@@ -905,7 +905,7 @@ export function Game(): JSX.Element | null {
                 <GameTimings
                     moves={goban.current.engine.config.moves ?? []}
                     start_time={goban.current.engine.config.start_time ?? 0}
-                    end_time={goban.current.engine.config.end_time ?? 0}
+                    end_time={goban.current.engine.config.end_time}
                     free_handicap_placement={
                         goban.current.engine.config.free_handicap_placement ?? false
                     }

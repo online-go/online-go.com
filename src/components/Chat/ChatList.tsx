@@ -50,7 +50,7 @@ interface ChatListProperties {
     closing_toggle?: () => void;
     collapse_state_store_name?: keyof DataSchema;
     fakelink?: boolean;
-    partFunc?: (channel: string, dont_autoset_active: boolean, dont_clear_joined: boolean) => void;
+    partFunc?: (channel: string, dont_auto_set_active: boolean, dont_clear_joined: boolean) => void;
 }
 
 interface ChatListState {
@@ -69,7 +69,7 @@ interface ChatListState {
     highlight_active_channel: boolean;
     active_channel: string;
     fakelink: boolean;
-    partFunc?: (channel: string, dont_autoset_active: boolean, dont_clear_joined: boolean) => void;
+    partFunc?: (channel: string, dont_auto_set_active: boolean, dont_clear_joined: boolean) => void;
 }
 
 export class ChatList extends React.PureComponent<ChatListProperties, ChatListState> {

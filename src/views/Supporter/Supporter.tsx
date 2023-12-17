@@ -453,7 +453,7 @@ export function Supporter(props: SupporterProperties): JSX.Element {
             )}
 
             <div className="SiteSupporterText">
-                <p className="fineprint">
+                <p className="fine-print">
                     <sup>*</sup>
                     {_(
                         "Only 19x19, 9x9, and 13x13 games are supported for AI review. Playouts and engines are subject to change over time as technology and software improves, but only if the changes should provide you with better reviews.",

@@ -171,7 +171,7 @@ export function ChatDetails(props: ChatDetailsProperties): JSX.Element {
                     </>
                 )}
                 {props.partFunc ? (
-                    <button className="xs noshadow reject" onClick={leave}>
+                    <button className="xs no-shadow reject" onClick={leave}>
                         <i className="fa fa-times" /> {leave_text}
                     </button>
                 ) : null}

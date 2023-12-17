@@ -134,7 +134,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
         }
         // And if there was one, revert it then move on to the next after the previous is done.
         if (current_selections.get(next_selection)) {
-            const target_id = next_selection.substring(7); //  get rid of the wierd "select-" from SelectTable
+            const target_id = next_selection.substring(7); //  get rid of the weird "select-" from SelectTable
 
             post(this.props.server_url + "revert", { audit_id: target_id })
                 .then((body) => {
@@ -206,7 +206,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
     };
 
     fetchDataForTable = (table_state: any) => {
-        // this shinanigans is so that we save the table state passed in the argument to this callback
+        // this shenanigans is so that we save the table state passed in the argument to this callback
         // into our component state, enabling us to reload the data again when we need to (after reverting an audit)
         this.setState(
             {

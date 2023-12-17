@@ -159,7 +159,7 @@ class _Ladder extends React.PureComponent<LadderProperties, LadderState> {
                     <div className="Ladder-header">
                         {this.state.ladder && this.state.ladder?.group !== null && (
                             <button
-                                className="xs noshadow"
+                                className="xs no-shadow"
                                 onAuxClick={this.goToGroup}
                                 onClick={this.goToGroup}
                             >
@@ -424,9 +424,9 @@ export class LadderRow extends React.Component<LadderRowProperties, LadderRowSta
         // <b>{_("Challenged by") /* Translators: List of players that challenged this player in a ladder */}: </b>
         // <b>{_("Challenging") /* Translators: List of players that have been challenged by this player in a ladder */}: </b>
 
-        let row_class = "challengable";
+        let row_class = "challengeable";
         if (row && !user.anonymous && row.can_challenge && !row.can_challenge.challengeable) {
-            row_class = "not-challengable";
+            row_class = "not-challengeable";
         }
 
         return (
@@ -526,7 +526,7 @@ export class LadderRow extends React.Component<LadderRowProperties, LadderRowSta
                                     {_("Challenge")}
                                 </button>
                             ) : (
-                                <div className="not-challengable">
+                                <div className="not-challengeable">
                                     {canChallengeTooltip(row.can_challenge)}
                                 </div>
                             )}

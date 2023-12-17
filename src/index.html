@@ -388,7 +388,7 @@
         }
         window['ogs_current_language'] = ogs_current_language || 'en';
 
-        /* Load our transations */
+        /* Load our translations */
         var language_path = "{{CDN_SERVICE}}/{{RELEASE}}/locale/" + ogs_current_language + ".{{LANGUAGE_VERSION_DOTJS}}";
         language_path = language_path.replace('///', '/'); /* in dev mode, we don't use the cdn or release vars */
         document.write('<script defer src="' + language_path + '"><' + '/script>');

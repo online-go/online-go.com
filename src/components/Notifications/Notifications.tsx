@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* cspell:disable */
+
 import * as React from "react";
 import * as data from "data";
 

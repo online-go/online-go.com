@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import * as markdownit from "markdown-it";
+import * as markdown_it from "markdown-it";
 import * as sanitizeHtml from "sanitize-html";
 //import * as moment from "moment";
 import { profanity_filter } from "profanity_filter";
@@ -29,7 +29,7 @@ interface MarkdownProps {
 
 interface MarkdownState {}
 
-const md = markdownit({
+const md = markdown_it({
     html: true,
     linkify: true,
     typographer: true,
@@ -123,6 +123,7 @@ function sanitize(src: string) {
             "area",
             "audio",
             "embed",
+            /* cspell:disable-next-line */
             "flgcaption",
             "figure",
             "img",
@@ -183,7 +184,7 @@ function sanitize(src: string) {
     });
 }
 
-// this component is protected from calling sanitizeHtml to often by memoising, below.
+// this component is protected from calling sanitizeHtml to often by memoizing, below.
 
 class _Markdown extends React.PureComponent<MarkdownProps, MarkdownState> {
     constructor(props: MarkdownProps) {
@@ -196,7 +197,7 @@ class _Markdown extends React.PureComponent<MarkdownProps, MarkdownState> {
         // Profanity filter
         source = profanity_filter(source);
 
-        // Allow people to have #header style markdown for headers, markdownit requires a space between
+        // Allow people to have #header style markdown for headers, markdown-it requires a space between
         source = source
             .split("\n")
             .map((l) => l.replace(/^(#+)([a-zA-Z0-9])/, "$1 $2"))

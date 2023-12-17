@@ -329,13 +329,13 @@ export function rankList(
 
 /**
  * Returns a list of all possible pro ranks and their labels.
- * @param bigranknums if true, ranks will start at 1037
+ * @param big_rank_nums if true, ranks will start at 1037
  */
-export function proRankList(bigranknums: boolean = true): Array<IRankInfo> {
+export function proRankList(big_rank_nums: boolean = true): Array<IRankInfo> {
     const result: IRankInfo[] = [];
     for (let i = 37; i <= 45; ++i) {
         result.push({
-            rank: i + (bigranknums ? 1000 : 0),
+            rank: i + (big_rank_nums ? 1000 : 0),
             label: longRankString(i + 1000),
         });
     }
@@ -355,7 +355,7 @@ export function allRanks(): IRankInfo[] {
  * For new players we pretend their rating is lower than it actually is for the purposes of
  * matchmaking and the like. See:
  * https://forums.online-go.com/t/i-think-the-13k-default-rank-is-doing-harm/13480/192
- * for the history surounding that.
+ * for the history surrounding that.
  */
 export function humble_rating(rating: number, deviation: number): number {
     return (

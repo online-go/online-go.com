@@ -26,8 +26,8 @@ import { _ } from "translate";
 
 export interface LearningPageProperties {
     title: string;
-    npages: number;
-    curpage: number;
+    nPages: number;
+    curPage: number;
     section: string;
     nextSection: string;
 }
@@ -75,15 +75,15 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
         };
     }
     next = () => {
-        setSectionPageCompleted(this.props.section, this.props.curpage);
+        setSectionPageCompleted(this.props.section, this.props.curPage);
 
         this.correct_answer_triggered = false;
         this.error_triggered = false;
         this.wrong_answer_triggered = false;
 
-        if (this.props.curpage + 1 < this.props.npages) {
+        if (this.props.curPage + 1 < this.props.nPages) {
             browserHistory.push(
-                window.location.pathname.replace(/\/[0-9]+/, "") + "/" + (this.props.curpage + 1),
+                window.location.pathname.replace(/\/[0-9]+/, "") + "/" + (this.props.curPage + 1),
             );
         } else {
             browserHistory.push("/learn-to-play-go/" + this.props.nextSection);
@@ -120,7 +120,7 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
             show_next: this.complete(),
         });
     };
-    pagehref(i: number): string {
+    page_href(i: number): string {
         return window.location.pathname.replace(/\/[0-9]*$/, "") + "/" + i;
     }
 
@@ -231,8 +231,8 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
 
     render() {
         const links: JSX.Element[] = [];
-        for (let i = 0; i < this.props.npages; ++i) {
-            if (i === this.props.curpage) {
+        for (let i = 0; i < this.props.nPages; ++i) {
+            if (i === this.props.curPage) {
                 links.push(
                     <span key={i} onClick={this.reset} className="page active">
                         {i + 1}
@@ -240,7 +240,7 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
                 );
             } else {
                 links.push(
-                    <Link key={i} to={this.pagehref(i)} className="page">
+                    <Link key={i} to={this.page_href(i)} className="page">
                         {getSectionPageCompleted(this.props.section, i) ? (
                             <i className="fa fa-star" />
                         ) : (

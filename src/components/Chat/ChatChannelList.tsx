@@ -65,7 +65,7 @@ interface ChatChannelListProperties {
     channel: string;
 }
 
-function autojoin_channels() {
+function auto_join_channels() {
     const joined_channels = data.get("chat.joined", {});
     const parted_channels = data.get("chat.parted", {});
 
@@ -93,7 +93,7 @@ function autojoin_channels() {
 }
 
 export function ChatChannelList({ channel }: ChatChannelListProperties): JSX.Element {
-    autojoin_channels();
+    auto_join_channels();
 
     const joined_channels = data.get("chat.joined", {});
     const using_resolved_channel = !(

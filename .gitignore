@@ -18,8 +18,6 @@ package-lock.json
 report.*.json
 neovide_backtraces.log
 
-
-
 i18n/data/
 i18n/import/
 i18n/prep-import.js

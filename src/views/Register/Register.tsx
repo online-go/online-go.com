@@ -225,7 +225,7 @@ export function Register(): JSX.Element {
                     <SocialLoginButtons />
                 </Card>
 
-                <div className="signin-option">
+                <div className="sign-in-option">
                     <h3>{_("Already have an account?")} </h3>
                     <div>
                         <Link to="/sign-in" className="btn primary">

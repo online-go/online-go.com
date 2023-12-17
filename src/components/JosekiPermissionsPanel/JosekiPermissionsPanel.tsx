@@ -27,7 +27,7 @@ interface JosekiAdminProps {
 }
 
 interface JosekiAdminState {
-    userid: string;
+    user_id: string;
     can_comment: boolean;
     can_edit: boolean;
     can_admin: boolean;
@@ -41,7 +41,7 @@ export class JosekiPermissionsPanel extends React.PureComponent<
     constructor(props: JosekiAdminProps) {
         super(props);
         this.state = {
-            userid: "",
+            user_id: "",
             can_comment: false,
             can_edit: false,
             can_admin: false,
@@ -54,7 +54,7 @@ export class JosekiPermissionsPanel extends React.PureComponent<
         if (!/^\d*$/.test(new_id)) {
             return;
         } else {
-            this.setState({ userid: new_id });
+            this.setState({ user_id: new_id });
         }
 
         this.setState({ throb: true });
@@ -98,7 +98,7 @@ export class JosekiPermissionsPanel extends React.PureComponent<
 
         new_permissions[permission] = value;
 
-        put(this.props.server_url + "permissions?id=" + this.state.userid, new_permissions)
+        put(this.props.server_url + "permissions?id=" + this.state.user_id, new_permissions)
             .then((body) => {
                 // Display the result of what happened
                 console.log("permissions result", body);
@@ -110,13 +110,13 @@ export class JosekiPermissionsPanel extends React.PureComponent<
     };
 
     render = () => {
-        const protect_self = data.get("user").id === parseInt(this.state.userid); // don't let people dis-admin themselves!
+        const protect_self = data.get("user").id === parseInt(this.state.user_id); // don't let people dis-admin themselves!
 
         return (
             <div className="joseki-permissions-panel">
                 <div>User id:</div>
-                <input value={this.state.userid} onChange={this.onUserIdChange} />
-                <Player user={parseInt(this.state.userid)} />
+                <input value={this.state.user_id} onChange={this.onUserIdChange} />
+                <Player user={parseInt(this.state.user_id)} />
                 <div>comment</div>
                 {this.state.throb ? (
                     <React.Fragment>

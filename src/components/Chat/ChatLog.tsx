@@ -53,7 +53,7 @@ interface ChatLogProperties {
     updateTitle?: boolean;
     hideTopic?: boolean;
     forceShowGames?: boolean;
-    inputPlaceholdertText?: string;
+    inputPlaceholderText?: string;
     onShowChannels?: (tf: boolean) => void;
     onShowUsers?: (tf: boolean) => void;
     /* if properties are added to this, don't forget to
@@ -66,7 +66,7 @@ interface InternalChatLogProperties extends ChatLogProperties {
     onShowGames?: (tf: boolean) => void;
     showingGames?: boolean;
     canShowGames?: boolean;
-    inputPlaceholdertext?: string;
+    inputPlaceholderText?: string;
 }
 
 let deferred_chat_update: Timeout | null = null;
@@ -352,12 +352,6 @@ function ChannelTopic({
                 )}
 
                 <i className={"header-icon fa fa-gear"} onClick={channelDetails} />
-                {/*channel_leavable &&
-                    <i className={'header-icon fa fa-times'}
-                        title={pgettext("Leave the selected channel.", "Leave Channel")}
-                        onClick={partChannel}
-                        />
-                */}
 
                 <i
                     className={"header-icon fa fa-users" + (showingUsers ? " active" : "")}
@@ -495,7 +489,7 @@ function ChatLines({
                 const ll = last_line;
                 last_line = line;
                 return (
-                    <ChatLine key={line.message.i || `system-${idx}`} line={line} lastline={ll} />
+                    <ChatLine key={line.message.i || `system-${idx}`} line={line} lastLine={ll} />
                 );
             })}
         </div>
@@ -505,7 +499,7 @@ function ChatLines({
 function ChatInput({
     channel,
     autoFocus,
-    inputPlaceholdertText,
+    inputPlaceholderText,
 }: InternalChatLogProperties): JSX.Element {
     const user = useUser();
     const rtl_mode = !!global_channels_by_id[channel]?.rtl;
@@ -550,8 +544,8 @@ function ChatInput({
         [channel, proxy],
     );
 
-    const placeholder = inputPlaceholdertText
-        ? inputPlaceholdertText
+    const placeholder = inputPlaceholderText
+        ? inputPlaceholderText
         : pgettext(
               "This is the placeholder text for the chat input field in games, chat channels, and private messages",
               interpolate("Message {{who}}", { who: channel_name || "..." }),

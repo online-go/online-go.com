@@ -15,6 +15,8 @@ import { uiPushActions } from "../../components/UIPush/MockUIPush";
 
 import { OnlineLeaguePlayerLanding } from "./OnlineLeaguePlayerLanding";
 
+/* cspell: disable */
+
 // Test data
 
 const TEST_USER = {

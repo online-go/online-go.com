@@ -39,7 +39,7 @@ import { EmbeddedChatCard } from "Chat";
 // They get to chat to each other here, in a dedicated channel, and mutually agree when to start.
 
 export function OnlineLeaguePlayerLanding(): JSX.Element {
-    const { search: urlparams } = useLocation();
+    const { search: url_params } = useLocation();
 
     /* State */
     const [loading, set_loading] = React.useState(true); // set to false after we have the info about that match they are joining
@@ -49,10 +49,10 @@ export function OnlineLeaguePlayerLanding(): JSX.Element {
     const [match, set_match] = React.useState<rest_api.online_league.MatchStatus>();
 
     const [linked_challenge_key, set_linked_challenge_key] = React.useState<string>(
-        new URLSearchParams(urlparams).get("id") || "",
+        new URLSearchParams(url_params).get("id") || "",
     );
 
-    const [side, set_side] = React.useState(new URLSearchParams(urlparams).get("side") || "black");
+    const [side, set_side] = React.useState(new URLSearchParams(url_params).get("side") || "black");
 
     const navigate = useNavigate();
 
@@ -242,7 +242,7 @@ export function OnlineLeaguePlayerLanding(): JSX.Element {
                     </button>
                     <div className="waiting-chat">
                         <EmbeddedChatCard
-                            inputPlaceholdertText={pgettext(
+                            inputPlaceholderText={pgettext(
                                 "place holder text in a chat channel input",
                                 "Chat while you wait...",
                             )}

@@ -53,8 +53,8 @@ export abstract class LearningHubSection extends React.PureComponent<LearningHub
         return (
             <P
                 title={this.props.title}
-                npages={this.props.pages.length}
-                curpage={page}
+                nPages={this.props.pages.length}
+                curPage={page}
                 section={this.props.section}
                 nextSection={this.props.nextSection}
             />

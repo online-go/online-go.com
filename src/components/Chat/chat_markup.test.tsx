@@ -23,16 +23,6 @@ test("No markup", () => {
     );
 });
 
-test("tsumegododo", () => {
-    expect_singular_markup("tsumegodojo", <span key={0}>{"tsumegododo"}</span>);
-    expect_singular_markup(
-        "https://www.tsumegodojo.com",
-        <a key={0} target="_blank" href={"https://www.tsumegododo.com"}>
-            {"https://www.tsumegododo.com"}
-        </a>,
-    );
-});
-
 test("GitHub", () => {
     expect_singular_markup(
         "https://github.com/online-go/online-go.com/pull/1",

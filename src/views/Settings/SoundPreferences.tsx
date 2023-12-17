@@ -562,47 +562,47 @@ export function SoundPreferences(): JSX.Element {
                         <SoundToggle
                             name={pgettext("Sound sample option", "Byoyomi")}
                             sprite="byoyomi"
-                            voiceopt={true}
+                            voiceOpt={true}
                         />
                         <SoundToggle
                             name={pgettext("Sound sample option", "Overtime")}
                             sprite="overtime"
-                            voiceopt={true}
+                            voiceOpt={true}
                         />
                         <SoundToggle
                             name={pgettext("Sound sample option", "Start Counting")}
                             sprite="start_counting"
-                            voiceopt={true}
+                            voiceOpt={true}
                         />
                         <SoundToggle
                             name={pgettext("Sound sample option", "Period")}
                             sprite="period"
-                            voiceopt={true}
+                            voiceOpt={true}
                         />
                         <SoundToggle
                             name={pgettext("Sound sample option", "5 periods left")}
                             sprite="5_periods_left"
-                            voiceopt={true}
+                            voiceOpt={true}
                         />
                         <SoundToggle
                             name={pgettext("Sound sample option", "4 periods left")}
                             sprite="4_periods_left"
-                            voiceopt={true}
+                            voiceOpt={true}
                         />
                         <SoundToggle
                             name={pgettext("Sound sample option", "3 periods left")}
                             sprite="3_periods_left"
-                            voiceopt={true}
+                            voiceOpt={true}
                         />
                         <SoundToggle
                             name={pgettext("Sound sample option", "2 periods left")}
                             sprite="2_periods_left"
-                            voiceopt={true}
+                            voiceOpt={true}
                         />
                         <SoundToggle
                             name={pgettext("Sound sample option", "Last period")}
                             sprite="last_period"
-                            voiceopt={true}
+                            voiceOpt={true}
                         />
                     </Card>
 
@@ -610,22 +610,22 @@ export function SoundPreferences(): JSX.Element {
                         <SoundToggle
                             name={pgettext("Sound sample option", "Black wins")}
                             sprite="black_wins"
-                            voiceopt={true}
+                            voiceOpt={true}
                         />
                         <SoundToggle
                             name={pgettext("Sound sample option", "White wins")}
                             sprite="white_wins"
-                            voiceopt={true}
+                            voiceOpt={true}
                         />
                         <SoundToggle
                             name={pgettext("Sound sample option", "You have won")}
                             sprite="you_have_won"
-                            voiceopt={true}
+                            voiceOpt={true}
                         />
                         <SoundToggle
                             name={pgettext("Sound sample option", "Tie")}
                             sprite="tie"
-                            voiceopt={true}
+                            voiceOpt={true}
                         />
                     </Card>
 
@@ -633,47 +633,47 @@ export function SoundPreferences(): JSX.Element {
                         <SoundToggle
                             name={pgettext("Sound sample option", "Challenge received")}
                             sprite="challenge_received"
-                            voiceopt={true}
+                            voiceOpt={true}
                         />
                         <SoundToggle
                             name={pgettext("Sound sample option", "Game started")}
                             sprite="game_started"
-                            voiceopt={true}
+                            voiceOpt={true}
                         />
                         <SoundToggle
                             name={pgettext("Sound sample option", "Game paused")}
                             sprite="game_paused"
-                            voiceopt={true}
+                            voiceOpt={true}
                         />
                         <SoundToggle
                             name={pgettext("Sound sample option", "Game resumed")}
                             sprite="game_resumed"
-                            voiceopt={true}
+                            voiceOpt={true}
                         />
                         <SoundToggle
                             name={pgettext("Sound sample option", "Undo granted")}
                             sprite="undo_granted"
-                            voiceopt={true}
+                            voiceOpt={true}
                         />
                         <SoundToggle
                             name={pgettext("Sound sample option", "Undo requested")}
                             sprite="undo_requested"
-                            voiceopt={true}
+                            voiceOpt={true}
                         />
                         <SoundToggle
                             name={pgettext("Sound sample option", "Pass")}
                             sprite="pass"
-                            voiceopt={true}
+                            voiceOpt={true}
                         />
                         <SoundToggle
                             name={pgettext("Sound sample option", "Remove the dead stones")}
                             sprite="remove_the_dead_stones"
-                            voiceopt={true}
+                            voiceOpt={true}
                         />
                         <SoundToggle
                             name={pgettext("Sound sample option", "Review started")}
                             sprite="review_started"
-                            voiceopt={true}
+                            voiceOpt={true}
                         />
                     </Card>
                 </div>
@@ -725,32 +725,32 @@ export function SoundPreferences(): JSX.Element {
                         <SoundToggle
                             name={pgettext("Sound sample option", "Disconnected")}
                             sprite="disconnected"
-                            voiceopt={true}
+                            voiceOpt={true}
                         />
                         <SoundToggle
                             name={pgettext("Sound sample option", "Reconnected")}
                             sprite="reconnected"
-                            voiceopt={true}
+                            voiceOpt={true}
                         />
                         <SoundToggle
                             name={pgettext("Sound sample option", "Player disconnected")}
                             sprite="player_disconnected"
-                            voiceopt={true}
+                            voiceOpt={true}
                         />
                         <SoundToggle
                             name={pgettext("Sound sample option", "Player reconnected")}
                             sprite="player_reconnected"
-                            voiceopt={true}
+                            voiceOpt={true}
                         />
                         <SoundToggle
                             name={pgettext("Sound sample option", "Your opponent has disconnected")}
                             sprite="your_opponent_has_disconnected"
-                            voiceopt={true}
+                            voiceOpt={true}
                         />
                         <SoundToggle
                             name={pgettext("Sound sample option", "Your opponent has reconnected")}
                             sprite="your_opponent_has_reconnected"
-                            voiceopt={true}
+                            voiceOpt={true}
                         />
                     </Card>
 
@@ -797,7 +797,7 @@ export function SoundPreferences(): JSX.Element {
     );
 }
 
-function SoundToggle(props: { name: string; sprite: ValidSound; voiceopt?: boolean }): JSX.Element {
+function SoundToggle(props: { name: string; sprite: ValidSound; voiceOpt?: boolean }): JSX.Element {
     const [on, __set]: [boolean, (x: boolean) => void] = React.useState(
         sfx.getSpriteEnabled(props.sprite),
     );
@@ -824,7 +824,7 @@ function SoundToggle(props: { name: string; sprite: ValidSound; voiceopt?: boole
                     checked={on}
                 />
             </label>
-            {props.voiceopt && (
+            {props.voiceOpt && (
                 <label className="SoundToggle-voice-label">
                     {voice ? (
                         <span className="voice-or-effect">
