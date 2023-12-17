@@ -71,7 +71,7 @@
  *   values for replication:
  *
  *      Replication.NONE
- *          No replication is performed. This is the same as not passing this paramter.
+ *          No replication is performed. This is the same as not passing this parameter.
  *
  *          When to use: When you don't want the value replicated to other devices
  *
@@ -124,7 +124,7 @@ const event_emitter = new TypedEventEmitter<DataSchema>();
 export function setWithoutEmit<KeyT extends Extract<keyof DataSchema, string>>(
     key: KeyT,
     value: DataSchema[KeyT] | undefined,
-): DataSchema[KeyT] {
+): DataSchema[KeyT] | undefined {
     if (value === undefined) {
         remove(key);
         return value;
@@ -140,7 +140,7 @@ export function set<KeyT extends Extract<keyof DataSchema, string>>(
     key: KeyT,
     value: DataSchema[KeyT] | undefined,
     replication?: Replication,
-): DataSchema[KeyT] {
+): typeof value {
     if (replication !== Replication.REMOTE_ONLY) {
         setWithoutEmit(key, value);
     }
@@ -186,21 +186,21 @@ export function removePrefix(key_prefix: string): any {
 
     Object.keys(store).map((key) => {
         if (key.indexOf(key_prefix) === 0) {
-            hits[key] = key;
+            hits[key as keyof DataSchema] = key;
         }
     });
 
     for (const key in hits) {
         safeLocalStorageRemove(`ogs.${key}`);
-        delete store[key];
+        delete store[key as keyof DataSchema];
         emitForKey(key as keyof DataSchema);
     }
 }
 
 export function removeAll(): void {
-    const keys = [];
+    const keys: (keyof DataSchema)[] = [];
     for (const key in store) {
-        keys.push(key);
+        keys.push(key as keyof DataSchema);
     }
     for (const key of keys) {
         try {
@@ -211,10 +211,18 @@ export function removeAll(): void {
     }
 }
 
+export function get(key: "user"): DataSchema["user"];
 export function get<KeyT extends Extract<keyof DataSchema, string>>(
     key: KeyT,
-    default_value?: DataSchema[KeyT],
-): DataSchema[KeyT] | undefined {
+): DataSchema[KeyT] | undefined;
+export function get<KeyT extends Extract<keyof DataSchema, string>>(
+    key: KeyT,
+    default_value: DataSchema[KeyT],
+): DataSchema[KeyT];
+export function get<KeyT extends Extract<keyof DataSchema, string>>(
+    key: KeyT | "user",
+    default_value?: undefined | DataSchema[KeyT],
+): DataSchema[KeyT] | DataSchema["user"] | undefined {
     if (key in store) {
         return store[key] as DataSchema[KeyT];
     }
@@ -229,7 +237,7 @@ export function get<KeyT extends Extract<keyof DataSchema, string>>(
 
 export function watch<KeyT extends Extract<keyof DataSchema, string>>(
     key: KeyT,
-    cb: (data: DataSchema[KeyT]) => void,
+    cb: (data: DataSchema[KeyT] | undefined) => void,
     call_on_undefined?: boolean,
     dont_call_immediately?: boolean,
 ): void {
@@ -247,7 +255,7 @@ export function watch<KeyT extends Extract<keyof DataSchema, string>>(
 
 export function unwatch<KeyT extends Extract<keyof DataSchema, string>>(
     key: KeyT,
-    cb: (data: DataSchema[KeyT]) => void,
+    cb: (data: DataSchema[KeyT] | undefined) => void,
 ): void {
     event_emitter.off(key, cb);
 }
@@ -256,22 +264,22 @@ export function dump(key_prefix: string = "", strip_prefix?: boolean) {
     if (!key_prefix) {
         key_prefix = "";
     }
-    const ret = {};
-    const remote_values = {};
+    const ret: any = {};
+    const remote_values: any = {};
     for (const k in remote_store) {
-        remote_values[k] = remote_store[k].value;
+        remote_values[k] = remote_store[k as keyof DataSchema]?.value;
     }
     const data = Object.assign({}, defaults, remote_values, store);
     const keys = Object.keys(data);
 
-    keys.sort().map((key) => {
+    keys.sort().map((key: string) => {
         if (key.indexOf(key_prefix) === 0) {
             const k = strip_prefix ? key.substr(key_prefix.length) : key;
             ret[k] = {
                 union: data[key],
-                value: store[key],
-                default: defaults[key],
-                remote: remote_get(key),
+                value: store[key as keyof DataSchema],
+                default: defaults[key as keyof DataSchema],
+                remote: remote_get(key as keyof DataSchema),
             };
         }
     });
@@ -282,10 +290,10 @@ export function getPrefix(key_prefix: string = "", strip_prefix?: boolean): { [k
     if (!key_prefix) {
         key_prefix = "";
     }
-    const ret = {};
-    const remote_values = {};
+    const ret: any = {};
+    const remote_values: any = {};
     for (const k in remote_store) {
-        remote_values[k] = remote_store[k].value;
+        remote_values[k] = remote_store[k as keyof DataSchema]?.value;
     }
     const data = Object.assign({}, defaults, remote_values, store);
     const keys = Object.keys(data);
@@ -299,7 +307,7 @@ export function getPrefix(key_prefix: string = "", strip_prefix?: boolean): { [k
     return ret;
 }
 
-function safeLocalStorageSet(key, value) {
+function safeLocalStorageSet(key: string, value: any) {
     try {
         localStorage.setItem(key, value);
     } catch (e) {
@@ -309,7 +317,7 @@ function safeLocalStorageSet(key, value) {
     }
 }
 
-function safeLocalStorageRemove(key) {
+function safeLocalStorageRemove(key: string) {
     try {
         localStorage.removeItem(key);
     } catch (e) {
@@ -320,15 +328,16 @@ function safeLocalStorageRemove(key) {
 }
 
 /* Load previously saved data from localStorage */
-
 try {
     for (let i = 0; i < localStorage.length; ++i) {
         let key = localStorage.key(i);
-        if (key.indexOf("ogs.") === 0) {
+        if (key?.indexOf("ogs.") === 0) {
             key = key.substr(4);
             try {
                 const item = localStorage.getItem(`ogs.${key}`);
-                store[key] = JSON.parse(item);
+                if (item) {
+                    store[key as keyof DataSchema] = JSON.parse(item);
+                }
             } catch (e) {
                 console.error(
                     `Data storage system failed to load ${key}. Value was: `,
@@ -392,7 +401,11 @@ let wal_currently_processing: { [k: string]: boolean } = {};
 let last_modified = "2000-01-01T00:00:00.000Z";
 let loaded_user_id: number | null = null; // user id we've currently loaded data for
 
-function remote_set(key: string, value: RemoteStorableValue, replication: Replication): void {
+function remote_set(
+    key: keyof DataSchema,
+    value: RemoteStorableValue,
+    replication: Replication,
+): void {
     const user = store["config.user"];
     if (!user || user.anonymous) {
         throw new Error("user is not authenticated");
@@ -410,7 +423,7 @@ function remote_set(key: string, value: RemoteStorableValue, replication: Replic
     );
 }
 
-function remote_remove(key: string, replication: Replication): void {
+function remote_remove(key: keyof DataSchema, replication: Replication): void {
     const user = store["config.user"];
     if (!user || user.anonymous) {
         throw new Error("user is not authenticated");
@@ -425,7 +438,7 @@ function remote_remove(key: string, replication: Replication): void {
     safeLocalStorageRemove(`ogs-remote-storage-store.${user.id}.${key}`);
 }
 
-function remote_get(key: string): RemoteStorableValue {
+function remote_get(key: keyof DataSchema): RemoteStorableValue {
     const user = store["config.user"];
     if (!user || user.anonymous) {
         return undefined;
@@ -470,7 +483,11 @@ function _process_write_ahead_log(user_id: number): void {
 
         wal_currently_processing[kv.key] = true;
 
-        const cb = (res) => {
+        const cb = (
+            res:
+                | { error?: string | undefined; retry?: boolean | undefined }
+                | { error?: undefined; success: true },
+        ) => {
             if (loaded_user_id !== user_id) {
                 console.warn(
                     "User changed while we were synchronizing our remote storage write ahead log, bailing from further updates.",
@@ -613,7 +630,7 @@ socket.on("remote_storage/update", (row) => {
         setWithoutEmit(row.key as keyof DataSchema, row.value);
     }
 
-    remote_store[row.key] = row;
+    (remote_store as any)[row.key] = row;
     safeLocalStorageSet(`ogs-remote-storage-store.${user.id}.${row.key}`, JSON.stringify(row));
 
     if (last_modified < row.modified) {
@@ -671,12 +688,14 @@ function load_from_local_storage_and_sync() {
         for (let i = 0; i < localStorage.length; ++i) {
             const full_key = localStorage.key(i);
 
-            if (full_key.indexOf(store_prefix) === 0) {
-                const key = full_key.substr(store_prefix.length);
+            if (full_key?.indexOf(store_prefix) === 0) {
+                const key = full_key.substr(store_prefix.length) as keyof DataSchema;
                 try {
-                    remote_store[key] = JSON.parse(localStorage.getItem(full_key)) as RemoteKV;
-                    if (remote_store[key].replication === Replication.REMOTE_OVERWRITES_LOCAL) {
-                        store[key] = remote_store[key].value;
+                    remote_store[key] = JSON.parse(
+                        localStorage.getItem(full_key) as string,
+                    ) as RemoteKV;
+                    if (remote_store[key]?.replication === Replication.REMOTE_OVERWRITES_LOCAL) {
+                        store[key] = remote_store[key]?.value;
                         emitForKey(key as keyof DataSchema);
                     }
                 } catch (e) {
@@ -684,17 +703,17 @@ function load_from_local_storage_and_sync() {
                     localStorage.removeItem(full_key);
                 }
             }
-            if (full_key.indexOf(wal_prefix) === 0) {
+            if (full_key?.indexOf(wal_prefix) === 0) {
                 const key = full_key.substr(wal_prefix.length);
                 try {
-                    wal[key] = JSON.parse(localStorage.getItem(full_key));
+                    wal[key] = JSON.parse(localStorage.getItem(full_key) as string);
                 } catch (e) {
                     console.error(`Error loading WAL key ${full_key}, removing`, e);
                     localStorage.removeItem(full_key);
                 }
             }
             if (full_key === last_modified_key) {
-                last_modified = localStorage.getItem(full_key);
+                last_modified = localStorage.getItem(full_key) as string;
             }
         }
     } catch (e) {

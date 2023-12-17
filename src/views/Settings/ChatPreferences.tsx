@@ -56,7 +56,7 @@ export function ChatPreferences(): JSX.Element {
             <PreferenceLine
                 title={_("Notify me when I'm mentioned in group chats I'm a member of.")}
                 description={_(
-                    "This only applies to chats you haven't choosen a different setting.",
+                    "This only applies to chats you haven't chosen a different setting.",
                 )}
             >
                 <Toggle checked={group_chat_mentions} onChange={toggleGroupChatMentions} />
@@ -65,7 +65,7 @@ export function ChatPreferences(): JSX.Element {
             <PreferenceLine
                 title={_("Notify me about unread messages in group chats I'm a member of.")}
                 description={_(
-                    "This only applies to chats you haven't choosen a different setting.",
+                    "This only applies to chats you haven't chosen a different setting.",
                 )}
             >
                 <Toggle checked={group_chat_unread} onChange={toggleGroupChatUnread} />
@@ -74,7 +74,7 @@ export function ChatPreferences(): JSX.Element {
             <PreferenceLine
                 title={_("Notify me when I'm mentioned in tournament chats I'm a member of.")}
                 description={_(
-                    "This only applies to chats you haven't choosen a different setting.",
+                    "This only applies to chats you haven't chosen a different setting.",
                 )}
             >
                 <Toggle
@@ -86,7 +86,7 @@ export function ChatPreferences(): JSX.Element {
             <PreferenceLine
                 title={_("Notify me about unread messages in tournament chats I'm a member of.")}
                 description={_(
-                    "This only applies to chats you haven't choosen a different setting.",
+                    "This only applies to chats you haven't chosen a different setting.",
                 )}
             >
                 <Toggle checked={tournament_chat_unread} onChange={toggleTournamentChatUnread} />

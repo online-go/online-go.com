@@ -25,12 +25,12 @@ import { setSetShowFriendList } from "./close_friend_list";
 
 const online_subscriptions = {};
 
-export function FriendIndicator(): JSX.Element {
+export function FriendIndicator(): JSX.Element | null {
     const user = data.get("user");
     const [show_friend_list, setShowFriendList] = React.useState(false);
     const [online_ct, setOnlineCt] = React.useState(0);
     const [, refresh] = React.useState(0);
-    const friend_list = React.useRef([]);
+    const friend_list = React.useRef<any[]>([]);
 
     setSetShowFriendList(setShowFriendList);
 
@@ -40,7 +40,7 @@ export function FriendIndicator(): JSX.Element {
                 let ct = 0;
                 for (const friend of friend_list.current) {
                     if (!(friend.id in online_subscriptions)) {
-                        online_subscriptions[friend.id] = true;
+                        (online_subscriptions as any)[friend.id] = true;
                         setTimeout(() => {
                             online_status.subscribe(friend.id, updateFriendCount);
                         }, 1);

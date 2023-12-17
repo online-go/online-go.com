@@ -42,7 +42,7 @@ export const api1 = api1ify;
 interface OgsRequest {
     method: Method;
     url: string;
-    data: object;
+    data?: object;
     promise?: Promise<any>;
     controller: AbortController;
     signal: AbortSignal;
@@ -114,7 +114,7 @@ function request(method: Method): RequestFunction {
                         url +=
                             (url.indexOf("?") >= 0 ? "&" : "?") +
                             Object.keys(data)
-                                .map((k) => `${k}=` + encodeURIComponent(data[k]))
+                                .map((k) => `${k}=` + encodeURIComponent((data as any)[k]))
                                 .join("&");
                     } else {
                         prepared_data = JSON.stringify(data);
@@ -243,8 +243,8 @@ export function abort_requests_in_flight(url: string, method?: Method): boolean 
     return aborted;
 }
 
-export function getCookie(name: string) {
-    let cookieValue = null;
+export function getCookie(name: string): string {
+    let cookieValue = "";
     if (document.cookie && document.cookie !== "") {
         const cookies = document.cookie.split(";");
         for (let i = 0; i < cookies.length; i++) {

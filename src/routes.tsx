@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* cspell: words groupadmin cotsen */
+
 import * as React from "react";
 import { unstable_HistoryRouter as Router, Route, Routes, Navigate } from "react-router-dom";
 
@@ -74,7 +76,7 @@ import { NetworkStatus } from "NetworkStatus";
 import * as docs from "docs";
 
 /*** Layout our main view and routes ***/
-function Main(props): JSX.Element {
+function Main(props: { children: any }): JSX.Element {
     if (username_needs_to_be_updated()) {
         return (
             <div>
@@ -87,7 +89,7 @@ function Main(props): JSX.Element {
 
     return (
         <Experiment name="v6">
-            <Variant value="enabled" bodyclass="v6">
+            <Variant value="enabled" bodyClass="v6">
                 <div id="variant-container">
                     <ErrorBoundary>
                         <NavBar />
@@ -163,6 +165,9 @@ function ChatRedirect(): JSX.Element {
             for (const key of Object.keys(joined)) {
                 channel = key;
                 break;
+            }
+            if (!channel) {
+                channel = "global-english";
             }
         } else {
             channel = "global-english";

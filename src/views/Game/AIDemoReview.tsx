@@ -42,7 +42,7 @@ export function AIDemoReview({
     const user = useUser();
     const is_controller = user?.id === controller;
     const [engine, setEngine] = React.useState(goban?.engine);
-    const [prediction, setPrediction] = React.useState<Prediction>(null);
+    const [prediction, setPrediction] = React.useState<Prediction | null>(null);
     const [useScore, setUseScore] = usePreference("ai-review-use-score");
     const [aiReviewEnabled] = usePreference("ai-review-enabled");
 
@@ -124,7 +124,7 @@ export function AIDemoReview({
         engine.on("cur_move", onMove);
         engine.on("cur_review_move", onMove);
         //onMove(engine.cur_move);
-        let pending_request = null;
+        let pending_request: ReturnType<typeof setTimeout> | null = null;
 
         function onMove() {
             const move = goban.engine.cur_move;
@@ -262,8 +262,8 @@ export function AIDemoReview({
         return <div className="AIDemoReview" />;
     }
 
-    const score = prediction.score;
-    const win_rate_p = prediction.win_rate * 100.0;
+    const score = prediction.score || 0;
+    const win_rate_p = (prediction.win_rate || 0) * 100.0;
 
     return (
         <>
@@ -324,13 +324,10 @@ function stringifyBoardState(move: MoveTree): string {
     return move.state.board.reduce((a, b) => a + b.reduce((a, b) => a + b, ""), "");
 }
 
-function clearAnalysis(goban) {
-    const marks: { [mark: string]: string } = {};
-    const colored_circles: ColoredCircle[] = [];
-    const heatmap: Array<Array<number>> | null = null;
-    goban.setMarks(marks, true); /* draw the remaining AI sequence as ghost marks, if any */
-    goban.setHeatmap(heatmap, true);
-    goban.setColoredCircles(colored_circles, false);
+function clearAnalysis(goban: Goban) {
+    goban.setMarks({}, true); /* draw the remaining AI sequence as ghost marks, if any */
+    goban.setHeatmap(undefined, true);
+    goban.setColoredCircles([], false);
 }
 
 function computePrediction(data: any): any {
@@ -346,14 +343,14 @@ function renderAnalysis(goban: Goban, data: any) {
     const analysis = data.analysis;
     const branches = analysis.branches;
 
-    const total_visits = branches.reduce((a, b) => a + b.visits, 0);
+    const total_visits = branches.reduce((a: number, b: any) => a + b.visits, 0);
 
     let marks: { [mark: string]: string } = {};
     const colored_circles: ColoredCircle[] = [];
     let heatmap: Array<Array<number>> | null = null;
     heatmap = [];
     for (let y = 0; y < goban.engine.height; y++) {
-        const r = [];
+        const r: number[] = [];
         for (let x = 0; x < goban.engine.width; x++) {
             r.push(0);
         }
@@ -442,14 +439,17 @@ function trimMaxMoves(marks: { [mark: string]: string }): { [mark: string]: stri
     // Move object has more than just one move in it and the user has set the non-zero value
     if (maxMoves < 10 && Object.keys(marks).length > 2) {
         // Get all the moves into an array but leave the black and white keys since we'll append them later
-        let marksArray = Object.entries(marks).reduce((result, entry) => {
-            if (entry[0] !== "black" && entry[0] !== "white") {
-                result.push({ key: entry[0], value: entry[1] });
-            }
-            return result;
-        }, []);
+        let marksArray = Object.entries(marks).reduce(
+            (result, entry) => {
+                if (entry[0] !== "black" && entry[0] !== "white") {
+                    result.push({ key: entry[0], value: entry[1] });
+                }
+                return result;
+            },
+            [] as { key: string; value: any }[],
+        );
 
-        // use the max moves set by teh user or the number of movesin the variation, whiever is lower
+        // use the max moves set by teh user or the number of moves in the variation, whichever is lower
         const actualMoves = marksArray.length > maxMoves ? maxMoves : marksArray.length;
 
         // Chop off anything after the number of moves we want
@@ -479,7 +479,7 @@ function trimMaxMoves(marks: { [mark: string]: string }): { [mark: string]: stri
             }
         }
 
-        // Work out how many characters (2 per move) we should restrict the transpancy string to for each
+        // Work out how many characters (2 per move) we should restrict the transparency string to for each
         const blackMoveString = marks.black.substring(0, 2 * blackMoves);
         const whiteMoveString = marks.white.substring(0, 2 * whiteMoves);
 
@@ -500,7 +500,10 @@ function trimMaxMoves(marks: { [mark: string]: string }): { [mark: string]: stri
         }
 
         // Convert teh array back into an object
-        marks = marksArray.reduce((target, item) => ((target[item.key] = item.value), target), {});
+        marks = marksArray.reduce(
+            (target, item) => (((target as any)[item.key] = item.value), target),
+            {},
+        );
     }
 
     //Return the result

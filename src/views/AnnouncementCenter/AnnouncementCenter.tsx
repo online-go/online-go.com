@@ -27,6 +27,7 @@ import { Player } from "Player";
 import * as moment from "moment";
 //import { Announcement } from "src/components/Announcements";
 import { useUser } from "hooks";
+import { Announcement } from "src/components/Announcements";
 
 moment.relativeTimeThreshold("m", 59);
 
@@ -71,7 +72,7 @@ export function AnnouncementCenter(): JSX.Element {
         data.get("announcement.last-duration", 4),
     );
     const duration_options = all_duration_options.filter((x) => x < 86400 || user.is_superuser);
-    const [announcements, setAnnouncements] = React.useState([]);
+    const [announcements, setAnnouncements] = React.useState<any[]>([]);
 
     React.useEffect(() => {
         window.document.title = _("Announcement Center");
@@ -105,7 +106,7 @@ export function AnnouncementCenter(): JSX.Element {
             })
             .catch(errorAlerter);
     };
-    const deleteAnnouncement = (announcement) => {
+    const deleteAnnouncement = (announcement: Announcement) => {
         del(`announcements/${announcement.id}`).then(refresh).catch(errorAlerter);
     };
 

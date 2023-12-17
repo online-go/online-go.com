@@ -29,7 +29,7 @@ import { useUser } from "hooks";
 
 import { SocialLoginButtons } from "SocialLoginButtons";
 
-window["Md5"] = Md5;
+(window as any)["Md5"] = Md5;
 import { alert } from "swal_config";
 
 /***
@@ -93,11 +93,11 @@ export function SignIn(): JSX.Element {
 
     const login = (
         event: React.MouseEvent<HTMLButtonElement> | React.KeyboardEvent<HTMLInputElement>,
-    ) => {
+    ): boolean | void => {
         const actually_login = () => {
             post("/api/v0/login", {
-                username: ref_username.current.value.trim(),
-                password: ref_password.current.value,
+                username: ref_username.current!.value.trim(),
+                password: ref_password.current!.value,
                 ebi: get_ebi(),
             })
                 .then((config) => {
@@ -147,11 +147,11 @@ export function SignIn(): JSX.Element {
         };
 
         const focus_empty = () => {
-            if (ref_username.current.value.trim() === "") {
+            if (ref_username.current?.value.trim() === "") {
                 ref_username.current.focus();
                 return true;
             }
-            if (ref_password.current.value.trim() === "") {
+            if (ref_password.current?.value.trim() === "") {
                 ref_password.current.focus();
                 return true;
             }
@@ -187,7 +187,7 @@ export function SignIn(): JSX.Element {
                 text: _("What is your username?"),
                 input: "text",
                 showCancelButton: true,
-                inputValidator: (username) => {
+                inputValidator: (username): string | void => {
                     if (!username) {
                         return _("Please supply a username!");
                     }

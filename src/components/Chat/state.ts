@@ -22,37 +22,42 @@ import { TypedEventEmitter } from "TypedEventEmitter";
 interface Events {
     subscription_changed: void;
 }
-const event_emiter = new TypedEventEmitter<Events>();
+const event_emitter = new TypedEventEmitter<Events>();
 
-export let chat_subscriptions = {};
+export let chat_subscriptions: { [channel: string]: { [option: string]: boolean } } = {};
+
 data.watch("chat-indicator.chat-subscriptions", onChatSubscriptionUpdate);
-function onChatSubscriptionUpdate(pref) {
-    chat_subscriptions = pref;
-    event_emiter.emit("subscription_changed");
+function onChatSubscriptionUpdate(
+    subs: { [channel: string]: { [option: string]: boolean } } | undefined,
+) {
+    if (subs) {
+        chat_subscriptions = subs;
+    }
+    event_emitter.emit("subscription_changed");
 }
 let chat_subscribe_new_group_chat_messages = false;
 preferences.watch("chat-subscribe-group-chat-unread", onChatSubscribeGroupMessageChange);
 function onChatSubscribeGroupMessageChange(pref: boolean) {
     chat_subscribe_new_group_chat_messages = pref;
-    event_emiter.emit("subscription_changed");
+    event_emitter.emit("subscription_changed");
 }
 let chat_subscribe_new_group_chat_mentioned = false;
 preferences.watch("chat-subscribe-group-mentions", onChatSubscribeGroupMentionsChange);
 function onChatSubscribeGroupMentionsChange(pref: boolean) {
     chat_subscribe_new_group_chat_mentioned = pref;
-    event_emiter.emit("subscription_changed");
+    event_emitter.emit("subscription_changed");
 }
 let chat_subscribe_new_tournament_chat_messages = false;
 preferences.watch("chat-subscribe-tournament-chat-unread", onChatSubscribeTournamentMessageChange);
 function onChatSubscribeTournamentMessageChange(pref: boolean) {
     chat_subscribe_new_tournament_chat_messages = pref;
-    event_emiter.emit("subscription_changed");
+    event_emitter.emit("subscription_changed");
 }
 let chat_subscribe_new_tournament_chat_mentioned = false;
 preferences.watch("chat-subscribe-tournament-mentions", onChatSubscribeTournamentMentionsChange);
 function onChatSubscribeTournamentMentionsChange(pref: boolean) {
     chat_subscribe_new_tournament_chat_mentioned = pref;
-    event_emiter.emit("subscription_changed");
+    event_emitter.emit("subscription_changed");
 }
 
 export function getUnreadChatPreference(channel: string): boolean {
@@ -80,13 +85,16 @@ export function getMentionedChatPreference(channel: string): boolean {
     return false;
 }
 
-export function watchChatSubscriptionChanged(cb: () => void, dont_call_imediately?: boolean): void {
+export function watchChatSubscriptionChanged(
+    cb: () => void,
+    dont_call_immediately?: boolean,
+): void {
     // Give a single place to subscribe to setting changes
-    event_emiter.on("subscription_changed", cb);
-    if (!dont_call_imediately) {
+    event_emitter.on("subscription_changed", cb);
+    if (!dont_call_immediately) {
         cb();
     }
 }
 export function unwatchChatSubscriptionChanged(cb: () => void): void {
-    event_emiter.off("subscription_changed", cb);
+    event_emitter.off("subscription_changed", cb);
 }

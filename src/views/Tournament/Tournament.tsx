@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* cspell: words gameid tourn */
+
 import * as React from "react";
 import * as ReactDOM from "react-dom/client";
 import { LoadingPage } from "Loading";
@@ -49,9 +51,43 @@ import { alert } from "swal_config";
 import { useUser } from "hooks";
 import { PlayerCacheEntry } from "player_cache";
 
-let logspam_debounce: any;
+let log_spam_debounce: any;
 
 const ranks = amateurRanks();
+
+interface TournamentPlayer extends PlayerCacheEntry {
+    rank: number;
+    username: string;
+    points: number;
+    sos: number;
+    sodos: number;
+    net_points: number;
+    notes: string;
+    disqualified: boolean;
+    resigned: boolean;
+    eliminated: boolean;
+}
+
+interface TournamentMatch {
+    [k: string]: any;
+}
+
+interface TournamentRecord {
+    player_id: number;
+    match: TournamentMatch;
+}
+
+interface TournamentRound {
+    [k: string]: any;
+}
+
+interface TournamentGroup {
+    [k: string]: any;
+}
+
+interface TournamentPlayers {
+    [k: string]: TournamentPlayer;
+}
 
 interface TournamentInterface {
     id: number;
@@ -97,12 +133,12 @@ interface TournamentInterface {
 export function Tournament(): JSX.Element {
     const user = useUser();
     const params = useParams<{ tournament_id: string; group_id: string }>();
-    const tournament_id = parseInt(params.tournament_id) || 0;
-    const new_tournament_group_id = parseInt(params.group_id) || 0;
+    const tournament_id = parseInt(params.tournament_id ?? "0");
+    const new_tournament_group_id = parseInt(params.group_id ?? "0");
 
-    const ref_tournament_name = React.useRef<HTMLInputElement>();
-    const ref_description = React.useRef<HTMLTextAreaElement>();
-    const ref_max_players = React.useRef<HTMLInputElement>();
+    const ref_tournament_name = React.useRef<HTMLInputElement>(null);
+    const ref_description = React.useRef<HTMLTextAreaElement>(null);
+    const ref_max_players = React.useRef<HTMLInputElement>(null);
 
     const elimination_tree_container = React.useRef<HTMLDivElement>(document.createElement("div"));
 
@@ -160,11 +196,11 @@ export function Tournament(): JSX.Element {
         number | "standings" | "roster"
     >(0);
     const [sorted_players, setSortedPlayers] = React.useState<any[]>([]);
-    const [players, setPlayers] = React.useState({});
+    const [players, setPlayers] = React.useState<{ [id: string]: TournamentPlayer }>({});
     const [is_joined, setIsJoined] = React.useState(false);
-    const [invite_result, setInviteResult] = React.useState(null);
+    const [invite_result, setInviteResult] = React.useState<string | null>(null);
     const [use_elimination_trees, setUseEliminationTrees] = React.useState(false);
-    const [user_to_invite, setUserToInvite] = React.useState<PlayerCacheEntry>(null);
+    const [user_to_invite, setUserToInvite] = React.useState<PlayerCacheEntry | null>(null);
 
     //const tournament = tournament_ref.current;
 
@@ -182,6 +218,7 @@ export function Tournament(): JSX.Element {
             tournament_ref.current.time_start = moment(new Date()).add(1, "minute").format();
             tournament_ref.current.rules = "japanese";
             tournament_ref.current.description =
+                /* cspell: disable-next-line */
                 "Aliquam dolor blanditiis voluptatem et harum officiis atque. Eum eos aut consequatur quis sunt. Minima nisi aut ratione. Consequatur deleniti vitae minima exercitationem illum debitis debitis sunt. Culpa officia voluptates quos sit. Reprehenderit fuga ad quo ipsam assumenda nihil quos qui.";
             tournament_ref.current.tournament_type = "elimination";
             tournament_ref.current.first_pairing_method = "slide";
@@ -257,7 +294,7 @@ export function Tournament(): JSX.Element {
                     use_elimination_trees = true;
                     setTimeout(() => updateEliminationTrees(), 1);
                 } else {
-                    rounds = rounds.map((r) => groupify(r, players));
+                    rounds = rounds.map((r: any) => groupify(r, players));
                     linkPlayersToRoundMatches(rounds, players);
                 }
 
@@ -325,7 +362,7 @@ export function Tournament(): JSX.Element {
         }).catch(errorAlerter);
         return ret;
     };
-    const linkPlayersToRoundMatches = (rounds, players) => {
+    const linkPlayersToRoundMatches = (rounds: any, players: PlayerCacheEntry[]) => {
         for (const round of rounds) {
             if (!round.groupify) {
                 for (const match of round.matches) {
@@ -336,7 +373,7 @@ export function Tournament(): JSX.Element {
             }
         }
     };
-    const compareUserRank = (a, b) => {
+    const compareUserRank = (a: TournamentPlayer, b: TournamentPlayer) => {
         if (!a && !b) {
             return 0;
         }
@@ -372,17 +409,17 @@ export function Tournament(): JSX.Element {
             return pa.rank - pb.rank;
         }
         if (pa.points !== pb.points) {
-            return parseFloat(pb.points) - parseFloat(pa.points);
+            return Number(pb.points) - Number(pa.points);
         }
         if (pa.sos !== pb.sos) {
-            return parseFloat(pb.sos) - parseFloat(pa.sos);
+            return Number(pb.sos) - Number(pa.sos);
         }
         if (pa.sodos !== pb.sodos) {
-            return parseFloat(pb.sodos) - parseFloat(pa.sodos);
+            return Number(pb.sodos) - Number(pa.sodos);
         }
         //if (pa.net_points !== pb.net_points) return parseFloat(pb.net_points) - parseFloat(pa.net_points);
         if (pa.ranking !== pb.ranking) {
-            return pb.ranking - pa.ranking;
+            return (pb.ranking ?? 0) - (pa.ranking ?? 0);
         }
         if (pa.username < pb.username) {
             return 1;
@@ -504,23 +541,23 @@ export function Tournament(): JSX.Element {
             }
 
             const container = elimination_tree_container.current;
-            const lastbucket = {};
-            let lastcurbucket = {};
-            let curbucket = {};
+            const last_bucket: any = {};
+            let last_cur_bucket: any = {};
+            let cur_bucket: any = {};
             const em_4 = ($("#em10").width() * 0.4) / 10.0;
             const em_6 = ($("#em10").width() * 0.6) / 10.0;
             const em2_5 = ($("#em10").width() * 2.5) / 10.0;
-            const namewidth = ($("#em10").width() * 12.0) / 10.0;
-            const minspace = ($("#em10").width() * 0.5) / 10.0;
-            const h = em2_5 + minspace;
-            const w = namewidth + ($("#em10").width() * 4.0) / 10.0;
+            const name_width = ($("#em10").width() * 12.0) / 10.0;
+            const min_space = ($("#em10").width() * 0.5) / 10.0;
+            const h = em2_5 + min_space;
+            const w = name_width + ($("#em10").width() * 4.0) / 10.0;
 
-            const bindHovers = (div, id) => {
+            const bindHovers = (div: JQuery, id: number | object) => {
                 if (typeof id !== "number") {
                     try {
                         console.warn("ID = ", id);
                         for (const k in id) {
-                            console.warn("ID.", k, "=", id[k]);
+                            console.warn("ID.", k, "=", (id as any)[k]);
                         }
                     } catch (e) {
                         // ignore error
@@ -537,13 +574,13 @@ export function Tournament(): JSX.Element {
                 });
             };
 
-            const all_objects = [];
+            const all_objects: any[] = [];
             for (let round_num = 0; round_num < rounds.length; ++round_num) {
                 const round = rounds[round_num];
 
                 for (let match_num = 0; match_num < round.matches.length; ++match_num) {
                     const match = round.matches[match_num];
-                    const matchdiv = $("<div>").addClass("matchdiv");
+                    const match_div = $("<div>").addClass("match-div");
                     const black = $("<div>")
                         .addClass("black")
                         .addClass("elimination-player-" + match.black);
@@ -580,13 +617,13 @@ export function Tournament(): JSX.Element {
                         white.addClass("win");
                     }
 
-                    matchdiv.append(black);
-                    matchdiv.append(white);
+                    match_div.append(black);
+                    match_div.append(white);
 
                     const obj = {
-                        div: matchdiv,
-                        black_src: round_num > 0 ? lastbucket[match.black] : null,
-                        white_src: round_num > 0 ? lastbucket[match.white] : null,
+                        div: match_div,
+                        black_src: round_num > 0 ? last_bucket[match.black] : null,
+                        white_src: round_num > 0 ? last_bucket[match.white] : null,
                         black_won: result === "B",
                         match: match,
                         second_bracket: false,
@@ -602,28 +639,28 @@ export function Tournament(): JSX.Element {
                     }
                     all_objects.push(obj);
 
-                    curbucket[match.black] = obj;
-                    curbucket[match.white] = obj;
+                    cur_bucket[match.black] = obj;
+                    cur_bucket[match.white] = obj;
 
-                    container.appendChild(matchdiv[0]);
+                    container.appendChild(match_div[0]);
                 }
                 for (let bye_num = 0; bye_num < round.byes.length; ++bye_num) {
                     const bye = round.byes[bye_num];
-                    const byediv = $("<div>").addClass("byediv");
-                    const byee = $("<div>")
+                    const bye_div = $("<div>").addClass("bye-div");
+                    const bye_entry = $("<div>")
                         .addClass("bye")
                         .addClass("elimination-player-" + bye);
-                    const root = ReactDOM.createRoot(byee[0]);
+                    const root = ReactDOM.createRoot(bye_entry[0]);
                     root.render(
                         <React.StrictMode>
                             <Player user={players[bye]} icon rank />
                         </React.StrictMode>,
                     );
-                    bindHovers(byee, bye);
-                    byediv.append(byee);
+                    bindHovers(bye_entry, bye);
+                    bye_div.append(bye_entry);
                     const obj = {
-                        div: byediv,
-                        bye_src: round_num > 0 ? lastbucket[bye] : null,
+                        div: bye_div,
+                        bye_src: round_num > 0 ? last_bucket[bye] : null,
                         black_won: true,
                         second_bracket: false,
                         round: round_num,
@@ -632,25 +669,25 @@ export function Tournament(): JSX.Element {
                     if (obj.bye_src) {
                         obj.bye_src.parent = obj;
                     }
-                    curbucket[bye] = obj;
+                    cur_bucket[bye] = obj;
                     all_objects.push(obj);
 
-                    container.appendChild(byediv[0]);
+                    container.appendChild(bye_div[0]);
                 }
 
-                for (const k in curbucket) {
-                    lastbucket[k] = curbucket[k];
+                for (const k in cur_bucket) {
+                    last_bucket[k] = cur_bucket[k];
                 }
-                lastcurbucket = curbucket;
-                curbucket = {};
+                last_cur_bucket = cur_bucket;
+                cur_bucket = {};
             }
 
-            const lastcurbucket_arr = [];
-            for (const k in lastcurbucket) {
-                lastcurbucket_arr.push(lastcurbucket[k]);
+            const last_cur_bucket_arr: any[] = [];
+            for (const k in last_cur_bucket) {
+                last_cur_bucket_arr.push(last_cur_bucket[k]);
             }
 
-            const playerWon = (obj, player_id) => {
+            const playerWon = (obj: { match: TournamentMatch }, player_id: number) => {
                 if (!obj.match) {
                     return true;
                 }
@@ -685,7 +722,7 @@ export function Tournament(): JSX.Element {
                     }
                 }
 
-                if (obj.round === rounds.length - 1 && lastcurbucket_arr.length <= 2) {
+                if (obj.round === rounds.length - 1 && last_cur_bucket_arr.length <= 2) {
                     obj.second_bracket = false;
                 }
 
@@ -697,8 +734,8 @@ export function Tournament(): JSX.Element {
             const svg_extents = { x: 0, y: 0 };
 
             let last_visit_order = 0;
-            const layout = (collection) => {
-                const computeVisitOrder = (obj) => {
+            const layout = (collection: any) => {
+                const computeVisitOrder = (obj: any) => {
                     if (obj.visit_order) {
                         return;
                     }
@@ -727,7 +764,7 @@ export function Tournament(): JSX.Element {
                     obj.visit_order = ++last_visit_order;
                 };
 
-                const arr = [];
+                const arr: any[] = [];
                 for (const k in collection) {
                     arr.push(collection[k]);
                 }
@@ -737,9 +774,9 @@ export function Tournament(): JSX.Element {
                         return d;
                     }
 
-                    const compute_rank = (e) => {
+                    const compute_rank = (e: TournamentRecord) => {
                         if (e.player_id && e.player_id in players) {
-                            return players[e.player_id].ranking * 2;
+                            return (players as any)[e.player_id].ranking * 2;
                         }
                         if (
                             e.match &&
@@ -748,7 +785,10 @@ export function Tournament(): JSX.Element {
                             e.match.black in players &&
                             e.match.white in players
                         ) {
-                            return players[e.match.black].ranking + players[e.match.white].ranking;
+                            return (
+                                (players as any)[e.match.black].ranking +
+                                (players as any)[e.match.white].ranking
+                            );
                         }
                         return -1000;
                     };
@@ -813,7 +853,7 @@ export function Tournament(): JSX.Element {
                     return a.visit_order - b.visit_order;
                 });
 
-                const y = { 0: 0 };
+                const y: any = { 0: 0 };
                 let base_y = 0;
                 const bracket_spacing = 75;
                 for (let i = 0; i < all_objects.length; ++i) {
@@ -868,7 +908,7 @@ export function Tournament(): JSX.Element {
                     }
 
                     obj.left = w * obj.round;
-                    obj.right = obj.left + namewidth;
+                    obj.right = obj.left + name_width;
                     obj.bottom = obj.top + em2_5;
 
                     obj.div.css({
@@ -885,9 +925,7 @@ export function Tournament(): JSX.Element {
                 }
             };
 
-            //for (let k in lastcurbucket) {
-            layout(lastcurbucket);
-            //}
+            layout(last_cur_bucket);
 
             let not_laid_out = 0;
             for (let i = 0; i < all_objects.length; ++i) {
@@ -907,7 +945,7 @@ export function Tournament(): JSX.Element {
             //let line_style = "linear";
             //let line_style = "step-before";
 
-            const drawLine = (path) => {
+            const drawLine = (path: any) => {
                 const line_function = d3
                     .line()
                     .curve(d3.curveMonotoneX)
@@ -923,14 +961,14 @@ export function Tournament(): JSX.Element {
             const bottom_padding = 3.0;
             const left_padding = 5.0;
 
-            const getWinnerBottom = (obj) => {
+            const getWinnerBottom = (obj: any) => {
                 if (obj.black_won) {
                     return Math.round((obj.top + obj.bottom) / 2.0);
                 }
                 return Math.round(obj.bottom + bottom_padding);
             };
 
-            const drawLines = (obj) => {
+            const drawLines = (obj: any) => {
                 if (obj.black_src) {
                     drawLines(obj.black_src);
                     if (
@@ -991,20 +1029,19 @@ export function Tournament(): JSX.Element {
                 }
             };
 
-            for (const k in lastcurbucket) {
-                //drawLines(lastcurbucket[k], rounds.length-1);
-                drawLines(lastcurbucket[k]);
+            for (const k in last_cur_bucket) {
+                drawLines(last_cur_bucket[k]);
             }
         }
     };
-    const groupify = (round, players) => {
+    const groupify = (round: TournamentRound, players: TournamentPlayers): any => {
         try {
-            const match_map = {};
-            const result_map = {};
-            const color_map = {};
-            const game_id_map = {};
-            let matches = [];
-            let byes = [];
+            const match_map: any = {};
+            const result_map: any = {};
+            const color_map: any = {};
+            const game_id_map: any = {};
+            let matches: any[] = [];
+            let byes: any[] = [];
 
             for (let i = 0; i < round.matches.length; ++i) {
                 const m = round.matches[i];
@@ -1025,29 +1062,29 @@ export function Tournament(): JSX.Element {
                     ? m.result[0] === "B"
                         ? "win"
                         : m.result[0] === "W"
-                        ? "loss"
-                        : "?"
+                          ? "loss"
+                          : "?"
                     : "?";
                 result_map[m.white + "x" + m.black] = m.result
                     ? m.result[0] === "W"
                         ? "win"
                         : m.result[0] === "B"
-                        ? "loss"
-                        : "?"
+                          ? "loss"
+                          : "?"
                     : "?";
                 color_map[m.black + "x" + m.white] = m.result
                     ? m.result[0] === "B"
                         ? "win"
                         : m.result[0] === "W"
-                        ? "loss"
-                        : "no-result"
+                          ? "loss"
+                          : "no-result"
                     : "?";
                 color_map[m.white + "x" + m.black] = m.result
                     ? m.result[0] === "W"
                         ? "win"
                         : m.result[0] === "B"
-                        ? "loss"
-                        : "no-result"
+                          ? "loss"
+                          : "no-result"
                     : "?";
             }
 
@@ -1088,8 +1125,8 @@ export function Tournament(): JSX.Element {
                 }
             }
 
-            let groups = new Array(last_group);
-            let broken_list = [];
+            let groups: TournamentGroup[] = new Array(last_group);
+            let broken_list: any[] = [];
             for (let i = 0; i < groups.length; ++i) {
                 groups[i] = { players: [] };
             }
@@ -1125,12 +1162,12 @@ export function Tournament(): JSX.Element {
             }
 
             broken_list = broken_list.sort(compareUserRank);
-            const broken_players = {};
+            const broken_players: any = {};
             for (let i = 0; i < broken_list.length; ++i) {
                 broken_players[broken_list[i].player.id] = broken_list[i].player;
             }
             for (let i = 0; i < broken_list.length; ++i) {
-                const opponents = [];
+                const opponents: any[] = [];
                 for (const opponent_id in broken_list[i].matches) {
                     //let opponent_id = broken_list[i].matches[j].black === broken_list[i].id ? broken_list[i].matches[j].white : broken_list[i].matches[j].black;
                     opponents.push({
@@ -1171,25 +1208,25 @@ export function Tournament(): JSX.Element {
         tournament.description = tournament.description.trim();
 
         if (tournament.name.length < 5) {
-            ref_tournament_name.current.focus();
+            ref_tournament_name.current?.focus();
             void alert.fire(_("Please provide a name for the tournament"));
             return;
         }
 
         if (tournament.description.length < 5) {
-            ref_description.current.focus();
+            ref_description.current?.focus();
             void alert.fire(_("Please provide a description for the tournament"));
             return;
         }
 
         const max_players = parseInt(tournament.settings.maximum_players);
         if (max_players > 10 && tournament.tournament_type === "roundrobin") {
-            ref_max_players.current.focus();
+            ref_max_players.current?.focus();
             void alert.fire(_("Round Robin tournaments are limited to a maximum of 10 players"));
             return;
         }
         if (max_players < 2) {
-            ref_max_players.current.focus();
+            ref_max_players.current?.focus();
             void alert.fire(_("You need at least two players in a tournament"));
             return;
         }
@@ -1221,18 +1258,18 @@ export function Tournament(): JSX.Element {
 
         setEditing(false);
     };
-    const setTournamentName = (ev) => {
+    const setTournamentName = (ev: React.ChangeEvent<HTMLInputElement>) => {
         tournament_ref.current.name = ev.target.value;
         refresh();
     };
-    const setStartTime = (t) => {
+    const setStartTime = (t: any) => {
         if (t && t.format) {
             tournament_ref.current.time_start = t.format();
             refresh();
         }
     };
 
-    const setTournamentType = (ev) => {
+    const setTournamentType = (ev: React.ChangeEvent<HTMLSelectElement>) => {
         const update: any = {
             tournament_type: ev.target.value,
         };
@@ -1252,33 +1289,33 @@ export function Tournament(): JSX.Element {
         tournament_ref.current = Object.assign(tournament_ref.current, update);
         refresh();
     };
-    const setLowerBar = (ev) => {
+    const setLowerBar = (ev: React.ChangeEvent<HTMLSelectElement>) => {
         const newSettings = Object.assign({}, tournament_ref.current.settings, {
             lower_bar: ev.target.value,
         });
         tournament_ref.current.settings = newSettings;
         refresh();
     };
-    const setUpperBar = (ev) => {
+    const setUpperBar = (ev: React.ChangeEvent<HTMLSelectElement>) => {
         const newSettings = Object.assign({}, tournament_ref.current.settings, {
             upper_bar: ev.target.value,
         });
         tournament_ref.current.settings = newSettings;
         refresh();
     };
-    const setPlayersStart = (ev) => {
-        tournament_ref.current.players_start = ev.target.value;
+    const setPlayersStart = (ev: React.ChangeEvent<HTMLInputElement>) => {
+        tournament_ref.current.players_start = Number(ev.target.value);
         refresh();
     };
-    const setMaximumPlayers = (ev) => {
+    const setMaximumPlayers = (ev: React.ChangeEvent<HTMLInputElement>) => {
         tournament_ref.current.settings.maximum_players = ev.target.value;
         refresh();
     };
-    const setAutoStartOnMax = (ev) => {
+    const setAutoStartOnMax = (ev: React.ChangeEvent<HTMLInputElement>) => {
         tournament_ref.current.auto_start_on_max = ev.target.checked;
         refresh();
     };
-    const setFirstPairingMethod = (ev) => {
+    const setFirstPairingMethod = (ev: React.ChangeEvent<HTMLSelectElement>) => {
         const update: any = {
             first_pairing_method: ev.target.value,
         };
@@ -1292,7 +1329,7 @@ export function Tournament(): JSX.Element {
         refresh();
     };
 
-    const setSubsequentPairingMethod = (ev) => {
+    const setSubsequentPairingMethod = (ev: React.ChangeEvent<HTMLSelectElement>) => {
         const update: any = {
             subsequent_pairing_method: ev.target.value,
         };
@@ -1305,48 +1342,48 @@ export function Tournament(): JSX.Element {
         tournament_ref.current = Object.assign(tournament_ref.current, update);
         refresh();
     };
-    const setTournamentExclusivity = (ev) => {
+    const setTournamentExclusivity = (ev: React.ChangeEvent<HTMLSelectElement>) => {
         tournament_ref.current.exclusivity = ev.target.value;
         refresh();
     };
 
-    const setNumberOfRounds = (ev) => {
+    const setNumberOfRounds = (ev: React.ChangeEvent<HTMLSelectElement>) => {
         tournament_ref.current.settings.num_rounds = ev.target.value;
         refresh();
     };
-    const setGroupSize = (ev) => {
+    const setGroupSize = (ev: React.ChangeEvent<HTMLSelectElement>) => {
         tournament_ref.current.settings.group_size = ev.target.value;
         refresh();
     };
-    const setRules = (ev) => {
-        tournament_ref.current.rules = ev.target.value;
+    const setRules = (ev: React.ChangeEvent<HTMLSelectElement>) => {
+        tournament_ref.current.rules = ev.target.value as any;
         refresh();
     };
-    const setHandicap = (ev) => {
+    const setHandicap = (ev: React.ChangeEvent<HTMLSelectElement>) => {
         tournament_ref.current.handicap = ev.target.value;
         refresh();
     };
-    const setBoardSize = (ev) => {
+    const setBoardSize = (ev: React.ChangeEvent<HTMLSelectElement>) => {
         tournament_ref.current.board_size = parseInt(ev.target.value);
         refresh();
     };
-    const setAnalysisEnabled = (ev) => {
+    const setAnalysisEnabled = (ev: React.ChangeEvent<HTMLInputElement>) => {
         tournament_ref.current.analysis_enabled = ev.target.checked;
         refresh();
     };
-    const setMinRank = (ev) => {
+    const setMinRank = (ev: React.ChangeEvent<HTMLSelectElement>) => {
         tournament_ref.current.min_ranking = ev.target.value;
         refresh();
     };
-    const setMaxRank = (ev) => {
+    const setMaxRank = (ev: React.ChangeEvent<HTMLSelectElement>) => {
         tournament_ref.current.max_ranking = ev.target.value;
         refresh();
     };
-    const setExcludeProvisionalPlayers = (ev) => {
+    const setExcludeProvisionalPlayers = (ev: React.ChangeEvent<HTMLInputElement>) => {
         tournament_ref.current.exclude_provisional = !ev.target.checked;
         refresh();
     };
-    const setDescription = (ev) => {
+    const setDescription = (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
         tournament_ref.current.description = ev.target.value;
         refresh();
     };
@@ -1362,6 +1399,9 @@ export function Tournament(): JSX.Element {
 
     const kick = (player_id: number) => {
         const user = player_cache.lookup(player_id);
+        if (!user) {
+            return;
+        }
 
         void alert
             .fire({
@@ -1386,6 +1426,9 @@ export function Tournament(): JSX.Element {
     };
     const adjustPoints = (player_id: number) => {
         const user = player_cache.lookup(player_id);
+        if (!user) {
+            return;
+        }
 
         alert
             .fire({
@@ -1396,7 +1439,7 @@ export function Tournament(): JSX.Element {
                 ),
                 showCancelButton: true,
                 focusCancel: true,
-                inputValidator: (value): string => {
+                inputValidator: (value): string | undefined => {
                     const f = parseFloat(value);
                     if (isNaN(f)) {
                         return "Enter the number of points for the adjustment";
@@ -1419,7 +1462,7 @@ export function Tournament(): JSX.Element {
                     return;
                 }
 
-                const adjustments = {};
+                const adjustments: any = {};
                 adjustments[user.id] = v;
 
                 put(`tournaments/${tournament_ref.current.id}/players`, {
@@ -1433,6 +1476,9 @@ export function Tournament(): JSX.Element {
     };
     const disqualify = (player_id: number) => {
         const user = player_cache.lookup(player_id);
+        if (!user) {
+            return;
+        }
 
         void alert
             .fire({
@@ -1453,7 +1499,7 @@ export function Tournament(): JSX.Element {
         close_all_popovers();
     };
 
-    const renderExtraPlayerActions = (player_id: number) => {
+    const renderExtraPlayerActions = (player_id: number): any => {
         const tournament = tournament_ref.current;
         if (
             !(
@@ -1493,7 +1539,7 @@ export function Tournament(): JSX.Element {
             : null;
     const raw_selected_round =
         rounds && rounds.length > selected_round ? raw_rounds[selected_round] : null;
-    window["tournament"] = tournament;
+    (window as any)["tournament"] = tournament;
 
     let tournament_time_start_text = "";
     if (tournament.time_start) {
@@ -1535,16 +1581,17 @@ export function Tournament(): JSX.Element {
 
     const time_control_text = timeControlDescription(tournament.time_control_parameters);
 
-    const tournament_type_name = TOURNAMENT_TYPE_NAMES[tournament.tournament_type] || "(Unknown)";
+    const tournament_type_name =
+        (TOURNAMENT_TYPE_NAMES as any)[tournament.tournament_type] || "(Unknown)";
     const tournament_rules_name = rulesText(tournament.rules);
     const first_pairing_method_text =
-        TOURNAMENT_PAIRING_METHODS[tournament.first_pairing_method] || "(Unknown)";
+        (TOURNAMENT_PAIRING_METHODS as any)[tournament.first_pairing_method] || "(Unknown)";
     const subsequent_pairing_method_text =
-        TOURNAMENT_PAIRING_METHODS[tournament.subsequent_pairing_method] || "(Unknown)";
-    const handicap_text = handicapText(tournament.handicap);
+        (TOURNAMENT_PAIRING_METHODS as any)[tournament.subsequent_pairing_method] || "(Unknown)";
+    const handicap_text = handicapText(Number(tournament.handicap));
     const rank_restriction_text = rankRestrictionText(
-        tournament.min_ranking,
-        tournament.max_ranking,
+        Number(tournament.min_ranking),
+        Number(tournament.max_ranking),
     );
     const provisional_players_text = tournament.exclude_provisional
         ? _("Not allowed")
@@ -1941,11 +1988,11 @@ export function Tournament(): JSX.Element {
                                                 {!tournament.settings.maximum_players
                                                     ? "+"
                                                     : parseInt(
-                                                          tournament.settings
-                                                              .maximum_players as string,
-                                                      ) > tournament.players_start
-                                                    ? "-" + tournament.settings.maximum_players
-                                                    : ""}
+                                                            tournament.settings
+                                                                .maximum_players as string,
+                                                        ) > tournament.players_start
+                                                      ? "-" + tournament.settings.maximum_players
+                                                      : ""}
                                             </span>
                                         ) : (
                                             <span>
@@ -1954,11 +2001,11 @@ export function Tournament(): JSX.Element {
                                                 {!tournament.settings.maximum_players
                                                     ? "+"
                                                     : parseInt(
-                                                          tournament.settings
-                                                              .maximum_players as string,
-                                                      ) > tournament.players_start
-                                                    ? "-" + tournament.settings.maximum_players
-                                                    : ""}
+                                                            tournament.settings
+                                                                .maximum_players as string,
+                                                        ) > tournament.players_start
+                                                      ? "-" + tournament.settings.maximum_players
+                                                      : ""}
                                                 )
                                             </span>
                                         )}
@@ -2312,7 +2359,7 @@ export function Tournament(): JSX.Element {
             {!loading && !tournament.started && (
                 <div className={"bottom-details not-started"}>
                     {(!tournament.start_waiting || null) && (
-                        <div className="signup-area" style={{ textAlign: "center" }}>
+                        <div className="sign-up-area" style={{ textAlign: "center" }}>
                             {(tournament.time_start || null) && (
                                 <h3>
                                     {interpolate(
@@ -2358,7 +2405,7 @@ export function Tournament(): JSX.Element {
                         </div>
                     )}
                     {(tournament.start_waiting || null) && (
-                        <div className="signup-area" style={{ textAlign: "center" }}>
+                        <div className="sign-up-area" style={{ textAlign: "center" }}>
                             <p style={{ marginTop: "6em" }}>
                                 <span>{_("Tournament is starting")}</span>
                             </p>
@@ -2442,7 +2489,7 @@ export function Tournament(): JSX.Element {
                                 <OpenGothaTournamentRound
                                     tournament={tournament}
                                     roundNotes={
-                                        tournament.settings[
+                                        (tournament.settings as any)[
                                             "notes-round-" + ((selected_round_idx as number) + 1)
                                         ] || ""
                                     }
@@ -2482,149 +2529,168 @@ export function Tournament(): JSX.Element {
                                         </div>
                                     )}
 
-                                {/* Round robin / simul style groups */}
+                                {/* Round robin / simultaneous style groups */}
                                 {((selected_round && selected_round.groupify) || null) && (
                                     <div>
-                                        {selected_round.groups.map((group, idx) => {
-                                            // (if we had ramda library, we'd use that non-mutating sort instead of this funky spread-copy...)
+                                        {selected_round.groups.map(
+                                            (group: TournamentGroup, idx: number) => {
+                                                // (if we had ramda library, we'd use that non-mutating sort instead of this funky spread-copy...)
 
-                                            const sorted_players = [...group.players]
-                                                .filter((p) => p.player)
-                                                .sort(sortDropoutsToBottom);
+                                                const sorted_players = [...group.players]
+                                                    .filter((p) => p.player)
+                                                    .sort(sortDropoutsToBottom);
 
-                                            return (
-                                                <div key={idx} className="round-group">
-                                                    <table>
-                                                        <tbody>
-                                                            <tr>
-                                                                {(tournament.ended || null) && (
-                                                                    <th className="rank">
-                                                                        {_("Rank")}
+                                                return (
+                                                    <div key={idx} className="round-group">
+                                                        <table>
+                                                            <tbody>
+                                                                <tr>
+                                                                    {(tournament.ended || null) && (
+                                                                        <th className="rank">
+                                                                            {_("Rank")}
+                                                                        </th>
+                                                                    )}
+                                                                    <th>{_("Player")}</th>
+                                                                    {sorted_players.map(
+                                                                        (opponent, idx) => (
+                                                                            <th
+                                                                                key={idx}
+                                                                                className="rotated-title"
+                                                                            >
+                                                                                {(opponent.player ||
+                                                                                    null) && (
+                                                                                    <span className="rotated">
+                                                                                        <Player
+                                                                                            user={
+                                                                                                opponent.player
+                                                                                            }
+                                                                                            icon
+                                                                                        ></Player>
+                                                                                    </span>
+                                                                                )}
+                                                                            </th>
+                                                                        ),
+                                                                    )}
+                                                                    <th className="rotated-title">
+                                                                        <span className="rotated">
+                                                                            {_("Points")}
+                                                                        </span>
                                                                     </th>
-                                                                )}
-                                                                <th>{_("Player")}</th>
+                                                                    {(tournament.ended || null) && (
+                                                                        <th className="rotated-title">
+                                                                            <span className="rotated">
+                                                                                &Sigma;{" "}
+                                                                                {_(
+                                                                                    "Opponent Scores",
+                                                                                )}
+                                                                            </span>
+                                                                        </th>
+                                                                    )}
+                                                                    {(tournament.ended || null) && (
+                                                                        <th className="rotated-title">
+                                                                            <span className="rotated">
+                                                                                &Sigma;{" "}
+                                                                                {_(
+                                                                                    "Defeated Scores",
+                                                                                )}
+                                                                            </span>
+                                                                        </th>
+                                                                    )}
+                                                                    <th></th>
+                                                                </tr>
                                                                 {sorted_players.map(
-                                                                    (opponent, idx) => (
-                                                                        <th
-                                                                            key={idx}
-                                                                            className="rotated-title"
-                                                                        >
-                                                                            {(opponent.player ||
-                                                                                null) && (
-                                                                                <span className="rotated">
+                                                                    (player, idx) => {
+                                                                        player = player.player;
+                                                                        return (
+                                                                            <tr key={idx}>
+                                                                                {(tournament.ended ||
+                                                                                    null) && (
+                                                                                    <td className="rank">
+                                                                                        {
+                                                                                            player.rank
+                                                                                        }
+                                                                                    </td>
+                                                                                )}
+
+                                                                                <th className="player">
                                                                                     <Player
                                                                                         user={
-                                                                                            opponent.player
+                                                                                            player
                                                                                         }
                                                                                         icon
-                                                                                    ></Player>
-                                                                                </span>
-                                                                            )}
-                                                                        </th>
-                                                                    ),
-                                                                )}
-                                                                <th className="rotated-title">
-                                                                    <span className="rotated">
-                                                                        {_("Points")}
-                                                                    </span>
-                                                                </th>
-                                                                {(tournament.ended || null) && (
-                                                                    <th className="rotated-title">
-                                                                        <span className="rotated">
-                                                                            &Sigma;{" "}
-                                                                            {_("Opponent Scores")}
-                                                                        </span>
-                                                                    </th>
-                                                                )}
-                                                                {(tournament.ended || null) && (
-                                                                    <th className="rotated-title">
-                                                                        <span className="rotated">
-                                                                            &Sigma;{" "}
-                                                                            {_("Defeated Scores")}
-                                                                        </span>
-                                                                    </th>
-                                                                )}
-                                                                <th></th>
-                                                            </tr>
-                                                            {sorted_players.map((player, idx) => {
-                                                                player = player.player;
-                                                                return (
-                                                                    <tr key={idx}>
-                                                                        {(tournament.ended ||
-                                                                            null) && (
-                                                                            <td className="rank">
-                                                                                {player.rank}
-                                                                            </td>
-                                                                        )}
-
-                                                                        <th className="player">
-                                                                            <Player
-                                                                                user={player}
-                                                                                icon
-                                                                            />
-                                                                        </th>
-                                                                        {sorted_players.map(
-                                                                            (opponent, idx) => (
-                                                                                <td
-                                                                                    key={idx}
-                                                                                    className={
-                                                                                        "result " +
-                                                                                        selected_round
-                                                                                            .colors[
-                                                                                            player.id +
-                                                                                                "x" +
-                                                                                                opponent.id
-                                                                                        ]
-                                                                                    }
-                                                                                >
-                                                                                    <Link
-                                                                                        to={`/game/${
-                                                                                            selected_round
-                                                                                                .game_ids[
-                                                                                                player.id +
-                                                                                                    "x" +
-                                                                                                    opponent.id
-                                                                                            ]
-                                                                                        }`}
-                                                                                    >
-                                                                                        {
-                                                                                            selected_round
-                                                                                                .results[
-                                                                                                player.id +
-                                                                                                    "x" +
-                                                                                                    opponent.id
-                                                                                            ]
-                                                                                        }
-                                                                                    </Link>
+                                                                                    />
+                                                                                </th>
+                                                                                {sorted_players.map(
+                                                                                    (
+                                                                                        opponent,
+                                                                                        idx,
+                                                                                    ) => (
+                                                                                        <td
+                                                                                            key={
+                                                                                                idx
+                                                                                            }
+                                                                                            className={
+                                                                                                "result " +
+                                                                                                selected_round
+                                                                                                    .colors[
+                                                                                                    player.id +
+                                                                                                        "x" +
+                                                                                                        opponent.id
+                                                                                                ]
+                                                                                            }
+                                                                                        >
+                                                                                            <Link
+                                                                                                to={`/game/${
+                                                                                                    selected_round
+                                                                                                        .game_ids[
+                                                                                                        player.id +
+                                                                                                            "x" +
+                                                                                                            opponent.id
+                                                                                                    ]
+                                                                                                }`}
+                                                                                            >
+                                                                                                {
+                                                                                                    selected_round
+                                                                                                        .results[
+                                                                                                        player.id +
+                                                                                                            "x" +
+                                                                                                            opponent.id
+                                                                                                    ]
+                                                                                                }
+                                                                                            </Link>
+                                                                                        </td>
+                                                                                    ),
+                                                                                )}
+                                                                                <td className="points">
+                                                                                    {player.points}
                                                                                 </td>
-                                                                            ),
-                                                                        )}
-                                                                        <td className="points">
-                                                                            {player.points}
-                                                                        </td>
-                                                                        {(tournament.ended ||
-                                                                            null) && (
-                                                                            <td className="points">
-                                                                                {player.sos}
-                                                                            </td>
-                                                                        )}
-                                                                        {(tournament.ended ||
-                                                                            null) && (
-                                                                            <td className="points">
-                                                                                {player.sodos}
-                                                                            </td>
-                                                                        )}
-                                                                        <td className="notes">
-                                                                            {player.notes}
-                                                                        </td>
-                                                                    </tr>
-                                                                );
-                                                            })}
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            );
-                                        })}
+                                                                                {(tournament.ended ||
+                                                                                    null) && (
+                                                                                    <td className="points">
+                                                                                        {player.sos}
+                                                                                    </td>
+                                                                                )}
+                                                                                {(tournament.ended ||
+                                                                                    null) && (
+                                                                                    <td className="points">
+                                                                                        {
+                                                                                            player.sodos
+                                                                                        }
+                                                                                    </td>
+                                                                                )}
+                                                                                <td className="notes">
+                                                                                    {player.notes}
+                                                                                </td>
+                                                                            </tr>
+                                                                        );
+                                                                    },
+                                                                )}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                );
+                                            },
+                                        )}
                                     </div>
                                 )}
 
@@ -2660,81 +2726,95 @@ export function Tournament(): JSX.Element {
                                                     )}
                                                     <th></th>
                                                 </tr>
-                                                {selected_round.matches.map((m, idx) => {
-                                                    const pxo =
-                                                        (m.player &&
-                                                            m.opponent &&
-                                                            `${m.player.id}x${m.opponent.id}`) ||
-                                                        "error-invalid-player-or-opponent";
-                                                    if (
-                                                        pxo === "error-invalid-player-or-opponent"
-                                                    ) {
-                                                        if (!logspam_debounce) {
-                                                            logspam_debounce = setTimeout(() => {
-                                                                console.error(
-                                                                    "invalid player or opponent",
-                                                                    m,
-                                                                    selected_round.matches,
-                                                                    selected_round,
+                                                {selected_round.matches.map(
+                                                    (m: TournamentMatch, idx: number) => {
+                                                        const pxo =
+                                                            (m.player &&
+                                                                m.opponent &&
+                                                                `${m.player.id}x${m.opponent.id}`) ||
+                                                            "error-invalid-player-or-opponent";
+                                                        if (
+                                                            pxo ===
+                                                            "error-invalid-player-or-opponent"
+                                                        ) {
+                                                            if (!log_spam_debounce) {
+                                                                log_spam_debounce = setTimeout(
+                                                                    () => {
+                                                                        console.error(
+                                                                            "invalid player or opponent",
+                                                                            m,
+                                                                            selected_round.matches,
+                                                                            selected_round,
+                                                                        );
+                                                                        log_spam_debounce =
+                                                                            undefined;
+                                                                    },
+                                                                    10,
                                                                 );
-                                                                logspam_debounce = undefined;
-                                                            }, 10);
+                                                            }
                                                         }
-                                                    }
 
-                                                    return (
-                                                        <tr key={idx}>
-                                                            {(tournament.ended || null) && (
-                                                                <td className="rank">
-                                                                    {m.player?.rank}
-                                                                </td>
-                                                            )}
-                                                            {(m.player || null) && (
-                                                                <td className="player">
-                                                                    <Player user={m.player} icon />
-                                                                </td>
-                                                            )}
-                                                            {(m.opponent || null) && (
-                                                                <td className="player">
-                                                                    <Player
-                                                                        user={m.opponent}
-                                                                        icon
-                                                                    />
-                                                                </td>
-                                                            )}
+                                                        return (
+                                                            <tr key={idx}>
+                                                                {(tournament.ended || null) && (
+                                                                    <td className="rank">
+                                                                        {m.player?.rank}
+                                                                    </td>
+                                                                )}
+                                                                {(m.player || null) && (
+                                                                    <td className="player">
+                                                                        <Player
+                                                                            user={m.player}
+                                                                            icon
+                                                                        />
+                                                                    </td>
+                                                                )}
+                                                                {(m.opponent || null) && (
+                                                                    <td className="player">
+                                                                        <Player
+                                                                            user={m.opponent}
+                                                                            icon
+                                                                        />
+                                                                    </td>
+                                                                )}
 
-                                                            <td
-                                                                className={
-                                                                    "result " +
-                                                                    selected_round.colors[pxo]
-                                                                }
-                                                            >
-                                                                <Link
-                                                                    to={`/game/${selected_round.game_ids[pxo]}`}
+                                                                <td
+                                                                    className={
+                                                                        "result " +
+                                                                        selected_round.colors[pxo]
+                                                                    }
                                                                 >
-                                                                    {selected_round.results[pxo]}
-                                                                </Link>
-                                                            </td>
+                                                                    <Link
+                                                                        to={`/game/${selected_round.game_ids[pxo]}`}
+                                                                    >
+                                                                        {
+                                                                            selected_round.results[
+                                                                                pxo
+                                                                            ]
+                                                                        }
+                                                                    </Link>
+                                                                </td>
 
-                                                            <td className="points">
-                                                                {m.player && m.player.points}
-                                                            </td>
-                                                            {(tournament.ended || null) && (
                                                                 <td className="points">
-                                                                    {m.player && m.player.sos}
+                                                                    {m.player && m.player.points}
                                                                 </td>
-                                                            )}
-                                                            {(tournament.ended || null) && (
-                                                                <td className="points">
-                                                                    {m.player && m.player.sodos}
+                                                                {(tournament.ended || null) && (
+                                                                    <td className="points">
+                                                                        {m.player && m.player.sos}
+                                                                    </td>
+                                                                )}
+                                                                {(tournament.ended || null) && (
+                                                                    <td className="points">
+                                                                        {m.player && m.player.sodos}
+                                                                    </td>
+                                                                )}
+                                                                <td className="notes">
+                                                                    {m.player && m.player.notes}
                                                                 </td>
-                                                            )}
-                                                            <td className="notes">
-                                                                {m.player && m.player.notes}
-                                                            </td>
-                                                        </tr>
-                                                    );
-                                                })}
+                                                            </tr>
+                                                        );
+                                                    },
+                                                )}
                                             </tbody>
                                         </table>
                                     </div>
@@ -2771,76 +2851,81 @@ export function Tournament(): JSX.Element {
                                                     )}
                                                     <th></th>
                                                 </tr>
-                                                {selected_round.broken_list.map((m, idx) => {
-                                                    return (
-                                                        <tr key={idx}>
-                                                            {(tournament.ended || null) && (
-                                                                <td className="rank">
-                                                                    {m.player.rank}
-                                                                </td>
-                                                            )}
-                                                            {(m.player || null) && (
-                                                                <td className="player">
-                                                                    <Player user={m.player} icon />
-                                                                </td>
-                                                            )}
-                                                            {(m.opponent || null) && (
-                                                                <td className="player">
-                                                                    <Player
-                                                                        user={m.opponent}
-                                                                        icon
-                                                                    />
-                                                                </td>
-                                                            )}
+                                                {selected_round.broken_list.map(
+                                                    (m: any, idx: number) => {
+                                                        return (
+                                                            <tr key={idx}>
+                                                                {(tournament.ended || null) && (
+                                                                    <td className="rank">
+                                                                        {m.player.rank}
+                                                                    </td>
+                                                                )}
+                                                                {(m.player || null) && (
+                                                                    <td className="player">
+                                                                        <Player
+                                                                            user={m.player}
+                                                                            icon
+                                                                        />
+                                                                    </td>
+                                                                )}
+                                                                {(m.opponent || null) && (
+                                                                    <td className="player">
+                                                                        <Player
+                                                                            user={m.opponent}
+                                                                            icon
+                                                                        />
+                                                                    </td>
+                                                                )}
 
-                                                            <td
-                                                                className={
-                                                                    "result " +
-                                                                    selected_round.colors[
-                                                                        m.player.id +
-                                                                            "x" +
-                                                                            m.opponent.id
-                                                                    ]
-                                                                }
-                                                            >
-                                                                <Link
-                                                                    to={`/game/${
-                                                                        selected_round.game_ids[
-                                                                            m.player.id +
-                                                                                "x" +
-                                                                                m.opponent.id
-                                                                        ]
-                                                                    }`}
-                                                                >
-                                                                    {
-                                                                        selected_round.results[
+                                                                <td
+                                                                    className={
+                                                                        "result " +
+                                                                        selected_round.colors[
                                                                             m.player.id +
                                                                                 "x" +
                                                                                 m.opponent.id
                                                                         ]
                                                                     }
-                                                                </Link>
-                                                            </td>
+                                                                >
+                                                                    <Link
+                                                                        to={`/game/${
+                                                                            selected_round.game_ids[
+                                                                                m.player.id +
+                                                                                    "x" +
+                                                                                    m.opponent.id
+                                                                            ]
+                                                                        }`}
+                                                                    >
+                                                                        {
+                                                                            selected_round.results[
+                                                                                m.player.id +
+                                                                                    "x" +
+                                                                                    m.opponent.id
+                                                                            ]
+                                                                        }
+                                                                    </Link>
+                                                                </td>
 
-                                                            <td className="points">
-                                                                {m.player.points}
-                                                            </td>
-                                                            {(tournament.ended || null) && (
                                                                 <td className="points">
-                                                                    {m.player.sos}
+                                                                    {m.player.points}
                                                                 </td>
-                                                            )}
-                                                            {(tournament.ended || null) && (
-                                                                <td className="points">
-                                                                    {m.player.sodos}
+                                                                {(tournament.ended || null) && (
+                                                                    <td className="points">
+                                                                        {m.player.sos}
+                                                                    </td>
+                                                                )}
+                                                                {(tournament.ended || null) && (
+                                                                    <td className="points">
+                                                                        {m.player.sodos}
+                                                                    </td>
+                                                                )}
+                                                                <td className="notes">
+                                                                    {m.player.notes}
                                                                 </td>
-                                                            )}
-                                                            <td className="notes">
-                                                                {m.player.notes}
-                                                            </td>
-                                                        </tr>
-                                                    );
-                                                })}
+                                                            </tr>
+                                                        );
+                                                    },
+                                                )}
                                             </tbody>
                                         </table>
                                     </div>
@@ -2874,40 +2959,42 @@ export function Tournament(): JSX.Element {
                                                     )}
                                                     <th></th>
                                                 </tr>
-                                                {selected_round.byes.map((player, idx) => {
-                                                    if (!player) {
-                                                        return <tr key={idx} />;
-                                                    }
-                                                    return (
-                                                        <tr key={idx}>
-                                                            {(tournament.ended || null) && (
-                                                                <td className="rank">
-                                                                    {player.rank}
+                                                {selected_round.byes.map(
+                                                    (player: TournamentPlayer, idx: number) => {
+                                                        if (!player) {
+                                                            return <tr key={idx} />;
+                                                        }
+                                                        return (
+                                                            <tr key={idx}>
+                                                                {(tournament.ended || null) && (
+                                                                    <td className="rank">
+                                                                        {player.rank}
+                                                                    </td>
+                                                                )}
+                                                                <td className="player">
+                                                                    <Player user={player} icon />
                                                                 </td>
-                                                            )}
-                                                            <td className="player">
-                                                                <Player user={player} icon />
-                                                            </td>
-                                                            <td className="points">
-                                                                {player.points}
-                                                            </td>
-                                                            {((player && tournament.ended) ||
-                                                                null) && (
                                                                 <td className="points">
-                                                                    {player.sos}
+                                                                    {player.points}
                                                                 </td>
-                                                            )}
-                                                            {(tournament.ended || null) && (
-                                                                <td className="points">
-                                                                    {player.sodos}
+                                                                {((player && tournament.ended) ||
+                                                                    null) && (
+                                                                    <td className="points">
+                                                                        {player.sos}
+                                                                    </td>
+                                                                )}
+                                                                {(tournament.ended || null) && (
+                                                                    <td className="points">
+                                                                        {player.sodos}
+                                                                    </td>
+                                                                )}
+                                                                <td className="notes">
+                                                                    {player.notes}
                                                                 </td>
-                                                            )}
-                                                            <td className="notes">
-                                                                {player.notes}
-                                                            </td>
-                                                        </tr>
-                                                    );
-                                                })}
+                                                            </tr>
+                                                        );
+                                                    },
+                                                )}
                                             </tbody>
                                         </table>
                                     </div>
@@ -2933,16 +3020,18 @@ export function Tournament(): JSX.Element {
                                                 )}
                                             </h3>
 
-                                            {raw_selected_round.matches.map((m, idx) => (
-                                                <MiniGoban
-                                                    key={idx}
-                                                    id={m.gameid}
-                                                    width={tournament.board_size}
-                                                    height={tournament.board_size}
-                                                    black={players[m.black]}
-                                                    white={players[m.white]}
-                                                />
-                                            ))}
+                                            {raw_selected_round.matches.map(
+                                                (m: TournamentMatch, idx: number) => (
+                                                    <MiniGoban
+                                                        key={idx}
+                                                        id={m.gameid}
+                                                        width={tournament.board_size}
+                                                        height={tournament.board_size}
+                                                        black={players[m.black]}
+                                                        white={players[m.white]}
+                                                    />
+                                                ),
+                                            )}
                                         </div>
                                     </div>
                                 )}
@@ -2956,7 +3045,7 @@ export function Tournament(): JSX.Element {
 }
 
 function OpenGothaRoster({ players }: { tournament: any; players: Array<any> }): JSX.Element {
-    window["players"] = players;
+    (window as any)["players"] = players;
     players.sort((a, b) => a.username.localeCompare(b.username));
     return (
         <div className="OpenGothaRoster">
@@ -2996,9 +3085,10 @@ function OpenGothaTournamentRound({
     rounds: Array<any>;
 }): JSX.Element {
     //let [notes, _set_notes]:[string, (s) => void] = React.useState(tournament.settings[`notes-round-${selectedRound}`] || "");
-    const [notes, _set_notes]: [string, (s) => void] = React.useState(roundNotes);
-    const [notes_updated, set_notes_updated]: [boolean, (b) => void] = React.useState(false);
-    window["rounds"] = rounds;
+    const [notes, _set_notes]: [string, (s: string) => void] = React.useState(roundNotes);
+    const [notes_updated, set_notes_updated]: [boolean, (b: boolean) => void] =
+        React.useState(false);
+    (window as any)["rounds"] = rounds;
     const round_started = !!(
         rounds.length >= selectedRound && (rounds[selectedRound - 1]?.matches.length || 0) > 0
     );
@@ -3007,7 +3097,7 @@ function OpenGothaTournamentRound({
         _set_notes(roundNotes);
     }, [roundNotes]);
 
-    function set_notes(ev) {
+    function set_notes(ev: React.ChangeEvent<HTMLTextAreaElement>) {
         _set_notes(ev.target.value);
         set_notes_updated(true);
     }
@@ -3043,8 +3133,8 @@ function OpenGothaTournamentRound({
 
     const selected_round = rounds[selectedRound - 1];
 
-    const round_seen = {};
-    function dedup(m) {
+    const round_seen: any = {};
+    function dedup(m: any) {
         const pxo =
             (m.player && m.opponent && `${m.player.id}x${m.opponent.id}`) ||
             "error-invalid-player-or-opponent";
@@ -3067,73 +3157,87 @@ function OpenGothaTournamentRound({
                                 <th colSpan={2}>{_("Game")}</th>
                                 <th>{_("Result")}</th>
                             </tr>
-                            {selected_round.matches.filter(dedup).map((m, idx) => {
-                                const pxo =
-                                    (m.player && m.opponent && `${m.player.id}x${m.opponent.id}`) ||
-                                    "error-invalid-player-or-opponent";
-                                if (pxo === "error-invalid-player-or-opponent") {
-                                    if (!logspam_debounce) {
-                                        logspam_debounce = setTimeout(() => {
-                                            console.error(
-                                                "invalid player or opponent",
-                                                m,
-                                                selected_round.matches,
-                                                selected_round,
-                                            );
-                                            logspam_debounce = undefined;
-                                        }, 10);
+                            {selected_round.matches
+                                .filter(dedup)
+                                .map((m: TournamentMatch, idx: number) => {
+                                    const pxo =
+                                        (m.player &&
+                                            m.opponent &&
+                                            `${m.player.id}x${m.opponent.id}`) ||
+                                        "error-invalid-player-or-opponent";
+                                    if (pxo === "error-invalid-player-or-opponent") {
+                                        if (!log_spam_debounce) {
+                                            log_spam_debounce = setTimeout(() => {
+                                                console.error(
+                                                    "invalid player or opponent",
+                                                    m,
+                                                    selected_round.matches,
+                                                    selected_round,
+                                                );
+                                                log_spam_debounce = undefined;
+                                            }, 10);
+                                        }
                                     }
-                                }
 
-                                let black = null;
-                                let white = null;
-                                let white_won = "";
-                                let black_won = "";
+                                    let black = null;
+                                    let white = null;
+                                    let white_won = "";
+                                    let black_won = "";
 
-                                try {
-                                    const match =
-                                        selected_round.match_map[m.player.id].matches[
-                                            m.opponent.id
-                                        ];
+                                    try {
+                                        const match =
+                                            selected_round.match_map[m.player.id].matches[
+                                                m.opponent.id
+                                            ];
 
-                                    black = match.black === m.player.id ? m.player : m.opponent;
-                                    white = match.black === m.player.id ? m.opponent : m.player;
-                                    if (match.result[0] === "W") {
-                                        white_won = "win";
+                                        black = match.black === m.player.id ? m.player : m.opponent;
+                                        white = match.black === m.player.id ? m.opponent : m.player;
+                                        if (match.result[0] === "W") {
+                                            white_won = "win";
+                                        }
+                                        if (match.result[0] === "B") {
+                                            black_won = "win";
+                                        }
+                                    } catch (e) {
+                                        // ignore error
                                     }
-                                    if (match.result[0] === "B") {
-                                        black_won = "win";
-                                    }
-                                } catch (e) {
-                                    // ignore error
-                                }
 
-                                return (
-                                    <tr key={idx}>
-                                        {white && (
-                                            <td className={`player ${white_won}`}>
-                                                <Player disable-cache-update user={white} icon />
-                                            </td>
-                                        )}
-                                        {black && (
-                                            <td className={`player ${black_won}`}>
-                                                <Player disable-cache-update user={black} icon />
-                                            </td>
-                                        )}
+                                    return (
+                                        <tr key={idx}>
+                                            {white && (
+                                                <td className={`player ${white_won}`}>
+                                                    <Player
+                                                        disable-cache-update
+                                                        user={white}
+                                                        icon
+                                                    />
+                                                </td>
+                                            )}
+                                            {black && (
+                                                <td className={`player ${black_won}`}>
+                                                    <Player
+                                                        disable-cache-update
+                                                        user={black}
+                                                        icon
+                                                    />
+                                                </td>
+                                            )}
 
-                                        {black && white && (
-                                            <td className={"result"}>
-                                                <Link to={`/game/${selected_round.game_ids[pxo]}`}>
-                                                    {
-                                                        selected_round.match_map[m.player.id]
-                                                            .matches[m.opponent.id].result
-                                                    }
-                                                </Link>
-                                            </td>
-                                        )}
-                                    </tr>
-                                );
-                            })}
+                                            {black && white && (
+                                                <td className={"result"}>
+                                                    <Link
+                                                        to={`/game/${selected_round.game_ids[pxo]}`}
+                                                    >
+                                                        {
+                                                            selected_round.match_map[m.player.id]
+                                                                .matches[m.opponent.id].result
+                                                        }
+                                                    </Link>
+                                                </td>
+                                            )}
+                                        </tr>
+                                    );
+                                })}
                         </tbody>
                     </table>
                 </div>
@@ -3162,7 +3266,7 @@ function OpenGothaTournamentRound({
                                 value={notes}
                                 onChange={set_notes}
                                 placeholder={pgettext(
-                                    "Notes about a tournament round that are publically visible",
+                                    "Notes about a tournament round that are publicly visible",
                                     "Round notes (everyone can see this)",
                                 )}
                             />
@@ -3230,12 +3334,12 @@ function OpenGothaTournamentUploadDownload({
 }: {
     tournament: any;
     reloadCallback: () => void;
-}): JSX.Element {
+}): JSX.Element | null {
     if (!tournament.can_administer) {
         return null;
     }
 
-    function uploadFile(files) {
+    function uploadFile(files: File[]) {
         put(`tournaments/${tournament.id}/opengotha`, files[0])
             .then((res) => {
                 console.log("Upload successful", res);
@@ -3295,7 +3399,7 @@ function OpenGothaTournamentUploadDownload({
     );
 }
 
-export function rankRestrictionText(min_ranking, max_ranking) {
+export function rankRestrictionText(min_ranking: number, max_ranking: number) {
     if (min_ranking <= 0) {
         if (max_ranking >= 36) {
             return _("None");
@@ -3317,7 +3421,7 @@ export function rankRestrictionText(min_ranking, max_ranking) {
         }
     }
 }
-export function shortRankRestrictionText(min_ranking, max_ranking) {
+export function shortRankRestrictionText(min_ranking: number, max_ranking: number) {
     if (min_ranking <= 0) {
         if (max_ranking >= 36) {
             return _("All");
@@ -3361,7 +3465,7 @@ export const TOURNAMENT_PAIRING_METHODS = {
     opengotha: pgettext("Tournament director will pair opponents with OpenGotha", "OpenGotha"),
 };
 
-function fromNow(t) {
+function fromNow(t: number | string) {
     const d = new Date(t).getTime();
     if (d - Date.now() < 0) {
         return pgettext("Tournament begins very shortly", "very shortly");
@@ -3369,7 +3473,7 @@ function fromNow(t) {
     return moment(d).fromNow();
 }
 
-function nthPlace(n) {
+function nthPlace(n: number): string | null {
     switch (n) {
         case 1:
             return _("First place");
@@ -3378,9 +3482,11 @@ function nthPlace(n) {
         case 3:
             return _("Third place");
     }
+
+    return null;
 }
 
-function trophyFilename(tournament, rank) {
+function trophyFilename(tournament: any, rank: number): string | null {
     const size = tournament.board_size;
     switch (rank) {
         case 1:
@@ -3390,8 +3496,10 @@ function trophyFilename(tournament, rank) {
         case 3:
             return `bronze_tourn_${size}.png`;
     }
+
+    return null;
 }
-function sortDropoutsToBottom(player_a, player_b) {
+function sortDropoutsToBottom(player_a: any, player_b: any) {
     // Sorting the players structure from a group array
     // "bottom" is greater than "top" of the display list.
     const a = player_a.player;

@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import * as ReactSelect from "react-select";
 import Select from "react-select";
 
 import * as data from "data";
@@ -54,7 +55,7 @@ export function GeneralPreferences(props: SettingGroupPageProps): JSX.Element {
         "translation-dialog-never-show",
     );
     const [hide_ui_class, setHideUiClass]: [boolean, (x: boolean) => void] = React.useState(
-        props.state.hide_ui_class,
+        !!props.state.hide_ui_class,
     );
     const [show_tournament_indicator, setShowTournamentIndicator] = usePreference(
         "show-tournament-indicator",
@@ -86,7 +87,9 @@ export function GeneralPreferences(props: SettingGroupPageProps): JSX.Element {
         /* not all browsers support the Notification API */
     }
 
-    function updateProfanityFilter(langs: { value: string; label: string }[]) {
+    function updateProfanityFilter(
+        langs: ReactSelect.MultiValue<{ value: string; label: string }>,
+    ) {
         if (!langs) {
             langs = [];
         }
@@ -118,7 +121,7 @@ export function GeneralPreferences(props: SettingGroupPageProps): JSX.Element {
     }
     */
 
-    function updateDesktopNotifications(enabled) {
+    function updateDesktopNotifications(enabled: boolean) {
         if (!enabled) {
             //this.setState({'desktop_notifications_enabled': false});
         }
@@ -143,7 +146,7 @@ export function GeneralPreferences(props: SettingGroupPageProps): JSX.Element {
                 }
 
                 if ((Notification as any).permission === "default") {
-                    const onRequestResult = (perm) => {
+                    const onRequestResult = (perm: string) => {
                         if (perm === "granted") {
                             //this.setState({'desktop_notifications_enabled': true});
                             console.log("granted notification permission");
@@ -173,7 +176,7 @@ export function GeneralPreferences(props: SettingGroupPageProps): JSX.Element {
         }
     }
 
-    function updateHideUIClass(checked) {
+    function updateHideUIClass(checked: boolean) {
         setHideUiClass(!checked);
         put(`me/settings`, {
             site_preferences: {

@@ -92,12 +92,12 @@ interface GroupState {
     group_id: number;
     editing: boolean;
     show_new_news_post: boolean;
-    new_icon: { preview: string };
+    new_icon?: { preview: string };
     new_banner?: { preview: string };
     new_news_title: string;
     new_news_body: string;
     invite_result?: string;
-    editing_news: GroupNews;
+    editing_news?: GroupNews;
     refresh: number;
     user_to_invite?: PlayerCacheEntry;
 }
@@ -108,7 +108,7 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
 
     news_ref = React.createRef<PaginatedTableRef>();
 
-    constructor(props) {
+    constructor(props: GroupProperties) {
         super(props);
         this.state = {
             group: {
@@ -133,12 +133,12 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
             group_id: parseInt(props.match.params.group_id),
             editing: false,
             show_new_news_post: false,
-            new_icon: null,
-            new_banner: null,
+            new_icon: undefined,
+            new_banner: undefined,
             new_news_title: "",
             new_news_body: "",
-            invite_result: null,
-            editing_news: null,
+            invite_result: undefined,
+            editing_news: undefined,
             refresh: 0,
         };
     }
@@ -239,7 +239,7 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
             })
             .catch(errorAlerter);
     }
-    updateIcon = (files) => {
+    updateIcon = (files: File[]) => {
         this.setState({
             new_icon: Object.assign(files[0], { preview: URL.createObjectURL(files[0]) }),
         });
@@ -253,7 +253,7 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
             })
             .catch(errorAlerter);
     };
-    updateBanner = (files) => {
+    updateBanner = (files: File[]) => {
         this.setState({
             new_banner: Object.assign(files[0], { preview: URL.createObjectURL(files[0]) }),
         });
@@ -277,7 +277,7 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
                 text: _("Tournament Name"),
                 input: "text",
                 showCancelButton: true,
-                inputValidator: (value) => {
+                inputValidator: (value): string | void => {
                     if (!value) {
                         return pgettext(
                             "They have to supply a name for a tournament they want to create",
@@ -301,75 +301,75 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
                     .catch(errorAlerter);
             });
     };
-    setGroupName = (ev) => {
+    setGroupName = (ev: React.ChangeEvent<HTMLInputElement>) => {
         this.setState({ group: Object.assign({}, this.state.group, { name: ev.target.value }) });
     };
-    setShortDescription = (ev) => {
+    setShortDescription = (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
         this.setState({
             group: Object.assign({}, this.state.group, { short_description: ev.target.value }),
         });
     };
-    setDescription = (ev) => {
+    setDescription = (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
         this.setState({
             group: Object.assign({}, this.state.group, { description: ev.target.value }),
         });
     };
-    setWebsite = (ev) => {
+    setWebsite = (ev: React.ChangeEvent<HTMLInputElement>) => {
         this.setState({ group: Object.assign({}, this.state.group, { website: ev.target.value }) });
     };
-    setLocation = (ev) => {
+    setLocation = (ev: React.ChangeEvent<HTMLInputElement>) => {
         this.setState({
             group: Object.assign({}, this.state.group, { location: ev.target.value }),
         });
     };
-    setBulletin = (ev) => {
+    setBulletin = (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
         this.setState({
             group: Object.assign({}, this.state.group, { bulletin: ev.target.value }),
         });
     };
-    setOpenToThePublic = (ev) => {
+    setOpenToThePublic = (ev: React.ChangeEvent<HTMLInputElement>) => {
         this.setState({
             group: Object.assign({}, this.state.group, { is_public: ev.target.checked }),
         });
     };
-    setHideDetails = (ev) => {
+    setHideDetails = (ev: React.ChangeEvent<HTMLInputElement>) => {
         this.setState({
             group: Object.assign({}, this.state.group, { hide_details: ev.target.checked }),
         });
     };
-    setDisableInvitationRequests = (ev) => {
+    setDisableInvitationRequests = (ev: React.ChangeEvent<HTMLInputElement>) => {
         this.setState({
             group: Object.assign({}, this.state.group, { require_invitation: ev.target.checked }),
         });
     };
-    setAdminOnlyTournaments = (ev) => {
+    setAdminOnlyTournaments = (ev: React.ChangeEvent<HTMLInputElement>) => {
         this.setState({
             group: Object.assign({}, this.state.group, {
                 admin_only_tournaments: ev.target.checked,
             }),
         });
     };
-    setNewNewsTitle = (ev) => {
+    setNewNewsTitle = (ev: React.ChangeEvent<HTMLInputElement>) => {
         this.setState({ new_news_title: ev.target.value });
     };
-    setNewNewsBody = (ev) => {
+    setNewNewsBody = (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
         this.setState({ new_news_body: ev.target.value });
     };
     postNewNews = () => {
         if (this.state.new_news_title.trim().length < 5) {
             alert
                 .fire({ title: _("Please provide a title") })
-                .then(() => this.ref_new_news_title.current.focus())
+                .then(() => this.ref_new_news_title.current?.focus())
                 .catch(errorAlerter);
-            this.ref_new_news_title.current.focus();
+            this.ref_new_news_title.current?.focus();
             return;
         }
         if (this.state.new_news_body.trim().length < 16) {
             alert
                 .fire({ title: _("Please provide more content for your news") })
-                .then(() => this.ref_new_news_body.current.focus())
+                .then(() => this.ref_new_news_body.current?.focus())
                 .catch(errorAlerter);
-            this.ref_new_news_body.current.focus();
+            this.ref_new_news_body.current?.focus();
             return;
         }
         this.toggleNewNewsPost();
@@ -398,7 +398,7 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
             }
         }, 1);
     };
-    deleteNewsPost(entry) {
+    deleteNewsPost(entry: GroupNews) {
         void alert
             .fire({
                 text: _("Delete this news post?"),
@@ -425,7 +425,7 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
                 }
             });
     }
-    editNewsPost(entry) {
+    editNewsPost(entry: GroupNews) {
         this.setState({ editing_news: entry });
         this.news_ref.current?.refresh();
     }
@@ -433,7 +433,7 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
         put(`group/${this.state.group_id}/news/`, this.state.editing_news)
             .then(() => {
                 this.setState({
-                    editing_news: null,
+                    editing_news: undefined,
                 });
                 this.news_ref.current?.refresh();
                 /* Since the removal of the refs I don't think we need to worry about this? - anoek 2021-12-23
@@ -446,19 +446,23 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
             })
             .catch(errorAlerter);
     };
-    updateNewsContent = (ev) => {
+    updateNewsContent = (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
         this.setState({
             editing_news: Object.assign({}, this.state.editing_news, { content: ev.target.value }),
         });
     };
-    updateNewsTitle = (ev) => {
+    updateNewsTitle = (ev: React.ChangeEvent<HTMLInputElement>) => {
         this.setState({
             editing_news: Object.assign({}, this.state.editing_news, { title: ev.target.value }),
         });
     };
 
     inviteUser = () => {
-        const username = this.state.user_to_invite.username;
+        const username = this.state.user_to_invite?.username;
+        if (!username) {
+            return;
+        }
+
         post(`group/${this.state.group_id}/members`, { username })
             .then((res) => {
                 console.log(res);
@@ -477,8 +481,10 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
                 }
             });
     };
-    setUserToInvite = (user) => {
-        this.setState({ user_to_invite: user });
+    setUserToInvite = (user: PlayerCacheEntry | null) => {
+        if (user) {
+            this.setState({ user_to_invite: user });
+        }
     };
 
     render() {
@@ -486,7 +492,7 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
         const group = this.state.group;
         const editing = this.state.editing;
 
-        let group_website_href = group.website;
+        let group_website_href: string | null = group.website;
         if (!/[/][/]/.test(group_website_href)) {
             // no protocol? Guess at http
             group_website_href = "http://" + group_website_href;
@@ -713,7 +719,10 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
                                         {((!editing && group_website_href) || null) && (
                                             <span>
                                                 {
-                                                    <a target="_blank" href={group_website_href}>
+                                                    <a
+                                                        target="_blank"
+                                                        href={group_website_href as string}
+                                                    >
                                                         {group_website_href}
                                                     </a>
                                                 }
@@ -1083,7 +1092,7 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
                                     {
                                         header: _("Members"),
                                         className: "",
-                                        render: (X) => <Player icon user={X} online />,
+                                        render: (X) => <Player icon user={X as any} online />,
                                     },
                                 ]}
                             />

@@ -28,7 +28,7 @@ const INITIAL_CONNECTION_TIME = 6000;
 
 type NetworkStatusState = "connected" | "went-away" | "disconnected" | "timeout";
 
-export function NetworkStatus(): JSX.Element {
+export function NetworkStatus(): JSX.Element | null {
     const [state, setState] = React.useState<NetworkStatusState>("connected");
     const [show_slow_internet_warning] = preferences.usePreference("show-slow-internet-warning");
 
@@ -46,7 +46,7 @@ export function NetworkStatus(): JSX.Element {
 
     React.useEffect(() => {
         const clear = (current_latency: number) => {
-            if (current_latency < socket.options.timeout_delay) {
+            if (current_latency < (socket.options.timeout_delay || 0)) {
                 setState("connected");
             }
         };
@@ -84,7 +84,7 @@ export function NetworkStatus(): JSX.Element {
         show_slow_internet_warning ? ": warning toggle on," : ": warning toggle off,",
         in_live_game ? "in live game," : "not in live game,",
         "time control:",
-        window["global_goban"]?.engine?.time_control,
+        (window as any)["global_goban"]?.engine?.time_control,
     );
 
     if (state === "connected" || state === "went-away") {

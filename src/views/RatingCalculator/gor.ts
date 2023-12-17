@@ -44,7 +44,7 @@ export class GorEntry {
         return ret;
     }
 
-    Gorstr() {
+    GorStr() {
         return this.rating.toFixed(2);
     }
 
@@ -59,7 +59,7 @@ export function compute_a(gor: number) {
 }
 
 export function compute_con(rank: number) {
-    const conlist = [
+    const con_list = [
         [10, 116],
         [11, 110],
         [12, 105],
@@ -90,10 +90,10 @@ export function compute_con(rank: number) {
     ];
     let last_con = 116;
 
-    for (let j = 0; j < conlist.length; j++) {
+    for (let j = 0; j < con_list.length; j++) {
         //(r, con)
-        const r = conlist[j][0];
-        const con = conlist[j][1];
+        const r = con_list[j][0];
+        const con = con_list[j][1];
         if (rank <= r) {
             return (r - rank) * last_con + (1 - (r - rank)) * con;
         }

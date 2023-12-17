@@ -9,7 +9,7 @@
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more detils.
+ * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -30,7 +30,6 @@ import { errorAlerter, ignore } from "misc";
 import { DismissableNotification } from "DismissableNotification";
 import { FriendList } from "FriendList";
 import { ChallengesList } from "./ChallengesList";
-import { SupporterGoals } from "SupporterGoals";
 import { ProfileCard } from "ProfileCard";
 import { InviteList } from "./InviteList";
 import { notification_manager } from "Notifications";
@@ -164,7 +163,6 @@ export class OldOverview extends React.Component<{}, OverviewState> {
 
         return (
             <div id="Overview-Container">
-                <SupporterGoals />
                 <div id="Overview">
                     <div className="left">
                         <DismissableMessages />
@@ -185,7 +183,7 @@ export class OldOverview extends React.Component<{}, OverviewState> {
                             </DismissableNotification>
                         )}
 
-                        {this.state.resolved && (
+                        {this.state.resolved && user && (
                             <ActiveDroppedGameList
                                 games={this.state.overview.active_games}
                                 user={user}
@@ -291,8 +289,10 @@ export class GroupList extends React.PureComponent<{}, GroupState> {
         data.watch(cached.group_invitations, this.updateGroupInvitations);
     }
 
-    updateGroups = (groups: Group[]) => {
-        this.setState({ groups: groups });
+    updateGroups = (groups?: Group[]) => {
+        if (groups) {
+            this.setState({ groups: groups });
+        }
     };
     updateGroupInvitations = (invitations: InvitationType[]) => {
         this.setState({ invitations: invitations });
@@ -349,8 +349,10 @@ export class TournamentList extends React.PureComponent<{}, TournamentListState>
     componentDidMount() {
         data.watch(cached.active_tournaments, this.update);
     }
-    update = (tournaments: ActiveTournamentList) => {
-        this.setState({ my_tournaments: tournaments });
+    update = (tournaments?: ActiveTournamentList) => {
+        if (tournaments) {
+            this.setState({ my_tournaments: tournaments });
+        }
     };
 
     componentWillUnmount() {
@@ -384,8 +386,10 @@ export class LadderList extends React.PureComponent<{}, LadderListState> {
         data.watch(cached.ladders, this.update);
     }
 
-    update = (ladders: LadderType[]) => {
-        this.setState({ ladders: ladders });
+    update = (ladders?: LadderType[]) => {
+        if (ladders) {
+            this.setState({ ladders: ladders });
+        }
     };
 
     componentWillUnmount() {

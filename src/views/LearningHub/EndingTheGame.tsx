@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import { PuzzleConfig, GoEngineConfig } from "goban";
-import { LearningPage } from "./LearningPage";
+import { LearningPage, LearningPageProperties } from "./LearningPage";
 import { _, pgettext } from "translate";
 import { LearningHubSection } from "./LearningHubSection";
 
@@ -43,7 +43,7 @@ export class EndingTheGame extends LearningHubSection {
 class Page1 extends LearningPage {
     pass_pressed = false;
 
-    constructor(props) {
+    constructor(props: LearningPageProperties) {
         super(props);
     }
 
@@ -71,7 +71,9 @@ class Page1 extends LearningPage {
         return {
             mode: "puzzle",
             initial_state: {
+                /* cspell:disable-next-line */
                 black: "fafbgbhbgdhdcedeheiebfdfefgfhfagcgegfggg",
+                /* cspell:disable-next-line */
                 white: "eahaebibbcccecfcgchcicadcdddfdidaebeeefegeafff",
             },
             move_tree: this.makePuzzleMoveTree(["b6" /* dummy to trigger fail */], []),
@@ -86,7 +88,7 @@ class Page1 extends LearningPage {
 class Page2 extends LearningPage {
     success = false;
 
-    constructor(props) {
+    constructor(props: LearningPageProperties) {
         super(props);
     }
 
@@ -100,13 +102,16 @@ class Page2 extends LearningPage {
             mode: "play",
             phase: "stone removal",
             initial_state: {
+                /* cspell:disable-next-line */
                 black: "fafbgbhbgdhdcedeheiebfdfefgfhfagcgegfggg",
+                /* cspell:disable-next-line */
                 white: "eahaebibbcccecfcgchcicadcdddfdidaebeeefegeafff",
             },
         };
     }
 
     onStoneRemoval(stone_removal_string: string): void {
+        /* cspell:disable-next-line */
         if (stone_removal_string === "fafbgbhb") {
             this.success = true;
             this.onUpdate();

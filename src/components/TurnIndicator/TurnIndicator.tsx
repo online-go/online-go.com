@@ -19,8 +19,8 @@ import * as React from "react";
 import { notification_manager } from "Notifications";
 
 export function TurnIndicator(): JSX.Element {
-    const [count, setCount] = React.useState(0);
-    const [total, setTotal] = React.useState(0);
+    const [count, setCount] = React.useState<number | undefined>(0);
+    const [total, setTotal] = React.useState<number | undefined>(0);
 
     React.useEffect(() => {
         notification_manager.event_emitter.on("turn-count", setCount);
@@ -38,7 +38,15 @@ export function TurnIndicator(): JSX.Element {
             onAuxClick={(e) => notification_manager.advanceToNextBoard(e)}
             onClick={(e) => notification_manager.advanceToNextBoard(e)}
         >
-            <span className={total > 0 ? (count > 0 ? "active count" : "inactive count") : "count"}>
+            <span
+                className={
+                    (total || 0) > 0
+                        ? (count || 0) > 0
+                            ? "active count"
+                            : "inactive count"
+                        : "count"
+                }
+            >
                 <span>{count}</span>
             </span>
         </span>

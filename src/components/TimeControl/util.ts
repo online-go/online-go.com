@@ -21,6 +21,7 @@ import { TimeControl, TimeControlTypes } from "./TimeControl";
 
 type TimeControlSystem = TimeControlTypes.TimeControlSystem;
 type TimeControlSpeed = TimeControlTypes.TimeControlSpeed;
+type ValidTimeControlFormats = TimeControl | JGOFTimeControl | number | null | undefined;
 
 const times = [
     1,
@@ -112,7 +113,7 @@ const times = [
     86400 * 28,
 ];
 
-function mktime(t: number): string {
+function format_time(t: number): string {
     if (t < 60) {
         return interpolate(t === 1 ? _("1 second") : _("%s seconds"), [t]);
     }
@@ -154,13 +155,13 @@ const zero: LabeledTimeOption = {
     label: _("None"),
 };
 
-function gen(min, max): LabeledTimeOption[] {
-    const ret = [];
+function gen(min: number, max: number): LabeledTimeOption[] {
+    const ret: any[] = [];
     for (let i = 0; i < times.length; ++i) {
         if (times[i] >= min && times[i] <= max) {
             ret.push({
                 time: times[i],
-                label: mktime(times[i]),
+                label: format_time(times[i]),
             });
         }
     }
@@ -204,187 +205,246 @@ export function timeControlSystemText(system: TimeControlSystem) {
     return "[unknown]";
 }
 
-export function timeControlDescription(time_control) {
+export function timeControlDescription(_time_control: ValidTimeControlFormats) {
     let ret = "";
 
-    switch (time_control && (time_control.system || time_control.time_control)) {
+    if (typeof _time_control === "number") {
+        return durationString(_time_control);
+    }
+
+    switch (_time_control?.system || (_time_control as any)?.time_control) {
         case "simple":
-            ret = interpolate(_("Simple: %s per move."), [durationString(time_control.per_move)]);
+            {
+                const time_control = _time_control as TimeControlTypes.Simple;
+                ret = interpolate(_("Simple: %s per move."), [
+                    durationString(time_control.per_move),
+                ]);
+            }
             break;
         case "fischer":
-            ret = interpolate(
-                _(
-                    "Fischer: Clock starts with %s and increments by %s per move up to a maximum of %s.",
-                ),
-                [
-                    durationString(time_control.initial_time),
-                    durationString(time_control.time_increment),
-                    durationString(time_control.max_time),
-                ],
-            );
+            {
+                const time_control = _time_control as TimeControlTypes.Fischer;
+                ret = interpolate(
+                    _(
+                        "Fischer: Clock starts with %s and increments by %s per move up to a maximum of %s.",
+                    ),
+                    [
+                        durationString(time_control.initial_time),
+                        durationString(time_control.time_increment),
+                        durationString(time_control.max_time),
+                    ],
+                );
+            }
             break;
         case "byoyomi":
-            ret = interpolate(
-                _("Japanese Byo-Yomi: Clock starts with %s main time, followed by %s %s periods."),
-                [
-                    durationString(time_control.main_time),
-                    time_control.periods,
-                    durationString(time_control.period_time),
-                ],
-            );
+            {
+                const time_control = _time_control as TimeControlTypes.ByoYomi;
+                ret = interpolate(
+                    _(
+                        "Japanese Byo-Yomi: Clock starts with %s main time, followed by %s %s periods.",
+                    ),
+                    [
+                        durationString(time_control.main_time),
+                        time_control.periods,
+                        durationString(time_control.period_time),
+                    ],
+                );
+            }
 
             break;
         case "canadian":
-            ret = interpolate(
-                _(
-                    "Canadian Byo-Yomi: Clock starts with %s main time, followed by %s per %s stones.",
-                ),
-                [
-                    durationString(time_control.main_time),
-                    durationString(time_control.period_time),
-                    time_control.stones_per_period,
-                ],
-            );
+            {
+                const time_control = _time_control as TimeControlTypes.Canadian;
+                ret = interpolate(
+                    _(
+                        "Canadian Byo-Yomi: Clock starts with %s main time, followed by %s per %s stones.",
+                    ),
+                    [
+                        durationString(time_control.main_time),
+                        durationString(time_control.period_time),
+                        time_control.stones_per_period,
+                    ],
+                );
+            }
+
             break;
         case "absolute":
-            ret = interpolate(_("Absolute: %s total play time per player."), [
-                durationString(time_control.total_time),
-            ]);
+            {
+                const time_control = _time_control as TimeControlTypes.Absolute;
+                ret = interpolate(_("Absolute: %s total play time per player."), [
+                    durationString(time_control.total_time),
+                ]);
+            }
             break;
         case "none":
             ret = _("No time limits.");
             break;
         default:
-            ret =
-                "[No time control description for " +
-                (time_control && (time_control.system || time_control.time_control)) +
-                "]";
+            {
+                const time_control = _time_control;
+
+                ret =
+                    "[No time control description for " +
+                    (time_control && (time_control.system || (time_control as any).time_control)) +
+                    "]";
+            }
             break;
     }
 
-    if (time_control && time_control.pause_on_weekends) {
+    if (_time_control?.pause_on_weekends) {
         ret += " " + _("Pauses on weekends.");
     }
 
     return ret;
 }
-export function shortTimeControl(time_control) {
-    if (typeof time_control !== "object") {
-        return "~" + durationString(time_control);
-    }
-
-    if (time_control === null) {
+export function shortTimeControl(_time_control: ValidTimeControlFormats) {
+    if (_time_control === null || _time_control === undefined) {
         return "";
     }
-
-    switch (time_control.system || time_control.time_control) {
-        case "simple":
+    if (typeof _time_control !== "object") {
+        return "~" + durationString(_time_control);
+    }
+    switch (_time_control.system || (_time_control as any).time_control) {
+        case "simple": {
+            const time_control = _time_control as TimeControlTypes.Simple;
             return interpolate(pgettext("Simple time: <time>/move", "%s/move"), [
                 durationString(time_control.per_move),
             ]);
-        case "fischer":
+        }
+        case "fischer": {
+            const time_control = _time_control as TimeControlTypes.Fischer;
             return interpolate(pgettext("Fischer time", "%s+%s/move, max %s"), [
                 durationString(time_control.initial_time),
                 durationString(time_control.time_increment),
                 durationString(time_control.max_time),
             ]);
-        case "byoyomi":
+        }
+        case "byoyomi": {
+            const time_control = _time_control as TimeControlTypes.ByoYomi;
             return interpolate(pgettext("Japanese Byo-Yomi", "%s+%sx%s"), [
                 durationString(time_control.main_time),
                 time_control.periods,
                 durationString(time_control.period_time),
             ]);
-
-        case "canadian":
+        }
+        case "canadian": {
+            const time_control = _time_control as TimeControlTypes.Canadian;
             return interpolate(pgettext("Canadian Byo-Yomi", "%s+%s/%s"), [
                 durationString(time_control.main_time),
                 durationString(time_control.period_time),
                 time_control.stones_per_period,
             ]);
-        case "absolute":
+        }
+        case "absolute": {
+            const time_control = _time_control as TimeControlTypes.Absolute;
             return durationString(time_control.total_time);
+        }
         case "none":
             return _("None");
-        default:
-            return "[error: " + (time_control.system || time_control.time_control) + "]";
+        default: {
+            const time_control = _time_control;
+            return "[error: " + (time_control.system || (time_control as any).time_control) + "]";
+        }
     }
 }
-export function shortShortTimeControl(time_control) {
-    if (typeof time_control !== "object") {
-        return "~" + shortDurationString(time_control);
+export function shortShortTimeControl(_time_control: ValidTimeControlFormats) {
+    if (typeof _time_control === "number") {
+        return "~" + shortDurationString(_time_control);
     }
 
-    if (time_control === null) {
+    if (_time_control === null || _time_control === undefined) {
         return "";
     }
 
-    switch (time_control.system || time_control.time_control) {
-        case "simple":
+    switch (_time_control.system || (_time_control as any).time_control) {
+        case "simple": {
+            const time_control = _time_control as TimeControlTypes.Simple;
             return interpolate(pgettext("Simple time: <time>/move", "%s/move"), [
                 shortDurationString(time_control.per_move),
             ]);
-        case "fischer":
+        }
+        case "fischer": {
+            const time_control = _time_control as TimeControlTypes.Fischer;
             return interpolate(pgettext("Fischer time", "%s+%s up to %s"), [
                 shortDurationString(time_control.initial_time),
                 shortDurationString(time_control.time_increment),
                 shortDurationString(time_control.max_time),
             ]);
-        case "byoyomi":
+        }
+        case "byoyomi": {
+            const time_control = _time_control as TimeControlTypes.ByoYomi;
             return interpolate(pgettext("Japanese Byo-Yomi", "%s+%sx%s"), [
                 shortDurationString(time_control.main_time),
                 time_control.periods,
                 shortDurationString(time_control.period_time),
             ]);
-        case "canadian":
+        }
+        case "canadian": {
+            const time_control = _time_control as TimeControlTypes.Canadian;
             return interpolate(pgettext("Canadian Byo-Yomi", "%s+%s/%s"), [
                 shortDurationString(time_control.main_time),
                 shortDurationString(time_control.period_time),
                 time_control.stones_per_period,
             ]);
-        case "absolute":
+        }
+        case "absolute": {
+            const time_control = _time_control as TimeControlTypes.Absolute;
             return shortDurationString(time_control.total_time);
+        }
         case "none":
             return _("None");
-        default:
-            return "[error: " + (time_control.system || time_control.time_control) + "]";
+        default: {
+            const time_control = _time_control;
+            return "[error: " + (time_control.system || (time_control as any).time_control) + "]";
+        }
     }
 }
 
-const QUESTIONABLE_SECONDS_PER_MOVE = 4; // less than this gets flagged as may be cheaty.
+const QUESTIONABLE_SECONDS_PER_MOVE = 4; // less than this gets flagged as may be cheating.
 const QUESTIONABLE_ABSOLUTE_TIME = 900; // Arguably absolute time cheaters don't use > 10 min.  I've seen reports complaining about abuse at 10min though, so set this a bit higher.
 
-export function usedForCheating(time_control) {
-    if (typeof time_control !== "object" || time_control === null) {
+export function usedForCheating(_time_control: ValidTimeControlFormats) {
+    if (typeof _time_control !== "object" || _time_control === null) {
         return false;
     }
 
     // either there has to be enough time for the whole game or
     // a sensible ongoing per-move allocation
-    switch (time_control.system || time_control.time_control) {
-        case "simple":
+    switch (_time_control.system || (_time_control as any).time_control) {
+        case "simple": {
+            const time_control = _time_control as TimeControlTypes.Simple;
             return time_control.per_move < QUESTIONABLE_SECONDS_PER_MOVE;
+        }
 
-        case "absolute":
+        case "absolute": {
+            const time_control = _time_control as TimeControlTypes.Absolute;
             return time_control.total_time <= QUESTIONABLE_ABSOLUTE_TIME;
+        }
 
-        case "canadian":
+        case "canadian": {
+            const time_control = _time_control as TimeControlTypes.Canadian;
             return !(
                 time_control.main_time > QUESTIONABLE_ABSOLUTE_TIME ||
                 time_control.period_time / time_control.stones_per_period >
                     QUESTIONABLE_SECONDS_PER_MOVE
             );
+        }
 
-        case "byoyomi":
+        case "byoyomi": {
+            const time_control = _time_control as TimeControlTypes.ByoYomi;
             return !(
                 time_control.main_time > QUESTIONABLE_ABSOLUTE_TIME ||
                 time_control.period_time > QUESTIONABLE_SECONDS_PER_MOVE
             );
+        }
 
-        case "fischer":
+        case "fischer": {
+            const time_control = _time_control as TimeControlTypes.Fischer;
             return !(
                 time_control.initial_time > QUESTIONABLE_ABSOLUTE_TIME ||
                 time_control.time_increment > QUESTIONABLE_SECONDS_PER_MOVE
             );
+        }
 
         case "none":
         default:
@@ -394,32 +454,40 @@ export function usedForCheating(time_control) {
 
 export function lookingAtOurLiveGame(): boolean {
     // Is the current page looking at a game we are live playing in...
-    const goban = window["global_goban"] as Goban;
+    const goban = (window as any)["global_goban"] as Goban;
     if (!goban) {
         return false;
     }
     const player_id = goban.config.player_id;
 
-    return (
+    return !!(
         goban &&
         goban.engine.phase !== "finished" &&
         isLiveGame(goban.engine.time_control, goban.engine.width, goban.engine.height) &&
+        player_id &&
         goban.engine.isParticipant(player_id)
     );
 }
 
-export function isLiveGame(time_control: JGOFTimeControl | TimeControl, w?: number, h?: number) {
+export function isLiveGame(time_control: ValidTimeControlFormats, w: number, h: number) {
     const speed = classifyGameSpeed(time_control, w, h);
     return speed === "live" || speed === "blitz";
 }
 
 export function classifyGameSpeed(
-    time_control: TimeControl | JGOFTimeControl,
+    time_control: ValidTimeControlFormats,
     w: number,
     h: number,
 ): TimeControlSpeed {
-    const tpm = computeAverageMoveTime(time_control, w, h);
-    return tpm === 0 || tpm > 3600 ? "correspondence" : tpm < 10 ? "blitz" : "live";
+    if (time_control && typeof time_control === "object") {
+        const tpm = computeAverageMoveTime(time_control, w, h);
+        return tpm === 0 || tpm > 3600 ? "correspondence" : tpm < 10 ? "blitz" : "live";
+    }
+    if (typeof time_control === "number") {
+        const tpm = time_control;
+        return tpm === 0 || tpm > 3600 ? "correspondence" : tpm < 10 ? "blitz" : "live";
+    }
+    throw new Error("Invalid time control");
 }
 
 export function durationString(seconds: number): string {
@@ -471,7 +539,7 @@ export function durationString(seconds: number): string {
     return interpolate(seconds_string, [seconds]);
 }
 
-export function daysOnlyDurationString(seconds): string {
+export function daysOnlyDurationString(seconds: number): string {
     seconds = Math.round(seconds);
     const days = Math.floor(seconds / 86400);
 
@@ -482,7 +550,7 @@ export function daysOnlyDurationString(seconds): string {
     });
     return ret.trim();
 }
-export function shortDurationString(seconds) {
+export function shortDurationString(seconds: number) {
     seconds = Math.round(seconds);
     const weeks = Math.floor(seconds / (86400 * 7));
     seconds -= weeks * 86400 * 7;
@@ -506,16 +574,16 @@ export function shortDurationString(seconds) {
 type Reify<T extends TimeControlSystem> = T extends "fischer"
     ? TimeControlTypes.Fischer
     : T extends "simple"
-    ? TimeControlTypes.Simple
-    : T extends "canadian"
-    ? TimeControlTypes.Canadian
-    : T extends "byoyomi"
-    ? TimeControlTypes.ByoYomi
-    : T extends "absolute"
-    ? TimeControlTypes.Absolute
-    : T extends "none"
-    ? TimeControlTypes.None
-    : never;
+      ? TimeControlTypes.Simple
+      : T extends "canadian"
+        ? TimeControlTypes.Canadian
+        : T extends "byoyomi"
+          ? TimeControlTypes.ByoYomi
+          : T extends "absolute"
+            ? TimeControlTypes.Absolute
+            : T extends "none"
+              ? TimeControlTypes.None
+              : never;
 export type PropertyOf<T extends TimeControlSystem> = keyof Reify<T> & string;
 
 type TimeOption<T extends TimeControlSystem> = {
@@ -533,7 +601,7 @@ export function getTimeOptions(
     system: TimeControlSystem,
     property: string, // Difficult to get this typed properly
 ): LabeledTimeOption[] {
-    return time_options[speed][system][property] ?? [];
+    return (time_options as any)?.[speed]?.[system]?.[property] ?? [];
 }
 
 export function getInputRange(
@@ -541,8 +609,8 @@ export function getInputRange(
     system: TimeControlSystem,
     property: string,
 ): [number, number] | null {
-    const min = default_time_settings[speed][system][property + "_min"];
-    const max = default_time_settings[speed][system][property + "_max"];
+    const min = (default_time_settings as any)[speed][system][property + "_min"];
+    const max = (default_time_settings as any)[speed][system][property + "_max"];
     if (min != null && max != null) {
         return [min, max];
     }

@@ -28,13 +28,13 @@ interface ErrcodeModalProperties {
 }
 
 export class ErrcodeModal extends Modal<Events, ErrcodeModalProperties, any> {
-    constructor(props) {
+    constructor(props: ErrcodeModalProperties) {
         super(props);
     }
 
     render() {
-        let header = null;
-        let body = null;
+        let header: JSX.Element | null = null;
+        let body: JSX.Element | null = null;
 
         switch (this.props.message_id) {
             case "ai_review_queue_full":
@@ -58,6 +58,6 @@ export class ErrcodeModal extends Modal<Events, ErrcodeModalProperties, any> {
     }
 }
 
-export function errcodeAlerter(errobj: { errcode: MessageId }): void {
-    openModal(<ErrcodeModal message_id={errobj.errcode} />);
+export function errcodeAlerter(err_obj: { errcode: MessageId }): void {
+    openModal(<ErrcodeModal message_id={err_obj.errcode} />);
 }

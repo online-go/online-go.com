@@ -86,7 +86,7 @@ export const CANNED_MESSAGES: rest_api.warnings.WarningMessages = {
         interpolate(
             _(`
         Thank you for bringing the possible instance of score cheating by {{reported}} to
-        our attention. We looked into the report and their actions seemed approprate. If a pattern of
+        our attention. We looked into the report and their actions seemed appropriate. If a pattern of
         complaints emerges, we will investigate further.
 
         Thank you for helping keep OGS enjoyable for everyone. We appreciate it.`),
@@ -137,14 +137,14 @@ export const CANNED_MESSAGES: rest_api.warnings.WarningMessages = {
     ack_warned_escaper_and_annul: (reported) =>
         interpolate(
             _(`
-        Thank you for your report, {{reported}} has been given a formal warning about finishing games properly, and that abandonned game annulled.`),
+        Thank you for your report, {{reported}} has been given a formal warning about finishing games properly, and that abandoned game annulled.`),
             reported,
         ),
     no_escaping_evident: (reported) =>
         interpolate(
             _(`
         Thank you for bringing the possible instance of escaping by {{reported}} to
-        our attention. We looked into the report and their actions seemed approprate. If a pattern of
+        our attention. We looked into the report and their actions seemed appropriate. If a pattern of
         complaints emerges, we will investigate further.
 
         Thank you for helping keep OGS enjoyable for everyone. We appreciate it.`),

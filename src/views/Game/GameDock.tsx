@@ -100,8 +100,8 @@ export function GameDock({
     const unannulable = annulled && engine.config.ranked;
     const user_is_player = useUserIsParticipant(goban);
 
-    const review_id: number = goban.config.review_id;
-    const game_id = Number(goban.config.game_id);
+    const review_id: number | undefined = goban.config.review_id;
+    const game_id: number | undefined = Number(goban.config.game_id);
 
     const review = !!review_id;
     const game = !!game_id;
@@ -338,8 +338,8 @@ export function GameDock({
                             (volume === 0
                                 ? "fa-volume-off"
                                 : volume > 0.5
-                                ? "fa-volume-up"
-                                : "fa-volume-down")
+                                  ? "fa-volume-up"
+                                  : "fa-volume-down")
                         }
                         onClick={toggleVolume}
                     />{" "}

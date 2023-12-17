@@ -473,7 +473,7 @@ export function AccountSettings(props: SettingGroupPageProps): JSX.Element {
                     <dt>{_("Social account linking")}</dt>
                     {settings.social_auth_accounts && (
                         <dd>
-                            {settings.social_auth_accounts.map((account) => (
+                            {settings.social_auth_accounts.map((account: any) => (
                                 <div key={account.provider}>
                                     <div className="social-link">
                                         {account.provider === "github" && (

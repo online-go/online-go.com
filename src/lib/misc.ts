@@ -20,6 +20,7 @@ import { errcodeAlerter } from "ErrcodeModal";
 import { browserHistory } from "ogsHistory";
 import * as preferences from "preferences";
 import { alert } from "swal_config";
+import React from "react";
 
 // Must match back-end MODERATOR_POWER
 export const MOD_POWER_HANDLE_SCORE_CHEAT = 0b01;
@@ -38,7 +39,7 @@ export function updateDup(obj: any, field: string, value: any) {
     return ret;
 }
 
-export function rulesText(rules) {
+export function rulesText(rules: string) {
     if (!rules) {
         return "[unknown]";
     }
@@ -62,19 +63,19 @@ export function rulesText(rules) {
 
 // Create a deep copy of obj
 export function dup<T>(obj: T): T {
-    let ret;
+    let ret: T;
     if (typeof obj === "object") {
         if (obj === null) {
-            return null;
+            return null as T;
         }
 
         if (Array.isArray(obj)) {
-            ret = [];
+            ret = [] as T;
             for (let i = 0; i < obj.length; ++i) {
-                ret.push(dup(obj[i]));
+                (ret as any).push(dup(obj[i]));
             }
         } else {
-            ret = {};
+            ret = {} as T;
             for (const i in obj) {
                 ret[i] = dup(obj[i]);
             }
@@ -124,13 +125,19 @@ export function deepEqual(a: any, b: any) {
         return a === b;
     }
 }
-export function getRandomInt(min, max) {
+export function getRandomInt(min: number, max: number) {
     return Math.floor(Math.random() * (max - min)) + min;
 }
-export function getRelativeEventPosition(event) {
+export function getRelativeEventPosition(
+    event: React.PointerEvent & React.TouchEvent & React.MouseEvent & any,
+): { x: number; y: number } | undefined {
     let x;
     let y;
     const offset = $(event.target).offset();
+
+    if (!offset) {
+        return;
+    }
 
     if (event.originalEvent.touches && event.originalEvent.touches.length) {
         x = event.originalEvent.touches[0].pageX - offset.left;
@@ -150,6 +157,7 @@ export function getRelativeEventPosition(event) {
 }
 
 export function uuid(): string {
+    /* cspell: disable-next-line */
     return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
         const r = (Math.random() * 16) | 0;
         const v = c === "x" ? r : (r & 0x3) | 0x8;
@@ -186,7 +194,7 @@ export function getOutcomeTranslation(outcome: string) {
     }
 
     if (/[0-9.]+/.test(outcome)) {
-        const num: number = +outcome.match(/([0-9.]+)/)[1];
+        const num: number = +(outcome.match(/([0-9.]+)/) as string[])[1];
         const rounded_num = Math.round(num * 2) / 2;
         return interpolate(pgettext("Game outcome", "{{number}} points"), { number: rounded_num }); // eslint-disable-line id-denylist
     }
@@ -225,12 +233,12 @@ export function getGameResultText(
     return result;
 }
 
-function lengthInUtf8Bytes(str) {
+function lengthInUtf8Bytes(str: string): number {
     // Matches only the 10.. bytes that are non-initial characters in a multi-byte sequence.
     const m = encodeURIComponent(str).match(/%[89ABab]/g);
     return str.length + (m ? m.length : 0);
 }
-export function splitOnBytes(message, bytes) {
+export function splitOnBytes(message: string, bytes: number): [string, string] {
     let offs = 0;
 
     while (lengthInUtf8Bytes(message.substr(0, bytes - offs)) > bytes) {
@@ -239,7 +247,7 @@ export function splitOnBytes(message, bytes) {
 
     return [message.substr(0, bytes - offs), message.substr(bytes - offs)];
 }
-export function getPrintableError(err) {
+export function getPrintableError(err: any): string | undefined {
     if (err === "esc" || err === "cancel" || err === "overlay" || err === "timer") {
         /* We get these from swal (sweetalert) modals when the scape key is pressed, not really errors */
         return;
@@ -335,25 +343,25 @@ export function getPrintableError(err) {
         return _("An error has occurred");
     }
 }
-export function errorAlerter(...args) {
+export function errorAlerter(...args: any[]) {
     const err = getPrintableError(args[0]);
     if (!err) {
         return;
     }
     if (err === "errcode") {
-        let errobj = args[0];
+        let err_object = args[0];
         try {
-            if ("responseText" in errobj) {
+            if ("responseText" in err_object) {
                 try {
-                    errobj = JSON.parse(errobj.responseText);
+                    err_object = JSON.parse(err_object.responseText);
                 } catch (e) {
-                    errobj = errobj.responseText;
+                    err_object = err_object.responseText;
                 }
             }
         } catch (e) {
             // ignore error
         }
-        errcodeAlerter(errobj);
+        errcodeAlerter(err_object);
     } else {
         void alert.fire({
             title: _(err.substring(0, 128)),
@@ -363,7 +371,7 @@ export function errorAlerter(...args) {
     console.error(err);
     console.error(new Error().stack);
 }
-export function errorLogger(...args) {
+export function errorLogger(...args: any[]) {
     const err = getPrintableError(args[0]);
     if (!err) {
         return;
@@ -373,7 +381,7 @@ export function errorLogger(...args) {
 export function string_splitter(str: string, max_length: number = 200): Array<string> {
     const words = str.split(/(\W+)/g);
 
-    const lines = [];
+    const lines: string[] = [];
     let cur = "";
     for (let word of words) {
         while (word.length > max_length) {
@@ -421,8 +429,8 @@ export function unicodeFilter(str: string): string {
 }
 
 const n2s_alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-const n2s_alphalen = n2s_alphabet.length;
-export function n2s(n?: number) {
+const n2s_alphabet_len = n2s_alphabet.length;
+export function n2s(n: number): string {
     if (n < 0) {
         return "-" + n2s(-n);
     }
@@ -435,8 +443,8 @@ export function n2s(n?: number) {
 
     let ret = "";
     while (n) {
-        const remainder = n % n2s_alphalen;
-        n = Math.trunc(n / n2s_alphalen);
+        const remainder = n % n2s_alphabet_len;
+        n = Math.trunc(n / n2s_alphabet_len);
         ret = n2s_alphabet[remainder] + ret;
     }
 
@@ -444,12 +452,20 @@ export function n2s(n?: number) {
 }
 
 /* Returns true on middle clicks and command-clicks */
-export function shouldOpenNewTab(event) {
+export function shouldOpenNewTab(
+    event: React.KeyboardEvent | React.MouseEvent | React.TouchEvent | React.PointerEvent,
+) {
     if (event.nativeEvent) {
-        event = event.nativeEvent;
+        (event as any) = event.nativeEvent;
     }
 
-    if (event && (event.which === 2 || event.metaKey || event.ctrlKey || event.shiftKey)) {
+    if (
+        event &&
+        ((event as React.KeyboardEvent).which === 2 ||
+            event.metaKey ||
+            event.ctrlKey ||
+            event.shiftKey)
+    ) {
         return true;
     }
     /*
@@ -461,12 +477,15 @@ export function shouldOpenNewTab(event) {
 }
 
 const last_navigateTo = {
-    path: null,
-    timestamp: null,
+    path: null as string | null,
+    timestamp: null as number | null,
 };
 
-export function navigateTo(path, event?) {
-    if (last_navigateTo.path === path && Date.now() - last_navigateTo.timestamp < 100) {
+export function navigateTo(
+    path: string,
+    event?: React.KeyboardEvent | React.MouseEvent | React.TouchEvent | React.PointerEvent,
+): boolean {
+    if (last_navigateTo.path === path && Date.now() - (last_navigateTo.timestamp || 0) < 100) {
         /* debounce, this is for elements that need to have both onClick and onMouseUp to
          * handle various use cases in different browsers */
         console.log("navigate debounce");
@@ -481,14 +500,16 @@ export function navigateTo(path, event?) {
     } else {
         browserHistory.push(path);
     }
+
+    return true;
 }
 
 export function deepCompare(x: any, y: any) {
     // http://stackoverflow.com/questions/1068834/object-comparison-in-javascript
-    const leftChain = [];
-    const rightChain = [];
+    const leftChain: any[] = [];
+    const rightChain: any[] = [];
 
-    const compare2Objects = (x, y) => {
+    const compare2Objects = (x: any, y: any) => {
         // remember that NaN === NaN returns false
         // and isNaN(undefined) returns true
         if (isNaN(x) && isNaN(y) && typeof x === "number" && typeof y === "number") {
@@ -856,7 +877,7 @@ export function slugify(str: string) {
         Э: "E",
         Ю: "Yu",
         Я: "Ya",
-        // ukranian
+        // ukrainian
         Є: "Ye",
         І: "I",
         Ї: "Yi",
@@ -1046,6 +1067,7 @@ export function slugify(str: string) {
         "₧": "peseta",
         "₨": "rupee",
         "₩": "won",
+        /* cspell: disable-next-line */
         "₪": "new shequel",
         "₫": "dong",
         "₭": "kip",
@@ -1103,7 +1125,7 @@ export function slugify(str: string) {
     const slug = str
         .split("")
         .reduce((result, ch) => {
-            return result + (charMap[ch] || ch).replace(/[^\w\s$*_+~.()'"!\-:@]/g, "");
+            return result + ((charMap as any)[ch] ?? ch).replace(/[^\w\s$*_+~.()'"!\-:@]/g, "");
         }, "")
         .trim()
         .replace(/[-\s]+/g, "-");
@@ -1142,7 +1164,7 @@ export function insert_into_sorted_list<T>(
     }
 }
 
-export function yesno(tf: boolean) {
+export function yesno(tf?: boolean) {
     return tf ? _("Yes") : _("No");
 }
 

@@ -16,7 +16,7 @@
  */
 
 /**
- * @overview A barebones version of Game.tsx that is optimized for iframe embeds.
+ * @overview A bare bones version of Game.tsx that is optimized for iframe embeds.
  */
 
 import * as React from "react";
@@ -50,7 +50,7 @@ export function GameEmbed(): JSX.Element {
 
     return (
         <div className="goban-embed" ref={ref}>
-            <MiniGoban id={game_id} displayWidth={width - PADDING} openLinksInNewTab />
+            <MiniGoban id={game_id} displayWidth={(width ?? 100) - PADDING} openLinksInNewTab />
         </div>
     );
 }

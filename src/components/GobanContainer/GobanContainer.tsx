@@ -106,7 +106,7 @@ export function GobanContainer({
     };
 
     // Trigger resize on new Goban and subsequent "load" events
-    generateGobanHook(() => onResize(/* no_debounce */ true, /* do_cb */ false))(goban);
+    generateGobanHook(() => onResize(/* no_debounce */ true, /* do_cb */ false))(goban || null);
 
     if (!goban || !goban_div) {
         return <React.Fragment />;

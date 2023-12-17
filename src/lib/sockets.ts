@@ -21,7 +21,7 @@ import { lookingAtOurLiveGame } from "TimeControl/util";
 
 const debug = new Debug("sockets");
 
-export const socket = new GobanSocket(window["websocket_host"] ?? window.location.origin);
+export const socket = new GobanSocket((window as any)["websocket_host"] ?? window.location.origin);
 
 // Updated to be more helpful (shorter) when we know latencies
 socket.options.ping_interval = 10000;
@@ -33,10 +33,10 @@ const MIN_TIMEOUT_DELAY = 1000;
 const MAX_PING_INTERVAL = 15000;
 const MAX_TIMEOUT_DELAY = 14000;
 
-export let ai_host;
+export let ai_host = "http://localhost:13284";
 if (
     window.location.hostname.indexOf("dev.beta") >= 0 &&
-    window["websocket_host"] === "https://online-go.com"
+    (window as any)["websocket_host"] === "https://online-go.com"
 ) {
     // if we're developing locally but connecting to the production system, use our local system for estimation
     ai_host = `http://localhost:13284`;
@@ -63,20 +63,17 @@ if (
     // don't set ai host because we dont use it in tests (stubbed)
 } else {
     console.warn("AI Host not set, defaulting to localhost", window.location.hostname);
-    ai_host = "http://localhost:13284";
 }
 
-export const ai_socket = ai_host
-    ? new GobanSocket<protocol.ClientToAIServer, protocol.AIServerToClient>(ai_host)
-    : undefined;
+export const ai_socket = new GobanSocket<protocol.ClientToAIServer, protocol.AIServerToClient>(
+    ai_host,
+);
 
-if (ai_socket) {
-    ai_socket.options.ping_interval = 20000;
-}
+ai_socket.options.ping_interval = 20000;
 
 let last_clock_drift = 0.0;
 let last_latency = 0.0;
-let connect_time = null;
+let connect_time: number | null = null;
 let timing_needed = 0; // if non zero, this is the speed that they are playing at (in ms)
 
 socket.on("connect", () => {
@@ -98,7 +95,7 @@ socket.on("latency", (latency, drift) => {
     // If they are playing a live game at the moment, work out what timing they would like
     // us to make sure that they have...
     if (lookingAtOurLiveGame()) {
-        const goban = window["global_goban"] as Goban;
+        const goban = (window as any)["global_goban"] as Goban;
         const time_control = goban.engine.time_control as JGOFTimeControl;
         switch (time_control.system) {
             case "fischer":
@@ -128,19 +125,19 @@ socket.on("latency", (latency, drift) => {
 
     timing_needed = timing_needed * 1000; // Time control is seconds, we need milliseconds
 
-    if (timing_needed && socket.options.timeout_delay > timing_needed / 2) {
+    if (timing_needed && (socket.options.timeout_delay || 0) > timing_needed / 2) {
         // if we're going slower than the timing they need, we better at least as fast as they need
         socket.options.timeout_delay = timing_needed / 2;
         socket.options.ping_interval = timing_needed;
         console.log("Set network timeout for game:", socket.options.timeout_delay);
     } else {
         // Ping more quickly for people with fast connections (to detect outages fast)
-        if (latency < Math.max(3 * socket.options.ping_interval, MIN_PING_INTERVAL)) {
+        if (latency < Math.max(3 * (socket.options.ping_interval || 0), MIN_PING_INTERVAL)) {
             socket.options.ping_interval = Math.max(latency * 3, MIN_PING_INTERVAL);
         }
         if (
             !last_latency ||
-            latency < Math.max(2 * socket.options.timeout_delay, MIN_TIMEOUT_DELAY)
+            latency < Math.max(2 * (socket.options.timeout_delay || 0), MIN_TIMEOUT_DELAY)
         ) {
             // wind down the timeout for people with fast connections (to detect outages fast)
             socket.options.timeout_delay = Math.max(latency * 2, MIN_TIMEOUT_DELAY);
@@ -160,8 +157,14 @@ socket.on("latency", (latency, drift) => {
 
 // If we timed out, maybe their internet just went slow...
 socket.on("timeout", () => {
-    socket.options.ping_interval = Math.min(socket.options.ping_interval * 2, MAX_PING_INTERVAL);
-    socket.options.timeout_delay = Math.min(socket.options.timeout_delay * 2, MAX_TIMEOUT_DELAY);
+    socket.options.ping_interval = Math.min(
+        (socket.options.ping_interval || 0) * 2,
+        MAX_PING_INTERVAL,
+    );
+    socket.options.timeout_delay = Math.min(
+        (socket.options.timeout_delay || 0) * 2,
+        MAX_TIMEOUT_DELAY,
+    );
     console.log("Network ping timeout, increased delay to:", socket.options.timeout_delay);
 });
 

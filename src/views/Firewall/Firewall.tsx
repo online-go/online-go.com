@@ -60,9 +60,9 @@ const FIELDS: { [name in FieldName]: string } = {
 
 interface Rule {
     operator: Operator;
-    children?: Rule[];
-    field?: FieldName;
-    value?: string | number | boolean;
+    children: Rule[];
+    field: FieldName;
+    value: string | number | boolean;
 }
 
 type Action = "ACCEPT" | "REJECT" | "REPORT" | "COLLECT_VPN_INFORMATION";
@@ -102,13 +102,13 @@ interface FirewallRule {
     networks: Network[];
 }
 
-export function Firewall(): JSX.Element {
+export function Firewall(): JSX.Element | null {
     const user = data.get("user");
 
-    const table_ref = React.useRef(null);
+    const table_ref = React.useRef<any>(null);
 
     const new_rule_def: FirewallRule = {
-        id: newid(),
+        id: new_id(),
         active: false,
         priority: 0,
         rule: {
@@ -264,7 +264,7 @@ function FirewallRuleRow({
                 />
                 {(firewall_rule.owner || null) && (
                     <span>
-                        Responsible: <Player user={firewall_rule.owner} />
+                        Responsible: <Player user={firewall_rule.owner as number} />
                     </span>
                 )}
             </div>
@@ -365,7 +365,7 @@ interface RuleEditorProps {
     refresh: () => void;
 }
 
-function RuleEditor({ rule, parent, refresh }: RuleEditorProps): JSX.Element {
+function RuleEditor({ rule, parent, refresh }: RuleEditorProps): JSX.Element | null {
     const [field, setField] = React.useState(rule.field);
     const [value, setValue]: [string | number | boolean, (tf: string | number | boolean) => void] =
         React.useState(rule.value as string | number | boolean);
@@ -375,7 +375,9 @@ function RuleEditor({ rule, parent, refresh }: RuleEditorProps): JSX.Element {
 
     function del() {
         console.log("delete");
-        parent.children = parent.children.filter((child) => !deepCompare(child, rule));
+        if (parent) {
+            parent.children = parent.children?.filter((child) => !deepCompare(child, rule));
+        }
         refresh();
     }
     function add() {
@@ -385,7 +387,7 @@ function RuleEditor({ rule, parent, refresh }: RuleEditorProps): JSX.Element {
             field: "screen_width" as FieldName,
             value: "123",
         };
-        rule.children.push(new_rule);
+        rule.children?.push(new_rule);
         refresh();
     }
 
@@ -482,7 +484,7 @@ interface NetworkEditorProps {
 function NetworkEditor({ firewall_rule, refresh }: NetworkEditorProps): JSX.Element {
     function add() {
         firewall_rule.networks.push({
-            id: newid(),
+            id: new_id(),
             asn: null,
             inet: "10.0.0.0/32",
             created: "",
@@ -611,6 +613,6 @@ function RecentMatches({ firewall_rule }: { firewall_rule: FirewallRule }): JSX.
 }
 
 let next_new_id = -1;
-function newid(): number {
+function new_id(): number {
     return next_new_id--;
 }

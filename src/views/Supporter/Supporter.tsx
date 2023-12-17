@@ -150,7 +150,7 @@ function load_checkout_libraries(): void {
             script.async = true;
             //script.charset = "utf-8";
             script.onload = () => {
-                window["stripe"] = stripe = new Stripe(data.get("config").stripe_pk);
+                (window as any)["stripe"] = stripe = new Stripe(data.get("config")?.stripe_pk);
                 resolve();
             };
             script.onerror = () => {
@@ -192,13 +192,15 @@ export function Supporter(props: SupporterProperties): JSX.Element {
     const inline = props?.inline;
     const account_id = parseInt((params?.account_id || user?.id || "0") as string);
     const [loading, setLoading] = React.useState(true);
-    const [config, setConfig]: [Config, (h: Config) => void] = React.useState({
+    const [config, setConfig]: [Config, (h: Config) => void] = React.useState<Config>({
         loading: true,
         country_code: "US",
         payments: [],
         subscriptions: [],
         services: [],
         plans: [],
+        sandbox: true,
+        country_currency_list: {},
     } as Config);
     const [error, setError]: [string, (e: string) => void] = React.useState("");
     const [overrides, setOverrides]: [SupporterOverrides, (e: SupporterOverrides) => void] =
@@ -213,7 +215,7 @@ export function Supporter(props: SupporterProperties): JSX.Element {
         if (search_params.get("payment_updated") === "true") {
             if (!already_showed_payment_updated_modal.current) {
                 already_showed_payment_updated_modal.current = true;
-                void alert.fire(_("Payment method upated, thank you!"));
+                void alert.fire(_("Payment method updated, thank you!"));
                 setSearchParams({});
             }
         }
@@ -408,7 +410,7 @@ export function Supporter(props: SupporterProperties): JSX.Element {
         ];
     }
 
-    const current_plan_slug = getCurentPlanSlug(config);
+    const current_plan_slug = getCurrentPlanSlug(config);
 
     return (
         <div className="Supporter">
@@ -439,7 +441,7 @@ export function Supporter(props: SupporterProperties): JSX.Element {
 
             {(!inline || null) && (
                 <>
-                    <DeprecatedPlanNote slug={current_plan_slug} />
+                    <DeprecatedPlanNote slug={current_plan_slug as string} />
 
                     <SupporterOverridesEditor
                         account_id={account_id}
@@ -451,7 +453,7 @@ export function Supporter(props: SupporterProperties): JSX.Element {
             )}
 
             <div className="SiteSupporterText">
-                <p className="fineprint">
+                <p className="fine-print">
                     <sup>*</sup>
                     {_(
                         "Only 19x19, 9x9, and 13x13 games are supported for AI review. Playouts and engines are subject to change over time as technology and software improves, but only if the changes should provide you with better reviews.",
@@ -562,7 +564,7 @@ export function PriceBox({
     config,
     account_id,
     overrides,
-}: PriceBoxProperties): JSX.Element {
+}: PriceBoxProperties): JSX.Element | null {
     const user = data.get("user");
     const [mor_locations, setMorLocations] = React.useState<string[]>(
         data.get("config.billing_mor_locations") || [],
@@ -669,7 +671,7 @@ export function PriceBox({
         overrides.payment_methods === "paddle" || (!overrides.payment_methods && mor_only);
 
     const has_subscription = config.subscriptions.length > 0;
-    const current_plan_slug = getCurentPlanSlug(config);
+    const current_plan_slug = getCurrentPlanSlug(config);
 
     const show_sign_up_before_box = null;
 
@@ -682,11 +684,7 @@ export function PriceBox({
         <div className="PriceBox">
             <h1>{price.title}</h1>
 
-            <ul>
-                {price.description.map((s, idx) => (
-                    <li key={idx}>{s}</li>
-                ))}
-            </ul>
+            <ul>{price.description?.map((s, idx) => <li key={idx}>{s}</li>)}</ul>
 
             {
                 /* don't remove this. We want the translations to stick around
@@ -822,7 +820,7 @@ function Subscription({
 }: {
     subscription: Subscription;
     prices: Price[];
-}): JSX.Element {
+}): JSX.Element | null {
     const user = data.get("user");
 
     let text: string;
@@ -877,7 +875,9 @@ function Subscription({
                             break;
 
                         case "paddle":
-                            window.location.assign(subscription.paddle_cancel_url);
+                            if (subscription.paddle_cancel_url) {
+                                window.location.assign(subscription.paddle_cancel_url);
+                            }
                             //promise = post(`/billing/paddle/cancel_subscription`, {'ref_id': subscription.ref_id});
                             break;
 
@@ -914,7 +914,7 @@ function Subscription({
             .catch(errorAlerter);
     }
 
-    function updatePaymentMethod() {
+    function updatePaymentMethod(): void {
         let promise;
 
         switch (subscription.payment_processor) {
@@ -942,7 +942,9 @@ function Subscription({
                 break;
 
             case "paddle":
-                window.location.assign(subscription.paddle_update_url);
+                if (subscription.paddle_update_url) {
+                    window.location.assign(subscription.paddle_update_url);
+                }
                 //promise = post(`/billing/paddle/cancel_subscription`, {'ref_id': subscription.ref_id});
                 break;
 
@@ -958,7 +960,7 @@ function Subscription({
         }
     }
 
-    let amount: string;
+    let amount: string | undefined;
 
     if (subscription?.plan?.amount) {
         amount = formatMoney(subscription.plan.currency, subscription.plan.amount);
@@ -1009,8 +1011,8 @@ function Subscription({
 
 function PaymentMethod({ payment }: { payment: Payment }): JSX.Element {
     const user = data.get("user");
-    let details: JSX.Element | null;
-    let ret: JSX.Element | null;
+    let details: JSX.Element | undefined;
+    let ret: JSX.Element | undefined;
 
     if (payment.payment_method_details?.card) {
         const card = payment.payment_method_details?.card;
@@ -1097,7 +1099,7 @@ interface ManualServiceCreatorProperties {
     config: Config;
 }
 
-function ManualServiceCreator({ account_id }: ManualServiceCreatorProperties): JSX.Element {
+function ManualServiceCreator({ account_id }: ManualServiceCreatorProperties): JSX.Element | null {
     const user = data.get("user");
     const [level, setLevel]: [string, React.Dispatch<string>] = React.useState("");
     const [months, setMonths]: [string, React.Dispatch<string>] = React.useState("");
@@ -1143,7 +1145,7 @@ function ManualServiceCreator({ account_id }: ManualServiceCreatorProperties): J
     );
 }
 
-function ServiceLine({ service }: { service: Service }): JSX.Element {
+function ServiceLine({ service }: { service: Service }): JSX.Element | null {
     const user = data.get("user");
     const [active, setActive] = React.useState(service.active);
 
@@ -1184,7 +1186,7 @@ function SupporterOverridesEditor({
     overrides,
     onChange,
     config,
-}: SupporterOverridesProperties): JSX.Element {
+}: SupporterOverridesProperties): JSX.Element | null {
     const user = data.get("user");
     const prices = config.plans;
     const currency = overrides.currency;
@@ -1201,13 +1203,15 @@ function SupporterOverridesEditor({
     }
 
     function up(key: string, value: any): void {
-        overrides[key] = value;
+        (overrides as any)[key] = value;
         onChange({ ...overrides }); // copy to force re-render
     }
 
-    function upprice(slug: string, interval: string, value: any): void {
+    function upPrice(slug: string, interval: string, value: any): void {
         if (!value) {
-            delete overrides.plan[slug][interval];
+            if ((overrides as any).plan?.[slug]?.[interval]) {
+                delete (overrides as any).plan[slug][interval];
+            }
         } else {
             value = parseInt(value);
             if (!overrides.plan) {
@@ -1221,12 +1225,12 @@ function SupporterOverridesEditor({
             if (!overrides.plan.meijin) {
                 overrides.plan.meijin = {};
             }
-            overrides.plan[slug][interval] = value;
+            (overrides as any).plan[slug][interval] = value;
         }
         let found = false;
         for (const _slug of ["aji", "hane", "tenuki", "meijin"]) {
             for (const _interval of ["month", "year"]) {
-                if (overrides?.plan?.[_slug]?.[_interval]) {
+                if ((overrides as any)?.plan?.[_slug]?.[_interval]) {
                     found = true;
                 }
             }
@@ -1321,13 +1325,13 @@ function SupporterOverridesEditor({
                         type="text"
                         placeholder="Monthly"
                         value={overrides.plan?.aji?.month || ""}
-                        onChange={(ev) => upprice("aji", "month", ev.target.value || undefined)}
+                        onChange={(ev) => upPrice("aji", "month", ev.target.value || undefined)}
                     />
                     <input
                         placeholder="Yearly"
                         type="text"
                         value={overrides.plan?.aji?.year || ""}
-                        onChange={(ev) => upprice("aji", "year", ev.target.value || undefined)}
+                        onChange={(ev) => upPrice("aji", "year", ev.target.value || undefined)}
                     />
                 </dd>
                 <dd>
@@ -1337,13 +1341,13 @@ function SupporterOverridesEditor({
                         type="text"
                         placeholder="Monthly"
                         value={overrides.plan?.hane?.month || ""}
-                        onChange={(ev) => upprice("hane", "month", ev.target.value || undefined)}
+                        onChange={(ev) => upPrice("hane", "month", ev.target.value || undefined)}
                     />
                     <input
                         placeholder="Yearly"
                         type="text"
                         value={overrides.plan?.hane?.year || ""}
-                        onChange={(ev) => upprice("hane", "year", ev.target.value || undefined)}
+                        onChange={(ev) => upPrice("hane", "year", ev.target.value || undefined)}
                     />
                 </dd>
                 <dd>
@@ -1353,13 +1357,13 @@ function SupporterOverridesEditor({
                         type="text"
                         placeholder="Monthly"
                         value={overrides.plan?.tenuki?.month || ""}
-                        onChange={(ev) => upprice("tenuki", "month", ev.target.value || undefined)}
+                        onChange={(ev) => upPrice("tenuki", "month", ev.target.value || undefined)}
                     />
                     <input
                         type="text"
                         placeholder="Yearly"
                         value={overrides.plan?.tenuki?.year || ""}
-                        onChange={(ev) => upprice("tenuki", "year", ev.target.value || undefined)}
+                        onChange={(ev) => upPrice("tenuki", "year", ev.target.value || undefined)}
                     />
                 </dd>
                 <dd>
@@ -1369,13 +1373,13 @@ function SupporterOverridesEditor({
                         type="text"
                         placeholder="Monthly"
                         value={overrides.plan?.meijin?.month || ""}
-                        onChange={(ev) => upprice("meijin", "month", ev.target.value || undefined)}
+                        onChange={(ev) => upPrice("meijin", "month", ev.target.value || undefined)}
                     />
                     <input
                         type="text"
                         placeholder="Yearly"
                         value={overrides.plan?.meijin?.year || ""}
-                        onChange={(ev) => upprice("meijin", "year", ev.target.value || undefined)}
+                        onChange={(ev) => upPrice("meijin", "year", ev.target.value || undefined)}
                     />
                 </dd>
                 <dt>
@@ -1399,7 +1403,7 @@ function SupporterOverridesEditor({
     );
 }
 
-function DeprecatedPlanNote({ slug }: { slug: string }): JSX.Element {
+function DeprecatedPlanNote({ slug }: { slug: string }): JSX.Element | null {
     if (slug === "aji" || slug === "hane" || slug === "tenuki" || slug === "meijin") {
         return null;
     }
@@ -1526,7 +1530,7 @@ function formatMoneyWithTrimmedZeros(currency_code: string, amount: number): str
     return ret.replace(".00", "");
 }
 
-function getCurentPlanSlug(config: Config): string {
+function getCurrentPlanSlug(config: Config): string | null {
     const max_service_level = Math.max(0, ...config.services.map((s) => s.level));
     if (max_service_level >= 20) {
         return "meijin";

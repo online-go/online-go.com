@@ -41,14 +41,14 @@ export function nominateForRengoChallenge(c: Challenge): Promise<RengoParticipan
 export function assignToTeam(
     player_id: number,
     team: string,
-    challenge,
+    challenge: Challenge,
 ): Promise<RengoParticipantsDTO> {
     const assignment =
         team === "rengo_black_team"
             ? "assign_black"
             : team === "rengo_white_team"
-            ? "assign_white"
-            : "unassign";
+              ? "assign_white"
+              : "unassign";
 
     return put(`challenges/${challenge.challenge_id}/team`, {
         [assignment]: [player_id], // back end expects an array of changes, but we only ever send one at a time.

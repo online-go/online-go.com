@@ -92,9 +92,10 @@ export function ChatDetails(props: ChatDetailsProperties): JSX.Element {
 
     const leave_text = pgettext("Leave the selected channel.", "Leave channel");
 
-    const group_url = (channelId.startsWith("group-") || null) && "/group/" + channelId.slice(6);
+    const group_url =
+        (channelId.startsWith("group-") || undefined) && "/group/" + channelId.slice(6);
     const tournament_url =
-        (channelId.startsWith("tournament-") || null) && "/tournament/" + channelId.slice(11);
+        (channelId.startsWith("tournament-") || undefined) && "/tournament/" + channelId.slice(11);
 
     return (
         <div className="ChatDetails">
@@ -170,7 +171,7 @@ export function ChatDetails(props: ChatDetailsProperties): JSX.Element {
                     </>
                 )}
                 {props.partFunc ? (
-                    <button className="xs noshadow reject" onClick={leave}>
+                    <button className="xs no-shadow reject" onClick={leave}>
                         <i className="fa fa-times" /> {leave_text}
                     </button>
                 ) : null}

@@ -25,7 +25,7 @@ interface PuzzleSettingsModalState {
 }
 
 export class PuzzleSettingsModal extends React.PureComponent<{}, PuzzleSettingsModalState> {
-    constructor(props) {
+    constructor(props: {}) {
         super(props);
         this.state = {
             randomize_transform: preferences.get("puzzle.randomize.transform"),

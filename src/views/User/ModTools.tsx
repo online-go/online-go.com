@@ -36,19 +36,21 @@ interface ModToolsProps {
     collapse_same_users?: boolean;
 }
 
-export function ModTools(props: ModToolsProps): JSX.Element {
+export function ModTools(props: ModToolsProps): JSX.Element | null {
     const [hide_moderator_controls] = usePreference("moderator.hide-profile-information");
-    const [aliases, setAliases] = React.useState([]);
+    const [aliases, setAliases] = React.useState<any[]>([]);
     const moderator_note = React.useRef<HTMLTextAreaElement>(null);
     const addModeratorNote = async () => {
-        const txt = moderator_note.current.value.trim();
+        const txt = moderator_note.current?.value.trim() ?? "";
 
         if (txt.length < 2) {
-            moderator_note.current.focus();
+            moderator_note.current?.focus();
             return;
         }
 
-        moderator_note.current.value = "";
+        if (moderator_note.current !== null) {
+            moderator_note.current.value = "";
+        }
 
         try {
             await put(`players/${props.user_id}/moderate`, {
@@ -242,6 +244,6 @@ export function ModTools(props: ModToolsProps): JSX.Element {
     );
 }
 
-function openNotes(notes) {
+function openNotes(notes: string) {
     openModal(<NotesModal notes={notes} fastDismiss />);
 }

@@ -45,13 +45,15 @@ export function OgsResizeDetector(props: ReactResizeDetector["props"]): JSX.Elem
             return;
         }
 
-        let debounce = null;
+        let debounce: ReturnType<typeof setTimeout> | null = null;
 
         const cb = () => {
             if (!debounce) {
                 debounce = setTimeout(() => {
                     debounce = null;
-                    props.onResize();
+                    if (props.onResize) {
+                        props.onResize();
+                    }
                 }, 50);
             }
         };

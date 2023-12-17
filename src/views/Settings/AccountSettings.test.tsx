@@ -21,7 +21,14 @@ const TEST_USER = {
     anonymous: false,
     id: 0,
     registration_date: "",
-    ratings: undefined,
+    ratings: {
+        version: 5,
+        overall: {
+            rating: 1500,
+            deviation: 350,
+            volatility: 0.06,
+        },
+    },
     country: "",
     professional: false,
     ranking: 0,

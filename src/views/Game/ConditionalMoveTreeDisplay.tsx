@@ -22,19 +22,22 @@ import { generateGobanHook } from "./GameHooks";
 
 interface ConditionalMoveTreeDisplayProps {
     tree: GoConditionalMove;
-    cpath: string;
+    conditional_path: string;
 }
 
-export function ConditionalMoveTreeDisplay({ tree, cpath }: ConditionalMoveTreeDisplayProps) {
-    const player_move: string = tree.move;
+export function ConditionalMoveTreeDisplay({
+    tree,
+    conditional_path,
+}: ConditionalMoveTreeDisplayProps) {
+    const player_move: string | null = tree.move;
 
     const goban = useGoban();
     const opponent_color = goban.conditional_starting_color;
     const player_color = opponent_color === "black" ? "white" : "black";
-    const selected_path = useCurrentConditionalpath(goban);
-    const player_move_selected = player_move && cpath + player_move === selected_path;
+    const selected_path = useCurrentConditionalPath(goban);
+    const player_move_selected = player_move && conditional_path + player_move === selected_path;
 
-    if (!cpath) {
+    if (!conditional_path) {
         return (
             <div className="conditional-move-tree-container">
                 {Object.keys(tree.children).map((opponent_move: string) => {
@@ -42,7 +45,7 @@ export function ConditionalMoveTreeDisplay({ tree, cpath }: ConditionalMoveTreeD
                     return (
                         <ConditionalMoveTreeDisplay
                             tree={child_tree}
-                            cpath={opponent_move}
+                            conditional_path={opponent_move}
                             key={opponent_move}
                         />
                     );
@@ -54,16 +57,23 @@ export function ConditionalMoveTreeDisplay({ tree, cpath }: ConditionalMoveTreeD
     return (
         <ul className="tree">
             <li className="move-row">
-                <MoveEntry color={opponent_color} cpath={cpath} />
-                {player_move && <MoveEntry color={player_color} cpath={cpath + player_move} />}
-                {player_move_selected && <DeleteButton cpath={cpath + player_move} />}
+                <MoveEntry color={opponent_color} conditional_path={conditional_path} />
+                {player_move && (
+                    <MoveEntry
+                        color={player_color}
+                        conditional_path={conditional_path + player_move}
+                    />
+                )}
+                {player_move_selected && (
+                    <DeleteButton conditional_path={conditional_path + player_move} />
+                )}
                 {Object.keys(tree.children).map((opponent_move: string) => {
                     const child_tree = tree.getChild(opponent_move);
-                    const child_cpath = cpath + player_move + opponent_move;
+                    const child_conditional_path = conditional_path + player_move + opponent_move;
                     return (
                         <ConditionalMoveTreeDisplay
                             tree={child_tree}
-                            cpath={child_cpath}
+                            conditional_path={child_conditional_path}
                             key={opponent_move}
                         />
                     );
@@ -75,24 +85,24 @@ export function ConditionalMoveTreeDisplay({ tree, cpath }: ConditionalMoveTreeD
 
 interface MoveEntryProps {
     color: "black" | "white" | "invalid";
-    cpath: string;
+    conditional_path: string;
 }
 
-const useCurrentConditionalpath = generateGobanHook(
-    (goban) => goban.getCurrentConditionalPath(),
+const useCurrentConditionalPath = generateGobanHook(
+    (goban) => goban?.getCurrentConditionalPath(),
     ["conditional-moves.updated"],
 );
 
-function MoveEntry({ color, cpath }: MoveEntryProps) {
+function MoveEntry({ color, conditional_path }: MoveEntryProps) {
     const goban = useGoban();
-    const mv = goban.engine.decodeMoves(cpath.slice(-2))[0];
-    const selected_cpath = useCurrentConditionalpath(goban);
-    const selected = cpath === selected_cpath;
+    const mv = goban.engine.decodeMoves(conditional_path.slice(-2))[0];
+    const selected_conditional_path = useCurrentConditionalPath(goban);
+    const selected = conditional_path === selected_conditional_path;
 
     const cb = () => {
         goban.jumpToLastOfficialMove();
-        console.log(cpath);
-        goban.followConditionalPath(cpath);
+        console.log(conditional_path);
+        goban.followConditionalPath(conditional_path);
         goban.redraw();
     };
 
@@ -108,11 +118,11 @@ function MoveEntry({ color, cpath }: MoveEntryProps) {
     );
 }
 
-function DeleteButton({ cpath }: { cpath: string }) {
+function DeleteButton({ conditional_path }: { conditional_path: string }) {
     const goban = useGoban();
     const cb = () => {
         goban.jumpToLastOfficialMove();
-        goban.deleteConditionalPath(cpath);
+        goban.deleteConditionalPath(conditional_path);
         goban.redraw();
     };
     return <i className="fa fa-times delete-move" onClick={cb} />;

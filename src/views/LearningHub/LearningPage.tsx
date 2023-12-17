@@ -26,8 +26,8 @@ import { _ } from "translate";
 
 export interface LearningPageProperties {
     title: string;
-    npages: number;
-    curpage: number;
+    nPages: number;
+    curPage: number;
     section: string;
     nextSection: string;
 }
@@ -43,7 +43,7 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
         return false;
     }
 
-    constructor(props) {
+    constructor(props: LearningPageProperties) {
         super(props);
         this._config = Object.assign(
             {
@@ -75,15 +75,15 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
         };
     }
     next = () => {
-        setSectionPageCompleted(this.props.section, this.props.curpage);
+        setSectionPageCompleted(this.props.section, this.props.curPage);
 
         this.correct_answer_triggered = false;
         this.error_triggered = false;
         this.wrong_answer_triggered = false;
 
-        if (this.props.curpage + 1 < this.props.npages) {
+        if (this.props.curPage + 1 < this.props.nPages) {
             browserHistory.push(
-                window.location.pathname.replace(/\/[0-9]+/, "") + "/" + (this.props.curpage + 1),
+                window.location.pathname.replace(/\/[0-9]+/, "") + "/" + (this.props.curPage + 1),
             );
         } else {
             browserHistory.push("/learn-to-play-go/" + this.props.nextSection);
@@ -93,7 +93,7 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
         this.correct_answer_triggered = false;
         this.error_triggered = false;
         this.wrong_answer_triggered = false;
-        this.instructional_goban.reset();
+        this.instructional_goban?.reset();
         this.forceUpdate();
     };
 
@@ -112,7 +112,7 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
             sfx.play("tutorial-fail");
         }
         if (this.complete() || this.failed()) {
-            this.instructional_goban.goban.disableStonePlacement();
+            this.instructional_goban?.goban?.disableStonePlacement();
         }
 
         this.setState({
@@ -120,7 +120,7 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
             show_next: this.complete(),
         });
     };
-    pagehref(i: number): string {
+    page_href(i: number): string {
         return window.location.pathname.replace(/\/[0-9]*$/, "") + "/" + i;
     }
 
@@ -128,13 +128,13 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
         this.correct_answer_triggered = true;
         sfx.play("tutorial-pass");
         setTimeout(this.next, 1000);
-        this.instructional_goban.goban.disableStonePlacement();
+        this.instructional_goban?.goban?.disableStonePlacement();
         this.forceUpdate();
     };
     onWrongAnswer = () => {
         this.wrong_answer_triggered = true;
         sfx.play("tutorial-fail");
-        this.instructional_goban.goban.disableStonePlacement();
+        this.instructional_goban?.goban?.disableStonePlacement();
         this.forceUpdate();
     };
     onError = () => {
@@ -159,13 +159,13 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
             wrong.push(GoMath.decodeMoves(s, width, height));
         }
 
-        const ret = {
+        const ret: any = {
             x: -1,
             y: -1,
             branches: [],
         };
 
-        function walk(cur, path, cb) {
+        function walk(cur: any, path: any, cb: (node: any) => void) {
             if (!path.length) {
                 cb(cur);
                 return;
@@ -177,7 +177,7 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
                         return;
                     }
                 }
-                const new_branch = {
+                const new_branch: any = {
                     x: path[0].x,
                     y: path[0].y,
                     branches: [],
@@ -200,7 +200,7 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
         return ret;
     }
 
-    abstract text();
+    abstract text(): string;
     abstract config(): PuzzleConfig;
     button(): any {
         return null;
@@ -212,13 +212,15 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
         return false;
     }
 
-    setGobanRef = (r) => {
+    setGobanRef = (r: InstructionalGoban) => {
         this.instructional_goban = r;
         if (this.instructional_goban) {
-            this.instructional_goban.goban.on("set-for-removal", () => {
-                this.onStoneRemoval(this.instructional_goban.goban.engine.getStoneRemovalString());
+            this.instructional_goban.goban?.on("set-for-removal", () => {
+                this.onStoneRemoval(
+                    this.instructional_goban!.goban!.engine.getStoneRemovalString(),
+                );
             });
-            window["global_goban"] = r.goban;
+            (window as any)["global_goban"] = r.goban;
         }
     };
 
@@ -228,9 +230,9 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
     }
 
     render() {
-        const links = [];
-        for (let i = 0; i < this.props.npages; ++i) {
-            if (i === this.props.curpage) {
+        const links: JSX.Element[] = [];
+        for (let i = 0; i < this.props.nPages; ++i) {
+            if (i === this.props.curPage) {
                 links.push(
                     <span key={i} onClick={this.reset} className="page active">
                         {i + 1}
@@ -238,7 +240,7 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
                 );
             } else {
                 links.push(
-                    <Link key={i} to={this.pagehref(i)} className="page">
+                    <Link key={i} to={this.page_href(i)} className="page">
                         {getSectionPageCompleted(this.props.section, i) ? (
                             <i className="fa fa-star" />
                         ) : (
@@ -310,7 +312,7 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
 }
 
 export class DummyPage extends LearningPage {
-    constructor(props) {
+    constructor(props: LearningPageProperties) {
         super(props);
     }
     static underConstruction(): boolean {

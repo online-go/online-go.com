@@ -56,14 +56,14 @@ interface RatingCalcTableState {
     p1v: string;
     p2v: string;
     handicap: string;
-    p1newrating: string[];
-    p2newrating: string[];
-    p1newdeviation: string[];
-    p2newdeviation: string[];
-    p1newvolatility: string[];
-    p2newvolatility: string[];
-    auto_black: PlayerCacheEntry;
-    auto_white: PlayerCacheEntry;
+    p1_new_rating: string[];
+    p2_new_rating: string[];
+    p1_new_deviation: string[];
+    p2_new_deviation: string[];
+    p1_new_volatility: string[];
+    p2_new_volatility: string[];
+    auto_black: PlayerCacheEntry | null;
+    auto_white: PlayerCacheEntry | null;
 }
 
 export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableState> {
@@ -77,12 +77,12 @@ export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableSt
             p1v: "",
             p2v: "",
             handicap: "0",
-            p1newrating: [],
-            p2newrating: [],
-            p1newdeviation: [],
-            p2newdeviation: [],
-            p1newvolatility: [],
-            p2newvolatility: [],
+            p1_new_rating: [],
+            p2_new_rating: [],
+            p1_new_deviation: [],
+            p2_new_deviation: [],
+            p1_new_volatility: [],
+            p2_new_volatility: [],
             auto_black: null,
             auto_white: null,
         };
@@ -122,7 +122,7 @@ export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableSt
         );
     }
 
-    setHandicap(event) {
+    setHandicap(event: React.ChangeEvent<HTMLInputElement>) {
         if (
             event.target.value !== "" &&
             !isNaN(Number(event.target.value)) &&
@@ -253,24 +253,24 @@ export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableSt
         }
 
         this.setState({
-            p1newrating: [p1win.rating.toFixed(2), p1loss.rating.toFixed(2)],
-            p2newrating: [p2loss.rating.toFixed(2), p2win.rating.toFixed(2)],
-            p1newdeviation: [p1win.deviation.toFixed(2), p1loss.deviation.toFixed(2)],
-            p2newdeviation: [p2loss.deviation.toFixed(2), p2win.deviation.toFixed(2)],
-            p1newvolatility: [p1win.volatility.toFixed(4), p1loss.volatility.toFixed(4)],
-            p2newvolatility: [p2loss.volatility.toFixed(4), p2win.volatility.toFixed(4)],
+            p1_new_rating: [p1win.rating.toFixed(2), p1loss.rating.toFixed(2)],
+            p2_new_rating: [p2loss.rating.toFixed(2), p2win.rating.toFixed(2)],
+            p1_new_deviation: [p1win.deviation.toFixed(2), p1loss.deviation.toFixed(2)],
+            p2_new_deviation: [p2loss.deviation.toFixed(2), p2win.deviation.toFixed(2)],
+            p1_new_volatility: [p1win.volatility.toFixed(4), p1loss.volatility.toFixed(4)],
+            p2_new_volatility: [p2loss.volatility.toFixed(4), p2win.volatility.toFixed(4)],
         });
     }
 
     calculated_rank_display_player(p12: number, win: boolean): String {
-        const winindex = (p12 === 1 && win) || (p12 === 2 && !win) ? 0 : 1;
+        const win_index = (p12 === 1 && win) || (p12 === 2 && !win) ? 0 : 1;
         if (
-            this.state.p1newrating.length === 0 ||
-            this.state.p2newrating.length === 0 ||
-            this.state.p1newdeviation.length === 0 ||
-            this.state.p2newdeviation.length === 0 ||
-            this.state.p1newvolatility.length === 0 ||
-            this.state.p1newdeviation.length === 0
+            this.state.p1_new_rating.length === 0 ||
+            this.state.p2_new_rating.length === 0 ||
+            this.state.p1_new_deviation.length === 0 ||
+            this.state.p2_new_deviation.length === 0 ||
+            this.state.p1_new_volatility.length === 0 ||
+            this.state.p1_new_deviation.length === 0
         ) {
             return "";
         }
@@ -280,9 +280,9 @@ export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableSt
                 getUserRating({
                     ratings: {
                         overall: {
-                            rating: Number(this.state.p1newrating[winindex]),
-                            deviation: Number(this.state.p1newdeviation[winindex]),
-                            volatility: Number(this.state.p1newvolatility[winindex]),
+                            rating: Number(this.state.p1_new_rating[win_index]),
+                            deviation: Number(this.state.p1_new_deviation[win_index]),
+                            volatility: Number(this.state.p1_new_volatility[win_index]),
                         },
                     },
                 }),
@@ -292,9 +292,9 @@ export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableSt
                 getUserRating({
                     ratings: {
                         overall: {
-                            rating: Number(this.state.p2newrating[winindex]),
-                            deviation: Number(this.state.p2newdeviation[winindex]),
-                            volatility: Number(this.state.p2newvolatility[winindex]),
+                            rating: Number(this.state.p2_new_rating[win_index]),
+                            deviation: Number(this.state.p2_new_deviation[win_index]),
+                            volatility: Number(this.state.p2_new_volatility[win_index]),
                         },
                     },
                 }),
@@ -520,23 +520,27 @@ export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableSt
                         <tr>
                             <th>{_("Rating")}</th>
                             <td className={"rating-table-divider result-won"}>
-                                {this.state.p1newrating[0] || null}
+                                {this.state.p1_new_rating[0] || null}
                             </td>
-                            <td className="result-lost">{this.state.p2newrating[0] || null}</td>
+                            <td className="result-lost">{this.state.p2_new_rating[0] || null}</td>
                         </tr>
                         <tr>
                             <th>{_("Deviation")}</th>
                             <td className={"rating-table-divider result-won"}>
-                                {this.state.p1newdeviation[0] || null}
+                                {this.state.p1_new_deviation[0] || null}
                             </td>
-                            <td className="result-lost">{this.state.p2newdeviation[0] || null}</td>
+                            <td className="result-lost">
+                                {this.state.p2_new_deviation[0] || null}
+                            </td>
                         </tr>
                         <tr>
                             <th>{_("Volatility")}</th>
                             <td className={"rating-table-divider result-won"}>
-                                {this.state.p1newvolatility[0] || null}
+                                {this.state.p1_new_volatility[0] || null}
                             </td>
-                            <td className="result-lost">{this.state.p2newvolatility[0] || null}</td>
+                            <td className="result-lost">
+                                {this.state.p2_new_volatility[0] || null}
+                            </td>
                         </tr>
                         <tr>
                             <th>{_("Rank")}</th>
@@ -556,23 +560,25 @@ export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableSt
                         <tr>
                             <th>{_("Rating")}</th>
                             <td className={"rating-table-divider result-lost"}>
-                                {this.state.p1newrating[1] || null}
+                                {this.state.p1_new_rating[1] || null}
                             </td>
-                            <td className="result-won">{this.state.p2newrating[1] || null}</td>
+                            <td className="result-won">{this.state.p2_new_rating[1] || null}</td>
                         </tr>
                         <tr>
                             <th>{_("Deviation")}</th>
                             <td className={"rating-table-divider result-lost"}>
-                                {this.state.p1newdeviation[1] || null}
+                                {this.state.p1_new_deviation[1] || null}
                             </td>
-                            <td className="result-won">{this.state.p2newdeviation[1] || null}</td>
+                            <td className="result-won">{this.state.p2_new_deviation[1] || null}</td>
                         </tr>
                         <tr>
                             <th>{_("Volatility")}</th>
                             <td className={"rating-table-divider result-lost"}>
-                                {this.state.p1newvolatility[1] || null}
+                                {this.state.p1_new_volatility[1] || null}
                             </td>
-                            <td className="result-won">{this.state.p2newvolatility[1] || null}</td>
+                            <td className="result-won">
+                                {this.state.p2_new_volatility[1] || null}
+                            </td>
                         </tr>
                         <tr>
                             <th>{_("Rank")}</th>

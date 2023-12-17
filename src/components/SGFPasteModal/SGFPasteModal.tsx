@@ -29,7 +29,7 @@ export class SGFPasteModal extends Modal<Events, SGFPasteModalProperties, any> {
     static fallbackFilename: string =
         pgettext("Fallback filename for pasted SGF data", "pasted") + ".sgf";
 
-    constructor(props) {
+    constructor(props: SGFPasteModalProperties) {
         super(props);
         this.state = {
             defaultFilename: SGFPasteModal.fallbackFilename,
@@ -38,11 +38,11 @@ export class SGFPasteModal extends Modal<Events, SGFPasteModalProperties, any> {
         };
     }
 
-    updateFilename = (ev) => {
+    updateFilename = (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
         this.setState({ filenameOverride: this.sanitizeFilename(ev.target.value) });
     };
 
-    updateData = (ev) => {
+    updateData = (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
         const data = ev.target.value;
         const filename = this.extractFilename(data);
         this.setState({ defaultFilename: this.sanitizeFilename(filename) });

@@ -61,9 +61,9 @@ interface ChatLine {
 
 interface GameChatLineProperties {
     line: ChatLine;
-    lastline: ChatLine;
-    game_id: number;
-    review_id: number;
+    last_line: ChatLine;
+    game_id?: number;
+    review_id?: number;
 }
 
 export function GameChat(props: GameChatProperties): JSX.Element {
@@ -99,7 +99,7 @@ export function GameChat(props: GameChatProperties): JSX.Element {
             }, 1);
         };
 
-        const onChat = (line) => {
+        const onChat = (line: protocol.GameChatLine) => {
             if (!(line.chat_id in chat_log_hash.current)) {
                 chat_log_hash.current[line.chat_id] = true;
                 chat_lines.current.push(line);
@@ -107,7 +107,7 @@ export function GameChat(props: GameChatProperties): JSX.Element {
             }
         };
 
-        const onChatRemove = (obj) => {
+        const onChatRemove = (obj: { chat_ids: string[] }) => {
             for (const chat_id of obj.chat_ids) {
                 for (let i = 0; i < chat_lines.current.length; ++i) {
                     if (chat_lines.current[i].chat_id === chat_id) {
@@ -149,7 +149,9 @@ export function GameChat(props: GameChatProperties): JSX.Element {
 
     React.useEffect(() => {
         const onAnonymousOverrideChange = () => {
-            const in_game_mod_channel = inGameModChannel(props.game_id || props.review_id);
+            const in_game_mod_channel = inGameModChannel(
+                (props.game_id || props.review_id) as number,
+            );
             if (in_game_mod_channel) {
                 onSelectedChatModeChange("hidden");
             } else {
@@ -168,7 +170,7 @@ export function GameChat(props: GameChatProperties): JSX.Element {
         };
     }, []);
 
-    const onKeyPress = (event: React.KeyboardEvent<HTMLElement>) => {
+    const onKeyPress = (event: React.KeyboardEvent<HTMLElement>): boolean | void => {
         if (event.key === "Enter") {
             const input = event.target as HTMLInputElement;
             if (input.className === "qc-option") {
@@ -185,6 +187,9 @@ export function GameChat(props: GameChatProperties): JSX.Element {
 
     const updateScrollPosition = () => {
         const chat_log = ref_chat_log.current;
+        if (!chat_log) {
+            return;
+        }
 
         const tf = chat_log.scrollHeight - chat_log.scrollTop - 10 < chat_log.offsetHeight;
         if (tf !== scrolled_to_bottom.current) {
@@ -221,7 +226,7 @@ export function GameChat(props: GameChatProperties): JSX.Element {
 
     requestAnimationFrame(autoscroll);
 
-    let last_line: ChatLine = null;
+    let last_line: ChatLine;
     return (
         <div className="GameChat">
             <div className={"log-player-container" + (show_player_list ? " show-player-list" : "")}>
@@ -238,7 +243,7 @@ export function GameChat(props: GameChatProperties): JSX.Element {
                                 <GameChatLine
                                     key={line.chat_id}
                                     line={line}
-                                    lastline={ll}
+                                    last_line={ll}
                                     game_id={props.game_id}
                                     review_id={props.review_id}
                                 />
@@ -278,22 +283,22 @@ export function GameChat(props: GameChatProperties): JSX.Element {
                         user.anonymous
                             ? _("Sign in to chat")
                             : !data.get("user").email_validated
-                            ? _("Chat will be enabled once your email address has been validated")
-                            : selected_chat_log === "malkovich"
-                            ? pgettext(
-                                  "Malkovich logs are only visible after the game has ended",
-                                  "Visible after the game",
-                              )
-                            : selected_chat_log === "personal"
-                            ? _("Visible only to you")
-                            : selected_chat_log === "moderator"
-                            ? "Message players as a moderator"
-                            : selected_chat_log === "hidden"
-                            ? "Visible only to moderators"
-                            : pgettext(
-                                  "This is the placeholder text for the chat input field in games, chat channels, and private messages",
-                                  interpolate("Message {{who}}", { who: "..." }),
-                              )
+                              ? _("Chat will be enabled once your email address has been validated")
+                              : selected_chat_log === "malkovich"
+                                ? pgettext(
+                                      "Malkovich logs are only visible after the game has ended",
+                                      "Visible after the game",
+                                  )
+                                : selected_chat_log === "personal"
+                                  ? _("Visible only to you")
+                                  : selected_chat_log === "moderator"
+                                    ? "Message players as a moderator"
+                                    : selected_chat_log === "hidden"
+                                      ? "Visible only to moderators"
+                                      : pgettext(
+                                            "This is the placeholder text for the chat input field in games, chat channels, and private messages",
+                                            interpolate("Message {{who}}", { who: "..." }),
+                                        )
                     }
                     onKeyPress={onKeyPress}
                     onFocus={() => setShowQuickChat(false)}
@@ -341,10 +346,10 @@ export function QuickChat(props: QuickChatProperties): JSX.Element {
         ),
     );
 
-    const editable_messages = React.useRef<HTMLLIElement[]>(null);
+    const editable_messages = React.useRef<HTMLLIElement[] | null>(null);
 
     const saveEdit = () => {
-        editable_messages.current.map((li, index) => {
+        editable_messages.current?.map((li, index) => {
             phrases.current[index] = li.innerText.trim();
         });
         data.set("quick-chat.phrases", phrases.current);
@@ -381,7 +386,9 @@ export function QuickChat(props: QuickChatProperties): JSX.Element {
                 editing
                     ? (input) => {
                           editable_messages.current = index === 0 ? [] : editable_messages.current;
-                          editable_messages.current.push(input);
+                          if (input) {
+                              editable_messages.current!.push(input);
+                          }
                       }
                     : null
             }
@@ -430,23 +437,23 @@ export function QuickChat(props: QuickChatProperties): JSX.Element {
 
 export function GameChatLine(props: GameChatLineProperties): JSX.Element {
     const line = props.line;
-    const lastline = props.lastline;
+    const last_line = props.last_line;
     const ts = line.date ? new Date(line.date * 1000) : null;
     let third_person = "";
     if (typeof line.body === "string" && line.body.substr(0, 4) === "/me ") {
         third_person = line.body.substr(0, 4) === "/me " ? "third-person" : "";
         line.body = line.body.substr(4);
     }
-    let show_date: JSX.Element = null;
-    let move_number: JSX.Element = null;
+    let show_date: JSX.Element | null = null;
+    let move_number: JSX.Element | null = null;
     const goban = useGoban();
 
-    if (!lastline || (line.date && lastline.date)) {
+    if (!last_line || (line.date && last_line.date)) {
         if (line.date) {
             if (
-                !lastline ||
+                !last_line ||
                 moment(new Date(line.date * 1000)).format("YYYY-MM-DD") !==
-                    moment(new Date(lastline.date * 1000)).format("YYYY-MM-DD")
+                    moment(new Date(last_line.date * 1000)).format("YYYY-MM-DD")
             ) {
                 show_date = (
                     <div className="date">{moment(new Date(line.date * 1000)).format("LL")}</div>
@@ -456,10 +463,10 @@ export function GameChatLine(props: GameChatLineProperties): JSX.Element {
     }
 
     if (
-        !lastline ||
-        line.move_number !== lastline.move_number ||
-        line.from !== lastline.from ||
-        line.moves !== lastline.moves
+        !last_line ||
+        line.move_number !== last_line.move_number ||
+        line.from !== last_line.from ||
+        line.moves !== last_line.moves
     ) {
         const jumpToMove = () => {
             game_control.emit("stopEstimatingScore");
@@ -480,12 +487,12 @@ export function GameChatLine(props: GameChatLineProperties): JSX.Element {
                 goban.emit("update");
             }
 
-            if ("from" in line) {
+            if ((line.from ?? -1) >= 0 && line.moves) {
                 if (goban.isAnalysisDisabled()) {
                     goban.setMode("analyze");
                 }
 
-                goban.engine.followPath(line.from, line.moves);
+                goban.engine.followPath(line.from as number, line.moves);
                 goban.syncReviewMove();
                 goban.drawPenMarks(goban.engine.cur_move.pen_marks);
                 goban.redraw();
@@ -495,7 +502,7 @@ export function GameChatLine(props: GameChatLineProperties): JSX.Element {
         };
 
         // It's unclear to me if we still need this "move_number" in (line as any) check,
-        // our typing says that field should always exist so the second case isn't necsesary,
+        // our typing says that field should always exist so the second case isn't necessary,
         // but I'm not sure why we had it to begin with then, so I'm leaving it in place
         // for the time being. - anoek 2023-01-02
         move_number = (
@@ -504,8 +511,8 @@ export function GameChatLine(props: GameChatLineProperties): JSX.Element {
                 {"move_number" in (line as any)
                     ? line.move_number
                     : "moves" in line
-                    ? line.from + (line.moves.length ? " + " + line.moves.length / 2 : "")
-                    : ""}
+                      ? line.from + (line.moves?.length ? " + " + line.moves.length / 2 : "")
+                      : ""}
             </LineText>
         );
     }
@@ -557,9 +564,9 @@ function parsePosition(position: string, goban: GobanCore) {
     return { i: i, j: j };
 }
 
-let orig_move: MoveTree = null;
-let stashed_pen_marks = null; //goban.pen_marks;
-let orig_marks: unknown[] = null;
+let orig_move: MoveTree | null = null;
+let stashed_pen_marks: any = null; //goban.pen_marks;
+let orig_marks: unknown[] | null = null;
 
 function MarkupChatLine({ line }: { line: ChatLine }): JSX.Element {
     const body = line.body;
@@ -638,7 +645,7 @@ function MarkupChatLine({ line }: { line: ChatLine }): JSX.Element {
                             delete game_control.onPushAnalysisLeft;
                             goban.engine.jumpTo(orig_move);
                             (orig_move as any).marks = orig_marks;
-                            goban.pen_marks = stashed_pen_marks;
+                            goban.pen_marks = stashed_pen_marks as any;
                             if (goban.pen_marks.length === 0) {
                                 goban.disablePen();
                             }
@@ -652,7 +659,7 @@ function MarkupChatLine({ line }: { line: ChatLine }): JSX.Element {
 
                         const turn =
                             "branch_move" in body
-                                ? body.branch_move - 1
+                                ? (body.branch_move ?? -1) - 1
                                 : body.from; /* branch_move exists in old games, and was +1 from our current counting */
                         const moves = body.moves;
 
@@ -663,14 +670,16 @@ function MarkupChatLine({ line }: { line: ChatLine }): JSX.Element {
                         } else {
                             orig_marks = null;
                         }
-                        goban.engine.followPath(parseInt(turn as any), moves);
+                        if (moves) {
+                            goban.engine.followPath(parseInt(turn as any), moves);
+                        }
 
                         if (body.marks) {
                             goban.setMarks(body.marks);
                         }
                         stashed_pen_marks = goban.pen_marks;
                         if (body.pen_marks) {
-                            goban.pen_marks = [].concat(body.pen_marks);
+                            goban.pen_marks = ([] as any[]).concat(body.pen_marks);
                         } else {
                             goban.pen_marks = [];
                         }

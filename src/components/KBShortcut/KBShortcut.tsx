@@ -51,7 +51,7 @@ export function KBShortcut({ shortcut, action, priority }: KBProps) {
     return null;
 }
 
-const keymap = {
+const key_map = {
     27: "esc",
     9: "tab",
     8: "del",
@@ -135,10 +135,10 @@ $(() => {
     $(document).on("keydown", (e) => {
         try {
             if (
-                document.activeElement.tagName === "INPUT" ||
-                document.activeElement.tagName === "TEXTAREA" ||
-                document.activeElement.tagName === "SELECT" ||
-                document.activeElement.className === "qc-option"
+                document.activeElement?.tagName === "INPUT" ||
+                document.activeElement?.tagName === "TEXTAREA" ||
+                document.activeElement?.tagName === "SELECT" ||
+                document.activeElement?.className === "qc-option"
             ) {
                 if (!(e.keyCode in input_enabled_keys)) {
                     return true;
@@ -163,8 +163,8 @@ $(() => {
             shortcut += "meta-";
         }
 
-        if (e.keyCode in keymap) {
-            shortcut += keymap[e.keyCode];
+        if (e.keyCode in key_map) {
+            shortcut += key_map[e.keyCode as keyof typeof key_map];
         } else {
             shortcut += String.fromCharCode(e.keyCode);
         }

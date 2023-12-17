@@ -72,36 +72,43 @@ const secondary_charts_height = chart_height - margin2.top - margin2.bottom;
 const show_hovered_game_delay = 250; // milliseconds till game info of hovered data point is updated
 // fast enough to not feel like a wait, while limiting rate
 
-const pie_restore_delay = 1500; // long enough to go click on the minigoban if you want to, not so long as to come as a suprise later.
+const pie_restore_delay = 1500; // long enough to go click on the minigoban if you want to, not so long as to come as a surprise later.
 
 const format_date = (d: Date) => moment(d).format("ll");
 
 export class RatingsChartByGame extends React.Component<RatingsChartProperties, RatingsChartState> {
     container = React.createRef<HTMLDivElement>();
-    chart_div;
-    svg;
-    clip;
-    resize_debounce;
-    rating_graph; // The main graph
-    subselect_graph; // The secondary graph, where a slice of the data can be selected to display on the main graph
 
-    legend;
+    chart_div!: HTMLDivElement;
+    svg!: d3.Selection<SVGSVGElement, unknown, null, undefined>;
+    clip!: d3.Selection<SVGRectElement, unknown, null, undefined>;
+    resize_debounce: ReturnType<typeof setTimeout> | undefined;
+    rating_graph!: d3.Selection<SVGGElement, unknown, null, undefined>; // The main timeline graph
+    timeline_graph!: d3.Selection<SVGGElement, unknown, null, undefined>; // The secondary graph, where a slice of timeline can be selected to display on the main graph
+    legend!: d3.Selection<SVGGElement, unknown, null, undefined>;
+    dateLegend!: d3.Selection<SVGGElement, unknown, null, undefined>;
+    dateLegendBackground!: d3.Selection<SVGRectElement, unknown, null, undefined>;
 
-    dateLegend; //  We use this to tell them what date was associated with the game they moused over
-    dateLegendBackground;
-    dateLegendText;
-    subselect_extents: number[];
-    range_label;
-    legend_label;
+    dateLegendText!: d3.Selection<SVGTextElement, unknown, null, undefined>;
+    range_label!: d3.Selection<SVGTextElement, unknown, null, undefined>;
+    legend_label!: d3.Selection<SVGTextElement, unknown, null, undefined>;
 
-    win_loss_aggregate;
+    win_loss_aggregate?: {
+        weak_wins: number;
+        strong_wins: number;
+        weak_losses: number;
+        strong_losses: number;
+    };
 
-    game_entries: Array<RatingEntry>;
+    subselect_graph!: d3.Selection<SVGGElement, unknown, null, undefined>; // The secondary graph, where a slice of the data can be selected to display on the main graph
+    subselect_extents!: number[];
+
+    game_entries!: Array<RatingEntry>;
 
     destroyed = false;
 
-    show_pie;
-    win_loss_pie;
+    show_pie: boolean = true;
+    win_loss_pie!: d3.Selection<SVGGElement, unknown, null, undefined>;
 
     ratings_x = d3.scaleLinear();
     ratings_y = d3.scaleLinear();
@@ -139,39 +146,39 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
         .y0(secondary_charts_height)
         .y1((d: RatingEntry) => this.subselect_y(humble_rating(d.rating, d.deviation)));
 
-    deviation_chart;
-    rating_chart;
+    deviation_chart!: d3.Selection<SVGPathElement, unknown, null, undefined>;
+    rating_chart!: d3.Selection<SVGPathElement, unknown, null, undefined>;
+    x_axis_date_labels!: d3.Selection<SVGGElement, unknown, null, undefined>;
+    y_axis_rank_labels!: d3.Selection<SVGGElement, unknown, null, undefined>;
+    y_axis_rating_labels!: d3.Selection<SVGGElement, unknown, null, undefined>;
+    helper!: d3.Selection<SVGGElement, unknown, null, undefined>;
+    helperText!: d3.Selection<SVGTextElement, unknown, null, undefined>;
+    ratingTooltip!: d3.Selection<SVGCircleElement, unknown, null, undefined>;
+    mouseArea!: d3.Selection<SVGRectElement, unknown, null, undefined>;
+    //verticalCrosshairLine;
+    horizontalCrosshairLine!: d3.Selection<SVGLineElement, unknown, null, undefined>;
+    timeline_chart!: d3.Selection<SVGPathElement, unknown, null, undefined>;
+    timeline_axis_labels!: d3.Selection<SVGGElement, unknown, null, undefined>;
+    brush!: d3.BrushBehavior<unknown>;
+    width: number = 0; // whole width of this element
+    graph_width: number = 0; // width of the part where the graph is drawn
+    pie_width: number = 0; // width of the area for the pie chart
+    height: number = 0;
 
-    x_axis_date_labels;
-    y_axis_rank_labels;
-    y_axis_rating_labels;
-    helper;
-    helperText;
-    ratingTooltip;
-    mouseArea;
+    subselect_chart!: d3.Selection<SVGPathElement, unknown, null, undefined>;
+    subselect_axis_labels!: d3.Selection<SVGGElement, unknown, null, undefined>;
 
-    horizontalCrosshairLine;
+    hover_timer?: ReturnType<typeof setTimeout>; // Timer for hovering over data points to see their game.
 
-    subselect_chart;
-    subselect_axis_labels;
-
-    brush;
-    width; // whole width of this element.
-    graph_width; // width of the part where the graph is drawn
-    pie_width; // width of the area for the pie chart
-    height; // of what?
-
-    hover_timer; // Timer for hovering over datapoints to see their game.
-
-    constructor(props) {
+    constructor(props: RatingsChartProperties) {
         super(props);
         this.state = {
             loading: true,
             nodata: false,
             subselect_extents: [],
-            hovered_game_id: null,
+            hovered_game_id: undefined,
         };
-        this.chart_div = $("<div>")[0];
+        this.chart_div = $("<div>")[0] as HTMLDivElement;
     }
     componentDidMount() {
         this.initialize();
@@ -181,7 +188,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
             this.y_axis_rank_labels.style("display", "none");
         }
     }
-    componentDidUpdate(prevProps) {
+    componentDidUpdate(prevProps: RatingsChartProperties) {
         if (
             this.props.playerId !== prevProps.playerId ||
             this.props.speed !== prevProps.speed ||
@@ -201,7 +208,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
         this.deinitialize();
         window.clearTimeout(this.hover_timer);
     }
-    shouldComponentUpdate(nextProps, nextState) {
+    shouldComponentUpdate(nextProps: RatingsChartProperties, nextState: RatingsChartState) {
         if (
             this.props.playerId !== nextProps.playerId ||
             this.props.speed !== nextProps.speed ||
@@ -268,7 +275,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
 
     initialize() {
         const self = this;
-        this.hover_timer = null;
+        this.hover_timer = undefined;
 
         this.destroyed = false;
         this.setRanges();
@@ -276,8 +283,8 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
         const width = this.graph_width;
         const height = this.height;
 
-        this.rank_axis.tickFormat((rating: number) => {
-            const rank = Math.round(rating_to_rank(rating));
+        this.rank_axis.tickFormat((rating: d3.NumberValue) => {
+            const rank = Math.round(rating_to_rank(rating as number));
             if (!is_rank_bounded(rank)) {
                 return rankString(rank);
             }
@@ -430,7 +437,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
 
                 // get rid of mouse-hover effects
                 window.clearTimeout(this.hover_timer);
-                self.hover_timer = window.setTimeout(this.restorePie.bind(self), pie_restore_delay);
+                self.hover_timer = setTimeout(this.restorePie.bind(self), pie_restore_delay);
             })
             .on("mousemove", function (event) {
                 // 'this' is the mouse area, in this context
@@ -492,10 +499,10 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
                 );
 
                 if (self.hover_timer) {
-                    window.clearTimeout(self.hover_timer);
+                    clearTimeout(self.hover_timer);
                 }
 
-                self.hover_timer = window.setTimeout(
+                self.hover_timer = setTimeout(
                     self.updateHoveredGame,
                     show_hovered_game_delay,
                     d.game_id,
@@ -527,7 +534,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
         this.destroyed = true;
         if (this.resize_debounce) {
             clearTimeout(this.resize_debounce);
-            this.resize_debounce = null;
+            this.resize_debounce = undefined;
         }
         this.svg.remove();
     }
@@ -542,7 +549,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
     }
 
     restorePie() {
-        this.setState({ hovered_game_id: null });
+        this.setState({ hovered_game_id: undefined });
         if (this.show_pie) {
             this.plotWinLossPie();
         }
@@ -552,7 +559,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
     chart_sizes() {
         const width = Math.max(
             chart_min_width,
-            $(this.container.current).width() - margin.left - margin.right,
+            $(this.container.current as any).width() - margin.left - margin.right,
         );
         return {
             width: width,
@@ -567,7 +574,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
 
         if (this.resize_debounce) {
             clearTimeout(this.resize_debounce);
-            this.resize_debounce = null;
+            this.resize_debounce = undefined;
         }
 
         if (!no_debounce) {
@@ -643,6 +650,9 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
         }
 
         const agg = this.win_loss_aggregate;
+        if (!agg) {
+            return;
+        }
 
         /* with well spread data, the order here places wins on top, and stronger opponent on right of pie */
         const pie_data = [
@@ -688,7 +698,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
             },
         ];
 
-        const pie_colour_class = ["strong-wins", "strong-losses", "weak-losses", "weak-wins"];
+        const pie_color_class = ["strong-wins", "strong-losses", "weak-losses", "weak-wins"];
 
         const pie_radius = Math.min(this.pie_width, this.height) / 3.0 - 15; // just looks about right.
 
@@ -708,8 +718,8 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
             .data(pie_values(pie_data as any))
             .enter()
             .append("path")
-            .attr("d", arc)
-            .attr("class", (d, i) => "pie " + pie_colour_class[i]);
+            .attr("d", arc as any)
+            .attr("class", (d, i) => "pie " + pie_color_class[i]);
 
         /* The legend with values */
 
@@ -744,7 +754,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
         legend_order.forEach((legend_item, i) => {
             this.win_loss_pie
                 .append("rect")
-                .attr("class", pie_colour_class[legend_item])
+                .attr("class", pie_color_class[legend_item])
                 .attr("x", legend_xoffset)
                 .attr("y", legend_yoffset + i * 20)
                 .attr("width", 15)
@@ -759,7 +769,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
 
     /* Callback function for data retrieval, which plots the retrieved data */
     //loadDataAndPlot = (err, data) => {
-    loadDataAndPlot = (data) => {
+    loadDataAndPlot = (data: RatingEntry[]) => {
         /* There's always a starting 1500 rating entry at least, so if that's all there
          * is let's just zero out the array and show a "No data" text */
         if (!data || data.length === 1) {
@@ -845,12 +855,9 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
         }
     };
 
-    onSubselectBrush = (event) => {
-        this.subselect_extents = (event && event.selection) || this.subselect_x.range();
-        this.subselect_extents = this.subselect_extents.map(
-            this.subselect_x.invert,
-            this.subselect_x,
-        );
+    onSubselectBrush = (event: d3.D3BrushEvent<any> | null) => {
+        const tmp = (event && event.selection) || this.subselect_x.range();
+        this.subselect_extents = tmp.map(this.subselect_x.invert as any, this.subselect_x);
         const range = this.subselect_extents[1] - this.subselect_extents[0];
 
         this.setState({ subselect_extents: this.subselect_extents.slice() });
@@ -896,7 +903,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
 
         this.rating_chart.attr("d", this.rating_line as any);
         this.deviation_chart.attr("d", this.deviation_area as any);
-        this.rating_graph.select(".x.axis").call(this.selected_axis);
+        this.rating_graph.select(".x.axis").call(this.selected_axis as any);
         this.y_axis_rating_labels.call(this.rating_axis);
         this.y_axis_rank_labels.call(this.rank_axis);
 
@@ -912,7 +919,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
         this.computeWinLossNumbers();
 
         if (!this.state.loading && this.show_pie) {
-            this.setState({ hovered_game_id: null }); // make sure hovered game is not lingering while the are doing subselect
+            this.setState({ hovered_game_id: undefined }); // make sure hovered game is not lingering while the are doing subselect
             this.plotWinLossPie();
         }
     };
@@ -967,7 +974,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
             subselect_extents[1] = this.game_entries.length;
         }
 
-        let agg = null;
+        let agg: RatingEntry | null = null;
         const start_game = subselect_extents[0];
         const end_game = subselect_extents[1];
 
@@ -985,15 +992,15 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
         }
 
         if (agg === null) {
-            agg = {
+            this.win_loss_aggregate = {
                 weak_wins: 0,
                 strong_wins: 0,
                 weak_losses: 0,
                 strong_losses: 0,
             };
+        } else {
+            this.win_loss_aggregate = agg;
         }
-
-        this.win_loss_aggregate = agg;
     }
 
     renderWinLossNumbersAsText() {

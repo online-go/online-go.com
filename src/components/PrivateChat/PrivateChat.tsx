@@ -33,8 +33,8 @@ import { alert } from "swal_config";
 
 let last_id = 0;
 
-const private_chats = [];
-const instances = {};
+const private_chats: any[] = [];
+const instances: { [k: string]: any } = {};
 
 const date_format: Intl.DateTimeFormatOptions = {
     month: "long",
@@ -45,30 +45,30 @@ const date_format: Intl.DateTimeFormatOptions = {
 class PrivateChat {
     id: number = ++last_id;
     user_id: number;
-    dom = null;
-    lines = [];
-    received_messages = {};
-    last_uid;
+    dom!: JQuery;
+    lines: any[] = [];
+    received_messages: { [k: string]: any } = {};
+    last_uid?: string;
     last_date = new Date(Date.now() - 864e5).toLocaleDateString(undefined, date_format);
     floating = false;
     superchat_enabled = false;
-    banner;
-    body;
-    input;
-    superchat_modal;
-    player_is_ignored;
-    pc;
-    opening;
-    player_dom;
+    banner?: JQuery;
+    body?: JQuery | null;
+    input?: JQuery;
+    superchat_modal?: JQuery | null;
+    player_is_ignored = false;
+    pc?: PrivateChat;
+    opening: boolean = false;
+    player_dom: JQuery;
     player: PlayerCacheEntry;
 
     /* for generating uids */
-    chatbase = Math.floor(Math.random() * 100000).toString(36);
-    chatnum = 0;
+    chat_base = Math.floor(Math.random() * 100000).toString(36);
+    chat_num = 0;
 
     display_state = "closed";
 
-    constructor(user_id, username) {
+    constructor(user_id: number, username: string) {
         this.user_id = user_id;
         socket.send("chat/pm/load", { player_id: user_id });
 
@@ -100,9 +100,9 @@ class PrivateChat {
                 .fetch(this.user_id, ["username", "ui_class"])
                 .then((player) => {
                     this.player = player;
-                    this.player_dom.text(unicodeFilter(player.username));
-                    this.player_dom.addClass(player.ui_class);
-                    if (player.ui_class.match(/moderator/)) {
+                    this.player_dom.text(unicodeFilter(player.username || ""));
+                    this.player_dom.addClass(player.ui_class ?? "");
+                    if (player.ui_class?.match(/moderator/)) {
                         // inter mod chat? don't open
                         if (!data.get("user").is_moderator) {
                             this.open();
@@ -122,7 +122,7 @@ class PrivateChat {
         }
     }
 
-    open(send_itc?) {
+    open(send_itc?: boolean) {
         if (this.display_state === "open") {
             return;
         }
@@ -147,19 +147,19 @@ class PrivateChat {
                     this.superchat_enabled = !this.superchat_enabled;
                     if (this.superchat_enabled) {
                         superchat.addClass("enabled");
-                        this.dom.addClass("superchat");
+                        this.dom?.addClass("superchat");
 
                         socket.send("chat/pm/superchat", {
                             player_id: this.user_id,
-                            username: this.player.username,
+                            username: this.player.username || "<error>",
                             enable: true,
                         });
                     } else {
                         superchat.removeClass("enabled");
-                        this.dom.removeClass("superchat");
+                        this.dom?.removeClass("superchat");
                         socket.send("chat/pm/superchat", {
                             player_id: this.user_id,
-                            username: this.player.username,
+                            username: this.player.username || "<error>",
                             enable: false,
                         });
                     }
@@ -205,7 +205,7 @@ class PrivateChat {
                             "/user/view/" +
                                 this.user_id +
                                 "/" +
-                                encodeURIComponent(unicodeFilter(this.player.username)),
+                                encodeURIComponent(unicodeFilter(this.player.username || "")),
                             "_blank",
                         );
                     }),
@@ -229,17 +229,21 @@ class PrivateChat {
         this.dom.append(title);
 
         const handle = title;
-        const start_drag = (ev) => {
-            if (!$(ev.target).hasClass("title") && !$(ev.target).hasClass("user")) {
+        const start_drag = (ev: MouseEvent) => {
+            if (!$(ev.target as any).hasClass("title") && !$(ev.target as any).hasClass("user")) {
                 return;
             }
 
             const body = $("body");
 
+            if (!this.dom) {
+                return;
+            }
+
             body.append(this.dom); /* brings the chat to the front of other chats */
             const offset = this.dom.offset();
-            let ox = offset.left;
-            let oy = offset.top;
+            let ox = offset?.left || 0;
+            let oy = offset?.top || 0;
             const sx = ev.clientX;
             const sy = ev.clientY;
             let lx = sx;
@@ -249,7 +253,7 @@ class PrivateChat {
             let last_rox = 0;
             let last_roy = 0;
 
-            const move = (ev) => {
+            const move = (ev: MouseEvent) => {
                 const cx = ev.clientX;
                 const cy = ev.clientY;
                 if (moving || Math.abs(cx - lx) + Math.abs(cy - ly) > 5) {
@@ -268,8 +272,10 @@ class PrivateChat {
                     if (last_rox !== rox || last_roy !== roy) {
                         last_rox = rox;
                         last_roy = roy;
-                        this.dom.css({ right: "auto", bottom: "auto", left: rox, top: roy });
-                        this.body[0].scrollTop = this.body[0].scrollHeight;
+                        this.dom?.css({ right: "auto", bottom: "auto", left: rox, top: roy });
+                        if (this.body) {
+                            this.body[0].scrollTop = this.body[0].scrollHeight;
+                        }
                     }
                 }
 
@@ -278,24 +284,24 @@ class PrivateChat {
 
             const release = () => {
                 //handle.off('mousedown touchstart', start_drag);
-                body.off("mousemove touchmove", move);
+                body.off("mousemove touchmove", move as any);
                 body.off("mouseup touchend", release);
 
                 return false;
             };
             body.on("mouseup touchend", release);
-            body.on("mousemove touchmove", move);
+            body.on("mousemove touchmove", move as any);
 
             return true;
         };
 
-        handle.on("mousedown touchstart", start_drag);
+        handle.on("mousedown touchstart", start_drag as any);
 
         const raise_to_top = () => {
             const body = $("body");
             if (body[0].childNodes[body[0].childNodes.length - 1] !== this.dom[0]) {
                 body.append(this.dom); /* brings the chat to the front of other chats */
-                this.body[0].scrollTop = this.body[0].scrollHeight;
+                this.body![0].scrollTop = this.body![0].scrollHeight;
             }
         };
 
@@ -313,10 +319,10 @@ class PrivateChat {
 
         const input = (this.input = $("<input>")
             .attr("type", "text")
-            .keypress((ev) => {
+            .keypress((ev): boolean | void => {
                 if (
                     !data.get("user").email_validated &&
-                    this.player.ui_class.indexOf("moderator") < 0 &&
+                    (this.player.ui_class?.indexOf("moderator") || 0) < 0 &&
                     this.lines.length === 0
                 ) {
                     return;
@@ -350,7 +356,7 @@ class PrivateChat {
         }
     }
     updateModeratorBanner() {
-        if (this.player.ui_class.match(/moderator/)) {
+        if (this.player.ui_class?.match(/moderator/)) {
             // surely would be better to use player.is_moderator, but not available!
             if (this.banner) {
                 this.banner.removeClass("banner-inactive");
@@ -375,7 +381,7 @@ class PrivateChat {
         }
         if (
             !data.get("user").email_validated &&
-            this.player.ui_class.indexOf("moderator") < 0 &&
+            (this.player.ui_class?.indexOf("moderator") || 0) < 0 &&
             this.lines.length === 0
         ) {
             this.input.attr(
@@ -399,7 +405,7 @@ class PrivateChat {
         }
     }
 
-    minimize(send_itc?) {
+    minimize(send_itc?: boolean) {
         if (this.superchat_enabled) {
             return;
         }
@@ -434,7 +440,7 @@ class PrivateChat {
                         "/user/view/" +
                             this.user_id +
                             "/" +
-                            encodeURIComponent(this.player.username),
+                            encodeURIComponent(this.player.username || ""),
                         "_blank",
                     );
                 }),
@@ -466,7 +472,7 @@ class PrivateChat {
             });
         }
     }
-    close(send_itc, dont_send_pm_close?) {
+    close(send_itc: boolean, dont_send_pm_close?: boolean) {
         this.display_state = "closed";
         for (let i = 0; i < private_chats.length; ++i) {
             if (private_chats[i].id === this.id) {
@@ -478,7 +484,7 @@ class PrivateChat {
         if (this.dom) {
             this.dom.remove();
         }
-        this.dom = null;
+        this.dom = null as any;
         this.body = null;
         update_chat_layout();
         if (send_itc) {
@@ -492,7 +498,7 @@ class PrivateChat {
             socket.send("chat/pm/close", { player_id: this.user_id });
         }
     }
-    addChat(from, txt, user_id, timestamp) {
+    addChat(from: string, txt: string, user_id: number, timestamp: number) {
         from = unicodeFilter(from);
 
         const line = $("<div>").addClass("chat-line");
@@ -526,7 +532,7 @@ class PrivateChat {
         } else {
             line.append($("<span>").addClass("username").text(from)).append("<span>: </span>");
         }
-        line.append($("<span>").html(chat_markup(profanity_filter(txt))));
+        line.append($("<span>").html(chat_markup(profanity_filter(txt)) || ""));
 
         this.lines.push(line);
         if (this.body) {
@@ -546,7 +552,7 @@ class PrivateChat {
         this.updateInputPlaceholder();
         this.updateModeratorBanner();
     }
-    addSystem(message) {
+    addSystem(message: { message: string }) {
         const line = $("<div>").addClass("chat-line system");
         line.text(message.message);
         this.lines.push(line);
@@ -581,28 +587,28 @@ class PrivateChat {
             reported_review_id: 0,
             report_type: "harassment",
             reported_conversation: {
-                username: this.player.username,
+                username: this.player.username || "<error>",
                 content: this.getConversation(),
             },
         });
     };
 
-    hilight() {
+    highlight() {
         if (this.dom) {
             this.dom.addClass("highlighted");
         }
     }
-    removeHilight() {
+    removeHighlight() {
         if (this.dom) {
             this.dom.removeClass("highlighted");
         }
     }
-    handleChat(line) {
+    handleChat(line: any) {
         if (!this.user_id) {
             // system message
             this.open();
         }
-        if (this.player.ui_class.match(/moderator/)) {
+        if (this.player.ui_class?.match(/moderator/)) {
             // Open the chat window if a moderator is messaging (unless we are a moderator ourselves)
             if (!data.get("user").is_moderator) {
                 this.open();
@@ -633,11 +639,11 @@ class PrivateChat {
                 //setTimeout(()=>{
                 //    if (this.opening) {
                 this.minimize();
-                this.hilight();
+                this.highlight();
                 //    }
                 //}, 100);
             } else if (this.display_state === "minimized") {
-                this.hilight();
+                this.highlight();
             }
             if (!player_is_ignored(line.from.id)) {
                 emitNotification(
@@ -653,10 +659,10 @@ class PrivateChat {
         this.last_uid = line.message.i + " " + line.message.t;
 
         if (this.last_uid === data.get(`pm.read-${this.user_id}`, "-")) {
-            this.removeHilight();
+            this.removeHighlight();
         }
     }
-    sendChat(msg, as_system?: true) {
+    sendChat(msg: any, as_system?: true) {
         if (data.get("appeals.banned_user_id")) {
             void alert.fire(_("Your account is suspended - you cannot send messages."));
             return;
@@ -672,8 +678,8 @@ class PrivateChat {
                 "chat/pm",
                 {
                     player_id: this.user_id,
-                    username: this.player.username,
-                    uid: this.chatbase + "." + (++this.chatnum).toString(36),
+                    username: this.player.username || "<error>",
+                    uid: this.chat_base + "." + (++this.chat_num).toString(36),
                     message: line,
                     as_system,
                 },
@@ -704,7 +710,7 @@ class PrivateChat {
             update_chat_layout();
         }
     }
-    superchat(enable) {
+    superchat(enable: boolean) {
         this.superchat_enabled = enable;
         if (enable) {
             this.open();
@@ -718,8 +724,8 @@ class PrivateChat {
                         return;
                     }
 
-                    if (!this.superchat_modal[0].parentNode) {
-                        $("body").append(this.superchat_modal);
+                    if (!this.superchat_modal![0].parentNode) {
+                        $("body").append(this.superchat_modal as any);
                     }
                 }, 100);
             }
@@ -743,7 +749,7 @@ function update_chat_layout() {
         max_width = "100vw";
     }
 
-    const docked_chats = [];
+    const docked_chats: any[] = [];
     for (let i = 0; i < private_chats.length; ++i) {
         if (!private_chats[i].floating) {
             docked_chats.push(private_chats[i]);
@@ -761,12 +767,12 @@ function update_chat_layout() {
     }
 }
 
-export function getPrivateChat(user_id, username?): PrivateChat {
+export function getPrivateChat(user_id: number, username?: string): PrivateChat {
     if (user_id in instances) {
         return instances[user_id];
     }
 
-    return (instances[user_id] = new PrivateChat(user_id, username));
+    return (instances[user_id] = new PrivateChat(user_id, username ?? "<unknown>"));
 }
 socket.on("private-message", (line) => {
     let pc;
@@ -819,7 +825,7 @@ ITC.register("private-chat-close", (data) => {
         pc.close(false);
     }
 });
-function chat_markup(body) {
+function chat_markup(body: string): string | undefined {
     if (typeof body === "string") {
         let ret = $("<div>").text(body).html();
         // Some link urls can have an @-sign in. Be careful not to cause the link_matcher
@@ -845,11 +851,9 @@ function chat_markup(body) {
         ret = ret.replace(player_matcher, "<a target='_blank' href='/user/view/$2'>$1</a>");
         const group_matcher = /(#group-([0-9]+))/gi;
         ret = ret.replace(group_matcher, "<a target='_blank' href='/group/$2'>$1</a>");
-        // try to migigate tsumegodojo spam
-        const tsumegodojo_matcher = /(tsumegodojo)/gi;
-        ret = ret.replace(tsumegodojo_matcher, "tsumegododo");
         return ret;
     } else {
         console.log("Attempted to markup non-text object: ", body);
     }
+    return;
 }

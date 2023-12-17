@@ -20,7 +20,7 @@ import { usePreference } from "preferences";
 import { report_categories } from "Report";
 import { Toggle } from "Toggle";
 
-const categories = [].concat(report_categories).concat([
+const categories = ([] as any[]).concat(report_categories).concat([
     {
         type: "appeal",
         title: "Appeals",
@@ -30,7 +30,7 @@ const categories = [].concat(report_categories).concat([
 
 export function getReportSettings(): { [key: string]: { priority: number; visible: boolean } } {
     const stored = preferences.get("moderator.report-settings");
-    const ret = {};
+    const ret: { [key: string]: { priority: number; visible: boolean } } = {};
     for (const category of categories) {
         if (category.type in stored) {
             ret[category.type] = {
@@ -49,14 +49,14 @@ export function ReportsCenterSettings(): JSX.Element {
     const [state, setState] = React.useState(getReportSettings());
     const [sortOrder, setSortOrder] = usePreference("moderator.report-sort-order");
 
-    const setPriority = React.useCallback((type, priority) => {
+    const setPriority = React.useCallback((type: string, priority: number) => {
         const new_state = Object.assign({}, state);
         new_state[type].priority = priority;
         preferences.set("moderator.report-settings", new_state);
         setState(new_state);
     }, []);
 
-    const setVisible = React.useCallback((type, visible) => {
+    const setVisible = React.useCallback((type: string, visible: boolean) => {
         const new_state = Object.assign({}, state);
         new_state[type].visible = visible;
         preferences.set("moderator.report-settings", new_state);

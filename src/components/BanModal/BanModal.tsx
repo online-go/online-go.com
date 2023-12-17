@@ -30,7 +30,7 @@ interface BanModalProperties {
 }
 
 export class BanModal extends Modal<Events, BanModalProperties, any> {
-    constructor(props) {
+    constructor(props: BanModalProperties) {
         super(props);
         this.state = {
             details: {
@@ -90,7 +90,7 @@ export class BanModal extends Modal<Events, BanModalProperties, any> {
 function BanDetails({ onChange }: { onChange: (d: any) => void }): JSX.Element {
     const [public_reason, set_public_reason] = React.useState("");
     const [moderator_notes, set_moderator_notes] = React.useState("");
-    const [expiration, set_expiration] = React.useState(null);
+    const [expiration, set_expiration] = React.useState();
 
     React.useEffect(() => {
         onChange({

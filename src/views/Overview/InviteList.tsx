@@ -52,10 +52,14 @@ type RengoParticipantsDTO = rest_api.RengoParticipantsDTO;
 type TimeControlSystem = TimeControlTypes.TimeControlSystem;
 
 function challengeDtoToSeekgraphChallengeSubset(c: ChallengeDTO, user_id: number): Challenge {
+    if (!c.game) {
+        throw new Error("ChallengeDTO has no game");
+    }
+
     return {
         challenge_id: c.id,
         created: c.created,
-        user_id: c.challenger.id, // number;
+        user_id: c.challenger.id as number, // number;
         username: c.challenger.username, // string;
 
         rengo: c.game.rengo, // boolean;
@@ -78,24 +82,24 @@ function challengeDtoToSeekgraphChallengeSubset(c: ChallengeDTO, user_id: number
 
         // These fields are not used by us, so we don't need to bother with them
         // (which is just as well, since many are not in ChallengeDTO)
-        rank: null, // number;
-        pro: null, // 0 | 1;
-        min_rank: null, // number;
-        max_rank: null, // number;
-        game_id: null, // number;
-        name: null, // string;
-        komi: null, // number;
-        disable_analysis: null, // true;
-        time_per_move: null, // number;
-        rengo_auto_start: null, // number;
+        rank: -999, // number;
+        pro: 0, // 0 | 1;
+        min_rank: -999, // number;
+        max_rank: -999, // number;
+        game_id: -999, // number;
+        name: "", // string;
+        komi: -999, // number;
+        disable_analysis: true, // true;
+        time_per_move: -999, // number;
+        rengo_auto_start: -999, // number;
 
-        invite_only: null, // boolean;
+        invite_only: false, // boolean;
     };
 }
 
 export function InviteList(): JSX.Element {
     const [invites, setInvites] = React.useState<Challenge[]>([]);
-    const [show_details, setShowDetails] = React.useState<Challenge>(null);
+    const [show_details, setShowDetails] = React.useState<Challenge | null>(null);
 
     const user = useUser();
 
@@ -252,8 +256,11 @@ export function InviteList(): JSX.Element {
                     return (
                         <Card key={challenge.challenge_id}>
                             <div className="name-and-buttons">
-                                <div className="name" title={profanity_filter(challenge.game_name)}>
-                                    <h4>"{profanity_filter(challenge.game_name)}"</h4>
+                                <div
+                                    className="name"
+                                    title={profanity_filter(challenge.game_name || "")}
+                                >
+                                    <h4>"{profanity_filter(challenge.game_name || "")}"</h4>
                                     <ChallengeLinkButton uuid={challenge.uuid} />
                                 </div>
                                 <div className="fab-section">
@@ -279,14 +286,14 @@ export function InviteList(): JSX.Element {
                                     )}
                                 </div>
                             </div>
-                            <div>{challenge_text_description(challenge)}</div>
+                            <div>{challenge_text_description(challenge as any)}</div>
                         </Card>
                     );
                 })}
             </div>
             {(show_details || null) && (
                 <RengoManagementPane
-                    challenge_id={show_details.challenge_id}
+                    challenge_id={show_details!.challenge_id}
                     user={user}
                     rengo_challenge_list={invites}
                     startRengoChallenge={startRengoChallenge}
@@ -296,7 +303,7 @@ export function InviteList(): JSX.Element {
                 >
                     <RengoTeamManagementPane
                         user={user}
-                        challenge_id={show_details.challenge_id}
+                        challenge_id={show_details!.challenge_id}
                         challenge_list={invites}
                         moderator={user.is_moderator}
                         show_chat={true}

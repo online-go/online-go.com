@@ -25,17 +25,23 @@ import { DataSchema } from "./data_schema";
  */
 export function useData<KeyT extends Extract<keyof DataSchema, string>>(
     key: KeyT,
-): [DataSchema[KeyT] | undefined, React.Dispatch<React.SetStateAction<DataSchema[KeyT]>>];
+): [
+    DataSchema[KeyT] | undefined,
+    React.Dispatch<React.SetStateAction<DataSchema[KeyT] | undefined>>,
+];
 export function useData<KeyT extends Extract<keyof DataSchema, string>>(
     key: KeyT,
     default_value: DataSchema[KeyT],
-): [DataSchema[KeyT], React.Dispatch<React.SetStateAction<DataSchema[KeyT]>>];
+): [DataSchema[KeyT], React.Dispatch<React.SetStateAction<DataSchema[KeyT] | undefined>>];
 export function useData<KeyT extends Extract<keyof DataSchema, string>>(
     key: KeyT,
     default_value?: DataSchema[KeyT],
-): [DataSchema[KeyT] | undefined, React.Dispatch<React.SetStateAction<DataSchema[KeyT]>>] {
+): [
+    DataSchema[KeyT] | undefined,
+    React.Dispatch<React.SetStateAction<DataSchema[KeyT] | undefined>>,
+] {
     const [val, setVal] = React.useState<DataSchema[KeyT] | undefined>(
-        data.get(key, default_value),
+        data.get(key, default_value as DataSchema[KeyT]),
     );
 
     React.useEffect(() => {
@@ -51,7 +57,7 @@ export function useData<KeyT extends Extract<keyof DataSchema, string>>(
 }
 
 export function useUser(): rest_api.UserConfig {
-    return useData("user")[0];
+    return useData("user")[0] as rest_api.UserConfig;
 }
 
 export function useRefresh(): () => void {

@@ -63,4 +63,4 @@ export default class Debug {
     }
 }
 
-window["debug"] = debug;
+(window as any)["debug"] = debug;

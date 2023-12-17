@@ -23,7 +23,7 @@ import { _ } from "translate";
 import { Supporter } from "./Supporter";
 
 export class BecomeASiteSupporterModal extends Modal<{}, {}, any> {
-    constructor(props) {
+    constructor(props: {}) {
         super(props);
     }
 

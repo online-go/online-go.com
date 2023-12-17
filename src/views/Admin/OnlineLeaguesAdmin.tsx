@@ -22,7 +22,7 @@ import { get, post, del } from "requests";
 import { useUser } from "hooks";
 
 export function OnlineLeaguesAdmin(): JSX.Element {
-    const [leagues, set_leagues] = React.useState([]);
+    const [leagues, set_leagues] = React.useState<any[]>([]);
     const [new_league_name, set_new_league_name] = React.useState("");
 
     const user = useUser();
@@ -40,7 +40,7 @@ export function OnlineLeaguesAdmin(): JSX.Element {
         }
     };
 
-    const removeLeague = (league_name) => {
+    const removeLeague = (league_name: string) => {
         if (league_name) {
             del("admin/adminOnlineLeagues", { name: league_name })
                 .then((response) => {

@@ -33,7 +33,7 @@ export function icon_size_url(url: string, size: number): string {
 }
 
 export async function getPlayerIconURL(id: number, size: number): Promise<string> {
-    return player_cache.fetch(id, ["icon"]).then((user) => icon_size_url(user.icon, size));
+    return player_cache.fetch(id, ["icon"]).then((user) => icon_size_url(user.icon || "", size));
 }
 
 export function PlayerIcon(props: PlayerIconProps): JSX.Element {
@@ -64,7 +64,7 @@ export function PlayerIcon(props: PlayerIconProps): JSX.Element {
 
         return () => {
             cancelled = true;
-            subscriber.current.off(subscriber.current.players());
+            subscriber.current?.off(subscriber.current.players());
             delete subscriber.current;
         };
 
@@ -79,7 +79,7 @@ export function PlayerIcon(props: PlayerIconProps): JSX.Element {
         }
     }, [id, props.size]);
 
-    if (url && !player_is_ignored(id)) {
+    if (url && id && !player_is_ignored(id)) {
         return (
             <img
                 className={`PlayerIcon PlayerIcon-${props.size} ${props.className || ""}`}
@@ -97,8 +97,10 @@ export function PlayerIcon(props: PlayerIconProps): JSX.Element {
     );
 }
 
-function getId(props: PlayerIconProps): number {
-    let ret = parseInt(props.id || (props.user && (props.user.id || props.user.user_id)));
+function getId(props: PlayerIconProps): number | null {
+    let ret: number | null = parseInt(
+        props.id || (props.user && (props.user.id || props.user.user_id)),
+    );
     if (isNaN(ret)) {
         ret = null;
     }

@@ -191,11 +191,11 @@ function dev_server(done) {
     let http = require("http");
     var proxy = require("express-http-proxy");
     let url = require("url");
-    let devserver = express();
-    devserver.use(body_parser.json());
-    devserver.use(body_parser.text());
+    let dev_server = express();
+    dev_server.use(body_parser.json());
+    dev_server.use(body_parser.text());
 
-    http.createServer(devserver).listen(port, null, function () {
+    http.createServer(dev_server).listen(port, null, function () {
         console.info(`#############################################`);
         console.info(`## Development server started on port ${port}`);
         console.info(`##  ( http://localhost:${port} )`);
@@ -203,8 +203,8 @@ function dev_server(done) {
         console.info(`#############################################`);
     });
 
-    devserver.use(express.static("dist"));
-    devserver.use(express.static("assets"));
+    dev_server.use(express.static("dist"));
+    dev_server.use(express.static("assets"));
 
     // Based on https://github.com/villadora/express-http-proxy/issues/127
     const isMultipartRequest = (req) => {
@@ -237,19 +237,19 @@ function dev_server(done) {
             },
         });
 
-    devserver.use("/api", backend_proxy("/api"));
-    devserver.use("/termination-api", backend_proxy("/termination-api"));
-    devserver.use("/merchant", backend_proxy("/merchant"));
-    devserver.use("/billing", backend_proxy("/billing"));
-    devserver.use("/sso", backend_proxy("/sso"));
-    devserver.use("/oauth2", backend_proxy("/oauth2"));
-    devserver.use("/complete", backend_proxy("/complete"));
-    devserver.use("/disconnect", backend_proxy("/disconnect"));
-    devserver.use("/OGSScoreEstimator", backend_proxy("/OGSScoreEstimator"));
-    devserver.use("/oje", backend_proxy("/oje"));
-    devserver.use("/firewall", backend_proxy("/firewall"));
+    dev_server.use("/api", backend_proxy("/api"));
+    dev_server.use("/termination-api", backend_proxy("/termination-api"));
+    dev_server.use("/merchant", backend_proxy("/merchant"));
+    dev_server.use("/billing", backend_proxy("/billing"));
+    dev_server.use("/sso", backend_proxy("/sso"));
+    dev_server.use("/oauth2", backend_proxy("/oauth2"));
+    dev_server.use("/complete", backend_proxy("/complete"));
+    dev_server.use("/disconnect", backend_proxy("/disconnect"));
+    dev_server.use("/OGSScoreEstimator", backend_proxy("/OGSScoreEstimator"));
+    dev_server.use("/oje", backend_proxy("/oje"));
+    dev_server.use("/firewall", backend_proxy("/firewall"));
 
-    devserver.get("/locale/*", (req, res) => {
+    dev_server.get("/locale/*", (req, res) => {
         let options = {
             hostname: "storage.googleapis.com",
             port: 80,
@@ -277,7 +277,7 @@ function dev_server(done) {
         req2.end();
     });
 
-    devserver.get("/goban.js", (req, res) => {
+    dev_server.get("/goban.js", (req, res) => {
         console.info(`GET ${req.path} -> node_modules/goban/lib/goban.js`);
         let js = fs.readFileSync("node_modules/goban/lib/goban.js", { encoding: "utf-8" });
         res.setHeader("Content-Type", "application/javascript; charset=utf-8");
@@ -288,7 +288,7 @@ function dev_server(done) {
         res.status(200).send(js);
     });
 
-    devserver.get("/goban.js.map", (req, res) => {
+    dev_server.get("/goban.js.map", (req, res) => {
         console.info(`GET ${req.path} -> node_modules/goban/lib/goban.js.map`);
         let js = fs.readFileSync("node_modules/goban/lib/goban.js.map", { encoding: "utf-8" });
         res.setHeader("Content-Type", "application/javascript; charset=utf-8");
@@ -299,7 +299,7 @@ function dev_server(done) {
         res.status(200).send(js);
     });
 
-    devserver.get("/index.js.map", (req, res) => {
+    dev_server.get("/index.js.map", (req, res) => {
         let js = fs.readFileSync("node_modules/goban/lib/index.js.map", { encoding: "utf-8" });
         res.setHeader("Content-Type", "application/javascript; charset=utf-8");
         res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
@@ -309,7 +309,7 @@ function dev_server(done) {
         res.status(200).send(js);
     });
 
-    devserver.get("*", (req, res) => {
+    dev_server.get("*", (req, res) => {
         console.info(`GET ${req.path}`);
 
         if (req.path === "ogs.js") {
@@ -370,6 +370,7 @@ function dev_server(done) {
                     return JSON.stringify(supported_languages);
 
                 case "AMEX_CLIENT_ID":
+                    /* cspell: disable-next-line */
                     return "kvEB9qXE6jpNUv3fPkdbWcPaZ7nQAXyg";
                 case "AMEX_ENV":
                     return "qa";

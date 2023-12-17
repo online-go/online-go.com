@@ -38,6 +38,20 @@ import { SeekGraphColorPalette, SeekGraphPalettes } from "./SeekGraphPalettes";
 import * as SeekGraphSymbols from "./SeekGraphSymbols";
 
 import { Challenge, ChallengeFilter, shouldDisplayChallenge } from "challenge_utils";
+import {
+    SeekgraphDeleteMessage,
+    SeekgraphStartedMessage,
+    SeekgraphChallengeMessage,
+} from "goban/lib/protocol";
+
+interface ExtendedSeekgraphChallengeMessage extends SeekgraphChallengeMessage {
+    user_challenge?: boolean;
+    joined_rengo?: boolean;
+    eligible?: boolean;
+    ineligible_reason?: string;
+    pro?: boolean;
+    rank?: number;
+}
 
 interface AnchoredChallenge extends Challenge {
     x?: number;
@@ -56,7 +70,7 @@ interface SeekGraphModal {
 }
 
 interface Events {
-    challenges: Challenge[];
+    challenges: { [k: string]: AnchoredChallenge };
 }
 
 interface SeekGraphConfig {
@@ -92,8 +106,8 @@ function timeRatio(tpm: number): number {
 }
 
 function dist(C: AnchoredChallenge, pos: Point) {
-    const dx = C.x - pos.x;
-    const dy = C.y - pos.y;
+    const dx = (C.x || 0) - pos.x;
+    const dy = (C.y || 0) - pos.y;
     return Math.sqrt(dx * dx + dy * dy);
 }
 
@@ -190,11 +204,11 @@ export class SeekGraph extends TypedEventEmitter<Events> {
     padding = 14;
     legend_size = 25;
     list_locked: boolean = false;
-    modal?: SeekGraphModal = null;
-    $list: JQuery;
+    modal?: SeekGraphModal;
+    $list!: JQuery;
     list_open: boolean = false;
-    width: number;
-    height: number;
+    width!: number;
+    height!: number;
 
     constructor(config: SeekGraphConfig) {
         super();
@@ -240,22 +254,32 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         // }
     };
 
-    onSeekgraphGlobal = (lst) => {
-        const this_userid = data.get("user").id;
+    onSeekgraphGlobal = (
+        lst: (
+            | SeekgraphDeleteMessage
+            | SeekgraphStartedMessage
+            | ExtendedSeekgraphChallengeMessage
+        )[],
+    ) => {
+        const this_user_id = data.get("user").id;
         // lst contains entries that tell us what to do with our local challenge list.
         for (let i = 0; i < lst.length; ++i) {
-            const entry = lst[i];
-            if ("game_started" in entry) {
+            const e = lst[i];
+            if ("game_started" in e) {
+                const entry = e as SeekgraphStartedMessage;
                 // rengo "other players" on this page need to be sent to the game when it starts
                 // the creator already gets sent, by the normal challenge modal mechanism
-                if (entry.rengo && entry.creator !== this_userid) {
+                if (entry.rengo && entry.creator !== this_user_id) {
                     if (
-                        entry.rengo_black_team.concat(entry.rengo_white_team).includes(this_userid)
+                        entry
+                            .rengo_black_team!.concat(entry.rengo_white_team as any)
+                            .includes(this_user_id)
                     ) {
                         browserHistory.push(`/game/${entry.game_id}`);
                     }
                 }
-            } else if ("delete" in entry) {
+            } else if ("delete" in e) {
+                const entry = e as SeekgraphDeleteMessage;
                 if (entry.challenge_id in this.challenges) {
                     const uid = this.challenges[entry.challenge_id].system_message_id;
                     delete this.challenges[entry.challenge_id];
@@ -267,9 +291,10 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                     }
                 }
             } else {
+                const entry = e as ExtendedSeekgraphChallengeMessage;
                 // the entry has details of a challenge we need to list
                 entry.user_challenge = false;
-                entry.joined_rengo = entry.rengo && entry.rengo_participants.includes(this_userid);
+                entry.joined_rengo = entry.rengo && entry.rengo_participants.includes(this_user_id);
 
                 if (data.get("user").anonymous) {
                     entry.eligible = false;
@@ -278,7 +303,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                     entry.eligible = false;
                     entry.user_challenge = true;
                     entry.ineligible_reason = _("This is your challenge");
-                } else if (entry.ranked && Math.abs(this.userRank() - entry.rank) > 9) {
+                } else if (entry.ranked && Math.abs(this.userRank() - entry.ranking) > 9) {
                     entry.eligible = false;
                     entry.ineligible_reason = _(
                         "This is a ranked game and the rank difference is more than 9",
@@ -298,11 +323,13 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                         ]);
                     }
                 }
-                this.challenges[entry.challenge_id] = entry;
+                entry.rank = entry.ranking;
+                entry.pro = entry.professional;
+                this.challenges[entry.challenge_id] = entry as unknown as AnchoredChallenge;
             }
         }
         this.redraw();
-        this.emit("challenges", this.challenges as Challenge[]);
+        this.emit("challenges", this.challenges);
     };
 
     onTouchEnd = (ev: JQueryEventObject) => {
@@ -316,6 +343,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
             ev.preventDefault();
             return false;
         }
+        return;
     };
     onPointerMove = (ev: JQueryEventObject) => {
         const new_list = this.getHits(ev);
@@ -345,7 +373,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
             this.list_locked = true;
             this.modal = createModal(() => {
                 //console.log("Closing modal");
-                this.modal = null;
+                this.modal = undefined;
                 this.list_locked = false;
                 this.closeChallengeList();
             }, 49);
@@ -412,10 +440,13 @@ export class SeekGraph extends TypedEventEmitter<Events> {
     redraw() {
         validateCanvas(this.canvas);
         const ctx = this.canvas.getContext("2d");
+        if (!ctx) {
+            return;
+        }
 
         ctx.clearRect(0, 0, this.width, this.height);
 
-        const siteTheme = data.get("theme");
+        const siteTheme = data.get("theme", "light");
         const palette = SeekGraphPalettes.getPalette(siteTheme);
         this.drawAxes(ctx, palette);
         this.drawLegend(ctx, palette);
@@ -459,7 +490,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         //console.log("Redrawing seekgraph");
     }
 
-    resize(w, h) {
+    resize(w: number, h: number) {
         this.width = w;
         this.height = h;
 
@@ -483,6 +514,10 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         this.canvas.height = h * scale;
 
         const ctx = this.canvas.getContext("2d");
+        if (!ctx) {
+            return;
+        }
+
         ctx.scale(scale, scale);
 
         this.padding = this.getFontHeight(ctx) + 4;
@@ -650,7 +685,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         return metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
     }
 
-    moveChallengeList(ev) {
+    moveChallengeList(ev: JQueryEventObject) {
         this.popupChallengeList(ev);
         if (this.list_locked) {
             return;
@@ -664,10 +699,10 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         // The above was occurring for long lists on the bottom right of the seek graph (and was fixed),
         // but this function should probably be improved further
 
-        const pointerPos: Point = getRelativeEventPosition(ev);
+        const pointerPos: Point = getRelativeEventPosition(ev) || { x: 0, y: 0 };
         const listAnchor: Point = Object.assign({}, pointerPos);
 
-        const offset = $(ev.target).offset();
+        const offset = $(ev.target).offset() || { left: 0, top: 0 };
         listAnchor.x += offset.left + 10;
         listAnchor.y += offset.top + 5;
 
@@ -690,7 +725,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         listAnchor.x = Math.max(0, listAnchor.x);
         this.$list.css({ left: listAnchor.x, top: listAnchor.y });
     }
-    popupChallengeList(ev) {
+    popupChallengeList(ev: JQueryEventObject) {
         if (this.list_open) {
             return;
         }
@@ -859,21 +894,21 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                 (C.handicap === 0
                     ? ", " + _("no handicap")
                     : C.handicap < 0
-                    ? ""
-                    : interpolate(_(", %s handicap"), [C.handicap])) +
+                      ? ""
+                      : interpolate(_(", %s handicap"), [C.handicap])) +
                 (C.disable_analysis ? ", " + _("analysis disabled") : "");
             if (C.challenger_color !== "automatic") {
-                let yourcolor = "";
+                let your_color = "";
                 if (C.challenger_color === "black") {
-                    yourcolor = _("white");
+                    your_color = _("white");
                 } else if (C.challenger_color === "white") {
-                    yourcolor = _("black");
+                    your_color = _("black");
                 } else {
-                    yourcolor = _(C.challenger_color);
+                    your_color = _(C.challenger_color);
                 }
 
                 details_html +=
-                    ", " + interpolate(pgettext("color", "you play as %s"), [yourcolor]);
+                    ", " + interpolate(pgettext("color", "you play as %s"), [your_color]);
             }
 
             if (C.time_control !== "none") {
@@ -941,8 +976,8 @@ export class SeekGraph extends TypedEventEmitter<Events> {
 }
 
 /* Modal stuff  */
-function createModal(close_callback, priority): SeekGraphModal {
-    let modal = null;
+function createModal(close_callback: () => void, priority: number): SeekGraphModal {
+    let modal: any = null;
     function onClose() {
         close_callback();
         removeModal(modal);

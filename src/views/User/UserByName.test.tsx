@@ -7,7 +7,7 @@ import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { render } from "@testing-library/react";
 import { act } from "react-dom/test-utils";
 
-let container: HTMLDivElement = null;
+let container: HTMLDivElement | undefined;
 beforeEach(() => {
     // setup a DOM element as a render target
     container = document.createElement("div");
@@ -27,7 +27,7 @@ jest.mock("./User", () => {
 });
 
 async function renderUserByName() {
-    let res: ReturnType<typeof render>;
+    let res: ReturnType<typeof render> | undefined;
     await act(async () => {
         res = render(
             <MemoryRouter initialEntries={["/user/benjito"]}>
@@ -37,7 +37,7 @@ async function renderUserByName() {
             </MemoryRouter>,
         );
     });
-    return res;
+    return res as ReturnType<typeof render>;
 }
 
 test("Renders User page if found in cache", async () => {

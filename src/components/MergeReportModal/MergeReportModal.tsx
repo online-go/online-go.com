@@ -33,7 +33,7 @@ interface MergeReportModalProperties {
 }
 
 export class MergeReportModal extends Modal<Events, MergeReportModalProperties, any> {
-    constructor(props) {
+    constructor(props: MergeReportModalProperties) {
         super(props);
     }
 

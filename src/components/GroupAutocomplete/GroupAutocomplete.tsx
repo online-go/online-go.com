@@ -21,7 +21,7 @@ import { get, abort_requests_in_flight } from "requests";
 import * as Autosuggest from "react-autosuggest";
 
 interface GroupAutocompleteProperties {
-    onComplete: (user) => void;
+    onComplete: (group: Suggestion | null) => void;
     placeholder?: string;
 }
 
@@ -46,11 +46,11 @@ export class GroupAutocomplete extends React.PureComponent<
     GroupAutocompleteProperties,
     GroupAutocompleteState
 > {
-    last_on_complete_username = null;
-    current_search = null;
-    tabbed_out = false;
+    last_on_complete_username: string | null = null;
+    current_search: string | null = null;
+    tabbed_out: boolean = false;
 
-    constructor(props) {
+    constructor(props: GroupAutocompleteProperties) {
         super(props);
         this.state = {
             value: "",
@@ -61,10 +61,10 @@ export class GroupAutocomplete extends React.PureComponent<
     clear() {
         this.setState({ value: "" });
     }
-    complete(groupname) {
+    complete(groupname: string) {
         if (groupname in groups_by_name) {
             if (this.last_on_complete_username !== groupname) {
-                this.props.onComplete(groups_by_name[groupname]);
+                this.props.onComplete(groups_by_name[groupname as keyof typeof groups_by_name]);
                 this.last_on_complete_username = groupname;
             }
         } else {
@@ -72,13 +72,13 @@ export class GroupAutocomplete extends React.PureComponent<
             this.last_on_complete_username = null;
         }
     }
-    onChange = (event, { newValue }) => {
+    onChange = (_event: any, { newValue }: { newValue: string }) => {
         this.setState({
             value: newValue,
         });
         this.complete(newValue);
     };
-    onSuggestionsFetchRequested = ({ value }) => {
+    onSuggestionsFetchRequested = ({ value }: { value: string }) => {
         if (this.current_search === value) {
             return;
         }
@@ -90,7 +90,7 @@ export class GroupAutocomplete extends React.PureComponent<
             get("groups/", { name__istartswith: value, page_size: 10 })
                 .then((res: { results: Suggestion[] }) => {
                     for (const group of res.results) {
-                        groups_by_name[group.name] = group;
+                        (groups_by_name as any)[group.name] = group;
                     }
 
                     this.setState({
@@ -116,7 +116,11 @@ export class GroupAutocomplete extends React.PureComponent<
         });
     };
     //onBlur = (ev, {focusedSuggestion}) => {
-    onBlur = (ev, { highlightedSuggestion }) => {
+    onBlur = (
+        ev: React.FocusEvent<HTMLElement, Element>,
+        params?: Autosuggest.BlurEvent<Suggestion> | undefined,
+    ) => {
+        const highlightedSuggestion = params?.highlightedSuggestion;
         if (this.tabbed_out) {
             if (highlightedSuggestion) {
                 this.setState({ value: getSuggestionValue(highlightedSuggestion) });
@@ -124,7 +128,7 @@ export class GroupAutocomplete extends React.PureComponent<
             }
         }
     };
-    onKeyDown = (ev) => {
+    onKeyDown = (ev: React.KeyboardEvent) => {
         if (ev.keyCode === 9) {
             this.tabbed_out = true;
         } else {

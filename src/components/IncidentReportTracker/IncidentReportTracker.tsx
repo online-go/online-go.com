@@ -176,7 +176,7 @@ export function IncidentReportTracker(): JSX.Element {
         };
     }, []);
 
-    const reportButtonClicked = (report_id) => {
+    const reportButtonClicked = (report_id: number) => {
         reportButtonUsed();
         navigate(`/reports-center/all/${report_id}`);
     };

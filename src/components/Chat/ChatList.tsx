@@ -50,7 +50,7 @@ interface ChatListProperties {
     closing_toggle?: () => void;
     collapse_state_store_name?: keyof DataSchema;
     fakelink?: boolean;
-    partFunc?: (channel: string, dont_autoset_active: boolean, dont_clear_joined: boolean) => void;
+    partFunc?: (channel: string, dont_auto_set_active: boolean, dont_clear_joined: boolean) => void;
 }
 
 interface ChatListState {
@@ -69,7 +69,7 @@ interface ChatListState {
     highlight_active_channel: boolean;
     active_channel: string;
     fakelink: boolean;
-    partFunc?: (channel: string, dont_autoset_active: boolean, dont_clear_joined: boolean) => void;
+    partFunc?: (channel: string, dont_auto_set_active: boolean, dont_clear_joined: boolean) => void;
 }
 
 export class ChatList extends React.PureComponent<ChatListProperties, ChatListState> {
@@ -77,29 +77,29 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
     joined_chats: { [channel: string]: true | 1 } = {};
     closing_toggle: () => void = () => null;
 
-    constructor(props) {
+    constructor(props: ChatListProperties) {
         super(props);
         if (props.closing_toggle) {
             this.closing_toggle = props.closing_toggle;
         }
         this.state = {
-            show_unjoined: props.show_unjoined,
-            show_read: props.show_read,
+            show_unjoined: !!props.show_unjoined,
+            show_read: !!props.show_read,
             hide_global: props.hide_global,
             visible_group_channels: false,
             visible_global_channels: false,
             visible_tournament_channels: false,
-            collapse_unjoined: props.collapse_unjoined,
-            collapse_read: props.collapse_read,
-            join_subscriptions: props.join_subscriptions,
-            join_joined: props.join_joined,
+            collapse_unjoined: !!props.collapse_unjoined,
+            collapse_read: !!props.collapse_read,
+            join_subscriptions: !!props.join_subscriptions,
+            join_joined: !!props.join_joined,
             collapsed_channel_groups: props.collapse_state_store_name
                 ? { global: false, groups: false, tournaments: false }
-                : undefined,
-            collapse_state_store_name: props.collapse_state_store_name,
-            highlight_active_channel: props.highlight_active_channel,
+                : {},
+            collapse_state_store_name: props.collapse_state_store_name as keyof DataSchema,
+            highlight_active_channel: !!props.highlight_active_channel,
             active_channel: data.get("chat.active_channel", ""),
-            fakelink: props.fakelink,
+            fakelink: !!props.fakelink,
             partFunc: props.partFunc,
         };
     }
@@ -137,13 +137,15 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
         this.setState({ collapsed_channel_groups: obj });
     };
 
-    onActiveChannelChanged = (channel) => {
-        this.setState({
-            active_channel: channel,
-        });
+    onActiveChannelChanged = (channel: string | undefined) => {
+        if (channel) {
+            this.setState({
+                active_channel: channel,
+            });
+        }
     };
 
-    onJoinedChanged = (joined: { [channel: string]: true | 1 }) => {
+    onJoinedChanged = (joined?: { [channel: string]: true | 1 }) => {
         if (joined === undefined) {
             joined = {};
         }
@@ -218,8 +220,14 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
         this.forceUpdate();
     };
 
-    goToChannel = (ev) => {
-        setActiveChannel(ev.currentTarget.getAttribute("data-channel"));
+    goToChannel = (ev: React.MouseEvent<HTMLDivElement>) => {
+        const chan = ev.currentTarget.getAttribute("data-channel");
+        if (!chan) {
+            return;
+        }
+
+        setActiveChannel(chan);
+
         if (ev && shouldOpenNewTab(ev)) {
             window.open("/chat");
         } else {
@@ -256,7 +264,7 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
         this.forceUpdate();
     };
 
-    display_details = (event) => {
+    display_details = (event: React.MouseEvent<HTMLElement>) => {
         if (!this.props.fakelink && shouldOpenNewTab(event)) {
             /* let browser deal with opening the window so we don't get the popup warnings */
             return;
@@ -266,6 +274,10 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
         event.preventDefault();
 
         const channel = event.currentTarget.getAttribute("data-channel");
+        if (!channel) {
+            return;
+        }
+
         if (shouldOpenNewTab(event)) {
             let uri = "";
             if (channel.startsWith("group")) {
@@ -482,7 +494,7 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
                         >
                             <span className="channel-name" data-channel={chan.id}>
                                 <Flag
-                                    country={chan.country}
+                                    country={chan.country ?? ""}
                                     language={
                                         chan.language &&
                                         (typeof chan.language === "string"

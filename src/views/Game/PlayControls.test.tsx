@@ -42,7 +42,7 @@ const PLAY_CONTROLS_DEFAULTS = {
         return;
     },
     review_list: [] as any,
-    stashed_conditional_moves: null,
+    stashed_conditional_moves: undefined,
     mode: "play",
     phase: "play",
     title: "",

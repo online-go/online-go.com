@@ -28,7 +28,7 @@ export function image_resizer(
     }
 
     console.log(file);
-    window["file"] = file;
+    (window as any)["file"] = file;
 
     const reader = new FileReader();
     const image = new Image();
@@ -60,8 +60,13 @@ export function image_resizer(
                 canvas.width = width;
                 canvas.height = height;
                 validateCanvas(canvas);
-                canvas.getContext("2d").drawImage(image, 0, 0, width, height);
-                canvas.toBlob((blob: Blob) => {
+                canvas.getContext("2d")?.drawImage(image, 0, 0, width, height);
+                canvas.toBlob((blob: Blob | null) => {
+                    if (!blob) {
+                        reject("Failed to convert canvas to blob");
+                        return;
+                    }
+
                     const new_filename = file.name.replace(
                         /(\.[^\.]+)$/,
                         "-resized." + (blob.type === "image/webp" ? "webp" : "png"),

@@ -21,7 +21,7 @@ import { current_language, pgettext } from "translate";
 import { Markdown } from "Markdown";
 
 interface AutoTranslateProps {
-    source: string;
+    source: string | null | undefined;
     className?: string;
     markdown?: boolean;
     source_language?: string;
@@ -39,23 +39,23 @@ export function AutoTranslate({
     source_language,
     className,
     markdown,
-}: AutoTranslateProps): JSX.Element {
+}: AutoTranslateProps): JSX.Element | null {
     const need_translation =
         source !== "" && (!source_language || source_language.toLowerCase() !== current_language);
 
-    const [translation, setTranslation] = React.useState<Translation>(
+    const [translation, setTranslation] = React.useState<Translation | null>(
         need_translation
             ? null
             : {
-                  source_language: source_language?.toLowerCase(),
-                  source_text: source,
-                  target_language: source_language?.toLowerCase(),
-                  target_text: source,
+                  source_language: source_language?.toLowerCase() || current_language,
+                  source_text: source || "",
+                  target_language: source_language?.toLowerCase() || current_language,
+                  target_text: source || "",
               },
     );
 
     React.useEffect(() => {
-        if (need_translation) {
+        if (need_translation && source) {
             auto_translate(source)
                 .then((translation: Translation) => {
                     setTranslation(translation);
@@ -63,6 +63,10 @@ export function AutoTranslate({
                 .catch(console.error);
         }
     }, [source]);
+
+    if (!source) {
+        return null;
+    }
 
     const show_translation =
         translation &&
@@ -103,8 +107,8 @@ async function auto_translate(text: string): Promise<Translation> {
     let res: Promise<Translation>;
 
     if (current_language === "debug") {
-        res = Promise.resolve({
-            source_language: null,
+        return Promise.resolve({
+            source_language: "",
             source_text: text,
             target_language: "debug",
             target_text: `${text} <<translated`,

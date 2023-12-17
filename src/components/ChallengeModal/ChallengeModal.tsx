@@ -44,7 +44,7 @@ import {
     TimeControl,
 } from "TimeControl";
 import { sfx } from "sfx";
-import { notification_manager } from "Notifications/NotificationManager";
+import { notification_manager, NotificationManagerEvents } from "Notifications/NotificationManager";
 import { one_bot, bot_count, bots_list } from "bots";
 import { goban_view_mode } from "Game/util";
 import {
@@ -66,7 +66,7 @@ import {
     updateSystem,
 } from "TimeControl/TimeControlUpdates";
 
-type ChallengeDetails = rest_api.ChallengeDetails;
+export type ChallengeDetails = rest_api.ChallengeDetails;
 
 type ChallengeModes = "open" | "computer" | "player" | "demo";
 
@@ -118,8 +118,8 @@ interface RejectionDetails {
 
 /* Constants  */
 
-const negKomiRanges = [];
-const posKomiRanges = [];
+const negKomiRanges: number[] = [];
+const posKomiRanges: number[] = [];
 const maxKomi = 36.5;
 for (let komi = 0.0; komi <= maxKomi; komi += 0.5) {
     if (komi - maxKomi !== 0.0) {
@@ -128,7 +128,7 @@ for (let komi = 0.0; komi <= maxKomi; komi += 0.5) {
     posKomiRanges.push(komi);
 }
 
-const handicapRanges = [];
+const handicapRanges: number[] = [];
 for (let i = 1; i <= 36; ++i) {
     handicapRanges.push(i);
 }
@@ -147,7 +147,7 @@ const ranked_ranks = (() => {
     return rankList(rankedMin, rankedMax, false);
 })();
 
-const standard_board_sizes = {
+const standard_board_sizes: { [k: string]: string | undefined } = {
     "19x19": "19x19",
     "13x13": "13x13",
     "9x9": "9x9",
@@ -159,7 +159,7 @@ const standard_board_sizes = {
 };
 
 export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any> {
-    constructor(props) {
+    constructor(props: ChallengeModalProperties) {
         super(props);
 
         const speed = data.get("challenge.speed", "live");
@@ -316,11 +316,14 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         this.setState({ view_mode: goban_view_mode() });
     };
 
-    preferredSettingsUpdated = (preferred_settings: ChallengeDetails[]) => {
+    preferredSettingsUpdated = (preferred_settings?: ChallengeDetails[]) => {
+        if (!preferred_settings) {
+            return;
+        }
         this.setState({ preferred_settings: preferred_settings });
     };
 
-    syncBoardSize(value) {
+    syncBoardSize(value: string) {
         const conf = dup(this.state.conf);
         const challenge = dup(this.state.challenge);
 
@@ -334,7 +337,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         this.setState({ conf: conf, challenge: challenge });
     }
 
-    setRanked(tf) {
+    setRanked(tf: boolean) {
         const next = this.nextState();
 
         next.challenge.game.ranked = tf;
@@ -407,7 +410,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         }
     };
 
-    deletePreferredSetting = (index) => {
+    deletePreferredSetting = (index: number) => {
         const preferred_settings = data.get("preferred-game-settings", []);
         preferred_settings.splice(index, 1);
         data.set(
@@ -417,7 +420,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         );
     };
 
-    usePreferredSetting = (index) => {
+    usePreferredSetting = (index: number) => {
         const preferred_settings = data.get("preferred-game-settings", []);
         const setting: ChallengeDetails = JSON.parse(JSON.stringify(preferred_settings[index]));
         if (this.props.mode !== "open") {
@@ -585,7 +588,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
 
         let player_id = 0;
         if (this.props.mode === "player") {
-            player_id = this.props.playerId;
+            player_id = this.props.playerId as number;
             if (!player_id || player_id === data.get("user").id) {
                 return;
             }
@@ -595,7 +598,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             player_id = conf.bot_id;
 
             if (!player_id) {
-                player_id = bot_count() === 0 ? 0 : one_bot().id;
+                player_id = bot_count() === 0 ? 0 : one_bot()?.id ?? 0;
             }
 
             console.log("Bot set to ", player_id);
@@ -633,7 +636,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 const challenge_uuid = res.uuid;
 
                 const game_id = typeof res.game === "object" ? res.game.id : res.game;
-                let keepalive_interval;
+                let keepalive_interval: ReturnType<typeof setInterval> | undefined;
 
                 const details: CreatedChallengeInfo = {
                     challenge_id: challenge_id,
@@ -688,7 +691,10 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                                 // This can be fixed when HistoryRouter is properly supported, if we can be bothered.
                                 footer: `<a href='/'>${footer_text}</a>`,
                             });
-                            copyChallengeLinkURL(alert.getConfirmButton(), challenge_uuid);
+                            copyChallengeLinkURL(
+                                alert.getConfirmButton() as HTMLElement,
+                                challenge_uuid,
+                            );
                         } else {
                             void alert.fire(_("Challenge created!"));
                         }
@@ -738,7 +744,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                     notification_manager.event_emitter.off("notification", checkForReject);
                 }
 
-                function checkForReject(notification) {
+                function checkForReject(notification: NotificationManagerEvents["notification"]) {
                     console.log("challenge rejection check notification:", notification);
                     if (notification.type === "gameOfferRejected") {
                         /* non checked delete to purge old notifications that
@@ -758,18 +764,20 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
     };
 
     /* update bindings  */
-    update_conf_bot_id = (ev) =>
-        this.upstate("conf.bot_id", parseInt((ev.target as HTMLSelectElement).value));
-    update_challenge_game_name = (ev) => this.upstate("challenge.game.name", ev);
-    update_private = (ev) =>
+    update_conf_bot_id = (ev: React.ChangeEvent<HTMLSelectElement>) =>
+        this.upstate("conf.bot_id", parseInt(ev.target.value));
+    update_challenge_game_name = (ev: React.ChangeEvent<HTMLInputElement>) =>
+        this.upstate("challenge.game.name", ev);
+    update_private = (ev: React.ChangeEvent<HTMLInputElement>) =>
         this.upstate([
             ["challenge.game.private", ev],
             ["challenge.game.ranked", false],
         ]);
-    update_invite_only = (ev) => this.upstate("challenge.invite_only", ev);
-    update_rengo = (ev) => {
+    update_invite_only = (ev: React.ChangeEvent<HTMLInputElement>) =>
+        this.upstate("challenge.invite_only", ev);
+    update_rengo = (ev: React.ChangeEvent<HTMLInputElement>) => {
         this.forceTimeControlSystemIfNecessary(
-            ev.target.value,
+            ev.target.checked,
             this.state.challenge.game.rengo_casual_mode,
         );
         this.upstate([
@@ -778,12 +786,12 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             ["challenge.game.handicap", 0],
         ]);
     };
-    update_rengo_casual = (ev) => {
-        this.forceTimeControlSystemIfNecessary(this.state.challenge.game.rengo, ev.target.value);
+    update_rengo_casual = (ev: React.ChangeEvent<HTMLInputElement>) => {
+        this.forceTimeControlSystemIfNecessary(this.state.challenge.game.rengo, ev.target.checked);
         this.upstate("challenge.game.rengo_casual_mode", ev);
     };
 
-    update_rengo_auto_start = (ev) => {
+    update_rengo_auto_start = (ev: React.ChangeEvent<HTMLInputElement>) => {
         let new_val = parseInt(ev.target.value);
         if (isNaN(new_val)) {
             new_val = 0;
@@ -797,34 +805,43 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         }
     };
 
-    update_demo_private = (ev) => this.upstate("demo.private", ev);
-    update_ranked = (ev) => this.setRanked((ev.target as HTMLInputElement).checked);
-    update_demo_rules = (ev) => this.upstate("demo.rules", ev);
-    update_board_size = (ev) => {
-        this.syncBoardSize((ev.target as HTMLSelectElement).value);
+    update_demo_private = (ev: React.ChangeEvent<HTMLInputElement>) =>
+        this.upstate("demo.private", ev);
+    update_ranked = (ev: React.ChangeEvent<HTMLInputElement>) => this.setRanked(ev.target.checked);
+    update_demo_rules = (ev: React.ChangeEvent<HTMLSelectElement>) =>
+        this.upstate("demo.rules", ev);
+    update_board_size = (ev: React.ChangeEvent<HTMLSelectElement>) => {
+        this.syncBoardSize(ev.target.value);
     };
 
-    update_board_width = (ev) => {
+    update_board_width = (ev: React.ChangeEvent<HTMLInputElement>) => {
         this.state.challenge.game.width = parseInt(ev.target.value);
         this.setState({
             challenge: Object.assign({}, this.state.challenge),
         });
     };
-    update_board_height = (ev) => {
+    update_board_height = (ev: React.ChangeEvent<HTMLInputElement>) => {
         this.state.challenge.game.height = parseInt(ev.target.value);
         this.setState({
             challenge: Object.assign({}, this.state.challenge),
         });
     };
 
-    update_rules = (ev) => this.upstate("challenge.game.rules", ev);
-    update_handicap = (ev) => this.upstate("challenge.game.handicap", ev);
-    update_komi_auto = (ev) => this.upstate("challenge.game.komi_auto", ev);
-    update_komi = (ev) => this.upstate("challenge.game.komi", ev);
-    update_challenge_color = (ev) => this.upstate("challenge.challenger_color", ev);
-    update_disable_analysis = (ev) => this.upstate("challenge.game.disable_analysis", ev);
-    update_restrict_rank = (ev) => this.upstate("conf.restrict_rank", ev);
-    update_min_rank = (ev) => {
+    update_rules = (ev: React.ChangeEvent<HTMLSelectElement>) =>
+        this.upstate("challenge.game.rules", ev);
+    update_handicap = (ev: React.ChangeEvent<HTMLSelectElement>) =>
+        this.upstate("challenge.game.handicap", ev);
+    update_komi_auto = (ev: React.ChangeEvent<HTMLSelectElement>) =>
+        this.upstate("challenge.game.komi_auto", ev);
+    update_komi = (ev: React.ChangeEvent<HTMLInputElement>) =>
+        this.upstate("challenge.game.komi", ev);
+    update_challenge_color = (ev: React.ChangeEvent<HTMLSelectElement>) =>
+        this.upstate("challenge.challenger_color", ev);
+    update_disable_analysis = (ev: React.ChangeEvent<HTMLInputElement>) =>
+        this.upstate("challenge.game.disable_analysis", ev);
+    update_restrict_rank = (ev: React.ChangeEvent<HTMLInputElement>) =>
+        this.upstate("conf.restrict_rank", ev);
+    update_min_rank = (ev: React.ChangeEvent<HTMLSelectElement>) => {
         const min_ranking = parseInt(ev.target.value);
         let max_ranking = this.state.challenge.max_ranking;
         if (min_ranking > max_ranking) {
@@ -837,7 +854,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             }),
         });
     };
-    update_max_rank = (ev) => {
+    update_max_rank = (ev: React.ChangeEvent<HTMLSelectElement>) => {
         let min_ranking = this.state.challenge.min_ranking;
         const max_ranking = parseInt(ev.target.value);
         if (max_ranking < min_ranking) {
@@ -850,23 +867,27 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             }),
         });
     };
-    update_demo_black_name = (ev) => this.upstate("demo.black_name", ev);
-    update_demo_white_name = (ev) => this.upstate("demo.white_name", ev);
-    update_demo_black_ranking = (ev) => this.upstate("demo.black_ranking", ev);
-    update_demo_white_ranking = (ev) => this.upstate("demo.white_ranking", ev);
+    update_demo_black_name = (ev: React.ChangeEvent<HTMLInputElement>) =>
+        this.upstate("demo.black_name", ev);
+    update_demo_white_name = (ev: React.ChangeEvent<HTMLInputElement>) =>
+        this.upstate("demo.white_name", ev);
+    update_demo_black_ranking = (ev: React.ChangeEvent<HTMLSelectElement>) =>
+        this.upstate("demo.black_ranking", ev);
+    update_demo_white_ranking = (ev: React.ChangeEvent<HTMLSelectElement>) =>
+        this.upstate("demo.white_ranking", ev);
 
-    update_selected_demo_player_black = (ev) => {
+    update_selected_demo_player_black = (ev: React.ChangeEvent<HTMLSelectElement>) => {
         const idx = parseInt(ev.target.value);
-        this.upstate("demo.black_name", this.props.playersList[idx].name);
-        this.upstate("demo.black_ranking", this.props.playersList[idx].rank);
+        this.upstate("demo.black_name", this.props.playersList?.[idx].name);
+        this.upstate("demo.black_ranking", this.props.playersList?.[idx].rank);
         this.setState({
             selected_demo_player_black: idx,
         });
     };
-    update_selected_demo_player_white = (ev) => {
+    update_selected_demo_player_white = (ev: React.ChangeEvent<HTMLSelectElement>) => {
         const idx = parseInt(ev.target.value);
-        this.upstate("demo.white_name", this.props.playersList[idx].name);
-        this.upstate("demo.white_ranking", this.props.playersList[idx].rank);
+        this.upstate("demo.white_name", this.props.playersList?.[idx].name);
+        this.upstate("demo.white_ranking", this.props.playersList?.[idx].rank);
         this.setState({
             selected_demo_player_white: idx,
         });
@@ -1633,27 +1654,29 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                     !this.state.hide_preferred_settings_on_portrait ||
                     null) && (
                     <div style={{ padding: "0.5em", marginTop: "0.1em" }}>
-                        {this.state.preferred_settings.map((setting: ChallengeDetails, index) => {
-                            return (
-                                <div key={index} style={{ marginBottom: "0.5em" }}>
-                                    <button
-                                        onClick={this.usePreferredSetting.bind(this, index)}
-                                        className="xs primary"
-                                    >
-                                        {_("Use")}
-                                    </button>
-                                    <button
-                                        onClick={this.deletePreferredSetting.bind(this, index)}
-                                        className="xs reject"
-                                    >
-                                        {_("Delete")}
-                                    </button>
-                                    <span style={{ marginLeft: "0.5em" }}>
-                                        {challenge_text_description(setting)}
-                                    </span>
-                                </div>
-                            );
-                        })}
+                        {this.state.preferred_settings.map(
+                            (setting: ChallengeDetails, index: number) => {
+                                return (
+                                    <div key={index} style={{ marginBottom: "0.5em" }}>
+                                        <button
+                                            onClick={this.usePreferredSetting.bind(this, index)}
+                                            className="xs primary"
+                                        >
+                                            {_("Use")}
+                                        </button>
+                                        <button
+                                            onClick={this.deletePreferredSetting.bind(this, index)}
+                                            className="xs reject"
+                                        >
+                                            {_("Delete")}
+                                        </button>
+                                        <span style={{ marginLeft: "0.5em" }}>
+                                            {challenge_text_description(setting)}
+                                        </span>
+                                    </div>
+                                );
+                            },
+                        )}
                     </div>
                 )}
             </div>
@@ -1767,7 +1790,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
     componentDidUpdate() {
         this.upstate_object = null;
     }
-    bulkUpstate(arr) {
+    bulkUpstate(arr: Array<Array<any>>) {
         const next_state: any = this.nextState();
         const state_update: any = {};
 
@@ -1794,7 +1817,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         }
         this.setState(state_update);
     }
-    upstate(key: string | Array<Array<any>>, event_or_value?) {
+    upstate(key: string | Array<Array<any>>, event_or_value?: any) {
         if (!event_or_value && Array.isArray(key)) {
             return this.bulkUpstate(key);
         }
@@ -1850,7 +1873,7 @@ export function createDemoBoard(
     );
 }
 export function challengeComputer() {
-    return challenge(null, null, true);
+    return challenge(undefined, null, true);
 }
 export function challengeRematch(
     goban: Goban,
@@ -1877,9 +1900,9 @@ export function challengeRematch(
                 conf.players.black.id === opponent.id ? ("white" as const) : ("black" as const),
             game: {
                 handicap: conf.handicap,
-                time_control: conf.time_control["time_control"],
+                time_control: conf.time_control,
                 rules: conf.rules,
-                ranked: conf.config.ranked,
+                ranked: !!conf.config.ranked,
                 width: conf.width,
                 height: conf.height,
                 komi_auto: "custom",
@@ -1887,7 +1910,7 @@ export function challengeRematch(
                 disable_analysis: conf.disable_analysis,
                 pause_on_weekends: original_game_meta.pause_on_weekends ?? false,
                 initial_state: null,
-                private: conf["private"],
+                private: (conf as any)["private"], // this is either missing from the type def or invalid
             },
             invite_only: false, // maybe one day we will support challenge-links on the rematch dialog!
         },
@@ -1896,7 +1919,7 @@ export function challengeRematch(
 
     challenge(opponent.id, null, false, config);
 }
-export function challenge_text_description(challenge) {
+export function challenge_text_description(challenge: ChallengeDetails) {
     const c = challenge;
     const g = "game" in challenge ? challenge.game : challenge;
     let details_html = g.ranked ? _("Ranked") : _("Unranked");
@@ -1921,9 +1944,9 @@ export function challenge_text_description(challenge) {
             : g.time_control;
 
     if (typeof time_control === "object") {
-        if (time_control.time_control !== "none") {
+        if (time_control.system !== "none") {
             // This is gross and still needs refactoring, but preserves the old behavior
-            const time_control_system = time_control.system || time_control.time_control;
+            const time_control_system = time_control.system;
             details_html +=
                 ", " +
                 interpolate(_("%s clock: %s"), [
@@ -1947,24 +1970,25 @@ export function challenge_text_description(challenge) {
             : ", " + interpolate(_("{{komi}} komi"), { komi: g.komi })) +
         (g.disable_analysis ? ", " + _("analysis disabled") : "");
     if (c.challenger_color !== "automatic") {
-        let yourcolor = "";
+        let your_color = "";
+
         if (
             data.get("user") &&
-            ((c.challenger && c.challenger.id !== data.get("user").id) ||
-                (c.user && c.user.id !== data.get("user").id))
+            ((c as any)?.challenger?.id !== data.get("user").id ||
+                (c as any)?.user?.id !== data.get("user").id)
         ) {
             if (c.challenger_color === "black") {
-                yourcolor = _("white");
+                your_color = _("white");
             } else if (c.challenger_color === "white") {
-                yourcolor = _("black");
+                your_color = _("black");
             } else {
-                yourcolor = _(c.challenger_color);
+                your_color = _(c.challenger_color);
             }
         } else {
-            yourcolor = _(c.challenger_color);
+            your_color = _(c.challenger_color);
         }
 
-        details_html += ", " + interpolate(pgettext("color", "you play as %s"), [yourcolor]);
+        details_html += ", " + interpolate(pgettext("color", "you play as %s"), [your_color]);
     }
 
     return details_html;

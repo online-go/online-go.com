@@ -41,7 +41,7 @@ type Challenge = socket_api.seekgraph_global.Challenge;
 
 export function ChallengeLinkLanding(): JSX.Element {
     /* State */
-    const [linked_challenge, set_linked_challenge] = React.useState<Challenge>(null);
+    const [linked_challenge, set_linked_challenge] = React.useState<Challenge>();
     const [logging_in, set_logging_in] = React.useState<boolean>(false);
 
     const navigate = useNavigate();
@@ -87,11 +87,11 @@ export function ChallengeLinkLanding(): JSX.Element {
                     errorAlerter(err);
                 });
         }
-        data.set("pending_accepted_challenge", null);
+        data.set("pending_accepted_challenge", undefined);
     };
 
     const accept = () => {
-        if (logged_in) {
+        if (logged_in && linked_challenge) {
             doAcceptance(linked_challenge);
         } else {
             set_logging_in(true);
@@ -108,7 +108,6 @@ export function ChallengeLinkLanding(): JSX.Element {
             "HonouredGuest",
         );
 
-        // naively uniquify... 6 lsbs of epoch... good enough?
         const new_username =
             new_username_root.replace(/\s+/g, "") + Date.now().toString().slice(-6);
 
@@ -226,7 +225,7 @@ export function ChallengeLinkLanding(): JSX.Element {
 
             {((!linked_challenge && !pending_accepted_challenge) || null) && <LoadingPage />}
 
-            {((linked_challenge && !pending_accepted_challenge) || null) && (
+            {((linked_challenge && !pending_accepted_challenge) || null) && linked_challenge && (
                 <>
                     <Card>
                         <div className="invitation">

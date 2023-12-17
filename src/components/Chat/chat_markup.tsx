@@ -21,7 +21,7 @@ import { Link } from "react-router-dom";
 import { Player } from "Player";
 import { profanity_filter } from "profanity_filter";
 
-export class TextReplacement {
+export interface TextReplacement {
     split: RegExp;
     pattern: RegExp;
     replacement: (m: RegExpExecArray, idx: number) => JSX.Element;
@@ -29,21 +29,6 @@ export class TextReplacement {
 
 const global_replacements: TextReplacement[] = [
     // spam mitigation
-    // replace tsumegodojo.worldpress.com urls with tsumegododo.worldpress.com as spam mitigation
-    {
-        split: /(https?:\/\/\S*tsumegodojo\S*)/i,
-        pattern: /(https?:\/\/[^\s\/]*)(tsumegodojo)(\S*)/i,
-        replacement: (m, idx) => (
-            <a key={idx} target="_blank" href={m[1] + "tsumegododo" + m[3]}>
-                {m[1] + "tsumegododo" + m[3]}
-            </a>
-        ),
-    },
-    {
-        split: /(\S*tsumegodojo\S*)/i,
-        pattern: /(\S*)(tsumegodojo)(\S*)/i,
-        replacement: (m, idx) => <span key={idx}>{m[1] + "tsumegododo" + m[3]}</span>,
-    },
     // Match github
     {
         split: /\b(https?:\/\/github\.com\/online-go\/online-go\.com\/pull\/[0-9]+(?:\/|\b))/i,
@@ -417,7 +402,7 @@ export function chat_markup(
 
     let fragments = [profanity_filter(body)];
     for (const r of replacements) {
-        fragments = [].concat.apply(
+        fragments = ([] as any[]).concat.apply(
             [],
             fragments.map((text_fragment) => {
                 return text_fragment.split(r.split);

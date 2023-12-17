@@ -40,7 +40,7 @@ export function GuestUserIntroRengo(): JSX.Element {
                 position={"bottom-right"}
                 anchor={"top-right"}
             >
-                <div>{_("The organiser will start your Rengo game when it is ready")} </div>
+                <div>{_("The organizer will start your Rengo game when it is ready")} </div>
             </HelpItem>
         </HelpFlow>
     );

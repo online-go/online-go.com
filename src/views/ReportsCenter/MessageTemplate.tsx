@@ -260,18 +260,18 @@ export const WARNING_TEMPLATES: MessageTemplates = {
             show_warning_button: true,
         },
     },
-    Harrasment: {
-        "Undo-harrasment": {
+    Harassment: {
+        "Undo-harassment": {
             message: `
                 Please note that our undo policy is as follows:
 
                 You are allowed to request an undo at any time for any reason,
-                however **your oppponent is not obligated to accept the undo
+                however **your opponent is not obligated to accept the undo
                 request regardless of reason**. This includes unintentional
                 misclicks, bugs, or any other reason.
 
                 Scolding your opponent for their decision is viewed as a form
-                of harrasement, which is not allowed and can result in punitive
+                of harassment, which is not allowed and can result in punitive
                 actions taken.
 
                 See our Terms of Service for more information.
@@ -315,7 +315,7 @@ export const REPORTER_RESPONSE_TEMPLATES: MessageTemplates = {
         },
         "Formal warning about chat abuse": {
             message: `
-            Thanks for your report, #REPORTED has been given a formal warning, and their chat privileges at OGS will be removed if that behaviour continues.`,
+            Thanks for your report, #REPORTED has been given a formal warning, and their chat privileges at OGS will be removed if that behavior continues.`,
             show_warning_button: false,
         },
         "Chat banned": {
@@ -367,7 +367,7 @@ export const REPORTER_RESPONSE_TEMPLATES: MessageTemplates = {
         },
         "Not escaping - using Cancel": {
             message: `
-                Thanks for your report. Player are allowed to use the Cancel button to cancel a game that they have realised
+                Thanks for your report. Player are allowed to use the Cancel button to cancel a game that they have realized
                 will not suit them, as long as they do not do that too often. I have reminded your opponent to use that sparingly.
                 Thanks again.`,
             show_warning_button: false,
@@ -390,8 +390,8 @@ export const REPORTER_RESPONSE_TEMPLATES: MessageTemplates = {
         "Don't hassle about AI": {
             message: `
                 If you suspect your opponent of using AI, please tell us and not them.
-                When actual cheaters are warned about suspicion, they change their behaviour,
-                it makes it harder to detect.   Also, accusations of AI use feel like harrasment,
+                When actual cheaters are warned about suspicion, they change their behavior,
+                it makes it harder to detect.   Also, accusations of AI use feel like harassment,
                 which is not allowed.  Please finish the game the best you can and report it - this
                 provides the best evidence, and we will investigate`,
             show_warning_button: false,
@@ -448,7 +448,7 @@ export function MessageTemplate({
                     /#XX+/g,
                     game_id ? `[${game_id.toString()}](/game/${game_id.toString()})` : "#XXXXXXXX",
                 )
-                .replace(/#REPORTED/, reported ? reported.username : "that player")
+                .replace(/#REPORTED/, reported?.username ?? "that player")
                 .replace(/\n[ \t]+/g, "\n")
                 .replace(/[ \t]+\n/g, "\n")
                 .replace(/([^\n])[\n]([^\n])/g, "$1 $2");
@@ -565,7 +565,7 @@ export function MessageTemplate({
             <div className="buttons">
                 <button
                     onClick={sendWarning}
-                    disabled={!text || (template && !template.show_warning_button)}
+                    disabled={(!text || (template && !template.show_warning_button)) ?? undefined}
                 >
                     Send Warning
                 </button>

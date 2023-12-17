@@ -26,7 +26,7 @@ import { ignore, errorAlerter, dup } from "misc";
 import { rankString, allRanks } from "rank_utils";
 import { createDemoBoard } from "ChallengeModal";
 
-window["dup"] = dup;
+(window as any)["dup"] = dup;
 
 import { alert } from "swal_config";
 const ranks = allRanks();
@@ -36,7 +36,7 @@ interface Round {
     id: number;
     name: string;
     notes: string;
-    entries: any[];
+    entries: RoundEntry[];
 }
 interface TournamentRecordState {
     editing: boolean;
@@ -53,21 +53,25 @@ interface TournamentRecordState {
     editable_by_current_user?: boolean;
 }
 
+interface RoundEntry {
+    [k: string]: any;
+}
+
 export function TournamentRecord(): JSX.Element {
     const params = useParams<"tournament_record_id">();
-    const tournament_record_id = parseInt(params.tournament_record_id);
+    const tournament_record_id = parseInt(params.tournament_record_id ?? "0");
 
     const [, refresh] = React.useState(0);
     const [editing, setEditing] = React.useState(false);
     const [loading, setLoading] = React.useState(true);
     const [name, setName] = React.useState("");
     const [new_round_name, setNewRoundName] = React.useState("");
-    const [rounds, setRounds] = React.useState([]);
+    const [rounds, setRounds] = React.useState<any[]>([]);
     const [new_player_name, setNewPlayerName] = React.useState("");
     const [new_player_rank, setNewPlayerRank] = React.useState(1037);
     const [description, setDescription] = React.useState("");
     const [location, setLocation] = React.useState("");
-    const [players, setPlayers] = React.useState([]);
+    const [players, setPlayers] = React.useState<any[]>([]);
     const [editable_by_current_user, setEditableByCurrentUser] = React.useState(false);
 
     const player_table_ref = React.useRef<PaginatedTableRef>(null);
@@ -88,14 +92,14 @@ export function TournamentRecord(): JSX.Element {
             return;
         }
 
-        setLoading(loaded_state.current.loading);
-        setEditing(loaded_state.current.editing);
-        setName(loaded_state.current.name);
-        setRounds(loaded_state.current.rounds);
-        setDescription(loaded_state.current.description);
-        setLocation(loaded_state.current.location);
-        setPlayers(loaded_state.current.players);
-        setEditableByCurrentUser(loaded_state.current.editable_by_current_user);
+        setLoading(!!loaded_state.current.loading);
+        setEditing(!!loaded_state.current.editing);
+        setName(loaded_state.current.name ?? "");
+        setRounds(loaded_state.current.rounds as any);
+        setDescription(loaded_state.current.description ?? "");
+        setLocation(loaded_state.current.location ?? "");
+        setPlayers(loaded_state.current.players as any);
+        setEditableByCurrentUser(loaded_state.current.editable_by_current_user as any);
     };
 
     const abort_requests = () => {
@@ -215,7 +219,7 @@ export function TournamentRecord(): JSX.Element {
             });
     };
 
-    const deleteEntry = (round: Round, entry) => {
+    const deleteEntry = (round: Round, entry: RoundEntry) => {
         alert
             .fire({
                 text: "Are you sure you wish to delete this entry? The original game or review content will not be affected, but the entry will be removed from this list of game in this round.",
@@ -463,7 +467,7 @@ export function TournamentRecord(): JSX.Element {
                     <div className="round-entries-container">
                         <table className="round-entries">
                             <tbody>
-                                {round.entries.map((entry) => (
+                                {round.entries.map((entry: RoundEntry) => (
                                     <tr key={entry.id} className="round-entry">
                                         {editable && (
                                             <td>

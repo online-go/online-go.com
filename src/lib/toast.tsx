@@ -23,7 +23,7 @@ interface Events {
     close: never;
 }
 
-let toast_meta_container = null;
+let toast_meta_container: JQuery | null = null;
 
 export class Toast extends TypedEventEmitter<Events> {
     private react_root: ReactDOM.Root;
@@ -55,7 +55,7 @@ export class Toast extends TypedEventEmitter<Events> {
     }
 }
 
-export function toast(element: React.ReactElement<any>, timeout?: number): Toast {
+export function toast(element: React.ReactElement<any>, timeout: number = 0): Toast {
     if (toast_meta_container == null) {
         toast_meta_container = $("<div id='toast-meta-container'>");
         $(document.body).append(toast_meta_container);

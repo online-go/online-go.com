@@ -18,8 +18,8 @@
 import * as React from "react";
 
 export interface VariantProps {
-    value: string; // Value the expiriment name should be set to to use this variant
-    bodyclass?: string; // class added to body tag when this variant is being used
+    value: string; // Value the experiment name should be set to to use this variant
+    bodyClass?: string; // class added to body tag when this variant is being used
     children: React.ReactElement[] | React.ReactElement;
 }
 

@@ -25,7 +25,7 @@ interface ErrorBoundaryProps {
 }
 
 export class ErrorBoundary extends React.Component<ErrorBoundaryProps, any> {
-    constructor(props) {
+    constructor(props: ErrorBoundaryProps) {
         super(props);
         this.state = {
             hasError: false,
@@ -35,7 +35,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, any> {
         };
     }
 
-    componentDidCatch(error, info) {
+    componentDidCatch(error: Error, info: React.ErrorInfo) {
         this.setState({
             hasError: true,
             error: error,
@@ -65,7 +65,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, any> {
                     }
                 }
 
-                scope.setExtras(info);
+                scope.setExtras(info as any);
                 const eventId = Sentry.captureException(error);
                 this.setState({ eventId });
             });
@@ -97,7 +97,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, any> {
     }
 }
 
-window["test_sentry"] = () => {
+(window as any)["test_sentry"] = () => {
     try {
         throw new Error("SENTRY TEST");
     } catch (e) {

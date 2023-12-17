@@ -1,6 +1,8 @@
 {
 	"recommendations": [
 		"esbenp.prettier-vscode",
-		"dbaeumer.vscode-eslint"
+		"dbaeumer.vscode-eslint",
+		"sysoev.language-stylus",
+		"streetsidesoftware.code-spell-checker"
 	],
 }

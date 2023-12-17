@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import * as ReactSelect from "react-select";
 import { _ } from "translate";
 
 import * as player_cache from "player_cache";
@@ -23,7 +24,7 @@ import { JosekiTagSelector, JosekiTag } from "../JosekiTagSelector";
 import { PlayerCacheEntry } from "player_cache";
 import { get } from "requests";
 
-export type JosekiFilter = { contributor: number; tags: JosekiTag[]; source: number };
+export type JosekiFilter = { contributor?: number; tags: JosekiTag[]; source?: number };
 
 interface JosekiVariationFilterProps {
     contributor_list_url: string;
@@ -47,10 +48,10 @@ export function JosekiVariationFilter(props: JosekiVariationFilterProps) {
             .then((body) => {
                 //console.log("Server response to contributors GET:", body);
                 const new_contributor_list: ContributorList = [];
-                body.forEach((id, idx) => {
+                body.forEach((id: number, idx: number) => {
                     //console.log("Looking up player", id, idx);
                     const player = player_cache.lookup(id);
-                    new_contributor_list[idx] = {
+                    (new_contributor_list as any)[idx] = {
                         resolved: player !== null,
                         player: player === null ? id : player,
                     };
@@ -87,19 +88,19 @@ export function JosekiVariationFilter(props: JosekiVariationFilterProps) {
             });
     }, []);
 
-    const onTagChange = (tags: JosekiTag[]) => {
+    const onTagChange = (tags: ReactSelect.MultiValue<JosekiTag>) => {
         const new_filter = { ...props.current_filter, tags };
 
-        props.set_variation_filter(new_filter); // tell parent the fiter changed, so the view needs to change
+        props.set_variation_filter(new_filter); // tell parent the filter changed, so the view needs to change
     };
 
-    const onContributorChange = (e) => {
+    const onContributorChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const val = e.target.value === "none" ? null : parseInt(e.target.value);
         const new_filter = { ...props.current_filter, contributor: val };
         props.set_variation_filter(new_filter);
     };
 
-    const onSourceChange = (e) => {
+    const onSourceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const val = e.target.value === "none" ? null : parseInt(e.target.value);
         const new_filter = { ...props.current_filter, source: val };
         props.set_variation_filter(new_filter);

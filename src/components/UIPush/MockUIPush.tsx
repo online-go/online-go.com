@@ -23,7 +23,7 @@ import "@testing-library/jest-dom";
 // ** Note: this component needs to be imported before the React components that are under test.
 
 // Use this hash: it collects up all the actions found on UIPush components in the React tree,
-// so you can call their action by event namein a test.
+// so you can call their action by event name in a test.
 //
 // For example:
 /*
@@ -36,7 +36,7 @@ import "@testing-library/jest-dom";
         });
 */
 
-export const uiPushActions = {};
+export const uiPushActions: { [event: string]: () => void } = {};
 
 interface UIPushProperties {
     event: string;
@@ -44,7 +44,7 @@ interface UIPushProperties {
     action: () => void;
 }
 
-function MockUIPush({ event, action }: UIPushProperties): JSX.Element {
+function MockUIPush({ event, action }: UIPushProperties): JSX.Element | null {
     React.useEffect(() => {
         uiPushActions[event] = action;
     }, [event, action]);

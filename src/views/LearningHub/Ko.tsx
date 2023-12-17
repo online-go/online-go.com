@@ -16,7 +16,7 @@
  */
 
 import { PuzzleConfig } from "goban";
-import { LearningPage } from "./LearningPage";
+import { LearningPage, LearningPageProperties } from "./LearningPage";
 import { _, pgettext } from "translate";
 import { LearningHubSection } from "./LearningHubSection";
 
@@ -45,7 +45,7 @@ export class Ko extends LearningHubSection {
 }
 
 class Page1 extends LearningPage {
-    constructor(props) {
+    constructor(props: LearningPageProperties) {
         super(props);
     }
 
@@ -57,7 +57,7 @@ class Page1 extends LearningPage {
     config(): PuzzleConfig {
         return {
             mode: "puzzle",
-
+            /* cspell: disable-next-line */
             initial_state: { black: "afbfcfcgdhcidi", white: "agbgahchbi" },
             move_tree: this.makePuzzleMoveTree(["b2d3a1"], []),
         };
@@ -65,7 +65,7 @@ class Page1 extends LearningPage {
 }
 
 class Page2 extends LearningPage {
-    constructor(props) {
+    constructor(props: LearningPageProperties) {
         super(props);
     }
 
@@ -76,6 +76,7 @@ class Page2 extends LearningPage {
         return {
             mode: "puzzle",
 
+            /* cspell: disable-next-line */
             initial_state: { black: "ecedeedfegehfh", white: "fdcedefeefgfcgdgfg" },
             move_tree: this.makePuzzleMoveTree(["f4c4e4"], ["c4b4", "g3c4"]),
         };
@@ -83,7 +84,7 @@ class Page2 extends LearningPage {
 }
 
 class Page3 extends LearningPage {
-    constructor(props) {
+    constructor(props: LearningPageProperties) {
         super(props);
     }
 
@@ -94,6 +95,7 @@ class Page3 extends LearningPage {
         return {
             mode: "puzzle",
 
+            /* cspell: disable-next-line */
             initial_state: { black: "fcfdgehfggfhgh", white: "edfeefgffgeh" },
             move_tree: this.makePuzzleMoveTree(["f4e3e5"], ["e3d3", "e5d5", "h5f4", "g6f4"]),
         };
@@ -101,7 +103,7 @@ class Page3 extends LearningPage {
 }
 
 class Page4 extends LearningPage {
-    constructor(props) {
+    constructor(props: LearningPageProperties) {
         super(props);
     }
 
@@ -116,6 +118,7 @@ class Page4 extends LearningPage {
             width: 13,
             height: 13,
 
+            /* cspell: disable-next-line */
             initial_state: { black: "bgcgchcicjbkalclbm", white: "bebfagbhaibibjak" },
             move_tree: this.makePuzzleMoveTree(
                 ["a8a9a4a6a8"],

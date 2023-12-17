@@ -39,20 +39,20 @@ import { EmbeddedChatCard } from "Chat";
 // They get to chat to each other here, in a dedicated channel, and mutually agree when to start.
 
 export function OnlineLeaguePlayerLanding(): JSX.Element {
-    const { search: urlparams } = useLocation();
+    const { search: url_params } = useLocation();
 
     /* State */
     const [loading, set_loading] = React.useState(true); // set to false after we have the info about that match they are joining
     const [logging_in, set_logging_in] = React.useState<boolean>(false);
     const [im_ready, set_im_ready] = React.useState(false);
 
-    const [match, set_match] = React.useState<rest_api.online_league.MatchStatus>(null);
+    const [match, set_match] = React.useState<rest_api.online_league.MatchStatus>();
 
-    const [linked_challenge_key, set_linked_challenge_key] = React.useState(
-        new URLSearchParams(urlparams).get("id"),
+    const [linked_challenge_key, set_linked_challenge_key] = React.useState<string>(
+        new URLSearchParams(url_params).get("id") || "",
     );
 
-    const [side, set_side] = React.useState(new URLSearchParams(urlparams).get("side"));
+    const [side, set_side] = React.useState(new URLSearchParams(url_params).get("side") || "black");
 
     const navigate = useNavigate();
 
@@ -66,21 +66,29 @@ export function OnlineLeaguePlayerLanding(): JSX.Element {
     //  - tell the server when this player is ready
     // possibly logging in or registering them along with league id along the way...
 
-    const pending_match = data.get("pending_league_match", null);
+    const pending_match = data.get("pending_league_match");
 
     const user = useUser();
     const logged_in = !user.anonymous;
 
     const signThemIn = () => {
         console.log("Helping them sign in");
-        data.set("pending_league_match", { ...match, side: side, key: linked_challenge_key });
+        data.set("pending_league_match", {
+            ...match,
+            side: side,
+            key: linked_challenge_key,
+        } as any);
         // Go to sign in, and come back to this page after signing in
         navigate("/sign-in#/online-league/league-player", { replace: true });
     };
 
     const signThemUp = () => {
         console.log("Sending them to register");
-        data.set("pending_league_match", { ...match, side: side, key: linked_challenge_key });
+        data.set("pending_league_match", {
+            ...match,
+            side: side,
+            key: linked_challenge_key,
+        } as any);
         navigate("/register#/online-league/league-player", { replace: true });
     };
 
@@ -111,14 +119,14 @@ export function OnlineLeaguePlayerLanding(): JSX.Element {
         set_im_ready(!im_ready);
     };
 
-    const jumpToGame = (details) => {
-        if (details.matchId === match.id) {
+    const jumpToGame = (details: any) => {
+        if (details.matchId === match?.id) {
             navigate(`/game/${details.gameId}`, { replace: true });
         }
     };
 
-    const updateWaitingStatus = (details) => {
-        if (details.matchId === match.id) {
+    const updateWaitingStatus = (details: any) => {
+        if (details.matchId === match?.id && match) {
             set_match({ ...match, black_ready: details.black, white_ready: details.white });
         }
     };
@@ -132,8 +140,10 @@ export function OnlineLeaguePlayerLanding(): JSX.Element {
             set_logging_in(false);
             set_loading(false);
             set_side(pending_match.side);
-            set_linked_challenge_key(pending_match.key);
-            data.set("pending_league_match", null);
+            if (pending_match.key) {
+                set_linked_challenge_key(pending_match.key);
+            }
+            data.set("pending_league_match", undefined);
         } else if (!match) {
             if (!linked_challenge_key || !side) {
                 console.log(
@@ -142,7 +152,7 @@ export function OnlineLeaguePlayerLanding(): JSX.Element {
                 browserHistory.push("/");
             } else {
                 // no matter what, make sure this is clean
-                data.set("pending_league_match", null);
+                data.set("pending_league_match", undefined);
 
                 // If they're not logged in, we have to get them logged in before doing anything else
                 if (!logged_in && !logging_in) {
@@ -178,9 +188,9 @@ export function OnlineLeaguePlayerLanding(): JSX.Element {
 
             {(!loading || null) && (
                 <React.Fragment>
-                    <h2>{match.name}</h2>
+                    <h2>{match?.name}</h2>
                     <div className={"match-detail"}>
-                        ({match.league} Match {match.id})
+                        ({match?.league} Match {match?.id})
                     </div>
                 </React.Fragment>
             )}
@@ -232,16 +242,16 @@ export function OnlineLeaguePlayerLanding(): JSX.Element {
                     </button>
                     <div className="waiting-chat">
                         <EmbeddedChatCard
-                            inputPlaceholdertText={pgettext(
+                            inputPlaceholderText={pgettext(
                                 "place holder text in a chat channel input",
                                 "Chat while you wait...",
                             )}
-                            channel={`ool-landing-${match.id}`}
+                            channel={`ool-landing-${match?.id}`}
                         />
                     </div>
                     <div>
                         {_("Black: ")}
-                        {match.black_ready ? <i className="fa fa-thumbs-up" /> : _("waiting... ")}
+                        {match?.black_ready ? <i className="fa fa-thumbs-up" /> : _("waiting... ")}
                         {`${
                             side === "black"
                                 ? pgettext(
@@ -253,7 +263,7 @@ export function OnlineLeaguePlayerLanding(): JSX.Element {
                     </div>
                     <div>
                         {_("White: ")}
-                        {match.white_ready ? <i className="fa fa-thumbs-up" /> : _("waiting...")}
+                        {match?.white_ready ? <i className="fa fa-thumbs-up" /> : _("waiting...")}
                         {`${
                             side === "white"
                                 ? pgettext(

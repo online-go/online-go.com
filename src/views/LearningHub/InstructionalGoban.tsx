@@ -31,9 +31,9 @@ interface InstructionalGobanProps {
 
 export class InstructionalGoban extends React.Component<InstructionalGobanProps> {
     goban_div: HTMLDivElement;
-    goban: Goban;
+    goban?: Goban;
 
-    constructor(props) {
+    constructor(props: InstructionalGobanProps) {
         super(props);
         // TODO: Remove this (state unused)
         this.state = {};
@@ -48,7 +48,7 @@ export class InstructionalGoban extends React.Component<InstructionalGobanProps>
     componentWillUnmount() {
         this.destroy();
     }
-    componentDidUpdate(prev_props) {
+    componentDidUpdate(prev_props: InstructionalGobanProps) {
         if (prev_props.config !== this.props.config) {
             this.destroy();
             this.initialize();
@@ -87,7 +87,7 @@ export class InstructionalGoban extends React.Component<InstructionalGobanProps>
             },
             this.props.config,
         );
-        window["goban"] = this.goban;
+        (window as any)["goban"] = this.goban;
 
         this.goban.setMode(this.props.config.mode || "puzzle");
         if (this.props.config.engine_phase) {

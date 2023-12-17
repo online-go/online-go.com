@@ -29,10 +29,11 @@ import { sfx } from "sfx";
 
 import { ogs_has_focus, getCurrentGameId, shouldOpenNewTab } from "misc";
 import { lookingAtOurLiveGame } from "TimeControl/util";
+import { PlayerCacheEntry } from "src/lib/player_cache";
 
 declare let Notification: any;
 
-interface Events {
+export interface NotificationManagerEvents {
     "turn-count": number;
     "total-count": number;
     notification: any;
@@ -41,8 +42,8 @@ interface Events {
 }
 
 const boot_time = Date.now();
-let notification_timeout = null;
-const sent = {};
+let notification_timeout: ReturnType<typeof setTimeout> | null = null;
+const sent: { [k: string]: boolean } = {};
 
 $(window).on("storage", (event) => {
     //console.log(event);
@@ -56,7 +57,7 @@ $(window).on("storage", (event) => {
     }
 });
 
-export function emitNotification(title, body, cb?) {
+export function emitNotification(title: string, body: string, cb?: () => void) {
     try {
         if (!preferences.get("desktop-notifications")) {
             return;
@@ -80,7 +81,7 @@ export function emitNotification(title, body, cb?) {
                                         .then(() => {
                                             emitNotification(title, body, cb);
                                         })
-                                        .catch((err) => console.error(err));
+                                        .catch((err: any) => console.error(err));
                                 } catch (e) {
                                     /* deprecated usage, but only way supported on safari currently */
                                     Notification.requestPermission(() => {
@@ -170,26 +171,27 @@ export function emitNotification(title, body, cb?) {
                 }
             }, delay);
         } else {
-            //console.log("Ignoring notificaiton sent within the first few seconds of page load", title, body);
+            //console.log("Ignoring notification sent within the first few seconds of page load", title, body);
         }
     } catch (e) {
         console.log("Error emitting notification: ", e);
     }
 }
 export class NotificationManager {
-    user;
-    notifications;
-    ordered_notifications;
-    unread_notification_count;
-    boards_to_move_on;
-    active_boards;
-    advances;
-    auth;
-    event_emitter: TypedEventEmitter<Events>;
+    user?: PlayerCacheEntry;
+
+    notifications: { [k: string]: any };
+    ordered_notifications: any[];
+    unread_notification_count: number = 0;
+    boards_to_move_on: { [k: string]: any };
+    active_boards: { [k: string]: any };
+    advances: number = 0;
+    auth: string | undefined;
+    event_emitter: TypedEventEmitter<NotificationManagerEvents>;
 
     constructor() {
-        window["notification_manager"] = this;
-        this.event_emitter = new TypedEventEmitter<Events>();
+        (window as any)["notification_manager"] = this;
+        this.event_emitter = new TypedEventEmitter<NotificationManagerEvents>();
 
         this.notifications = {};
         this.ordered_notifications = [];
@@ -199,7 +201,7 @@ export class NotificationManager {
         this.advances = 0; // count of times "advance" has been called (since last "urgent board" advance)
         browserHistory.listen(this.onNavigate);
     }
-    setUser(user) {
+    setUser(user: PlayerCacheEntry) {
         if (this.user && user.id === this.user.id) {
             return;
         }
@@ -222,7 +224,7 @@ export class NotificationManager {
             looking_at_game_id
         ];
 
-        const target_boards = [];
+        const target_boards: { id: number; expiration: number }[] = [];
         let we_have_moves_to_play = false;
 
         // If there are boards where we have a move, then we'll chose one of these.
@@ -295,14 +297,14 @@ export class NotificationManager {
 
         // open a new tab if the user `asked for it`, or if we must protect against disconnection from a live game
 
-        if ((click_event && shouldOpenNewTab(click_event)) || lookingAtOurLiveGame()) {
+        if ((click_event && shouldOpenNewTab(click_event as any)) || lookingAtOurLiveGame()) {
             window.open("/game/" + target_boards[target_board].id, "_blank");
         } else {
             browserHistory.push("/game/" + target_boards[target_board].id);
         }
     }
 
-    deleteNotification(notification, dont_rebuild?: boolean) {
+    deleteNotification(notification: any, dont_rebuild?: boolean) {
         socket.send("notification/delete", {
             notification_id: notification.id,
         });
@@ -541,7 +543,7 @@ export class NotificationManager {
         return true;
     }
 
-    // Clears the notifiction you get when you have some amount of
+    // Clears the notification you get when you have some amount of
     // time left to make your move. This is fine to call with a game
     // that has no notification for it yet.
     clearTimecopNotification(game_id: number) {

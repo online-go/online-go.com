@@ -20,7 +20,7 @@ import * as data from "data";
 import { Link, useParams } from "react-router-dom";
 import { CardLink } from "material";
 import { _, pgettext } from "translate";
-import { sections, allsections } from "./sections";
+import { sections, all_sections } from "./sections";
 import { Ribbon } from "misc-ui";
 import { getSectionCompletion, getSectionByName } from "./util";
 import { browserHistory } from "ogsHistory";
@@ -44,14 +44,14 @@ export function LearningHub(): JSX.Element {
     }, [params.section, params.page]);
 
     const section_name = (params.section || "index").toLowerCase();
-    let section = null;
+    let section: any = null;
     let next_section_name = "";
 
-    for (let i = 0; i < allsections.length; ++i) {
-        if (allsections[i].section() === section_name) {
-            section = allsections[i];
-            if (i + 1 < allsections.length) {
-                next_section_name = allsections[i + 1].section();
+    for (let i = 0; i < all_sections.length; ++i) {
+        if (all_sections[i].section() === section_name) {
+            section = all_sections[i];
+            if (i + 1 < all_sections.length) {
+                next_section_name = all_sections[i + 1].section();
             }
         }
     }
@@ -91,7 +91,7 @@ export function LearningHub(): JSX.Element {
 }
 
 class Index extends React.PureComponent<{}, any> {
-    constructor(props) {
+    constructor(props: {}) {
         super(props);
     }
 
@@ -122,11 +122,11 @@ class Index extends React.PureComponent<{}, any> {
                                         >
                                             <MiniGoban
                                                 noLink
-                                                id={null}
+                                                id={undefined}
                                                 json={config}
                                                 displayWidth={64}
-                                                white={null}
-                                                black={null}
+                                                white={undefined}
+                                                black={undefined}
                                             />
                                             <div>
                                                 <h1>{S.title()}</h1>
@@ -212,7 +212,7 @@ class Index extends React.PureComponent<{}, any> {
 }
 
 class SectionNav extends React.Component<{}, any> {
-    constructor(props) {
+    constructor(props: {}) {
         super(props);
     }
 
@@ -297,7 +297,7 @@ function getSectionClassName(section_name: string): string {
     const sc = getSectionCompletion(section_name);
 
     const S = getSectionByName(section_name);
-    if (S.pages()[0].underConstruction()) {
+    if (S?.pages()[0].underConstruction()) {
         return "under-construction";
     }
 

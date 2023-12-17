@@ -42,7 +42,7 @@ const ACTION_PROMPTS = {
     ),
     annul_escaped: pgettext(
         "Label for a moderator to select this option",
-        "Wrong result due to escape - annull and warn the escaper.",
+        "Wrong result due to escape - annul and warn the escaper.",
     ),
     warn_escaper: pgettext(
         "Label for a moderator to select this option",
@@ -91,7 +91,7 @@ export function ModerationActionSelector({
                 </div>
             )}
             {!enable && (
-                <div className="diabled-actions-note">
+                <div className="disabled-actions-note">
                     {_("This report was handled after you decided to look at it!")}
                 </div>
             )}
@@ -110,7 +110,7 @@ export function ModerationActionSelector({
                             value={a}
                             onChange={updateSelectedAction}
                         />
-                        <label htmlFor={a}>{ACTION_PROMPTS[a]}</label>
+                        <label htmlFor={a}>{(ACTION_PROMPTS as any)[a]}</label>
                     </div>
                 ))}
             {((action_choices && enable) || null) && (

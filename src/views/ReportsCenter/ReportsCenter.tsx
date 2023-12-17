@@ -57,7 +57,7 @@ for (let i = 0; i < report_categories.length; ++i) {
     category_priorities[report_categories[i].type] = i;
 }
 
-export function ReportsCenter(): JSX.Element {
+export function ReportsCenter(): JSX.Element | null {
     const user = useUser();
     const navigateTo = useNavigate();
     const refresh = useRefresh();
@@ -66,7 +66,7 @@ export function ReportsCenter(): JSX.Element {
     const category = params["category"] || "all";
 
     const reports = report_manager.getAvailableReports();
-    const counts = {};
+    const counts: any = {};
     for (const report of reports) {
         counts[report.report_type] = (counts[report.report_type] || 0) + 1;
         counts["all"] = (counts["all"] || 0) + 1;
@@ -115,7 +115,7 @@ export function ReportsCenter(): JSX.Element {
         };
     }, [category, report_id]);
 
-    const setCategory = React.useCallback((category) => {
+    const setCategory = React.useCallback((category: string) => {
         navigateTo(`/reports-center/${category}`);
     }, []);
 
@@ -187,7 +187,7 @@ export function ReportsCenter(): JSX.Element {
 
             <div id="ReportsCenterContainer">
                 <div id="ReportsCenterCategoryList">
-                    {visible_categories.map((report_type, idx) => {
+                    {visible_categories.map((report_type, idx): JSX.Element | null => {
                         if ("type" in report_type) {
                             const ct = counts[report_type.type] || 0;
                             return (
@@ -233,6 +233,8 @@ export function ReportsCenter(): JSX.Element {
                                     );
                             }
                         }
+
+                        return null;
                     })}
                 </div>
                 <Select

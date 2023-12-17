@@ -21,11 +21,11 @@ import { Link } from "react-router-dom";
 import * as data from "data";
 import { ServerTimeDisplay } from "ServerTimeDisplay";
 
-declare let ogs_version;
-declare let ogs_current_language;
+declare let ogs_version: string;
+declare let ogs_current_language: string;
 
 export class About extends React.Component<{}, any> {
-    constructor(props) {
+    constructor(props: {}) {
         super(props);
     }
 
