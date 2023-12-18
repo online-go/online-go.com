@@ -23,9 +23,9 @@ import { GobanLineSummary } from "GobanLineSummary";
 import { Player } from "Player";
 import {
     JGOFTimeControl,
-    AdHocPauseControl,
-    AdHocClock,
-    AdHocPlayerClock,
+    JGOFPauseState,
+    JGOFClock,
+    JGOFPlayerClock,
     AdHocPackedMove,
     Goban,
 } from "goban";
@@ -42,10 +42,7 @@ interface GameType {
     white: UserType;
     goban?: Goban;
     json?: {
-        clock: AdHocClock;
         moves: AdHocPackedMove[];
-        pause_control?: AdHocPauseControl;
-        time_control?: JGOFTimeControl;
         rengo_teams: {
             black: Array<UserType>;
             white: Array<UserType>;
@@ -71,6 +68,7 @@ type DescendingSortOrder = `-${SortOrder}`;
 
 interface GameListState {
     sort_order: SortOrder | DescendingSortOrder;
+    force_render: number;
 }
 
 export class GameList extends React.PureComponent<GameListProps, GameListState> {
@@ -78,6 +76,7 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
         super(props);
         this.state = {
             sort_order: "clock",
+            force_render: 0,
         };
     }
 
@@ -89,7 +88,7 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
         }
     };
 
-    isPaused(pause_control: AdHocPauseControl | undefined) {
+    isPaused(pause_control: JGOFPauseState | undefined) {
         for (const _key in pause_control) {
             return true;
         }
@@ -98,107 +97,63 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
 
     computeRemainingTime(
         time_control: JGOFTimeControl | undefined,
-        clock: AdHocClock,
-        player_clock: AdHocPlayerClock | number,
+        clock: JGOFClock,
+        player_clock: JGOFPlayerClock,
     ) {
+        if (clock?.start_mode) {
+            return clock.start_time_left || 0;
+        }
+        if (clock?.stone_removal_time_left) {
+            return clock.stone_removal_time_left || 0;
+        }
         switch (time_control?.system) {
-            case "simple": {
-                const time: number = player_clock as number;
-                return time - clock.last_move;
-            }
-            case "absolute":
-            case "fischer": {
-                const time: AdHocPlayerClock = player_clock as AdHocPlayerClock;
-                return time.thinking_time * 1000;
-            }
-            case "byoyomi": {
-                const time: AdHocPlayerClock = player_clock as AdHocPlayerClock;
-                return (
-                    (time.thinking_time + (time.period_time as number) * (time.periods as number)) *
-                    1000
-                );
-            }
-            case "canadian": {
-                const time: AdHocPlayerClock = player_clock as AdHocPlayerClock;
-                return (time.thinking_time + (time.block_time as number)) * 1000;
-            }
             case "none":
             default:
                 return Number.MAX_SAFE_INTEGER;
+
+            case "fischer":
+            case "absolute":
+            case "simple":
+                return player_clock.main_time;
+
+            case "byoyomi":
+                return (
+                    player_clock.main_time +
+                    (player_clock.period_time_left || 0) +
+                    (player_clock.periods_left || 0) * ((time_control.period_time as number) * 1000)
+                );
+            case "canadian":
+                return player_clock.main_time + (player_clock.block_time_left || 0);
         }
     }
 
     extractClockSortFields(game: GameType, use_this_player: boolean) {
-        try {
-            // In the initial sort, game.goban is null. In later sorts, it's
-            // valid.
-            //
-            // This is why:
-            //
-            //   - GameList.render() calls:
-            //       - applyCurrentSort()   [game.goban null]
-            //       - LineSummaryTable()
-            //           - GobanLineSummary() [game.goban gets initialized]
-            //
-            //   - Later, something triggers a re-sort:
-            //       - applyCurrentSort()   [game.goban valid]
-            //
-            // For the initial sort, we can use game.json.clock, which comes
-            // directly with the game list.
-            const clock =
-                game.goban && game.goban.last_clock ? game.goban.last_clock : game.json?.clock;
-            const paused = game.goban
-                ? this.isPaused(game.goban.config?.pause_control)
-                : this.isPaused(game.json?.pause_control);
-            if (!clock) {
-                throw new Error("No clock");
-            }
-
-            // Figure out whose turn it is.
-            const is_current_player = clock.current_player === this.props.player?.id;
-
-            // 'expiration_or_rem' has two different meanings: an expiration
-            // timestamp or the time remaining on a clock. It's only coherent
-            // to compare for the same value of 'paused' and
-            // 'is_current_player'. Which is what the callers do.
-            //
-            // It would be possible to express the time remaining as an
-            // expiration time by adding it to some distant future timestamp.
-            // That seems unnecessary for now.
-            let expiration_or_rem: number;
-            if (!paused && is_current_player === use_this_player) {
-                // AdHocClock.expiration is perfect for sorting when the game
-                // is not paused, and we're sorting by the player whose turn it
-                // is. The value is a timestamp (in the future) when the game
-                // will time out if no one makes a move.
-                expiration_or_rem = clock.expiration;
-            } else {
-                // For paused games, or when sorting by the clock of the player
-                // whose turn it is NOT, the expiration timestamp is not useful.
-                // Compute the time remaining and sort by that.
-                const time_control = game.goban
-                    ? game.goban.config?.time_control
-                    : game.json?.time_control;
-                const is_black = clock.black_player_id === this.props.player?.id;
-                expiration_or_rem = this.computeRemainingTime(
-                    time_control,
-                    clock,
-                    is_black === use_this_player ? clock.black_time : clock.white_time,
-                );
-            }
-            return {
-                paused: paused,
-                is_current_player: is_current_player,
-                expiration_or_rem: expiration_or_rem,
-            };
-        } catch (e) {
-            console.error(game, e);
+        if (game?.goban?.last_emitted_clock === undefined) {
+            // No JGOFClock yet. Sort last.
             return {
                 paused: true,
                 is_current_player: false,
-                expiration_or_rem: Number.MAX_SAFE_INTEGER,
+                remaining: Number.MAX_SAFE_INTEGER,
             };
         }
+
+        const clock = game.goban.last_emitted_clock;
+        const paused = this.isPaused(clock.pause_state);
+
+        // Figure out which player clock to use.
+        const is_current_player = clock.current_player_id === this.props.player?.id?.toString();
+        const is_black = is_current_player === (clock.current_player === "black");
+        const use_black = use_this_player === is_black;
+        const remaining = this.computeRemainingTime(
+            game.goban.config?.time_control,
+            clock,
+            use_black ? clock.black_clock : clock.white_clock,
+        );
+        return {
+            paused: paused,
+            is_current_player: is_current_player,
+            remaining: remaining,
+        };
     }
 
     applyCurrentSort(games: GameType[]) {
@@ -211,7 +166,7 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
                     return (
                         +b_clock.is_current_player - +a_clock.is_current_player ||
                         +a_clock.paused - +b_clock.paused ||
-                        a_clock.expiration_or_rem - b_clock.expiration_or_rem ||
+                        a_clock.remaining - b_clock.remaining ||
                         a.id - b.id
                     );
                 });
@@ -225,7 +180,7 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
                     return (
                         +a_clock.is_current_player - +b_clock.is_current_player ||
                         +a_clock.paused - +b_clock.paused ||
-                        a_clock.expiration_or_rem - b_clock.expiration_or_rem ||
+                        a_clock.remaining - b_clock.remaining ||
                         a.id - b.id
                     );
                 });
@@ -320,11 +275,20 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
                     currentSort={this.state.sort_order}
                     player={this.props.player}
                     lineSummaryMode={this.props.lineSummaryMode}
+                    onFirstClock={() => this.onFirstClock()}
                 ></LineSummaryTable>
             );
         } else {
             return MiniGobanList(games, !!this.props.namesByGobans, this.props.miniGobanProps);
         }
+    }
+
+    onFirstClock() {
+        // Now that (more) gobans have their first clock, force render() to be
+        // called again so that the default sort (by clock) works.
+        this.setState({
+            force_render: this.state.force_render + 1,
+        });
     }
 }
 
@@ -337,6 +301,7 @@ interface LineSummaryTableProps extends GameListProps {
     disableSort: boolean;
     currentSort: SortOrder | DescendingSortOrder;
     onSort: (sortBy: SortOrder) => void;
+    onFirstClock: () => void;
 }
 
 function LineSummaryTable({
@@ -346,6 +311,7 @@ function LineSummaryTable({
     disableSort,
     currentSort,
     onSort,
+    onFirstClock,
 }: LineSummaryTableProps): JSX.Element {
     const getHeaderClassName = (sortOrder: SortOrder) => {
         const sortable = disableSort && player ? "" : "sortable";
@@ -426,6 +392,7 @@ function LineSummaryTable({
                     white={game.white}
                     player={player}
                     gobanRef={(goban) => (game.goban = goban)}
+                    onFirstClock={onFirstClock}
                     width={game.width}
                     height={game.height}
                     rengo_teams={game.json?.rengo_teams}
