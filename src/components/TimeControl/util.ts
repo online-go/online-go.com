@@ -487,7 +487,7 @@ export function classifyGameSpeed(
         const tpm = time_control;
         return tpm === 0 || tpm > 3600 ? "correspondence" : tpm < 10 ? "blitz" : "live";
     }
-    throw new Error("Invalid time control");
+    throw new Error(`Invalid time control: ${time_control}`);
 }
 
 export function durationString(seconds: number): string {

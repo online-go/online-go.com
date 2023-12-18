@@ -1422,6 +1422,12 @@ export function Game(): JSX.Element | null {
                     }
 
                     // folk think auto-zen-mode makes no sense for correspondence...
+                    if (game.source === "sgf") {
+                        if (!game.time_control_parameters) {
+                            game.time_control_parameters = "0";
+                        }
+                    }
+
                     const live = isLiveGame(
                         JSON.parse(game.time_control_parameters),
                         game.width,
