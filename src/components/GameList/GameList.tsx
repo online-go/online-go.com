@@ -279,17 +279,36 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
                     currentSort={this.state.sort_order}
                     player={this.props.player}
                     lineSummaryMode={this.props.lineSummaryMode}
-                    onFirstClock={() => this.onFirstClock()}
+                    onGobanCreated={(game: GameType, goban: Goban) =>
+                        this.onGobanCreated(game, goban)
+                    }
                 ></LineSummaryTable>
             );
         } else {
-            return MiniGobanList(games, !!this.props.namesByGobans, this.props.miniGobanProps);
+            return MiniGobanList(
+                games,
+                !!this.props.namesByGobans,
+                (game: GameType, goban: Goban) => this.onGobanCreated(game, goban),
+                this.props.miniGobanProps,
+            );
         }
     }
 
-    onFirstClock() {
-        // Now that (more) gobans have their first clock, force render() to be
-        // called again so that the default sort (by clock) works.
+    onGobanCreated(game: GameType, goban: Goban) {
+        // Save a pointer into the goban to use when sorting.
+        game.goban = goban;
+
+        // Render again once goban has a valid clock to set the sorted order.
+        if (goban.last_emitted_clock === undefined) {
+            goban.once("clock", () => {
+                this.forceRender();
+            });
+        } else {
+            this.forceRender();
+        }
+    }
+
+    forceRender() {
         this.setState({
             force_render: this.state.force_render + 1,
         });
@@ -305,7 +324,7 @@ interface LineSummaryTableProps extends GameListProps {
     disableSort: boolean;
     currentSort: SortOrder | DescendingSortOrder;
     onSort: (sortBy: SortOrder) => void;
-    onFirstClock: () => void;
+    onGobanCreated: (game: GameType, goban: Goban) => void;
 }
 
 function LineSummaryTable({
@@ -315,7 +334,7 @@ function LineSummaryTable({
     disableSort,
     currentSort,
     onSort,
-    onFirstClock,
+    onGobanCreated,
 }: LineSummaryTableProps): JSX.Element {
     const getHeaderClassName = (sortOrder: SortOrder) => {
         const sortable = disableSort && player ? "" : "sortable";
@@ -395,8 +414,7 @@ function LineSummaryTable({
                     black={game.black}
                     white={game.white}
                     player={player}
-                    gobanRef={(goban) => (game.goban = goban)}
-                    onFirstClock={onFirstClock}
+                    gobanRef={(goban) => onGobanCreated(game, goban)}
                     width={game.width}
                     height={game.height}
                     rengo_teams={game.json?.rengo_teams}
@@ -410,6 +428,7 @@ function LineSummaryTable({
 function MiniGobanList(
     games: GameType[],
     withNames: boolean,
+    onGobanCreated: (game: GameType, goban: Goban) => void,
     miniGobanProps?: MiniGobanProps,
 ): JSX.Element {
     return (
@@ -421,6 +440,7 @@ function MiniGobanList(
                         id={game.id}
                         width={game.width}
                         height={game.height}
+                        onGobanCreated={(goban) => onGobanCreated(game, goban)}
                         {...(miniGobanProps || {})}
                     />
                 );
