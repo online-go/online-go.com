@@ -129,7 +129,6 @@ function request(method: Method): RequestFunction {
                 signal,
                 method,
                 credentials: same_origin ? "include" : undefined,
-                keepalive: true,
                 mode: same_origin ? (csrf_safe ? "no-cors" : "cors") : undefined,
                 cache: cacheable ? "default" : "no-cache",
                 body: prepared_data as any,
