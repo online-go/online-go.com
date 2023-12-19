@@ -116,12 +116,16 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
             case "simple":
                 return player_clock.main_time;
 
-            case "byoyomi":
+            case "byoyomi": {
+                // JGOFClock.periods_left includes the current, partially used,
+                // period, but we just need to count the full ones.
+                const full_periods_left = (player_clock.periods_left || 1) - 1;
                 return (
                     player_clock.main_time +
                     (player_clock.period_time_left || 0) +
-                    (player_clock.periods_left || 0) * ((time_control.period_time as number) * 1000)
+                    full_periods_left * (time_control.period_time as number) * 1000
                 );
+            }
             case "canadian":
                 return player_clock.main_time + (player_clock.block_time_left || 0);
         }
