@@ -42,6 +42,7 @@ interface GobanLineSummaryProps {
     white: UserType;
     player?: { id: number };
     gobanRef?: (goban: Goban) => void;
+    onFirstClock?: () => void;
     width?: number;
     height?: number;
     rengo_teams?: {
@@ -116,6 +117,18 @@ export class GobanLineSummary extends React.Component<
 
             if (this.props.gobanRef) {
                 this.props.gobanRef(this.goban);
+            }
+
+            // Let the caller know the once we have a valid JGOFClock.
+            if (this.props.onFirstClock) {
+                const onFirstClock = this.props.onFirstClock;
+                if (this.goban.last_emitted_clock === undefined) {
+                    this.goban.once("clock", () => {
+                        onFirstClock();
+                    });
+                } else {
+                    onFirstClock();
+                }
             }
         });
     }
