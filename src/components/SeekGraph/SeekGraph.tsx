@@ -323,8 +323,8 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                         ]);
                     }
                 }
-                entry.rank = entry.ranking;
-                entry.pro = entry.professional;
+                entry.rank ??= entry.ranking;
+                entry.pro ??= entry.professional;
                 this.challenges[entry.challenge_id] = entry as unknown as AnchoredChallenge;
             }
         }
