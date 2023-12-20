@@ -145,6 +145,7 @@ export interface GobanInfoStateBase {
     white_name?: string;
 
     current_users_move?: boolean;
+    opponents_move?: boolean;
     black_to_move_cls?: string;
     white_to_move_cls?: string;
     in_stone_removal_phase?: boolean;

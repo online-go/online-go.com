@@ -289,6 +289,7 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
                 games,
                 !!this.props.namesByGobans,
                 (game: GameType, goban: Goban) => this.onGobanCreated(game, goban),
+                this.props?.player,
                 this.props.miniGobanProps,
             );
         }
@@ -429,6 +430,7 @@ function MiniGobanList(
     games: GameType[],
     withNames: boolean,
     onGobanCreated: (game: GameType, goban: Goban) => void,
+    player?: { id: number },
     miniGobanProps?: MiniGobanProps,
 ): JSX.Element {
     return (
@@ -441,6 +443,7 @@ function MiniGobanList(
                         width={game.width}
                         height={game.height}
                         onGobanCreated={(goban) => onGobanCreated(game, goban)}
+                        player={player}
                         {...(miniGobanProps || {})}
                     />
                 );
