@@ -1083,11 +1083,6 @@ export const GoResources = () => {
                             />,
                             <BasicResource
                                 countries={[en]}
-                                title="Go Shrine"
-                                href="http://goshrine.com/"
-                            />,
-                            <BasicResource
-                                countries={[en]}
                                 title="Fly or Die"
                                 href="http://www.flyordie.com/go/"
                             />,
