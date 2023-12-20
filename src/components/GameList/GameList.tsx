@@ -26,6 +26,9 @@ import {
     JGOFPauseState,
     JGOFClock,
     JGOFPlayerClock,
+    AdHocClock,
+    AdHocPlayerClock,
+    AdHocPauseControl,
     AdHocPackedMove,
     Goban,
 } from "goban";
