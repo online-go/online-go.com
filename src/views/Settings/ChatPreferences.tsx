@@ -55,27 +55,18 @@ export function ChatPreferences(): JSX.Element {
 
             <PreferenceLine
                 title={_("Notify me when I'm mentioned in group chats I'm a member of.")}
-                description={_(
-                    "This only applies to chats you haven't chosen a different setting.",
-                )}
             >
                 <Toggle checked={group_chat_mentions} onChange={toggleGroupChatMentions} />
             </PreferenceLine>
 
             <PreferenceLine
                 title={_("Notify me about unread messages in group chats I'm a member of.")}
-                description={_(
-                    "This only applies to chats you haven't chosen a different setting.",
-                )}
             >
                 <Toggle checked={group_chat_unread} onChange={toggleGroupChatUnread} />
             </PreferenceLine>
 
             <PreferenceLine
                 title={_("Notify me when I'm mentioned in tournament chats I'm a member of.")}
-                description={_(
-                    "This only applies to chats you haven't chosen a different setting.",
-                )}
             >
                 <Toggle
                     checked={tournament_chat_mentions}
@@ -85,9 +76,6 @@ export function ChatPreferences(): JSX.Element {
 
             <PreferenceLine
                 title={_("Notify me about unread messages in tournament chats I'm a member of.")}
-                description={_(
-                    "This only applies to chats you haven't chosen a different setting.",
-                )}
             >
                 <Toggle checked={tournament_chat_unread} onChange={toggleTournamentChatUnread} />
             </PreferenceLine>
