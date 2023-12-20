@@ -157,7 +157,7 @@ export class GobanLineSummary extends React.Component<
             // If this is a different player's page, also mark other games
             // where it's not that player's move.
             opponents_move:
-                player && !is_current_user && user !== player && player_to_move !== player,
+                !!player && !is_current_user && user !== player && player_to_move !== player,
             black_to_move_cls: this.goban && black.id === player_to_move ? "to-move" : "",
             white_to_move_cls: this.goban && white.id === player_to_move ? "to-move" : "",
 

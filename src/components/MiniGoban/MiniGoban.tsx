@@ -230,7 +230,7 @@ export function MiniGoban(props: MiniGobanProps): JSX.Element {
             // where it's not that player's move.
             const player = props?.player?.id;
             setOpponentsMove(
-                player && !is_current_user && user !== player && player_to_move !== player,
+                !!player && !is_current_user && user !== player && player_to_move !== player,
             );
 
             setBlackToMoveCls(
