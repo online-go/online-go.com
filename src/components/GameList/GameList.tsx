@@ -26,6 +26,9 @@ import {
     JGOFPauseState,
     JGOFClock,
     JGOFPlayerClock,
+    AdHocClock,
+    AdHocPlayerClock,
+    AdHocPauseControl,
     AdHocPackedMove,
     Goban,
 } from "goban";
@@ -42,7 +45,10 @@ interface GameType {
     white: UserType;
     goban?: Goban;
     json?: {
+        clock: AdHocClock;
         moves: AdHocPackedMove[];
+        pause_control?: AdHocPauseControl;
+        time_control?: JGOFTimeControl;
         rengo_teams: {
             black: Array<UserType>;
             white: Array<UserType>;
@@ -88,11 +94,44 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
         }
     };
 
-    isPaused(pause_control: JGOFPauseState | undefined) {
+    isPaused(pause_control: JGOFPauseState | AdHocPauseControl | undefined) {
         for (const _key in pause_control) {
             return true;
         }
         return false;
+    }
+
+    computeRemainingTimeAdHoc(
+        time_control: JGOFTimeControl | undefined,
+        clock: AdHocClock,
+        player_clock: AdHocPlayerClock | number,
+    ) {
+        // Inaccurate for paused clocks.
+        switch (time_control?.system) {
+            case "simple": {
+                const time: number = player_clock as number;
+                return time - clock.last_move;
+            }
+            case "absolute":
+            case "fischer": {
+                const time: AdHocPlayerClock = player_clock as AdHocPlayerClock;
+                return time.thinking_time * 1000;
+            }
+            case "byoyomi": {
+                const time: AdHocPlayerClock = player_clock as AdHocPlayerClock;
+                return (
+                    (time.thinking_time + (time.period_time as number) * (time.periods as number)) *
+                    1000
+                );
+            }
+            case "canadian": {
+                const time: AdHocPlayerClock = player_clock as AdHocPlayerClock;
+                return (time.thinking_time + (time.block_time as number)) * 1000;
+            }
+            case "none":
+            default:
+                return Number.MAX_SAFE_INTEGER;
+        }
     }
 
     computeRemainingTime(
@@ -131,14 +170,38 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
         }
     }
 
-    extractClockSortFields(game: GameType, use_this_player: boolean) {
-        if (game?.goban?.last_emitted_clock === undefined) {
-            // No JGOFClock yet. Sort last.
+    extractClockSortFieldsAdHoc(game: GameType, use_this_player: boolean) {
+        if (game?.json?.clock === undefined) {
+            // No clock at all! Sort last.
             return {
                 paused: true,
                 is_current_player: false,
                 remaining: Number.MAX_SAFE_INTEGER,
             };
+        }
+
+        const clock = game.goban?.last_clock || game.json.clock;
+        const paused = this.isPaused(game.json?.pause_control);
+        const is_current_player = clock.current_player === this.props.player?.id;
+        const is_black = clock.black_player_id === this.props.player?.id;
+        const use_black = use_this_player === is_black;
+        const remaining = this.computeRemainingTimeAdHoc(
+            game.json?.time_control,
+            clock,
+            use_black ? clock.black_time : clock.white_time,
+        );
+
+        return {
+            paused: paused,
+            is_current_player: is_current_player,
+            remaining: remaining,
+        };
+    }
+
+    extractClockSortFields(game: GameType, use_this_player: boolean) {
+        if (game?.goban?.last_emitted_clock === undefined) {
+            // No JGOFClock yet. Use the AdHocClock.
+            return this.extractClockSortFieldsAdHoc(game, use_this_player);
         }
 
         const clock = game.goban.last_emitted_clock;
