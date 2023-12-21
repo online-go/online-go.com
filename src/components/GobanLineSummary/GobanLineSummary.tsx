@@ -156,8 +156,8 @@ export class GobanLineSummary extends React.Component<
 
             // If this is a different player's page, also mark other games
             // where it's not that player's move.
-            opponents_move:
-                !!player && !is_current_user && user !== player && player_to_move !== player,
+            viewed_users_move:
+                !!player && !is_current_user && user !== player && player_to_move === player,
             black_to_move_cls: this.goban && black.id === player_to_move ? "to-move" : "",
             white_to_move_cls: this.goban && white.id === player_to_move ? "to-move" : "",
 
@@ -192,7 +192,7 @@ export class GobanLineSummary extends React.Component<
                 to={`/game/${this.props.id}`}
                 className={
                     `GobanLineSummary ` +
-                    (this.state.opponents_move ? " opponents-move" : "") +
+                    (this.state.viewed_users_move ? " viewed-users-move" : "") +
                     (this.state.current_users_move ? " current-users-move" : "") +
                     (this.state.in_stone_removal_phase ? " in-stone-removal-phase" : "")
                 }

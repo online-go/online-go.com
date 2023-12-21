@@ -72,7 +72,7 @@ export function MiniGoban(props: MiniGobanProps): JSX.Element {
     const [black_name, setBlackName] = React.useState("");
     const [white_name, setWhiteName] = React.useState("");
     const [current_users_move, setCurrentUsersMove] = React.useState(false);
-    const [opponents_move, setOpponentsMove] = React.useState(false);
+    const [viewed_users_move, setViewedUsersMove] = React.useState(false);
     const [black_to_move_cls, setBlackToMoveCls] = React.useState("");
     const [white_to_move_cls, setWhiteToMoveCls] = React.useState("");
     const [in_stone_removal_phase, setInStoneRemovalPhase] = React.useState(false);
@@ -229,8 +229,8 @@ export function MiniGoban(props: MiniGobanProps): JSX.Element {
             // If this is a different player's page, also mark other games
             // where it's not that player's move.
             const player = props?.player?.id;
-            setOpponentsMove(
-                !!player && !is_current_user && user !== player && player_to_move !== player,
+            setViewedUsersMove(
+                !!player && !is_current_user && user !== player && player_to_move === player,
             );
 
             setBlackToMoveCls(
@@ -280,7 +280,7 @@ export function MiniGoban(props: MiniGobanProps): JSX.Element {
                     className={
                         "small board" +
                         (current_users_move ? " current-users-move" : "") +
-                        (opponents_move ? " opponents-move" : "") +
+                        (viewed_users_move ? " viewed-users-move" : "") +
                         (in_stone_removal_phase ? " in-stone-removal-phase" : "") +
                         (finished ? " finished" : "")
                     }
