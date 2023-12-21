@@ -135,6 +135,9 @@ export class GobanLineSummary extends React.Component<
         const black = this.props.black;
         const white = this.props.white;
         const player_to_move = (this.goban && this.goban.engine.playerToMove()) || 0;
+        const user = data.get("config.user").id;
+        const player = this.props?.player?.id;
+        const is_current_user = player_to_move === user;
 
         this.setState({
             black_score: interpolate("%s points", [score.black.prisoners + score.black.komi]),
@@ -148,7 +151,13 @@ export class GobanLineSummary extends React.Component<
             white_name:
                 typeof white === "object" ? white.username + " [" + rankString(white) + "]" : white,
 
-            current_users_move: player_to_move === data.get("config.user").id,
+            // Mark games where it's the current user's move.
+            current_users_move: is_current_user,
+
+            // If this is a different player's page, also mark other games
+            // where it's not that player's move.
+            opponents_move:
+                !!player && !is_current_user && user !== player && player_to_move !== player,
             black_to_move_cls: this.goban && black.id === player_to_move ? "to-move" : "",
             white_to_move_cls: this.goban && white.id === player_to_move ? "to-move" : "",
 
@@ -183,6 +192,7 @@ export class GobanLineSummary extends React.Component<
                 to={`/game/${this.props.id}`}
                 className={
                     `GobanLineSummary ` +
+                    (this.state.opponents_move ? " opponents-move" : "") +
                     (this.state.current_users_move ? " current-users-move" : "") +
                     (this.state.in_stone_removal_phase ? " in-stone-removal-phase" : "")
                 }
