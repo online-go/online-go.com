@@ -19,14 +19,14 @@ jobs:
 
       - name: Generate UUID image name
         id: uuid
-        run: echo "UUID_TAG_APP=$(uuidgen)" >> $GITHUB_ENV
+        run: echo "UUID_TAG_APP=online-go-$(uuidgen --time)" >> $GITHUB_ENV
 
       - name: Docker metadata
         id: meta
         uses: docker/metadata-action@v4
         with:
           images: registry.uffizzi.com/${{ env.UUID_TAG_APP }}
-          tags: type=raw,value=60d
+          tags: type=raw,value=30d
 
       - name: Build Image
         uses: docker/build-push-action@v3
