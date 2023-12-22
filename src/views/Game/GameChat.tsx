@@ -670,7 +670,7 @@ function MarkupChatLine({ line }: { line: ChatLine }): JSX.Element {
                         } else {
                             orig_marks = null;
                         }
-                        if (moves) {
+                        if (moves || moves === "") {
                             goban.engine.followPath(parseInt(turn as any), moves);
                         }
 
