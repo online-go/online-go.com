@@ -1443,7 +1443,7 @@ class PlayPane extends React.Component<PlayProps, any> {
             this.props.current_filter.source === null) {
             // Set up a Joseki filter by default
             this.props.set_variation_filter({
-                tags:[null,
+                tags: null,
                 contributor: null,
                 source: null
             });
