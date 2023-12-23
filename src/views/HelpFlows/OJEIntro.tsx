@@ -34,7 +34,7 @@ export function OJEIntro(): JSX.Element {
                 <div>{_("Use this filter to control what variations you see")}</div>
             </HelpItem>
 
-            <HelpItem target="joseki-tag-filter" position={"centre-left"}>
+            <HelpItem target="joseki-tag-filter" position={"centre-left"} anchor="top-right">
                 <div>
                     {_(
                         "By default only 'actual joseki' are shown.  You can clear the filter to see more variations",
