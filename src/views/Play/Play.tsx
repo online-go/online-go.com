@@ -741,6 +741,11 @@ export class Play extends React.Component<{}, PlayState> {
                             show_chat={false}
                             assignToTeam={rengo_utils.assignToTeam}
                             kickRengoUser={rengo_utils.kickRengoUser}
+                            locked={
+                                this.state.rengo_manage_pane_lock[
+                                    rengo_challenge_to_show.challenge_id
+                                ]
+                            }
                             lock={(lock: boolean) =>
                                 this.setPaneLock(rengo_challenge_to_show.challenge_id, lock)
                             }
@@ -1251,6 +1256,7 @@ export class Play extends React.Component<{}, PlayState> {
                                 show_chat={true}
                                 assignToTeam={rengo_utils.assignToTeam}
                                 kickRengoUser={rengo_utils.kickRengoUser}
+                                locked={this.state.rengo_manage_pane_lock[C.challenge_id]}
                                 lock={(lock: boolean) => this.setPaneLock(C.challenge_id, lock)}
                             />
                         </RengoManagementPane>

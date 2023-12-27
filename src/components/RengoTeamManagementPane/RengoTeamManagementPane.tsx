@@ -38,6 +38,7 @@ interface RengoTeamManagementPaneProps {
     challenge_id: number;
     moderator: boolean;
     show_chat: boolean;
+    locked: boolean; // indication from parent that it's has us locked
     // The following promises signal when the server action is done, for UI update.
     // typing note - we genuinely don't care what the promise return type is, we just use the `then` event
     assignToTeam: (player_id: number, team: string, challenge: Challenge) => Promise<any>;
@@ -45,7 +46,7 @@ interface RengoTeamManagementPaneProps {
     unassignPlayers?: (challenge: Challenge) => Promise<any>;
     balanceTeams?: (challenge: Challenge) => Promise<any>;
     setTeams?: (teams: RengoParticipantsDTO, challenge: Challenge) => Promise<any>;
-    lock: (lock: boolean) => void; // we call this to signal that we're busy so don't start the challenge
+    lock: (lock: boolean) => void; // we call this to signal that we're busy so don't start the challenge yet
 }
 
 export function RengoTeamManagementPane({
@@ -54,6 +55,7 @@ export function RengoTeamManagementPane({
     challenge_id,
     moderator,
     show_chat,
+    locked,
     assignToTeam,
     kickRengoUser,
     // The Play page is happy to have us just deal with these using the rengo_balancer utils
@@ -188,7 +190,7 @@ export function RengoTeamManagementPane({
 
     return (
         <div className="RengoTeamManagementPane">
-            <div className={"rengo-admin-container" + (assignment_pending ? " pending" : "")}>
+            <div className={"rengo-admin-container" + (locked && !lock_state ? " pending" : "")}>
                 {ordering_players ? (
                     <MultipleContainers
                         initialItems={initial_order}

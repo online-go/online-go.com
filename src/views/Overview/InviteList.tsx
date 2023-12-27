@@ -323,6 +323,7 @@ export function InviteList(): JSX.Element {
                         unassignPlayers={unassignPlayers}
                         balanceTeams={balanceTeams}
                         setTeams={setTeams}
+                        locked={lock}
                         lock={setLock}
                     />
                 </RengoManagementPane>
