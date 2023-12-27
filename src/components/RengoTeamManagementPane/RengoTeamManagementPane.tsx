@@ -44,7 +44,7 @@ interface RengoTeamManagementPaneProps {
     kickRengoUser: (player_id: number) => Promise<any>;
     unassignPlayers?: (challenge: Challenge) => Promise<any>;
     balanceTeams?: (challenge: Challenge) => Promise<any>;
-    setTeams?: (teams: RengoParticipantsDTO) => Promise<any>;
+    setTeams?: (teams: RengoParticipantsDTO, challenge: Challenge) => Promise<any>;
 }
 
 export function RengoTeamManagementPane({
@@ -103,10 +103,10 @@ export function RengoTeamManagementPane({
         balanceTeams(challenge).then(done).catch(errorAlerter);
     };
 
-    const onSavePlayerOrder = () => {
+    const onSavePlayerOrder = (challenge: Challenge) => {
         if (new_teams) {
             setAssignmentPending(true);
-            setTeams(new_teams).then(done).catch(errorAlerter);
+            setTeams(new_teams, challenge).then(done).catch(errorAlerter);
             setOrderingPlayers(false);
         } else {
             errorAlerter("save player order called with no teams");
@@ -291,7 +291,10 @@ export function RengoTeamManagementPane({
                     <div className="rengo-balancer-buttons">
                         {ordering_players ? (
                             <>
-                                <button className="sm" onClick={onSavePlayerOrder}>
+                                <button
+                                    className="sm"
+                                    onClick={() => onSavePlayerOrder(the_challenge)}
+                                >
                                     {_("Save")}
                                 </button>
                                 <button className="sm" onClick={() => setOrderingPlayers(false)}>

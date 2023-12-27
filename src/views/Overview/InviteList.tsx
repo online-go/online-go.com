@@ -205,6 +205,15 @@ export function InviteList(): JSX.Element {
             .catch(errorAlerter);
     };
 
+    const setTeams = (teams: RengoParticipantsDTO, challenge: Challenge): Promise<void> => {
+        return rengo_utils
+            .setTeams(teams)
+            .then((participants) => {
+                updateRengoParticipants(challenge, participants);
+            })
+            .catch(errorAlerter);
+    };
+
     const startRengoChallenge = (challenge: Challenge) => {
         setShowDetails(null);
         return rengo_utils
@@ -311,6 +320,7 @@ export function InviteList(): JSX.Element {
                         kickRengoUser={kickRengoUser}
                         unassignPlayers={unassignPlayers}
                         balanceTeams={balanceTeams}
+                        setTeams={setTeams}
                     />
                 </RengoManagementPane>
             )}
