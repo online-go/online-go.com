@@ -321,7 +321,7 @@ class ReportManager extends EventEmitter<Events> {
                 delete ignored[key];
             }
         }
-        data.set("ignored-reports", ignored);
+        data.set("ignored-reports", ignored, data.Replication.REMOTE_OVERWRITES_LOCAL);
         this.update();
     }
 
