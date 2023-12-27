@@ -100,6 +100,7 @@ function challengeDtoToSeekgraphChallengeSubset(c: ChallengeDTO, user_id: number
 export function InviteList(): JSX.Element {
     const [invites, setInvites] = React.useState<Challenge[]>([]);
     const [show_details, setShowDetails] = React.useState<Challenge | null>(null);
+    const [lock, setLock] = React.useState(false);
 
     const user = useUser();
 
@@ -309,6 +310,7 @@ export function InviteList(): JSX.Element {
                     cancelChallenge={cancelRengoChallenge}
                     withdrawFromRengoChallenge={unNominate}
                     joinRengoChallenge={nominateForRengoChallenge}
+                    lock={lock}
                 >
                     <RengoTeamManagementPane
                         user={user}
@@ -321,6 +323,7 @@ export function InviteList(): JSX.Element {
                         unassignPlayers={unassignPlayers}
                         balanceTeams={balanceTeams}
                         setTeams={setTeams}
+                        lock={setLock}
                     />
                 </RengoManagementPane>
             )}

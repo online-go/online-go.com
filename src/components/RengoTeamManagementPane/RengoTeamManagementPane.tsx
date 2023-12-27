@@ -45,6 +45,7 @@ interface RengoTeamManagementPaneProps {
     unassignPlayers?: (challenge: Challenge) => Promise<any>;
     balanceTeams?: (challenge: Challenge) => Promise<any>;
     setTeams?: (teams: RengoParticipantsDTO, challenge: Challenge) => Promise<any>;
+    lock: (lock: boolean) => void; // we call this to signal that we're busy so don't start the challenge
 }
 
 export function RengoTeamManagementPane({
@@ -60,10 +61,22 @@ export function RengoTeamManagementPane({
     unassignPlayers = rengo_balancer.unassignPlayers,
     balanceTeams = rengo_balancer.balanceTeams,
     setTeams = rengo_utils.setTeams,
+    lock,
 }: RengoTeamManagementPaneProps): JSX.Element {
     const [assignment_pending, setAssignmentPending] = React.useState(false);
     const [ordering_players, setOrderingPlayers] = React.useState(false);
     const [new_teams, setNewTeams] = React.useState<RengoParticipantsDTO | null>(null);
+    const [lock_state, setLockState] = React.useState(false);
+
+    React.useEffect(
+        () => {
+            const lock_needed = assignment_pending || ordering_players;
+            if (lock && lock_state !== lock_needed) {
+                lock(lock_needed);
+                setLockState(lock_needed);
+            }
+        } /* always */,
+    );
 
     const done = () => {
         setAssignmentPending(false);

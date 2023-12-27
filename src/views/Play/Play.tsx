@@ -68,8 +68,10 @@ interface PlayState {
     filter: ChallengeFilter;
     automatch_size_options: Size[];
     freeze_challenge_list: boolean; // Don't change the challenge list while they are trying to point the mouse at it
-    pending_challenges: Array<Challenge>; // challenges received while frozen
+    pending_challenges: { [id: number]: Challenge }; // challenges received while frozen
     show_in_rengo_management_pane: number[]; // a challenge_ids for challenges to show with pane open in the rengo challenge list
+    rengo_manage_pane_lock: { [key: number]: boolean }; // a hash for storing the "locked" state of rengo management panes
+    pane_unlock_pending: Array<number>; // list of challenges where we're expecting a rengo update from seekgraph
 }
 
 export class Play extends React.Component<{}, PlayState> {
@@ -119,6 +121,8 @@ export class Play extends React.Component<{}, PlayState> {
             freeze_challenge_list: false, // Don't change the challenge list while they are trying to point the mouse at it
             pending_challenges: [], // challenges received while frozen
             show_in_rengo_management_pane: [],
+            rengo_manage_pane_lock: {},
+            pane_unlock_pending: [],
         };
         this.canvas = allocateCanvasOrError();
     }
@@ -156,7 +160,7 @@ export class Play extends React.Component<{}, PlayState> {
         if (
             prevState.freeze_challenge_list &&
             !this.state.freeze_challenge_list &&
-            this.state.pending_challenges.length !== 0
+            Object.keys(this.state.pending_challenges).length !== 0
         ) {
             this.updateChallenges(this.state.pending_challenges);
         }
@@ -178,7 +182,20 @@ export class Play extends React.Component<{}, PlayState> {
         }
     };
 
-    updateChallenges = (challenges: Challenge[]) => {
+    updateChallenges = (challenges: { [id: number]: Challenge }) => {
+        Object.keys(challenges).forEach((ids) => {
+            const id = parseInt(ids);
+            if (this.state.pane_unlock_pending.includes(id)) {
+                this.setState({
+                    rengo_manage_pane_lock: {
+                        ...this.state.rengo_manage_pane_lock,
+                        [id]: false,
+                    },
+                    pane_unlock_pending: this.state.pane_unlock_pending.filter((i) => i !== id),
+                });
+            }
+        });
+
         if (this.state.freeze_challenge_list) {
             const live = this.state.live_list;
             const corr = this.state.correspondence_list;
@@ -257,6 +274,16 @@ export class Play extends React.Component<{}, PlayState> {
                 this.unfreezeChallenges();
             })
             .catch(errorAlerter);
+    };
+
+    setPaneLock = (id: number, lock: boolean) => {
+        if (lock) {
+            this.setState({
+                rengo_manage_pane_lock: { ...this.state.rengo_manage_pane_lock, [id]: lock },
+            });
+        } else {
+            this.setState({ pane_unlock_pending: [...this.state.pane_unlock_pending, id] });
+        }
     };
 
     cancelOpenRengoChallenge = (challenge: Challenge) => {
@@ -702,6 +729,9 @@ export class Play extends React.Component<{}, PlayState> {
                         cancelChallenge={this.cancelOpenRengoChallenge}
                         withdrawFromRengoChallenge={this.unNominateForRengoChallenge}
                         joinRengoChallenge={rengo_utils.nominateForRengoChallenge}
+                        lock={
+                            this.state.rengo_manage_pane_lock[rengo_challenge_to_show.challenge_id]
+                        }
                     >
                         <RengoTeamManagementPane
                             user={user}
@@ -711,6 +741,9 @@ export class Play extends React.Component<{}, PlayState> {
                             show_chat={false}
                             assignToTeam={rengo_utils.assignToTeam}
                             kickRengoUser={rengo_utils.kickRengoUser}
+                            lock={(lock: boolean) =>
+                                this.setPaneLock(rengo_challenge_to_show.challenge_id, lock)
+                            }
                         />
                     </RengoManagementPane>
                 </div>
@@ -1208,6 +1241,7 @@ export class Play extends React.Component<{}, PlayState> {
                             withdrawFromRengoChallenge={this.unNominateForRengoChallenge}
                             joinRengoChallenge={rengo_utils.nominateForRengoChallenge}
                             dontShowCancelButton={true}
+                            lock={this.state.rengo_manage_pane_lock[C.challenge_id]}
                         >
                             <RengoTeamManagementPane
                                 user={user}
@@ -1217,6 +1251,7 @@ export class Play extends React.Component<{}, PlayState> {
                                 show_chat={true}
                                 assignToTeam={rengo_utils.assignToTeam}
                                 kickRengoUser={rengo_utils.kickRengoUser}
+                                lock={(lock: boolean) => this.setPaneLock(C.challenge_id, lock)}
                             />
                         </RengoManagementPane>
                     </Card>
