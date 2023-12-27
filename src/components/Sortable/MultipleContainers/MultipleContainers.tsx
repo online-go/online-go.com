@@ -456,6 +456,7 @@ export function MultipleContainers({
             modifiers={modifiers}
         >
             <div
+                className="MultipleContainers"
                 style={{
                     display: "inline-grid",
                     boxSizing: "border-box",

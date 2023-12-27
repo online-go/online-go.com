@@ -130,6 +130,7 @@ export const Item = React.memo(
                             "--scale-y": transform?.scaleY ? `${transform.scaleY}` : undefined,
                             "--index": index,
                             "--color": color,
+                            "list-style-type": "none",
                         } as React.CSSProperties
                     }
                     ref={ref}
@@ -149,11 +150,11 @@ export const Item = React.memo(
                         {...props}
                         tabIndex={!handle ? 0 : undefined}
                     >
-                        {value}
                         <span className={"Actions"}>
                             {onRemove ? <Remove className={"Remove"} onClick={onRemove} /> : null}
                             {handle ? <Handle {...handleProps} {...listeners} /> : null}
                         </span>
+                        {value}
                     </div>
                 </li>
             );
