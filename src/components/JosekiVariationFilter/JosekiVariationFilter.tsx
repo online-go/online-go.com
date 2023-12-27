@@ -18,6 +18,7 @@
 import * as React from "react";
 import * as ReactSelect from "react-select";
 import { _ } from "translate";
+import * as DynamicHelp from "react-dynamic-help";
 
 import * as player_cache from "player_cache";
 import { JosekiTagSelector, JosekiTag } from "../JosekiTagSelector";
@@ -41,6 +42,10 @@ type ContributorList = (ResolvedContributor | UnresolvedContributor)[];
 export function JosekiVariationFilter(props: JosekiVariationFilterProps) {
     const [contributor_list, setContributorList] = React.useState<ContributorList>([]);
     const [source_list, setSourceList] = React.useState<{ id: string; description: string }[]>([]);
+
+    const { registerTargetItem, signalUsed } = React.useContext(DynamicHelp.Api);
+    const { ref: joseki_position_filter } = registerTargetItem("joseki-position-filter");
+    const { ref: joseki_tag_filter } = registerTargetItem("joseki-tag-filter");
 
     React.useEffect(() => {
         // Get the list of contributors to chose from
@@ -92,6 +97,8 @@ export function JosekiVariationFilter(props: JosekiVariationFilterProps) {
         const new_filter = { ...props.current_filter, tags };
 
         props.set_variation_filter(new_filter); // tell parent the filter changed, so the view needs to change
+        signalUsed("joseki-position-filter");
+        signalUsed("joseki-tag-filter");
     };
 
     const onContributorChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -146,8 +153,8 @@ export function JosekiVariationFilter(props: JosekiVariationFilterProps) {
         props.current_filter.source === null ? "none" : props.current_filter.source;
 
     return (
-        <div className="joseki-variation-filter">
-            <div className="filter-set">
+        <div className="joseki-variation-filter" ref={joseki_position_filter}>
+            <div className="filter-set" ref={joseki_tag_filter}>
                 <div className="filter-label">{_("Filter by Tag")}</div>
                 <JosekiTagSelector
                     available_tags={props.joseki_tags}

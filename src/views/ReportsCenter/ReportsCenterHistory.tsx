@@ -44,9 +44,9 @@ export function ReportsCenterHistory(): JSX.Element {
                 name="reports-appeals"
                 source={"moderation/incident"}
                 filter={
-                    reportingUserFilter !== null
+                    reportingUserFilter !== null && reportingUserFilter !== undefined
                         ? {
-                              reporting_user: reportingUserFilter || -1,
+                              reporting_user: reportingUserFilter,
                           }
                         : undefined
                 }
