@@ -1199,6 +1199,13 @@ export class Play extends React.Component<{}, PlayState> {
                     challenge_id,
                     ...this.state.show_in_rengo_management_pane,
                 ],
+                rengo_manage_pane_lock: {
+                    ...this.state.rengo_manage_pane_lock,
+                    [challenge_id]: false,
+                },
+                pane_unlock_pending: this.state.pane_unlock_pending.filter(
+                    (i) => i !== challenge_id,
+                ),
             });
         }
     };

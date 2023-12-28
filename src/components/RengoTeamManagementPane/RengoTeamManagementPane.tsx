@@ -312,9 +312,12 @@ export function RengoTeamManagementPane({
                                 >
                                     {_("Save")}
                                 </button>
+                                {/* Dont do this:
                                 <button className="sm" onClick={() => setOrderingPlayers(false)}>
                                     {_("Cancel")}
                                 </button>
+                                ... because we need a seek graph update to unlock the pane.
+                                They can exit using the "close pane" button */}
                             </>
                         ) : (
                             <>
