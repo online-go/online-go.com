@@ -25,6 +25,7 @@ interface RengoManagementPaneProperties {
     user: rest_api.UserConfig;
     challenge_id: number;
     rengo_challenge_list: Array<Challenge>;
+    lock: boolean; // don't let the user start the challenge
 
     startRengoChallenge: (challenge: any) => Promise<void>;
     cancelChallenge: (challenge: any) => void;
@@ -116,7 +117,7 @@ export function RengoManagementPane(props: RengoManagementPaneProperties): JSX.E
                         <button
                             className="success sm"
                             onClick={() => props.startRengoChallenge(the_challenge)}
-                            disabled={!challenge_ready_to_start}
+                            disabled={!challenge_ready_to_start || props.lock}
                         >
                             {pgettext("Start game", "Start")}
                         </button>
