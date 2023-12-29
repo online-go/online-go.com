@@ -158,6 +158,7 @@ export function LogData({
                             config={{
                                 ...config,
                                 marks,
+                                removed: "",
                             }}
                             move_number={data.move_number}
                             removal_string={data.current_removal_string}
