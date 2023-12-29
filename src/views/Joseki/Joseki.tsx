@@ -719,7 +719,6 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
             the_move = undefined;
         }
         if (move_string !== this.state.move_string) {
-            console.log("placed", move_string, this.state.move_string);
             this.goban.disableStonePlacement(); // we need to only have one click being processed at a time
             this.setState({ move_string });
             this.processPlacement(the_move as JGOFMove, move_string); // this is responsible for making sure stone placement is turned back on
@@ -798,9 +797,6 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
             // they must have clicked a stone onto the board
             const chosen_move = this.next_moves.find((move) => move.placement === placement);
 
-            console.log(placement);
-            console.log(this.next_moves);
-            console.log(chosen_move);
             if (
                 this.state.mode === PageMode.Play &&
                 !this.computer_turn && // computer is allowed/expected to play mistake moves to test the response to them
