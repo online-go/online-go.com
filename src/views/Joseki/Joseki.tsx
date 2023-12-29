@@ -692,6 +692,7 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
        or anything else changes about the state of the board (back-step, sequence load)
 
        We ask the board engine what the position is now, and update the display accordingly */
+
     onBoardUpdate = () => {
         this.last_click = new Date().valueOf();
         const mvs = GoMath.decodeMoves(
@@ -726,6 +727,14 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
         }
     };
 
+    // This is like GoMath.PrettyCoords except we must always have 3 characters
+    josekiCoords(x: number, y: number, board_height: number): string {
+        if (x >= 0) {
+            return "ABCDEFGHJKLMNOPQRSTUVWXYZ"[x] + String(board_height - y).padStart(2, "0");
+        }
+        return "pass";
+    }
+
     processPlacement(move: { x: number; y: number }, move_string: string) {
         /* They've either
             clicked a stone onto the board in a new position,
@@ -736,11 +745,7 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
             ... otherwise stone placement will be left turned off.
             */
 
-        const placement = move
-            ? move.x !== -1
-                ? GoMath.prettyCoords(move.x, move.y, this.goban.height)
-                : "pass"
-            : "root";
+        const placement = move ? this.josekiCoords(move.x, move.y, this.goban.height) : "root";
 
         if (this.back_stepping) {
             const play = ".root." + move_string.replace(/,/g, ".");
@@ -1872,16 +1877,12 @@ class PlayPane extends React.Component<PlayProps, PlayState> {
         switch (move_type) {
             case "good":
                 return <i className="fa fa-check" />;
-                break;
             case "bad":
                 return <i className="fa fa-times" />;
-                break;
             case "computer":
                 return <i className="fa fa-desktop" />;
-                break;
             case "complete":
                 return <i className="fa fa-star" />;
-                break;
             default:
                 return "";
         }
