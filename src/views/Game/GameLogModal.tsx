@@ -21,7 +21,8 @@ import { _ } from "translate";
 import { openModal, Modal } from "Modal";
 import { Player } from "Player";
 import { socket } from "sockets";
-import { GoMath } from "goban";
+import { GoEngineConfig } from "goban";
+import { ScoringEventThumbnail } from "../../views/ReportsCenter/ScoringEventThumbnail";
 
 interface Events {}
 
@@ -110,11 +111,10 @@ export class GameLogModal extends Modal<Events, GameLogModalProperties, { log: A
 
 export function LogData({
     config,
-    markCoords,
     event,
     data,
 }: {
-    config: any;
+    config: GoEngineConfig;
     markCoords: (stones: string) => void;
     event: string;
     data: any;
@@ -141,11 +141,30 @@ export function LogData({
                         </span>,
                     );
                 } else if (k === "stones") {
-                    const stones = GoMath.decodeMoves(data[k], config.width, config.height)
-                        .map((mv) => GoMath.prettyCoords(mv.x, mv.y, config.height))
-                        .join(", ");
+                    let marks: { [mark: string]: string };
+                    if (event === "stone_removal_stones_set") {
+                        if (data.removed) {
+                            marks = { cross: data.stones };
+                        } else {
+                            marks = { triangle: data.stones };
+                        }
+                    } else {
+                        marks = { cross: data.stones };
+                    }
 
-                    ret.push(<DrawCoordsButton stones={stones} markCoords={markCoords} key={k} />);
+                    ret.push(
+                        <ScoringEventThumbnail
+                            key={k}
+                            config={{
+                                ...config,
+                                marks,
+                            }}
+                            move_number={data.move_number}
+                            removal_string={data.current_removal_string}
+                        />,
+                    );
+                } else if (k === "current_removal_string" || k === "move_number") {
+                    // skip
                 } else {
                     ret.push(
                         <span key={k} className="field">
