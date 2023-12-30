@@ -476,6 +476,8 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                                 next();
                             }}
                             enable={report.state === "pending"}
+                            // clear the selection for subsequent reports
+                            key={report.id}
                         />
                     </div>
                 )}
