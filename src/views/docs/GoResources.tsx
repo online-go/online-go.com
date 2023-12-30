@@ -1120,6 +1120,11 @@ export const GoResources = () => {
                         <dt>{_("Organizations")}</dt>
                         {ordered(
                             <BasicResource
+                                countries={["si"]}
+                                title="Go Zveza Slovenije"
+                                href="https://go-zveza.si/"
+                            />,
+                            <BasicResource
                                 countries={["in"]}
                                 title="Association of Indian Go Players"
                                 href="https://aigp.org.in/"
