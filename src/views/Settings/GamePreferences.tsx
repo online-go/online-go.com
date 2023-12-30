@@ -314,9 +314,7 @@ export function GamePreferences(): JSX.Element {
                 />
                 <span>
                     &nbsp;
-                    {interpolate(_("{{transparency_level}}"), {
-                        transparency_level: variation_stone_transparency,
-                    })}
+                    {variation_stone_transparency}
                 </span>
             </PreferenceLine>
 
