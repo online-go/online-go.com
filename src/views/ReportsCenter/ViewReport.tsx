@@ -457,7 +457,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                     </div>
                 )}
 
-                {(user.is_moderator || null) && (
+                {(user.is_moderator || user.moderator_powers || null) && (
                     <div className="notes">
                         <h4>Moderator Notes</h4>
                         <textarea value={moderatorNote} onChange={setAndSaveModeratorNote} />
