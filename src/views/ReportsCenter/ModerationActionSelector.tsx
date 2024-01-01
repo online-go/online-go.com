@@ -27,6 +27,8 @@ interface ModerationActionSelectorProps {
     submit: (action: string) => void;
 }
 
+// Translatable versions of the prompts for Community Moderators.
+// The set of keys (choices) here is determined by the server VotableActions class.
 const ACTION_PROMPTS = {
     annul_score_cheat: pgettext(
         "Label for a moderator to select this option",
@@ -40,6 +42,14 @@ const ACTION_PROMPTS = {
         "Label for a moderator to select this option",
         "No cheating - inform the reporter.",
     ),
+    call_score_cheat_for_black: pgettext(
+        "Label for a moderator to select this option",
+        "White is cheating - call the game for black, and warn white.",
+    ),
+    call_score_cheat_for_white: pgettext(
+        "Label for a moderator to select this option",
+        "Black is cheating - call the game for white, and warn black.",
+    ),
     annul_escaped: pgettext(
         "Label for a moderator to select this option",
         "Wrong result due to escape - annul and warn the escaper.",
@@ -47,6 +57,14 @@ const ACTION_PROMPTS = {
     warn_escaper: pgettext(
         "Label for a moderator to select this option",
         "The accused escaped - warn them.",
+    ),
+    call_escaped_game_for_black: pgettext(
+        "Label for a moderator to select this option",
+        "White escaped - call the game for black, and warn white.",
+    ),
+    call_escaped_game_for_white: pgettext(
+        "Label for a moderator to select this option",
+        "Black escaped - call the game for white, and warn black.",
     ),
     no_escaping: pgettext(
         "Label for a moderator to select this option",
