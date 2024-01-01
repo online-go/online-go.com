@@ -55,7 +55,7 @@ export const CANNED_MESSAGES: rest_api.warnings.WarningMessages = {
     ack_educated_beginner_score_cheat: (reported) =>
         interpolate(
             _(`
-            Thanks for the report about {{reported}}. It seems you were playing against a
+            Thanks for the report about {{reported}}. It seems that person was a
             complete beginner - we have tried to explain that games should
             be ended correctly, to pass when their opponent passes, and to accept promptly,
             trusting the auto-score.`),
@@ -64,7 +64,7 @@ export const CANNED_MESSAGES: rest_api.warnings.WarningMessages = {
     ack_educated_beginner_score_cheat_and_annul: (reported) =>
         interpolate(
             _(`
-            Thanks for the report about {{reported}}. It seems you were playing against a
+            Thanks for the report about {{reported}}. It seems that person was a
             complete beginner - we have tried to explain that games should
             be ended correctly, to pass when their opponent passes, and to accept promptly,
             trusting the auto-score.   That incorrectly scored game has been annulled.`),
