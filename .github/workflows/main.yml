@@ -44,10 +44,10 @@ jobs:
 
       # Do some basic linting and formatting
       - name: Lint
-        run: npm run lint
+        run: npm run lint &&  npm run prettier:check
 
-      - name: Check formatting
-        run: npm run prettier:check
+      #- name: Check formatting
+      #  run: npm run prettier:check
 
       - name: Check spelling
         run: npm run cspell
