@@ -17,6 +17,7 @@
 
 import * as Sentry from "@sentry/browser";
 import { apply_polyfills } from "polyfills";
+
 apply_polyfills();
 
 import { configure_goban } from "configure-goban";
