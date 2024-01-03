@@ -63,6 +63,7 @@ declare namespace rest_api {
         is_superuser: boolean;
         is_tournament_moderator: boolean;
         moderator_powers: number; // a bit-field of MOD_POWER (see lib/misc)
+        offered_moderator_powers: number;
         supporter: boolean;
         supporter_level: number;
         tournament_admin: boolean;

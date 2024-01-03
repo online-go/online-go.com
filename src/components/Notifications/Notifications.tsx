@@ -31,7 +31,7 @@ import { deepEqual } from "misc";
 import { isLiveGame, durationString } from "TimeControl";
 
 import { notification_manager } from "./NotificationManager";
-import { openModerationOfferModal } from "./ModerationOfferModal";
+import { ModerationOffer } from "ModerationOffer";
 
 export function NotificationList(): JSX.Element {
     const [, setCount] = React.useState<number | undefined>(
@@ -533,29 +533,16 @@ class NotificationEntry extends React.Component<NotificationEntryProps, any> {
 
             case "moderationOffer":
                 return (
-                    <div className="moderation-offer">
-                        <span>{_("You qualify for access to community moderation tools!")}</span>
-                        <button
-                            onClick={() =>
-                                openModerationOfferModal(
-                                    notification.player_id,
-                                    notification.offered_powers,
-                                    this.del,
-                                )
-                            }
-                        >
-                            {pgettext(
-                                "Label of a button to get details of community moderation offer",
-                                "Details",
-                            )}
-                        </button>
-                    </div>
+                    <ModerationOffer
+                        player_id={notification.player_id}
+                        offered_moderator_powers={notification.offered_moderator_powers}
+                        onAck={this.del}
+                    />
                 );
 
             default:
                 console.error("Unsupported notification: ", notification.type, notification);
                 return null;
-                break;
         }
     }
 }
