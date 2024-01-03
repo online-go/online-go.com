@@ -14,6 +14,9 @@ node_modules: package.json
 pretty prettier lint-fix:
 	npm run prettier
 	npm run lint:fix
+	
+cspell: 
+	npm run cspell
 
 min: minjs mincss
 

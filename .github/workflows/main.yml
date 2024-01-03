@@ -24,9 +24,9 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
 
       - name: Cache node modules
         id: cache-node-modules
@@ -46,17 +46,20 @@ jobs:
       - name: Build CSS
         run: npx gulp min_styl
 
-      - name: Run linters
-        # uses: wearerequired/lint-action@v2
-        # with:
-          # auto_fix: ${{ github.event_name == 'pull_request' }}
-          # eslint: true
-          # eslint_extensions: "ts,tsx"
-        run: npm run lint && npm run prettier:check
-
       - name: Webpack
         run: npx webpack --optimization-minimize --devtool=source-map
 
+      # Do some basic linting and formatting
+      - name: Lint
+        run: npm run lint
+
+      - name: Check formatting
+        run: npm run prettier:check
+
+      - name: Check spelling
+        run: npm run cspell
+
+      # Run tests
       - name: Tests
         run: npx jest
 
