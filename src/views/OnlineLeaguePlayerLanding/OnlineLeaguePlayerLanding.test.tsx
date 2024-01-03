@@ -41,6 +41,7 @@ const TEST_USER = {
     is_superuser: false,
     is_tournament_moderator: false,
     moderator_powers: 0,
+    offered_moderator_powers: 0,
     supporter: false,
     supporter_level: 0,
     tournament_admin: false,

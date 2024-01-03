@@ -37,6 +37,7 @@ import { ActiveTournamentList, Group } from "src/lib/types";
 import { DismissableMessages } from "DismissableMessages";
 import { EmailBanner } from "EmailBanner";
 import { ActiveDroppedGameList } from "ActiveDroppedGameList";
+import { ModerationOffer } from "ModerationOffer";
 
 declare let ogs_missing_translation_count: number;
 
@@ -142,6 +143,7 @@ export class EXV6Overview extends React.Component<{}, OverviewState> {
     render() {
         const user = this.state.user;
 
+        console.log(user);
         return (
             <div id="Overview-Container">
                 <div id="Overview">
@@ -149,6 +151,12 @@ export class EXV6Overview extends React.Component<{}, OverviewState> {
                         <DismissableMessages />
                         <EmailBanner />
                         <ActiveAnnouncements />
+                        {user && !!user.offered_moderator_powers && (
+                            <ModerationOffer
+                                player_id={user.id}
+                                offered_moderator_powers={user.offered_moderator_powers}
+                            />
+                        )}
                         <ChallengesList onAccept={() => this.refresh()} />
                         <InviteList />
 
