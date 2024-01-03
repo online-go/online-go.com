@@ -42,13 +42,6 @@ jobs:
           max_attempts: 3
           command: yarn install
 
-      # Build
-      - name: Build CSS
-        run: npx gulp min_styl
-
-      - name: Webpack
-        run: npx webpack --optimization-minimize --devtool=source-map
-
       # Do some basic linting and formatting
       - name: Lint
         run: npm run lint
@@ -58,6 +51,13 @@ jobs:
 
       - name: Check spelling
         run: npm run cspell
+
+      # Build
+      - name: Build CSS
+        run: npx gulp min_styl
+
+      - name: Webpack
+        run: npx webpack --optimization-minimize --devtool=source-map
 
       # Run tests
       - name: Tests
