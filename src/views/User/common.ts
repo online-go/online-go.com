@@ -20,9 +20,13 @@ import { shouldOpenNewTab } from "misc";
 import * as preferences from "preferences";
 
 export function openUrlIfALinkWasNotClicked(ev: any, url: string) {
-    if (ev.target.nodeName === "A" || ev.target.parentNode.nodeName === "A") {
-        /* if a link was clicked, let the browser handle that. */
-        return;
+    let cur = ev.target;
+    /* if a link was clicked, let the browser handle that. */
+    while (cur) {
+        if (cur.nodeName === "A") {
+            return;
+        }
+        cur = cur.parentNode;
     }
 
     /* Only navigate on left and middle clicks */
