@@ -60,6 +60,10 @@ jobs:
       - name: Tests
         run: npx jest
 
+      - uses: streetsidesoftware/cspell-action@v5
+        with:
+            files: src/**/*.{ts,tsx}
+
       # Log compressed output size
       - name: Compressed sizes
         run: |
