@@ -37,7 +37,7 @@ const log = [
             stones: "eafafbfcgcfdhdgehfifig",
             strict_seki_mode: false,
             move_number: 48,
-            current_removal_string: "eafafbfcgcfdhdgehfifig",
+            current_removed_stones: "eafafbfcgcfdhdgehfifig",
         },
     },
     {
@@ -48,7 +48,7 @@ const log = [
             stones: "eafafbfcgcfdhdgehfifig",
             strict_seki_mode: false,
             move_number: 48,
-            current_removal_string: "eafafbfcgcfdhdgehfifig",
+            current_removed_stones: "eafafbfcgcfdhdgehfifig",
         },
     },
     {
@@ -60,7 +60,7 @@ const log = [
             stones: "fcfdfbfaeagcfdfcfbfaeagchdgefbfcfdgcfaeafafbfcfdgceagcfcfdfbfaeahdhdifighfgehdhfifig",
             removed: true,
             move_number: 48,
-            current_removal_string: "eafafbfcgcfdhdgehfifig",
+            current_removed_stones: "eafafbfcgcfdhdgehfifig",
         },
     },
     {
@@ -72,7 +72,7 @@ const log = [
             stones: "fcfdfbfaeagcfdfcfbfaeagchdgefbfcfdgcfaeafafbfcfdgceagcfcfdfbfaeahdhdifighfgehdhfifig",
             removed: false,
             move_number: 48,
-            current_removal_string: "",
+            current_removed_stones: "",
         },
     },
     {
@@ -84,7 +84,7 @@ const log = [
             stones: "acadbdbececfcgbhdhdiei",
             removed: false,
             move_number: 48,
-            current_removal_string: "eafafbfcgcfdhdgehfifig",
+            current_removed_stones: "eafafbfcgcfdhdgehfifig",
         },
     },
     {
@@ -96,7 +96,7 @@ const log = [
             stones: "acadbdbececfcgbhdhdiei",
             removed: true,
             move_number: 48,
-            current_removal_string: "eafafbacfcgcadbdfdhdbecegecfhfifcgigbhdhdiei",
+            current_removed_stones: "eafafbacfcgcadbdfdhdbecegecfhfifcgigbhdhdiei",
         },
     },
     {
@@ -108,7 +108,7 @@ const log = [
             stones: "fcfdfbfaeagcfdfcfbfaeagchdgefbfcfdgcfaeafafbfcfdgceagcfcfdfbfaeahdhdifighfgehdhfifig",
             removed: true,
             move_number: 48,
-            current_removal_string: "eafafbfcgcfdhdgehfifig",
+            current_removed_stones: "eafafbfcgcfdhdgehfifig",
         },
     },
     {
@@ -120,7 +120,7 @@ const log = [
             stones: "fbfcfdgcfaeafbfcfdgcfaeafafbfcfdgceagcfcfdfbfaeahdhdifighfgehdhfifigfdfcfbfaeagchdge",
             removed: false,
             move_number: 48,
-            current_removal_string: "",
+            current_removed_stones: "",
         },
     },
     {
@@ -132,7 +132,7 @@ const log = [
             stones: "fcfdfbfaeagcfdfcfbfaeagchdgefbfcfdgcfaeafafbfcfdgceagcfcfdfbfaeahdhdifighfgehdhfifig",
             removed: true,
             move_number: 48,
-            current_removal_string: "eafafbfcgcfdhdgehfifig",
+            current_removed_stones: "eafafbfcgcfdhdgehfifig",
         },
     },
     {
@@ -144,7 +144,7 @@ const log = [
             stones: "",
             removed: true,
             move_number: 48,
-            current_removal_string: "",
+            current_removed_stones: "",
         },
     },
     {
@@ -156,7 +156,7 @@ const log = [
             stones: "",
             removed: false,
             move_number: 48,
-            current_removal_string: "",
+            current_removed_stones: "",
         },
     },
     {
@@ -168,7 +168,7 @@ const log = [
             stones: "",
             removed: true,
             move_number: 48,
-            current_removal_string: "",
+            current_removed_stones: "",
         },
     },
     {
@@ -180,7 +180,7 @@ const log = [
             stones: "",
             removed: false,
             move_number: 48,
-            current_removal_string: "",
+            current_removed_stones: "",
         },
     },
     {
@@ -211,7 +211,7 @@ const log = [
             stones: "aaabacbbbaca",
             removed: false,
             move_number: 43,
-            current_removal_string: "",
+            current_removed_stones: "",
         },
     },
     {
@@ -223,7 +223,7 @@ const log = [
             stones: "aaabacbbbaca",
             removed: true,
             move_number: 43,
-            current_removal_string: "aaabacbbbaca",
+            current_removed_stones: "aaabacbbbaca",
         },
     },
     {
@@ -235,7 +235,7 @@ const log = [
             stones: "",
             removed: false,
             move_number: 43,
-            current_removal_string: "",
+            current_removed_stones: "",
         },
     },
     {
@@ -247,7 +247,7 @@ const log = [
             stones: "",
             removed: true,
             move_number: 43,
-            current_removal_string: "",
+            current_removed_stones: "",
         },
     },
     {
@@ -259,7 +259,7 @@ const log = [
             stones: "",
             removed: true,
             move_number: 43,
-            current_removal_string: "",
+            current_removed_stones: "",
         },
     },
     {
@@ -271,7 +271,7 @@ const log = [
             stones: "",
             removed: false,
             move_number: 43,
-            current_removal_string: "",
+            current_removed_stones: "",
         },
     },
     {

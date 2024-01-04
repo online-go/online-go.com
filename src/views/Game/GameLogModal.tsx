@@ -161,10 +161,10 @@ export function LogData({
                                 removed: "",
                             }}
                             move_number={data.move_number}
-                            removal_string={data.current_removal_string}
+                            removal_string={data.current_removed_stones}
                         />,
                     );
-                } else if (k === "current_removal_string" || k === "move_number") {
+                } else if (k === "current_removed_stones" || k === "move_number") {
                     // skip
                 } else {
                     ret.push(
