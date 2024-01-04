@@ -40,7 +40,7 @@ export function Experiment({ name, children }: ExperimentProps): JSX.Element | u
     }
 
     React.useEffect((): (() => void) | void => {
-        const body_class = matching_child?.props?.bodyclass;
+        const body_class = matching_child?.props?.bodyclass; // cspell: disable-line
         if (body_class) {
             document.body.classList.add(body_class);
             return () => {

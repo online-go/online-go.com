@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// cspell: disable
+
 import React from "react";
 import { LogData } from "./Game";
 import moment from "moment";
