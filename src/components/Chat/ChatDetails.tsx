@@ -154,7 +154,7 @@ export function ChatDetails(props: ChatDetailsProperties): JSX.Element {
                             <div className="notify-option">
                                 <label htmlFor="notify_none">
                                     {pgettext(
-                                        "Don't notify the user when any chats are snet to the channel",
+                                        "Don't notify the user when any chats are sent to the channel",
                                         "Nothing",
                                     )}
                                 </label>
