@@ -66,6 +66,8 @@ import {
     updateSystem,
 } from "TimeControl/TimeControlUpdates";
 
+const MAX_GAME_NAME_LEN = 50; // Longer than this makes the Play pane all scrolly and yuck.
+
 export type ChallengeDetails = rest_api.ChallengeDetails;
 
 type ChallengeModes = "open" | "computer" | "player" | "demo";
@@ -766,8 +768,12 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
     /* update bindings  */
     update_conf_bot_id = (ev: React.ChangeEvent<HTMLSelectElement>) =>
         this.upstate("conf.bot_id", parseInt(ev.target.value));
-    update_challenge_game_name = (ev: React.ChangeEvent<HTMLInputElement>) =>
+    update_challenge_game_name = (ev: React.ChangeEvent<HTMLInputElement>) => {
+        if (ev.target.value.length > MAX_GAME_NAME_LEN) {
+            return;
+        }
         this.upstate("challenge.game.name", ev);
+    };
     update_private = (ev: React.ChangeEvent<HTMLInputElement>) =>
         this.upstate([
             ["challenge.game.private", ev],
