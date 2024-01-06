@@ -471,8 +471,8 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                             claim={() => {
                                 /* community moderators don't claim reports */
                             }}
-                            submit={(action) => {
-                                void report_manager.vote(report.id, action);
+                            submit={(action, note) => {
+                                void report_manager.vote(report.id, action, note);
                                 next();
                             }}
                             enable={report.state === "pending"}
@@ -483,7 +483,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                 )}
             </div>
 
-            {(user.is_moderator || null) && (
+            {user.is_moderator && (
                 <>
                     <div className="actions">
                         <div className="related-reports">
@@ -502,7 +502,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                                 </>
                             )}
                             {report.voters?.length > 0 && (
-                                <>
+                                <div className="voters">
                                     <h4>{_("Voters:")}</h4>
                                     <ul>
                                         {report.voters?.map((vote) => (
@@ -511,7 +511,13 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                                             </li>
                                         ))}
                                     </ul>
-                                </>
+                                </div>
+                            )}
+                            {report.escalated && report.community_mod_note && (
+                                <div className="community-mod-note">
+                                    <h5>Community Moderator Note:</h5>
+                                    <div className="Card">{report.community_mod_note}</div>
+                                </div>
                             )}
                         </div>
 

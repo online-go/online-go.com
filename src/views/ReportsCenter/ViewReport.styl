@@ -89,11 +89,44 @@
         }
     }
 
-    .actions-right {
-        align-items: flex-end; // put the buttons down close-ish to the send-warning buttons
-        button {
-            height: auto;
-            padding: 7px;
+    .actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+
+        .actions-left {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-around;
+        }
+        .actions-right {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-around;
+            align-items: flex-end; // put the buttons down close-ish to the send-warning buttons
+            button {
+                height: auto;
+                padding: 7px;
+            }
+        }
+    }
+
+    .voters {
+        h4 {
+            margin-bottom: 0;
+        }
+        ul {
+            margin-top: 0;
+        }
+    }
+    .community-mod-note {
+        h5 {
+            margin: 0;
+        }
+        .Card {
+            font-size: smaller;
+            margin-bottom: 0; // aligns with items on the right
         }
     }
 

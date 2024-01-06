@@ -24,7 +24,7 @@ interface ModerationActionSelectorProps {
     available_actions: string[];
     enable: boolean;
     claim: () => void;
-    submit: (action: string) => void;
+    submit: (action: string, note: string) => void;
 }
 
 // Translatable versions of the prompts for Community Moderators.
@@ -70,6 +70,7 @@ const ACTION_PROMPTS = {
         "Label for a moderator to select this option",
         "No escaping evident - inform the reporter.",
     ),
+    // Note: keep this last, so it's positioned above the "note to moderator" input
     escalate: pgettext(
         "A label for a community moderator to select this option - send report to to full moderators",
         "Escalate: send direct to moderators.",
@@ -83,6 +84,7 @@ export function ModerationActionSelector({
     submit,
 }: ModerationActionSelectorProps): JSX.Element {
     const [selectedOption, setSelectedOption] = React.useState("");
+    const [mod_note, setModNote] = React.useState("");
 
     const updateSelectedAction = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSelectedOption(e.target.value);
@@ -90,13 +92,13 @@ export function ModerationActionSelector({
     };
 
     const { registerTargetItem } = React.useContext(DynamicHelp.Api);
-    const { ref: voting_pane } = registerTargetItem("voting-pane");
+    const { ref: voting_pane } = registerTargetItem("ModerationActionSelector");
     const { ref: escalate_option } = registerTargetItem("escalate-option");
 
     const action_choices = available_actions ? available_actions : ["escalate"];
 
     return (
-        <div className="voting-pane" ref={voting_pane}>
+        <div className="ModerationActionSelector" ref={voting_pane}>
             <h4>
                 {pgettext(
                     "The heading for community moderators 'action choices' section",
@@ -131,8 +133,17 @@ export function ModerationActionSelector({
                         <label htmlFor={a}>{(ACTION_PROMPTS as any)[a]}</label>
                     </div>
                 ))}
+            {selectedOption === "escalate" && (
+                <textarea
+                    id="mod-note-text"
+                    placeholder={_("Message for moderators...")}
+                    rows={5}
+                    value={mod_note}
+                    onChange={(ev) => setModNote(ev.target.value)}
+                />
+            )}
             {((action_choices && enable) || null) && (
-                <button className="success" onClick={() => submit(selectedOption)}>
+                <button className="success" onClick={() => submit(selectedOption, mod_note)}>
                     {pgettext("A label on a button for submitting a vote", "Vote")}
                 </button>
             )}

@@ -20,9 +20,9 @@ import { _ } from "translate";
 
 interface ModerationOfferControlProps {
     ability: string; // Title/label for this power
-    ability_mask: number;
-    currently_offered: number;
-    moderator_powers: number;
+    ability_mask: number; // which bitfield carries the power we want to offer
+    currently_offered: number; // what they are already offered
+    moderator_powers: number; // what they already have
     previously_rejected: boolean;
     onMakeOffer: (offer_mask: number) => void;
     onRetractOffer: (offer_mask: number) => void;
