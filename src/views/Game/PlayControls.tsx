@@ -606,16 +606,11 @@ interface AnalyzeButtonBarProps {
     is_review: boolean;
     mode: GobanModes;
     copied_node: React.MutableRefObject<MoveTree | undefined>;
-
-    // called when user passes in analysis
-    // Is this still needed? I think an event could be emitted to similar effect... -BPJ
-    forceUpdate: (nonce: number) => void;
 }
 export function AnalyzeButtonBar({
     setAnalyzeTool,
     setAnalyzePencilColor,
     analyze_pencil_color,
-    forceUpdate,
     is_review,
     mode,
     copied_node,
@@ -643,8 +638,6 @@ export function AnalyzeButtonBar({
     };
     const analysis_pass = () => {
         goban.pass();
-        // Do we really need to forceUpdate here?
-        forceUpdate(Math.random());
     };
 
     const goban_setModeDeferredPlay = () => {

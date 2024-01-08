@@ -147,7 +147,6 @@ export function Game(): JSX.Element | null {
     const [score_estimate_amount, set_score_estimate_amount] = React.useState<number>();
     const show_title = useShowTitle(goban.current);
     const [, set_undo_requested] = React.useState<number | undefined>();
-    const [, forceUpdate] = React.useState<number>();
     const [bot_detection_results, set_bot_detection_results] = React.useState<any>(null);
     const [show_bot_detection_results, set_show_bot_detection_results] = React.useState(false);
 
@@ -797,7 +796,6 @@ export function Game(): JSX.Element | null {
                 setAnalyzePencilColor={set_analyze_pencil_color}
                 analyze_pencil_color={analyze_pencil_color}
                 setAnalyzeTool={setAnalyzeTool}
-                forceUpdate={forceUpdate}
                 is_review={!!review_id}
                 mode={mode}
                 copied_node={copied_node}
