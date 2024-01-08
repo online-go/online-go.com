@@ -80,6 +80,7 @@ export interface Report {
 
     available_actions: Array<string>; // community moderator actions
     voters: Vote[]; // votes from community moderators on this report
+    community_mod_note: string;
 
     unclaim: () => void;
     claim: () => void;
@@ -392,12 +393,13 @@ class ReportManager extends EventEmitter<Events> {
         this.updateIncidentReport(res);
         return res;
     }
-    public async vote(report_id: number, voted_action: string) {
+    public async vote(report_id: number, voted_action: string, mod_note: string) {
         delete this.active_incident_reports[report_id];
         this.update();
         const res = await post(`moderation/incident/${report_id}`, {
             action: "vote", // darn, yes, two different uses of the word "action" collide here
             voted_action: voted_action,
+            mod_note,
         }).then((res) => {
             toast(
                 <div>
