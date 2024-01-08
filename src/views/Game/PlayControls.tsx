@@ -801,7 +801,7 @@ export function AnalyzeButtonBar({
                     <button
                         onClick={() => automateBranch(goban)}
                         title={_("Copy branch to conditional move planner")}
-                        disabled={user_id === currentPlayer(goban)}
+                        disabled={user_id === goban.engine.playerToMoveOnOfficialBranch()}
                     >
                         <i className="fa fa-exchange"></i>
                     </button>
@@ -1257,7 +1257,7 @@ function automateBranch(goban: Goban): void {
         return;
     }
 
-    if (data.get("user").id === currentPlayer(goban)) {
+    if (data.get("user").id === goban.engine.playerToMoveOnOfficialBranch()) {
         toast(<div>{_("You cannot make conditional moves on your turn.")}</div>, 2000);
         return;
     }
@@ -1309,16 +1309,6 @@ function mergeConditionalTrees(a: ConditionalMoveTree, b: ConditionalMoveTree): 
 
         mergeConditionalTrees(nextA, nextB);
     }
-}
-
-// Returns current player, ignoring any provisional stones on the board.
-function currentPlayer(goban: Goban): number {
-    const engine = goban.engine;
-    const backup = engine.cur_move;
-    engine.jumpTo(engine.last_official_move);
-    const ret = engine.playerToMove();
-    engine.jumpTo(backup);
-    return ret;
 }
 
 function AnnulmentReason({
