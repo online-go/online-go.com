@@ -33,7 +33,7 @@ import { Report, report_manager, DAILY_REPORT_GOAL } from "report_manager";
 import { useRefresh, useUser } from "hooks";
 import * as DynamicHelp from "react-dynamic-help";
 
-export function IncidentReportTracker(): JSX.Element {
+export function IncidentReportTracker(): JSX.Element | null {
     const user = useUser();
     const navigate = useNavigate();
     const [show_incident_list, setShowIncidentList] = React.useState(false);
@@ -180,6 +180,11 @@ export function IncidentReportTracker(): JSX.Element {
         reportButtonUsed();
         navigate(`/reports-center/all/${report_id}`);
     };
+
+    if (!user) {
+        // Can happen when deleting your account, apparently.
+        return null;
+    }
 
     const reports = report_manager.getAvailableReports();
     const hide_indicator = (reports.length === 0 && !user.is_moderator) || prefer_hidden;
