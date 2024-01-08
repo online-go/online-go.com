@@ -188,7 +188,8 @@ export function NavBar(): JSX.Element {
                 </Link>
                 <Menu title={_("Play")} to="/play">
                     <Link to="/play">
-                        <i className="ogs-goban"></i> {_("Play")}
+                        <i className="ogs-goban"></i>
+                        {_("Play")}
                     </Link>
                     <Link to="/tournaments">
                         <i className="fa fa-trophy"></i>
