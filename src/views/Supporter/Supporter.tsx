@@ -28,6 +28,7 @@ import { ignore, errorAlerter } from "misc";
 import { currencies } from "./currencies";
 import { Toggle } from "Toggle";
 import { LoadingPage } from "Loading";
+import { toast } from "toast";
 
 interface SupporterProperties {
     inline?: boolean;
@@ -194,6 +195,7 @@ export function Supporter(props: SupporterProperties): JSX.Element {
     const inline = props?.inline;
     const account_id = parseInt((params?.account_id || user?.id || "0") as string);
     const [loading, setLoading] = React.useState(true);
+    const [refresh, setRefresh] = React.useState(0);
     const [config, setConfig]: [Config, (h: Config) => void] = React.useState<Config>({
         loading: true,
         country_code: "US",
@@ -283,7 +285,7 @@ export function Supporter(props: SupporterProperties): JSX.Element {
             .then(ignore)
             .catch(ignore)
             .finally(() => setLoading(false));
-    }, [account_id]);
+    }, [account_id, refresh]);
 
     if (error) {
         return (
@@ -523,7 +525,11 @@ export function Supporter(props: SupporterProperties): JSX.Element {
                         </>
                     ) : null}
 
-                    <ManualServiceCreator account_id={account_id} config={config} />
+                    <ManualServiceCreator
+                        account_id={account_id}
+                        config={config}
+                        refresh={setRefresh}
+                    />
 
                     {config.services.length && user.is_superuser ? (
                         <div className="Services">
@@ -1099,9 +1105,13 @@ function PaymentMethod({ payment }: { payment: Payment }): JSX.Element {
 interface ManualServiceCreatorProperties {
     account_id: number;
     config: Config;
+    refresh: (n: number) => void;
 }
 
-function ManualServiceCreator({ account_id }: ManualServiceCreatorProperties): JSX.Element | null {
+function ManualServiceCreator({
+    account_id,
+    refresh,
+}: ManualServiceCreatorProperties): JSX.Element | null {
     const user = data.get("user");
     const [level, setLevel]: [string, React.Dispatch<string>] = React.useState("");
     const [months, setMonths]: [string, React.Dispatch<string>] = React.useState("");
@@ -1117,7 +1127,15 @@ function ManualServiceCreator({ account_id }: ManualServiceCreatorProperties): J
             level: parseInt(level),
             months: parseInt(months),
         })
-            .then((res: any) => console.log(res))
+            .then((res: any) => {
+                toast(
+                    <div>
+                        Service {level} granted for {months} months
+                    </div>,
+                );
+                console.log(res);
+                refresh(Math.random());
+            })
             .catch((err: any) => console.error(err));
     }
 
@@ -1157,7 +1175,10 @@ function ServiceLine({ service }: { service: Service }): JSX.Element | null {
 
     function toggleActive() {
         put(`/billing/service/${service.id}`, { active: !active })
-            .then((res: any) => console.log(res))
+            .then((res: any) => {
+                toast(!active ? <div> Service activated</div> : <div> Service deactivated</div>);
+                console.log(res);
+            })
             .catch((err: any) => console.error(err));
         setActive(!active);
     }
@@ -1200,7 +1221,10 @@ function SupporterOverridesEditor({
     function save() {
         console.log("save", overrides);
         put(`players/${account_id}/supporter_overrides`, overrides)
-            .then(() => console.log("saved"))
+            .then(() => {
+                toast(<div>Supporter prices updated</div>);
+                console.log("saved");
+            })
             .catch(console.error);
     }
 
@@ -1241,6 +1265,14 @@ function SupporterOverridesEditor({
             delete overrides.plan;
         }
         onChange({ ...overrides }); // copy to force re-render
+
+        if (interval === "month") {
+            if (value === "") {
+                upPrice(slug, "year", "");
+            } else {
+                upPrice(slug, "year", value * 10);
+            }
+        }
     }
 
     return (
@@ -1250,33 +1282,39 @@ function SupporterOverridesEditor({
                     <label htmlFor="payment_methods">Payment Methods</label>
                 </dt>
                 <dd>
-                    <label htmlFor="auto">Auto</label>
-                    <input
-                        type="radio"
-                        name="payment_methods"
-                        id="auto"
-                        value={""}
-                        checked={!overrides.payment_methods}
-                        onChange={(ev) => up("payment_methods", ev.target.value || undefined)}
-                    />
-                    <label htmlFor="stripe">Stripe + Paypal</label>
-                    <input
-                        type="radio"
-                        name="payment_methods"
-                        id="stripe"
-                        value={"stripe_and_paypal"}
-                        checked={overrides.payment_methods === "stripe_and_paypal"}
-                        onChange={(ev) => up("payment_methods", ev.target.value || undefined)}
-                    />
-                    <label htmlFor="paddle">Paddle</label>
-                    <input
-                        type="radio"
-                        name="payment_methods"
-                        id="paddle"
-                        value={"paddle"}
-                        checked={overrides.payment_methods === "paddle"}
-                        onChange={(ev) => up("payment_methods", ev.target.value || undefined)}
-                    />
+                    <div>
+                        <input
+                            type="radio"
+                            name="payment_methods"
+                            id="auto"
+                            value={""}
+                            checked={!overrides.payment_methods}
+                            onChange={(ev) => up("payment_methods", ev.target.value || undefined)}
+                        />
+                        <label htmlFor="auto">Auto</label>
+                    </div>
+                    <div>
+                        <input
+                            type="radio"
+                            name="payment_methods"
+                            id="stripe"
+                            value={"stripe_and_paypal"}
+                            checked={overrides.payment_methods === "stripe_and_paypal"}
+                            onChange={(ev) => up("payment_methods", ev.target.value || undefined)}
+                        />
+                        <label htmlFor="stripe">Stripe + Paypal</label>
+                    </div>
+                    <div>
+                        <input
+                            type="radio"
+                            name="payment_methods"
+                            id="paddle"
+                            value={"paddle"}
+                            checked={overrides.payment_methods === "paddle"}
+                            onChange={(ev) => up("payment_methods", ev.target.value || undefined)}
+                        />
+                        <label htmlFor="paddle">Paddle</label>
+                    </div>
                 </dd>
 
                 <dt>
@@ -1320,6 +1358,38 @@ function SupporterOverridesEditor({
                 <dt>
                     <label>Price</label>
                 </dt>
+                <dd>
+                    <button
+                        onClick={() => {
+                            upPrice("aji", "month", "");
+                            upPrice("hane", "month", "");
+                            upPrice("tenuki", "month", "");
+                            upPrice("meijin", "month", "");
+                        }}
+                    >
+                        Clear
+                    </button>
+                    <button
+                        onClick={() => {
+                            upPrice("aji", "month", 300);
+                            upPrice("hane", "month", 500);
+                            upPrice("tenuki", "month", 1000);
+                            upPrice("meijin", "month", 2500);
+                        }}
+                    >
+                        2020 prices
+                    </button>
+                    <button
+                        onClick={() => {
+                            upPrice("aji", "month", 400);
+                            upPrice("hane", "month", 600);
+                            upPrice("tenuki", "month", 1100);
+                            upPrice("meijin", "month", 2900);
+                        }}
+                    >
+                        2023 prices
+                    </button>
+                </dd>
                 <dd>
                     <label htmlFor="aji">Aji</label>
                     <input
