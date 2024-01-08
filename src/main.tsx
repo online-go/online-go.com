@@ -244,7 +244,7 @@ data.watch("config.user_jwt", (jwt?: string) => {
 });
 
 sockets.socket.on("user/jwt", (jwt: string) => {
-    console.log("Updating JWT: ", jwt);
+    console.log("Updating JWT");
     data.set("config.user_jwt", jwt);
 });
 
