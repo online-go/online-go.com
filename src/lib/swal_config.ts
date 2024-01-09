@@ -33,3 +33,5 @@ export const alert = Swal.mixin({
     cancelButtonText: _("Cancel"),
     allowEscapeKey: true,
 });
+
+(window as any)["swal"] = alert;
