@@ -834,7 +834,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
     update_komi_auto = (ev: React.ChangeEvent<HTMLSelectElement>) =>
         this.upstate("challenge.game.komi_auto", ev);
     update_komi = (ev: React.ChangeEvent<HTMLInputElement>) =>
-        this.upstate("challenge.game.komi", ev);
+        this.upstate("challenge.game.komi", ev.target.value || "0");
     update_challenge_color = (ev: React.ChangeEvent<HTMLSelectElement>) =>
         this.upstate("challenge.challenger_color", ev);
     update_disable_analysis = (ev: React.ChangeEvent<HTMLInputElement>) =>
