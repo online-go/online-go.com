@@ -31,6 +31,7 @@ import { SocialLoginButtons } from "SocialLoginButtons";
 
 (window as any)["Md5"] = Md5;
 import { alert } from "swal_config";
+import { LoadingButton } from "LoadingButton";
 
 /***
  * Setup a device UUID so we can logout other *devices* and not all other
@@ -84,6 +85,7 @@ export function get_ebi() {
 export function SignIn(): JSX.Element {
     const user = useUser();
     const navigate = useNavigate();
+    const [submitLoading, setSubmitLoading] = React.useState(false);
     const ref_username = React.useRef<HTMLInputElement>(null);
     const ref_password = React.useRef<HTMLInputElement>(null);
 
@@ -91,11 +93,13 @@ export function SignIn(): JSX.Element {
         navigate("/");
     }
 
-    const login = (
-        event: React.MouseEvent<HTMLButtonElement> | React.KeyboardEvent<HTMLInputElement>,
-    ): boolean | void => {
+    const onSubmit = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
+        event.preventDefault();
+        if (submitLoading) {
+            return;
+        }
         const actually_login = () => {
-            post("/api/v0/login", {
+            return post("/api/v0/login", {
                 username: ref_username.current!.value.trim(),
                 password: ref_password.current!.value,
                 ebi: get_ebi(),
@@ -146,38 +150,20 @@ export function SignIn(): JSX.Element {
                 });
         };
 
-        const focus_empty = () => {
-            if (ref_username.current?.value.trim() === "") {
-                ref_username.current.focus();
-                return true;
-            }
-            if (ref_password.current?.value.trim() === "") {
-                ref_password.current.focus();
-                return true;
-            }
-
-            return false;
-        };
-
-        if (event.type === "click") {
-            event.preventDefault();
-            if (focus_empty()) {
-                return false;
-            }
-            actually_login();
+        if (ref_username.current?.value.trim() === "") {
+            ref_username.current.focus();
+            return;
         }
-        if (event.type === "keypress") {
-            if ((event as any).charCode === 13) {
-                event.preventDefault();
-                if (focus_empty()) {
-                    return false;
-                }
-                actually_login();
-            }
+        if (ref_password.current?.value.trim() === "") {
+            ref_password.current.focus();
+            return;
         }
 
-        if (event.type === "click" || (event as any).charCode === 13) {
-            return false;
+        try {
+            setSubmitLoading(true);
+            await actually_login();
+        } finally {
+            setSubmitLoading(false);
         }
     };
 
@@ -216,7 +202,7 @@ export function SignIn(): JSX.Element {
             <div>
                 <Card>
                     <h2>{_("Sign in")}</h2>
-                    <form name="login" autoComplete="on">
+                    <form name="login" autoComplete="on" onSubmit={onSubmit}>
                         <label htmlFor="username">
                             {_("Username") /* translators: Provide username to sign in with */}
                         </label>
@@ -226,7 +212,6 @@ export function SignIn(): JSX.Element {
                             autoFocus
                             ref={ref_username}
                             name="username"
-                            onKeyPress={login}
                             autoCapitalize="off"
                         />
                         <label htmlFor="password">
@@ -238,13 +223,18 @@ export function SignIn(): JSX.Element {
                             ref={ref_password}
                             type="password"
                             name="password"
-                            onKeyPress={login}
                         />
                         <div className="form-actions">
                             <a onClick={resetPassword}>{_("Forgot password?")}</a>
-                            <button className="primary" onClick={login}>
-                                <i className="fa fa-sign-in" /> {_("Sign in")}
-                            </button>
+                            <LoadingButton
+                                type="submit"
+                                className="primary"
+                                style={{ whiteSpace: "nowrap" }}
+                                loading={submitLoading}
+                                icon={<i className="fa fa-sign-in" />}
+                            >
+                                {_("Sign in")}
+                            </LoadingButton>
                         </div>
                     </form>
 
