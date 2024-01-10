@@ -144,8 +144,8 @@ export function configure_goban() {
                     white_theme: preferences.get("goban-theme-white"),
                 },
             });
-            preferences.set("goban-theme-black", "Plain");
-            preferences.set("goban-theme-white", "Plain");
+            preferences.setWithoutEmit("goban-theme-black", "Plain");
+            preferences.setWithoutEmit("goban-theme-white", "Plain");
             if (performance.now() > 10000) {
                 alert(
                     "A canvas allocation device limit has been reached, we are changing " +

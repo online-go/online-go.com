@@ -185,6 +185,15 @@ export function set<KeyT extends ValidPreference>(
         replication,
     ) as DataSchema[`preferences.${KeyT}`];
 }
+export function setWithoutEmit<KeyT extends ValidPreference>(
+    key: KeyT,
+    value: PreferencesType[KeyT],
+): DataSchema[`preferences.${KeyT}`] {
+    return data.setWithoutEmit(
+        `preferences.${key}`,
+        value as any,
+    ) as DataSchema[`preferences.${KeyT}`];
+}
 export function watch<KeyT extends ValidPreference>(
     key: KeyT,
     cb: (d: PreferencesType[KeyT]) => void,
