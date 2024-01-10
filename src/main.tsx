@@ -80,12 +80,16 @@ try {
             "zaloJSV2", // cspell:disable-line
             "evaluating 'a.L'",
             "document.querySelector(\"[title='Kaya']\").style",
+            "onHide is not defined",
 
-            // Broken Safari workarounds
-            // broken mac app WKWebView, see
-            // https://github.com/getsentry/sentry-javascript/issues/3040
+            // Library bugs
+            "(...).ended is not a function", // d3
+
+            // Safari bugs
+            //   broken mac app WKWebView, see
+            //   https://github.com/getsentry/sentry-javascript/issues/3040
             "evaluating 'window.webkit.messageHandlers'",
-            // Audio
+            //   Audio
             "cannot call stop without calling start first",
         ],
     });
