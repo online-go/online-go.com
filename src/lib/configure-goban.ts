@@ -124,69 +124,42 @@ export function configure_goban() {
 
         canvasAllocationErrorHandler: (
             note: string | null,
-            total_allocations_made: number,
-            error?: Error,
+            error: Error,
+            extra: {
+                total_allocations_made: number;
+                total_pixels_allocated: number;
+                width?: number | string;
+                height?: number | string;
+            },
         ) => {
-            console.error(
-                "Canvas allocation error: note=",
-                note,
-                " total_allocations_made=",
-                total_allocations_made,
-                " error=",
-                error,
-                " uptime=",
-                performance.now(),
-                " black theme: ",
-                preferences.get("goban-theme-black"),
-                " white theme: ",
-                preferences.get("goban-theme-white"),
-            );
-            Sentry.captureException(
-                new Error(
-                    "Canvas allocation failed: " +
-                        " note=" +
-                        note +
-                        " total_allocations_made=" +
-                        total_allocations_made +
-                        " uptime=" +
-                        performance.now() +
-                        " black theme: " +
-                        preferences.get("goban-theme-black") +
-                        " white theme: " +
-                        preferences.get("goban-theme-white"),
-                ),
-            );
+            const canvas_ct = document.querySelectorAll("canvas").length;
+
+            Sentry.captureException(new Error("Canvas allocation failed"), {
+                extra: {
+                    ...extra,
+                    note,
+                    canvas_ct,
+                    uptime: performance.now(),
+                    black_theme: preferences.get("goban-theme-black"),
+                    white_theme: preferences.get("goban-theme-white"),
+                },
+            });
             preferences.set("goban-theme-black", "Plain");
             preferences.set("goban-theme-white", "Plain");
             if (performance.now() > 10000) {
-                /*
-                setTimeout(() => {
-                }, 1000);
-                */
                 alert(
-                    "A canvas allocation device limit has been reached, we are changing the stone theme to be plain stones and reloading the page now to help prevent visual glitches.",
+                    "A canvas allocation device limit has been reached, we are changing " +
+                        "the stone theme to be plain stones and reloading the page now " +
+                        "to help prevent visual glitches.",
                 );
                 window.location.reload();
-            } else {
-                console.error("Canvas allocation error: too early to automatically reload");
+                return;
             }
             throw new Error(
-                "Canvas allocation limit reached: note=" +
-                    note +
-                    " total_allocations_made=" +
-                    total_allocations_made +
-                    " error=" +
-                    error +
-                    " uptime=" +
-                    performance.now(),
+                "Oops, an error has occurred creating a canvas element. " +
+                    "The team has been made aware of this issue. You can try " +
+                    "reloading a page, or try a different browser or device.",
             );
         },
-
-        /*
-        updateScoreEstimation: (est_winning_color:"black"|"white", number_of_points:number):void => {
-            let color = est_winning_color === "black" ? _("Black") : _("White");
-            $("#score-estimation").text(interpolate(pgettext("Score estimation result", "Estimation: %s by %s"), [color, number_of_points.toFixed(1)]));
-        },
-        */
     });
 }
