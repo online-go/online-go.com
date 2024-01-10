@@ -80,9 +80,13 @@ try {
             "zaloJSV2", // cspell:disable-line
             "evaluating 'a.L'",
             "document.querySelector(\"[title='Kaya']\").style",
+
+            // Broken Safari workarounds
             // broken mac app WKWebView, see
             // https://github.com/getsentry/sentry-javascript/issues/3040
             "evaluating 'window.webkit.messageHandlers'",
+            // Audio
+            "cannot call stop without calling start first",
         ],
     });
 
