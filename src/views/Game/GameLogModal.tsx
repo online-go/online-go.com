@@ -157,9 +157,9 @@ export function LogData({
                             key={k}
                             config={{
                                 ...config,
-                                marks,
                                 removed: "",
                             }}
+                            marks={marks}
                             move_number={data.move_number}
                             removal_string={data.current_removal_string}
                         />,

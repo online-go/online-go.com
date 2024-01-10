@@ -23,10 +23,12 @@ import { PersistentElement } from "../../components/PersistentElement";
 export function ScoringEventThumbnail({
     config,
     move_number,
+    marks,
     removal_string,
 }: {
     config: GobanConfig;
     move_number: number | undefined;
+    marks: any;
     removal_string: string | undefined;
 }) {
     const goban_div = React.useRef<HTMLDivElement>(
@@ -55,6 +57,7 @@ export function ScoringEventThumbnail({
                 },
             );
         }
+        goban.current?.setMarks(marks);
         const score = engine.computeScore();
         goban.current?.showScores(score);
     }, [config]);
