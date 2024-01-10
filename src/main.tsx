@@ -69,34 +69,21 @@ try {
                 console: false,
             }),
         ],
-        beforeSend(event, hint) {
-            try {
-                const error: any = hint.originalException;
-                /* Several users have weird addons and extensions that cause errors
-                 * that have nothing to do with OGS. This code filters some of these
-                 * out so they don't get reported to Sentry. */
 
-                const strings_to_ignore = [
-                    "coinbase",
-                    "hideMyLocation",
-                    "userAgent",
-                    "zaloJSV2", // cspell:disable-line
-                    "evaluating 'a.L'",
-                    "document.querySelector(\"[title='Kaya']\").style",
-                ];
-
-                if (
-                    error &&
-                    error.message &&
-                    strings_to_ignore.some((str) => error.message.indexOf(str) >= 0)
-                ) {
-                    return null;
-                }
-            } catch (e) {
-                // ignore
-            }
-            return event;
-        },
+        /* Several users have weird addons and extensions that cause errors
+         * that have nothing to do with OGS. This code filters some of these
+         * out so they don't get reported to Sentry. */
+        ignoreErrors: [
+            "coinbase",
+            "hideMyLocation",
+            "userAgent",
+            "zaloJSV2", // cspell:disable-line
+            "evaluating 'a.L'",
+            "document.querySelector(\"[title='Kaya']\").style",
+            // broken mac app WKWebView, see
+            // https://github.com/getsentry/sentry-javascript/issues/3040
+            "evaluating 'window.webkit.messageHandlers'",
+        ],
     });
 
     Sentry.setTag("version", ogs_version || "dev");
