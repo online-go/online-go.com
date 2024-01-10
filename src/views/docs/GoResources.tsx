@@ -475,6 +475,11 @@ export const GoResources = () => {
                             </span>,
                             <BasicResource
                                 countries={[en]}
+                                title="Awesome Baduk"
+                                href="https://www.youtube.com/@AwesomeBaduk"
+                            />,
+                            <BasicResource
+                                countries={[en]}
                                 title="Takumi Go Academy"
                                 href="https://www.youtube.com/@TakumiGoAcademy"
                             />,
@@ -726,6 +731,11 @@ export const GoResources = () => {
                     <dl>
                         <dt>{_("Sites")}</dt>
                         {scramble(
+                            <BasicResource
+                                countries={[eu]}
+                                title="Awesome Baduk"
+                                href="https://awesomebaduk.com/"
+                            />,
                             <BasicResource
                                 countries={[eu]}
                                 title="EGF Academy"
