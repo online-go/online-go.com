@@ -57,6 +57,10 @@ export function ScoringEventThumbnail({
         }
         const score = engine.computeScore();
         goban.current?.showScores(score);
+
+        return () => {
+            goban.current?.destroy();
+        };
     }, [config]);
 
     return <PersistentElement className={"goban-thumbnail"} elt={goban_div.current} />;

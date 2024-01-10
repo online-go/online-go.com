@@ -119,11 +119,38 @@ export function LogData({
     event: string;
     data: any;
 }): JSX.Element | null {
+    const [markedConfig, setMarkedConfig] = React.useState<GoEngineConfig | null>(null);
+    React.useEffect(() => {
+        if (event === "game_created") {
+            return;
+        }
+        if (!data?.stones) {
+            return;
+        }
+
+        let marks: { [mark: string]: string };
+        if (event === "stone_removal_stones_set") {
+            if (data.removed) {
+                marks = { cross: data.stones };
+            } else {
+                marks = { triangle: data.stones };
+            }
+        } else {
+            marks = { cross: data.stones };
+        }
+
+        setMarkedConfig({
+            ...config,
+            marks,
+            removed: "",
+        });
+    }, [config, event, data?.removed, data?.stones]);
+
+    const ret: Array<JSX.Element> = [];
+
     if (event === "game_created") {
         return null;
     }
-
-    const ret: Array<JSX.Element> = [];
 
     if (data) {
         try {
@@ -141,29 +168,17 @@ export function LogData({
                         </span>,
                     );
                 } else if (k === "stones") {
-                    let marks: { [mark: string]: string };
-                    if (event === "stone_removal_stones_set") {
-                        if (data.removed) {
-                            marks = { cross: data.stones };
-                        } else {
-                            marks = { triangle: data.stones };
-                        }
-                    } else {
-                        marks = { cross: data.stones };
+                    // we'll re-render when it's set
+                    if (markedConfig) {
+                        ret.push(
+                            <ScoringEventThumbnail
+                                key={k}
+                                config={markedConfig}
+                                move_number={data.move_number}
+                                removal_string={data.current_removal_string}
+                            />,
+                        );
                     }
-
-                    ret.push(
-                        <ScoringEventThumbnail
-                            key={k}
-                            config={{
-                                ...config,
-                                marks,
-                                removed: "",
-                            }}
-                            move_number={data.move_number}
-                            removal_string={data.current_removal_string}
-                        />,
-                    );
                 } else if (k === "current_removal_string" || k === "move_number") {
                     // skip
                 } else {
