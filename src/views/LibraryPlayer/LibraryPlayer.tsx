@@ -411,6 +411,14 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
 
         const bread_crumbs: any[] = [];
         const collection = this.state.collections[this.state.collection_id];
+        if (!collection) {
+            if (this.state.collection_id !== "0") {
+                requestAnimationFrame(() => {
+                    this.setState({ collection_id: "0" });
+                });
+            }
+            return null;
+        }
 
         this.applyCurrentSort(collection.games);
 
