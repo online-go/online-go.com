@@ -430,6 +430,7 @@ function minify_index(done) {
         return "{{" + parameter + "}}";
     });
 
+    /*
     let res = html_minifier(index, {
         minifyJS: true,
         minifyCSS: true,
@@ -439,6 +440,9 @@ function minify_index(done) {
     });
 
     console.log(res);
+    */
+
+    console.log(index);
     done();
 }
 
