@@ -157,7 +157,8 @@
         window.addEventListener("error", (e) => {
             if (
                 e.message.indexOf("ResizeObserver loop completed with undelivered notifications") >= 0 ||
-                e.message.indexOf("ResizeObserver loop limit exceeded") >= 0
+                e.message.indexOf("ResizeObserver loop limit exceeded") >= 0 ||
+                e.message.indexOf("Script error.") >= 0
             ) {
                 e.stopImmediatePropagation();
                 return false;
