@@ -943,9 +943,8 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
                 ) : (
                     <div className="ratings-graph">
                         <OgsResizeDetector
-                            handleWidth
-                            handleHeight
                             onResize={() => this.onResize()}
+                            targetRef={this.container}
                         />
                         <PersistentElement elt={this.chart_div} />
                     </div>

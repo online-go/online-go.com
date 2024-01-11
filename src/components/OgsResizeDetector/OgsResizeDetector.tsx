@@ -16,19 +16,23 @@
  */
 
 import React from "react";
-import ReactResizeDetector from "react-resize-detector";
-import { TypedEventEmitter } from "TypedEventEmitter";
+import { EventEmitter } from "eventemitter3";
 
 interface Events {
-    resize: void;
+    resize: () => void;
 }
 
-const resize_emitter = new TypedEventEmitter<Events>();
+const resize_emitter = new EventEmitter<Events>();
 
 if (!window.ResizeObserver) {
     window.onresize = () => {
         resize_emitter.emit("resize");
     };
+}
+
+interface OgsResizeDetectorProps {
+    onResize: () => void;
+    targetRef: React.RefObject<HTMLElement>;
 }
 
 /**
@@ -39,37 +43,65 @@ if (!window.ResizeObserver) {
  * stemming from dom reflows, but it's better than nothing and is probably good
  * enough.
  */
-export function OgsResizeDetector(props: ReactResizeDetector["props"]): JSX.Element {
+export function OgsResizeDetector(props: OgsResizeDetectorProps): JSX.Element {
     React.useEffect(() => {
         if (window.ResizeObserver) {
-            return;
-        }
+            const t = props.targetRef.current;
+            let debounce: ReturnType<typeof setTimeout> | null = null;
+            let doOnResizeAgain = false;
 
-        let debounce: ReturnType<typeof setTimeout> | null = null;
-
-        const cb = () => {
-            if (!debounce) {
-                debounce = setTimeout(() => {
-                    debounce = null;
-                    if (props.onResize) {
+            const observer = new ResizeObserver(() => {
+                if (props.onResize) {
+                    if (debounce) {
+                        doOnResizeAgain = true;
+                    } else {
                         props.onResize();
+                        debounce = setTimeout(() => {
+                            if (doOnResizeAgain) {
+                                props.onResize();
+                            }
+                            debounce = null;
+                            doOnResizeAgain = false;
+                        }, 1);
                     }
-                }, 50);
+                }
+            });
+            if (props.targetRef.current) {
+                observer.observe(props.targetRef.current);
             }
-        };
+            return () => {
+                if (debounce) {
+                    clearTimeout(debounce);
+                }
+                if (t) {
+                    observer.unobserve(t);
+                }
+                observer.disconnect();
+            };
+        } else {
+            // No ResizeObserver
+            let debounce: ReturnType<typeof setTimeout> | null = null;
 
-        resize_emitter.on("resize", cb);
-        return () => {
-            if (debounce) {
-                clearTimeout(debounce);
-            }
-            resize_emitter.off("resize", cb);
-        };
-    }, []);
+            const cb = () => {
+                if (!debounce) {
+                    debounce = setTimeout(() => {
+                        debounce = null;
+                        if (props.onResize) {
+                            props.onResize();
+                        }
+                    }, 50);
+                }
+            };
 
-    if (window.ResizeObserver) {
-        return <ReactResizeDetector {...props} />;
-    }
+            resize_emitter.on("resize", cb);
+            return () => {
+                if (debounce) {
+                    clearTimeout(debounce);
+                }
+                resize_emitter.off("resize", cb);
+            };
+        }
+    }, [props.onResize, props.targetRef.current]);
 
     return <React.Fragment />;
 }

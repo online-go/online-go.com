@@ -74,7 +74,7 @@ interface PlayState {
 }
 
 export class Play extends React.Component<{}, PlayState> {
-    ref_container?: HTMLDivElement;
+    ref_container: React.RefObject<HTMLDivElement> = React.createRef();
     canvas: HTMLCanvasElement;
 
     seekgraph!: SeekGraph;
@@ -165,12 +165,12 @@ export class Play extends React.Component<{}, PlayState> {
     }
 
     onResize = () => {
-        if (!this.ref_container) {
+        if (!this.ref_container.current) {
             return;
         }
 
-        const w = this.ref_container.offsetWidth;
-        const h = this.ref_container.offsetHeight;
+        const w = this.ref_container.current.offsetWidth;
+        const h = this.ref_container.current.offsetHeight;
         if (w !== this.seekgraph.width || h !== this.seekgraph.height) {
             this.seekgraph.resize(w, h);
         }
@@ -486,14 +486,10 @@ export class Play extends React.Component<{}, PlayState> {
                     {showSeekGraph && (
                         <div className="col-sm-6 play-column">
                             <Card>
-                                <div
-                                    ref={(el) => el && (this.ref_container = el)}
-                                    className="seek-graph-container"
-                                >
+                                <div ref={this.ref_container} className="seek-graph-container">
                                     <OgsResizeDetector
-                                        handleWidth
-                                        handleHeight
                                         onResize={() => this.onResize()}
+                                        targetRef={this.ref_container}
                                     />
                                     <PersistentElement elt={this.canvas} />
                                 </div>
