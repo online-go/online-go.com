@@ -83,7 +83,7 @@ try {
             "onHide is not defined",
 
             // Library bugs
-            "(...).ended is not a function", // d3
+            ").ended is not a function", // d3
 
             // Safari bugs
             //   broken mac app WKWebView, see
