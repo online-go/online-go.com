@@ -82,6 +82,9 @@ try {
             "evaluating 'a.L'",
             "document.querySelector(\"[title='Kaya']\").style",
             "onHide is not defined",
+            "outputCurrentConfiguration",
+            "mvpConfig",
+            "Cannot read properties of undefined (reading 'ns')",
 
             // Library bugs
             ").ended is not a function", // d3
