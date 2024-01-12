@@ -182,6 +182,46 @@ test("getUserRating", () => {
     // With a size/speed that does not exist on the user's rating
     expect(getUserRating(user, "blitz", 9)).toEqual(
         expect.objectContaining({
+            rating: 1465,
+            volatility: 0.06,
+            provisional: true,
+            deviation: 350,
+            unset: true,
+        }),
+    );
+
+    // With a size that does not exist on the user's rating
+    expect(getUserRating(user, "correspondence", 9)).toEqual(
+        expect.objectContaining({
+            rating: 1480,
+            volatility: 0.06,
+            provisional: true,
+            deviation: 350,
+            unset: true,
+        }),
+    );
+
+    // With a speed that does not exist on the user's rating
+    expect(getUserRating(user, "live", 0)).toEqual(
+        expect.objectContaining({
+            bounded_rank: 24,
+            bounded_rank_label: "6k",
+            deviation: 350,
+            professional: false,
+            provisional: true,
+            rating: 1465,
+            unset: true,
+            volatility: 0.06,
+        }),
+    );
+
+    // When the rating is completely unknown
+    const unknown = {
+        pro: false,
+        ratings: {},
+    };
+    expect(getUserRating(unknown, "overall", 0)).toEqual(
+        expect.objectContaining({
             bounded_rank: 24,
             bounded_rank_label: "6k",
             deviation: 350,

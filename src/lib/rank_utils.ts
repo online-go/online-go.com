@@ -145,13 +145,23 @@ export function getUserRating(
     const ratings: RatingsType = (user.ratings as any) || {};
     ret.professional = (user as UserType).pro || user.professional || false;
 
-    let key: string = speed;
+    // Set up keys for the rating in a cascade, from most specific to least.
+    //
+    // E.g., for:
+    //
+    // - blitz   and size=19:  ["blitz-19x19", "blitz", "overall"]
+    // - overall and size=9:   ["9x9", "overall"]
+    // - live    and size=0:   ["live", "overall"]
+    const keys: string[] = [speed];
     if (size > 0) {
         if (speed !== "overall") {
-            key += `-${size}x${size}`;
+            keys.unshift(speed + `-${size}x${size}`);
         } else {
-            key = `${size}x${size}`;
+            keys.unshift(`${size}x${size}`);
         }
+    }
+    if (speed !== "overall") {
+        keys.push("overall");
     }
 
     let rating = {
@@ -160,9 +170,21 @@ export function getUserRating(
         volatility: 0.06,
     };
     ret.unset = true;
-    if (key in ratings) {
-        ret.unset = false;
-        rating = ratings[key] as CompactRatingType;
+    let is_fallback_rating = false;
+    for (const key of keys) {
+        if (key in ratings) {
+            const stored_rating = ratings[key] as CompactRatingType;
+            if (is_fallback_rating) {
+                // Propagate only the rating itself from the fallback.  Keep
+                // the default deviation and volatility.
+                rating.rating = stored_rating.rating;
+            } else {
+                ret.unset = false;
+                rating = stored_rating;
+            }
+            break;
+        }
+        is_fallback_rating = true;
     }
 
     ret.rating = rating.rating;
