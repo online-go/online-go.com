@@ -2635,7 +2635,7 @@ export function Tournament(): JSX.Element {
                                                                                                     .colors[
                                                                                                     player.id +
                                                                                                         "x" +
-                                                                                                        opponent.id
+                                                                                                        opponent?.id
                                                                                                 ]
                                                                                             }
                                                                                         >
@@ -2645,7 +2645,7 @@ export function Tournament(): JSX.Element {
                                                                                                         .game_ids[
                                                                                                         player.id +
                                                                                                             "x" +
-                                                                                                            opponent.id
+                                                                                                            opponent?.id
                                                                                                     ]
                                                                                                 }`}
                                                                                             >
@@ -2654,7 +2654,7 @@ export function Tournament(): JSX.Element {
                                                                                                         .results[
                                                                                                         player.id +
                                                                                                             "x" +
-                                                                                                            opponent.id
+                                                                                                            opponent?.id
                                                                                                     ]
                                                                                                 }
                                                                                             </Link>
@@ -2881,26 +2881,26 @@ export function Tournament(): JSX.Element {
                                                                     className={
                                                                         "result " +
                                                                         selected_round.colors[
-                                                                            m.player.id +
+                                                                            m.player?.id +
                                                                                 "x" +
-                                                                                m.opponent.id
+                                                                                m.opponent?.id
                                                                         ]
                                                                     }
                                                                 >
                                                                     <Link
                                                                         to={`/game/${
                                                                             selected_round.game_ids[
-                                                                                m.player.id +
+                                                                                m.player?.id +
                                                                                     "x" +
-                                                                                    m.opponent.id
+                                                                                    m.opponent?.id
                                                                             ]
                                                                         }`}
                                                                     >
                                                                         {
                                                                             selected_round.results[
-                                                                                m.player.id +
+                                                                                m.player?.id +
                                                                                     "x" +
-                                                                                    m.opponent.id
+                                                                                    m.opponent?.id
                                                                             ]
                                                                         }
                                                                     </Link>
