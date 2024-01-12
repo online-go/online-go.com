@@ -369,7 +369,6 @@ export function errorAlerter(...args: any[]) {
         });
     }
     console.error(err);
-    console.error(new Error().stack);
 }
 export function errorLogger(...args: any[]) {
     const err = getPrintableError(args[0]);
