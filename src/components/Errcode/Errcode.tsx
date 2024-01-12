@@ -74,22 +74,27 @@ export function format_message(props: MessageProps): string {
         case "stone_already_placed_here":
         case "move_is_suicidal":
         case "illegal_ko_move":
-        case "illegal_board_repetition": {
-            const m: GobanMoveErrorMessageObject = props.message as GobanMoveErrorMessageObject;
-            const coords = m?.coords || "ERR";
-            const move_number = m?.move_number || -1;
-            const suffix = ": #" + move_number.toString() + " @" + coords;
-            switch (message_id) {
-                case "stone_already_placed_here":
-                    return _("A stone has already been placed here") + suffix;
-                case "move_is_suicidal":
-                    return _("Move is suicidal");
-                case "illegal_ko_move":
-                    return _("Illegal Ko Move") + suffix;
-                case "illegal_board_repetition":
-                    return _("Illegal board repetition") + suffix;
+        case "illegal_board_repetition":
+            {
+                const m: GobanMoveErrorMessageObject = props.message as GobanMoveErrorMessageObject;
+                const coords = m?.coords || "ERR";
+                const move_number = m?.move_number || -1;
+                const suffix = ": #" + move_number.toString() + " @" + coords;
+                switch (message_id) {
+                    case "stone_already_placed_here":
+                        return _("A stone has already been placed here") + suffix;
+                    case "move_is_suicidal":
+                        return _("Move is suicidal");
+                    case "illegal_ko_move":
+                        return _("Illegal Ko Move") + suffix;
+                    case "illegal_board_repetition":
+                        return _("Illegal board repetition") + suffix;
+                }
             }
-        }
+            break;
+
+        case "komi_invalid":
+            return _("Komi setting is invalid");
 
         // break omitted
         case "test":
