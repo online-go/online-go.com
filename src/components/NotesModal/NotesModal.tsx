@@ -26,7 +26,7 @@ interface NotesModalProperties {
 }
 
 export class NotesModal extends Modal<Events, NotesModalProperties, any> {
-    constructor(props) {
+    constructor(props: NotesModalProperties) {
         super(props);
     }
 

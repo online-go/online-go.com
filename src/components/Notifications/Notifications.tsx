@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* cspell:disable */
+
 import * as React from "react";
 import * as data from "data";
 
@@ -22,17 +24,19 @@ import { _, interpolate, pgettext } from "translate";
 
 import { post, del } from "requests";
 import { browserHistory } from "ogsHistory";
-import { challenge_text_description } from "ChallengeModal";
+import { challenge_text_description, ChallengeDetails } from "ChallengeModal";
 import { Player } from "Player";
 import { FabX, FabCheck } from "material";
 import { deepEqual } from "misc";
 import { isLiveGame, durationString } from "TimeControl";
 
 import { notification_manager } from "./NotificationManager";
-import { openModerationOfferModal } from "./ModerationOfferModal";
+import { ModerationOffer } from "ModerationOffer";
 
 export function NotificationList(): JSX.Element {
-    const [, setCount] = React.useState(notification_manager.ordered_notifications.length);
+    const [, setCount] = React.useState<number | undefined>(
+        notification_manager.ordered_notifications.length,
+    );
     const [, refresh] = React.useState(0);
 
     React.useEffect(() => {
@@ -71,8 +75,16 @@ export function NotificationList(): JSX.Element {
     );
 }
 
-class NotificationEntry extends React.Component<{ notification }, any> {
-    constructor(props) {
+interface Notification {
+    type: string;
+    [key: string]: any;
+}
+
+interface NotificationEntryProps {
+    notification: Notification;
+}
+class NotificationEntry extends React.Component<NotificationEntryProps, any> {
+    constructor(props: NotificationEntryProps) {
         super(props);
         this.state = {
             message: null,
@@ -86,7 +98,7 @@ class NotificationEntry extends React.Component<{ notification }, any> {
         }
     }
 
-    shouldComponentUpdate(nextProps, nextState) {
+    shouldComponentUpdate(nextProps: NotificationEntryProps, nextState: any) {
         if (deepEqual(this.props, nextProps) && deepEqual(this.state, nextState)) {
             return false;
         }
@@ -97,7 +109,7 @@ class NotificationEntry extends React.Component<{ notification }, any> {
         notification_manager.deleteNotification(this.props.notification);
     }
 
-    onError(err) {
+    onError(err: any) {
         console.error(err);
         if (err.status === 404) {
             notification_manager.deleteNotification(this.props.notification);
@@ -106,7 +118,7 @@ class NotificationEntry extends React.Component<{ notification }, any> {
         }
     }
 
-    open = (ev) => {
+    open = (ev: any) => {
         if (!$(ev.target).hasClass("fab") && !$(ev.target).hasClass("fa")) {
             const url = this.getOpenUrl();
             if (url) {
@@ -183,7 +195,7 @@ class NotificationEntry extends React.Component<{ notification }, any> {
         );
     }
 
-    renderNotification() {
+    renderNotification(): JSX.Element | null {
         const notification = this.props.notification;
 
         switch (notification.type) {
@@ -199,7 +211,9 @@ class NotificationEntry extends React.Component<{ notification }, any> {
                     <div>
                         {_("Challenge from")} <Player user={notification.user} />
                         <div className="description">
-                            {challenge_text_description(notification)}
+                            {challenge_text_description(
+                                notification as unknown as ChallengeDetails,
+                            )}
                         </div>
                         <div className="buttons">
                             <FabX
@@ -519,28 +533,16 @@ class NotificationEntry extends React.Component<{ notification }, any> {
 
             case "moderationOffer":
                 return (
-                    <div className="moderation-offer">
-                        <span>{_("You qualify for access to community moderation tools!")}</span>
-                        <button
-                            onClick={() =>
-                                openModerationOfferModal(
-                                    notification.player_id,
-                                    notification.offered_powers,
-                                    this.del,
-                                )
-                            }
-                        >
-                            {pgettext(
-                                "Label of a button to get details of community moderation offer",
-                                "Details",
-                            )}
-                        </button>
-                    </div>
+                    <ModerationOffer
+                        player_id={notification.player_id}
+                        offered_moderator_powers={notification.offered_moderator_powers}
+                        onAck={this.del}
+                    />
                 );
 
             default:
                 console.error("Unsupported notification: ", notification.type, notification);
-                break;
+                return null;
         }
     }
 }

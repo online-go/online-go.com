@@ -40,7 +40,7 @@ interface PopoverConfig {
 }
 
 let last_id = 0;
-const open_popovers = {};
+const open_popovers: { [id: number]: PopOver } = {};
 
 export class PopOver extends TypedEventEmitter<Events> {
     id: number;
@@ -67,7 +67,7 @@ export class PopOver extends TypedEventEmitter<Events> {
         setTimeout(this.close, 500); // matches css transition-duration
     };
 
-    close = (ev) => {
+    close = (ev?: React.MouseEvent) => {
         if (!ev || ev.target === this.backdrop || ev.target === this.container) {
             //ReactDOM.unmountComponentAtNode(this.container);
             $(this.container).remove();

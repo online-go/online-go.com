@@ -24,20 +24,21 @@ import { useUser } from "hooks";
 import { JGOFClockWithTransmitting, JGOFTimeControl } from "goban";
 import { browserHistory } from "../../ogsHistory";
 import { toast } from "toast";
+import { StallingScoreEstimate } from "goban/lib/protocol";
 
 const ANTI_ESCAPING_TIMEOUT = 60; // number of seconds to wait before allowing the "Claim victory" button to be appear and be clicked
 
 let on_game_page = false;
 let live_game = false;
 let live_game_id = 0;
-let live_game_phase = null;
-let last_toast = null;
+let live_game_phase: string | null = null;
+let last_toast: ReturnType<typeof toast> | null = null;
 let was_player = false;
 
 function checkForLeavingLiveGame(pathname: string) {
     try {
         const user = data.get("user");
-        const goban = window["global_goban"];
+        const goban = (window as any)["global_goban"];
         const was_on_page = on_game_page;
         const was_live_game = live_game;
 
@@ -99,17 +100,19 @@ export function AntiGrief(): JSX.Element {
         </>
     );
 }
-function AntiEscaping(): JSX.Element {
+function AntiEscaping(): JSX.Element | null {
     const user = useUser();
     const goban = useGoban();
     const [phase, setPhase] = React.useState(goban?.engine?.phase);
-    const [clock, setClock] = React.useState<JGOFClockWithTransmitting>(goban?.last_clock as any);
-    const [expiration, setExpiration] = React.useState<number>(null);
+    const [clock, setClock] = React.useState<JGOFClockWithTransmitting | undefined | null>(
+        goban?.last_emitted_clock,
+    );
+    const [expiration, setExpiration] = React.useState<number | undefined | null>(null);
     const [show, setShow] = React.useState(false);
 
     React.useEffect(() => {
         setShow(false);
-        setClock(goban?.last_clock as any);
+        setClock(goban?.last_emitted_clock);
         goban.on("clock", setClock);
 
         return () => {
@@ -140,7 +143,7 @@ function AntiEscaping(): JSX.Element {
         };
     }, [goban]);
 
-    React.useEffect(() => {
+    React.useEffect((): (() => void) | void => {
         if (expiration) {
             const timer = setTimeout(() => {
                 setExpiration(null);
@@ -221,14 +224,14 @@ function AntiEscaping(): JSX.Element {
     );
 }
 
-function AntiStalling(): JSX.Element {
+function AntiStalling(): JSX.Element | null {
     const user = useUser();
     const goban = useGoban();
-    const [estimate, setEstimate] = React.useState(null);
+    const [estimate, setEstimate] = React.useState<any>(null);
     const [phase, setPhase] = React.useState(goban?.engine?.phase);
 
     React.useEffect(() => {
-        const onScoreEstimate = (estimate) => {
+        const onScoreEstimate = (estimate?: StallingScoreEstimate) => {
             setEstimate(estimate);
         };
 

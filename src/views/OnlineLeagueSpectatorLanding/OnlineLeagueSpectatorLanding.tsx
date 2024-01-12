@@ -37,7 +37,7 @@ export function OnlineLeagueSpectatorLanding(): JSX.Element {
 
     /* State */
     const [loading, set_loading] = React.useState(true); // set to false after we have the info about that match they are joining
-    const [match, set_match] = React.useState<rest_api.online_league.MatchStatus>(null);
+    const [match, set_match] = React.useState<rest_api.online_league.MatchStatus>();
 
     const { registerTargetItem } = React.useContext(DynamicHelp.Api);
 
@@ -46,16 +46,16 @@ export function OnlineLeagueSpectatorLanding(): JSX.Element {
     const user = useUser();
     const logged_in = !user.anonymous;
 
-    const jumpToGame = (details) => {
+    const jumpToGame = (details: any) => {
         console.log("Jump to game?", details, match);
-        if (details.matchId === match.id) {
+        if (details.matchId === match?.id) {
             console.log("yes, jumping...");
             navigate(`/game/${details.gameId}`, { replace: true });
         }
     };
 
-    const updateWaitingStatus = (details) => {
-        if (details.matchId === match.id) {
+    const updateWaitingStatus = (details: any) => {
+        if (details.matchId === match?.id && match) {
             set_match({ ...match, black_ready: details.black, white_ready: details.white });
         }
     };
@@ -88,9 +88,9 @@ export function OnlineLeagueSpectatorLanding(): JSX.Element {
 
             {(!loading || null) && (
                 <React.Fragment>
-                    <h2>{match.name}</h2>
+                    <h2>{match?.name}</h2>
                     <div className={"match-detail"}>
-                        ({match.league} Match {match.id})
+                        ({match?.league} Match {match?.id})
                     </div>
                     <div className={"match-detail"}>{_("Spectator Waiting Room")}</div>
                 </React.Fragment>
@@ -103,19 +103,19 @@ export function OnlineLeagueSpectatorLanding(): JSX.Element {
                     </div>
                     <div className="waiting-chat">
                         <EmbeddedChatCard
-                            inputPlaceholdertText={pgettext(
+                            inputPlaceholderText={pgettext(
                                 "place holder text in a chat channel input",
                                 "Chat while you wait...",
                             )}
-                            channel={`ool-landing-${match.id}`}
+                            channel={`ool-landing-${match!.id}`}
                         />
                     </div>
                     {(logged_in || null) && (
                         <React.Fragment>
-                            {/* can't show thes unles we're logged in 'cause updates don't come */}
+                            {/* can't show these unless we're logged in 'cause updates don't come */}
                             <div>
                                 {_("Black: ")}
-                                {match.black_ready ? (
+                                {match!.black_ready ? (
                                     <i className="fa fa-thumbs-up" />
                                 ) : (
                                     _("waiting... ")
@@ -123,7 +123,7 @@ export function OnlineLeagueSpectatorLanding(): JSX.Element {
                             </div>
                             <div>
                                 {_("White: ")}
-                                {match.white_ready ? (
+                                {match!.white_ready ? (
                                     <i className="fa fa-thumbs-up" />
                                 ) : (
                                     _("waiting...")

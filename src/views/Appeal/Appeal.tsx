@@ -38,14 +38,14 @@ interface AppealMessage {
     hidden?: boolean;
 }
 
-export function Appeal(props: { player_id?: number }): JSX.Element {
+export function Appeal(props: { player_id?: number }): JSX.Element | null {
     // we are either a full blow appeals page, or we are embedded within the ReportsCenter
     // For the embedded version we use props, for the routed version we use useParams
     const _params = useParams();
     const params = props?.player_id ? props : _params;
 
-    const banned_user_id: number = data.get("appeals.banned_user_id");
-    const jwt_key: string = data.get("appeals.jwt");
+    const banned_user_id: number = data.get("appeals.banned_user_id", 0);
+    const jwt_key: string = data.get("appeals.jwt", "");
 
     const player_id = params.player_id || banned_user_id;
     const user = data.get("user");
@@ -58,17 +58,17 @@ export function Appeal(props: { player_id?: number }): JSX.Element {
     const [still_banned, setStillBanned] = React.useState(true);
     const [allow_further_appeals, setAllowFurtherAppeals] = React.useState(true);
 
-    const ban_reason: string = reason_for_ban || data.get("appeals.ban-reason");
+    const ban_reason: string = reason_for_ban || data.get("appeals.ban-reason", "");
     React.useEffect(refresh, [props.player_id]);
 
     if (!user.is_moderator && !jwt_key) {
         window.location.pathname = "/sign-in";
-        return;
+        return null;
     }
 
     const mod = user && user.is_moderator;
     const placeholder = mod
-        ? "You can respond to the user's appeal here. Click 'hidden' for the reponse to only be visible to other moderators."
+        ? "You can respond to the user's appeal here. Click 'hidden' for the response to only be visible to other moderators."
         : pgettext(
               "This text is shown when a user needs to appeal the suspension of their account.",
               "If you would like to appeal this suspension, please enter your appeal here and it will be reviewed by a moderator. Second chances are sometimes offered if we can be assured the reason for the suspension will not be repeated.",
@@ -108,7 +108,7 @@ export function Appeal(props: { player_id?: number }): JSX.Element {
                     {interpolate(
                         pgettext(
                             "When their account will be restored",
-                            "Supension expires: {{expiration}}",
+                            "Suspension expires: {{expiration}}",
                         ),
                         {
                             expiration: moment(ban_expiration).format("LLL"),
@@ -176,14 +176,14 @@ export function Appeal(props: { player_id?: number }): JSX.Element {
         </div>
     );
 
-    function updateState(ev) {
+    function updateState(ev: React.ChangeEvent<HTMLSelectElement>) {
         setState(ev.target.value);
         patch(`appeal/${player_id}`, { state: ev.target.value })
             .then(() => 0)
             .catch(errorAlerter);
     }
 
-    function updateAllowFurtherAppeals(ev) {
+    function updateAllowFurtherAppeals(ev: React.ChangeEvent<HTMLInputElement>) {
         setAllowFurtherAppeals(ev.target.checked);
         patch(`appeal/${player_id}`, { allow_further_appeals: ev.target.checked })
             .then(() => 0)

@@ -35,9 +35,9 @@ import { post } from "requests";
 import { ai_host } from "sockets";
 sfx.sync();
 
-declare let ogs_current_language;
-declare let ogs_language_version;
-declare let ogs_version;
+declare let ogs_current_language: string;
+declare let ogs_language_version: string;
+declare let ogs_version: string;
 
 let sentry_env = "production";
 
@@ -69,6 +69,33 @@ try {
                 console: false,
             }),
         ],
+
+        /* Several users have weird addons and extensions that cause errors
+         * that have nothing to do with OGS. This code filters some of these
+         * out so they don't get reported to Sentry. */
+        ignoreErrors: [
+            "ReferenceError",
+            "coinbase",
+            "hideMyLocation",
+            "userAgent",
+            "zaloJSV2", // cspell:disable-line
+            "evaluating 'a.L'",
+            "document.querySelector(\"[title='Kaya']\").style",
+            "onHide is not defined",
+            "outputCurrentConfiguration",
+            "mvpConfig",
+            "Cannot read properties of undefined (reading 'ns')",
+
+            // Library bugs
+            ").ended is not a function", // d3
+
+            // Safari bugs
+            //   broken mac app WKWebView, see
+            //   https://github.com/getsentry/sentry-javascript/issues/3040
+            "evaluating 'window.webkit.messageHandlers'",
+            //   Audio
+            "cannot call stop without calling start first",
+        ],
     });
 
     Sentry.setTag("version", ogs_version || "dev");
@@ -82,7 +109,9 @@ try {
     window.onunhandledrejection = (e) => {
         console.error(e);
         console.error(e.reason);
-        console.error(e.stack);
+        if (e.reason.stack) {
+            console.error(e.reason.stack);
+        }
     };
 } catch (e) {
     console.log(e);
@@ -94,7 +123,7 @@ import * as preferences from "preferences";
 
 try {
     // default_theme is set in index.html based on looking at the OS theme
-    data.setDefault("theme", window["default_theme"]);
+    data.setDefault("theme", (window as any)["default_theme"]);
 } catch (e) {
     data.setDefault("theme", "light");
 }
@@ -118,13 +147,16 @@ data.setDefault("config", { user: default_user });
 
 data.setDefault("config.user", default_user);
 
-data.setDefault("config.cdn", window["cdn_service"]);
+data.setDefault("config.cdn", (window as any)["cdn_service"]);
 data.setDefault(
     "config.cdn_host",
-    window["cdn_service"].replace("https://", "").replace("http://", "").replace("//", ""),
+    (window as any)["cdn_service"].replace("https://", "").replace("http://", "").replace("//", ""),
 );
-data.setDefault("config.cdn_release", window["cdn_service"] + "/" + window["ogs_release"]);
-data.setDefault("config.release", window["ogs_release"]);
+data.setDefault(
+    "config.cdn_release",
+    (window as any)["cdn_service"] + "/" + (window as any)["ogs_release"],
+);
+data.setDefault("config.release", (window as any)["ogs_release"]);
 
 configure_goban();
 
@@ -138,7 +170,7 @@ import { errorAlerter } from "misc";
 import { close_all_popovers } from "popover";
 import * as sockets from "sockets";
 import { _, setCurrentLanguage } from "translate";
-import { init_tabcomplete } from "tabcomplete";
+import { init_tab_complete } from "tab_complete";
 import * as player_cache from "player_cache";
 import { toast } from "toast";
 import cached from "cached";
@@ -174,10 +206,10 @@ if (cached_config) {
      * that are depending on other parts of the config will fire without
      * having up to date information (in particular user / auth stuff) */
     for (const key in cached_config) {
-        data.setWithoutEmit(`config.${key as keyof ConfigSchema}`, cached_config[key]);
+        data.setWithoutEmit(`config.${key as keyof ConfigSchema}`, (cached_config as any)[key]);
     }
     for (const key in cached_config) {
-        data.set(`config.${key as keyof ConfigSchema}`, cached_config[key]);
+        data.set(`config.${key as keyof ConfigSchema}`, (cached_config as any)[key]);
     }
 }
 
@@ -194,7 +226,7 @@ try {
 
 player_cache.update(user);
 data.set("user", user);
-window["user"] = user;
+(window as any)["user"] = user;
 
 /***
  * Test if local storage is disabled for some reason (Either because the user
@@ -216,7 +248,7 @@ try {
 /** Connect to the chat service */
 for (const socket of [sockets.socket, sockets.ai_socket]) {
     socket.authenticate({
-        jwt: data.get("config.user_jwt"),
+        jwt: data.get("config.user_jwt", ""),
         device_id: get_device_id(),
         user_agent: navigator.userAgent,
         language: ogs_current_language,
@@ -225,23 +257,21 @@ for (const socket of [sockets.socket, sockets.ai_socket]) {
     });
 }
 
-data.watch("config.user_jwt", (jwt: string) => {
-    if (jwt) {
-        if (sockets.ai_socket.connected) {
-            sockets.ai_socket.authenticate({
-                jwt: data.get("config.user_jwt"),
-                device_id: get_device_id(),
-                user_agent: navigator.userAgent,
-                language: ogs_current_language,
-                language_version: ogs_language_version,
-                client_version: ogs_version,
-            });
-        }
+data.watch("config.user_jwt", (jwt?: string) => {
+    if (sockets.ai_socket.connected) {
+        sockets.ai_socket.authenticate({
+            jwt: jwt ?? "",
+            device_id: get_device_id(),
+            user_agent: navigator.userAgent,
+            language: ogs_current_language,
+            language_version: ogs_language_version,
+            client_version: ogs_version,
+        });
     }
 });
 
 sockets.socket.on("user/jwt", (jwt: string) => {
-    console.log("Updating JWT: ", jwt);
+    console.log("Updating JWT");
     data.set("config.user_jwt", jwt);
 });
 
@@ -251,7 +281,7 @@ sockets.socket.on("user/update", (user: any) => {
         data.set("config.user", user);
         player_cache.update(user);
         data.set("user", user);
-        window["user"] = user;
+        (window as any)["user"] = user;
     } else {
         console.log("Ignoring user update for user", user);
     }
@@ -261,7 +291,7 @@ sockets.socket.on("user/update", (user: any) => {
 set_remote_scorer(remote_score_estimator);
 function remote_score_estimator(req: ScoreEstimateRequest): Promise<ScoreEstimateResponse> {
     return new Promise<ScoreEstimateResponse>((resolve) => {
-        req.jwt = data.get("config.user_jwt");
+        req.jwt = data.get("config.user_jwt", "");
         resolve(post(`${ai_host}/api/score`, req));
     });
 }
@@ -286,7 +316,7 @@ browserHistory.listen(({ action /*, location */ }) => {
 });
 
 /*** Some finial initializations ***/
-init_tabcomplete();
+init_tab_complete();
 
 //  don't inherit old rdh values
 if (user.anonymous) {
@@ -295,9 +325,9 @@ if (user.anonymous) {
 
 /* Initialization done, render!! */
 const svg_loader = document.getElementById("loading-svg-container");
-svg_loader.parentNode.removeChild(svg_loader);
+svg_loader?.parentNode?.removeChild(svg_loader);
 
-const react_root = ReactDOM.createRoot(document.getElementById("main-content"));
+const react_root = ReactDOM.createRoot(document.getElementById("main-content") as HTMLElement);
 
 react_root.render(
     <React.StrictMode>
@@ -308,10 +338,10 @@ react_root.render(
     </React.StrictMode>,
 );
 
-window["data"] = data;
-window["preferences"] = preferences;
-window["player_cache"] = player_cache;
-window["GoMath"] = GoMath;
+(window as any)["data"] = data;
+(window as any)["preferences"] = preferences;
+(window as any)["player_cache"] = player_cache;
+(window as any)["GoMath"] = GoMath;
 
 import * as requests from "requests";
-window["requests"] = requests;
+(window as any)["requests"] = requests;

@@ -16,7 +16,7 @@
  */
 
 import * as data from "data";
-import { sections, allsections } from "./sections";
+import { sections, all_sections } from "./sections";
 import { LearningHubSection } from "./LearningHubSection";
 
 interface SectionCompletion {
@@ -40,8 +40,8 @@ export function getSectionCompletion(section_name: string): SectionCompletion {
         }
     }
 
-    let section = null;
-    for (const S of allsections) {
+    let section: any = null;
+    for (const S of all_sections) {
         if (S.section() === section_name) {
             section = S;
             break;
@@ -68,8 +68,8 @@ export function getSectionCompletion(section_name: string): SectionCompletion {
     };
 }
 
-export function getSectionByName(section_name: string): typeof LearningHubSection {
-    for (const S of allsections) {
+export function getSectionByName(section_name: string): typeof LearningHubSection | null {
+    for (const S of all_sections) {
         if (S.section() === section_name) {
             return S;
         }
@@ -80,8 +80,8 @@ export function getSectionByName(section_name: string): typeof LearningHubSectio
 
 export function getFirstUncompletedPage(section_name: string): number {
     const completion = data.get(`learning-hub.${section_name}`, {});
-    let section = null;
-    for (const S of allsections) {
+    let section: any = null;
+    for (const S of all_sections) {
         if (S.section() === section_name) {
             section = S;
             break;

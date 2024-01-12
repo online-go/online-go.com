@@ -40,27 +40,20 @@ reports_center_content_width=56rem
         }
     }
 
-    .actions {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        margin-top: 0.5rem;
-        margin-bottom: 0.5rem;
 
-        .actions-left {
-            display: flex;
-            flex-direction: row;
-            justify-content: space-around;
-            .Button {
-                margin-left: 0.5rem;
-            }
+    .ModerationActionSelector {
+        display: flex;
+        flex-direction: column;
+
+        padding-bottom: 0.5rem; // intended to create margin for rdh highlighter
+
+        .no-report-actions-note,  .disabled-actions-note {
+            padding: 0 1rem 1rem 1rem;
         }
-        .actions-right {
-            display: flex;
-            flex-direction: row;
-            justify-content: space-around;
-            .Button {
-                margin-left: 0.5rem;
-            }
+
+        button {
+            max-width: fit-content;
+            align-self: center;
         }
     }
 

@@ -27,12 +27,12 @@ interface Events {}
 
 interface ModerationOfferModalProperties {
     player_id: number;
-    offered_powers: number; // Must be the full bitfield that the person is going to get
-    onResolved: () => void;
+    offered_moderator_powers: number; // Must be the full bitfield that the person is going to get
+    onResolved?: () => void;
 }
 
 export class ModerationOfferModal extends Modal<Events, ModerationOfferModalProperties, {}> {
-    constructor(props) {
+    constructor(props: ModerationOfferModalProperties) {
         super(props);
     }
 
@@ -46,11 +46,11 @@ export class ModerationOfferModal extends Modal<Events, ModerationOfferModalProp
         });
 
         patch("me/moderation", {
-            moderator_powers: this.props.offered_powers,
+            moderator_powers: this.props.offered_moderator_powers,
         })
             .then(() => {
                 alert.close();
-                this.props.onResolved();
+                this.props.onResolved?.();
             })
             .catch(errorAlerter);
         this.close();
@@ -70,7 +70,7 @@ export class ModerationOfferModal extends Modal<Events, ModerationOfferModalProp
         })
             .then(() => {
                 alert.close();
-                this.props.onResolved();
+                this.props.onResolved?.();
             })
             .catch(errorAlerter);
         this.close();
@@ -116,11 +116,15 @@ export class ModerationOfferModal extends Modal<Events, ModerationOfferModalProp
     }
 }
 
-export function openModerationOfferModal(player_id, offered_powers, onResolved) {
+export function openModerationOfferModal(
+    player_id: number,
+    offered_moderator_powers: number,
+    onResolved?: () => void,
+) {
     openModal(
         <ModerationOfferModal
             player_id={player_id}
-            offered_powers={offered_powers}
+            offered_moderator_powers={offered_moderator_powers}
             onResolved={onResolved}
             fastDismiss
         />,

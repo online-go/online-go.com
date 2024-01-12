@@ -35,6 +35,7 @@ import { Speed } from "src/lib/types";
 import { usePreference } from "preferences";
 import { openAnnulQueueModal, AnnulQueueModal } from "AnnulQueueModal";
 import { useUser } from "hooks";
+import { GameNameForList } from "GobanLineSummary";
 
 interface GameHistoryProps {
     user_id: number;
@@ -71,7 +72,7 @@ interface GroomedGame {
 }
 
 export function GameHistoryTable(props: GameHistoryProps) {
-    const [player_filter, setPlayerFilter] = React.useState<number>(null);
+    const [player_filter, setPlayerFilter] = React.useState<number>();
     const [game_history_board_size_filter, setGameHistoryBoardSizeFilter] = React.useState<string>(
         preferences.get("game-history-size-filter"),
     );
@@ -85,7 +86,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
 
     const user = useUser();
 
-    function getBoardSize(size_filter: string): number {
+    function getBoardSize(size_filter: string): number | undefined {
         switch (size_filter) {
             case "9x9":
                 return 9;
@@ -94,9 +95,13 @@ export function GameHistoryTable(props: GameHistoryProps) {
             case "19x19":
                 return 19;
         }
+        throw new Error(`Unknown size filter: ${size_filter}`);
     }
 
-    function handleRowClick(row, ev) {
+    function handleRowClick(
+        row: GroomedGame,
+        ev: React.MouseEvent | React.TouchEvent | React.PointerEvent,
+    ) {
         if (selectModeActive) {
             toggleQueued(row);
         } else {
@@ -104,7 +109,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
         }
     }
 
-    function toggleQueued(rowData) {
+    function toggleQueued(rowData: GroomedGame) {
         const alreadyInQueue = annulQueue.some((item) => item.id === rowData.id);
 
         if (!alreadyInQueue) {
@@ -114,7 +119,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
         }
     }
 
-    function handleLinkClick(event) {
+    function handleLinkClick(event: React.MouseEvent) {
         if (selectModeActive) {
             event.preventDefault();
         }
@@ -139,7 +144,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
     }
 
     function game_history_groomer(results: rest_api.Game[]): GroomedGame[] {
-        const ret = [];
+        const ret: GroomedGame[] = [];
         for (let i = 0; i < results.length; ++i) {
             const r = results[i];
 
@@ -152,7 +157,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
 
             item.width = r.width;
             item.height = r.height;
-            item.date = r.ended ? new Date(r.ended) : null;
+            item.date = r.ended ? new Date(r.ended) : undefined;
             item.annulled = r.annulled || false;
             item.ranked = r.ranked;
 
@@ -172,7 +177,9 @@ export function GameHistoryTable(props: GameHistoryProps) {
             }
 
             if (r.rengo) {
-                item.rengo_vs_text = `${r.rengo_black_team.length} vs. ${r.rengo_white_team.length}`;
+                item.rengo_vs_text = `${r.rengo_black_team?.length ?? -1} vs. ${
+                    r.rengo_white_team?.length ?? -1
+                }`;
             }
 
             item.result_class = getResultClass(r, props.user_id);
@@ -187,12 +194,12 @@ export function GameHistoryTable(props: GameHistoryProps) {
                 item.name = item.href;
             }
 
-            item.href = `/game/${item.id}`;
+            item.href = `/game/${item.id as number}`;
             item.result = getGameResultRichText(r);
             item.flags = r.flags && props.user_id in r.flags ? r.flags[props.user_id] : undefined;
-            item.bot_detection_results = r.bot_detection_results;
+            item.bot_detection_results = r.bot_detection_results ?? undefined;
 
-            ret.push(item);
+            ret.push(item as GroomedGame);
         }
         return ret;
     }
@@ -310,7 +317,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
                         filter={{
                             source: "play",
                             ended__isnull: false,
-                            ...(player_filter !== null && {
+                            ...(player_filter !== undefined && {
                                 alt_player: player_filter,
                             }),
                             ...(game_history_board_size_filter !== "all" && {
@@ -338,8 +345,8 @@ export function GameHistoryTable(props: GameHistoryProps) {
                                             {X.played_black == null
                                                 ? "❓" // Some rengo games don't tell us which team the user is on. Needs backend fix.
                                                 : X.played_black
-                                                ? "⚫"
-                                                : "⚪"}
+                                                  ? "⚫"
+                                                  : "⚪"}
                                         </span>
                                         {X.played_black != null &&
                                             maskedRank(`[${rankString(X.player)}]`)}
@@ -370,7 +377,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
                                         {X.rengo_vs_text ? (
                                             <strong>{X.rengo_vs_text}</strong>
                                         ) : (
-                                            <Player user={X.opponent} disableCacheUpdate />
+                                            <Player user={X.opponent as any} disableCacheUpdate />
                                         )}
                                     </>
                                 ),
@@ -392,7 +399,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
                                     "game_name" + (X && X.annulled ? " annulled" : ""),
                                 render: (X) => (
                                     <Link to={X.href} onClick={(e) => handleLinkClick(e)}>
-                                        {X.name ||
+                                        {!X.name &&
                                             interpolate(
                                                 "{{black_username}} vs. {{white_username}}",
                                                 {
@@ -400,6 +407,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
                                                     white_username: X.white.username,
                                                 },
                                             )}
+                                        {X.name && <GameNameForList original_name={X.name} />}
                                     </Link>
                                 ),
                             },
@@ -550,10 +558,10 @@ function getSpeedClass(speed: Speed) {
 
 function playedBlack(game: rest_api.Game, user_id: number) {
     if (game.rengo) {
-        if (game.rengo_black_team.indexOf(user_id) !== -1) {
+        if (game.rengo_black_team?.indexOf(user_id) !== -1) {
             return true;
         }
-        if (game.rengo_white_team.indexOf(user_id) !== -1) {
+        if (game.rengo_white_team?.indexOf(user_id) !== -1) {
             return false;
         }
     }

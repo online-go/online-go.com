@@ -30,7 +30,7 @@ import { SettingGroupPageProps, PreferenceLine } from "SettingsCommon";
 import { IAssociation, associations } from "associations";
 import { allRanks, IRankInfo } from "rank_utils";
 
-let update_link_preferences_debounce: Timeout;
+let update_link_preferences_debounce: Timeout | undefined;
 
 export function LinkPreferences(props: SettingGroupPageProps): JSX.Element {
     const link = props.state.self_reported_account_linkages || {};
@@ -62,7 +62,7 @@ export function LinkPreferences(props: SettingGroupPageProps): JSX.Element {
         <div id="LinkPreferences">
             <div className="LinkPreferencesDescription">
                 {_(
-                    "Here you can list other places you play and have a rating or a rank. You can choose to publically display this information or not. Providing this even if you don't want it publically known helps us tune our ranking algorithm and provide guidance on converting ranks between servers and organizations for the community, so the information is important and greatly appreciated.",
+                    "Here you can list other places you play and have a rating or a rank. You can choose to publicly display this information or not. Providing this even if you don't want it publicly known helps us tune our ranking algorithm and provide guidance on converting ranks between servers and organizations for the community, so the information is important and greatly appreciated.",
                 )}
             </div>
 
@@ -73,7 +73,7 @@ export function LinkPreferences(props: SettingGroupPageProps): JSX.Element {
             <PreferenceLine title={_("Only show ranks, not ids and usernames")}>
                 <Toggle
                     disabled={link.hidden}
-                    checked={link.hidden_ids && !link.hidden}
+                    checked={!!link.hidden_ids && !link.hidden}
                     onChange={(tf) => set("hidden_ids")(tf)}
                 />
             </PreferenceLine>
@@ -236,7 +236,7 @@ function AssociationSelect({
     value: string;
     onChange: (value: string) => void;
 }): JSX.Element {
-    let user_countries = [];
+    let user_countries: string[] = [];
     try {
         if (data.get("user").country) {
             /* If there's an association for the user's country, we put it at the top of the list */
@@ -249,7 +249,7 @@ function AssociationSelect({
     }
 
     if (user_countries.length === 0 || user_countries[0] === "un") {
-        /* Couldn't figure out a best assocation to put up top? Put the most common ones up on top */
+        /* Couldn't figure out a best association to put up top? Put the most common ones up on top */
         user_countries = ["us", "eu", "jp", "cn", "kr"];
     }
 

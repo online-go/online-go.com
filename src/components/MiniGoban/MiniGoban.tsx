@@ -29,8 +29,8 @@ import { fetch } from "player_cache";
 import { getGameResultText } from "misc";
 import { PlayerCacheEntry } from "player_cache";
 
-interface MiniGobanProps {
-    id: number;
+export interface MiniGobanProps {
+    id?: number;
     width?: number;
     height?: number;
     displayWidth?: number;
@@ -44,6 +44,7 @@ interface MiniGobanProps {
 
     onUpdate?: () => void;
     json?: any;
+    player?: { id: number };
     noLink?: boolean;
     openLinksInNewTab?: boolean;
     noText?: boolean;
@@ -71,6 +72,7 @@ export function MiniGoban(props: MiniGobanProps): JSX.Element {
     const [black_name, setBlackName] = React.useState("");
     const [white_name, setWhiteName] = React.useState("");
     const [current_users_move, setCurrentUsersMove] = React.useState(false);
+    const [viewed_users_move, setViewedUsersMove] = React.useState(false);
     const [black_to_move_cls, setBlackToMoveCls] = React.useState("");
     const [white_to_move_cls, setWhiteToMoveCls] = React.useState("");
     const [in_stone_removal_phase, setInStoneRemovalPhase] = React.useState(false);
@@ -101,7 +103,11 @@ export function MiniGoban(props: MiniGobanProps): JSX.Element {
         }
 
         goban.current.on("update", () => {
-            const engine = goban.current.engine;
+            const engine = goban.current?.engine;
+            if (!engine) {
+                return;
+            }
+
             const score = engine.computeScore(true);
             let black: string | PlayerCacheEntry = props.black || "";
             let white: string | PlayerCacheEntry = props.white || "";
@@ -111,7 +117,7 @@ export function MiniGoban(props: MiniGobanProps): JSX.Element {
                     // maybe the engine doesn't have players?
                     black = engine.players.black;
                     // the goban engine doesn't come with the full player rating structure
-                    fetch(goban.current.engine.players.black.id)
+                    fetch(engine.players.black.id)
                         .then((player) => {
                             const blackRating = getUserRating(player);
                             let rank_text = blackRating.bounded_rank_label;
@@ -132,7 +138,7 @@ export function MiniGoban(props: MiniGobanProps): JSX.Element {
                 try {
                     white = engine.players.white;
                     // the goban engine doesn't come with the full player rating structure
-                    fetch(goban.current.engine.players.white.id)
+                    fetch(engine.players.white.id)
                         .then((player) => {
                             const whiteRating = getUserRating(player);
                             let rank_text = whiteRating.bounded_rank_label;
@@ -151,14 +157,14 @@ export function MiniGoban(props: MiniGobanProps): JSX.Element {
 
             if (props.title) {
                 const result_string = getGameResultText(
-                    goban.current.engine.outcome,
-                    goban.current.engine.winner !== (goban.current.engine as any).white_player_id,
-                    goban.current.engine.winner !== (goban.current.engine as any).black_player_id,
+                    engine.outcome,
+                    engine.winner !== (engine as any).white_player_id,
+                    engine.winner !== (engine as any).black_player_id,
                 );
 
-                setGameName(goban.current.engine.config.game_name || "");
+                setGameName(engine.config.game_name || "");
                 setGameDate(
-                    goban.current.config.end_time
+                    goban.current?.config.end_time
                         ? moment(new Date(goban.current.config.end_time * 1000)).format("LLL")
                         : "",
                 );
@@ -196,26 +202,36 @@ export function MiniGoban(props: MiniGobanProps): JSX.Element {
                 setBlackName(black);
             } else {
                 setBlackName(
-                    goban.current.engine.rengo
-                        ? goban.current.engine.rengo_teams.black[0].username +
+                    engine.rengo && engine.rengo_teams
+                        ? engine.rengo_teams.black[0].username +
                               " +" +
-                              (goban.current.engine.rengo_teams.black.length - 1)
-                        : goban.current.engine.players.black.username,
+                              (engine.rengo_teams.black.length - 1)
+                        : engine.players.black.username,
                 );
             }
             if (typeof white === "string") {
                 setWhiteName(white);
             } else {
                 setWhiteName(
-                    goban.current.engine.rengo
-                        ? goban.current.engine.rengo_teams.white[0].username +
+                    engine.rengo && engine.rengo_teams
+                        ? engine.rengo_teams.white[0].username +
                               " +" +
-                              (goban.current.engine.rengo_teams.white.length - 1)
-                        : goban.current.engine.players.white.username,
+                              (engine.rengo_teams.white.length - 1)
+                        : engine.players.white.username,
                 );
             }
 
-            setCurrentUsersMove(player_to_move === data.get("config.user").id);
+            // Mark games where it's the current user's move.
+            const user = data.get("config.user").id;
+            const is_current_user = player_to_move === user;
+            setCurrentUsersMove(is_current_user);
+
+            // If this is a different player's page, also mark other games
+            // where it's not that player's move.
+            const player = props?.player?.id;
+            setViewedUsersMove(
+                !!player && !is_current_user && user !== player && player_to_move === player,
+            );
 
             setBlackToMoveCls(
                 typeof black === "object" && goban.current && black.id === player_to_move
@@ -228,8 +244,8 @@ export function MiniGoban(props: MiniGobanProps): JSX.Element {
                     : "",
             );
 
-            setInStoneRemovalPhase(goban.current && goban.current.engine.phase === "stone removal");
-            setFinished(goban.current && goban.current.engine.phase === "finished");
+            setInStoneRemovalPhase(engine.phase === "stone removal");
+            setFinished(engine.phase === "finished");
 
             if (props.onUpdate) {
                 props.onUpdate();
@@ -237,7 +253,7 @@ export function MiniGoban(props: MiniGobanProps): JSX.Element {
         });
 
         return () => {
-            goban.current.destroy();
+            goban.current?.destroy();
             goban_div.current.childNodes.forEach((node) => node.remove());
         };
     }, [props.id]);
@@ -264,6 +280,7 @@ export function MiniGoban(props: MiniGobanProps): JSX.Element {
                     className={
                         "small board" +
                         (current_users_move ? " current-users-move" : "") +
+                        (viewed_users_move ? " viewed-users-move" : "") +
                         (in_stone_removal_phase ? " in-stone-removal-phase" : "") +
                         (finished ? " finished" : "")
                     }
@@ -273,14 +290,15 @@ export function MiniGoban(props: MiniGobanProps): JSX.Element {
                     <div className={`title-black ${black_to_move_cls}`}>
                         <span className={`player-name`}>{black_name}</span>
                         <span className={`player-rank`}>{black_rank}</span>
-                        {finished || (
-                            <Clock
-                                compact
-                                goban={goban.current}
-                                color="black"
-                                className="mini-goban"
-                            />
-                        )}
+                        {finished ||
+                            (goban.current && (
+                                <Clock
+                                    compact
+                                    goban={goban.current}
+                                    color="black"
+                                    className="mini-goban"
+                                />
+                            ))}
                         {finished || <span className="score">{black_points}</span>}
                     </div>
                 )}
@@ -288,14 +306,15 @@ export function MiniGoban(props: MiniGobanProps): JSX.Element {
                     <div className={`title-white ${white_to_move_cls}`}>
                         <span className={`player-name`}>{white_name}</span>
                         <span className={`player-rank`}>{white_rank}</span>
-                        {finished || (
-                            <Clock
-                                compact
-                                goban={goban.current}
-                                color="white"
-                                className="mini-goban"
-                            />
-                        )}
+                        {finished ||
+                            (goban.current && (
+                                <Clock
+                                    compact
+                                    goban={goban.current}
+                                    color="white"
+                                    className="mini-goban"
+                                />
+                            ))}
                         {finished || <span className="score">{white_points}</span>}
                     </div>
                 )}

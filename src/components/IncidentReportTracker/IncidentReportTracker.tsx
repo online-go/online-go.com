@@ -31,22 +31,42 @@ import { AutoTranslate } from "AutoTranslate";
 import { report_categories } from "Report";
 import { Report, report_manager, DAILY_REPORT_GOAL } from "report_manager";
 import { useRefresh, useUser } from "hooks";
+import * as DynamicHelp from "react-dynamic-help";
 
-export function IncidentReportTracker(): JSX.Element {
+export function IncidentReportTracker(): JSX.Element | null {
     const user = useUser();
     const navigate = useNavigate();
     const [show_incident_list, setShowIncidentList] = React.useState(false);
     const [normal_ct, setNormalCt] = React.useState(0);
-    const [hide_icon] = usePreference("hide-incident-reports");
+    const [prefer_hidden] = usePreference("hide-incident-reports");
     const refresh = useRefresh();
+
+    const { registerTargetItem, triggerFlow, signalUsed } = React.useContext(DynamicHelp.Api);
+    const { ref: incident_report_indicator } = registerTargetItem("incident-report-indicator");
+    const { ref: hidden_incident_report_indicator } = registerTargetItem(
+        "hidden-incident-report-indicator",
+    );
+    const { ref: first_report_button, used: reportButtonUsed } =
+        registerTargetItem("first-report-button");
 
     function toggleList() {
         if (user.is_moderator) {
             navigate("/reports-center/");
         } else {
+            signalUsed("incident-report-indicator");
             setShowIncidentList(!show_incident_list);
         }
     }
+
+    React.useEffect(() => {
+        if (incident_report_indicator && user.moderator_powers) {
+            if (!prefer_hidden && normal_ct > 0) {
+                triggerFlow("community-moderator-with-reports-intro");
+            } else {
+                triggerFlow("community-moderator-no-reports-intro");
+            }
+        }
+    }, [incident_report_indicator, prefer_hidden, normal_ct]);
 
     React.useEffect(() => {
         const onReport = (report: Report) => {
@@ -156,11 +176,18 @@ export function IncidentReportTracker(): JSX.Element {
         };
     }, []);
 
-    const reports = report_manager.sorted_active_incident_reports;
+    const reportButtonClicked = (report_id: number) => {
+        reportButtonUsed();
+        navigate(`/reports-center/all/${report_id}`);
+    };
 
-    if (reports.length === 0 && !user.is_moderator) {
+    if (!user) {
+        // Can happen when deleting your account, apparently.
         return null;
     }
+
+    const reports = report_manager.getAvailableReports();
+    const hide_indicator = (reports.length === 0 && !user.is_moderator) || prefer_hidden;
 
     function getReportType(report: Report): string {
         if (report.report_type === "appeal") {
@@ -179,16 +206,24 @@ export function IncidentReportTracker(): JSX.Element {
             report.moderator.id === user.id,
     );
 
-    if (hide_icon) {
-        return null;
-    }
-
     return (
         <>
-            <div className="IncidentReportIndicator" onClick={toggleList}>
-                <i className={`fa fa-exclamation-triangle ${normal_ct > 0 ? "active" : ""}`} />
-                <span className={`count ${normal_ct > 0 ? "active" : ""}`}>{normal_ct}</span>
-            </div>
+            {hide_indicator && (
+                /* this is a target for a dynamic help popup talking about why this isn't shown,
+                so we need it rendered while hidden */
+                <div className={"IncidentReportIndicator"} ref={hidden_incident_report_indicator}>
+                    <i className={`fa fa-exclamation-triangle`} style={{ visibility: "hidden" }} />
+                </div>
+            )}
+            {!hide_indicator && (
+                <div className={"IncidentReportIndicator"} onClick={toggleList}>
+                    <i
+                        className={`fa fa-exclamation-triangle ${normal_ct > 0 ? "active" : ""}`}
+                        ref={incident_report_indicator}
+                    />
+                    <span className={`count ${normal_ct > 0 ? "active" : ""}`}>{normal_ct}</span>
+                </div>
+            )}
             {show_incident_list && (
                 <div className="IncidentReportTracker">
                     <div className="IncidentReportList-backdrop" onClick={toggleList}></div>
@@ -199,21 +234,31 @@ export function IncidentReportTracker(): JSX.Element {
                             </h1>
                         )}
                         <hr />
-                        {filtered_reports.length === 0 && (
+                        {filtered_reports.length === 0 && user.is_moderator && (
+                            // note: normal users would see this if they have the last report and cancel it,
+                            // that's why we need to filter for only moderators to see it
                             <div>
                                 {pgettext(
-                                    "Shown to moderators when there are no active reports", // because users don't see the tracker when there are none for them
+                                    "Shown to moderators when there are no active reports",
                                     "No reports left, great job team!",
                                 )}
                             </div>
                         )}
-                        {filtered_reports.map((report) => (
+                        {filtered_reports.map((report, index) => (
                             <div className="incident" key={report.id}>
                                 <div className="report-header">
-                                    <div className="report-id">
-                                        {"R" + `${report.id}`.slice(-3) + ": "}
-                                        {getReportType(report)}
+                                    <div
+                                        className="report-id"
+                                        ref={index === 0 ? first_report_button : null}
+                                    >
+                                        <button
+                                            onClick={() => reportButtonClicked(report.id)}
+                                            className="small"
+                                        >
+                                            {"R" + report.id.toString().slice(-3)}
+                                        </button>
                                     </div>
+                                    {getReportType(report)}
                                     {((!report.moderator && user.is_moderator) || null) && (
                                         <button className="primary xs" onClick={report.claim}>
                                             {_("Claim")}

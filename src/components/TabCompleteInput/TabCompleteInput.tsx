@@ -19,9 +19,9 @@ import * as React from "react";
 
 interface TabCompleteInputProperties {
     id?: string;
-    placeholder: string;
+    placeholder?: string;
     disabled?: boolean;
-    onKeyPress: (event: React.KeyboardEvent<HTMLInputElement>) => boolean;
+    onKeyPress?: React.KeyboardEventHandler<HTMLInputElement>;
     className?: string;
     onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void;
     autoFocus?: boolean;

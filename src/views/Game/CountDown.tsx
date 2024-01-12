@@ -17,10 +17,14 @@
 
 import * as React from "react";
 
-export class CountDown extends React.PureComponent<{ to: Date }, any> {
+interface CountDownProps {
+    to: Date;
+}
+
+export class CountDown extends React.PureComponent<CountDownProps, any> {
     timeout: any;
 
-    constructor(props) {
+    constructor(props: CountDownProps) {
         super(props);
         this.state = {
             display: this.format(props.to.getTime() - Date.now()),

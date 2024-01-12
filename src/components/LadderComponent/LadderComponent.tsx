@@ -19,7 +19,7 @@ import * as React from "react";
 import { _ } from "translate";
 import { Player } from "Player";
 import { PaginatedTable } from "PaginatedTable";
-import { useResizeDetector } from "react-resize-detector";
+import { useResizeDetector } from "OgsResizeDetector";
 
 interface LadderComponentProperties {
     ladderId: number;

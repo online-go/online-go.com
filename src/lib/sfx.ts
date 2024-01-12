@@ -65,7 +65,7 @@ const UnusedSounds = [
     "game_accepted",
     "challenge_accepted",
     "your_partner_has_disconnected",
-    "your_parnter_has_reconnected",
+    "your_partner_has_reconnected",
     "your_opponent_has_passed",
     "confirm_the_score",
 
@@ -383,14 +383,14 @@ export class SFXManager {
         }
         return false;
     }
-    public play(sound_name: ValidSound, repeat_breaker_ms?: number): SFXSprite | null {
+    public play(sound_name: ValidSound, repeat_breaker_ms?: number): SFXSprite | undefined {
         try {
             if (!this.getSpriteEnabled(sound_name)) {
-                return null;
+                return;
             }
 
             if (!this.sync()) {
-                return null;
+                return;
             }
 
             if (this.getSpriteVoiceEnabled(sound_name) && sound_name in this.sprites) {
@@ -414,6 +414,7 @@ export class SFXManager {
         } catch (e) {
             console.error(e);
         }
+        return;
     }
     public stop(group_name?: string): void {
         try {
@@ -442,7 +443,7 @@ export class SFXManager {
         */
 
         const sprite_pack = sprite_packs[pack_id];
-        const release_base: string = data.get("config.cdn_release");
+        const release_base: string = data.get("config.cdn_release", "");
         const howl = new Howl({
             src:
                 (window as any).safari !== undefined // As of safari 14.1, their webm implementation cannot play our webm audio files correctly.
@@ -462,10 +463,10 @@ export class SFXManager {
                       UnusedSounds as any,
                   ) as unknown as Array<ValidSound>)
                 : group_name === "countdown"
-                ? (CountdownSounds as unknown as Array<ValidSound>)
-                : group_name === "stones"
-                ? (StoneSounds as unknown as Array<ValidSound>)
-                : (EffectsSounds as unknown as Array<ValidSound>);
+                  ? (CountdownSounds as unknown as Array<ValidSound>)
+                  : group_name === "stones"
+                    ? (StoneSounds as unknown as Array<ValidSound>)
+                    : (EffectsSounds as unknown as Array<ValidSound>);
         for (const sprite_name in sprite_pack.definitions) {
             if (sound_list.indexOf(sprite_name as ValidSound) >= 0) {
                 this.sprites[sprite_name] = new SFXSprite(howl, group_name, sprite_name);
@@ -521,10 +522,10 @@ export class SFXManager {
         lang = lang.replace(/-[a-zA-Z].*/, "");
 
         try {
-            for (let navlang of navigator.languages) {
-                navlang = navlang.toLowerCase();
-                if (navlang.indexOf(lang) >= 0) {
-                    to_check.push(navlang);
+            for (let nav_lang of navigator.languages) {
+                nav_lang = nav_lang.toLowerCase();
+                if (nav_lang.indexOf(lang) >= 0) {
+                    to_check.push(nav_lang);
                 }
             }
         } catch (e) {
@@ -601,8 +602,8 @@ export class SFXManager {
     ): void {
         try {
             let pan = (x / Math.max(1, width - 1) - 0.5) * 0.3;
-            const rnum = (Math.round(Math.random() * 100000) % 5) + 1;
-            const stone_sound: ValidSound = (color + "-" + rnum) as ValidSound;
+            const random_num = (Math.round(Math.random() * 100000) % 5) + 1;
+            const stone_sound: ValidSound = (color + "-" + random_num) as ValidSound;
 
             if (!preferences.get("sound.positional-stone-placement-effect")) {
                 pan = 0;
@@ -633,7 +634,7 @@ export const sfx = new SFXManager();
 
 const I = setInterval(() => {
     /* postpone downloading stuff till more important things have begun loading */
-    const release_base: string = data.get("config.cdn_release");
+    const release_base: string = data.get("config.cdn_release", "");
 
     if (release_base) {
         clearInterval(I);
@@ -642,7 +643,7 @@ const I = setInterval(() => {
 }, 100);
 
 /* Check and warn if we don't have an effect mapping for every sound voice sound */
-window["sprite_packs"] = sprite_packs;
+(window as any)["sprite_packs"] = sprite_packs;
 const effects = sprite_packs["zz-un-effects"];
 for (const pack of [GameVoiceSounds, CountdownSounds, StoneSounds, EffectsSounds]) {
     for (const name of pack) {

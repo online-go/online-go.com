@@ -18,7 +18,7 @@
 import { Goban } from "goban";
 
 export class PuzzleNavigation {
-    _goban: Goban;
+    _goban!: Goban;
 
     set goban(newValue: Goban) {
         this._goban = newValue;

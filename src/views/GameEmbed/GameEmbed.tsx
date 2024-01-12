@@ -16,12 +16,12 @@
  */
 
 /**
- * @overview A barebones version of Game.tsx that is optimized for iframe embeds.
+ * @overview A bare bones version of Game.tsx that is optimized for iframe embeds.
  */
 
 import * as React from "react";
 import { useParams, useSearchParams } from "react-router-dom";
-import { useResizeDetector } from "react-resize-detector";
+import { useResizeDetector } from "OgsResizeDetector";
 import { MiniGoban } from "MiniGoban";
 
 // For the layout, this seems to give just enough room for the point tally on
@@ -50,7 +50,7 @@ export function GameEmbed(): JSX.Element {
 
     return (
         <div className="goban-embed" ref={ref}>
-            <MiniGoban id={game_id} displayWidth={width - PADDING} openLinksInNewTab />
+            <MiniGoban id={game_id} displayWidth={(width ?? 100) - PADDING} openLinksInNewTab />
         </div>
     );
 }

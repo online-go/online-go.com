@@ -50,7 +50,7 @@ interface PlayerDetailsProperties {
     nochallenge?: boolean; // don't show challenge options for this player - typically due to ladder considerations
 }
 
-let friends = {};
+let friends: { [id: number]: true } = {};
 data.watch(cached.friends, (friends_arr) => {
     friends = {};
     for (const friend of friends_arr) {
@@ -58,7 +58,10 @@ data.watch(cached.friends, (friends_arr) => {
     }
 });
 
-let extraActionCallback: (user_id: number, user: any) => JSX.Element = null;
+let extraActionCallback:
+    | ((user_id: number, user: any) => JSX.Element | null | undefined)
+    | null
+    | undefined;
 
 interface PlayerDetailsState {
     id?: PlayerCacheEntry["id"];
@@ -90,7 +93,7 @@ export class PlayerDetails extends React.PureComponent<
         this.resolve(this.props.playerId);
     }
 
-    blankState() {
+    blankState(): PlayerDetailsState {
         return {
             resolved: false,
             username: "...",
@@ -100,7 +103,7 @@ export class PlayerDetails extends React.PureComponent<
             rating: "...",
             ui_class: "...",
             country: "un",
-            error: null,
+            error: undefined,
         };
     }
     resolve(player_id: number) {
@@ -222,7 +225,7 @@ export class PlayerDetails extends React.PureComponent<
             .catch(errorAlerter);
     };
     removeSingleLine = () => {
-        const m = this.props.chatId.match(/^([gr]).([^.]+).([^.]+).(.+)/);
+        const m = this.props.chatId?.match(/^([gr]).([^.]+).([^.]+).(.+)/);
         if (m) {
             const game = m[1] === "g";
             const id = parseInt(m[2]);
@@ -245,7 +248,9 @@ export class PlayerDetails extends React.PureComponent<
                 });
             }
         } else {
-            socket.send("chat/remove", { uuid: this.props.chatId });
+            if (this.props.chatId) {
+                socket.send("chat/remove", { uuid: this.props.chatId });
+            }
         }
 
         this.close_all_modals_and_popovers();
@@ -288,10 +293,11 @@ export class PlayerDetails extends React.PureComponent<
                     <div
                         className="icon"
                         style={{
-                            backgroundImage: 'url("' + icon_size_url(this.state.icon, 64) + '")',
+                            backgroundImage:
+                                'url("' + icon_size_url(this.state.icon || "", 64) + '")',
                         }}
                     >
-                        <Flag country={this.state.country} />
+                        <Flag country={this.state.country || ""} />
                     </div>
                     <div className="player-info">
                         <div>
@@ -329,7 +335,7 @@ export class PlayerDetails extends React.PureComponent<
                     <div className="actions">
                         {!this.props.nochallenge && (
                             <button
-                                className="xs noshadow primary"
+                                className="xs no-shadow primary"
                                 disabled={!this.state.resolved}
                                 onClick={this.challenge}
                             >
@@ -340,7 +346,7 @@ export class PlayerDetails extends React.PureComponent<
                         {this.props.nochallenge && <div style={{ width: "48%" }}></div>}
 
                         <button
-                            className="xs noshadow success"
+                            className="xs no-shadow success"
                             disabled={!this.state.resolved}
                             onClick={this.editPlayerNotes}
                         >
@@ -349,7 +355,7 @@ export class PlayerDetails extends React.PureComponent<
                         </button>
 
                         <button
-                            className="xs noshadow success"
+                            className="xs no-shadow success"
                             disabled={!this.state.resolved}
                             onClick={this.message}
                         >
@@ -358,7 +364,7 @@ export class PlayerDetails extends React.PureComponent<
                         </button>
                         {friends[this.props.playerId] ? (
                             <button
-                                className="xs noshadow reject"
+                                className="xs no-shadow reject"
                                 disabled={!this.state.resolved}
                                 onClick={this.removeFriend}
                             >
@@ -367,7 +373,7 @@ export class PlayerDetails extends React.PureComponent<
                             </button>
                         ) : (
                             <button
-                                className="xs noshadow success"
+                                className="xs no-shadow success"
                                 disabled={!this.state.resolved}
                                 onClick={this.addFriend}
                             >
@@ -376,7 +382,7 @@ export class PlayerDetails extends React.PureComponent<
                             </button>
                         )}
                         <button
-                            className="xs noshadow reject"
+                            className="xs no-shadow reject"
                             disabled={!this.state.resolved}
                             onClick={this.report}
                         >
@@ -384,7 +390,7 @@ export class PlayerDetails extends React.PureComponent<
                             {_("Report")}
                         </button>
                         <button
-                            className="xs noshadow reject"
+                            className="xs no-shadow reject"
                             disabled={!this.state.resolved}
                             onClick={this.block}
                         >
@@ -400,12 +406,12 @@ export class PlayerDetails extends React.PureComponent<
                 {(user.is_moderator || null) && (
                     <div className="actions">
                         {(this.props.chatId || null) && (
-                            <button className="xs noshadow reject" onClick={this.removeSingleLine}>
+                            <button className="xs no-shadow reject" onClick={this.removeSingleLine}>
                                 <i className="fa fa-times" />
                                 {pgettext("Remove chat line", "Remove chat line")}
                             </button>
                         )}
-                        <button className="xs noshadow reject" onClick={this.removeAllChats}>
+                        <button className="xs no-shadow reject" onClick={this.removeAllChats}>
                             <i className="fa fa-times-circle" />
                             {pgettext("Remove all chat lines from this user", "Remove all chats")}
                         </button>
@@ -413,11 +419,11 @@ export class PlayerDetails extends React.PureComponent<
                 )}
                 {((user.is_moderator && this.props.playerId > 0) || null) && (
                     <div className="actions">
-                        <button className="xs noshadow reject" onClick={this.ban}>
+                        <button className="xs no-shadow reject" onClick={this.ban}>
                             <i className="fa fa-gavel" />
                             {pgettext("Ban user from the server", "Ban")}
                         </button>
-                        <button className="xs noshadow danger" onClick={this.shadowban}>
+                        <button className="xs no-shadow danger" onClick={this.shadowban}>
                             <i className="fa fa-commenting" />
                             {pgettext("Disallow user to chat", "Shadowban")}
                         </button>
@@ -425,11 +431,11 @@ export class PlayerDetails extends React.PureComponent<
                 )}
                 {((user.is_moderator && this.props.playerId > 0) || null) && (
                     <div className="actions">
-                        <button className="xs noshadow" onClick={this.removeBan}>
+                        <button className="xs no-shadow" onClick={this.removeBan}>
                             <i className="fa fa-thumbs-o-up" />
                             {pgettext("Allow user on the server", "Un-Ban")}
                         </button>
-                        <button className="xs noshadow" onClick={this.removeShadowban}>
+                        <button className="xs no-shadow" onClick={this.removeShadowban}>
                             <i className="fa fa-commenting-o" />
                             {pgettext("Remove chat ban", "Un-Shadowban")}
                         </button>
@@ -437,7 +443,7 @@ export class PlayerDetails extends React.PureComponent<
                 )}
                 {((user.is_superuser && this.props.playerId > 0) || null) && (
                     <div className="actions">
-                        <button className="xs noshadow" onClick={this.openSupporterPage}>
+                        <button className="xs no-shadow" onClick={this.openSupporterPage}>
                             <i className="fa fa-star" />
                             Supporter Page
                         </button>
@@ -448,6 +454,6 @@ export class PlayerDetails extends React.PureComponent<
     }
 }
 
-export function setExtraActionCallback(cb: (user_id: number, user: any) => JSX.Element) {
+export function setExtraActionCallback(cb?: typeof extraActionCallback) {
     extraActionCallback = cb;
 }

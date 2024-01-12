@@ -21,7 +21,7 @@ import { useState, useEffect, useCallback } from "react";
 import { ChatChannelList, ChatLog, ChatUsersList } from "Chat";
 import { useParams } from "react-router";
 
-export function ChatView(): JSX.Element {
+export function ChatView(): JSX.Element | null {
     const { channel } = useParams();
 
     data.set("chat.active_channel", channel);
@@ -57,6 +57,11 @@ export function ChatView(): JSX.Element {
         },
         [channel, showing_users],
     );
+
+    if (!channel) {
+        console.error("Null channel passed to ChatView");
+        return null;
+    }
 
     const subprops = {
         channel: channel,

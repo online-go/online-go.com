@@ -40,8 +40,8 @@ import { doAnnul } from "moderation";
 type PlayerType = rest_api.games.Player;
 
 interface PlayerCardsProps {
-    historical_black: PlayerType;
-    historical_white: PlayerType;
+    historical_black: PlayerType | null;
+    historical_white: PlayerType | null;
     estimating_score: boolean;
     zen_mode: boolean;
     black_flags: null | rest_api.GamePlayerFlags;
@@ -201,7 +201,7 @@ const useScore = generateGobanHook(
 interface PlayerCardProps {
     color: "black" | "white";
     goban: Goban;
-    historical: PlayerType;
+    historical: PlayerType | null;
     estimating_score: boolean;
     show_score_breakdown: boolean;
     onScoreClick: () => void;
@@ -265,7 +265,7 @@ export function PlayerCard({
         doAnnul(engine.config, true, null, ` ${color} `); // spaces make it easy for the user to put the cursor before or after, they are trimmed later
     };
 
-    // In rengo we always will have a player icon to show (after initialisation).
+    // In rengo we always will have a player icon to show (after initialization).
     // In other cases, we only have one if `historical` is set
     const player_bg: React.CSSProperties = {};
     if (engine.rengo && player && (player as any)["icon-url"]) {
@@ -394,8 +394,8 @@ export function PlayerCard({
     );
 }
 
-function PlayerFlag({ player_id }: { player_id: number }): JSX.Element {
-    const [country, setCountry] = React.useState<string>(lookup(player_id)?.country);
+function PlayerFlag({ player_id }: { player_id: number }): JSX.Element | null {
+    const [country, setCountry] = React.useState<string | undefined>(lookup(player_id)?.country);
 
     React.useEffect(() => {
         let cancelled = false;

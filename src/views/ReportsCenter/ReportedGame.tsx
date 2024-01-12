@@ -43,15 +43,15 @@ import { socket } from "sockets";
 import { Player } from "Player";
 import { useUser } from "hooks";
 
-export function ReportedGame({ game_id }: { game_id: number }): JSX.Element {
-    const [goban, setGoban] = React.useState<Goban>(null);
+export function ReportedGame({ game_id }: { game_id: number }): JSX.Element | null {
+    const [goban, setGoban] = React.useState<Goban | null>(null);
     const [selectedChatLog, setSelectedChatLog] = React.useState<ChatMode>("main");
     const refresh = useRefresh();
     const onGobanCreated = React.useCallback((goban: Goban) => {
         setGoban(goban);
     }, []);
     const cur_move = useCurrentMove(goban);
-    const [game, setGame] = React.useState<rest_api.GameDetails>(null);
+    const [game, setGame] = React.useState<rest_api.GameDetails | null>(null);
     const [, /* aiReviewUuid */ setAiReviewUuid] = React.useState<string | null>(null);
     const [annulled, setAnnulled] = React.useState<boolean>(false);
 
@@ -90,7 +90,7 @@ export function ReportedGame({ game_id }: { game_id: number }): JSX.Element {
                 return;
             }
 
-            const engine = goban.engine;
+            const engine = goban!.engine;
             doAnnul(engine.config, tf);
         },
         [game_id, goban],
@@ -101,7 +101,11 @@ export function ReportedGame({ game_id }: { game_id: number }): JSX.Element {
             goban.on("update", refresh);
         }
 
-        const gotoMove = (move_number: number) => {
+        const gotoMove = (move_number?: number) => {
+            if (typeof move_number !== "number") {
+                return;
+            }
+
             if (goban) {
                 goban.showFirst(move_number > 0);
                 for (let i = 0; i < move_number; ++i) {
@@ -156,21 +160,15 @@ export function ReportedGame({ game_id }: { game_id: number }): JSX.Element {
                 {goban && goban.engine && (
                     <GobanContext.Provider value={goban}>
                         <div className="col">
-                            <div>
-                                Creator: <Player user={game?.creator} />
-                            </div>
-                            <div>
-                                Black: <Player user={game?.black} />
-                            </div>
-                            <div>
-                                White: <Player user={game?.white} />
-                            </div>
+                            <div>Creator: {game && <Player user={game.creator} />}</div>
+                            <div>Black: {game && <Player user={game.black} />}</div>
+                            <div>White: {game && <Player user={game.white} />}</div>
                             <div>Game Phase: {goban.engine.phase}</div>
                             {(goban.engine.phase === "finished" || null) && (
                                 <div>
                                     Game Outcome: {winner} (
-                                    <Player user={goban?.engine?.winner as number} />) by{" "}
-                                    {goban.engine.outcome} {annulled ? " anulled" : ""}
+                                    <Player user={goban!.engine.winner as number} />) by{" "}
+                                    {goban.engine.outcome} {annulled ? " annulled" : ""}
                                 </div>
                             )}
 
@@ -207,24 +205,25 @@ export function ReportedGame({ game_id }: { game_id: number }): JSX.Element {
                                     )}
                                 </>
                             )}
-                            {((goban.engine.phase === "finished" &&
-                                goban.engine.game_id === game_id &&
-                                ((goban.engine.width === 19 && goban.engine.height === 19) ||
-                                    (goban.engine.width === 13 && goban.engine.height === 13) ||
-                                    (goban.engine.width === 9 && goban.engine.height === 9))) ||
-                                null) && (
-                                <AIReview
-                                    onAIReviewSelected={(r) => setAiReviewUuid(r?.uuid)}
-                                    game_id={game_id}
-                                    move={cur_move}
-                                    hidden={false}
-                                />
-                            )}
+                            {cur_move &&
+                                ((goban.engine.phase === "finished" &&
+                                    goban.engine.game_id === game_id &&
+                                    ((goban.engine.width === 19 && goban.engine.height === 19) ||
+                                        (goban.engine.width === 13 && goban.engine.height === 13) ||
+                                        (goban.engine.width === 9 && goban.engine.height === 9))) ||
+                                    null) && (
+                                    <AIReview
+                                        onAIReviewSelected={(r) => setAiReviewUuid(r?.uuid)}
+                                        game_id={game_id}
+                                        move={cur_move}
+                                        hidden={false}
+                                    />
+                                )}
 
                             <Resizable
                                 id="move-tree-container"
                                 className="vertically-resizable"
-                                ref={(ref) => goban.setMoveTreeContainer(ref?.div)}
+                                ref={(ref) => ref?.div && goban.setMoveTreeContainer(ref.div)}
                             />
                         </div>
 
@@ -232,15 +231,15 @@ export function ReportedGame({ game_id }: { game_id: number }): JSX.Element {
                             {(user.is_moderator /* community moderators don't see this secret stuff :o */ ||
                                 null) && (
                                 <GameTimings
-                                    moves={goban.engine.config.moves}
-                                    start_time={goban.engine.config.start_time}
-                                    end_time={goban.engine.config.end_time}
+                                    moves={goban.engine.config.moves as any}
+                                    start_time={goban.engine.config.start_time as any}
+                                    end_time={goban.engine.config.end_time as any}
                                     free_handicap_placement={
-                                        goban.engine.config.free_handicap_placement
+                                        goban.engine.config.free_handicap_placement as any
                                     }
-                                    handicap={goban.engine.config.handicap}
-                                    black_id={goban.engine.config.black_player_id}
-                                    white_id={goban.engine.config.white_player_id}
+                                    handicap={goban.engine.config.handicap as any}
+                                    black_id={goban.engine.config.black_player_id as any}
+                                    white_id={goban.engine.config.white_player_id as any}
                                 />
                             )}
                             <GameLog goban={goban} />

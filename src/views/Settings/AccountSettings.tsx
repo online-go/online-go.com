@@ -17,7 +17,6 @@
 
 import * as React from "react";
 import * as DynamicHelp from "react-dynamic-help";
-import * as data from "data";
 import { cached } from "cached";
 import * as player_cache from "player_cache";
 import Dropzone from "react-dropzone";
@@ -170,19 +169,7 @@ export function AccountSettings(props: SettingGroupPageProps): JSX.Element {
                 })
                     .then(() => {
                         try {
-                            data.remove("user");
-                        } catch (e) {
-                            // ignore error
-                        }
-
-                        try {
-                            data.removePrefix("config");
-                        } catch (e) {
-                            // ignore error
-                        }
-
-                        try {
-                            data.removePrefix("preferences");
+                            localStorage.clear();
                         } catch (e) {
                             // ignore error
                         }
@@ -473,7 +460,7 @@ export function AccountSettings(props: SettingGroupPageProps): JSX.Element {
                     <dt>{_("Social account linking")}</dt>
                     {settings.social_auth_accounts && (
                         <dd>
-                            {settings.social_auth_accounts.map((account) => (
+                            {settings.social_auth_accounts.map((account: any) => (
                                 <div key={account.provider}>
                                     <div className="social-link">
                                         {account.provider === "github" && (

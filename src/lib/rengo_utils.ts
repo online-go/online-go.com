@@ -41,17 +41,17 @@ export function nominateForRengoChallenge(c: Challenge): Promise<RengoParticipan
 export function assignToTeam(
     player_id: number,
     team: string,
-    challenge,
+    challenge: Challenge,
 ): Promise<RengoParticipantsDTO> {
     const assignment =
         team === "rengo_black_team"
             ? "assign_black"
             : team === "rengo_white_team"
-            ? "assign_white"
-            : "unassign";
+              ? "assign_white"
+              : "unassign";
 
     return put(`challenges/${challenge.challenge_id}/team`, {
-        [assignment]: [player_id], // back end expects an array of changes, but we only ever send one at a time.
+        [assignment]: [player_id], // back end expects an array of changes, but here we send one at a time.
     });
 }
 
@@ -89,6 +89,21 @@ export function unNominate(the_challenge: Challenge): Promise<RengoParticipantsD
     });
 
     return del(`challenges/${the_challenge.challenge_id}/join`, {}).then((res) => {
+        alert.close();
+        return res;
+    });
+}
+
+export function setTeams(teams: RengoParticipantsDTO): Promise<RengoParticipantsDTO> {
+    void alert.fire({
+        text: _("Setting teams..."), // translator: the server is processing their request to set Rengo teams
+        icon: "info",
+        showCancelButton: false,
+        showConfirmButton: false,
+        allowEscapeKey: false,
+    });
+
+    return put(`challenges/${teams.challenge}/team`, { set_teams: teams }).then((res) => {
         alert.close();
         return res;
     });

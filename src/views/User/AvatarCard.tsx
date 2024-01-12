@@ -55,7 +55,7 @@ interface AvatarCardUserType extends AvatarCardEditableFields {
     supporter: boolean;
     ui_class_extra: string | null;
     on_vacation: boolean;
-    name: string | null;
+    name: string | undefined;
     is_bot: boolean;
     is_tournament_moderator: boolean;
     bot_ai: string;

@@ -106,7 +106,7 @@ export function GobanContainer({
     };
 
     // Trigger resize on new Goban and subsequent "load" events
-    generateGobanHook(() => onResize(/* no_debounce */ true, /* do_cb */ false))(goban);
+    generateGobanHook(() => onResize(/* no_debounce */ true, /* do_cb */ false))(goban || null);
 
     if (!goban || !goban_div) {
         return <React.Fragment />;
@@ -114,7 +114,7 @@ export function GobanContainer({
 
     return (
         <div ref={ref_goban_container} className="goban-container">
-            <OgsResizeDetector handleWidth handleHeight onResize={() => onResize()} />
+            <OgsResizeDetector onResize={() => onResize()} targetRef={ref_goban_container} />
             <PersistentElement className="Goban" elt={goban_div} extra_props={extra_props} />
         </div>
     );

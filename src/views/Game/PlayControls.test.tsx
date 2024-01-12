@@ -24,6 +24,7 @@ const TEST_USER = {
     is_moderator: false,
     is_superuser: false,
     moderator_powers: 0,
+    offered_moderator_powers: 0,
     is_tournament_moderator: false,
     supporter: true,
     supporter_level: 4,
@@ -42,7 +43,7 @@ const PLAY_CONTROLS_DEFAULTS = {
         return;
     },
     review_list: [] as any,
-    stashed_conditional_moves: null,
+    stashed_conditional_moves: undefined,
     mode: "play",
     phase: "play",
     title: "",

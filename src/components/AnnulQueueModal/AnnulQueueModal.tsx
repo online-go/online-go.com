@@ -55,7 +55,7 @@ export function AnnulQueueModal({
     const [queue, setQueue] = React.useState<any[]>(annulQueue);
     const [debounceTimer, setDebounceTimer] = React.useState<number | null>(null);
     const [showAnnulOverlay, setShowAnnulOverlay] = React.useState(false);
-    const [annulResponse, setAnnulResponse] = React.useState(null);
+    const [annulResponse, setAnnulResponse] = React.useState<string | null>(null);
 
     // Get the current game from the queue
     const currentGame = queue[selectedGameIndex];
@@ -155,7 +155,7 @@ export function AnnulQueueModal({
     }, [queue, dequeueRequested, selectedGameIndex]);
 
     // Get only games that are ranked and not annulled
-    function getValidGameIds(games) {
+    function getValidGameIds(games: any[]) {
         return games
             .filter((game) => game.ranked === true && game.annulled === false)
             .map((game) => game.id);
@@ -175,7 +175,7 @@ export function AnnulQueueModal({
         }
         do {
             moderationNote = prompt(
-                `Annulling ${validGameIds.length} of ${currentPlayer.username}'s games.\nEnter moderation note: (will be entered with '${currentPlayer.username} mass annull:')`,
+                `Annulling ${validGameIds.length} of ${currentPlayer.username}'s games.\nEnter moderation note: (will be entered with '${currentPlayer.username} mass annul:')`,
             );
 
             if (moderationNote == null) {
@@ -308,7 +308,9 @@ export function AnnulQueueModal({
                                                 id="move-tree-container"
                                                 className="vertically-resizable"
                                                 ref={(ref) =>
-                                                    goban && goban.setMoveTreeContainer(ref?.div)
+                                                    goban &&
+                                                    ref?.div &&
+                                                    goban.setMoveTreeContainer(ref.div)
                                                 }
                                             />
                                         )}
@@ -316,15 +318,15 @@ export function AnnulQueueModal({
 
                                     <div className="col">
                                         <GameTimings
-                                            moves={goban.engine.config.moves}
-                                            start_time={goban.engine.config.start_time}
-                                            end_time={goban.engine.config.end_time}
+                                            moves={goban.engine.config.moves || []}
+                                            start_time={goban.engine.config.start_time || 0}
+                                            end_time={goban.engine.config.end_time || 0}
                                             free_handicap_placement={
-                                                goban.engine.config.free_handicap_placement
+                                                goban.engine.config.free_handicap_placement || false
                                             }
-                                            handicap={goban.engine.config.handicap}
-                                            black_id={goban.engine.config.black_player_id}
-                                            white_id={goban.engine.config.white_player_id}
+                                            handicap={goban.engine.config.handicap || 0}
+                                            black_id={goban.engine.config.black_player_id || 0}
+                                            white_id={goban.engine.config.white_player_id || 0}
                                         />
                                     </div>
 
@@ -398,7 +400,7 @@ export function AnnulQueueModal({
 }
 
 // Open the AnnulQueueModal
-export function openAnnulQueueModal(setIsAnnulQueueModalOpen) {
+export function openAnnulQueueModal(setIsAnnulQueueModalOpen: (tf: boolean) => void) {
     setIsAnnulQueueModalOpen(true);
 
     // Disable body scroll
@@ -411,7 +413,15 @@ function Spinner() {
 }
 
 // AnnulOverlay component
-function AnnulOverlay({ numGames, visible, response }) {
+function AnnulOverlay({
+    numGames,
+    visible,
+    response,
+}: {
+    numGames: number;
+    visible: boolean;
+    response: string | null;
+}) {
     return visible ? (
         <div className="AnnulOverlay">
             <div className="overlay">

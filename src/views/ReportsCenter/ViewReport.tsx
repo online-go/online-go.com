@@ -17,6 +17,7 @@
 
 import * as React from "react";
 import * as moment from "moment";
+import * as ReactSelect from "react-select";
 import Select from "react-select";
 import { useUser } from "hooks";
 import { report_categories } from "Report";
@@ -39,7 +40,7 @@ import { openAnnulQueueModal, AnnulQueueModal } from "AnnulQueueModal";
 // Used for saving updates to the report
 let report_note_id = 0;
 let report_note_text = "";
-let report_note_update_timeout = null;
+let report_note_update_timeout: ReturnType<typeof setTimeout> | null = null;
 
 interface ViewReportProps {
     reports: Report[];
@@ -47,23 +48,31 @@ interface ViewReportProps {
     report_id: number;
 }
 
-let cached_moderators = [];
+let cached_moderators: PlayerCacheEntry[] = [];
 
 export function ViewReport({ report_id, reports, onChange }: ViewReportProps): JSX.Element {
     const user = useUser();
     const [moderatorNote, setModeratorNote] = React.useState("");
     const [moderators, setModerators] = React.useState(cached_moderators);
-    const [report, setReport] = React.useState<Report>(null);
-    const [error, setError] = React.useState(null);
-    const [moderator_id, setModeratorId] = React.useState(report?.moderator?.id);
-    const [reportState, setReportState] = React.useState(report?.state);
+    const [report, setReport] = React.useState<Report | null>(null);
+    const [error, setError] = React.useState<string | null>(null);
+    const [moderator_id, setModeratorId] = React.useState<number | undefined | null>(
+        report?.moderator?.id,
+    );
+    const [reportState, setReportState] = React.useState<any>(report?.state);
     const [isAnnulQueueModalOpen, setIsAnnulQueueModalOpen] = React.useState(false);
-    const [annulQueue, setAnnulQueue] = React.useState<null | any[]>(report?.detected_ai_games);
+    const [annulQueue, setAnnulQueue] = React.useState<null | undefined | any[]>(
+        report?.detected_ai_games,
+    );
+    const [availableActions, setAvailableActions] = React.useState<string[] | null>(null);
 
     const related = report_manager.getRelatedReports(report_id);
 
     React.useEffect(() => {
         if (report_id) {
+            // For some reason we have to capture the state of the report at the time that report_id goes valid
+            // It's not clear why, but there are subsequent renders where the report state goes away, so ...
+            // capture what you want to use here! ...
             report_manager
                 .getReport(report_id)
                 .then((report) => {
@@ -72,6 +81,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                     setModeratorId(report?.moderator?.id);
                     setReportState(report?.state);
                     setAnnulQueue(report?.detected_ai_games);
+                    setAvailableActions(report?.available_actions);
                 })
                 .catch((err) => {
                     console.error(err);
@@ -86,7 +96,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
     }, [report_id]);
 
     React.useEffect(() => {
-        const onUpdate = (r) => {
+        const onUpdate = (r: Report) => {
             if (r.id === report?.id) {
                 setReport(r);
                 setModeratorId(r?.moderator?.id);
@@ -111,7 +121,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                             if (b.id === user.id) {
                                 return 1;
                             }
-                            return a.username.localeCompare(b.username);
+                            return a.username!.localeCompare(b.username as string);
                         },
                     );
                     setModerators(cached_moderators);
@@ -125,7 +135,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
     }, [report?.moderator?.id]);
 
     React.useEffect(() => {
-        if (document.activeElement.nodeName !== "TEXTAREA") {
+        if (document.activeElement?.nodeName !== "TEXTAREA") {
             setModeratorNote(report?.moderator_note || "");
         }
     }, [report?.moderator_note]);
@@ -136,6 +146,9 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
 
     const setAndSaveModeratorNote = React.useCallback(
         (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+            if (!report) {
+                return;
+            }
             setModeratorNote(event.target.value);
 
             if (report_note_id !== 0 && report_note_id !== report.id) {
@@ -167,6 +180,9 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
 
     const assignToModerator = React.useCallback(
         (id: number) => {
+            if (!report) {
+                return;
+            }
             setModeratorId(id);
             post(`moderation/incident/${report.id}`, {
                 id: report.id,
@@ -180,6 +196,9 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
     );
 
     const claimReport = () => {
+        if (!report) {
+            return;
+        }
         if (report.moderator?.id !== user.id && user.is_moderator) {
             setReportState("claimed");
             void report_manager.claim(report.id);
@@ -205,8 +224,8 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
     const category = report_categories.find((c) => c.type === report.report_type);
     const claimed_by_me = report.moderator?.id === user.id;
     const report_in_reports = reports.find((r) => r.id === report.id);
-    let next_report: Report = null;
-    let prev_report: Report = null;
+    let next_report: Report | null = null;
+    let prev_report: Report | null = null;
     for (let i = 0; i < reports.length; i++) {
         if (reports[i].id === report.id) {
             if (i + 1 < reports.length) {
@@ -241,14 +260,14 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
         <div id="ViewReport">
             {isAnnulQueueModalOpen && (
                 <AnnulQueueModal
-                    annulQueue={annulQueue}
+                    annulQueue={annulQueue ?? []}
                     setAnnulQueue={setAnnulQueue}
                     onClose={handleCloseAnnulQueueModal}
                     forDetectedAI={true}
                     player={report.reported_user}
                 />
             )}
-            <div className="header">
+            <div className="view-report-header">
                 {report_in_reports ? (
                     <Select
                         id="ReportsCenterSelectReport"
@@ -256,7 +275,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                         classNamePrefix="ogs-react-select"
                         value={reports.filter((r) => r.id === report.id)[0]}
                         getOptionValue={(r) => r.id.toString()}
-                        onChange={(r: Report) => onChange(r.id)}
+                        onChange={(r: ReactSelect.SingleValue<Report>) => r && onChange(r.id)}
                         options={reports}
                         isClearable={false}
                         isSearchable={false}
@@ -290,47 +309,52 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                 ) : (
                     <span className="historical-report-number">{R(report.id)}</span>
                 )}
-
-                <span className="moderator">
-                    <Select
-                        id="ReportsCenterSelectModerator"
-                        className="reports-center-category-option-select"
-                        classNamePrefix="ogs-react-select"
-                        value={moderators.filter((m) => m.id === moderator_id)[0]}
-                        getOptionValue={(data) => data.type}
-                        onChange={(m: any) => assignToModerator(m.id)}
-                        options={moderators}
-                        isClearable={false}
-                        isSearchable={false}
-                        blurInputOnSelect={true}
-                        placeholder={"Moderator.."}
-                        components={{
-                            Option: ({ innerRef, innerProps, isFocused, isSelected, data }) => (
-                                <div
-                                    ref={innerRef}
-                                    {...innerProps}
-                                    className={
-                                        "reports-center-assigned-moderator" +
-                                        (isFocused ? "focused " : "") +
-                                        (isSelected ? "selected" : "")
-                                    }
-                                >
-                                    {data.username}
-                                </div>
-                            ),
-                            SingleValue: ({ innerProps, data }) => (
-                                <span {...innerProps} className="reports-center-assigned-moderator">
-                                    {data.username}
-                                </span>
-                            ),
-                            ValueContainer: ({ children }) => (
-                                <div className="reports-center-assigned-moderator-container">
-                                    {children}
-                                </div>
-                            ),
-                        }}
-                    />
-
+                {(user.is_moderator || null) && (
+                    <span className="moderator">
+                        <Select
+                            id="ReportsCenterSelectModerator"
+                            className="reports-center-category-option-select"
+                            classNamePrefix="ogs-react-select"
+                            value={moderators.filter((m: any) => m.id === moderator_id)[0]}
+                            getOptionValue={(data) => data.type}
+                            onChange={(m: any) => assignToModerator(m.id)}
+                            options={moderators}
+                            isClearable={false}
+                            isSearchable={false}
+                            blurInputOnSelect={true}
+                            placeholder={"Moderator.."}
+                            components={{
+                                Option: ({ innerRef, innerProps, isFocused, isSelected, data }) => (
+                                    <div
+                                        ref={innerRef}
+                                        {...innerProps}
+                                        className={
+                                            "reports-center-assigned-moderator" +
+                                            (isFocused ? "focused " : "") +
+                                            (isSelected ? "selected" : "")
+                                        }
+                                    >
+                                        {data.username}
+                                    </div>
+                                ),
+                                SingleValue: ({ innerProps, data }) => (
+                                    <span
+                                        {...innerProps}
+                                        className="reports-center-assigned-moderator"
+                                    >
+                                        {data.username}
+                                    </span>
+                                ),
+                                ValueContainer: ({ children }) => (
+                                    <div className="reports-center-assigned-moderator-container">
+                                        {children}
+                                    </div>
+                                ),
+                            }}
+                        />
+                    </span>
+                )}
+                <span>
                     <button className={"default" + (prev_report ? "" : " hide")} onClick={prev}>
                         &lt; Prev
                     </button>
@@ -443,21 +467,23 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                 {((!user.is_moderator && user.moderator_powers) || null) && (
                     <div className="voting">
                         <ModerationActionSelector
-                            report={report}
+                            available_actions={availableActions ?? []}
                             claim={() => {
-                                /* dont claim*/
+                                /* community moderators don't claim reports */
                             }}
-                            submit={(action) => {
-                                void report_manager.vote(report.id, action);
+                            submit={(action, note) => {
+                                void report_manager.vote(report.id, action, note);
                                 next();
                             }}
                             enable={report.state === "pending"}
+                            // clear the selection for subsequent reports
+                            key={report.id}
                         />
                     </div>
                 )}
             </div>
 
-            {(user.is_moderator || null) && (
+            {user.is_moderator && (
                 <>
                     <div className="actions">
                         <div className="related-reports">
@@ -476,7 +502,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                                 </>
                             )}
                             {report.voters?.length > 0 && (
-                                <>
+                                <div className="voters">
                                     <h4>{_("Voters:")}</h4>
                                     <ul>
                                         {report.voters?.map((vote) => (
@@ -485,7 +511,13 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                                             </li>
                                         ))}
                                     </ul>
-                                </>
+                                </div>
+                            )}
+                            {report.escalated && report.community_mod_note && (
+                                <div className="community-mod-note">
+                                    <h5>Community Moderator Note:</h5>
+                                    <div className="Card">{report.community_mod_note}</div>
+                                </div>
                             )}
                         </div>
 
@@ -544,7 +576,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                             reported={report.reported_user}
                             templates={WARNING_TEMPLATES}
                             game_id={report.reported_game}
-                            gpt={report.automod_to_reported}
+                            gpt={report.automod_to_reported ?? null}
                             logByDefault={true}
                             onSelect={claimReport}
                             onMessage={claimReport}
@@ -557,7 +589,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                                 reported={report.reported_user}
                                 templates={REPORTER_RESPONSE_TEMPLATES}
                                 game_id={report.reported_game}
-                                gpt={report.automod_to_reporter}
+                                gpt={report.automod_to_reporter ?? null}
                                 logByDefault={!user.is_moderator} // log community moderator actions
                                 onSelect={claimReport}
                                 onMessage={claimReport}

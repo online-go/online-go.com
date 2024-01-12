@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* cspell: words tourny tournies */
+
 import * as React from "react";
 import { Link } from "react-router-dom";
 import { _, pgettext, interpolate } from "translate";
@@ -92,7 +94,7 @@ export function TournamentListMainView(): JSX.Element {
     return (
         <div className="page-width">
             <div className="TournamentList container">
-                <div className="tabhead">
+                <div className="tab-head">
                     <h2>
                         <i className="fa fa-trophy"></i> {_("Tournaments")}
                     </h2>
@@ -219,14 +221,14 @@ function MyTournaments(): JSX.Element {
                             tournament.ended
                                 ? when(tournament.started) + " - " + when(tournament.ended)
                                 : tournament.started
-                                ? when(tournament.started)
-                                : when(tournament.time_start),
+                                  ? when(tournament.started)
+                                  : when(tournament.time_start),
                     },
                     {
                         header: _("Time Control"),
                         className: "nobr",
                         render: (tournament) =>
-                            shortShortTimeControl(tournament.time_control_parameters),
+                            shortShortTimeControl(tournament.time_control_parameters as any),
                     },
                     {
                         header: _("Size"),
@@ -254,12 +256,12 @@ function MyTournaments(): JSX.Element {
 }
 
 function Schedule(): JSX.Element {
-    const [schedules, setSchedules] = React.useState([]);
+    const [schedules, setSchedules] = React.useState<any[]>([]);
 
     React.useEffect(() => {
         get("tournament_schedules/", { page_size: 100 })
             .then((res) => {
-                res.results.sort((a, b) => {
+                res.results.sort((a: { next_run: number }, b: { next_run: number }) => {
                     return new Date(a.next_run).getTime() - new Date(b.next_run).getTime();
                 });
                 setSchedules(res.results);
@@ -294,13 +296,13 @@ function Schedule(): JSX.Element {
                                 <div>{typeDescription(entry)}</div>
                             </td>
                             <td>
-                                <div>{datefmt(entry.next_run)}</div>
+                                <div>{dateFmt(entry.next_run)}</div>
                                 <div>
                                     <i>{fromNow(entry.next_run)}</i>
                                 </div>
                             </td>
                             <td>
-                                <div>{datefmt(entry.next_run, entry.lead_time_seconds)}</div>
+                                <div>{dateFmt(entry.next_run, entry.lead_time_seconds)}</div>
                                 <div>
                                     <i>{fromNow(entry.next_run, entry.lead_time_seconds)}</i>
                                 </div>
@@ -375,7 +377,7 @@ export function TournamentList(props: TournamentListProperties) {
                         header: _("Time Control"),
                         className: "nobr",
                         render: (tournament) =>
-                            shortShortTimeControl(tournament.time_control_parameters),
+                            shortShortTimeControl(tournament.time_control_parameters as any),
                     },
                     {
                         header: _("Size"),
@@ -452,10 +454,10 @@ function makeTournamentFilter(
     return filter;
 }
 
-function mk32icon(path) {
+function mk32icon(path: string) {
     return path.replace(/-[0-9]+.png/, "-32.png");
 }
-function speedIcon(e) {
+function speedIcon(e: any) {
     const tpm = computeAverageMoveTime(e.time_control_parameters, e.size, e.size);
     if (tpm === 0 || tpm > 3600) {
         return "ogs-turtle";
@@ -465,7 +467,7 @@ function speedIcon(e) {
     }
     return "fa fa-clock-o";
 }
-function timeIcon(time_per_move) {
+function timeIcon(time_per_move: number) {
     if (time_per_move === 0) {
         return "ogs-turtle";
     } else if (time_per_move < 20) {
@@ -476,7 +478,7 @@ function timeIcon(time_per_move) {
     return "ogs-turtle";
 }
 
-function rrule_description(entry) {
+function rrule_description(entry: any): string {
     const m = moment(new Date(entry.next_run)).add(entry.lead_time_seconds, "seconds");
 
     const rrule = entry.rrule;
@@ -568,23 +570,24 @@ function rrule_description(entry) {
         }
     }
     console.log("Failed: ", unit, interval);
+    return "error formatting rrule";
 }
-function typeDescription(e) {
-    return TOURNAMENT_TYPE_NAMES[e.tournament_type];
+function typeDescription(e: any) {
+    return (TOURNAMENT_TYPE_NAMES as any)[e.tournament_type];
 }
-function datefmt(d, offset?) {
+function dateFmt(d: number, offset?: number) {
     if (!offset) {
         offset = 0;
     }
     return moment(new Date(d)).add(offset, "seconds").format("llll");
 }
-function fromNow(d, offset?) {
+function fromNow(d: number, offset?: number) {
     if (!offset) {
         offset = 0;
     }
     return moment(new Date(d)).add(offset, "seconds").fromNow();
 }
-function when(t) {
+function when(t: number | string) {
     if (t) {
         const d = new Date(t);
         const diff = Math.round((d.getTime() - Date.now()) / 1000.0);

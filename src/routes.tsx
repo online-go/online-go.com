@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* cspell: words groupadmin cotsen */
+
 import * as React from "react";
 import { unstable_HistoryRouter as Router, Route, Routes, Navigate } from "react-router-dom";
 
@@ -72,9 +74,10 @@ import { AccountWarning } from "AccountWarning";
 import { NetworkStatus } from "NetworkStatus";
 
 import * as docs from "docs";
+import { FakeGameLog } from "./views/FakeGameLog";
 
 /*** Layout our main view and routes ***/
-function Main(props): JSX.Element {
+function Main(props: { children: any }): JSX.Element {
     if (username_needs_to_be_updated()) {
         return (
             <div>
@@ -87,7 +90,7 @@ function Main(props): JSX.Element {
 
     return (
         <Experiment name="v6">
-            <Variant value="enabled" bodyclass="v6">
+            <Variant value="enabled" bodyClass="v6">
                 <div id="variant-container">
                     <ErrorBoundary>
                         <NavBar />
@@ -163,6 +166,9 @@ function ChatRedirect(): JSX.Element {
             for (const key of Object.keys(joined)) {
                 channel = key;
                 break;
+            }
+            if (!channel) {
+                channel = "global-english";
             }
         } else {
             channel = "global-english";
@@ -309,6 +315,7 @@ export const routes = (
                 {/* these aren't meant to be linked anywhere, just entered by hand
                 for developers looking to test and play with things */}
                 <Route path="/dev/styling" element={<Styling />} />
+                <Route path="/dev/fake-game-log" element={<FakeGameLog />} />
                 <Route path="/docs/about" element={<docs.About />} />
                 <Route path="/docs/privacy-policy" element={<docs.PrivacyPolicy />} />
                 <Route path="/docs/terms-of-service" element={<docs.TermsOfService />} />

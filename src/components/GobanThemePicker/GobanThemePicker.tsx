@@ -84,7 +84,7 @@ export class GobanThemePicker extends React.PureComponent<
                         theme.theme_name,
                     );
                     const up = {};
-                    up[k] = theme.theme_name;
+                    (up as any)[k] = theme.theme_name;
                     this.setState(up);
                 };
             }
@@ -96,7 +96,7 @@ export class GobanThemePicker extends React.PureComponent<
     }
 
     getCustom(key: keyof CustomGobanThemeSchema): string {
-        return data.get(`custom.${key}`);
+        return data.get(`custom.${key}`, "");
     }
     setCustom(
         key: keyof CustomGobanThemeSchema,
@@ -110,7 +110,7 @@ export class GobanThemePicker extends React.PureComponent<
             data.remove(`custom.${key}`);
         }
         const up = {};
-        up[`${key}Custom`] = this.getCustom(key);
+        (up as any)[`${key}Custom`] = this.getCustom(key);
         this.setState(up);
         this.renderPickers();
 
@@ -276,6 +276,9 @@ export class GobanThemePicker extends React.PureComponent<
             const theme = GoThemesSorted.board[i];
             const canvas = this.canvases.board[i];
             const ctx = (canvas[0] as HTMLCanvasElement).getContext("2d");
+            if (!ctx) {
+                continue;
+            }
             ctx.clearRect(0, 0, square_size, square_size);
 
             ctx.beginPath();
@@ -302,6 +305,9 @@ export class GobanThemePicker extends React.PureComponent<
             const theme = GoThemesSorted.white[i];
             const canvas = this.canvases.white[i];
             const ctx = (canvas[0] as HTMLCanvasElement).getContext("2d");
+            if (!ctx) {
+                continue;
+            }
             const radius = Math.round(square_size / 2.2);
             const draw = () => {
                 ctx.clearRect(0, 0, square_size, square_size);
@@ -322,6 +328,9 @@ export class GobanThemePicker extends React.PureComponent<
             const theme = GoThemesSorted.black[i];
             const canvas = this.canvases.black[i];
             const ctx = (canvas[0] as HTMLCanvasElement).getContext("2d");
+            if (!ctx) {
+                continue;
+            }
             const radius = Math.round(square_size / 2.2);
             const draw = () => {
                 ctx.clearRect(0, 0, square_size, square_size);

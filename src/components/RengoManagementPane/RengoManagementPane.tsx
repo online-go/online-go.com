@@ -25,6 +25,7 @@ interface RengoManagementPaneProperties {
     user: rest_api.UserConfig;
     challenge_id: number;
     rengo_challenge_list: Array<Challenge>;
+    lock: boolean; // don't let the user start the challenge
 
     startRengoChallenge: (challenge: any) => Promise<void>;
     cancelChallenge: (challenge: any) => void;
@@ -44,8 +45,8 @@ export function RengoManagementPane(props: RengoManagementPaneProperties): JSX.E
 
     const { ref: rengoManagementPane } = registerTargetItem("active-rengo-management-pane");
 
-    const rengoReadyToStart = (challenge): boolean => {
-        return (
+    const rengoReadyToStart = (challenge: Challenge): boolean => {
+        return !!(
             challenge.rengo_black_team.length &&
             challenge.rengo_white_team.length &&
             challenge.rengo_black_team.length + challenge.rengo_white_team.length > 2
@@ -83,8 +84,8 @@ export function RengoManagementPane(props: RengoManagementPaneProperties): JSX.E
                     {own_challenge && challenge_ready_to_start && !the_challenge.rengo_auto_start
                         ? _("Waiting for your decision to start...")
                         : challenge_ready_to_start && !the_challenge.rengo_auto_start
-                        ? _("Waiting for organiser to start...")
-                        : _("Waiting for Rengo players...")}
+                          ? _("Waiting for organiser to start...")
+                          : _("Waiting for Rengo players...")}
                 </span>
                 <span className="challenge-created-at">(created: {created_at})</span>
             </div>
@@ -116,7 +117,7 @@ export function RengoManagementPane(props: RengoManagementPaneProperties): JSX.E
                         <button
                             className="success sm"
                             onClick={() => props.startRengoChallenge(the_challenge)}
-                            disabled={!challenge_ready_to_start}
+                            disabled={!challenge_ready_to_start || props.lock}
                         >
                             {pgettext("Start game", "Start")}
                         </button>

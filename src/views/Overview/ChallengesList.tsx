@@ -29,8 +29,16 @@ import { FabX, FabCheck } from "material";
 import { ignore } from "misc";
 import cached from "cached";
 
-export class ChallengesList extends React.PureComponent<{ onAccept: () => void }, any> {
-    constructor(props) {
+interface ChallengeListProps {
+    onAccept: () => void;
+}
+
+interface ChallengeListState {
+    challenges: any[];
+}
+
+export class ChallengesList extends React.PureComponent<ChallengeListProps, ChallengeListState> {
+    constructor(props: ChallengeListProps) {
         super(props);
         this.state = {
             challenges: [],
@@ -43,15 +51,15 @@ export class ChallengesList extends React.PureComponent<{ onAccept: () => void }
     componentWillUnmount() {
         data.unwatch(cached.challenge_list, this.update);
     }
-    update = (challenge_list) => {
+    update = (challenge_list: ChallengeListState["challenges"]) => {
         this.setState({ challenges: challenge_list });
     };
 
-    deleteChallenge(challenge) {
+    deleteChallenge(challenge: ChallengeListState["challenges"][0]) {
         del(`me/challenges/${challenge.id}`).then(ignore).catch(ignore);
         this.setState({ challenges: this.state.challenges.filter((c) => c.id !== challenge.id) });
     }
-    acceptChallenge(challenge) {
+    acceptChallenge(challenge: ChallengeListState["challenges"][0]) {
         post(`me/challenges/${challenge.id}/accept`, {})
             .then((res) => {
                 if (res.time_per_move > 0 && res.time_per_move < 1800) {

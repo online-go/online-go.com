@@ -37,6 +37,7 @@ import { ActiveTournamentList, Group } from "src/lib/types";
 import { DismissableMessages } from "DismissableMessages";
 import { EmailBanner } from "EmailBanner";
 import { ActiveDroppedGameList } from "ActiveDroppedGameList";
+import { ModerationOffer } from "ModerationOffer";
 
 declare let ogs_missing_translation_count: number;
 
@@ -142,6 +143,7 @@ export class EXV6Overview extends React.Component<{}, OverviewState> {
     render() {
         const user = this.state.user;
 
+        console.log(user);
         return (
             <div id="Overview-Container">
                 <div id="Overview">
@@ -149,6 +151,12 @@ export class EXV6Overview extends React.Component<{}, OverviewState> {
                         <DismissableMessages />
                         <EmailBanner />
                         <ActiveAnnouncements />
+                        {user && !!user.offered_moderator_powers && (
+                            <ModerationOffer
+                                player_id={user.id}
+                                offered_moderator_powers={user.offered_moderator_powers}
+                            />
+                        )}
                         <ChallengesList onAccept={() => this.refresh()} />
                         <InviteList />
 
@@ -163,7 +171,7 @@ export class EXV6Overview extends React.Component<{}, OverviewState> {
                             </DismissableNotification>
                         )}
 
-                        {this.state.resolved && (
+                        {this.state.resolved && user && (
                             <ActiveDroppedGameList
                                 games={this.state.overview.active_games}
                                 user={user}
@@ -210,8 +218,10 @@ export class GroupList extends React.PureComponent<{}, GroupState> {
         data.watch(cached.group_invitations, this.updateGroupInvitations);
     }
 
-    updateGroups = (groups: Group[]) => {
-        this.setState({ groups: groups });
+    updateGroups = (groups?: Group[]) => {
+        if (groups) {
+            this.setState({ groups: groups });
+        }
     };
     updateGroupInvitations = (invitations: InvitationType[]) => {
         this.setState({ invitations: invitations });
@@ -268,8 +278,10 @@ export class TournamentList extends React.PureComponent<{}, TournamentListState>
     componentDidMount() {
         data.watch(cached.active_tournaments, this.update);
     }
-    update = (tournaments: ActiveTournamentList) => {
-        this.setState({ my_tournaments: tournaments });
+    update = (tournaments?: ActiveTournamentList) => {
+        if (tournaments) {
+            this.setState({ my_tournaments: tournaments });
+        }
     };
 
     componentWillUnmount() {
@@ -303,8 +315,10 @@ export class LadderList extends React.PureComponent<{}, LadderListState> {
         data.watch(cached.ladders, this.update);
     }
 
-    update = (ladders: LadderType[]) => {
-        this.setState({ ladders: ladders });
+    update = (ladders?: LadderType[]) => {
+        if (ladders) {
+            this.setState({ ladders: ladders });
+        }
     };
 
     componentWillUnmount() {

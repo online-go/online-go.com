@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* spell-checker: disable */
+
 import * as React from "react";
 import { pgettext, _, getLanguageFlag, interpolate } from "translate";
 import { Flag } from "Flag";
@@ -72,7 +74,7 @@ export const GoResources = () => {
     const cn = getLanguageFlag("chinese", country, "cn");
     const jp = getLanguageFlag("japanese", country, "jp");
     const kr = getLanguageFlag("korean", country, "kr");
-    const pt = getLanguageFlag("portugese", country, "pt");
+    const pt = getLanguageFlag("portuguese", country, "pt");
     const un = getLanguageFlag("un", country, "un");
     const us = getLanguageFlag("us", country, "us");
     const eu = getLanguageFlag("eu", country, "eu");
@@ -473,6 +475,11 @@ export const GoResources = () => {
                             </span>,
                             <BasicResource
                                 countries={[en]}
+                                title="Awesome Baduk"
+                                href="https://www.youtube.com/@AwesomeBaduk"
+                            />,
+                            <BasicResource
+                                countries={[en]}
                                 title="Takumi Go Academy"
                                 href="https://www.youtube.com/@TakumiGoAcademy"
                             />,
@@ -724,6 +731,11 @@ export const GoResources = () => {
                     <dl>
                         <dt>{_("Sites")}</dt>
                         {scramble(
+                            <BasicResource
+                                countries={[eu]}
+                                title="Awesome Baduk"
+                                href="https://awesomebaduk.com/"
+                            />,
                             <BasicResource
                                 countries={[eu]}
                                 title="EGF Academy"
@@ -1081,11 +1093,6 @@ export const GoResources = () => {
                             />,
                             <BasicResource
                                 countries={[en]}
-                                title="Go Shrine"
-                                href="http://goshrine.com/"
-                            />,
-                            <BasicResource
-                                countries={[en]}
                                 title="Fly or Die"
                                 href="http://www.flyordie.com/go/"
                             />,
@@ -1122,6 +1129,11 @@ export const GoResources = () => {
                     <dl>
                         <dt>{_("Organizations")}</dt>
                         {ordered(
+                            <BasicResource
+                                countries={["si"]}
+                                title="Go Zveza Slovenije"
+                                href="https://go-zveza.si/"
+                            />,
                             <BasicResource
                                 countries={["in"]}
                                 title="Association of Indian Go Players"

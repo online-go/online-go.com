@@ -24,10 +24,10 @@ interface UIPushProperties {
     action: (data: any) => any;
 }
 
-class Handler {
+interface Handler {
     id: number;
     event: string;
-    cb: (data, event?) => void;
+    cb: (data: any, event?: string) => void;
 }
 
 let last_handler_id = 0;
@@ -51,17 +51,19 @@ class UIPushManager {
             }
         });
         socket.on("connect", () => {
-            /* handle resubscriptions */
+            /* handle re-subscriptions */
             for (const channel in this.subscriptions) {
                 socket.send("ui-pushes/subscribe", { channel: channel });
             }
         });
     }
 
-    on(event, cb) {
-        const handler = new Handler();
-        (handler.id = ++last_handler_id), (handler.event = event);
-        handler.cb = cb;
+    on(event: string, cb: (data: any, event?: string) => void): Handler {
+        const handler: Handler = {
+            id: ++last_handler_id,
+            event: event,
+            cb: cb,
+        };
 
         if (!(event in this.handlers)) {
             this.handlers[event] = [];
@@ -70,7 +72,7 @@ class UIPushManager {
         return handler;
     }
 
-    off(handler) {
+    off(handler: Handler) {
         for (let i = 0; i < this.handlers[handler.event].length; ++i) {
             if (this.handlers[handler.event][i].id === handler.id) {
                 this.handlers[handler.event].splice(i, 1);
@@ -79,7 +81,7 @@ class UIPushManager {
         }
     }
 
-    subscribe(channel) {
+    subscribe(channel: string) {
         if (!channel || channel === "" || channel === "undefined") {
             console.error("Invalid channel: ", channel, new Error().stack);
         } else {
@@ -93,7 +95,7 @@ class UIPushManager {
             }
         }
     }
-    unsubscribe(channel) {
+    unsubscribe(channel: string) {
         if (!channel || channel === "" || channel === "undefined") {
             console.error("Invalid channel: ", channel, new Error().stack);
         } else {
@@ -111,8 +113,8 @@ class UIPushManager {
 
 export const push_manager = new UIPushManager();
 
-export function UIPush({ event, channel, action }: UIPushProperties): JSX.Element {
-    React.useEffect(() => {
+export function UIPush({ event, channel, action }: UIPushProperties): JSX.Element | null {
+    React.useEffect((): (() => void) | void => {
         if (event && action) {
             const handler = push_manager.on(event, action);
             return () => {
@@ -121,7 +123,7 @@ export function UIPush({ event, channel, action }: UIPushProperties): JSX.Elemen
         }
     }, [event, action]);
 
-    React.useEffect(() => {
+    React.useEffect((): (() => void) | void => {
         if (channel) {
             push_manager.subscribe(channel);
             return () => {

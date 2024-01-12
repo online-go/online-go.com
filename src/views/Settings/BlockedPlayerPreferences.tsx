@@ -26,7 +26,7 @@ export function BlockedPlayerPreferences(): JSX.Element {
     const [blocked_players, setBlockedPlayers]: [
         Array<any> | null,
         (x: Array<any> | null) => void,
-    ] = React.useState(null);
+    ] = React.useState<Array<any> | null>(null);
 
     React.useEffect(() => {
         getAllBlocksWithUsernames()

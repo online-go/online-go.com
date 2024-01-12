@@ -28,25 +28,31 @@ import { useUser } from "hooks";
 import cached from "cached";
 
 import { SocialLoginButtons } from "SocialLoginButtons";
+import { LoadingButton } from "LoadingButton";
 
 export function Register(): JSX.Element {
     const navigate = useNavigate();
     const user = useUser();
     const ref_username = React.useRef<HTMLInputElement>(null);
-    const ref_email = React.useRef<HTMLInputElement>();
-    const ref_password = React.useRef<HTMLInputElement>();
-    const [error, setError] = React.useState<string>(null);
+    const ref_email = React.useRef<HTMLInputElement | null>(null);
+    const ref_password = React.useRef<HTMLInputElement | null>(null);
+    const [error, setError] = React.useState<string>();
+    const [submitLoading, setSubmitLoading] = React.useState(false);
 
     if (!user.anonymous) {
         navigate("/");
     }
 
-    const register = (event) => {
-        const actually_register = () => {
-            post("/api/v0/register", {
-                username: ref_username.current.value.trim(),
-                password: ref_password.current.value,
-                email: ref_email.current.value.trim(),
+    const onSubmit = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
+        event.preventDefault();
+        if (submitLoading) {
+            return;
+        }
+        const actually_register = async () => {
+            return post("/api/v0/register", {
+                username: ref_username.current?.value.trim(),
+                password: ref_password.current?.value,
+                email: ref_email.current?.value.trim(),
                 ebi: get_ebi(),
             })
                 .then((config) => {
@@ -81,61 +87,44 @@ export function Register(): JSX.Element {
                 });
         };
 
-        const focus_empty = (focus_email?: boolean) => {
-            if (ref_username.current.value.trim() === "" || !validateUsername()) {
-                ref_username.current.focus();
-                return true;
-            }
-
-            if (ref_username.current.value.trim() === "") {
-                ref_username.current.focus();
-                return true;
-            }
-
-            if (ref_password.current.value.trim() === "") {
-                ref_password.current.focus();
-                return true;
-            }
-            if (
-                focus_email &&
-                ref_email.current.value.trim() === "" &&
-                ref_email.current !== document.activeElement
-            ) {
-                ref_email.current.focus();
-                return true;
-            }
-
-            return false;
-        };
-
-        if (event.type === "click") {
-            event.preventDefault();
-            if (focus_empty()) {
-                return false;
-            }
-            actually_register();
-        }
-        if (event.type === "keypress") {
-            if (event.charCode === 13) {
-                event.preventDefault();
-                if (focus_empty(true)) {
-                    return false;
-                }
-                actually_register();
-            }
+        if (ref_username.current?.value.trim() === "" || !validateUsername()) {
+            ref_username.current?.focus();
+            return;
         }
 
-        if (event.type === "click" || event.charCode === 13) {
-            return false;
+        if (ref_password.current?.value.trim() === "") {
+            ref_password.current?.focus();
+            return;
         }
+
+        if (
+            (document.activeElement === ref_username.current ||
+                document.activeElement === ref_password.current) &&
+            ref_email.current?.value.trim() === ""
+        ) {
+            ref_email.current.focus();
+            return;
+        }
+
+        try {
+            setSubmitLoading(true);
+            await actually_register();
+        } finally {
+            setSubmitLoading(false);
+        }
+        return;
     };
 
     const validateUsername = () => {
+        if (!ref_username.current) {
+            return false;
+        }
+
         if (/@/.test(ref_username.current.value)) {
             $(ref_username.current).addClass("validation-error");
             setError(
                 _(
-                    "Your username will be publically visible, please do not use your email address here.",
+                    "Your username will be publicly visible, please do not use your email address here.",
                 ),
             );
             ref_username.current.focus();
@@ -143,7 +132,7 @@ export function Register(): JSX.Element {
         } else {
             if ($(ref_username.current).hasClass("validation-error")) {
                 $(ref_username.current).removeClass("validation-error");
-                setError(null);
+                setError(undefined);
             }
         }
         return true;
@@ -154,7 +143,7 @@ export function Register(): JSX.Element {
             <div>
                 <Card>
                     <h2>{_("Welcome new player!")}</h2>
-                    <form name="login" autoComplete="on">
+                    <form name="login" autoComplete="on" onSubmit={onSubmit}>
                         <label htmlFor="username">
                             {_("Username") /* translators: New account registration */}
                         </label>
@@ -164,7 +153,6 @@ export function Register(): JSX.Element {
                             autoFocus
                             ref={ref_username}
                             name="username"
-                            onKeyPress={register}
                             onChange={validateUsername}
                         />
                         {error && <div className="error-message">{error}</div>}
@@ -177,7 +165,6 @@ export function Register(): JSX.Element {
                             ref={ref_password}
                             type="password"
                             name="password"
-                            onKeyPress={register}
                         />
                         <label htmlFor="email">
                             {_("Email (optional)") /* translators: New account registration */}
@@ -188,16 +175,19 @@ export function Register(): JSX.Element {
                             ref={ref_email}
                             type="email"
                             name="email"
-                            onKeyPress={register}
                         />
                         <div style={{ textAlign: "right", marginBottom: "1.0rem" }}>
-                            <button className="primary" onClick={register}>
-                                <i className="fa fa-sign-in" />
+                            <LoadingButton
+                                type="submit"
+                                className="primary"
+                                loading={submitLoading}
+                                icon={<i className="fa fa-sign-in" />}
+                            >
                                 {pgettext(
                                     "This is the button they press to register with OGS",
                                     "Register",
                                 )}
-                            </button>
+                            </LoadingButton>
                         </div>
                     </form>
 
@@ -213,7 +203,7 @@ export function Register(): JSX.Element {
                     <SocialLoginButtons />
                 </Card>
 
-                <div className="signin-option">
+                <div className="sign-in-option">
                     <h3>{_("Already have an account?")} </h3>
                     <div>
                         <Link to="/sign-in" className="btn primary">

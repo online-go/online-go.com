@@ -16,7 +16,7 @@
  */
 
 import { PuzzleConfig } from "goban";
-import { LearningPage } from "./LearningPage";
+import { LearningPage, LearningPageProperties } from "./LearningPage";
 import { _, pgettext } from "translate";
 import { LearningHubSection } from "./LearningHubSection";
 
@@ -40,7 +40,7 @@ export class SnapBack extends LearningHubSection {
 }
 
 class Page1 extends LearningPage {
-    constructor(props) {
+    constructor(props: LearningPageProperties) {
         super(props);
     }
 

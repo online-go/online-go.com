@@ -256,6 +256,8 @@ light.goban-shadow                      = 0 4px 8px rgba(128,128,128,.71)
 light.goban-shadow-borderless           = 0 0px 0px rgba(128,128,128,.71)
 light.miniboard-to-move                 = #E6FFD8
 light.miniboard-to-move-border          = darken(light.miniboard-to-move, 60%)
+light.miniboard-viewed-to-move          = #F3F3F3
+light.miniboard-viewed-to-move-border   = darken(light.miniboard-viewed-to-move, 10%)
 light.miniboard-hover                   = #C7E7E9
 light.miniboard-hover-border            = darken(light.miniboard-hover, 30%)
 light.miniboard-stone-removal           = #FBfbD8
@@ -392,6 +394,8 @@ dark.goban-shadow                       = none
 dark.goban-shadow-borderless            = none
 dark.miniboard-to-move                  = #2B4029
 dark.miniboard-to-move-border           = darken(dark.miniboard-to-move, 60%)
+dark.miniboard-viewed-to-move           = #282828
+dark.miniboard-viewed-to-move-border    = lighten(dark.miniboard-viewed-to-move, 10%)
 dark.miniboard-hover                    = #578588
 dark.miniboard-hover-border             = darken(dark.miniboard-hover, 30%)
 dark.miniboard-stone-removal            = #5B4810
@@ -508,6 +512,9 @@ nowrap()
 
 @require "./components/material/*.styl";
 @require "./components/[A-Z]*/*.styl";
+@require "./components/[A-Z]*/*/*.styl";
+@require "./components/[A-Z]*/*/*/*.styl";
+@require "./components/[A-Z]*/*/*/*/*/*.styl";
 
 @require "./views/[A-Z]*/*.styl";
 @require "./views/docs/*.styl";

@@ -25,17 +25,17 @@
         },
 
         "forceConsistentCasingInFileNames": true,
+        "allowSyntheticDefaultImports": true,
 
-        "noImplicitAny": false,
-        "noImplicitReturns": false,
-        "noImplicitThis": false,
-        "strictBindCallApply": false,
-        "strictFunctionTypes": false,
-        "strictNullChecks": false,
-        "strictPropertyInitialization": false,
+        "noImplicitAny": true,
+        "noImplicitReturns": true,
+        "strictBindCallApply": true,
+        "strictFunctionTypes": true,
+        "strictNullChecks": true,
+        "strictPropertyInitialization": true,
         "noUnusedLocals": true,
 
-        "allowSyntheticDefaultImports": true,
+        "noImplicitThis": false,
 
         "sourceMap": true,
         "jsx": "react"
@@ -44,7 +44,8 @@
         "./src/main.tsx",
         "typings_manual/index.d.ts",
         "node_modules/@types/jquery/index.d.ts",
-        "node_modules/jest-chain/types/index.d.ts",
+        "node_modules/jest-chain/types/index.d.ts"
     ],
-    "include": ["src"]
+    "include": ["src"],
+    "exclude": ["node_modules", "dist"]
 }

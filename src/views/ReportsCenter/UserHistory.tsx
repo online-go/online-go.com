@@ -19,7 +19,7 @@ import * as React from "react";
 import { Player } from "Player";
 import { ModTools } from "User";
 
-export function UserHistory({ user }: { user: any }): JSX.Element {
+export function UserHistory({ user }: { user: any }): JSX.Element | null {
     if (!user) {
         return null;
     }

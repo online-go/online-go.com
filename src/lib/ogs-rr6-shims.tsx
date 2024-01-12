@@ -15,7 +15,7 @@
  */
 
 /* This file contains shims to make it so we can use our pre-existing class
- * React components with React Router 6. We should strive to elimiate this the
+ * React components with React Router 6. We should strive to eliminate this the
  * need for this in time. */
 
 import React from "react";

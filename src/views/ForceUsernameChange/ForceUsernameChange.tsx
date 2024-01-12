@@ -26,7 +26,7 @@ import { cached } from "cached";
 export function ForceUsernameChange(): JSX.Element {
     const user = data.get("config.user");
     const [username, setUsername] = React.useState("");
-    const inputRef = React.useRef();
+    const inputRef = React.useRef<HTMLInputElement | null>(null);
 
     React.useEffect(() => {
         const ir: any = inputRef as any;

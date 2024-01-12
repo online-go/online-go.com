@@ -32,7 +32,7 @@ interface GroupCreateState {
 export class GroupCreate extends React.PureComponent<{}, GroupCreateState> {
     ref_name = React.createRef<HTMLInputElement>();
 
-    constructor(props) {
+    constructor(props: {}) {
         super(props);
         this.state = {
             name: "",
@@ -58,15 +58,19 @@ export class GroupCreate extends React.PureComponent<{}, GroupCreateState> {
                 })
                 .catch(errorAlerter);
         } else {
-            this.ref_name.current.focus();
+            this.ref_name.current?.focus();
         }
     }
 
-    set_name = (ev) => this.setState({ name: ev.target.value });
-    set_is_public = (ev) => this.setState({ is_public: ev.target.checked });
-    set_require_invitation = (ev) => this.setState({ require_invitation: ev.target.checked });
-    set_hide_details = (ev) => this.setState({ hide_details: ev.target.checked });
-    set_admin_only_tournaments = (ev) =>
+    set_name = (ev: React.ChangeEvent<HTMLInputElement>) =>
+        this.setState({ name: ev.target.value });
+    set_is_public = (ev: React.ChangeEvent<HTMLInputElement>) =>
+        this.setState({ is_public: ev.target.checked });
+    set_require_invitation = (ev: React.ChangeEvent<HTMLInputElement>) =>
+        this.setState({ require_invitation: ev.target.checked });
+    set_hide_details = (ev: React.ChangeEvent<HTMLInputElement>) =>
+        this.setState({ hide_details: ev.target.checked });
+    set_admin_only_tournaments = (ev: React.ChangeEvent<HTMLInputElement>) =>
         this.setState({ admin_only_tournaments: ev.target.checked });
 
     render() {

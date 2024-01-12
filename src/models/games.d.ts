@@ -28,7 +28,7 @@ declare namespace rest_api {
         name: string;
         creator: number;
         mode: "game";
-        source: "play";
+        source: "play" | "sgf";
         black: number;
         white: number;
         width: number;

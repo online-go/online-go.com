@@ -22,18 +22,19 @@ import * as data from "data";
 import * as preferences from "preferences";
 import { Player } from "Player";
 import cached from "cached";
+import { PlayerCacheEntry } from "src/lib/player_cache";
 
 export class FriendList extends React.PureComponent<{}, any> {
-    constructor(props) {
+    constructor(props: {}) {
         super(props);
         this.state = {
-            friends: [],
+            friends: [] as PlayerCacheEntry[],
             show_offline_friends: preferences.get("show-offline-friends"),
         };
     }
     friends_listener: any;
 
-    updateFriends = (friends) => {
+    updateFriends = (friends: PlayerCacheEntry[]) => {
         this.setState({
             friends: this.sortFriends(friends),
         });
@@ -50,8 +51,8 @@ export class FriendList extends React.PureComponent<{}, any> {
     resortFriends = () => {
         this.setState({ friends: this.sortFriends(this.state.friends) });
     };
-    sortFriends(lst) {
-        const ret = [].concat(lst);
+    sortFriends(lst: PlayerCacheEntry[]) {
+        const ret: any[] = ([] as PlayerCacheEntry[]).concat(lst);
         ret.sort((a, b) => {
             const a_online = online_status.is_player_online(a.id);
             const b_online = online_status.is_player_online(b.id);
@@ -65,15 +66,15 @@ export class FriendList extends React.PureComponent<{}, any> {
         });
         return ret;
     }
-    setShowOfflineFriends = (ev) => {
+    setShowOfflineFriends = (ev: React.ChangeEvent<HTMLInputElement>) => {
         preferences.set("show-offline-friends", ev.target.checked);
         this.setState({ show_offline_friends: preferences.get("show-offline-friends") });
         ev.stopPropagation();
     };
-    clickShowOfflineFriends = (ev) => {
+    clickShowOfflineFriends = (ev: React.MouseEvent) => {
         ev.stopPropagation();
     };
-    eat = (ev) => {
+    eat = (ev: React.MouseEvent) => {
         ev.stopPropagation();
     };
 
@@ -93,7 +94,7 @@ export class FriendList extends React.PureComponent<{}, any> {
                     </label>
                 </div>
                 {this.state.friends.map(
-                    (friend) =>
+                    (friend: PlayerCacheEntry) =>
                         (online_status.is_player_online(friend.id) ||
                             this.state.show_offline_friends) && (
                             <div className="friend-entry" key={friend.id}>

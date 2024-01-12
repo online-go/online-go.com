@@ -21,7 +21,8 @@ import { _ } from "translate";
 import { openModal, Modal } from "Modal";
 import { Player } from "Player";
 import { socket } from "sockets";
-import { GoMath } from "goban";
+import { GoEngineConfig } from "goban";
+import { ScoringEventThumbnail } from "../../views/ReportsCenter/ScoringEventThumbnail";
 
 interface Events {}
 
@@ -41,7 +42,7 @@ export interface LogEntry {
 export class GameLogModal extends Modal<Events, GameLogModalProperties, { log: Array<LogEntry> }> {
     config: any;
 
-    constructor(props) {
+    constructor(props: GameLogModalProperties) {
         super(props);
 
         this.state = {
@@ -110,20 +111,46 @@ export class GameLogModal extends Modal<Events, GameLogModalProperties, { log: A
 
 export function LogData({
     config,
-    markCoords,
     event,
     data,
 }: {
-    config: any;
+    config: GoEngineConfig;
     markCoords: (stones: string) => void;
     event: string;
     data: any;
-}): JSX.Element {
+}): JSX.Element | null {
+    const [markedConfig, setMarkedConfig] = React.useState<GoEngineConfig | null>(null);
+    React.useEffect(() => {
+        if (event === "game_created") {
+            return;
+        }
+        if (!data?.stones) {
+            return;
+        }
+
+        let marks: { [mark: string]: string };
+        if (event === "stone_removal_stones_set") {
+            if (data.removed) {
+                marks = { cross: data.stones };
+            } else {
+                marks = { triangle: data.stones };
+            }
+        } else {
+            marks = { cross: data.stones };
+        }
+
+        setMarkedConfig({
+            ...config,
+            marks,
+            removed: "",
+        });
+    }, [config, event, data?.removed, data?.stones]);
+
+    const ret: Array<JSX.Element> = [];
+
     if (event === "game_created") {
         return null;
     }
-
-    const ret: Array<JSX.Element> = [];
 
     if (data) {
         try {
@@ -141,11 +168,19 @@ export function LogData({
                         </span>,
                     );
                 } else if (k === "stones") {
-                    const stones = GoMath.decodeMoves(data[k], config.width, config.height)
-                        .map((mv) => GoMath.prettyCoords(mv.x, mv.y, config.height))
-                        .join(", ");
-
-                    ret.push(<DrawCoordsButton stones={stones} markCoords={markCoords} key={k} />);
+                    // we'll re-render when it's set
+                    if (markedConfig) {
+                        ret.push(
+                            <ScoringEventThumbnail
+                                key={k}
+                                config={markedConfig}
+                                move_number={data.move_number}
+                                removal_string={data.current_removal_string}
+                            />,
+                        );
+                    }
+                } else if (k === "current_removal_string" || k === "move_number") {
+                    // skip
                 } else {
                     ret.push(
                         <span key={k} className="field">

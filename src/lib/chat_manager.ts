@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* spell-checker: disable */
+
 import cached from "cached";
 import * as data from "data";
 import * as preferences from "preferences";
@@ -28,6 +30,7 @@ import { ActiveTournamentList, GroupList } from "types";
 import { _, interpolate } from "translate";
 import { getBlocks } from "BlockPlayer";
 import { insert_into_sorted_list, string_splitter, n2s, Timeout } from "misc";
+import { User } from "goban/lib/protocol";
 
 export interface ChatMessage {
     channel: string;
@@ -182,12 +185,21 @@ try {
         global_channels[0].primary_language = true; /* default to english as primary */
     }
 
-    global_channels.sort((a, b) => a.sort_order - b.sort_order);
+    global_channels.sort((a, b) => (a.sort_order as number) - (b.sort_order as number));
 } catch (e) {
     console.error(e);
 }
 
+export const global_channels_by_id: { [channel: string]: ChannelInformation | undefined } = {};
+for (const chan of global_channels) {
+    global_channels_by_id[chan.id] = chan;
+}
+
 data.watch("user", (user) => {
+    if (!user) {
+        return;
+    }
+
     if (user.supporter && global_channels.filter((c) => c.id === "global-supporter").length === 0) {
         global_channels.splice(0, 0, {
             id: "global-supporter",
@@ -207,27 +219,30 @@ data.watch("user", (user) => {
 
 export function resolveChannelDisplayName(channel: string): string {
     if (channel === "shadowban") {
-        return global_channels[channel];
+        return global_channels_by_id[channel]?.name ?? channel;
     }
     if (channel.startsWith("global-")) {
-        global_channels.forEach((element) => {
+        global_channels.forEach((element): string | void => {
             if (channel === element.id) {
                 return element.name;
             }
+            return;
         });
     } else if (channel.startsWith("tournament-")) {
         const id: number = parseInt(channel.substring(11));
-        tournament_channels.forEach((element) => {
+        tournament_channels.forEach((element): string | void => {
             if (id === element.id) {
                 return element.name;
             }
+            return;
         });
     } else if (channel.startsWith("group-")) {
         const id: number = parseInt(channel.substring(6));
-        group_channels.forEach((element) => {
+        group_channels.forEach((element): string | void => {
             if (id === element.id) {
                 return element.name;
             }
+            return;
         });
     } else if (channel.startsWith("game-")) {
         return interpolate(_("Game {{number}}"), { number: channel.substring(5) }); // eslint-disable-line id-denylist
@@ -240,10 +255,18 @@ export function resolveChannelDisplayName(channel: string): string {
 export let group_channels: GroupList = [];
 export let tournament_channels: ActiveTournamentList = [];
 
-function updateGroups(groups: GroupList) {
+function updateGroups(groups?: GroupList) {
+    if (!groups) {
+        return;
+    }
+
     group_channels = groups;
 }
-function updateTournaments(tournaments: ActiveTournamentList) {
+function updateTournaments(tournaments?: ActiveTournamentList) {
+    if (!tournaments) {
+        return;
+    }
+
     tournament_channels = tournaments;
 }
 data.watch(cached.groups, updateGroups);
@@ -277,7 +300,7 @@ let last_proxy_id = 0;
 
 export function inGameModChannel(channel_or_game_id: string | number): boolean {
     const user = data.get("user");
-    if (!user.is_moderator) {
+    if (!user?.is_moderator) {
         return false;
     }
 
@@ -301,19 +324,19 @@ class ChatChannel extends TypedEventEmitter<Events> {
     proxies: { [id: number]: ChatChannelProxy } = {};
     joining: boolean = false;
     chat_log: Array<ChatMessage> = [];
-    chat_ids = {};
+    chat_ids: { [id: string]: boolean } = {}; // used to prevent duplicate messages
     has_unread = false;
     unread_ct = 0;
     mentioned = false;
-    user_list = {};
-    users_by_rank = [];
-    users_by_name = [];
+    user_list: { [k: string]: User } = {};
+    users_by_rank: User[] = [];
+    users_by_name: User[] = [];
     user_count = 0;
     rtl_mode = false;
     last_seen_timestamp: number;
     send_tokens = 5;
-    flood_protection: Timeout = null;
-    topic: TopicMessage;
+    flood_protection: Timeout | null = null;
+    topic?: TopicMessage;
 
     constructor(channel: string, display_name: string) {
         super();
@@ -327,7 +350,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
         ); /* don't notify for name matches within 10s of joining a channel */
 
         const user = data.get("user");
-        if (user.is_moderator && channel.startsWith("game-")) {
+        if (user?.is_moderator && channel.startsWith("game-")) {
             data.watch(
                 `moderator.join-game-publicly.${channel}`,
                 this.handleAnonymousOverride,
@@ -413,6 +436,11 @@ class ChatChannel extends TypedEventEmitter<Events> {
     }
 
     handleChat(obj: ChatMessage) {
+        if (!obj.message.i) {
+            console.error("Chat message missing uuid: ", obj);
+            return;
+        }
+
         if (obj.message.i in this.chat_ids) {
             return;
         }
@@ -474,7 +502,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
         }
     }
 
-    handleChatRemoved(obj) {
+    handleChatRemoved(obj: { channel: string; uuid: string }) {
         console.log("Chat message removed: ", obj);
         this.chat_ids[obj.uuid] = true;
         for (let idx = 0; idx < this.chat_log.length; ++idx) {
@@ -505,7 +533,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
             console.error(e);
         }
     }
-    handlePart(user): void {
+    handlePart(user: User): void {
         if (user.id in this.user_list) {
             this.user_count--;
             this._remove_from_sorted_lists(user);
@@ -518,7 +546,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
             console.error(e);
         }
     }
-    handleUserUpdate(old_player_id, user): void {
+    handleUserUpdate(_old_player_id: number, user: User): void {
         if (user.id in this.user_list) {
             const old_entry = this.user_list[user.id];
             this.handlePart(old_entry);
@@ -526,7 +554,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
         this.handleJoins([user]);
     }
 
-    _insert_into_sorted_lists(new_user) {
+    _insert_into_sorted_lists(new_user: User) {
         insert_into_sorted_list(
             this.users_by_name,
             (a, b) => a.username.localeCompare(b.username),
@@ -536,7 +564,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
         insert_into_sorted_list(this.users_by_rank, users_by_rank, new_user);
     }
 
-    _remove_from_sorted_lists(user) {
+    _remove_from_sorted_lists(user: User) {
         this.users_by_name = this.users_by_name.filter(
             (existing_user) => existing_user.id !== user.id,
         );
@@ -595,7 +623,9 @@ class ChatChannel extends TypedEventEmitter<Events> {
                         "flood",
                     );
                 } else {
-                    clearInterval(this.flood_protection);
+                    if (this.flood_protection) {
+                        clearInterval(this.flood_protection);
+                    }
                     this.flood_protection = null;
                 }
             }, 1000);
@@ -625,11 +655,20 @@ class ChatChannel extends TypedEventEmitter<Events> {
             message: { i: _send_obj.uuid, t: Math.floor(Date.now() / 1000), m: text },
         };
         this.chat_log.push(obj);
-        this.chat_ids[obj.message.i] = true;
+        if (obj.message.i) {
+            this.chat_ids[obj.message.i] = true;
+        } else {
+            console.error("Chat message missing uuid: ", obj);
+        }
         this.emit("chat", obj);
     }
     public setTopic(topic: string) {
         const user = data.get("user");
+
+        if (!user) {
+            console.error("No user logged in");
+            return;
+        }
 
         socket.send("chat/topic", {
             channel: this.channel,
@@ -684,7 +723,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
     }
 }
 
-export function users_by_rank(a, b) {
+export function users_by_rank(a: User, b: User) {
     if (a.professional && !b.professional) {
         return -1;
     }
@@ -692,11 +731,11 @@ export function users_by_rank(a, b) {
         return 1;
     }
     if (a.professional && b.professional) {
-        return b.ranking - a.ranking;
+        return (b.ranking ?? 0) - (a.ranking ?? 0);
     }
 
-    const a_rank = Math.floor(bounded_rank(a));
-    const b_rank = Math.floor(bounded_rank(b));
+    const a_rank = Math.floor(bounded_rank(a as any));
+    const b_rank = Math.floor(bounded_rank(b as any));
 
     if (a_rank === b_rank && a.username && b.username) {
         return a.username.localeCompare(b.username);
@@ -708,7 +747,7 @@ export class ChatChannelProxy extends TypedEventEmitter<Events> {
     id: number = ++last_proxy_id;
     channel: ChatChannel;
 
-    constructor(channel) {
+    constructor(channel: ChatChannel) {
         super();
         this.channel = channel;
         this.channel.on("chat", this._onChat);
@@ -723,23 +762,23 @@ export class ChatChannelProxy extends TypedEventEmitter<Events> {
         this._destroy();
     }
 
-    _onChat = (...args) => {
-        this.emit.apply(this, ["chat"].concat(args));
+    _onChat = (...args: any[]) => {
+        this.emit.apply(this, ["chat", args]);
     };
-    _onTopic = (...args) => {
-        this.emit.apply(this, ["topic"].concat(args));
+    _onTopic = (...args: any[]) => {
+        this.emit.apply(this, ["topic", args]);
     };
-    _onJoin = (...args) => {
-        this.emit.apply(this, ["join"].concat(args));
+    _onJoin = (...args: any[]) => {
+        this.emit.apply(this, ["join", args]);
     };
-    _onPart = (...args) => {
-        this.emit.apply(this, ["part"].concat(args));
+    _onPart = (...args: any[]) => {
+        this.emit.apply(this, ["part", args]);
     };
-    _onChatRemoved = (...args) => {
-        this.emit.apply(this, ["chat-removed"].concat(args));
+    _onChatRemoved = (...args: any[]) => {
+        this.emit.apply(this, ["chat-removed", args]);
     };
-    _onUnreadChanged = (...args) => {
-        this.emit.apply(this, ["unread-count-changed"].concat(args));
+    _onUnreadChanged = (...args: any[]) => {
+        this.emit.apply(this, ["unread-count-changed", args]);
     };
     _destroy() {
         this.channel.off("chat", this._onChat);
@@ -807,14 +846,14 @@ class ChatManager {
 
         this.channels[obj.channel].handleChat(obj);
     };
-    onMessageRemoved = (obj) => {
+    onMessageRemoved = (obj: { channel: string; uuid: string }) => {
         if (!(obj.channel in this.channels)) {
             return;
         }
 
         this.channels[obj.channel].handleChatRemoved(obj);
     };
-    onJoin = (joins) => {
+    onJoin = (joins: { channel: string; users: User[] }) => {
         for (let i = 0; i < joins.users.length; ++i) {
             player_cache.update(joins.users[i]);
         }
@@ -825,14 +864,22 @@ class ChatManager {
 
         this.channels[joins.channel].handleJoins(joins.users);
     };
-    onPart = (part) => {
+    onPart = (part: { channel: string; user: User }) => {
         if (!(part.channel in this.channels)) {
             return;
         }
 
         this.channels[part.channel].handlePart(part.user);
     };
-    onUserUpdate = ({ channel, old_player_id, user }) => {
+    onUserUpdate = ({
+        channel,
+        old_player_id,
+        user,
+    }: {
+        channel: string;
+        old_player_id: number;
+        user: User;
+    }) => {
         if (!(channel in this.channels)) {
             return;
         }
@@ -944,7 +991,11 @@ export function chatSoftUid(user_id: number): string {
 for (const chan of global_channels) {
     updateCachedChannelInformation(chan.id, chan);
 }
-data.watch(cached.active_tournaments, (tournaments: ActiveTournamentList) => {
+data.watch(cached.active_tournaments, (tournaments?: ActiveTournamentList) => {
+    if (!tournaments) {
+        return;
+    }
+
     for (const tournament of tournaments) {
         updateCachedChannelInformation(`tournament-${tournament.id}`, {
             id: `tournament-${tournament.id}`,

@@ -15,4 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export * from "./SupporterGoals";
+// Code sourced from react-dndkit-multiple-containers example
+// https://codesandbox.io/p/sandbox/react-dndkit-multiple-containers-6wydy9?file=%2Fsrc%2Fexamples%2FSortable%2FMultipleContainers.tsx%3A240%2C1
+
+export { Grid } from "./Grid";

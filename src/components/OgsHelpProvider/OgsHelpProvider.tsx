@@ -26,12 +26,8 @@ import { HelpProvider, HelpPopupDictionary } from "react-dynamic-help";
 import * as DynamicHelp from "react-dynamic-help";
 
 const helpPopupDictionary: HelpPopupDictionary = {
-    "Don't show me these": pgettext(
-        "A button to turn off help popups completely",
-        "Don't show me these",
-    ),
-    Skip: pgettext("A button to dismiss a help popup", "Skip"),
-    OK: pgettext("A button to dismiss the last help popup", "OK"),
+    "Skip this topic": pgettext("A button to dismiss a help popup topic", "Skip this topic"),
+    OK: pgettext("A button to dismiss the current help popup", "OK"),
 };
 
 type OgsHelpProviderProps = {
@@ -69,16 +65,16 @@ export function OgsHelpProvider(props: OgsHelpProviderProps): JSX.Element {
                     "rdh-system-state",
                     rdhState,
                     data.Replication.REMOTE_OVERWRITES_LOCAL,
-                );
+                ) as string;
             } else {
                 debugDynamicHelp && console.log("NOT writing rdhState");
                 return rdhState;
             }
         },
         getState: (defaultValue?: string) => {
-            const newstate = data.get("rdh-system-state", defaultValue);
-            debugDynamicHelp && console.log("Read rdhState", user.username, user.id, newstate);
-            return newstate;
+            const new_state = data.get("rdh-system-state", defaultValue || "");
+            debugDynamicHelp && console.log("Read rdhState", user.username, user.id, new_state);
+            return new_state;
         },
     };
 

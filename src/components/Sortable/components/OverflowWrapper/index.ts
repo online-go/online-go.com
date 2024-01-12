@@ -15,27 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#SupporterGoalsContainer {
-    text-align: center;
-    margin: 1rem;
-    max-width: 50rem;
-    margin-left: auto;
-    margin-right: auto;
-}
-#SupporterGoalText {
-    display: block;
-    width: 100%;
-    text-align: center;
-}
-#SupporterCountLeftText {
-    display: block;
-    width: 100%;
-    text-align: center;
-}
-#SupporterGoals {
-    display: block;
-    width: 100%;
-    text-align: center;
-    white-space: nowrap;
-}
+// Code sourced from react-dndkit-multiple-containers example
+// https://codesandbox.io/p/sandbox/react-dndkit-multiple-containers-6wydy9?file=%2Fsrc%2Fexamples%2FSortable%2FMultipleContainers.tsx%3A240%2C1
 
+export { OverflowWrapper } from "./OverflowWrapper";

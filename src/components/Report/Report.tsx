@@ -41,6 +41,11 @@ export type ReportType =
     | "warning" // for moderators only
     | "troll"; // system generated, for moderators only
 
+export const CommunityModeratorReportTypes: ReadonlyArray<ReportType> = [
+    "escaping",
+    "score_cheating",
+];
+
 export interface ReportDescription {
     type: ReportType;
     title: string;
@@ -89,7 +94,7 @@ export const report_categories: ReportDescription[] = [
         title: pgettext("Report user for score cheating", "Score Cheating"),
         description: pgettext(
             "Report user for score cheating",
-            "User is attempting to cheat in the stone removal phase or the game has been miscored.",
+            "User is attempting to cheat in the stone removal phase or the game has been mis-scored.",
         ),
         game_id_required: true,
     },
@@ -186,7 +191,7 @@ export function Report(props: ReportProperties): JSX.Element {
         player_cache
             .fetch(fetching_user_id, ["username"])
             .then((player) => {
-                if (fetching_user_id === reported_user_id) {
+                if (fetching_user_id === reported_user_id && player.username) {
                     set_username(player.username);
                 }
             })
@@ -230,7 +235,10 @@ export function Report(props: ReportProperties): JSX.Element {
 
         set_submitting(true);
 
-        if (report_type === "inappropriate_content" || report_type === "harassment") {
+        if (
+            (report_type === "inappropriate_content" || report_type === "harassment") &&
+            reported_user_id
+        ) {
             setIgnore(reported_user_id, true);
         }
 
@@ -244,12 +252,12 @@ export function Report(props: ReportProperties): JSX.Element {
         })
             .then(() => {
                 set_submitting(false);
-                onClose();
+                onClose && onClose();
                 void alert.fire({ text: _("Thanks for the report!") });
             })
             .catch(() => {
                 set_submitting(false);
-                onClose();
+                onClose && onClose();
                 void alert.fire({ text: _("There was an error submitting your report") });
             });
     }
@@ -271,12 +279,12 @@ export function Report(props: ReportProperties): JSX.Element {
         post("moderation/warn", { user_id: reported_user_id, text: note })
             .then(() => {
                 set_submitting(false);
-                onClose();
+                onClose && onClose();
                 void alert.fire("Warning sent");
             })
             .catch(() => {
                 set_submitting(false);
-                onClose();
+                onClose && onClose();
                 void alert.fire({ text: _("There was an error submitting the warning!") });
             });
     }
@@ -357,9 +365,7 @@ export function Report(props: ReportProperties): JSX.Element {
             </div>
             {(reported_conversation || null) && (
                 <div className="reported-conversation">
-                    {reported_conversation.content.map((line, idx) => (
-                        <div key={idx}>{line}</div>
-                    ))}
+                    {reported_conversation?.content.map((line, idx) => <div key={idx}>{line}</div>)}
                 </div>
             )}
             <div className="buttons">

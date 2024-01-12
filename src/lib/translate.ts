@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* cspell:disable */
+
 import { setGobanTranslations } from "goban";
 
 const w = window as { [key: string]: any }; // Add index signature
@@ -50,7 +52,7 @@ function isInRange(n: number, min: number, max: number) {
     return n >= min && n <= max;
 }
 
-// Define the bahavior of plurals for the current language
+// Define the behavior of plurals for the current language
 // See http://cldr.unicode.org/index/cldr-spec/plural-rules
 export let pluralidx: (count: number) => number;
 function setPluralIdx() {
@@ -216,8 +218,8 @@ export function pgettext(context: string, msgid: string) {
  */
 export function npgettext(context: string, singular: string, plural: string, count: number) {
     const key = context + "\u0004" + singular + "\u0005" + plural;
-    const skey = context + "\u0004" + singular;
-    const pkey = context + "\u0004" + plural;
+    const s_key = context + "\u0004" + singular;
+    const p_key = context + "\u0004" + plural;
     if (key in catalog) {
         const idx = pluralidx(count);
         if (idx < catalog[key].length) {
@@ -229,8 +231,8 @@ export function npgettext(context: string, singular: string, plural: string, cou
              * translation but we do happen to have the plural translation as a
              * stand alone translation, use that. */
             if (count !== 1) {
-                if (pkey in catalog) {
-                    return catalog[pkey][0];
+                if (p_key in catalog) {
+                    return catalog[p_key][0];
                 }
 
                 if (plural in catalog) {
@@ -245,16 +247,16 @@ export function npgettext(context: string, singular: string, plural: string, cou
 
     /* If we don't have a npgettext translation entry at all, but
      * we do have some stand alone translations, use those */
-    if (count !== 1 || !(singular in catalog || skey in catalog)) {
-        if (pkey in catalog) {
-            return catalog[pkey][0];
+    if (count !== 1 || !(singular in catalog || s_key in catalog)) {
+        if (p_key in catalog) {
+            return catalog[p_key][0];
         }
         if (plural in catalog) {
             return catalog[plural][0];
         }
     }
-    if (skey in catalog) {
-        return catalog[skey][0];
+    if (s_key in catalog) {
+        return catalog[s_key][0];
     }
     if (singular in catalog) {
         return catalog[singular][0];
@@ -317,7 +319,7 @@ extended_countries.push(["_Lord_Howe_Island", gettext("Lord Howe Island")]);
 extended_countries.push(["_NATO", gettext("NATO")]);
 extended_countries.push(["_Northern_Cyprus", gettext("Northern Cyprus")]);
 extended_countries.push(["_Northern_Ireland", gettext("Northern Ireland")]);
-extended_countries.push(["_Olimpic_Movement", gettext("Olympic Movement")]);
+extended_countries.push(["_Olympic_Movement", gettext("Olympic Movement")]);
 extended_countries.push(["_OPEC", gettext("OPEC")]);
 extended_countries.push(["_Red_Cross", gettext("Red Cross")]);
 extended_countries.push(["_Scotland", gettext("Scotland")]);

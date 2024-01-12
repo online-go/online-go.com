@@ -23,7 +23,7 @@ import { UIPush } from "../UIPush";
 
 interface PaginatedTableColumnProperties<EntryT> {
     cellProps?: any;
-    render: (row: EntryT) => JSX.Element | string | number;
+    render: (row: EntryT) => JSX.Element | string | number | undefined | null;
     header: string;
     headerProps?: any;
     sortable?: boolean;
@@ -52,7 +52,10 @@ interface PaginatedTableProperties<RawEntryT, GroomedEntryT = RawEntryT> {
     filter?: Filter;
     orderBy?: Array<string>;
     groom?: (data: Array<RawEntryT>) => Array<GroomedEntryT>;
-    onRowClick?: (row, ev) => any;
+    onRowClick?: (
+        row: GroomedEntryT,
+        ev: React.MouseEvent | React.TouchEvent | React.PointerEvent,
+    ) => any;
     debug?: boolean;
     pageSizeOptions?: Array<number>;
     startingPage?: number;
@@ -80,7 +83,7 @@ function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(
     ref: React.ForwardedRef<PaginatedTableRef>,
 ): JSX.Element {
     const table_name = props.name || "default";
-    const [rows, setRows]: [any[], (x: any[]) => void] = React.useState([]);
+    const [rows, setRows]: [any[], (x: any[]) => void] = React.useState<GroomedEntryT[]>([]);
     const [page, _setPage]: [number, (x: number) => void] = React.useState(props.startingPage || 1);
     const [page_input_text, _setPageInputText]: [string, (s: string) => void] = React.useState(
         (props.startingPage || 1).toString(),
@@ -187,7 +190,7 @@ function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(
             const url = props.source as string;
             const method = props.method || "GET";
 
-            const query = { page_size, page };
+            const query: any = { page_size, page };
             for (const k in filter) {
                 if (
                     (k.indexOf("__istartswith") > 0 ||
@@ -292,7 +295,7 @@ function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(
         " ",
     );
     const columns = props.columns.filter((c) => !!c);
-    const blank_rows = [];
+    const blank_rows: JSX.Element[] = [];
     const page_sizes = props.pageSizeOptions || [10, 25, 50];
 
     if (props.fillBlankRows) {
@@ -335,12 +338,12 @@ function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(
                                     onClick={
                                         column.orderBy
                                             ? () => {
-                                                  _sort(column.orderBy);
+                                                  _sort(column.orderBy as string[]);
                                               }
                                             : null
                                     }
                                 >
-                                    {getHeader(column.orderBy, column.header)}
+                                    {column.orderBy ? getHeader(column.orderBy, column.header) : ""}
                                 </th>
                             ))}
                         </tr>
@@ -360,7 +363,9 @@ function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(
                                             className={
                                                 props.annulQueue.includes(row) ? "queued" : ""
                                             }
-                                            onMouseUp={(ev) => props.onRowClick(row, ev)}
+                                            onMouseUp={(ev) =>
+                                                props.onRowClick && props.onRowClick(row, ev)
+                                            }
                                         >
                                             {cols}
                                         </tr>
@@ -373,7 +378,9 @@ function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(
                                     return (
                                         <tr
                                             key={row.id}
-                                            onMouseUp={(ev) => props.onRowClick(row, ev)}
+                                            onMouseUp={(ev) =>
+                                                props.onRowClick && props.onRowClick(row, ev)
+                                            }
                                         >
                                             {cols}
                                         </tr>
@@ -430,21 +437,31 @@ function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(
     );
 }
 
-function column_render(column, row): JSX.Element | string | number {
+function column_render<GroomedEntryT>(
+    column: PaginatedTableColumnProperties<GroomedEntryT>,
+    row: GroomedEntryT,
+): JSX.Element | string | number | null | undefined {
     if (typeof column.render === "function") {
         return column.render(row);
     }
     return column.render;
 }
 
-function cls(row, column): string {
+function cls<GroomedEntryT>(
+    row: GroomedEntryT | null | undefined,
+    column: PaginatedTableColumnProperties<GroomedEntryT>,
+): string {
     if (!column.className) {
         return "";
     }
     if (typeof column.className === "function") {
-        return column.className(row, column);
+        if (row) {
+            return column.className(row);
+        }
+    } else {
+        return column.className;
     }
-    return column.className;
+    return "";
 }
 
 function ordersMatch(order1: string[], order2: string[]): boolean {
@@ -462,7 +479,7 @@ function ordersMatch(order1: string[], order2: string[]): boolean {
 }
 
 function reverseOrder(order: string[]): string[] {
-    const new_order_by = [];
+    const new_order_by: string[] = [];
     for (const str of order) {
         new_order_by.push(str.indexOf("-") === 0 ? str.substr(1) : "-" + str);
     }

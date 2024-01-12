@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import * as React from "react";
 import { PlayerCacheEntry } from "player_cache";
 import { GoEngineRules, JGOFTimeControl } from "goban";
 
@@ -86,6 +87,8 @@ export type Speed = "blitz" | "live" | "correspondence";
 export type Size = "9x9" | "13x13" | "19x19";
 export type AutomatchCondition = "required" | "preferred" | "no-preference";
 export type RuleSet = "japanese" | "chinese" | "aga" | "korean" | "nz" | "ing";
+export type TimeControlSystem = "absolute" | "byoyomi" | "canadian" | "fischer" | "simple" | "none";
+export type AutomatchTimeControlSystem = "byoyomi" | "fischer" | "simple" | "canadian";
 
 // AutomatchSettings and automatch_manager handle size, speed and uuid
 // differently, but everything else is the same.  Hence a shared base.
@@ -100,7 +103,7 @@ export interface AutomatchPreferencesBase {
     time_control: {
         condition: AutomatchCondition;
         value: {
-            system: "byoyomi" | "fischer" | "simple" | "canadian";
+            system: AutomatchTimeControlSystem;
             initial_time?: number;
             time_increment?: number;
             max_time?: number;
@@ -142,8 +145,11 @@ export interface GobanInfoStateBase {
     white_name?: string;
 
     current_users_move?: boolean;
+    viewed_users_move?: boolean;
     black_to_move_cls?: string;
     white_to_move_cls?: string;
     in_stone_removal_phase?: boolean;
     finished?: boolean;
 }
+
+export type CommonChangeEvent = React.ChangeEvent<HTMLInputElement & HTMLTextAreaElement>;

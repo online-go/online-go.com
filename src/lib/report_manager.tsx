@@ -33,9 +33,11 @@ import { EventEmitter } from "eventemitter3";
 import { emitNotification } from "Notifications";
 import { browserHistory } from "ogsHistory";
 import { get, post } from "requests";
-import { MOD_POWER_HANDLE_SCORE_CHEAT } from "./misc";
+import { MOD_POWER_HANDLE_SCORE_CHEAT, MOD_POWER_HANDLE_ESCAPING } from "./misc";
 
 export const DAILY_REPORT_GOAL = 10;
+
+const DONT_OFFER_COMMUNITY_MODERATION_TYPES_TO_MODERATORS = false;
 
 interface Vote {
     voter_id: number;
@@ -78,6 +80,7 @@ export interface Report {
 
     available_actions: Array<string>; // community moderator actions
     voters: Vote[]; // votes from community moderators on this report
+    community_mod_note: string;
 
     unclaim: () => void;
     claim: () => void;
@@ -180,7 +183,7 @@ class ReportManager extends EventEmitter<Events> {
         const prefs = preferences.get("moderator.report-settings");
         const user = data.get("user");
 
-        const reports = [];
+        const reports: Report[] = [];
         let normal_ct = 0;
         for (const id in this.active_incident_reports) {
             const report = this.active_incident_reports[id];
@@ -209,28 +212,57 @@ class ReportManager extends EventEmitter<Events> {
             if (this.getIgnored(report.id)) {
                 return false;
             }
+
+            // we can always see our own reports
+            if (user.id === report.reporting_user?.id) {
+                return true;
+            }
+
+            // if it's not ours, we need special powers to see it...
             if (!user.is_moderator && !user.moderator_powers) {
                 return false;
             }
-            // Community moderators only get to see score_cheating reports that they
-            // have not yet voted on.
+
+            // Community moderators only get to see reports that they have the power for and
+            // that they have not yet voted on.
+            const has_handle_score_cheat =
+                (user.moderator_powers & MOD_POWER_HANDLE_SCORE_CHEAT) > 0;
+            const has_handle_escaping = (user.moderator_powers & MOD_POWER_HANDLE_ESCAPING) > 0;
             if (
                 !user.is_moderator &&
                 user.moderator_powers &&
-                (!(
-                    report.report_type === "score_cheating" &&
-                    user.moderator_powers & MOD_POWER_HANDLE_SCORE_CHEAT
-                ) ||
+                ((!(report.report_type === "score_cheating" && has_handle_score_cheat) &&
+                    !(report.report_type === "escaping" && has_handle_escaping)) ||
                     report.voters?.some((vote) => vote.voter_id === user.id))
             ) {
                 return false;
             }
-            // don't hand score cheating reports to full mods unless the report is escalated,
-            // because community moderators are supposed to do these!
-            if (user.is_moderator && report.report_type === "score_cheating" && !report.escalated) {
+
+            if (DONT_OFFER_COMMUNITY_MODERATION_TYPES_TO_MODERATORS) {
+                // don't hand community moderation reports to full mods unless the report is escalated,
+                // because community moderators are supposed to do these!
+                if (
+                    user.is_moderator &&
+                    !(report.moderator?.id === user.id) && // maybe they already have it, so they need to see it
+                    (report.report_type === "score_cheating" ||
+                        report.report_type === "escaping") &&
+                    !report.escalated
+                ) {
+                    return false;
+                }
+            }
+
+            // Never give a claimed report to community moderators
+            if (!user.is_moderator && report.moderator?.id) {
                 return false;
             }
-            return !report.moderator || report.moderator?.id === user.id;
+
+            if (report.moderator && report.moderator.id !== user.id) {
+                // claimed reports are not given out to others
+                return false;
+            }
+
+            return true;
         });
     }
 
@@ -248,7 +280,7 @@ class ReportManager extends EventEmitter<Events> {
                 continue;
             }
 
-            const relationships = [];
+            const relationships: string[] = [];
 
             if (report.reported_game && other.reported_game === report.reported_game) {
                 relationships.push("Same game");
@@ -290,7 +322,7 @@ class ReportManager extends EventEmitter<Events> {
                 delete ignored[key];
             }
         }
-        data.set("ignored-reports", ignored);
+        data.set("ignored-reports", ignored, data.Replication.REMOTE_OVERWRITES_LOCAL);
         this.update();
     }
 
@@ -361,12 +393,13 @@ class ReportManager extends EventEmitter<Events> {
         this.updateIncidentReport(res);
         return res;
     }
-    public async vote(report_id: number, voted_action: string) {
+    public async vote(report_id: number, voted_action: string, mod_note: string) {
         delete this.active_incident_reports[report_id];
         this.update();
         const res = await post(`moderation/incident/${report_id}`, {
             action: "vote", // darn, yes, two different uses of the word "action" collide here
             voted_action: voted_action,
+            mod_note,
         }).then((res) => {
             toast(
                 <div>
@@ -430,4 +463,4 @@ function compare_reports(a: Report, b: Report): number {
 
 export const report_manager = new ReportManager();
 
-window["report_manager"] = report_manager;
+(window as any)["report_manager"] = report_manager;

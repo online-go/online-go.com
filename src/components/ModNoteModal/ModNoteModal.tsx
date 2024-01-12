@@ -32,7 +32,7 @@ interface ModNoteModalProperties {
 }
 
 export class ModNoteModal extends Modal<Events, ModNoteModalProperties, any> {
-    constructor(props) {
+    constructor(props: ModNoteModalProperties) {
         super(props);
 
         this.state = {
@@ -54,7 +54,7 @@ export class ModNoteModal extends Modal<Events, ModNoteModalProperties, any> {
         }
     };
 
-    updateDraft = (e) => {
+    updateDraft = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         this.setState({
             current_draft: e.target.value,
         });

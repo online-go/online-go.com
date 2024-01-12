@@ -42,7 +42,6 @@ import { Player } from "Player";
 import { openAutomatchSettings, getAutomatchSettings } from "AutomatchSettings";
 import { automatch_manager, AutomatchPreferences } from "automatch_manager";
 import { bot_count } from "bots";
-import { SupporterGoals } from "SupporterGoals";
 import { CreatedChallengeInfo } from "types";
 import { ChallengeLinkButton } from "ChallengeLinkButton";
 import { allocateCanvasOrError } from "goban";
@@ -69,21 +68,22 @@ interface PlayState {
     filter: ChallengeFilter;
     automatch_size_options: Size[];
     freeze_challenge_list: boolean; // Don't change the challenge list while they are trying to point the mouse at it
-    pending_challenges: Array<Challenge>; // challenges received while frozen
+    pending_challenges: { [id: number]: Challenge }; // challenges received while frozen
     show_in_rengo_management_pane: number[]; // a challenge_ids for challenges to show with pane open in the rengo challenge list
+    rengo_manage_pane_lock: { [key: number]: boolean }; // a hash for storing the "locked" state of rengo management panes
 }
 
 export class Play extends React.Component<{}, PlayState> {
-    ref_container: HTMLDivElement;
+    ref_container: React.RefObject<HTMLDivElement> = React.createRef();
     canvas: HTMLCanvasElement;
 
-    seekgraph: SeekGraph;
-    resize_check_interval;
+    seekgraph!: SeekGraph;
+    resize_check_interval: ReturnType<typeof setInterval> | undefined;
 
     static contextType: React.Context<DynamicHelp.AppApi> = DynamicHelp.Api;
     declare context: React.ContextType<typeof DynamicHelp.Api>;
 
-    private list_freeze_timeout;
+    private list_freeze_timeout: ReturnType<typeof setTimeout> | undefined;
 
     static filterPreferenceMapping: Map<ChallengeFilterKey, preferences.ValidPreference> = new Map([
         ["showIneligible", "show-all-challenges"],
@@ -96,12 +96,12 @@ export class Play extends React.Component<{}, PlayState> {
         ["showRengo", "show-rengo-challenges"],
     ]);
 
-    constructor(props) {
+    constructor(props: {}) {
         super(props);
 
         const user = data.get("user");
 
-        const filter = {};
+        const filter: any = {};
         Play.filterPreferenceMapping.forEach((pref, key) => {
             if (user.anonymous) {
                 filter[key] = true;
@@ -120,9 +120,9 @@ export class Play extends React.Component<{}, PlayState> {
             freeze_challenge_list: false, // Don't change the challenge list while they are trying to point the mouse at it
             pending_challenges: [], // challenges received while frozen
             show_in_rengo_management_pane: [],
+            rengo_manage_pane_lock: {},
         };
         this.canvas = allocateCanvasOrError();
-        this.list_freeze_timeout = null;
     }
 
     componentDidMount() {
@@ -132,7 +132,7 @@ export class Play extends React.Component<{}, PlayState> {
             filter: this.state.filter,
         });
         this.onResize();
-        this.seekgraph.on("challenges", this.updateChallenges);
+        this.seekgraph.on("challenges", this.updateChallenges as any);
         automatch_manager.on("entry", this.onAutomatchEntry);
         automatch_manager.on("start", this.onAutomatchStart);
         automatch_manager.on("cancel", this.onAutomatchCancel);
@@ -150,27 +150,27 @@ export class Play extends React.Component<{}, PlayState> {
         this.seekgraph.destroy();
         if (this.list_freeze_timeout) {
             clearTimeout(this.list_freeze_timeout);
-            this.list_freeze_timeout = null;
+            this.list_freeze_timeout = undefined;
         }
     }
 
-    componentDidUpdate(prevProps, prevState) {
+    componentDidUpdate(prevProps: {}, prevState: PlayState) {
         if (
             prevState.freeze_challenge_list &&
             !this.state.freeze_challenge_list &&
-            this.state.pending_challenges.length !== 0
+            Object.keys(this.state.pending_challenges).length !== 0
         ) {
             this.updateChallenges(this.state.pending_challenges);
         }
     }
 
     onResize = () => {
-        if (!this.ref_container) {
+        if (!this.ref_container.current) {
             return;
         }
 
-        const w = this.ref_container.offsetWidth;
-        const h = this.ref_container.offsetHeight;
+        const w = this.ref_container.current.offsetWidth;
+        const h = this.ref_container.current.offsetHeight;
         if (w !== this.seekgraph.width || h !== this.seekgraph.height) {
             this.seekgraph.resize(w, h);
         }
@@ -180,7 +180,7 @@ export class Play extends React.Component<{}, PlayState> {
         }
     };
 
-    updateChallenges = (challenges: Challenge[]) => {
+    updateChallenges = (challenges: { [id: number]: Challenge }) => {
         if (this.state.freeze_challenge_list) {
             const live = this.state.live_list;
             const corr = this.state.correspondence_list;
@@ -207,9 +207,9 @@ export class Play extends React.Component<{}, PlayState> {
         }
 
         //console.log("Updating challenges with:", challenges);
-        const live = [];
-        const corr = [];
-        const rengo = [];
+        const live: any[] = [];
+        const corr: any[] = [];
+        const rengo: any[] = [];
         for (const i in challenges) {
             const C = challenges[i];
             player_cache
@@ -259,6 +259,12 @@ export class Play extends React.Component<{}, PlayState> {
                 this.unfreezeChallenges();
             })
             .catch(errorAlerter);
+    };
+
+    setPaneLock = (id: number, lock: boolean) => {
+        this.setState({
+            rengo_manage_pane_lock: { ...this.state.rengo_manage_pane_lock, [id]: lock },
+        });
     };
 
     cancelOpenRengoChallenge = (challenge: Challenge) => {
@@ -374,7 +380,7 @@ export class Play extends React.Component<{}, PlayState> {
     };
 
     newCustomGame = () => {
-        challenge(null, null, null, null, this.challengeCreated);
+        challenge(undefined, undefined, undefined, undefined, this.challengeCreated);
     };
 
     challengeCreated = (c: CreatedChallengeInfo) => {
@@ -383,7 +389,7 @@ export class Play extends React.Component<{}, PlayState> {
         }
     };
 
-    toggleSize(size) {
+    toggleSize(size: Size) {
         let size_options = dup(this.state.automatch_size_options);
         if (size_options.indexOf(size) >= 0) {
             size_options = size_options.filter((x) => x !== size);
@@ -404,40 +410,38 @@ export class Play extends React.Component<{}, PlayState> {
         if (this.seekgraph) {
             this.seekgraph.setFilter(newFilter);
         }
-        preferences.set(Play.filterPreferenceMapping.get(key), newValue);
+        const pref_key = Play.filterPreferenceMapping.get(key);
+        if (pref_key) {
+            preferences.set(pref_key, newValue);
+        }
         this.setState({ filter: newFilter });
     };
 
     anyChallengesToShow = (challenge_list: Challenge[]): boolean => {
         return (
             (this.state.filter.showIneligible && (challenge_list.length as any)) ||
-            challenge_list.reduce((prev, current) => {
-                return prev || current.eligible || current.user_challenge;
+            challenge_list.reduce((accumulator, current) => {
+                return accumulator || current.eligible || !!current.user_challenge;
             }, false)
         );
     };
 
-    liveOwnChallengePending = (): Challenge => {
+    liveOwnChallengePending = (): Challenge | undefined => {
         // a user should have only one of these at any time
-        const locp = this.state.live_list.find((c) => c.user_challenge);
-        return locp;
+        return this.state.live_list.find((c) => c.user_challenge);
     };
 
     ownRengoChallengesPending = (): Challenge[] => {
         // multiple correspondence are possible, plus one live
-        const orcp = this.state.rengo_list.filter((c) => c.user_challenge);
-        //console.log("own rcp", orcp);
-        return orcp;
+        return this.state.rengo_list.filter((c) => c.user_challenge);
     };
 
     joinedRengoChallengesPending = (): Challenge[] => {
         // multiple correspondence are possible, plus one live
         const user_id = data.get("config.user").id;
-        const jrcp = this.state.rengo_list.filter(
+        return this.state.rengo_list.filter(
             (c) => c["rengo_participants"].includes(user_id) && !c.user_challenge,
         );
-        // console.log("joined rcp", jrcp);
-        return jrcp;
     };
 
     freezeChallenges = () => {
@@ -459,7 +463,7 @@ export class Play extends React.Component<{}, PlayState> {
         this.setState({ freeze_challenge_list: false });
         if (this.list_freeze_timeout) {
             clearTimeout(this.list_freeze_timeout);
-            this.list_freeze_timeout = null;
+            this.list_freeze_timeout = undefined;
         }
     };
 
@@ -470,12 +474,11 @@ export class Play extends React.Component<{}, PlayState> {
         const corr_automatchers = corr_automatcher_uuids.map(
             (uuid) => automatch_manager.active_correspondence_automatchers[uuid],
         );
-        corr_automatchers.sort((a, b) => a.timestamp - b.timestamp);
+        corr_automatchers.sort((a, b) => (a.timestamp as number) - (b.timestamp as number));
         const showSeekGraph = preferences.get("show-seek-graph");
 
         return (
             <div className="Play container">
-                <SupporterGoals />
                 <div className="row">
                     <div className="col-sm-6 play-column">
                         <Card>{this.automatchContainer()}</Card>
@@ -483,14 +486,10 @@ export class Play extends React.Component<{}, PlayState> {
                     {showSeekGraph && (
                         <div className="col-sm-6 play-column">
                             <Card>
-                                <div
-                                    ref={(el) => (this.ref_container = el)}
-                                    className="seek-graph-container"
-                                >
+                                <div ref={this.ref_container} className="seek-graph-container">
                                     <OgsResizeDetector
-                                        handleWidth
-                                        handleHeight
                                         onResize={() => this.onResize()}
+                                        targetRef={this.ref_container}
                                     />
                                     <PersistentElement elt={this.canvas} />
                                 </div>
@@ -572,8 +571,8 @@ export class Play extends React.Component<{}, PlayState> {
                                         {m.handicap.condition === "no-preference"
                                             ? pgettext("Automatch: no preference", "No preference")
                                             : m.handicap.value === "enabled"
-                                            ? pgettext("Handicap dnabled", "Enabled")
-                                            : pgettext("Handicap disabled", "Disabled")}
+                                              ? pgettext("Handicap enabled", "Enabled")
+                                              : pgettext("Handicap disabled", "Disabled")}
                                     </span>
 
                                     <span className={m.rules.condition + " cell"}>
@@ -614,7 +613,7 @@ export class Play extends React.Component<{}, PlayState> {
                             <div style={{ marginTop: "2em" }}></div>
                         </div>
                         {this.state.filter.showRengo && (
-                            <div id="challenge-list" onMouseMove={this.freezeChallenges}>
+                            <div id="challenge-list">
                                 <div className="challenge-row" style={{ marginTop: "1em" }}>
                                     <span className="cell break">{_("Rengo")}</span>
                                 </div>
@@ -635,7 +634,7 @@ export class Play extends React.Component<{}, PlayState> {
     }
 
     automatchContainer() {
-        const size_enabled = (size) => {
+        const size_enabled = (size: Size) => {
             return this.state.automatch_size_options.indexOf(size) >= 0;
         };
 
@@ -707,6 +706,9 @@ export class Play extends React.Component<{}, PlayState> {
                         cancelChallenge={this.cancelOpenRengoChallenge}
                         withdrawFromRengoChallenge={this.unNominateForRengoChallenge}
                         joinRengoChallenge={rengo_utils.nominateForRengoChallenge}
+                        lock={
+                            this.state.rengo_manage_pane_lock[rengo_challenge_to_show.challenge_id]
+                        }
                     >
                         <RengoTeamManagementPane
                             user={user}
@@ -716,6 +718,14 @@ export class Play extends React.Component<{}, PlayState> {
                             show_chat={false}
                             assignToTeam={rengo_utils.assignToTeam}
                             kickRengoUser={rengo_utils.kickRengoUser}
+                            locked={
+                                this.state.rengo_manage_pane_lock[
+                                    rengo_challenge_to_show.challenge_id
+                                ]
+                            }
+                            lock={(lock: boolean) =>
+                                this.setPaneLock(rengo_challenge_to_show.challenge_id, lock)
+                            }
                         />
                     </RengoManagementPane>
                 </div>
@@ -856,7 +866,7 @@ export class Play extends React.Component<{}, PlayState> {
         }
     }
 
-    suspectChallengeIcon = (C: Challenge): JSX.Element =>
+    suspectChallengeIcon = (C: Challenge): JSX.Element | null =>
         /* Mark eligible suspect games with a warning icon and warning explanation popup.
            We do let users see the warning for their own challenges. */
         (((C.eligible || C.user_challenge) &&
@@ -867,7 +877,7 @@ export class Play extends React.Component<{}, PlayState> {
             null) && (
             <span className="suspect-challenge">
                 <i className="cheat-alert fa fa-exclamation-triangle fa-xs" />
-                <p className="cheat-alert-tooltiptext">
+                <p className="cheat-alert-tooltip-text">
                     {(C.komi !== null
                         ? pgettext("Warning for users accepting game", "Custom komi") +
                           ": " +
@@ -894,7 +904,7 @@ export class Play extends React.Component<{}, PlayState> {
 
         const user = data.get("user");
 
-        const timeControlClassName = (config) => {
+        const timeControlClassName = (config: any) => {
             // This appears to be bolding live games compared to blitz?
             const isBold =
                 show_live_list && (config.time_per_move > 3600 || config.time_per_move === 0);
@@ -988,8 +998,8 @@ export class Play extends React.Component<{}, PlayState> {
         );
     }
 
-    cellBreaks(amount) {
-        const result = [];
+    cellBreaks(amount: number): JSX.Element[] {
+        const result: JSX.Element[] = [];
         for (let i = 0; i < amount; ++i) {
             result.push(<span key={i} className="cell break"></span>);
         }
@@ -1049,7 +1059,7 @@ export class Play extends React.Component<{}, PlayState> {
         );
     }
 
-    nominateAndShow = (C) => {
+    nominateAndShow = (C: Challenge) => {
         this.toggleRengoChallengePane(C.challenge_id);
         rengo_utils.nominateForRengoChallenge(C).catch(errorAlerter);
     };
@@ -1116,7 +1126,7 @@ export class Play extends React.Component<{}, PlayState> {
     rengoChallengeManagementList = (props: { challenge_list: Challenge[]; user: any }) => (
         <>
             {!this.anyChallengesToShow(props.challenge_list) ? (
-                <tr className="ineligible" key="corre-ineligible">
+                <tr className="ineligible" key="correspondence-ineligible">
                     <td style={{ textAlign: "center" }}>
                         {
                             this.state.filter.showIneligible
@@ -1166,6 +1176,10 @@ export class Play extends React.Component<{}, PlayState> {
                     challenge_id,
                     ...this.state.show_in_rengo_management_pane,
                 ],
+                rengo_manage_pane_lock: {
+                    ...this.state.rengo_manage_pane_lock,
+                    [challenge_id]: false,
+                },
             });
         }
     };
@@ -1213,6 +1227,7 @@ export class Play extends React.Component<{}, PlayState> {
                             withdrawFromRengoChallenge={this.unNominateForRengoChallenge}
                             joinRengoChallenge={rengo_utils.nominateForRengoChallenge}
                             dontShowCancelButton={true}
+                            lock={this.state.rengo_manage_pane_lock[C.challenge_id]}
                         >
                             <RengoTeamManagementPane
                                 user={user}
@@ -1222,6 +1237,8 @@ export class Play extends React.Component<{}, PlayState> {
                                 show_chat={true}
                                 assignToTeam={rengo_utils.assignToTeam}
                                 kickRengoUser={rengo_utils.kickRengoUser}
+                                locked={this.state.rengo_manage_pane_lock[C.challenge_id]}
+                                lock={(lock: boolean) => this.setPaneLock(C.challenge_id, lock)}
                             />
                         </RengoManagementPane>
                     </Card>

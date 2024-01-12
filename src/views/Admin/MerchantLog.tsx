@@ -20,7 +20,7 @@ import { PaginatedTable } from "PaginatedTable";
 import * as moment from "moment";
 
 export class MerchantLog extends React.PureComponent<{}, any> {
-    constructor(props) {
+    constructor(props: {}) {
         super(props);
     }
 
@@ -62,7 +62,7 @@ export class MerchantLog extends React.PureComponent<{}, any> {
                         },
                         { header: "Status", render: (X) => X.response_status_code },
                         {
-                            header: "Reponse",
+                            header: "Response",
                             render: (X) => <pre>{clean_body(X.response_body)}</pre>,
                         },
                         {
@@ -109,13 +109,13 @@ function clean_exception(str: string): string {
     return str;
 }
 
-function sortObjByKey(value) {
+function sortObjByKey(value: any): any {
     return typeof value === "object"
         ? Array.isArray(value)
             ? value.map(sortObjByKey)
             : Object.keys(value)
                   .sort()
-                  .reduce((o, key) => {
+                  .reduce((o: any, key) => {
                       const v = value[key];
                       o[key] = sortObjByKey(v);
                       return o;
@@ -123,12 +123,12 @@ function sortObjByKey(value) {
         : value;
 }
 
-function orderedJsonStringify(obj) {
+function orderedJsonStringify(obj: any) {
     return JSON.stringify(sortObjByKey(obj));
 }
 
-function parseQuery(queryString) {
-    const query = {};
+function parseQuery(queryString: string) {
+    const query: any = {};
     const pairs = (queryString[0] === "?" ? queryString.substr(1) : queryString).split("&");
     for (let i = 0; i < pairs.length; i++) {
         const pair = pairs[i].split("=");

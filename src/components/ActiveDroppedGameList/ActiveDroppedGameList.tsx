@@ -18,6 +18,7 @@
 import * as React from "react";
 import { _ } from "translate";
 import { GameList } from "GameList";
+import { PlayerCacheEntry } from "src/lib/player_cache";
 
 interface UserType {
     id: number;
@@ -76,10 +77,10 @@ export function ActiveDroppedGameList(props: ActiveDroppedGameListProps): JSX.El
 }
 
 function splitDroppedRengo(games: any[], playerId: number) {
-    const active = [];
-    const dropped = [];
-    const isPlayer = (player) => player.id === playerId;
-    const isActivePlayer = (game) => {
+    const active: any[] = [];
+    const dropped: any[] = [];
+    const isPlayer = (player: PlayerCacheEntry) => player.id === playerId;
+    const isActivePlayer = (game: any) => {
         if (game.json?.rengo === true) {
             return (
                 game.json.rengo_teams.black.some(isPlayer) ||

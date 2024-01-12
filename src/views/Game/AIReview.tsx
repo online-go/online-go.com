@@ -66,7 +66,7 @@ interface AIReviewState {
     use_score: boolean;
     ai_reviews: Array<JGOFAIReview>;
     selected_ai_review?: JGOFAIReview;
-    updatecount: number;
+    update_count: number;
     worst_moves_shown: number;
     table_set: boolean;
     table_hidden: boolean;
@@ -77,11 +77,11 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
     // selected_ai_review which will just contain some metadata from the
     // postgres database
     ai_review?: JGOFAIReview;
-    table_rows: string[][];
-    avg_score_loss: number[];
-    median_score_loss: number[];
-    moves_pending: number;
-    max_entries: number;
+    table_rows!: string[][];
+    avg_score_loss!: number[];
+    median_score_loss!: number[];
+    moves_pending!: number;
+    max_entries!: number;
 
     static contextType = GobanContext;
     declare context: React.ContextType<typeof GobanContext>;
@@ -92,7 +92,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             loading: true,
             reviewing: false,
             ai_reviews: [],
-            updatecount: 0,
+            update_count: 0,
             use_score: preferences.get("ai-review-use-score"),
             // TODO: allow users to view more than 3 of these key moves
             // See https://forums.online-go.com/t/top-3-moves-score-a-better-metric/32702/15
@@ -101,7 +101,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             table_hidden: preferences.get("ai-summary-table-show"),
         };
         this.state = state;
-        window["aireview"] = this;
+        (window as any)["aireview"] = this;
     }
 
     componentDidMount() {
@@ -223,7 +223,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
     syncAIReview() {
         if (!this.ai_review || !this.state.selected_ai_review) {
             this.setState({
-                updatecount: this.state.updatecount + 1,
+                update_count: this.state.update_count + 1,
             });
             return;
         }
@@ -259,7 +259,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             //blunders: blunders,
             //queue_position: this.state.selected_ai_review.queue.position,
             //queue_pending: this.state.selected_ai_review.queue.pending,
-            updatecount: this.state.updatecount + 1,
+            update_count: this.state.update_count + 1,
         });
     }
 
@@ -303,7 +303,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             for (const k in ai_review) {
                 //console.log("Updating", k, ai_review[k]);
                 if (k !== "moves" || !this.ai_review["moves"]) {
-                    this.ai_review[k] = ai_review[k];
+                    (this.ai_review as any)[k] = (ai_review as any)[k];
                 } else {
                     for (const move in ai_review["moves"]) {
                         this.ai_review["moves"][move] = ai_review["moves"][move];
@@ -312,7 +312,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             }
         }
         this.setState({
-            updatecount: this.state.updatecount + 1,
+            update_count: this.state.update_count + 1,
         });
     }
 
@@ -349,30 +349,32 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                             return;
                         }
 
-                        const m = key.match(/move-([0-9]+)/);
+                        const m = key.match(/move-([0-9]+)/) as string[];
                         const move_number = parseInt(m[1]);
                         this.ai_review.moves[move_number] = value;
                     } else if (/variation-([0-9]+)-([a-z.]+)/.test(key)) {
-                        if (!this.ai_review.analyzed_variations) {
-                            this.ai_review.analyzed_variations = {};
-                        }
                         if (!this.ai_review) {
                             console.warn(
                                 "AI Review move received but ai review not initialized yet",
                             );
                             return;
                         }
-                        const m = key.match(/variation-([0-9a-z.A-Z-]+)/);
-                        const varkey = m[1];
-                        this.ai_review.analyzed_variations[varkey] = value;
+                        if (!this.ai_review.analyzed_variations) {
+                            this.ai_review.analyzed_variations = {};
+                        }
+                        const m = key.match(/variation-([0-9a-z.A-Z-]+)/) as string[];
+                        const var_key = m[1];
+                        this.ai_review.analyzed_variations[var_key] = value;
                     } else {
                         console.warn(`Unrecognized key in updateAiReview data: ${key}`, value);
                     }
                 }
 
-                sanityCheck(this.ai_review);
+                if (this.ai_review) {
+                    sanityCheck(this.ai_review);
+                }
                 this.setState({
-                    updatecount: this.state.updatecount + 1,
+                    update_count: this.state.update_count + 1,
                 });
                 this.syncAIReview();
             }, 100);
@@ -386,6 +388,10 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
     };
 
     private getVariationReviewEntries(): Array<AIReviewEntry> {
+        if (!this.ai_review) {
+            return [];
+        }
+
         const ret: Array<AIReviewEntry> = [];
         let cur_move = this.props.move;
         const trunk_move = cur_move.getBranchPoint();
@@ -393,23 +399,26 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
         while (cur_move.id !== trunk_move.id) {
             const cur_move_string = cur_move.getMoveStringToThisPoint();
-            const varstring = cur_move_string.slice(trunk_move_string.length);
-            const varkey = `${trunk_move.move_number}-${varstring}`;
+            const var_string = cur_move_string.slice(trunk_move_string.length);
+            const var_key = `${trunk_move.move_number}-${var_string}`;
 
             // if we have an interactive review move, that's what we're interested in
             if (
                 this.ai_review.analyzed_variations &&
-                varkey in this.ai_review.analyzed_variations
+                var_key in this.ai_review.analyzed_variations
             ) {
-                const analysis = this.ai_review.analyzed_variations[varkey];
+                const analysis = this.ai_review.analyzed_variations[var_key];
                 ret.push({
                     move_number: analysis.move_number,
                     win_rate: analysis.win_rate,
-                    score: analysis.score | 0,
+                    score: analysis.score || 0,
                     num_variations: analysis.branches.length,
                 });
             }
 
+            if (!cur_move.parent) {
+                break;
+            }
             cur_move = cur_move.parent;
         }
 
@@ -418,16 +427,25 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         return ret;
     }
 
-    public updateHighlightsMarksAndHeatmaps() {
+    public updateHighlightsMarksAndHeatmaps(): [number, number, number | null, string] {
+        if (!this.ai_review) {
+            throw new Error("ai_review not set");
+        }
+
         const goban = this.context;
-        let ai_review_move: JGOFAIReviewMove;
-        let next_ai_review_move: JGOFAIReviewMove;
+
+        if (!goban) {
+            throw new Error("goban not set");
+        }
+
+        let ai_review_move: JGOFAIReviewMove | undefined;
+        let next_ai_review_move: JGOFAIReviewMove | undefined;
         let win_rate: number;
         let score: number;
         let next_win_rate: number;
-        let next_score: number;
-        let next_move = null;
-        let next_move_delta_win_rate = null;
+        let next_score: number | undefined;
+        let next_move: MoveTree | undefined | null = null;
+        let next_move_delta_win_rate: number | null = null;
         const cur_move = this.props.move;
         const trunk_move = cur_move.getBranchPoint();
         const move_number = trunk_move.move_number;
@@ -435,15 +453,15 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
         const trunk_move_string = trunk_move.getMoveStringToThisPoint();
         const cur_move_string = cur_move.getMoveStringToThisPoint();
-        const varstring = cur_move_string.slice(trunk_move_string.length);
-        const varkey = `${trunk_move.move_number}-${varstring}`;
+        const var_string = cur_move_string.slice(trunk_move_string.length);
+        const var_key = `${trunk_move.move_number}-${var_string}`;
         let have_variation_results = false;
 
         // if we have an interactive review move, display that.
         // otherwise, look for one that came from the normal review.
-        if (this.ai_review.analyzed_variations && varkey in this.ai_review.analyzed_variations) {
+        if (this.ai_review.analyzed_variations && var_key in this.ai_review.analyzed_variations) {
             have_variation_results = true;
-            ai_review_move = this.ai_review.analyzed_variations[varkey];
+            ai_review_move = this.ai_review.analyzed_variations[var_key];
         } else {
             if (this.ai_review.moves[move_number]) {
                 /* check if the nearest trunk move was one of the top three moves reviewed by ai */
@@ -520,7 +538,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                 const strength = this.ai_review.strength;
                 heatmap = [];
                 for (let y = 0; y < goban.engine.height; y++) {
-                    const r = [];
+                    const r: number[] = [];
                     for (let x = 0; x < goban.engine.width; x++) {
                         r.push(0);
                     }
@@ -559,8 +577,8 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                     const delta: number =
                         this.state.use_score && this.ai_review.scores
                             ? next_player === JGOFNumericPlayerColor.WHITE
-                                ? ai_review_move.score - branch.score
-                                : branch.score - ai_review_move.score
+                                ? (ai_review_move.score ?? 0) - (branch.score ?? 0)
+                                : (branch.score ?? 0) - (ai_review_move.score ?? 0)
                             : 100 *
                               (next_player === JGOFNumericPlayerColor.WHITE
                                   ? ai_review_move.win_rate - branch.win_rate
@@ -628,7 +646,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
         try {
             goban.setMarks(marks, true); /* draw the remaining AI sequence as ghost marks, if any */
-            goban.setHeatmap(heatmap, true);
+            goban.setHeatmap(heatmap as any, true);
             goban.setColoredCircles(colored_circles, false);
         } catch (e) {
             errorLogger(e);
@@ -654,14 +672,17 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         // Move object has more than just one move in it and the user has set the non-zero value
         if (maxMoves < 10 && Object.keys(marks).length > 2) {
             // Get all the moves into an array but leave the black and white keys since we'll append them later
-            let marksArray = Object.entries(marks).reduce((result, entry) => {
-                if (entry[0] !== "black" && entry[0] !== "white") {
-                    result.push({ key: entry[0], value: entry[1] });
-                }
-                return result;
-            }, []);
+            let marksArray = Object.entries(marks).reduce(
+                (result, entry) => {
+                    if (entry[0] !== "black" && entry[0] !== "white") {
+                        result.push({ key: entry[0], value: entry[1] });
+                    }
+                    return result;
+                },
+                [] as { key: string; value: string }[],
+            );
 
-            // use the max moves set by teh user or the number of movesin the variation, whiever is lower
+            // use the max moves set by teh user or the number of moves in the variation, whichever is lower
             const actualMoves = marksArray.length > maxMoves ? maxMoves : marksArray.length;
 
             // Chop off anything after the number of moves we want
@@ -691,7 +712,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                 }
             }
 
-            // Work out how many characters (2 per move) we should restrict the transpancy string to for each
+            // Work out how many characters (2 per move) we should restrict the transparency string to for each
             const blackMoveString = marks.black.substring(0, 2 * blackMoves);
             const whiteMoveString = marks.white.substring(0, 2 * whiteMoves);
 
@@ -713,7 +734,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
             // Convert teh array back into an object
             marks = marksArray.reduce(
-                (target, item) => ((target[item.key] = item.value), target),
+                (target, item) => (((target as any)[item.key] = item.value), target),
                 {},
             );
         }
@@ -760,10 +781,12 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         ai_request_variation_analysis(
             this.ai_review.uuid,
             this.props.game_id,
-            this.state.selected_ai_review?.id,
+            Number(this.state.selected_ai_review?.id),
             cur_move,
             trunk_move,
         );
+
+        return true;
     }
 
     /** This method attempts to match our cur_move sequence with any of the AI
@@ -780,7 +803,16 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         trunk_move: MoveTree,
         marks: { [mark: string]: string },
     ): boolean {
+        if (!this.ai_review) {
+            throw new Error("ai_review not set");
+        }
+
         const goban = this.context;
+
+        if (!goban) {
+            throw new Error("goban not set");
+        }
+
         for (let j = 0; j <= trunk_move.move_number; j++) {
             /* for each of the trunk moves starting from the nearest */
             const ai_review_move = this.ai_review.moves[trunk_move.move_number - j];
@@ -793,7 +825,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             trunk_move_string = trunk_move_string.slice(0, trunk_move_string.length - 2 * j);
 
             const cur_move_string = cur_move.getMoveStringToThisPoint();
-            let next_moves = null;
+            let next_moves: string | undefined;
 
             for (const branch of ai_review_move.branches) {
                 const move_str: string = trunk_move_string + GoMath.encodeMoves(branch.moves);
@@ -833,7 +865,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
     private static getPlayerColorsMoveList(goban: GobanCore) {
         const init_move = goban.engine.move_tree;
-        const move_list = [];
+        const move_list: any[] = [];
         let cur_move = init_move.trunk_next;
 
         while (cur_move !== undefined) {
@@ -843,18 +875,23 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         return move_list;
     }
 
-    private medianList(nums: number[]) {
-        const mid = nums.length === 0 ? undefined : Math.floor(nums.length / 2);
+    private medianList(numbers: number[]): number {
+        const mid = numbers.length === 0 ? undefined : Math.floor(numbers.length / 2);
         if (mid === undefined) {
-            return mid;
+            return -1;
         }
 
-        const median = nums.length % 2 !== 0 ? nums[mid] : (nums[mid] + nums[mid - 1]) / 2;
+        const median =
+            numbers.length % 2 !== 0 ? numbers[mid] : (numbers[mid] + numbers[mid - 1]) / 2;
         return median;
     }
 
     private AiSummaryTableRowList() {
         const goban = this.context;
+        if (!goban) {
+            throw new Error("goban not set");
+        }
+
         const summary_moves_list = [
             ["", "", "", ""],
             ["", "", "", ""],
@@ -902,9 +939,9 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
         const handicap = goban.engine.handicap;
         //only useful when there's free placement, handicap = 1 no offset needed.
-        let hoffset = AIReview.handicapOffset(goban);
-        hoffset = hoffset === 1 ? 0 : hoffset;
-        const bplayer = hoffset > 0 || handicap > 1 ? 1 : 0;
+        let h_offset = AIReview.handicapOffset(goban);
+        h_offset = h_offset === 1 ? 0 : h_offset;
+        const b_player = h_offset > 0 || handicap > 1 ? 1 : 0;
         const move_player_list = AIReview.getPlayerColorsMoveList(goban);
 
         if (this.ai_review?.type === "fast") {
@@ -922,13 +959,14 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                 };
             }
             const check1 =
-                !is_uploaded && goban.config.moves.length !== this.ai_review?.scores.length - 1;
+                !is_uploaded &&
+                goban.config.moves?.length !== (this.ai_review?.scores?.length ?? -1) - 1;
             // extra initial ! in all_moves which matches extra empty board score, except in handicap games for some reason.
-            // so subtract 1 if black goes second == bplayer
+            // so subtract 1 if black goes second == b_player
             const check2 =
                 is_uploaded &&
-                goban.config["all_moves"].split("!").length - bplayer !==
-                    this.ai_review?.scores.length;
+                (goban.config as any)["all_moves"]?.split("!").length - b_player !==
+                    this.ai_review?.scores?.length;
 
             // if there's less than 4 moves the worst moves doesn't seem to return 3 moves, otherwise look for these three moves.
             const check3 =
@@ -948,50 +986,51 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             ai_table_rows.splice(0, 2);
             summary_moves_list.splice(0, 2);
             const num_rows = ai_table_rows.length;
-            const movecounters = Array(2 * num_rows).fill(0);
-            const othercounters = Array(2).fill(0);
-            let wtotal = 0;
-            let btotal = 0;
-            const score_loss_list = [[], []];
+            const move_counters = Array(2 * num_rows).fill(0);
+            const other_counters = Array(2).fill(0);
+            let w_total = 0;
+            let b_total = 0;
+            const score_loss_list: [number[], number[]] = [[], []];
             const worst_move_keys = Object.keys(this.ai_review?.moves);
 
             for (let j = 0; j < worst_move_keys.length; j++) {
-                scores[worst_move_keys[j]] = this.ai_review?.moves[worst_move_keys[j]].score;
+                (scores as any)[worst_move_keys[j]] =
+                    this.ai_review?.moves[worst_move_keys[j]].score;
             }
 
-            for (let j = hoffset; j < scores.length - 1; j++) {
-                let scorediff = scores[j + 1] - scores[j];
-                const is_bplayer = move_player_list[j] === JGOFNumericPlayerColor.BLACK;
-                const offset = is_bplayer ? 0 : num_rows;
-                const player_index = is_bplayer ? 0 : 1;
-                scorediff = is_bplayer ? -1 * scorediff : scorediff;
-                avg_score_loss[player_index] += scorediff;
-                score_loss_list[player_index].push(scorediff);
+            for (let j = h_offset; j < scores.length - 1; j++) {
+                let score_diff = scores[j + 1] - scores[j];
+                const is_b_player = move_player_list[j] === JGOFNumericPlayerColor.BLACK;
+                const offset = is_b_player ? 0 : num_rows;
+                const player_index = is_b_player ? 0 : 1;
+                score_diff = is_b_player ? -1 * score_diff : score_diff;
+                avg_score_loss[player_index] += score_diff;
+                score_loss_list[player_index].push(score_diff);
 
-                if (scorediff < 1) {
-                    movecounters[offset] += 1;
+                if (score_diff < 1) {
+                    move_counters[offset] += 1;
                     //console.log("good");
-                } else if (scorediff < 2) {
-                    movecounters[offset + 1] += 1;
+                } else if (score_diff < 2) {
+                    move_counters[offset + 1] += 1;
                     //console.log("inaccuracy");
-                } else if (scorediff < 5) {
-                    movecounters[offset + 2] += 1;
+                } else if (score_diff < 5) {
+                    move_counters[offset + 2] += 1;
                     //console.log("mistake");
-                } else if (scorediff >= 5) {
-                    movecounters[offset + 3] += 1;
+                } else if (score_diff >= 5) {
+                    move_counters[offset + 3] += 1;
                     //console.log("blunder");
                 } else {
-                    othercounters[player_index] += 1;
+                    other_counters[player_index] += 1;
                 }
             }
 
             for (let j = 0; j < num_rows; j++) {
-                btotal += movecounters[j];
-                wtotal += movecounters[num_rows + j];
+                b_total += move_counters[j];
+                w_total += move_counters[num_rows + j];
             }
 
-            avg_score_loss[0] = btotal > 0 ? Number((avg_score_loss[0] / btotal).toFixed(1)) : 0;
-            avg_score_loss[1] = wtotal > 0 ? Number((avg_score_loss[1] / wtotal).toFixed(1)) : 0;
+            avg_score_loss[0] = b_total > 0 ? Number((avg_score_loss[0] / b_total).toFixed(1)) : 0;
+            avg_score_loss[1] = w_total > 0 ? Number((avg_score_loss[1] / w_total).toFixed(1)) : 0;
 
             score_loss_list[0].sort((a, b) => {
                 return a - b;
@@ -1010,12 +1049,12 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                     : 0;
 
             for (let j = 0; j < num_rows; j++) {
-                summary_moves_list[j][0] = movecounters[j].toString();
+                summary_moves_list[j][0] = move_counters[j].toString();
                 summary_moves_list[j][1] =
-                    btotal > 0 ? ((100 * movecounters[j]) / btotal).toFixed(1) : "";
-                summary_moves_list[j][2] = movecounters[num_rows + j].toString();
+                    b_total > 0 ? ((100 * move_counters[j]) / b_total).toFixed(1) : "";
+                summary_moves_list[j][2] = move_counters[num_rows + j].toString();
                 summary_moves_list[j][3] =
-                    wtotal > 0 ? ((100 * movecounters[num_rows + j]) / wtotal).toFixed(1) : "";
+                    w_total > 0 ? ((100 * move_counters[num_rows + j]) / w_total).toFixed(1) : "";
             }
 
             for (let j = 0; j < ai_table_rows.length; j++) {
@@ -1035,15 +1074,16 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             };
         } else if (this.ai_review?.type === "full") {
             const num_rows = ai_table_rows.length;
-            const movekeys = Object.keys(this.ai_review?.moves);
+            const move_keys = Object.keys(this.ai_review?.moves);
             const is_uploaded = goban.config.original_sgf !== undefined;
             // should be one more ai review score and move branches for empty board.
-            const check1 = !is_uploaded && goban.config.moves.length !== movekeys.length - 1;
+            const check1 = !is_uploaded && goban.config.moves?.length !== move_keys.length - 1;
             // extra initial ! in all_moves which matches extra empty board score, except in handicap games for some reason.
-            // so subtract 1 if black goes second == bplayer
+            // so subtract 1 if black goes second == b_player
             const check2 =
                 is_uploaded &&
-                goban.config["all_moves"].split("!").length - bplayer !== movekeys.length;
+                (goban.config as any)["all_moves"].split("!").length - b_player !==
+                    move_keys.length;
 
             if (this.state.loading || this.ai_review.scores === undefined) {
                 for (let j = 0; j < ai_table_rows.length; j++) {
@@ -1059,13 +1099,13 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             }
 
             max_entries = this.ai_review.scores.length;
-            const movecounters = Array(2 * num_rows).fill(0);
-            const othercounters = Array(2).fill(0);
-            let wtotal = 0;
-            let btotal = 0;
-            const score_loss_list = [[], []];
+            const move_counters = Array(2 * num_rows).fill(0);
+            const other_counters = Array(2).fill(0);
+            let w_total = 0;
+            let b_total = 0;
+            const score_loss_list: [number[], number[]] = [[], []];
 
-            for (let j = hoffset; j < this.ai_review?.scores.length - 1; j++) {
+            for (let j = h_offset; j < this.ai_review?.scores.length - 1; j++) {
                 if (
                     this.ai_review?.moves[j] === undefined ||
                     this.ai_review?.moves[j + 1] === undefined
@@ -1073,26 +1113,28 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                     moves_missing += 1;
                     continue;
                 }
-                const playermove = this.ai_review?.moves[j + 1].move;
+                const player_move = this.ai_review?.moves[j + 1].move;
                 //the current ai review shows top six playouts on the board, so matching that.
                 const current_branches = this.ai_review?.moves[j].branches.slice(0, 6);
-                const bluemove = current_branches[0].moves[0];
-                const is_bplayer = move_player_list[j] === JGOFNumericPlayerColor.BLACK;
-                const offset = is_bplayer ? 0 : num_rows;
-                const player_index = is_bplayer ? 0 : 1;
-                let scorediff = this.ai_review?.moves[j + 1].score - this.ai_review?.moves[j].score;
-                scorediff = is_bplayer ? -1 * scorediff : scorediff;
-                avg_score_loss[player_index] += scorediff;
-                score_loss_list[player_index].push(scorediff);
+                const blue_move = current_branches[0].moves[0];
+                const is_b_player = move_player_list[j] === JGOFNumericPlayerColor.BLACK;
+                const offset = is_b_player ? 0 : num_rows;
+                const player_index = is_b_player ? 0 : 1;
+                let score_diff =
+                    (this.ai_review?.moves[j + 1].score ?? 0) -
+                    (this.ai_review?.moves[j].score ?? 0);
+                score_diff = is_b_player ? -1 * score_diff : score_diff;
+                avg_score_loss[player_index] += score_diff;
+                score_loss_list[player_index].push(score_diff);
 
-                if (bluemove === undefined) {
-                    othercounters[player_index] += 1;
-                } else if (playermove.x === -1) {
-                    othercounters[player_index] += 1;
+                if (blue_move === undefined) {
+                    other_counters[player_index] += 1;
+                } else if (player_move.x === -1) {
+                    other_counters[player_index] += 1;
                     //console.log("pass etc");
                 } else {
-                    if (isEqualMoveIntersection(bluemove, playermove)) {
-                        movecounters[offset] += 1;
+                    if (isEqualMoveIntersection(blue_move, player_move)) {
+                        move_counters[offset] += 1;
                         //console.log("blue Excellent");
                     } else if (
                         current_branches.some((branch, index) => {
@@ -1102,38 +1144,39 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
                             const check =
                                 index > 0 &&
-                                isEqualMoveIntersection(branch.moves[0], playermove) &&
-                                branch.visits >= Math.min(50, 0.1 * this.ai_review?.strength);
+                                isEqualMoveIntersection(branch.moves[0], player_move) &&
+                                branch.visits >=
+                                    Math.min(50, 0.1 * (this.ai_review?.strength ?? 0));
                             return check;
                         })
                     ) {
-                        movecounters[offset + 1] += 1;
+                        move_counters[offset + 1] += 1;
                         //console.log("green Great");
-                    } else if (scorediff < 1) {
-                        movecounters[offset + 2] += 1;
+                    } else if (score_diff < 1) {
+                        move_counters[offset + 2] += 1;
                         //console.log("good");
-                    } else if (scorediff < 2) {
-                        movecounters[offset + 3] += 1;
+                    } else if (score_diff < 2) {
+                        move_counters[offset + 3] += 1;
                         //console.log("inaccuracy");
-                    } else if (scorediff < 5) {
-                        movecounters[offset + 4] += 1;
+                    } else if (score_diff < 5) {
+                        move_counters[offset + 4] += 1;
                         //console.log("mistake");
-                    } else if (scorediff >= 5) {
-                        movecounters[offset + 5] += 1;
+                    } else if (score_diff >= 5) {
+                        move_counters[offset + 5] += 1;
                         //console.log("blunder");
                     } else {
-                        othercounters[player_index] += 1;
+                        other_counters[player_index] += 1;
                     }
                 }
             }
 
             for (let j = 0; j < num_rows; j++) {
-                btotal += movecounters[j];
-                wtotal += movecounters[num_rows + j];
+                b_total += move_counters[j];
+                w_total += move_counters[num_rows + j];
             }
 
-            avg_score_loss[0] = btotal > 0 ? Number((avg_score_loss[0] / btotal).toFixed(1)) : 0;
-            avg_score_loss[1] = wtotal > 0 ? Number((avg_score_loss[1] / wtotal).toFixed(1)) : 0;
+            avg_score_loss[0] = b_total > 0 ? Number((avg_score_loss[0] / b_total).toFixed(1)) : 0;
+            avg_score_loss[1] = w_total > 0 ? Number((avg_score_loss[1] / w_total).toFixed(1)) : 0;
 
             score_loss_list[0].sort((a, b) => {
                 return a - b;
@@ -1152,12 +1195,12 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                     : 0;
 
             for (let j = 0; j < num_rows; j++) {
-                summary_moves_list[j][0] = movecounters[j].toString();
+                summary_moves_list[j][0] = move_counters[j].toString();
                 summary_moves_list[j][1] =
-                    btotal > 0 ? ((100 * movecounters[j]) / btotal).toFixed(1) : "";
-                summary_moves_list[j][2] = movecounters[num_rows + j].toString();
+                    b_total > 0 ? ((100 * move_counters[j]) / b_total).toFixed(1) : "";
+                summary_moves_list[j][2] = move_counters[num_rows + j].toString();
                 summary_moves_list[j][3] =
-                    wtotal > 0 ? ((100 * movecounters[num_rows + j]) / wtotal).toFixed(1) : "";
+                    w_total > 0 ? ((100 * move_counters[num_rows + j]) / w_total).toFixed(1) : "";
             }
 
             for (let j = 0; j < ai_table_rows.length; j++) {
@@ -1188,7 +1231,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         }
     }
 
-    public render(): JSX.Element {
+    public render(): JSX.Element | null {
         if (this.state.loading) {
             return null;
         }
@@ -1211,12 +1254,14 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                         channel={`game-${this.props.game_id}`}
                         action={this.ai_review_update}
                     />
-                    <AIReviewStream
-                        uuid={this.state.selected_ai_review?.uuid}
-                        game_id={this.props.game_id}
-                        ai_review_id={this.state.selected_ai_review?.id}
-                        callback={this.updateAiReview}
-                    />
+                    {this.state.selected_ai_review?.uuid && this.state.selected_ai_review?.id && (
+                        <AIReviewStream
+                            uuid={this.state.selected_ai_review?.uuid}
+                            game_id={this.props.game_id}
+                            ai_review_id={this.state.selected_ai_review?.id}
+                            callback={this.updateAiReview}
+                        />
+                    )}
                     {((!this.props.hidden &&
                         this.state.ai_reviews.length === 0 &&
                         this.state.reviewing) ||
@@ -1254,7 +1299,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             this.updateHighlightsMarksAndHeatmaps();
 
         const win_rate_p = win_rate * 100.0;
-        const next_move_delta_p = next_move_delta_win_rate * 100.0;
+        const next_move_delta_p = (next_move_delta_win_rate ?? 0) * 100.0;
 
         const ai_review_chart_entries: Array<AIReviewEntry> =
             this.ai_review.win_rates?.map((x, idx) => {
@@ -1296,12 +1341,14 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                     channel={`game-${this.props.game_id}`}
                     action={this.ai_review_update}
                 />
-                <AIReviewStream
-                    uuid={this.state.selected_ai_review?.uuid}
-                    game_id={this.props.game_id}
-                    ai_review_id={this.state.selected_ai_review?.id}
-                    callback={this.updateAiReview}
-                />
+                {this.state.selected_ai_review?.uuid && this.state.selected_ai_review?.id && (
+                    <AIReviewStream
+                        uuid={this.state.selected_ai_review?.uuid}
+                        game_id={this.props.game_id}
+                        ai_review_id={this.state.selected_ai_review?.id}
+                        callback={this.updateAiReview}
+                    />
+                )}
 
                 {(this.state.ai_reviews.length >= 1 || null) && (
                     <Select
@@ -1356,7 +1403,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                 <React.Fragment>
                                     <ReviewStrengthIcon review={data} />
                                     {win_rate >= 0 && win_rate <= 1.0 ? (
-                                        this.state.use_score && this.ai_review.scores ? (
+                                        this.state.use_score && this.ai_review?.scores ? (
                                             <div className="progress">
                                                 {score > 0 ? (
                                                     <div
@@ -1428,7 +1475,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                                 >
                                                     <i className="fa fa-plus" /> KataGo
                                                 </button>
-                                                {((goban.width === 19 &&
+                                                {((goban?.width === 19 &&
                                                     goban.height === 19 &&
                                                     false) ||
                                                     null) && (
@@ -1465,10 +1512,10 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                     ai_review={this.ai_review}
                                     entries={ai_review_chart_entries}
                                     variation_entries={ai_review_chart_variation_entries}
-                                    updatecount={this.state.updatecount}
+                                    update_count={this.state.update_count}
                                     move_number={move_number}
                                     variation_move_number={variation_move_number}
-                                    setmove={(num: number) => game_control.emit("gotoMove", num)}
+                                    set_move={(num: number) => game_control.emit("gotoMove", num)}
                                     use_score={this.state.use_score}
                                     highlighted_moves={worst_move_list
                                         .slice(0, this.state.worst_moves_shown)
@@ -1591,8 +1638,8 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                 (next_move_delta_p <= -0.1
                                     ? "negative"
                                     : next_move_delta_p >= 0.1
-                                    ? "positive"
-                                    : "")
+                                      ? "positive"
+                                      : "")
                             }
                         >
                             {next_move_delta_p <= -0.1 ? (
@@ -1609,8 +1656,8 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                 {data.get("user").is_moderator && this.ai_review?.engine.includes("katago") && (
                     <div>
                         <AiSummaryTable
-                            headinglist={[_("Type"), _("Black"), "%", _("White"), "%"]}
-                            bodylist={this.table_rows}
+                            heading_list={[_("Type"), _("Black"), "%", _("White"), "%"]}
+                            body_list={this.table_rows}
                             avg_loss={this.avg_score_loss}
                             median_score_loss={this.median_score_loss}
                             table_hidden={this.state.table_hidden}
@@ -1623,9 +1670,9 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         );
     }
 
-    public renderWorstMoveList(lst: AIReviewWorstMoveEntry[]): JSX.Element {
+    public renderWorstMoveList(lst: AIReviewWorstMoveEntry[]): JSX.Element | null {
         const goban = this.context;
-        if (!goban.engine.move_tree || !this.ai_review) {
+        if (!goban?.engine.move_tree || !this.ai_review) {
             return null;
         }
 
@@ -1747,7 +1794,7 @@ function extractShortNetworkVersion(network: string): string {
     // the first part of the katago version describes the network size,
     // second/third is hash I think
     if (network.indexOf("-") > 0) {
-        network = network.match(/[^-]*[-]([^-]*)/)[1];
+        network = network.match(/[^-]*[-]([^-]*)/)?.[1] || "xxxxxx";
     }
     return network.substr(0, 6);
 }
@@ -1766,17 +1813,17 @@ class AiSummaryTable extends React.Component<AiSummaryTableProperties, AiSummary
                 >
                     <thead>
                         <tr>
-                            {this.props.headinglist.map((head, index) => {
+                            {this.props.heading_list.map((head, index) => {
                                 return <th key={index}>{head}</th>;
                             })}
                         </tr>
                     </thead>
                     <tbody>
-                        {this.props.bodylist.map((body, bindex) => {
+                        {this.props.body_list.map((body, b_index) => {
                             return (
-                                <tr key={bindex}>
-                                    {body.map((element, eindex) => {
-                                        return <td key={eindex}>{element}</td>;
+                                <tr key={b_index}>
+                                    {body.map((element, e_index) => {
+                                        return <td key={e_index}>{element}</td>;
                                     })}
                                 </tr>
                             );
@@ -1832,9 +1879,9 @@ interface AiSummaryTableState {}
 
 interface AiSummaryTableProperties {
     /** headings for ai review table */
-    headinglist: string[];
+    heading_list: string[];
     /** the body of the table excluding the average score loss part */
-    bodylist: string[][];
+    body_list: string[][];
     /** values for the average score loss */
     avg_loss: number[];
     median_score_loss: number[];

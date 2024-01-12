@@ -53,7 +53,7 @@ function EmailNotificationToggle(props: {
 
     function save(on: boolean): void {
         __set(on);
-        const up = {};
+        const up: any = {};
         up[props.notification] = {
             description: props.state.notifications[props.notification].description,
             value: {

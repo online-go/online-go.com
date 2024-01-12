@@ -42,7 +42,7 @@ export const api1 = api1ify;
 interface OgsRequest {
     method: Method;
     url: string;
-    data: object;
+    data?: object;
     promise?: Promise<any>;
     controller: AbortController;
     signal: AbortSignal;
@@ -114,7 +114,7 @@ function request(method: Method): RequestFunction {
                         url +=
                             (url.indexOf("?") >= 0 ? "&" : "?") +
                             Object.keys(data)
-                                .map((k) => `${k}=` + encodeURIComponent(data[k]))
+                                .map((k) => `${k}=` + encodeURIComponent((data as any)[k]))
                                 .join("&");
                     } else {
                         prepared_data = JSON.stringify(data);
@@ -129,7 +129,6 @@ function request(method: Method): RequestFunction {
                 signal,
                 method,
                 credentials: same_origin ? "include" : undefined,
-                keepalive: true,
                 mode: same_origin ? (csrf_safe ? "no-cors" : "cors") : undefined,
                 cache: cacheable ? "default" : "no-cache",
                 body: prepared_data as any,
@@ -137,21 +136,38 @@ function request(method: Method): RequestFunction {
             })
                 .then((res) => {
                     delete requests_in_flight[request_id];
-                    if (res.status >= 200 && res.status < 300) {
-                        if (res.status === 204) {
-                            resolve({});
+
+                    const onJson = (data: any) => {
+                        if (res.status >= 200 && res.status < 300) {
+                            if (res.status === 204) {
+                                resolve({});
+                            } else {
+                                resolve(data);
+                            }
                         } else {
-                            resolve(res.json());
+                            console.error(res.status, url, data);
+                            console.error(traceback.stack);
+                            reject(data);
                         }
+                    };
+
+                    const errorHandler = () => {
+                        reject(res.statusText);
+                    };
+
+                    const data_or_promise = res.json();
+
+                    if (data_or_promise instanceof Promise) {
+                        data_or_promise.then(onJson).catch(errorHandler);
                     } else {
-                        reject(res);
+                        onJson(data_or_promise);
                     }
                 })
                 .catch((err) => {
                     delete requests_in_flight[request_id];
                     if (err.name !== "AbortError") {
-                        console.warn(url, err.name);
-                        console.warn(traceback.stack);
+                        console.error(err.name, url);
+                        console.error(traceback.stack);
                     }
                     reject(err);
                 });
@@ -230,8 +246,8 @@ export function abort_requests_in_flight(url: string, method?: Method): boolean 
     return aborted;
 }
 
-export function getCookie(name: string) {
-    let cookieValue = null;
+export function getCookie(name: string): string {
+    let cookieValue = "";
     if (document.cookie && document.cookie !== "") {
         const cookies = document.cookie.split(";");
         for (let i = 0; i < cookies.length; i++) {

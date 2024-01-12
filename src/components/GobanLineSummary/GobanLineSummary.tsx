@@ -25,6 +25,7 @@ import { Player } from "Player";
 import { Clock } from "Clock";
 import { GobanInfoStateBase } from "src/lib/types";
 import { LineSummaryTableMode } from "../GameList";
+import { PlayerCacheEntry } from "src/lib/player_cache";
 
 interface UserType {
     id: number;
@@ -40,7 +41,7 @@ interface GobanLineSummaryProps {
     black: UserType;
     white: UserType;
     player?: { id: number };
-    gobanref?: (goban: Goban) => void;
+    gobanRef?: (goban: Goban) => void;
     width?: number;
     height?: number;
     rengo_teams?: {
@@ -61,7 +62,7 @@ export class GobanLineSummary extends React.Component<
     GobanLineSummaryProps,
     GobanLineSummaryState
 > {
-    goban: Goban;
+    goban!: Goban;
 
     constructor(props: GobanLineSummaryProps) {
         super(props);
@@ -77,7 +78,7 @@ export class GobanLineSummary extends React.Component<
     componentWillUnmount() {
         this.destroy();
     }
-    componentDidUpdate(prev_props) {
+    componentDidUpdate(prev_props: GobanLineSummaryProps) {
         if (prev_props.id !== this.props.id) {
             this.destroy();
             this.initialize();
@@ -100,7 +101,7 @@ export class GobanLineSummary extends React.Component<
 
         requestAnimationFrame(() => {
             this.goban = new Goban({
-                board_div: null,
+                board_div: undefined,
                 draw_top_labels: false,
                 draw_bottom_labels: false,
                 draw_left_labels: false,
@@ -113,8 +114,8 @@ export class GobanLineSummary extends React.Component<
                 this.sync_state();
             });
 
-            if (this.props.gobanref) {
-                this.props.gobanref(this.goban);
+            if (this.props.gobanRef) {
+                this.props.gobanRef(this.goban);
             }
         });
     }
@@ -134,6 +135,9 @@ export class GobanLineSummary extends React.Component<
         const black = this.props.black;
         const white = this.props.white;
         const player_to_move = (this.goban && this.goban.engine.playerToMove()) || 0;
+        const user = data.get("config.user").id;
+        const player = this.props?.player?.id;
+        const is_current_user = player_to_move === user;
 
         this.setState({
             black_score: interpolate("%s points", [score.black.prisoners + score.black.komi]),
@@ -147,7 +151,13 @@ export class GobanLineSummary extends React.Component<
             white_name:
                 typeof white === "object" ? white.username + " [" + rankString(white) + "]" : white,
 
-            current_users_move: player_to_move === data.get("config.user").id,
+            // Mark games where it's the current user's move.
+            current_users_move: is_current_user,
+
+            // If this is a different player's page, also mark other games
+            // where it's not that player's move.
+            viewed_users_move:
+                !!player && !is_current_user && user !== player && player_to_move === player,
             black_to_move_cls: this.goban && black.id === player_to_move ? "to-move" : "",
             white_to_move_cls: this.goban && white.id === player_to_move ? "to-move" : "",
 
@@ -157,9 +167,9 @@ export class GobanLineSummary extends React.Component<
     }
 
     render() {
-        let opponent: UserType;
-        let player_color: PlayerColor;
-        let opponent_color: PlayerColor;
+        let opponent: UserType | null = null;
+        let player_color: PlayerColor | null | null = null;
+        let opponent_color: PlayerColor | null = null;
 
         if (this.props.lineSummaryMode === "opponent-only") {
             if (this.props.player == null) {
@@ -168,7 +178,7 @@ export class GobanLineSummary extends React.Component<
                 );
             }
             player_color = playerColor(this.props);
-            if (player_color == null) {
+            if (player_color === null) {
                 console.error(
                     `You are using the line summary mode ${this.props.lineSummaryMode}, but the current player is not in the game ${this.state.game_name}. This will cause display problems!`,
                 );
@@ -182,26 +192,34 @@ export class GobanLineSummary extends React.Component<
                 to={`/game/${this.props.id}`}
                 className={
                     `GobanLineSummary ` +
+                    (this.state.viewed_users_move ? " viewed-users-move" : "") +
                     (this.state.current_users_move ? " current-users-move" : "") +
                     (this.state.in_stone_removal_phase ? " in-stone-removal-phase" : "")
                 }
             >
                 <div className="move-number">{this.state.move_number}</div>
-                <div className="game-name">{this.state.game_name}</div>
+                <GameNameForList original_name={this.state.game_name || ""} />
 
-                {this.props.lineSummaryMode === "opponent-only" && (
-                    <>
-                        <div className="player">
-                            <Player user={opponent} fakelink rank />
-                        </div>
-                        <div>
-                            <Clock goban={this.goban} color={player_color} lineSummary={true} />
-                        </div>
-                        <div>
-                            <Clock goban={this.goban} color={opponent_color} lineSummary={true} />
-                        </div>
-                    </>
-                )}
+                {this.props.lineSummaryMode === "opponent-only" &&
+                    opponent &&
+                    player_color &&
+                    opponent_color && (
+                        <>
+                            <div className="player">
+                                <Player user={opponent} fakelink rank />
+                            </div>
+                            <div>
+                                <Clock goban={this.goban} color={player_color} lineSummary={true} />
+                            </div>
+                            <div>
+                                <Clock
+                                    goban={this.goban}
+                                    color={opponent_color}
+                                    lineSummary={true}
+                                />
+                            </div>
+                        </>
+                    )}
 
                 {this.props.lineSummaryMode === "both-players" && (
                     <>
@@ -238,7 +256,7 @@ function playerColor(props: GobanLineSummaryProps): PlayerColor | null {
         return "white";
     }
 
-    const isPlayer = (p) => p.id === props.player.id;
+    const isPlayer = (p: PlayerCacheEntry) => p.id === props.player?.id;
     if (props.rengo_teams) {
         if (props.rengo_teams.black.some(isPlayer)) {
             return "black";
@@ -248,4 +266,36 @@ function playerColor(props: GobanLineSummaryProps): PlayerColor | null {
         }
     }
     return null;
+}
+
+function stripNamePrefix(name: string, prefix: string): string | null {
+    if (!name) {
+        return null;
+    }
+    return name.startsWith(prefix) ? name.substr(prefix.length) : null;
+}
+
+export function GameNameForList(props: { original_name: string }): JSX.Element {
+    const name = props.original_name;
+    const spans = {
+        "Tournament Game:": "fa fa-trophy",
+        "Ladder Challenge:": "fa fa-list-ol",
+    };
+    for (const prefix in spans) {
+        let text: string | null = null;
+        if ((text = stripNamePrefix(name, prefix))) {
+            const icon_class = (spans as any)[prefix];
+            return (
+                <div className="game-name">
+                    <span className={icon_class} />
+                    <span title={name}>{text}</span>
+                </div>
+            );
+        }
+    }
+    return (
+        <div className="game-name">
+            <span title={name}>{name}</span>
+        </div>
+    );
 }

@@ -35,8 +35,8 @@ export function Clock({
     className?: string;
     compact?: boolean;
     lineSummary?: boolean;
-}): JSX.Element {
-    const [clock, setClock] = useState<JGOFClockWithTransmitting>(null);
+}): JSX.Element | null {
+    const [clock, setClock] = useState<JGOFClockWithTransmitting | null>(null);
     const [submitting_move, _setSubmittingMove] = useState<boolean>(false);
 
     useEffect(() => {
@@ -69,7 +69,7 @@ export function Clock({
     }
 
     if (color === "stone-removal") {
-        return <span> ({prettyTime(clock.stone_removal_time_left)})</span>;
+        return <span> ({prettyTime(clock.stone_removal_time_left || 0)})</span>;
     } else {
         const player_clock: JGOFPlayerClock =
             color === "black" ? clock.black_clock : clock.white_clock;
@@ -95,7 +95,9 @@ export function Clock({
 
         if (clock.start_mode && clock.current_player === color) {
             clock_className += " start-mode";
-            return <span className={clock_className}>{prettyTime(clock.start_time_left)}</span>;
+            return (
+                <span className={clock_className}>{prettyTime(clock.start_time_left || 0)}</span>
+            );
         }
 
         // The main time for correspondence games can get pretty lengthy, for those
@@ -118,26 +120,29 @@ export function Clock({
                     <div className="byo-yomi-container">
                         {(!compact || player_clock.main_time <= 0) && (
                             <React.Fragment>
-                                {player_clock.main_time > 0 && player_clock.periods_left >= 1 && (
-                                    <span className="periods-delimiter"> + </span>
-                                )}
-                                {player_clock.periods_left >= 1 && (
+                                {player_clock.main_time > 0 &&
+                                    (player_clock.periods_left || 0) >= 1 && (
+                                        <span className="periods-delimiter"> + </span>
+                                    )}
+                                {(player_clock.periods_left || 0) >= 1 && (
                                     <span
                                         className={
                                             "period-time boxed" +
-                                            (player_clock.periods_left <= 1 ? "sudden-death" : "")
+                                            ((player_clock.periods_left || 0) <= 1
+                                                ? "sudden-death"
+                                                : "")
                                         }
                                     >
-                                        {prettyTime(player_clock.period_time_left)}
+                                        {prettyTime(player_clock.period_time_left || 0)}
                                     </span>
                                 )}
                             </React.Fragment>
                         )}
-                        {player_clock.periods_left >= 1 && (
+                        {(player_clock.periods_left || 0) >= 1 && (
                             <span
                                 className={
                                     "byo-yomi-periods " +
-                                    (player_clock.periods_left <= 1 ? "sudden-death" : "")
+                                    ((player_clock.periods_left || 0) <= 1 ? "sudden-death" : "")
                                 }
                             >
                                 (
@@ -158,7 +163,7 @@ export function Clock({
                                     <span className="periods-delimiter"> + </span>
                                 )}
                                 <span className="period-time boxed">
-                                    {prettyTime(player_clock.block_time_left)}
+                                    {prettyTime(player_clock.block_time_left || 0)}
                                 </span>
                                 <span className="periods-delimiter">/</span>
                                 <span className="period-moves boxed">
@@ -170,15 +175,16 @@ export function Clock({
 
                 {(show_pause || !lineSummary) && (
                     <div className="pause-and-transmit">
-                        {(submitting_move && player_id !== data.get("user").id) ||
-                        transmitting > 0 ? (
-                            <span
-                                className="transmitting fa fa-wifi"
-                                title={transmitting.toFixed(0)}
-                            />
-                        ) : (
-                            <span className="transmitting" />
-                        )}
+                        {!lineSummary &&
+                            ((submitting_move && player_id !== data.get("user").id) ||
+                            transmitting > 0 ? (
+                                <span
+                                    className="transmitting fa fa-wifi"
+                                    title={transmitting.toFixed(0)}
+                                />
+                            ) : (
+                                <span className="transmitting" />
+                            ))}
                         {show_pause && <ClockPauseReason clock={clock} player_id={player_id} />}
                     </div>
                 )}
@@ -186,7 +192,7 @@ export function Clock({
         );
     }
 
-    function update(clock: JGOFClockWithTransmitting) {
+    function update(clock?: JGOFClockWithTransmitting | null) {
         if (clock) {
             setClock(Object.assign({}, clock));
         }
@@ -203,16 +209,18 @@ function ClockPauseReason({
     let pause_text = _("Paused");
     const pause_state = clock.pause_state;
 
-    if (pause_state.weekend) {
-        pause_text = _("Weekend");
-    }
+    if (pause_state) {
+        if (pause_state.weekend) {
+            pause_text = _("Weekend");
+        }
 
-    if (pause_state.server) {
-        pause_text = _("Paused by Server");
-    }
+        if (pause_state.server) {
+            pause_text = _("Paused by Server");
+        }
 
-    if (pause_state.vacation && pause_state.vacation[player_id]) {
-        pause_text = _("Vacation");
+        if (pause_state.vacation && pause_state.vacation[player_id]) {
+            pause_text = _("Vacation");
+        }
     }
 
     return <span className="pause-text">{pause_text}</span>;

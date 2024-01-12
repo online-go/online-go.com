@@ -30,10 +30,10 @@ interface ReviewsAndDemosProps {
 }
 
 export function ReviewsAndDemosTable(props: ReviewsAndDemosProps): JSX.Element {
-    const [alt_player, setAltPlayer] = React.useState<number>(null);
+    const [alt_player, setAltPlayer] = React.useState<number>();
 
-    const review_history_groomer = (results) => {
-        const ret = [];
+    const review_history_groomer = (results: any) => {
+        const ret: any[] = [];
 
         for (let i = 0; i < results.length; ++i) {
             const r = results[i];
@@ -97,7 +97,7 @@ export function ReviewsAndDemosTable(props: ReviewsAndDemosProps): JSX.Element {
                         source={`reviews/`}
                         filter={{
                             owner_id: props.user_id,
-                            ...(alt_player !== null && {
+                            ...(alt_player !== undefined && {
                                 alt_player: alt_player,
                             }),
                         }}

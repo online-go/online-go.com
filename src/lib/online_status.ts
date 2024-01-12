@@ -24,11 +24,11 @@ interface Events {
 }
 
 const listeners: { [id: number]: Array<any> } = {};
-const state = {};
+const state: { [player_id: number]: boolean } = {};
 const event_emitter = new TypedEventEmitter<Events>();
 
 socket.on("connect", () => {
-    const list = [];
+    const list: number[] = [];
     for (const id in state) {
         list.push(parseInt(id));
     }

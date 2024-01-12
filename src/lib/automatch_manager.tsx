@@ -37,7 +37,7 @@ export type AutomatchPreferences = AutomatchPreferencesBase & {
 class AutomatchToast extends React.PureComponent<{}, any> {
     timer: any;
 
-    constructor(props) {
+    constructor(props: {}) {
         super(props);
         this.state = {
             start: Date.now(),
@@ -73,10 +73,10 @@ class AutomatchToast extends React.PureComponent<{}, any> {
 }
 
 class AutomatchManager extends TypedEventEmitter<Events> {
-    active_live_automatcher: AutomatchPreferences;
+    active_live_automatcher?: AutomatchPreferences;
     active_correspondence_automatchers: { [id: string]: AutomatchPreferences } = {};
-    last_find_match_uuid: string;
-    active_toast: Toast;
+    last_find_match_uuid?: string;
+    active_toast?: Toast;
 
     constructor() {
         super();
@@ -107,7 +107,7 @@ class AutomatchManager extends TypedEventEmitter<Events> {
 
         this.emit("entry", entry);
     };
-    private onAutomatchStart = (entry) => {
+    private onAutomatchStart = (entry: { uuid: string; game_id: number }) => {
         this.remove(entry.uuid);
 
         if (entry.uuid === this.last_find_match_uuid) {
@@ -117,7 +117,7 @@ class AutomatchManager extends TypedEventEmitter<Events> {
 
         this.emit("start", entry);
     };
-    private onAutomatchCancel = (entry) => {
+    private onAutomatchCancel = (entry: { uuid: string }) => {
         if (!entry) {
             if (this.active_live_automatcher) {
                 entry = this.active_live_automatcher;
@@ -130,25 +130,25 @@ class AutomatchManager extends TypedEventEmitter<Events> {
     };
     private remove(uuid: string) {
         if (this.active_live_automatcher && this.active_live_automatcher.uuid === uuid) {
-            this.active_live_automatcher = null;
+            this.active_live_automatcher = undefined;
         }
 
         if (uuid === this.last_find_match_uuid) {
             if (this.active_toast) {
                 this.active_toast.close();
-                this.active_toast = null;
+                this.active_toast = undefined;
             }
         }
 
         delete this.active_correspondence_automatchers[uuid];
     }
     private clearState() {
-        this.active_live_automatcher = null;
+        this.active_live_automatcher = undefined;
         this.active_correspondence_automatchers = {};
-        this.last_find_match_uuid = null;
+        this.last_find_match_uuid = undefined;
         if (this.active_toast) {
             this.active_toast.close();
-            this.active_toast = null;
+            this.active_toast = undefined;
         }
     }
 
@@ -164,12 +164,12 @@ class AutomatchManager extends TypedEventEmitter<Events> {
             this.last_find_match_uuid = preferences.uuid;
             if (this.active_toast) {
                 this.active_toast.close();
-                this.active_toast = null;
+                this.active_toast = undefined;
             }
             this.active_toast = toast(<AutomatchToast />);
         }
     }
-    public cancel(uuid?: string) {
+    public cancel(uuid: string) {
         this.remove(uuid);
         socket.send("automatch/cancel", { uuid });
     }

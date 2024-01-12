@@ -30,11 +30,11 @@ window["d3"] = d3;
 interface AIReviewChartProperties {
     entries: Array<AIReviewEntry>;
     ai_review: JGOFAIReview;
-    updatecount: number;
+    update_count: number;
     move_number: number;
     variation_move_number: number;
     variation_entries: Array<AIReviewEntry>;
-    setmove: (move_number: number) => void;
+    set_move: (move_number: number) => void;
     use_score: boolean;
     highlighted_moves?: number[];
 }
@@ -57,15 +57,15 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
     graph?: number;
     resize_debounce?: any; // timeout
     replot_timeout?: any; // timeout
-    prediction_graph?: d3.Selection<SVGGElement, unknown, null, undefined>;
+    prediction_graph!: d3.Selection<SVGGElement, unknown, null, undefined>;
     width?: number;
     height?: number;
     win_rate_area_container?: d3.Selection<SVGPathElement, unknown, null, undefined>;
     variation_win_rate_line_container?: d3.Selection<SVGPathElement, unknown, null, undefined>;
-    win_rate_line?: d3.Line<AIReviewEntry>;
-    win_rate_area?: d3.Area<AIReviewEntry>;
-    x_axis?: d3.Selection<SVGGElement, unknown, null, undefined>;
-    y_axis?: d3.Selection<SVGGElement, unknown, null, undefined>;
+    win_rate_line!: d3.Line<AIReviewEntry>;
+    win_rate_area!: d3.Area<AIReviewEntry>;
+    x_axis!: d3.Selection<SVGGElement, unknown, null, undefined>;
+    y_axis!: d3.Selection<SVGGElement, unknown, null, undefined>;
     mouse?: number;
     mouse_rect?: d3.Selection<SVGRectElement, unknown, null, undefined>;
     move_crosshair?: d3.Selection<SVGLineElement, unknown, null, undefined>;
@@ -74,8 +74,13 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
     full_crosshair?: d3.Selection<SVGLineElement, unknown, null, undefined>;
     x: d3.ScaleLinear<number, number> = d3.scaleLinear().rangeRound([0, 0]);
     y: d3.ScaleLinear<number, number> = d3.scaleLinear().rangeRound([0, 0]);
-    highlighted_move_circle_container: d3.Selection<SVGElement, unknown, null, undefined>;
-    highlighted_move_circles: d3.Selection<SVGCircleElement, AIReviewEntry, SVGSVGElement, unknown>;
+    highlighted_move_circle_container!: d3.Selection<SVGElement, unknown, null, undefined>;
+    highlighted_move_circles!: d3.Selection<
+        SVGCircleElement,
+        AIReviewEntry,
+        SVGSVGElement,
+        unknown
+    >;
 
     constructor(props: AIReviewChartProperties) {
         super(props);
@@ -101,7 +106,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
         return (
             !deepCompare(nextProps.entries, this.props.entries) ||
             !deepCompare(nextProps.variation_entries, this.props.variation_entries) ||
-            this.props.updatecount !== nextProps.updatecount ||
+            this.props.update_count !== nextProps.update_count ||
             this.props.move_number !== nextProps.move_number ||
             this.props.variation_move_number !== nextProps.variation_move_number ||
             this.props.use_score !== nextProps.use_score
@@ -149,7 +154,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
         this.x_axis = this.prediction_graph.append("g");
         this.y_axis = this.prediction_graph.append("g");
 
-        this.highlighted_move_circle_container = this.prediction_graph.append("g");
+        this.highlighted_move_circle_container = this.prediction_graph.append("g") as any;
 
         this.move_crosshair = this.prediction_graph
             .append("g")
@@ -249,7 +254,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
                 if (mouse_down && !variation) {
                     if (d.move_number !== last_move) {
                         last_move = d.move_number;
-                        self.props.setmove(d.move_number);
+                        self.props.set_move(d.move_number);
                     }
                 }
             })
@@ -277,7 +282,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
 
                 const d = x0 - d0.move_number > d1.move_number - x0 ? d1 : d0;
                 last_move = d.move_number;
-                self.props.setmove(d.move_number);
+                self.props.set_move(d.move_number);
                 if (variation) {
                     self.onResize();
                 }
@@ -305,7 +310,9 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
                 return {
                     win_rate: x.win_rate,
                     score:
-                        x.score === 0 && use_score_safe ? this.props.ai_review.scores[i] : x.score,
+                        x.score === 0 && use_score_safe
+                            ? (this.props.ai_review.scores as number[])[i]
+                            : x.score,
                     move_number: x.move_number,
                     num_variations: x.num_variations,
                 };
@@ -368,7 +375,10 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
 
         if (use_score_safe) {
             this.y.domain(
-                d3.extent(d3.merge([entries, variation_entries]), (e: AIReviewEntry) => e.score),
+                d3.extent(
+                    d3.merge([entries, variation_entries]) as any,
+                    (e: AIReviewEntry) => e.score,
+                ) as any,
             );
         } else {
             this.y.domain([0, 100]);
@@ -406,7 +416,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
                 // The review is in progress, so mark discontinuities
                 if (
                     !this.props.ai_review.moves[x.move_number + 1] &&
-                    x.move_number !== this.props.ai_review.win_rates.length - 1
+                    x.move_number !== (this.props.ai_review.win_rates as number[]).length - 1
                 ) {
                     return true;
                 }
@@ -429,6 +439,10 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
                 gradient_transition_point = (max_score / yRange) * 100;
             }
         }
+        if (!this.svg) {
+            throw new Error(`this.svg not set`);
+        }
+
         this.svg.select("linearGradient").remove();
         this.svg
             .append("linearGradient")
@@ -437,7 +451,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
             .attr("x1", 0)
             .attr("y1", 0)
             .attr("x2", 0)
-            .attr("y2", this.height)
+            .attr("y2", this.height ?? 0)
             .selectAll("stop")
             .data(
                 // assuming "accessible" and "dark" are similar
@@ -495,12 +509,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
 
         this.highlighted_move_circles = this.highlighted_move_circle_container
             .selectAll("circle")
-            .data(circle_coords) as d3.Selection<
-            SVGCircleElement,
-            AIReviewEntry,
-            SVGSVGElement,
-            unknown
-        >;
+            .data(circle_coords) as any;
         // remove any data points that were removed
         const removes = this.highlighted_move_circles.exit().remove();
         // add circles that were added
@@ -611,7 +620,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
     render() {
         return (
             <div ref={this.container} className="AIReviewChart">
-                <OgsResizeDetector handleWidth handleHeight onResize={() => this.onResize()} />
+                <OgsResizeDetector onResize={() => this.onResize()} targetRef={this.container} />
                 <PersistentElement elt={this.chart_div} />
             </div>
         );

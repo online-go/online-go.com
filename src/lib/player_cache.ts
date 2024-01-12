@@ -89,7 +89,7 @@ interface FetchEntry {
     player_id: number;
     resolve: (value?: any) => void;
     reject: (reason?: any) => void;
-    required_fields: Array<string>;
+    required_fields?: Array<string>;
 }
 
 const cache: { [id: number]: PlayerCacheEntry } = {};
@@ -97,7 +97,7 @@ const cache_by_username: { [username: string]: PlayerCacheEntry } = {};
 const active_fetches: { [id: number]: Promise<PlayerCacheEntry> } = {};
 export const nicknames: Array<string> = [];
 
-export function update(player: any, dont_overwrite?: boolean): PlayerCacheEntry {
+export function update(player: any, dont_overwrite?: boolean): PlayerCacheEntry | undefined {
     if (Array.isArray(player)) {
         for (const p of player) {
             update(p, dont_overwrite);
@@ -121,13 +121,14 @@ export function update(player: any, dont_overwrite?: boolean): PlayerCacheEntry 
         if (dont_overwrite && k in cache[id]) {
             continue;
         }
-        cache[id][k] = player[k];
+        (cache[id] as any)[k] = player[k];
     }
-    if (cache[id].username && !(cache[id].username in cache_by_username)) {
-        nicknames.push(cache[id]["username"]);
+    const username = cache[id].username;
+    if (username && !(username in cache_by_username)) {
+        nicknames.push(username);
     }
-    if (cache[id].username) {
-        cache_by_username[cache[id].username] = cache[id];
+    if (username) {
+        cache_by_username[username] = cache[id];
     }
 
     /* these are synonymous but called different things throughout the back end, I am truly sorry. */
@@ -135,7 +136,7 @@ export function update(player: any, dont_overwrite?: boolean): PlayerCacheEntry 
         cache[id]["pro"] = !!player.professional;
     }
     if ("pro" in player) {
-        cache[id]["professional"] = !!player.pro;
+        (cache[id] as any)["professional"] = !!player.pro;
     }
 
     publisher.publish(id.toString(), cache[id]);
@@ -144,7 +145,11 @@ export function update(player: any, dont_overwrite?: boolean): PlayerCacheEntry 
 
 /** Returns the PlayerCacheEntry if we have it loaded already, else null. Does
  *  not perform a fetch or anything heavy. */
-export function lookup(player_id: number): PlayerCacheEntry | null {
+export function lookup(player_id?: number): PlayerCacheEntry | null {
+    if (!player_id) {
+        return null;
+    }
+
     if (player_id in cache) {
         return cache[player_id];
     }
@@ -154,7 +159,11 @@ export function lookup(player_id: number): PlayerCacheEntry | null {
 
 /** Returns the PlayerCacheEntry if we have it loaded already, else null. Does
  *  not perform a fetch or anything heavy. */
-export function lookup_by_username(username: string): PlayerCacheEntry | null {
+export function lookup_by_username(username?: string): PlayerCacheEntry | null {
+    if (!username) {
+        return null;
+    }
+
     if (username in cache_by_username) {
         return cache_by_username[username];
     }
@@ -163,10 +172,14 @@ export function lookup_by_username(username: string): PlayerCacheEntry | null {
 }
 
 export function fetch_by_username(
-    username: string,
+    username?: string,
     required_fields?: Array<string>,
-): Promise<PlayerCacheEntry> {
+): Promise<PlayerCacheEntry | null> {
     const user = lookup_by_username(username);
+    if (!username) {
+        return Promise.reject("invalid player name");
+    }
+
     if (user) {
         return fetch(user.id, required_fields);
     } else {
@@ -176,7 +189,7 @@ export function fetch_by_username(
             } else {
                 console.error("Attempted to fetch invalid player name: ", username);
                 cache_by_username[username] = {
-                    id: null,
+                    id: 0,
                     username: username,
                     ui_class: "provisional",
                     pro: false,
@@ -189,7 +202,7 @@ export function fetch_by_username(
 }
 
 export function fetch(
-    player_id: number,
+    player_id?: number,
     required_fields?: Array<string>,
 ): Promise<PlayerCacheEntry> {
     if (!player_id) {
@@ -197,7 +210,7 @@ export function fetch(
         return Promise.reject("invalid player id");
     }
 
-    const missing_fields = [];
+    const missing_fields: string[] = [];
 
     if (player_id in cache) {
         let have_cached_copy = true;
@@ -230,10 +243,10 @@ export function fetch(
 
     return (active_fetches[player_id] = new Promise((resolve, reject) => {
         fetch_player.soon({
-            player_id: player_id,
-            resolve: resolve,
-            reject: reject,
-            required_fields: required_fields,
+            player_id,
+            resolve,
+            reject,
+            required_fields,
         });
     }));
 }
@@ -262,7 +275,7 @@ const fetch_player = new Batcher<FetchEntry>((fetch_queue) => {
                         for (const field of required_fields) {
                             if (!(field in cache[player.id])) {
                                 debug.warn("Required field ", field, " was not resolved by fetch");
-                                cache[player.id][field] = "[ERROR]";
+                                (cache[player.id] as any)[field] = "[ERROR]";
                             }
                         }
                     }
@@ -277,8 +290,10 @@ const fetch_player = new Batcher<FetchEntry>((fetch_queue) => {
                 if ("error" in err.responseJSON) {
                     if (/Player ([0-9]+) not found in cassandra/gi.test(err.responseJSON.error)) {
                         const err_player_id = Number(
-                            /Player ([0-9]+) not found in cassandra/gi.exec(
-                                err.responseJSON.error,
+                            (
+                                /Player ([0-9]+) not found in cassandra/gi.exec(
+                                    err.responseJSON.error,
+                                ) as string[]
                             )[1],
                         );
                         // create a dummy entry for missing player

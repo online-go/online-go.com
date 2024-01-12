@@ -34,8 +34,8 @@ interface JosekiAdminProps {
     user_can_administer: boolean; // allows them to revert changes, give permissions etc
     user_can_edit: boolean; // allows them to filter
     db_locked_down: boolean;
-    loadPositionToBoard(pos: string);
-    updateDBLockStatus(value: boolean);
+    loadPositionToBoard: (pos: string) => void;
+    updateDBLockStatus: (value: boolean) => void;
 }
 
 interface JosekiAdminState {
@@ -73,7 +73,7 @@ const AuditTypes = [
 const SelectTable = selectTableHOC(ReactTable);
 
 export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdminState> {
-    constructor(props) {
+    constructor(props: JosekiAdminProps) {
         super(props);
         this.state = {
             data: [],
@@ -90,7 +90,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
             filter_user_id: "",
             filter_position_id: "",
             filter_audit_type: "",
-            page_visits: null,
+            page_visits: undefined,
             daily_visits: [],
         };
     }
@@ -134,7 +134,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
         }
         // And if there was one, revert it then move on to the next after the previous is done.
         if (current_selections.get(next_selection)) {
-            const target_id = next_selection.substring(7); //  get rid of the wierd "select-" from SelectTable
+            const target_id = next_selection.substring(7); //  get rid of the weird "select-" from SelectTable
 
             post(this.props.server_url + "revert", { audit_id: target_id })
                 .then((body) => {
@@ -205,8 +205,8 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
             });
     };
 
-    fetchDataForTable = (table_state) => {
-        // this shinanigans is so that we save the table state passed in the argument to this callback
+    fetchDataForTable = (table_state: any) => {
+        // this shenanigans is so that we save the table state passed in the argument to this callback
         // into our component state, enabling us to reload the data again when we need to (after reverting an audit)
         this.setState(
             {
@@ -218,7 +218,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
         );
     };
 
-    onUserIdChange = (e) => {
+    onUserIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const new_id = e.target.value;
         if (!/^\d*$/.test(new_id)) {
             return;
@@ -227,7 +227,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
         }
     };
 
-    onFilterPositionChange = (e) => {
+    onFilterPositionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const new_id = e.target.value;
         if (!/^\d*$/.test(new_id)) {
             return;
@@ -241,7 +241,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
         this.props.loadPositionToBoard(this.state.filter_position_id);
     };
 
-    onFilterAuditTypeChange = (e) => {
+    onFilterAuditTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         this.setState({ filter_audit_type: e.target.value }, this.reloadData);
     };
 
@@ -267,8 +267,8 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
         const AuditTable = this.props.user_can_administer ? SelectTable : ReactTable;
 
         const audit_type_selections = Object.keys(AuditTypes).map((selection, i) => (
-            <option key={i} value={AuditTypes[selection]}>
-                {AuditTypes[selection].toLowerCase()}
+            <option key={i} value={AuditTypes[selection as keyof typeof AuditTypes] as any}>
+                {(AuditTypes[selection as keyof typeof AuditTypes] as string).toLowerCase()}
             </option>
         ));
 
@@ -343,8 +343,9 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
                     isSelected={(key) => {
                         const key_string = `select-${key}`;
                         const result =
-                            this.state.selections.has(key_string) &&
-                            this.state.selections.get(key_string);
+                            (this.state.selections.has(key_string) &&
+                                this.state.selections.get(key_string)) ||
+                            false;
                         //console.log(`check for ${key_string}:`, result);
                         return result;
                     }}
@@ -376,7 +377,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
                             accessor: "placement",
                             maxWidth: 60,
                             // Click the placement to see the position on the board
-                            getProps: ((_state, rowInfo, _column) => ({
+                            getProps: ((_state: any, rowInfo: any, _column: any) => ({
                                 onClick: () => {
                                     this.props.loadPositionToBoard(
                                         rowInfo.original.node_id.toString(),

@@ -23,7 +23,7 @@ import { PlayerAutocomplete } from "PlayerAutocomplete";
 
 export function ReportsCenterHistory(): JSX.Element {
     const navigateTo = useNavigate();
-    const [reportingUserFilter, setReportingUserFilter] = React.useState<number>(null);
+    const [reportingUserFilter, setReportingUserFilter] = React.useState<number>();
 
     return (
         <div className="ReportsCenterHistory">
@@ -44,9 +44,11 @@ export function ReportsCenterHistory(): JSX.Element {
                 name="reports-appeals"
                 source={"moderation/incident"}
                 filter={
-                    reportingUserFilter !== null && {
-                        reporting_user: reportingUserFilter,
-                    }
+                    reportingUserFilter !== null && reportingUserFilter !== undefined
+                        ? {
+                              reporting_user: reportingUserFilter,
+                          }
+                        : undefined
                 }
                 orderBy={["-updated"]}
                 columns={[

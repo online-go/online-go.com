@@ -113,7 +113,7 @@ export function ChallengeDetailsReviewPane(
     );
 }
 
-export function handicapText(handicap) {
+export function handicapText(handicap: number) {
     if (handicap < 0) {
         return _("Auto");
     }

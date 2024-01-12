@@ -23,9 +23,9 @@ interface ServerTimeState {
     time: moment.Moment;
 }
 export class ServerTimeDisplay extends React.Component<{}, ServerTimeState> {
-    intervalID;
+    interval?: ReturnType<typeof setInterval>;
 
-    constructor(props) {
+    constructor(props: {}) {
         super(props);
         this.state = {
             time: moment().utcOffset(0),
@@ -33,11 +33,11 @@ export class ServerTimeDisplay extends React.Component<{}, ServerTimeState> {
     }
 
     componentDidMount() {
-        this.intervalID = setInterval(() => this.tick(), 1000);
+        this.interval = setInterval(() => this.tick(), 1000);
     }
 
     componentWillUnmount() {
-        clearInterval(this.intervalID);
+        clearInterval(this.interval);
     }
 
     tick() {

@@ -17,7 +17,33 @@
 
 import { effective_outcome, EffectiveOutcome } from "rank_utils";
 
-export class RatingEntry {
+export interface IRatingEntry {
+    ended: Date;
+    game_id: number;
+    played_black: boolean;
+    handicap: number;
+    rating: number;
+    deviation: number;
+    volatility: number;
+    opponent_id: number;
+    opponent_rating: number;
+    opponent_deviation: number;
+    outcome: number;
+    extra: any;
+    count: number;
+    starting_rating: number;
+    starting_deviation: number;
+    increase: boolean;
+    wins: number;
+    losses: number;
+    strong_wins: number;
+    strong_losses: number;
+    weak_wins: number;
+    weak_losses: number;
+    index: number; // to be set by client as needed.
+}
+
+export class RatingEntry implements IRatingEntry {
     ended: Date;
     game_id: number;
     played_black: boolean;
@@ -42,7 +68,7 @@ export class RatingEntry {
     weak_losses: number;
     index: number; // to be set by client as needed.
 
-    constructor(obj) {
+    constructor(obj: IRatingEntry) {
         this.ended = obj.ended;
         this.game_id = obj.game_id;
         this.played_black = obj.played_black;
@@ -122,13 +148,14 @@ export function makeRatingEntry(d: any): RatingEntry {
         starting_deviation: parseFloat(d.deviation),
         volatility: parseFloat(d.volatility),
         opponent_id: parseInt(d.opponent_id),
-        opponent_rating: parseFloat(d.oppponent_rating),
+        opponent_rating: parseFloat(d.opponent_rating),
         opponent_deviation: parseFloat(d.opponent_deviation),
         outcome: parseInt(d.outcome),
         extra: extra,
         count: d.opponent_id > 0 ? 1 : 0,
         wins: won,
         losses: lost,
+        increase: won === 1,
         strong_wins: (
             played_black ? outcome.white_effective_stronger : outcome.black_effective_stronger
         )
@@ -149,7 +176,7 @@ export function makeRatingEntry(d: any): RatingEntry {
         )
             ? lost
             : 0,
-        // index deliberately not intialised.
+        index: -1,
     });
 
     //console.log(new_rating_entry);

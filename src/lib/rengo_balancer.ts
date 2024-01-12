@@ -27,7 +27,7 @@ type Participant = {
 // Convert player IDs to Participants with ratings.
 function toParticipants(playerIDs: number[]): Promise<Participant[]> {
     const required_fields = ["username", "rating"];
-    const promises = [];
+    const promises: Promise<any>[] = [];
     for (const id of playerIDs) {
         const promise = player_cache.fetch(id, required_fields).then((entry) => {
             return {
@@ -101,8 +101,8 @@ function improveBalance(participants: Participant[]): boolean {
 
 // Split even and odd groups.
 function split(participants: Participant[]): [Participant[], Participant[]] {
-    const even = [];
-    const odd = [];
+    const even: Participant[] = [];
+    const odd: Participant[] = [];
     for (let i = 0; i < participants.length; i += 2) {
         even.push(participants[i]);
     }
@@ -115,8 +115,8 @@ function split(participants: Participant[]): [Participant[], Participant[]] {
 type BalancedResult = {
     black: Participant[];
     white: Participant[];
-    blackAverageRating?: number;
-    whiteAverageRating?: number;
+    blackAverageRating: number;
+    whiteAverageRating: number;
 };
 
 // Returns a balanced grouping of players.
@@ -155,7 +155,7 @@ type Challenge = socket_api.seekgraph_global.Challenge;
 type RengoParticipantsDTO = rest_api.RengoParticipantsDTO;
 
 export async function balanceTeams(challenge: Challenge): Promise<RengoParticipantsDTO> {
-    const user_id = (p) => p.user_id;
+    const user_id = (p: Participant) => p.user_id;
     const participants = await toParticipants(challenge.rengo_participants);
     const result = autoBalance(participants);
 

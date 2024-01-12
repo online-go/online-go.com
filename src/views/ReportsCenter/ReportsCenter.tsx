@@ -18,7 +18,7 @@
 import * as React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useUser, useRefresh } from "hooks";
-import { report_categories, ReportDescription } from "Report";
+import { CommunityModeratorReportTypes, report_categories, ReportDescription } from "Report";
 import { report_manager, DAILY_REPORT_GOAL } from "report_manager";
 import Select from "react-select";
 import { _ } from "translate";
@@ -57,7 +57,7 @@ for (let i = 0; i < report_categories.length; ++i) {
     category_priorities[report_categories[i].type] = i;
 }
 
-export function ReportsCenter(): JSX.Element {
+export function ReportsCenter(): JSX.Element | null {
     const user = useUser();
     const navigateTo = useNavigate();
     const refresh = useRefresh();
@@ -66,7 +66,7 @@ export function ReportsCenter(): JSX.Element {
     const category = params["category"] || "all";
 
     const reports = report_manager.getAvailableReports();
-    const counts = {};
+    const counts: any = {};
     for (const report of reports) {
         counts[report.report_type] = (counts[report.report_type] || 0) + 1;
         counts["all"] = (counts["all"] || 0) + 1;
@@ -115,7 +115,7 @@ export function ReportsCenter(): JSX.Element {
         };
     }, [category, report_id]);
 
-    const setCategory = React.useCallback((category) => {
+    const setCategory = React.useCallback((category: string) => {
         navigateTo(`/reports-center/${category}`);
     }, []);
 
@@ -133,8 +133,10 @@ export function ReportsCenter(): JSX.Element {
 
     const visible_categories = user.is_moderator
         ? categories
-        : // community moderators only get to see score cheating reports at the moment
-          [report_categories.find((category) => category.type === "score_cheating")];
+        : // community moderators supported report types
+          report_categories.filter((category) =>
+              CommunityModeratorReportTypes.includes(category.type),
+          );
 
     return (
         <div className="ReportsCenter container">
@@ -149,12 +151,14 @@ export function ReportsCenter(): JSX.Element {
                         className="progress-bar primary"
                         style={{
                             width: `${
-                                (Math.min(
-                                    DAILY_REPORT_GOAL,
-                                    report_manager.getHandledTodayCount(),
-                                ) /
-                                    DAILY_REPORT_GOAL) *
-                                100
+                                report_manager.getReportsLeftUntilGoal() <= 0
+                                    ? 100
+                                    : (Math.min(
+                                          DAILY_REPORT_GOAL,
+                                          report_manager.getHandledTodayCount(),
+                                      ) /
+                                          DAILY_REPORT_GOAL) *
+                                      100
                             }%`,
                         }}
                     >
@@ -162,24 +166,28 @@ export function ReportsCenter(): JSX.Element {
                             ? "All done, thank you!"
                             : report_manager.getHandledTodayCount() || ""}
                     </div>
-                    <div
-                        className="progress-bar empty"
-                        style={{
-                            width: `${
-                                (report_manager.getReportsLeftUntilGoal() / DAILY_REPORT_GOAL) * 100
-                            }%`,
-                        }}
-                    >
-                        {report_manager.getHandledTodayCount() === 0
-                            ? "Daily report goal: " + DAILY_REPORT_GOAL
-                            : ""}
-                    </div>
+
+                    {report_manager.getReportsLeftUntilGoal() > 0 && (
+                        <div
+                            className="progress-bar empty"
+                            style={{
+                                width: `${
+                                    (report_manager.getReportsLeftUntilGoal() / DAILY_REPORT_GOAL) *
+                                    100
+                                }%`,
+                            }}
+                        >
+                            {report_manager.getHandledTodayCount() === 0
+                                ? "Daily report goal: " + DAILY_REPORT_GOAL
+                                : ""}
+                        </div>
+                    )}
                 </div>
             )}
 
             <div id="ReportsCenterContainer">
                 <div id="ReportsCenterCategoryList">
-                    {visible_categories.map((report_type, idx) => {
+                    {visible_categories.map((report_type, idx): JSX.Element | null => {
                         if ("type" in report_type) {
                             const ct = counts[report_type.type] || 0;
                             return (
@@ -225,6 +233,8 @@ export function ReportsCenter(): JSX.Element {
                                     );
                             }
                         }
+
+                        return null;
                     })}
                 </div>
                 <Select

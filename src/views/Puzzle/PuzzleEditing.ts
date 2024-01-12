@@ -24,8 +24,8 @@ import { abort_requests_in_flight, post, get } from "requests";
 import * as preferences from "preferences";
 
 export class PuzzleEditor {
-    orig_puzzle_config: PuzzleConfig = null;
-    puzzle_config: PuzzleConfig = null;
+    orig_puzzle_config?: PuzzleConfig;
+    puzzle_config?: PuzzleConfig;
     puzzle: _Puzzle;
     transform: PuzzleTransform;
 
@@ -35,8 +35,8 @@ export class PuzzleEditor {
     }
 
     clearPuzzles() {
-        this.orig_puzzle_config = null;
-        this.puzzle_config = null;
+        this.orig_puzzle_config = undefined;
+        this.puzzle_config = undefined;
     }
 
     /**
@@ -106,7 +106,7 @@ export class PuzzleEditor {
      * @param puzzle Puzzle
      */
     createPuzzleCollection(puzzle: any, name: string): Promise<any> {
-        let postResult;
+        let postResult: any;
         return post("puzzles/collections/", {
             name: name,
             private: false,
@@ -127,7 +127,7 @@ export class PuzzleEditor {
     /**
      * Download a puzzle for given id
      * @param puzzle_id puzzle id
-     * @param callback assignes new state and editing status
+     * @param callback assigns new state and editing status
      */
     fetchPuzzle(puzzle_id: number, callback: (state: any, editing: boolean) => void) {
         abort_requests_in_flight(`puzzles/`, "GET");
@@ -192,11 +192,12 @@ export class PuzzleEditor {
 
                 const bounds = this.getBounds(puzzle, puzzle.width, puzzle.height);
                 new_state.zoomable =
-                    bounds &&
-                    (bounds.left > 0 ||
-                        bounds.top > 0 ||
-                        bounds.right < puzzle.width - 1 ||
-                        bounds.bottom < puzzle.height - 1);
+                    (bounds &&
+                        (bounds.left > 0 ||
+                            bounds.top > 0 ||
+                            bounds.right < puzzle.width - 1 ||
+                            bounds.bottom < puzzle.height - 1)) ||
+                    undefined;
 
                 callback(new_state, false);
             })
@@ -224,7 +225,7 @@ export class PuzzleEditor {
             this.transform.transformPuzzle(puzzle);
         }
         let bounds = this.transform.settings.zoom
-            ? this.getBounds(puzzle, puzzle.width, puzzle.height)
+            ? this.getBounds(puzzle, puzzle.width as number, puzzle.height as number)
             : null;
         if (editing) {
             bounds = null;
@@ -247,9 +248,9 @@ export class PuzzleEditor {
                 draw_bottom_labels:
                     label_position === "all" || label_position.indexOf("bottom") >= 0,
                 getPuzzlePlacementSetting: () => ({ mode: "play" as const }),
-                bounds: bounds,
+                bounds: bounds || undefined,
                 player_id: 0,
-                server_socket: null,
+                server_socket: undefined,
                 square_size: 4,
             },
             puzzle,
@@ -265,7 +266,7 @@ export class PuzzleEditor {
                 opts.puzzle_type = puzzle.puzzle_type || "";
             }
 
-            opts.move_tree_container = document.getElementById("move-tree-container");
+            opts.move_tree_container = document.getElementById("move-tree-container") || undefined;
         }
 
         return opts;
@@ -279,7 +280,7 @@ export class PuzzleEditor {
             right: 0,
         };
 
-        const process = (pos, width, height) => {
+        const process = (pos: any, width: number, height: number) => {
             if (Array.isArray(pos)) {
                 for (let i = 0; i < pos.length; ++i) {
                     process(pos[i], width, height);
@@ -305,8 +306,8 @@ export class PuzzleEditor {
             }
         };
 
-        process(GoMath.decodeMoves(puzzle.initial_state.black, width, height), width, height);
-        process(GoMath.decodeMoves(puzzle.initial_state.white, width, height), width, height);
+        process(GoMath.decodeMoves(puzzle.initial_state!.black, width, height), width, height);
+        process(GoMath.decodeMoves(puzzle.initial_state!.white, width, height), width, height);
         process(puzzle.move_tree, width, height);
 
         if (ret.top > ret.bottom) {

@@ -21,7 +21,7 @@ import * as React from "react";
  *   --- my text ---
  * It relies on css for 'left' and 'right' being as expected in context, caveat emptor. */
 
-export const LineText = (props) => (
+export const LineText = (props: JSX.IntrinsicElements["div"]) => (
     <div {...props} className={"LineText " + (props.className || "")}>
         <span className="left" />
         <span className="contents">{props.children}</span>
@@ -29,14 +29,14 @@ export const LineText = (props) => (
     </div>
 );
 
-export const SearchInput = (props) => (
+export const SearchInput = (props: JSX.IntrinsicElements["input"]) => (
     <div className={"SearchInput " + (props.className || "")}>
         <i className="fa fa-search"></i>
         <input type="search" className={props.className || ""} {...props} />
     </div>
 );
 
-export const Ribbon = (props) => (
+export const Ribbon = (props: JSX.IntrinsicElements["div"]) => (
     <div className="Ribbon-container">
         <div {...props} className={"Ribbon " + (props.className || "")}>
             {props.children}

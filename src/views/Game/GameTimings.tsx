@@ -20,12 +20,12 @@ import "moment-duration-format";
 
 import * as React from "react";
 
-import { GobanMovesArray } from "goban";
+import { AdHocPackedMove, GobanMovesArray } from "goban";
 
 interface GameTimingProperties {
     moves: GobanMovesArray;
     start_time: number;
-    end_time: number;
+    end_time?: number;
     free_handicap_placement: boolean;
     handicap: number;
     black_id: number;
@@ -58,10 +58,10 @@ export function GameTimings(props: GameTimingProperties): JSX.Element {
     const game_elapsed: ReturnType<typeof moment.duration> = moment.duration(0); // running total
     const black_elapsed: ReturnType<typeof moment.duration> = moment.duration(0);
     const white_elapsed: ReturnType<typeof moment.duration> = moment.duration(0);
-    const game_elapseds: Array<ReturnType<typeof moment.duration>> = []; // the time elapsed up to each move
+    const move_elapsed: Array<ReturnType<typeof moment.duration>> = []; // the time elapsed up to each move
 
     let non_handicap_moves = [...props.moves];
-    let handicap_moves = [];
+    let handicap_moves: any[] = [];
     let handicap_move_offset = 0;
 
     let white_first_turn = false;
@@ -80,17 +80,17 @@ export function GameTimings(props: GameTimingProperties): JSX.Element {
             white_first_turn = true;
             const first_move = non_handicap_moves.shift();
             handicap_move_offset = 1;
-            const elapsed = first_move?.[2];
+            const elapsed = (first_move as AdHocPackedMove)?.[2];
             game_elapsed.add(elapsed);
-            game_elapseds.push(game_elapsed.clone());
+            move_elapsed.push(game_elapsed.clone());
             white_elapsed.add(elapsed);
-            const move_string = show_seconds_nicely(elapsed);
+            const move_string = show_seconds_nicely(elapsed as any);
             first_row = (
                 <React.Fragment>
                     <div>0</div>
                     <div>-</div>
                     <div>{move_string}</div>
-                    <div>{`${game_elapseds[0].format()}`}</div>
+                    <div>{`${move_elapsed[0].format()}`}</div>
                 </React.Fragment>
             );
         }
@@ -111,7 +111,7 @@ export function GameTimings(props: GameTimingProperties): JSX.Element {
                 handicap_moves.map((move, move_num) => {
                     const elapsed = move[2];
                     game_elapsed.add(elapsed);
-                    game_elapseds.push(game_elapsed.clone());
+                    move_elapsed.push(game_elapsed.clone());
                     black_elapsed.add(elapsed);
                     const move_string = show_seconds_nicely(elapsed);
                     return (
@@ -119,7 +119,7 @@ export function GameTimings(props: GameTimingProperties): JSX.Element {
                             <div>{move_num + 1}</div>
                             <div>{move_string}</div>
                             <div>-</div>
-                            <div>{`${game_elapseds[move_num].format()}`}</div>
+                            <div>{`${move_elapsed[move_num].format()}`}</div>
                         </React.Fragment>
                     );
                 })
@@ -129,52 +129,56 @@ export function GameTimings(props: GameTimingProperties): JSX.Element {
                 non_handicap_moves
                     .map((move, move_num) => {
                         const blacks_turn: boolean = move_num % 2 === 0;
-                        const elapsed = move[2];
+                        const elapsed = (move as AdHocPackedMove)[2];
                         game_elapsed.add(elapsed);
-                        game_elapseds.push(game_elapsed.clone());
+                        move_elapsed.push(game_elapsed.clone());
                         if (blacks_turn) {
                             black_elapsed.add(elapsed);
                         } else {
                             white_elapsed.add(elapsed);
                         }
-                        return show_seconds_nicely(elapsed);
+                        return show_seconds_nicely(elapsed as any);
                     })
                     // pair them up into black and white move pairs, along with the elapsed time to that point
                     .reduce((acc, value, index, orig) => {
                         if (index % 2 === 0) {
                             // the elapsed array can contain handicap moves, we have to skip past those
-                            const elapseds_index =
+                            const move_elapsed_index =
                                 props.free_handicap_placement && props.handicap > 1
                                     ? props.handicap - 1 + index
                                     : index;
                             // if white didn't play (therefore has no elapsed) then the elapsed up to here is black's elapsed
-                            const total_elapsed = game_elapseds[elapseds_index + 1]
-                                ? game_elapseds[elapseds_index + 1]
-                                : game_elapseds[elapseds_index];
-                            const blur1 = non_handicap_moves?.[index]?.[4]?.blur;
-                            const blur2 = non_handicap_moves?.[index + 1]?.[4]?.blur;
+                            const total_elapsed = move_elapsed[move_elapsed_index + 1]
+                                ? move_elapsed[move_elapsed_index + 1]
+                                : move_elapsed[move_elapsed_index];
+                            const blur1 = (non_handicap_moves as any)?.[index]?.[4]?.blur;
+                            const blur2 = (non_handicap_moves as any)?.[index + 1]?.[4]?.blur;
                             const black_sgf_download =
-                                (non_handicap_moves?.[index]?.[4]?.sgf_downloaded_by || []).indexOf(
-                                    props.black_id,
-                                ) >= 0 ||
                                 (
-                                    non_handicap_moves?.[index + 1]?.[4]?.sgf_downloaded_by || []
+                                    (non_handicap_moves as any)?.[index]?.[4]?.sgf_downloaded_by ||
+                                    []
+                                ).indexOf(props.black_id) >= 0 ||
+                                (
+                                    (non_handicap_moves as any)?.[index + 1]?.[4]
+                                        ?.sgf_downloaded_by || []
                                 ).indexOf(props.black_id) >= 0;
                             const white_sgf_download =
-                                (non_handicap_moves?.[index]?.[4]?.sgf_downloaded_by || []).indexOf(
-                                    props.white_id,
-                                ) >= 0 ||
                                 (
-                                    non_handicap_moves?.[index + 1]?.[4]?.sgf_downloaded_by || []
+                                    (non_handicap_moves as any)?.[index]?.[4]?.sgf_downloaded_by ||
+                                    []
+                                ).indexOf(props.white_id) >= 0 ||
+                                (
+                                    (non_handicap_moves as any)?.[index + 1]?.[4]
+                                        ?.sgf_downloaded_by || []
                                 ).indexOf(props.white_id) >= 0;
                             let other_sgf_download = false;
-                            for (const player_id of non_handicap_moves?.[index]?.[4]
+                            for (const player_id of (non_handicap_moves as any)?.[index]?.[4]
                                 ?.sgf_downloaded_by || []) {
                                 if (player_id !== props.black_id && player_id !== props.white_id) {
                                     other_sgf_download = true;
                                 }
                             }
-                            for (const player_id of non_handicap_moves?.[index + 1]?.[4]
+                            for (const player_id of (non_handicap_moves as any)?.[index + 1]?.[4]
                                 ?.sgf_downloaded_by || []) {
                                 if (player_id !== props.black_id && player_id !== props.white_id) {
                                     other_sgf_download = true;
@@ -192,7 +196,7 @@ export function GameTimings(props: GameTimingProperties): JSX.Element {
                             ]);
                         }
                         return acc;
-                    }, [])
+                    }, [] as any[])
                     // render them in a move pair per row
                     .map((move_pair, idx) => {
                         const black_move_time = move_pair[0];
@@ -234,11 +238,12 @@ export function GameTimings(props: GameTimingProperties): JSX.Element {
             <div>{/* empty cell at end of row */}</div>
             <div className="span-3">Final action:</div>
             <div>
-                {show_seconds_resolution(
-                    moment
-                        .duration(props.end_time - props.start_time, "seconds")
-                        .subtract(game_elapsed),
-                )}
+                {props.end_time &&
+                    show_seconds_resolution(
+                        moment
+                            .duration(props.end_time - props.start_time, "seconds")
+                            .subtract(game_elapsed),
+                    )}
             </div>
             <div>{/* empty cell at end of row */}</div>
         </div>

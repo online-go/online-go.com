@@ -68,7 +68,7 @@ interface PlayControlsProps {
 
     readonly review_list: Array<{ owner: PlayerCacheEntry; id: number }>;
 
-    stashed_conditional_moves: GoConditionalMove;
+    stashed_conditional_moves?: GoConditionalMove;
 
     mode: GobanModes;
     phase: GoEnginePhase;
@@ -99,7 +99,7 @@ interface PlayControlsProps {
 }
 
 const useConditionalMoveTree = generateGobanHook(
-    (goban) => goban.conditional_tree,
+    (goban) => goban?.conditional_tree,
     ["mode", "conditional-moves.updated"],
 );
 
@@ -130,7 +130,8 @@ export function PlayControls({
     const { registerTargetItem, triggerFlow, signalUsed } = React.useContext(DynamicHelp.Api);
     const { ref: game_state_pane } = registerTargetItem("undo-requested-message");
     const [searchParams] = useSearchParams();
-    const return_url = is_valid_url(searchParams.get("return")) ? searchParams.get("return") : null;
+    const return_param = searchParams.get("return");
+    const return_url = return_param && is_valid_url(return_param) ? return_param : null;
     const [stone_removal_accept_disabled, setStoneRemovalAcceptDisabled] = React.useState(false);
 
     const user_is_active_player = [engine.players.black.id, engine.players.white.id].includes(
@@ -199,7 +200,7 @@ export function PlayControls({
         goban.setMode("play");
         if (stashed_conditional_moves) {
             goban.setConditionalTree(stashed_conditional_moves);
-            stashed_conditional_moves = null;
+            stashed_conditional_moves = undefined;
         }
     };
     const goban_resumeGame = () => {
@@ -209,14 +210,14 @@ export function PlayControls({
         goban.jumpToLastOfficialMove();
     };
     const acceptConditionalMoves = () => {
-        stashed_conditional_moves = null;
+        stashed_conditional_moves = undefined;
         goban.saveConditionalMoves();
         goban.setMode("play");
     };
 
     const rematch = () => {
         try {
-            $(document.activeElement).blur();
+            $(document.activeElement as any).blur();
         } catch (e) {
             console.error(e);
         }
@@ -344,16 +345,18 @@ export function PlayControls({
                         </button>
                     )}
                     <div>
-                        {engine.players.black.id === goban.pause_control.paused.pausing_player_id ||
+                        {engine.players.black.id ===
+                            goban.pause_control!.paused?.pausing_player_id ||
                         (engine.rengo &&
+                            engine.rengo_teams &&
                             engine.rengo_teams.black
                                 .map((p) => p.id)
-                                .includes(goban.pause_control.paused.pausing_player_id))
+                                .includes(goban.pause_control?.paused?.pausing_player_id ?? 0))
                             ? interpolate(_("{{pauses_left}} pauses left for Black"), {
-                                  pauses_left: goban.pause_control.paused.pauses_left,
+                                  pauses_left: goban.pause_control?.paused?.pauses_left,
                               })
                             : interpolate(_("{{pauses_left}} pauses left for White"), {
-                                  pauses_left: goban.pause_control.paused.pauses_left,
+                                  pauses_left: goban.pause_control?.paused?.pauses_left,
                               })}
                     </div>
                 </div>
@@ -390,7 +393,7 @@ export function PlayControls({
                     )}
                     {(return_url || null) && (
                         <div className="return-url">
-                            <a href={return_url} rel="noopener">
+                            <a href={return_url as string} rel="noopener">
                                 {interpolate(
                                     pgettext(
                                         "Link to where the user came from",
@@ -500,7 +503,12 @@ export function PlayControls({
                         <span className="move-current" onClick={goban_jumpToLastOfficialMove}>
                             {_("Current Move")}
                         </span>
-                        <ConditionalMoveTreeDisplay tree={conditional_moves} cpath="" />
+                        {(conditional_moves || null) && (
+                            <ConditionalMoveTreeDisplay
+                                tree={conditional_moves as GoConditionalMove}
+                                conditional_path=""
+                            />
+                        )}
                     </div>
                 </div>
             )}
@@ -597,17 +605,12 @@ interface AnalyzeButtonBarProps {
     analyze_pencil_color: string;
     is_review: boolean;
     mode: GobanModes;
-    copied_node: React.MutableRefObject<MoveTree>;
-
-    // called when user passes in analysis
-    // Is this still needed? I think an event could be emitted to similar effect... -BPJ
-    forceUpdate: (nonce: number) => void;
+    copied_node: React.MutableRefObject<MoveTree | undefined>;
 }
 export function AnalyzeButtonBar({
     setAnalyzeTool,
     setAnalyzePencilColor,
     analyze_pencil_color,
-    forceUpdate,
     is_review,
     mode,
     copied_node,
@@ -626,8 +629,8 @@ export function AnalyzeButtonBar({
         goban.on("analyze_subtool", set_analyze_subtool);
     });
 
-    const setPencilColor = (ev) => {
-        const color = (ev.target as HTMLInputElement).value;
+    const setPencilColor = (ev: React.ChangeEvent<HTMLInputElement>) => {
+        const color = ev.target.value;
         if (goban.analyze_tool === "draw") {
             goban.analyze_subtool = color;
         }
@@ -635,8 +638,6 @@ export function AnalyzeButtonBar({
     };
     const analysis_pass = () => {
         goban.pass();
-        // Do we really need to forceUpdate here?
-        forceUpdate(Math.random());
     };
 
     const goban_setModeDeferredPlay = () => {
@@ -800,7 +801,7 @@ export function AnalyzeButtonBar({
                     <button
                         onClick={() => automateBranch(goban)}
                         title={_("Copy branch to conditional move planner")}
-                        disabled={user_id === currentPlayer(goban)}
+                        disabled={user_id === goban.engine.playerToMoveOnOfficialBranch()}
                     >
                         <i className="fa fa-exchange"></i>
                     </button>
@@ -826,7 +827,7 @@ export function AnalyzeButtonBar({
 
 export function copyBranch(
     goban: Goban,
-    copied_node: React.MutableRefObject<MoveTree>,
+    copied_node: React.MutableRefObject<MoveTree | undefined>,
     mode: GobanModes,
 ) {
     if (mode !== "analyze") {
@@ -835,7 +836,7 @@ export function copyBranch(
 
     try {
         /* Don't try to copy branches when the user is selecting stuff somewhere on the page */
-        if (!window.getSelection().isCollapsed) {
+        if (!window.getSelection()?.isCollapsed) {
             return;
         }
     } catch (e) {
@@ -847,7 +848,7 @@ export function copyBranch(
 }
 export function pasteBranch(
     goban: Goban,
-    copied_node: React.MutableRefObject<MoveTree>,
+    copied_node: React.MutableRefObject<MoveTree | undefined>,
     mode: GobanModes,
 ) {
     if (mode !== "analyze") {
@@ -856,7 +857,7 @@ export function pasteBranch(
 
     try {
         /* Don't try to paste branches when the user is selecting stuff somewhere on the page */
-        if (!window.getSelection().isCollapsed) {
+        if (!window.getSelection()?.isCollapsed) {
             return;
         }
     } catch (e) {
@@ -899,7 +900,7 @@ export function deleteBranch(goban: Goban, mode: GobanModes) {
 
     try {
         /* Don't try to delete branches when the user is selecting stuff somewhere on the page */
-        if (!window.getSelection().isCollapsed) {
+        if (!window.getSelection()?.isCollapsed) {
             return;
         }
     } catch (e) {
@@ -963,10 +964,12 @@ const useReviewOutOfSync = generateGobanHook(
             return review_out_of_sync;
         }
         const engine = goban.engine;
-        review_out_of_sync =
+        review_out_of_sync = !!(
             engine.cur_move &&
             engine.cur_review_move &&
-            engine.cur_move.id !== engine.cur_review_move.id;
+            engine.cur_move.id !== engine.cur_review_move.id
+        );
+
         return review_out_of_sync;
     },
     ["cur_move", "review.updated"],
@@ -992,15 +995,15 @@ export function ReviewControls({
     const review_controller_id = useReviewControllerId(goban);
     const review_out_of_sync = useReviewOutOfSync(goban);
     React.useEffect(() => {
-        const renderExtraPlayerActions = (player_id: number) => {
+        const renderExtraPlayerActions = (player_id: number): JSX.Element | null => {
             const user = data.get("user");
             if (
                 review_id &&
                 goban &&
                 (goban.review_controller_id === user.id || goban.review_owner_id === user.id)
             ) {
-                let is_owner = null;
-                let is_controller = null;
+                let is_owner: any = null;
+                let is_controller: any = null;
                 if (goban.review_owner_id === player_id) {
                     is_owner = (
                         <div style={{ fontStyle: "italic" }}>
@@ -1056,9 +1059,9 @@ export function ReviewControls({
     }, [goban]);
 
     const [move_text, set_move_text] = React.useState<string>();
-    const updateMoveText = (ev) => {
+    const updateMoveText = (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
         set_move_text(ev.target.value);
-        goban.syncReviewMove(null, ev.target.value);
+        goban.syncReviewMove(undefined, ev.target.value);
     };
     React.useEffect(() => {
         const sync_move_text = () => set_move_text(goban.engine.cur_move?.text || "");
@@ -1082,11 +1085,12 @@ export function ReviewControls({
             <div className="game-state">
                 {(mode === "analyze" || null) && (
                     <div>
-                        {_("Review by")}: <Player user={review_owner_id} />
+                        {_("Review by")}: <Player user={review_owner_id as number} />
                         {((review_controller_id && review_controller_id !== review_owner_id) ||
                             null) && (
                             <div>
-                                {_("Review controller")}: <Player user={review_controller_id} />
+                                {_("Review controller")}:{" "}
+                                <Player user={review_controller_id as number} />
                             </div>
                         )}
                     </div>
@@ -1208,12 +1212,12 @@ function stoneRemovalAccepted(goban: GobanCore, color: PlayerColor) {
 }
 
 const useOfficialMoveNumber = generateGobanHook(
-    (goban) => goban.engine.last_official_move?.move_number || -1,
+    (goban) => goban!.engine.last_official_move?.move_number || -1,
     ["last_official_move"],
 );
-const useWinner = generateGobanHook((goban) => goban.engine.winner, ["winner"]);
+const useWinner = generateGobanHook((goban) => goban!.engine.winner, ["winner"]);
 const usePaused = generateGobanHook(
-    (goban) => goban.pause_control && !!goban.pause_control.paused,
+    (goban) => goban!.pause_control && !!goban!.pause_control.paused,
     ["paused"],
 );
 
@@ -1253,7 +1257,7 @@ function automateBranch(goban: Goban): void {
         return;
     }
 
-    if (data.get("user").id === currentPlayer(goban)) {
+    if (data.get("user").id === goban.engine.playerToMoveOnOfficialBranch()) {
         toast(<div>{_("You cannot make conditional moves on your turn.")}</div>, 2000);
         return;
     }
@@ -1307,21 +1311,11 @@ function mergeConditionalTrees(a: ConditionalMoveTree, b: ConditionalMoveTree): 
     }
 }
 
-// Returns current player, ignoring any provisional stones on the board.
-function currentPlayer(goban: Goban): number {
-    const engine = goban.engine;
-    const backup = engine.cur_move;
-    engine.jumpTo(engine.last_official_move);
-    const ret = engine.playerToMove();
-    engine.jumpTo(backup);
-    return ret;
-}
-
 function AnnulmentReason({
     reason,
-}: null | {
-    reason: rest_api.AnnulmentReason | { cancellation?: true; premature_timeout?: true };
-}): JSX.Element {
+}: {
+    reason: rest_api.AnnulmentReason | { cancellation?: true; premature_timeout?: true } | null;
+}): JSX.Element | null {
     if (!reason) {
         return null;
     }
@@ -1352,7 +1346,7 @@ function AnnulmentReason({
                 arr.push(<div key={key}>{_("This game has been annulled by a moderator.")}</div>);
                 break;
             case "bad_bot":
-                // "Bad bots" are bots that were decidably horrible and harmful
+                // "Bad bots" are bots that were decidedly horrible and harmful
                 // for the rating system. These primarily consist of older bots
                 // and is not generally used for modern games, hence the reason
                 // this is left untranslated.

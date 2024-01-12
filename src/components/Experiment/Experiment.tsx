@@ -24,7 +24,7 @@ interface ExperimentProps {
     children: React.ReactElement[];
 }
 
-export function Experiment({ name, children }: ExperimentProps): JSX.Element {
+export function Experiment({ name, children }: ExperimentProps): JSX.Element | undefined {
     if (children.filter((x) => x.type === Default).length !== 1) {
         throw new Error("Experiment must have exactly one Default child");
     }
@@ -35,12 +35,12 @@ export function Experiment({ name, children }: ExperimentProps): JSX.Element {
         children.find((x) => x.props?.value === selected) ||
         children.find((x) => x.type === Default);
 
-    if (matching_child.type === Default && selected) {
+    if (matching_child?.type === Default && selected) {
         console.warn("Experiment", name, "has no matching child for value", selected);
     }
 
-    React.useEffect(() => {
-        const body_class = matching_child?.props?.bodyclass;
+    React.useEffect((): (() => void) | void => {
+        const body_class = matching_child?.props?.bodyclass; // cspell: disable-line
         if (body_class) {
             document.body.classList.add(body_class);
             return () => {

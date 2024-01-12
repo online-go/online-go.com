@@ -38,8 +38,8 @@ export function OOLSpectatorIntro(): JSX.Element {
             <HelpItem target="spectator-wait" position={"top-right"}>
                 <div>
                     {pgettext(
-                        "A message to spectators who've come to see a leage game",
-                        "When both players have presssed their 'ready' button the game will start.",
+                        "A message to spectators who've come to see a league game",
+                        "When both players have pressed their 'ready' button the game will start.",
                     )}
                 </div>
             </HelpItem>

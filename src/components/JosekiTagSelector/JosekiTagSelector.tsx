@@ -28,7 +28,7 @@ export interface JosekiTag {
 interface JosekiTagSelectorProps {
     available_tags: JosekiTag[];
     selected_tags: JosekiTag[];
-    on_tag_update: (newvalue: MultiValue<JosekiTag>) => void;
+    on_tag_update: (new_value: MultiValue<JosekiTag>) => void;
 }
 
 export function JosekiTagSelector(props: JosekiTagSelectorProps) {

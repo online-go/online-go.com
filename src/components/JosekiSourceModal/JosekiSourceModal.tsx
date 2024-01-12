@@ -28,7 +28,7 @@ interface JosekiSourceModalProperties {
 }
 
 export class JosekiSourceModal extends Modal<Events, JosekiSourceModalProperties, any> {
-    constructor(props) {
+    constructor(props: JosekiSourceModalProperties) {
         super(props);
 
         this.state = {
@@ -37,14 +37,14 @@ export class JosekiSourceModal extends Modal<Events, JosekiSourceModalProperties
         };
     }
 
-    setDescription = (e) => {
+    setDescription = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.value.length < 45) {
             // none longer than this at josekipedia
             this.setState({ description: e.target.value });
         }
     };
 
-    setUrl = (e) => {
+    setUrl = (e: React.ChangeEvent<HTMLInputElement>) => {
         this.setState({ url: e.target.value });
     };
 

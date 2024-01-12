@@ -20,10 +20,10 @@ import * as React from "react";
 interface StarRatingProperties {
     value: number;
     rated?: boolean;
-    onChange?: (value) => void;
+    onChange?: (value: number) => void;
 }
 
-function star_class(rating, v) {
+function star_class(rating: number, v: number) {
     if (rating - (v - 1) < 1.0) {
         if (rating - (v - 1) >= 0.5) {
             return "fa-star-half-o";
@@ -36,17 +36,17 @@ function star_class(rating, v) {
 }
 
 export class StarRating extends React.PureComponent<StarRatingProperties, { rating: number }> {
-    setters = [];
-    preview = [];
+    setters: ((x: React.MouseEvent) => void)[] = [];
+    preview: (() => void)[] = [];
 
-    constructor(props) {
+    constructor(props: StarRatingProperties) {
         super(props);
         this.state = {
             rating: Math.max(0, Math.min(5, props.value)),
         };
 
         for (let i = 1; i <= 5; ++i) {
-            this.setters.push(this.props.onChange ? () => this.props.onChange(i) : () => 0);
+            this.setters.push(() => (this.props.onChange ? this.props.onChange(i) : 0));
         }
 
         for (let i = 1; i <= 5; ++i) {
@@ -54,13 +54,13 @@ export class StarRating extends React.PureComponent<StarRatingProperties, { rati
         }
     }
 
-    componentDidUpdate(oldProps) {
+    componentDidUpdate(oldProps: StarRatingProperties) {
         if (this.props.value !== oldProps.value) {
             this.setState({ rating: Math.max(0, Math.min(5, oldProps.value)) });
         }
     }
 
-    unpreview = () => {
+    stop_previewing = () => {
         if (!this.props.onChange) {
             return;
         }
@@ -82,7 +82,7 @@ export class StarRating extends React.PureComponent<StarRatingProperties, { rati
                         className={"fa " + star_class(this.state.rating, v)}
                         onClick={this.setters[idx]}
                         onMouseOver={this.preview[idx]}
-                        onMouseOut={this.unpreview}
+                        onMouseOut={this.stop_previewing}
                     />
                 ))}
             </span>

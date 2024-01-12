@@ -54,7 +54,7 @@ export function PreferenceToggle(props: {
                 <Toggle
                     id={`preference-toggle-${props.preference}`}
                     onChange={setPreference}
-                    checked={on}
+                    checked={!!on}
                 />
             </label>
         </div>

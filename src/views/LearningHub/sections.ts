@@ -70,7 +70,7 @@ export class Semeai extends LearningHubSection {
         return pgettext("Tutorial section on semeai", "Semeai");
     }
     static subtext(): string {
-        return pgettext("Tutorial section on semeai", "Attacking eachother");
+        return pgettext("Tutorial section on semeai", "Attacking each other");
     }
 }
 export class CountingLiberties extends LearningHubSection {
@@ -114,11 +114,11 @@ export class BenefitsOfLearningGo extends LearningHubSection {
         return "benefits-of-learning-go";
     }
     static title(): string {
-        return pgettext("Tutorial section on beneifts to learning go", "Benefits of learning Go");
+        return pgettext("Tutorial section on benefits to learning go", "Benefits of learning Go");
     }
     static subtext(): string {
         return pgettext(
-            "Tutorial section on beneifts to learning go",
+            "Tutorial section on benefits to learning go",
             "It's more than just a game!",
         );
     }
@@ -164,7 +164,7 @@ export const sections: [string, any[]][] = [
     */
 ];
 
-export let allsections: Array<typeof LearningHubSection> = [];
+export let all_sections: Array<typeof LearningHubSection> = [];
 for (const S of sections) {
-    allsections = allsections.concat(S[1]);
+    all_sections = all_sections.concat(S[1]);
 }

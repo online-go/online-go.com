@@ -21,7 +21,14 @@ const TEST_USER = {
     anonymous: false,
     id: 0,
     registration_date: "",
-    ratings: undefined,
+    ratings: {
+        version: 5,
+        overall: {
+            rating: 1500,
+            deviation: 350,
+            volatility: 0.06,
+        },
+    },
     country: "",
     professional: false,
     ranking: 0,
@@ -30,6 +37,7 @@ const TEST_USER = {
     is_moderator: false,
     is_superuser: false,
     moderator_powers: 0,
+    offered_moderator_powers: 0,
     is_tournament_moderator: false,
     supporter: false,
     supporter_level: 0,

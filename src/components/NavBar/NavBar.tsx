@@ -19,7 +19,6 @@ import * as React from "react";
 import { Link, useLocation } from "react-router-dom";
 
 import * as DynamicHelp from "react-dynamic-help";
-
 import * as data from "data";
 
 import { _, pgettext } from "translate";
@@ -41,11 +40,13 @@ import { logout } from "auth";
 import { useUser, useData } from "hooks";
 import { OmniSearch } from "./OmniSearch";
 
-import { MOD_POWER_HANDLE_SCORE_CHEAT } from "misc";
-
 const body = $(document.body);
 
-function _update_theme(theme: string) {
+function _update_theme(theme?: string) {
+    if (!theme) {
+        return;
+    }
+
     if (body.hasClass(theme)) {
         return;
     }
@@ -142,18 +143,18 @@ export function NavBar(): JSX.Element {
 
     //const valid_user = user.anonymous ? null : user;
 
-    // Don't show the signin link at the top if they arrived to the welcome page
+    // Don't show the sign-in link at the top if they arrived to the welcome page
     // (aka ChallengeLinkLanding)
-    // because that page has special treatment of signin, which takes them
+    // because that page has special treatment of sign-in, which takes them
     // to the challenge that they accepted via a challenge link, after logging them in.
     // We don't want to offer them a way of bailing out and signing in outside that.
     // (If they manually navigate away, it's no real harm, it's just that they won't
     //  get taken to the challenge they were in the middle of accepting).
 
-    const show_signin =
+    const show_sign_in =
         !window.location.pathname.includes("/sign-in") && // don't show the link to the page we're on
         !window.location.pathname.includes("/welcome") && // a challenge link page is being shown
-        !window.location.hash.includes("/welcome"); // the signin with redirect to challenge accept
+        !window.location.hash.includes("/welcome"); // the sign-in with redirect to challenge accept
 
     const show_appeal_box = !window.location.pathname.includes("/appeal");
 
@@ -165,7 +166,7 @@ export function NavBar(): JSX.Element {
                 (force_nav_close ? " force-nav-close" : "")
             }
         >
-            <KBShortcut shortcut="`" action={() => search_input.current.focus()} />
+            <KBShortcut shortcut="`" action={() => search_input.current?.focus()} />
 
             {banned_user_id && show_appeal_box ? <BanIndicator /> : null}
 
@@ -187,7 +188,8 @@ export function NavBar(): JSX.Element {
                 </Link>
                 <Menu title={_("Play")} to="/play">
                     <Link to="/play">
-                        <i className="ogs-goban"></i> {_("Play")}
+                        <i className="ogs-goban"></i>
+                        {_("Play")}
                     </Link>
                     <Link to="/tournaments">
                         <i className="fa fa-trophy"></i>
@@ -277,8 +279,7 @@ export function NavBar(): JSX.Element {
                         {_("Rating Calculator")}
                     </Link>
 
-                    {(user.is_moderator ||
-                        !!(user.moderator_powers & MOD_POWER_HANDLE_SCORE_CHEAT)) && (
+                    {(user.is_moderator || !!user.moderator_powers) && (
                         <Link className="admin-link" to="/reports-center">
                             <i className="fa fa-exclamation-triangle"></i>
                             {_("Reports Center")}
@@ -373,7 +374,7 @@ export function NavBar(): JSX.Element {
                         <span className="spacer" />
                         <i className="fa fa-adjust" onClick={toggleTheme} />
                         <LanguagePicker />
-                        {(show_signin || null) && (
+                        {(show_sign_in || null) && (
                             <Link className="sign-in" to={"/sign-in#" + location.pathname}>
                                 {_("Sign In")}
                             </Link>
@@ -381,7 +382,7 @@ export function NavBar(): JSX.Element {
                     </>
                 ) : (
                     <>
-                        <span className="spacer" />
+                        <div className="spacer" />
                         <IncidentReportTracker />
                         <ChatIndicator />
                         <TournamentIndicator />

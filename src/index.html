@@ -153,6 +153,18 @@
   </head>
   <body>
       <script>
+        /** We don't care about these errors */
+        window.addEventListener("error", (e) => {
+            if (
+                e.message.indexOf("ResizeObserver loop completed with undelivered notifications") >= 0 ||
+                e.message.indexOf("ResizeObserver loop limit exceeded") >= 0 ||
+                e.message.indexOf("Script error.") >= 0
+            ) {
+                e.stopImmediatePropagation();
+                return false;
+            }
+        });
+
         /* When browsers use Google Translate it breaks React apps like ours because they
          * replace text nodes with <font> tags, changing the dom structure and causing
          * React to throw errors. 
@@ -351,11 +363,13 @@
         function getPreferredLanguage() {
             try {
                 var set_lang = JSON.parse(localStorage.getItem('ogs.preferences.language') || 'null');
-                var lang = isSupportedLanguage(set_lang);
-                if (lang) {
-                    return lang;
-                } else if (set_lang && localStorage.getItem('ogs.preferences.language') != '"auto"') {
-                    console.error('User selected language: ', localStorage.getItem('ogs.preferences.language'), 'is not a recognized supported language');
+                if (set_lang !== "auto") {
+                    var lang = isSupportedLanguage(set_lang);
+                    if (lang) {
+                        return lang;
+                    } else if (set_lang && localStorage.getItem('ogs.preferences.language') != '"auto"') {
+                        console.error('User selected language: ', localStorage.getItem('ogs.preferences.language'), 'is not a recognized supported language');
+                    }
                 }
             } catch (e) {
                 console.error(e);
@@ -388,7 +402,7 @@
         }
         window['ogs_current_language'] = ogs_current_language || 'en';
 
-        /* Load our transations */
+        /* Load our translations */
         var language_path = "{{CDN_SERVICE}}/{{RELEASE}}/locale/" + ogs_current_language + ".{{LANGUAGE_VERSION_DOTJS}}";
         language_path = language_path.replace('///', '/'); /* in dev mode, we don't use the cdn or release vars */
         document.write('<script defer src="' + language_path + '"><' + '/script>');

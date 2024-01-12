@@ -18,9 +18,9 @@
 const gobanSelector = ".goban-container .Goban .Goban";
 
 export function disableTouchAction(selector: string = gobanSelector) {
-    document.querySelector(selector).classList.add("no-touch-action");
+    document.querySelector(selector)?.classList.add("no-touch-action");
 }
 
 export function enableTouchAction(selector: string = gobanSelector) {
-    document.querySelector(selector).classList.remove("no-touch-action");
+    document.querySelector(selector)?.classList.remove("no-touch-action");
 }

@@ -15,6 +15,8 @@ import { uiPushActions } from "../../components/UIPush/MockUIPush";
 
 import { OnlineLeaguePlayerLanding } from "./OnlineLeaguePlayerLanding";
 
+/* cspell: disable */
+
 // Test data
 
 const TEST_USER = {
@@ -22,7 +24,14 @@ const TEST_USER = {
     anonymous: false,
     id: 0,
     registration_date: "",
-    ratings: undefined,
+    ratings: {
+        version: 5,
+        overall: {
+            rating: 1500,
+            deviation: 350,
+            volatility: 0.006,
+        },
+    },
     country: "",
     professional: false,
     ranking: 0,
@@ -32,6 +41,7 @@ const TEST_USER = {
     is_superuser: false,
     is_tournament_moderator: false,
     moderator_powers: 0,
+    offered_moderator_powers: 0,
     supporter: false,
     supporter_level: 0,
     tournament_admin: false,
@@ -93,7 +103,7 @@ describe("COOL Player landing tests", () => {
             },
         );
 
-        let rendered: HTMLElement;
+        let rendered: HTMLElement | undefined;
         await act(async () => {
             rendered = render(
                 <OgsHelpProvider>
@@ -110,9 +120,10 @@ describe("COOL Player landing tests", () => {
                 </OgsHelpProvider>,
             ).container;
         });
+        rendered = rendered as HTMLElement;
 
         // There should be a welcome header for not-logged in players
-        expect(rendered.querySelector("#cool-player-landing-header"))
+        expect(rendered?.querySelector("#cool-player-landing-header"))
             .toBeInTheDocument()
             .toHaveTextContent("Welcome");
 
@@ -157,7 +168,7 @@ describe("COOL Player landing tests", () => {
         jest.spyOn(ogs_hooks, "useUser").mockReturnValue(TEST_USER);
 
         // we have to clear this, because it's left over from other tests :S
-        data.set("pending_league_match", null);
+        data.set("pending_league_match", undefined);
 
         // Landing page hits back-end to find out match status
         (requests.get as jest.MockedFunction<typeof requests.get>).mockImplementation(
@@ -169,7 +180,7 @@ describe("COOL Player landing tests", () => {
             },
         );
 
-        let rendered: HTMLElement;
+        let rendered: HTMLElement | undefined;
         await act(async () => {
             rendered = render(
                 <OgsHelpProvider>
@@ -186,6 +197,7 @@ describe("COOL Player landing tests", () => {
                 </OgsHelpProvider>,
             ).container;
         });
+        rendered = rendered as HTMLElement;
 
         // There should not be a "welcome" header for logged in players
         expect(rendered.querySelector("#cool-player-landing-header"))
@@ -249,7 +261,7 @@ describe("COOL Player landing tests", () => {
 
         // We need to update the opponent status when the server tells us
         await act(async () => {
-            uiPushActions["online-league-game-waiting"]({
+            (uiPushActions as any)["online-league-game-waiting"]({
                 matchId: 1,
                 black: false,
                 white: true,
@@ -261,7 +273,7 @@ describe("COOL Player landing tests", () => {
 
         // And go to game when the server tells us
         await act(async () => {
-            uiPushActions["online-league-game-commencement"]({
+            (uiPushActions as any)["online-league-game-commencement"]({
                 matchId: 1,
                 gameId: 999,
             });

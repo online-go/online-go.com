@@ -26,6 +26,8 @@ import { OOLUserIntro } from "./OOLUserIntro";
 import { OOLSpectatorIntro } from "./OOLSpectatorIntro";
 import { UndoRequestedIntro } from "./UndoIntro";
 import { UndoRequestReceivedIntro } from "./UndoIntro";
+import { CommunityModeratorIntro } from "./CommunityModeratorIntro";
+import { OJEIntro } from "./OJEIntro";
 
 /**
  * This component is a handy wrapper for all the Help Flows, and reset on login/logout
@@ -60,14 +62,14 @@ export function HelpFlows(): JSX.Element {
 
     React.useEffect(() => {
         if (helpSystemStatus().initialized) {
-            const linked_challenge = data.get("challenge_link_registration", null);
+            const linked_challenge = data.get("challenge_link_registration");
             if (linked_challenge) {
                 if (linked_challenge.rengo) {
                     triggerFlow("guest-user-intro-rengo");
                 }
 
                 triggerFlow("guest-user-intro");
-                data.set("challenge_link_registration", null);
+                data.set("challenge_link_registration", undefined);
             }
         }
     });
@@ -83,6 +85,10 @@ export function HelpFlows(): JSX.Element {
 
             <UndoRequestedIntro />
             <UndoRequestReceivedIntro />
+
+            <CommunityModeratorIntro />
+
+            <OJEIntro />
         </>
     );
 }

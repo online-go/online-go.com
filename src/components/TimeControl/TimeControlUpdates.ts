@@ -169,10 +169,10 @@ function restrictSpinnerProperty<T extends TimeControl, U extends keyof T & stri
 
 function restrictRangedInputProperty(tc: TimeControl, property: string) {
     const range = getInputRange(tc.speed, tc.system, property);
-    const value = tc[property];
+    const value = (tc as any)[property];
     if (range != null && typeof value == "number") {
         const [min, max] = range;
-        tc[property] = Math.min(Math.max(min, value), max);
+        (tc as any)[property] = Math.min(Math.max(min, value), max);
     } else {
         console.warn(`Trying to restrict an invalid property: ${property}.`);
     }

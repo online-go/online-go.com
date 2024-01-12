@@ -21,16 +21,16 @@ import * as data from "data";
 import * as moment from "moment";
 import { usePreference } from "preferences";
 
-export function TournamentIndicator(): JSX.Element {
-    const [tournament, setTournament] = React.useState(null);
+export function TournamentIndicator(): JSX.Element | null {
+    const [tournament, setTournament] = React.useState<any>(null);
     const [minutes_left, setMinutesLeft] = React.useState(0);
     const [seconds_left, setSecondsLeft] = React.useState(0);
     const [enabled] = usePreference("show-tournament-indicator");
     const [enabled_on_mobile] = usePreference("show-tournament-indicator-on-mobile");
 
-    React.useEffect(() => {
+    React.useEffect((): (() => void) | void => {
         if (enabled) {
-            const onActiveTournament = (tournament) => {
+            const onActiveTournament = (tournament: any) => {
                 setTournament(tournament);
             };
             data.watch("active-tournament", onActiveTournament);
@@ -42,12 +42,12 @@ export function TournamentIndicator(): JSX.Element {
         }
     }, [enabled]);
 
-    React.useEffect(() => {
+    React.useEffect((): (() => void) | void => {
         if (tournament && enabled) {
             const update = () => {
                 const t = (moment(tournament.expiration).toDate().getTime() - Date.now()) / 1000;
                 if (t < 0) {
-                    data.set("active-tournament", null);
+                    data.set("active-tournament", undefined);
                 } else {
                     setMinutesLeft(Math.floor(t / 60));
                     setSecondsLeft(Math.floor(t % 60));

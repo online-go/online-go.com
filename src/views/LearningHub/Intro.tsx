@@ -16,7 +16,7 @@
  */
 
 import { PuzzleConfig } from "goban";
-import { LearningPage } from "./LearningPage";
+import { LearningPage, LearningPageProperties } from "./LearningPage";
 import { _, pgettext } from "translate";
 import { LearningHubSection } from "./LearningHubSection";
 
@@ -40,13 +40,13 @@ export class Intro extends LearningHubSection {
 }
 
 class Page1 extends LearningPage {
-    constructor(props) {
+    constructor(props: LearningPageProperties) {
         super(props);
     }
 
     text() {
         return _(
-            "You can play a stone on any crossline, even the outer ones. The goal of the game is to surround the largest areas. Stones don't move but can be captured. Make a move to continue",
+            "You can play a stone on any intersection, even the outer ones. The goal of the game is to surround the largest areas. Stones don't move but can be captured. Make a move to continue",
         );
     }
     config(): PuzzleConfig {

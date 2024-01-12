@@ -49,6 +49,10 @@ interface GameListWhere {
     hide_beginning?: boolean;
     hide_middle?: boolean;
     hide_end?: boolean;
+    rengo_only?: boolean;
+    friend_games_only?: boolean;
+    /* cspell: disable-next-line */
+    malk_only?: boolean;
     players?: Array<number>;
 }
 
@@ -70,12 +74,12 @@ export class ObserveGamesComponent extends React.PureComponent<
     ObserveGamesComponentProperties,
     ObserveGamesComponentState
 > {
-    private last_refresh: number;
+    private last_refresh?: number;
     private next_refresh: any;
-    private auto_refresh: number;
+    private auto_refresh?: number;
     private channel?: string;
 
-    constructor(props) {
+    constructor(props: ObserveGamesComponentProperties) {
         super(props);
         this.state = {
             page: 1,
@@ -98,7 +102,7 @@ export class ObserveGamesComponent extends React.PureComponent<
         if (this.props.preferenceNamespace) {
             return data.get(
                 `observed-games.${this.props.preferenceNamespace}.${key}`,
-                preferences.get(key),
+                preferences.get(key as any),
             );
         }
         return preferences.get(key);
@@ -166,14 +170,14 @@ export class ObserveGamesComponent extends React.PureComponent<
     componentWillUnmount() {
         this.destroy();
     }
-    updateCounts = (counts) => {
+    updateCounts = (counts: { live: number; correspondence: number }) => {
         // console.log("updateCounts:". counts);
         this.setState({
             live_game_count: counts.live,
             corr_game_count: counts.correspondence,
         });
     };
-    setPageSize = (ev) => {
+    setPageSize = (ev: React.ChangeEvent<HTMLInputElement>) => {
         if (ev.target.value && parseInt(ev.target.value) >= 3 && parseInt(ev.target.value) <= 100) {
             const ct: number = parseInt(ev.target.value);
             this.namespacedPreferenceSet("observed-games-page-size", ct);
@@ -184,12 +188,12 @@ export class ObserveGamesComponent extends React.PureComponent<
             this.setPage(1);
             setTimeout(this.refresh, 1);
         } else {
-            this.setState({ page_size_text_input: ev.target.value });
+            this.setState({ page_size_text_input: Number(ev.target.value) });
         }
     };
     refresh = () => {
         const now = Date.now();
-        if (this.last_refresh != null && now - this.last_refresh < 1000.0) {
+        if (this.last_refresh !== undefined && now - this.last_refresh < 1000.0) {
             if (!this.next_refresh) {
                 this.next_refresh = setTimeout(
                     () => {
@@ -207,7 +211,7 @@ export class ObserveGamesComponent extends React.PureComponent<
         if (filter.friend_games_only) {
             delete filter.friend_games_only;
             try {
-                filter.players = data.get("cached.friends").map((friend) => friend.id);
+                filter.players = data.get("cached.friends")?.map((friend: any) => friend.id);
             } catch (e) {
                 console.error(e);
             }
@@ -224,6 +228,9 @@ export class ObserveGamesComponent extends React.PureComponent<
                 channel: this.channel,
             },
             (res) => {
+                if (!res) {
+                    return;
+                }
                 // console.log("gamelist/query res:", res);
 
                 const state_update: any = {
@@ -256,7 +263,7 @@ export class ObserveGamesComponent extends React.PureComponent<
             this.setPage(1);
         }
     };
-    setPage = (ev_or_page) => {
+    setPage = (ev_or_page: any) => {
         let page = parseInt(
             typeof ev_or_page === "number" ? ev_or_page : (ev_or_page.target as any).value,
         );
@@ -369,7 +376,7 @@ export class ObserveGamesComponent extends React.PureComponent<
                                     </div>
                                 )}
                                 <div className="right">
-                                    <label className="labelshow">{_("Show") + ":"}</label>
+                                    <label className="label_show">{_("Show") + ":"}</label>
                                     <input
                                         className="show"
                                         onChange={this.setPageSize}
@@ -402,14 +409,18 @@ export class ObserveGamesComponent extends React.PureComponent<
         );
     }
 
-    private filterOption(filter_field: string, name: string): JSX.Element {
+    private filterOption(filter_field: keyof GameListWhere, name: string): JSX.Element {
         const self = this;
 
         function toggle() {
-            const new_filters = dup(self.state.filters);
+            const new_filters: typeof self.state.filters = dup(self.state.filters);
 
             if (!new_filters[filter_field]) {
-                new_filters[filter_field] = true;
+                if (filter_field !== "players") {
+                    new_filters[filter_field] = true;
+                } else {
+                    new_filters[filter_field] = [];
+                }
             } else {
                 delete new_filters[filter_field];
             }
@@ -451,6 +462,7 @@ export class ObserveGamesComponent extends React.PureComponent<
                         pgettext("Filter games list", "Friend games only"),
                     )}
                     {this.filterOption(
+                        /* cspell: disable-next-line */
                         "malk_only",
                         pgettext("Filter games list", "Malkovich games only"),
                     )}

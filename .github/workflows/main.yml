@@ -30,7 +30,7 @@ jobs:
 
       - name: Cache node modules
         id: cache-node-modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: node_modules
           key: ${{ runner.os }}-node-modules
@@ -59,6 +59,10 @@ jobs:
 
       - name: Tests
         run: npx jest
+
+      - uses: streetsidesoftware/cspell-action@v5
+        with:
+            files: src/**/*.{ts,tsx}
 
       # Log compressed output size
       - name: Compressed sizes
