@@ -74,6 +74,7 @@ try {
          * that have nothing to do with OGS. This code filters some of these
          * out so they don't get reported to Sentry. */
         ignoreErrors: [
+            "ReferenceError",
             "coinbase",
             "hideMyLocation",
             "userAgent",
