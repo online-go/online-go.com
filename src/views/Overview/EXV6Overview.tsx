@@ -143,7 +143,6 @@ export class EXV6Overview extends React.Component<{}, OverviewState> {
     render() {
         const user = this.state.user;
 
-        console.log(user);
         return (
             <div id="Overview-Container">
                 <div id="Overview">
