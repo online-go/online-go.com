@@ -84,6 +84,7 @@ try {
             "onHide is not defined",
             "outputCurrentConfiguration",
             "mvpConfig",
+            "?(<anonymous>)",
             "Cannot read properties of undefined (reading 'ns')",
 
             // Library bugs
