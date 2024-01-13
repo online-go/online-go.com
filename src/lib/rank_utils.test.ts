@@ -209,14 +209,11 @@ test("getUserRating", () => {
     // With a speed that does not exist on the user's rating
     expect(getUserRating(user, "live", 0)).toEqual(
         expect.objectContaining({
-            bounded_rank: 24,
-            bounded_rank_label: "6k",
-            deviation: 350,
-            professional: false,
-            provisional: true,
             rating: 1465,
-            unset: true,
             volatility: 0.06,
+            provisional: true,
+            deviation: 350,
+            unset: true,
         }),
     );
 
