@@ -21,7 +21,7 @@ import { OgsResizeDetector } from "OgsResizeDetector";
 import { GobanCanvas, GobanCanvasConfig } from "goban";
 // Pull this out its own util
 import { goban_view_mode } from "Game/util";
-import { generateGobanHook } from "Game/GameHooks";
+//import { generateGobanHook } from "Game/GameHooks";
 
 interface GobanContainerProps {
     goban?: GobanCanvas;
@@ -55,58 +55,75 @@ export function GobanContainer({
             left: Math.ceil(ref_goban_container.current.offsetWidth - m.width) / 2,
         });
     };
-    const onResize = (no_debounce: boolean = false, do_cb: boolean = true) => {
-        if (!goban || !goban_div) {
-            return;
-        }
-
-        // Allow the consumer of this component to specify additional work
-        // that should be done when the goban container detects a resize.
-        if (do_cb && onResizeCb) {
-            onResizeCb();
-        }
-
-        if (resize_debounce.current) {
-            clearTimeout(resize_debounce.current);
-            resize_debounce.current = null;
-        }
-
-        if (!ref_goban_container.current) {
-            return;
-        }
-
-        if (goban_view_mode() === "portrait") {
-            const w = $(window).width() + 10;
-            if (ref_goban_container.current.style.minHeight !== `${w}px`) {
-                ref_goban_container.current.style.minHeight = `${w}px`;
+    const onResize = React.useCallback(
+        (no_debounce: boolean = false, do_cb: boolean = true) => {
+            console.error("onResize called");
+            if (!goban || !goban_div) {
+                return;
             }
-        } else {
-            if (ref_goban_container.current.style.minHeight !== `initial`) {
-                ref_goban_container.current.style.minHeight = `initial`;
-            }
-            const w = ref_goban_container.current.offsetWidth;
-            if (ref_goban_container.current.style.flexBasis !== `${w}px`) {
-                ref_goban_container.current.style.flexBasis = `${w}px`;
-            }
-        }
 
-        if (no_debounce) {
-            // Debouncing is necessary because setting the square size can be an expensive operation.
-            goban.setSquareSizeBasedOnDisplayWidth(
-                Math.min(
-                    ref_goban_container.current.offsetWidth,
-                    ref_goban_container.current.offsetHeight,
-                ),
-            );
-        } else {
-            resize_debounce.current = setTimeout(() => onResize(true), 10);
-        }
+            // Allow the consumer of this component to specify additional work
+            // that should be done when the goban container detects a resize.
+            if (do_cb && onResizeCb) {
+                onResizeCb();
+            }
 
-        recenterGoban();
-    };
+            if (resize_debounce.current) {
+                clearTimeout(resize_debounce.current);
+                resize_debounce.current = null;
+            }
+
+            if (!ref_goban_container.current) {
+                return;
+            }
+
+            if (goban_view_mode() === "portrait") {
+                const w = $(window).width() + 10;
+                if (ref_goban_container.current.style.minHeight !== `${w}px`) {
+                    ref_goban_container.current.style.minHeight = `${w}px`;
+                }
+            } else {
+                if (ref_goban_container.current.style.minHeight !== `initial`) {
+                    ref_goban_container.current.style.minHeight = `initial`;
+                }
+                const w = ref_goban_container.current.offsetWidth;
+                if (ref_goban_container.current.style.flexBasis !== `${w}px`) {
+                    ref_goban_container.current.style.flexBasis = `${w}px`;
+                }
+            }
+
+            if (no_debounce) {
+                // Debouncing is necessary because setting the square size can be an expensive operation.
+                goban.setSquareSizeBasedOnDisplayWidth(
+                    Math.min(
+                        ref_goban_container.current.offsetWidth,
+                        ref_goban_container.current.offsetHeight,
+                    ),
+                );
+            } else {
+                resize_debounce.current = setTimeout(() => onResize(true), 10);
+            }
+
+            recenterGoban();
+        },
+        [goban, goban_div, onResizeCb],
+    );
+
+    React.useEffect(() => {
+        console.log("onResize changed");
+    }, [onResize]);
+    React.useEffect(() => {
+        console.log("goban changed");
+    }, [goban]);
+    React.useEffect(() => {
+        console.log("goban_div changed");
+    }, [goban_div]);
+    React.useEffect(() => {
+        console.log("onResizeCb changed");
+    }, [onResizeCb]);
 
     // Trigger resize on new Goban and subsequent "load" events
-    generateGobanHook(() => onResize(/* no_debounce */ true, /* do_cb */ false))(goban || null);
+    //generateGobanHook(() => onResize(/* no_debounce */ true, /* do_cb */ false))(goban || null);
 
     if (!goban || !goban_div) {
         return <React.Fragment />;
@@ -114,7 +131,7 @@ export function GobanContainer({
 
     return (
         <div ref={ref_goban_container} className="goban-container">
-            <OgsResizeDetector onResize={() => onResize()} targetRef={ref_goban_container} />
+            <OgsResizeDetector onResize={onResize} targetRef={ref_goban_container} />
             <PersistentElement className="Goban" elt={goban_div} extra_props={extra_props} />
         </div>
     );

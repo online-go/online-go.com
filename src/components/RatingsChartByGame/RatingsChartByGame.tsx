@@ -942,10 +942,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
                     <div className="nodata">{_("No rated games played yet")}</div>
                 ) : (
                     <div className="ratings-graph">
-                        <OgsResizeDetector
-                            onResize={() => this.onResize()}
-                            targetRef={this.container}
-                        />
+                        <OgsResizeDetector onResize={this.onResize} targetRef={this.container} />
                         <PersistentElement elt={this.chart_div} />
                     </div>
                 )}

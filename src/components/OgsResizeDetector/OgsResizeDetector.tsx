@@ -45,6 +45,10 @@ interface OgsResizeDetectorProps {
  */
 export function OgsResizeDetector(props: OgsResizeDetectorProps): JSX.Element {
     React.useEffect(() => {
+        console.log("OgsResizeDetector mounted");
+        let width = -1;
+        let height = -1;
+
         if (window.ResizeObserver) {
             const t = props.targetRef.current;
             let debounce: ReturnType<typeof setTimeout> | null = null;
@@ -52,6 +56,16 @@ export function OgsResizeDetector(props: OgsResizeDetectorProps): JSX.Element {
 
             const observer = new ResizeObserver(() => {
                 if (props.onResize) {
+                    const new_width = props.targetRef.current?.offsetWidth ?? window.innerWidth;
+                    const new_height = props.targetRef.current?.offsetHeight ?? window.innerHeight;
+
+                    if (new_width === width && new_height === height) {
+                        return;
+                    }
+
+                    width = new_width;
+                    height = new_height;
+
                     if (debounce) {
                         doOnResizeAgain = true;
                     } else {

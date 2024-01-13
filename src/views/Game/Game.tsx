@@ -382,14 +382,17 @@ export function Game(): JSX.Element | null {
         }
         return false;
     };
-    const onResize = (_no_debounce: boolean = false, skip_state_update: boolean = false) => {
-        if (!skip_state_update) {
-            if (goban_view_mode() !== view_mode || goban_view_squashed() !== squashed) {
-                set_squashed(goban_view_squashed());
-                set_view_mode(goban_view_mode());
+    const onResize = React.useCallback(
+        (_no_debounce: boolean = false, skip_state_update: boolean = false) => {
+            if (!skip_state_update) {
+                if (goban_view_mode() !== view_mode || goban_view_squashed() !== squashed) {
+                    set_squashed(goban_view_squashed());
+                    set_view_mode(goban_view_mode());
+                }
             }
-        }
-    };
+        },
+        [set_squashed, set_view_mode, squashed, view_mode],
+    );
     const setAnalyzeTool = (tool: AnalysisTool | "erase", subtool: string) => {
         if (!goban.current) {
             return false;

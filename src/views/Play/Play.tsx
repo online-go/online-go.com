@@ -488,7 +488,7 @@ export class Play extends React.Component<{}, PlayState> {
                             <Card>
                                 <div ref={this.ref_container} className="seek-graph-container">
                                     <OgsResizeDetector
-                                        onResize={() => this.onResize()}
+                                        onResize={this.onResize}
                                         targetRef={this.ref_container}
                                     />
                                     <PersistentElement elt={this.canvas} />
