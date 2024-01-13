@@ -943,9 +943,6 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                         ", <span class='cause'>" +
                         interpolate(_("max. rank: %s"), [rankString(C.max_rank)]) +
                         "</span>";
-                } else if (C.ranked && Math.abs(this.userRank() - C.rank) > 9) {
-                    details_html +=
-                        ", <span class='cause'>" + _("rank difference more than 9") + "</span>";
                 }
             }
 
