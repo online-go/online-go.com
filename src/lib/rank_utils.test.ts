@@ -133,6 +133,11 @@ test("getUserRating", () => {
                 deviation: 62,
                 volatility: 0.0625,
             },
+            correspondence: {
+                rating: 1470,
+                deviation: 63,
+                volatility: 0.0625,
+            },
             "correspondence-19x19": {
                 rating: 1480,
                 deviation: 64,
@@ -193,7 +198,7 @@ test("getUserRating", () => {
     // With a size that does not exist on the user's rating
     expect(getUserRating(user, "correspondence", 9)).toEqual(
         expect.objectContaining({
-            rating: 1480,
+            rating: 1470,
             volatility: 0.06,
             provisional: true,
             deviation: 350,
