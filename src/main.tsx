@@ -74,15 +74,27 @@ try {
          * that have nothing to do with OGS. This code filters some of these
          * out so they don't get reported to Sentry. */
         ignoreErrors: [
+            "ReferenceError",
             "coinbase",
             "hideMyLocation",
             "userAgent",
             "zaloJSV2", // cspell:disable-line
             "evaluating 'a.L'",
             "document.querySelector(\"[title='Kaya']\").style",
-            // broken mac app WKWebView, see
-            // https://github.com/getsentry/sentry-javascript/issues/3040
+            "onHide is not defined",
+            "outputCurrentConfiguration",
+            "mvpConfig",
+            "Cannot read properties of undefined (reading 'ns')",
+
+            // Library bugs
+            ").ended is not a function", // d3
+
+            // Safari bugs
+            //   broken mac app WKWebView, see
+            //   https://github.com/getsentry/sentry-javascript/issues/3040
             "evaluating 'window.webkit.messageHandlers'",
+            //   Audio
+            "cannot call stop without calling start first",
         ],
     });
 

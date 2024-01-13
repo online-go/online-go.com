@@ -159,6 +159,8 @@ const standard_board_sizes: { [k: string]: string | undefined } = {
 };
 
 export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any> {
+    ref: React.RefObject<HTMLDivElement> = React.createRef();
+
     constructor(props: ChallengeModalProperties) {
         super(props);
 
@@ -1632,8 +1634,8 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
 
     preferredGameSettings = () => {
         return (
-            <div style={{ padding: "0.5em" }}>
-                <OgsResizeDetector handleWidth handleHeight onResize={this.onResize} />
+            <div style={{ padding: "0.5em" }} ref={this.ref}>
+                <OgsResizeDetector onResize={this.onResize} targetRef={this.ref} />
                 <hr />
                 <div>
                     <span onClick={this.togglePreferredSettings}>

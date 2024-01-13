@@ -16,14 +16,9 @@
  */
 
 import "whatwg-fetch"; /* polyfills window.fetch */
-import ResizeObserver from "resize-observer-polyfill";
 
 export function apply_polyfills() {
     if (typeof window === "undefined") {
         return;
-    }
-
-    if (!window.ResizeObserver) {
-        window.ResizeObserver = ResizeObserver;
     }
 }

@@ -153,6 +153,18 @@
   </head>
   <body>
       <script>
+        /** We don't care about these errors */
+        window.addEventListener("error", (e) => {
+            if (
+                e.message.indexOf("ResizeObserver loop completed with undelivered notifications") >= 0 ||
+                e.message.indexOf("ResizeObserver loop limit exceeded") >= 0 ||
+                e.message.indexOf("Script error.") >= 0
+            ) {
+                e.stopImmediatePropagation();
+                return false;
+            }
+        });
+
         /* When browsers use Google Translate it breaks React apps like ours because they
          * replace text nodes with <font> tags, changing the dom structure and causing
          * React to throw errors. 

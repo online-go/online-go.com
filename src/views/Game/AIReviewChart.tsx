@@ -620,7 +620,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
     render() {
         return (
             <div ref={this.container} className="AIReviewChart">
-                <OgsResizeDetector handleWidth handleHeight onResize={() => this.onResize()} />
+                <OgsResizeDetector onResize={() => this.onResize()} targetRef={this.container} />
                 <PersistentElement elt={this.chart_div} />
             </div>
         );

@@ -482,12 +482,20 @@ function _process_write_ahead_log(user_id: number): void {
         }
 
         wal_currently_processing[kv.key] = true;
+        let cb_already_called = false;
 
         const cb = (
             res:
                 | { error?: string | undefined; retry?: boolean | undefined }
                 | { error?: undefined; success: true },
         ) => {
+            /* I believe this might happen in some cases where the connection
+             * has reset, I'm not entirely sure though. anoek - 2024-01-10 */
+            if (cb_already_called) {
+                return;
+            }
+            cb_already_called = true;
+
             if (loaded_user_id !== user_id) {
                 console.warn(
                     "User changed while we were synchronizing our remote storage write ahead log, bailing from further updates.",

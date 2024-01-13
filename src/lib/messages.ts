@@ -32,6 +32,7 @@ export type MessageIdAPI =
     | "ai_review_must_be_site_supporter"
     | "ai_review_must_be_player"
     | "ai_review_queue_full"
+    | "komi_invalid"
     | "test";
 
 export interface MessageObjectsAPI {

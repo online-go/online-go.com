@@ -114,7 +114,7 @@ export function GobanContainer({
 
     return (
         <div ref={ref_goban_container} className="goban-container">
-            <OgsResizeDetector handleWidth handleHeight onResize={() => onResize()} />
+            <OgsResizeDetector onResize={() => onResize()} targetRef={ref_goban_container} />
             <PersistentElement className="Goban" elt={goban_div} extra_props={extra_props} />
         </div>
     );

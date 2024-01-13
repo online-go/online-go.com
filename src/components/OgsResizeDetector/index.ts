@@ -16,3 +16,4 @@
  */
 
 export * from "./OgsResizeDetector";
+export * from "./useResizeDetector";

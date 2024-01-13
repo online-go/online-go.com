@@ -151,10 +151,14 @@ function request(method: Method): RequestFunction {
                         }
                     };
 
+                    const errorHandler = () => {
+                        reject(res.statusText);
+                    };
+
                     const data_or_promise = res.json();
 
                     if (data_or_promise instanceof Promise) {
-                        data_or_promise.then(onJson).catch(reject);
+                        data_or_promise.then(onJson).catch(errorHandler);
                     } else {
                         onJson(data_or_promise);
                     }
