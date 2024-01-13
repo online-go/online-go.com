@@ -337,7 +337,7 @@ test("allRanks", () => {
 });
 
 test("humble_rating", () => {
-    expect(humble_rating(1500, 350)).toBe(1150);
+    expect(humble_rating(1500, 350)).toBe(1500);
 });
 
 test("effective_outcome", () => {

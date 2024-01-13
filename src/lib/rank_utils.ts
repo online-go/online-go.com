@@ -357,14 +357,9 @@ export function allRanks(): IRankInfo[] {
  * https://forums.online-go.com/t/i-think-the-13k-default-rank-is-doing-harm/13480/192
  * for the history surrounding that.
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function humble_rating(rating: number, deviation: number): number {
-    return (
-        rating -
-        ((Math.min(350, Math.max(PROVISIONAL_RATING_CUTOFF, deviation)) -
-            PROVISIONAL_RATING_CUTOFF) /
-            (350 - PROVISIONAL_RATING_CUTOFF)) *
-            deviation
-    );
+    return rating;
 }
 
 export interface EffectiveOutcome {
