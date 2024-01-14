@@ -112,7 +112,8 @@ export function configure_goban() {
         plainBoardColor: (): string => data.get("custom.board", ""),
         plainBoardLineColor: (): string => data.get("custom.line", ""),
         plainBoardUrl: (): string => data.get("custom.url", ""),
-
+        customBlackStoneUrl: (): string => data.get("custom.black_stone_url", ""),
+        customWhiteStoneUrl: (): string => data.get("custom.white_stone_url", ""),
         addCoordinatesToChatInput: (coordinates: string): void => {
             const chat_input = $(".chat-input");
 

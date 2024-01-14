@@ -38,6 +38,8 @@ interface GobanThemePickerState {
     whiteCustom: string;
     blackCustom: string;
     urlCustom: string;
+    black_stone_url: string;
+    white_stone_url: string;
 }
 export class GobanThemePicker extends React.PureComponent<
     GobanThemePickerProperties,
@@ -61,6 +63,8 @@ export class GobanThemePicker extends React.PureComponent<
             whiteCustom: this.getCustom("white"),
             blackCustom: this.getCustom("black"),
             urlCustom: this.getCustom("url"),
+            black_stone_url: this.getCustom("black_stone_url"),
+            white_stone_url: this.getCustom("white_stone_url"),
         };
 
         for (const k in GoThemesSorted) {
@@ -128,7 +132,15 @@ export class GobanThemePicker extends React.PureComponent<
 
     render() {
         const inputStyle = { height: `${this.state.size}px`, width: `${this.state.size * 1.5}px` };
-        const { boardCustom, lineCustom, whiteCustom, blackCustom, urlCustom } = this.state;
+        const {
+            boardCustom,
+            lineCustom,
+            whiteCustom,
+            blackCustom,
+            urlCustom,
+            white_stone_url,
+            black_stone_url,
+        } = this.state;
 
         return (
             <div className="GobanThemePicker">
@@ -231,6 +243,21 @@ export class GobanThemePicker extends React.PureComponent<
                             </button>
                         </div>
                     )}
+                    {this.state.white === "Custom" && (
+                        <div>
+                            <input
+                                className="customUrlSelector"
+                                type="text"
+                                value={white_stone_url}
+                                placeholder={pgettext(
+                                    "A URL pointing to a custom white stone image",
+                                    "Custom white stone URL",
+                                )}
+                                onFocus={(e) => e.target.select()}
+                                onChange={this.setCustom.bind(this, "white_stone_url")}
+                            />
+                        </div>
+                    )}
                 </div>
 
                 <div className="theme-set">
@@ -262,6 +289,21 @@ export class GobanThemePicker extends React.PureComponent<
                             >
                                 <i className="fa fa-undo" />
                             </button>
+                        </div>
+                    )}
+                    {this.state.black === "Custom" && (
+                        <div>
+                            <input
+                                className="customUrlSelector"
+                                type="text"
+                                value={black_stone_url}
+                                placeholder={pgettext(
+                                    "A URL pointing to a custom black stone image",
+                                    "Custom black stone URL",
+                                )}
+                                onFocus={(e) => e.target.select()}
+                                onChange={this.setCustom.bind(this, "black_stone_url")}
+                            />
                         </div>
                     )}
                 </div>
