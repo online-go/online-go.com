@@ -75,10 +75,25 @@ import { NetworkStatus } from "NetworkStatus";
 
 import * as docs from "docs";
 import { FakeGameLog } from "./views/FakeGameLog";
+import { useData } from "./lib/hooks";
 
 /*** Layout our main view and routes ***/
 function Main(props: { children: any }): JSX.Element {
-    if (username_needs_to_be_updated()) {
+    const [user] = useData("config.user");
+    let username_needs_to_be_updated = false;
+
+    if (user.anonymous) {
+        username_needs_to_be_updated = false;
+    }
+
+    // ends in a long random hex number? Change that please.
+    else if (/.*[a-fA-F0-9.]{16,}$/.test(user.username)) {
+        username_needs_to_be_updated = true;
+    } else {
+        username_needs_to_be_updated = false;
+    }
+
+    if (username_needs_to_be_updated) {
         return (
             <div>
                 <ErrorBoundary>
@@ -141,20 +156,6 @@ function Default(): JSX.Element {
     }
 
     return <Overview />;
-}
-
-function username_needs_to_be_updated(): boolean {
-    const user = data.get("config.user");
-    if (user.anonymous) {
-        return false;
-    }
-
-    // ends in a long random hex number? Change that please.
-    if (/.*[a-fA-F0-9.]{16,}$/.test(user.username)) {
-        return true;
-    }
-
-    return false;
 }
 
 function ChatRedirect(): JSX.Element {
