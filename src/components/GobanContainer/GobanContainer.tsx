@@ -57,7 +57,6 @@ export function GobanContainer({
     };
     const onResize = React.useCallback(
         (no_debounce: boolean = false, do_cb: boolean = true) => {
-            console.error("onResize called");
             if (!goban || !goban_div) {
                 return;
             }

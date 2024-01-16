@@ -47,7 +47,7 @@ export abstract class LearningHubSection extends React.PureComponent<LearningHub
 
     render() {
         let page = this.props.page || getFirstUncompletedPage(this.props.section);
-        page = Math.min(page, this.props.pages.length);
+        page = Math.min(page, this.props.pages.length - 1);
         page = Math.max(page, 0);
         const P = this.props.pages[page];
         return (
