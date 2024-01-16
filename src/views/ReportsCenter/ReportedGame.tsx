@@ -228,20 +228,18 @@ export function ReportedGame({ game_id }: { game_id: number }): JSX.Element | nu
                         </div>
 
                         <div className="col">
-                            {(user.is_moderator /* community moderators don't see this secret stuff :o */ ||
-                                null) && (
-                                <GameTimings
-                                    moves={goban.engine.config.moves as any}
-                                    start_time={goban.engine.config.start_time as any}
-                                    end_time={goban.engine.config.end_time as any}
-                                    free_handicap_placement={
-                                        goban.engine.config.free_handicap_placement as any
-                                    }
-                                    handicap={goban.engine.config.handicap as any}
-                                    black_id={goban.engine.config.black_player_id as any}
-                                    white_id={goban.engine.config.white_player_id as any}
-                                />
-                            )}
+                            <GameTimings
+                                moves={goban.engine.config.moves as any}
+                                start_time={goban.engine.config.start_time as any}
+                                end_time={goban.engine.config.end_time as any}
+                                free_handicap_placement={
+                                    goban.engine.config.free_handicap_placement as any
+                                }
+                                handicap={goban.engine.config.handicap as any}
+                                black_id={goban.engine.config.black_player_id as any}
+                                white_id={goban.engine.config.white_player_id as any}
+                            />
+
                             <GameLog goban={goban} />
                         </div>
 

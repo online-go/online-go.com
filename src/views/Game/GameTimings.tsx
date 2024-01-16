@@ -21,6 +21,7 @@ import "moment-duration-format";
 import * as React from "react";
 
 import { AdHocPackedMove, GobanMovesArray } from "goban";
+import { useUser } from "hooks";
 
 interface GameTimingProperties {
     moves: GobanMovesArray;
@@ -33,6 +34,8 @@ interface GameTimingProperties {
 }
 
 export function GameTimings(props: GameTimingProperties): JSX.Element {
+    const user = useUser();
+
     const show_seconds_nicely = (duration: moment.Duration) =>
         duration < moment.duration(60 * 1000) ? (
             <span className="timing-seconds">
@@ -96,12 +99,14 @@ export function GameTimings(props: GameTimingProperties): JSX.Element {
         }
     }
 
+    const cm = user.moderator_powers !== 0; // community moderator
+
     return (
         <div className="GameTimings">
             <div className="timings-header">Game Timings</div>
             <div>Move</div>
-            <div>Black (blur)</div>
-            <div>White (blur)</div>
+            <div>Black {!cm && "(blur)"}</div>
+            <div>White {!cm && "(blur)"}</div>
             <div>Elapsed Time</div>
             {white_first_turn ? first_row : ""}
             {
@@ -213,12 +218,12 @@ export function GameTimings(props: GameTimingProperties): JSX.Element {
                                 <div>{idx * 2 + 1 + handicap_move_offset}</div>
                                 <div>
                                     {black_move_time}
-                                    {blurDurationFormat(black_blur)}
+                                    {!cm && blurDurationFormat(black_blur)}
                                     {black_download_sgf ? <i className="fa fa-download" /> : null}
                                 </div>
                                 <div>
                                     {white_move_time}
-                                    {blurDurationFormat(white_blur)}
+                                    {!cm && blurDurationFormat(white_blur)}
                                     {white_download_sgf ? <i className="fa fa-download" /> : null}
                                 </div>
                                 <div>
