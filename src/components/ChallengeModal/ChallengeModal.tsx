@@ -482,6 +482,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         }
 
         console.log("Sending", demo);
+        this.saveSettings();
         this.close();
         post("demos", demo)
             .then((res) => {
