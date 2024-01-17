@@ -66,6 +66,7 @@ declare namespace socket_api {
             system_message_id?: any; // Don't know what this is, but it's accessed in SeekGraph
             ranked_text?: string;
             handicap_text?: string | number;
+            komi_text?: string | number;
             removed?: boolean;
             ineligible_reason?: string;
             user_challenge?: boolean;
