@@ -43,7 +43,13 @@ import { socket } from "sockets";
 import { Player } from "Player";
 import { useUser } from "hooks";
 
-export function ReportedGame({ game_id }: { game_id: number }): JSX.Element | null {
+export function ReportedGame({
+    game_id,
+    reported_at,
+}: {
+    game_id: number;
+    reported_at: number | undefined;
+}): JSX.Element | null {
     const [goban, setGoban] = React.useState<Goban | null>(null);
     const [selectedChatLog, setSelectedChatLog] = React.useState<ChatMode>("main");
     const refresh = useRefresh();
@@ -149,6 +155,7 @@ export function ReportedGame({ game_id }: { game_id: number }): JSX.Element | nu
             </h3>
             <div className="reported-game-container">
                 <div className="col">
+                    {reported_at && <div>{_("Reported on turn:") + ` ${reported_at}`}</div>}
                     <MiniGoban
                         id={game_id}
                         noLink={true}

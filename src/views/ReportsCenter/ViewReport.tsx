@@ -606,7 +606,12 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                     )}
                 </>
             )}
-            {report.reported_game && <ReportedGame game_id={report.reported_game} />}
+            {report.reported_game && (
+                <ReportedGame
+                    game_id={report.reported_game}
+                    reported_at={report.reported_game_move}
+                />
+            )}
             {report.report_type === "appeal" && <AppealView user_id={report.reported_user.id} />}
             {report.reported_review && (
                 <span>
