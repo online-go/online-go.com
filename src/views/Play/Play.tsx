@@ -225,6 +225,14 @@ export class Play extends React.Component<{}, PlayState> {
                 C.handicap_text = C.handicap;
             }
 
+            console.log(C);
+
+            if (C.komi === null) {
+                C.komi_text = _("Auto");
+            } else {
+                C.komi_text = C.komi;
+            }
+
             if (C.rengo) {
                 rengo.push(C);
             } else if (isLiveGame(C.time_control_parameters, C.width, C.height)) {
@@ -988,6 +996,7 @@ export class Play extends React.Component<{}, PlayState> {
                     </span>
                     <span className="cell">{C.ranked_text}</span>
                     <span className="cell">{C.handicap_text}</span>
+                    <span className="cell">{C.komi_text}</span>
                     <span className="cell">{C.name}</span>
                     <span className="cell">{rulesText(C.rules)}</span>
                     <span className="cell">
@@ -1016,6 +1025,7 @@ export class Play extends React.Component<{}, PlayState> {
                 <span className="head time-control-header">{_("Time")}</span>
                 <span className="head">{_("Ranked")}</span>
                 <span className="head">{_("Handicap")}</span>
+                <span className="head">{_("Komi")}</span>
                 <span className="head" style={{ textAlign: "left" }}>
                     {_("Name")}
                 </span>
@@ -1048,6 +1058,7 @@ export class Play extends React.Component<{}, PlayState> {
                     <td className="head">{_("Auto-Start")}</td>
                     <td className="head">{_("Signed up")}</td>
                     <td className="head">{_("Handicap")}</td>
+                    <td className="head">{_("Komi")}</td>
                     <td className="head" style={{ textAlign: "left" }}>
                         {_("Name")}
                     </td>
@@ -1336,6 +1347,7 @@ export class Play extends React.Component<{}, PlayState> {
                 <td className="cell">{rengo_auto_start_text}</td>
                 <td className="cell">{C.rengo_participants.length}</td>
                 <td className="cell">{C.handicap_text}</td>
+                <td className="cell">{C.komi_text}</td>
                 <td className="cell">{C.name}</td>
                 <td className="cell">
                     {(C.user_challenge || null) && <ChallengeLinkButton uuid={C.uuid} />}

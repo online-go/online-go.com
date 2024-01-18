@@ -57,6 +57,7 @@ export interface Report {
     reporting_user: any;
     reported_user: any;
     reported_game: number;
+    reported_game_move?: number;
     reported_review: number;
     reported_conversation: ReportedConversation;
     url: string;

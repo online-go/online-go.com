@@ -128,6 +128,9 @@ function validateSettings(
     if (tc.speed !== "correspondence") {
         tc.pause_on_weekends = false;
     }
+    if (typeof tc.pause_on_weekends !== "boolean") {
+        tc.pause_on_weekends = false;
+    }
     return tc;
 }
 

@@ -18,7 +18,7 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 import * as data from "data";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { _ } from "translate";
 import { Card } from "material";
 import { errorAlerter, uuid } from "misc";
@@ -85,6 +85,7 @@ export function get_ebi() {
 export function SignIn(): JSX.Element {
     const user = useUser();
     const navigate = useNavigate();
+    const [search] = useSearchParams();
     const [submitLoading, setSubmitLoading] = React.useState(false);
     const ref_username = React.useRef<HTMLInputElement>(null);
     const ref_password = React.useRef<HTMLInputElement>(null);
@@ -199,63 +200,68 @@ export function SignIn(): JSX.Element {
 
     return (
         <div id="SignIn">
-            <div>
-                <Card>
-                    <h2>{_("Sign in")}</h2>
-                    <form name="login" autoComplete="on" onSubmit={onSubmit}>
-                        <label htmlFor="username">
-                            {_("Username") /* translators: Provide username to sign in with */}
-                        </label>
-                        <input
-                            className="boxed"
-                            id="username"
-                            autoFocus
-                            ref={ref_username}
-                            name="username"
-                            autoCapitalize="off"
-                        />
-                        <label htmlFor="password">
-                            {_("Password") /* translators: Provide password to sign in with */}
-                        </label>
-                        <input
-                            className="boxed"
-                            id="password"
-                            ref={ref_password}
-                            type="password"
-                            name="password"
-                        />
-                        <div className="form-actions">
-                            <a onClick={resetPassword}>{_("Forgot password?")}</a>
-                            <LoadingButton
-                                type="submit"
-                                className="primary"
-                                style={{ whiteSpace: "nowrap" }}
-                                loading={submitLoading}
-                                icon={<i className="fa fa-sign-in" />}
-                            >
-                                {_("Sign in")}
-                            </LoadingButton>
-                        </div>
-                    </form>
+            {typeof search.get("login-error") === "string" ? (
+                <h2 className="error">
+                    <i className="fa fa-exclamation-triangle" />{" "}
+                    <span>{_("An error occurred signing in, please try again")}</span>
+                </h2>
+            ) : null}
 
-                    <hr />
-                    <span>
-                        {
-                            _(
-                                "or sign in using another account:",
-                            ) /* translators: username or password, or sign in with social authentication */
-                        }
-                    </span>
-                    <SocialLoginButtons next_url={window.location.hash.substring(1)} />
-                </Card>
-
-                <div className="registration">
-                    <h3>{_("New to Online-Go?")} </h3>
-                    <div>
-                        <Link to="/register" className="btn primary">
-                            <b>{_("Register here!") /* translators: register for an account */}</b>
-                        </Link>
+            <Card>
+                <h2>{_("Sign in")}</h2>
+                <form name="login" autoComplete="on" onSubmit={onSubmit}>
+                    <label htmlFor="username">
+                        {_("Username") /* translators: Provide username to sign in with */}
+                    </label>
+                    <input
+                        className="boxed"
+                        id="username"
+                        autoFocus
+                        ref={ref_username}
+                        name="username"
+                        autoCapitalize="off"
+                    />
+                    <label htmlFor="password">
+                        {_("Password") /* translators: Provide password to sign in with */}
+                    </label>
+                    <input
+                        className="boxed"
+                        id="password"
+                        ref={ref_password}
+                        type="password"
+                        name="password"
+                    />
+                    <div className="form-actions">
+                        <a onClick={resetPassword}>{_("Forgot password?")}</a>
+                        <LoadingButton
+                            type="submit"
+                            className="primary"
+                            style={{ whiteSpace: "nowrap" }}
+                            loading={submitLoading}
+                            icon={<i className="fa fa-sign-in" />}
+                        >
+                            {_("Sign in")}
+                        </LoadingButton>
                     </div>
+                </form>
+
+                <hr />
+                <span>
+                    {
+                        _(
+                            "or sign in using another account:",
+                        ) /* translators: username or password, or sign in with social authentication */
+                    }
+                </span>
+                <SocialLoginButtons next_url={window.location.hash.substring(1)} />
+            </Card>
+
+            <div className="registration">
+                <h3>{_("New to Online-Go?")} </h3>
+                <div>
+                    <Link to="/register" className="btn primary">
+                        <b>{_("Register here!") /* translators: register for an account */}</b>
+                    </Link>
                 </div>
             </div>
         </div>
