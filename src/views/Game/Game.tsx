@@ -975,7 +975,7 @@ export function Game(): JSX.Element | null {
                 <KBShortcut shortcut="home" action={nav_first} />
                 <KBShortcut shortcut="end" action={nav_last} />
                 <KBShortcut shortcut="escape" action={handleEscapeKey} />
-                <KBShortcut shortcut="f1" action={() => setAnalyzeTool("stone", "white")} />
+                <KBShortcut shortcut="f1" action={() => setAnalyzeTool("stone", "alternate")} />
                 <KBShortcut shortcut="f2" action={() => setAnalyzeTool("stone", "black")} />
                 <KBShortcut shortcut="f4" action={() => setAnalyzeTool("label", "triangle")} />
                 <KBShortcut shortcut="f5" action={() => setAnalyzeTool("label", "square")} />
