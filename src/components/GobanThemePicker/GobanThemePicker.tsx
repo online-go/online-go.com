@@ -23,6 +23,7 @@ import * as preferences from "preferences";
 import { PersistentElement } from "PersistentElement";
 import * as data from "data";
 import { CustomGobanThemeSchema } from "data_schema";
+import { Toggle } from "Toggle";
 
 interface GobanThemePickerProperties {
     size?: number;
@@ -40,6 +41,7 @@ interface GobanThemePickerState {
     urlCustom: string;
     black_stone_url: string;
     white_stone_url: string;
+    show_customize: boolean;
 }
 export class GobanThemePicker extends React.PureComponent<
     GobanThemePickerProperties,
@@ -65,6 +67,7 @@ export class GobanThemePicker extends React.PureComponent<
             urlCustom: this.getCustom("url"),
             black_stone_url: this.getCustom("black_stone_url"),
             white_stone_url: this.getCustom("white_stone_url"),
+            show_customize: false,
         };
 
         for (const k in GoThemesSorted) {
@@ -142,10 +145,69 @@ export class GobanThemePicker extends React.PureComponent<
             black_stone_url,
         } = this.state;
 
+        console.log(this.state);
+
+        // The layout of this picker is highly tweaked for the specific themes that Goban provides.
+
+        // They are assumed to be, in GoTheme arrays for each of board, black and white:
+        // - 5 board like themes for boards
+        // - 5 weirder coloured themes for boards
+        // - 1 customizable colour board theme called "Plain" (it's a plain board with a single colour)
+        // - 1 customizable board theme called "Custom" that needs a URL for the image
+
+        // - 5 standard stone themes for black and white
+        // - 1 customizable colour stone theme for white and black called "Plain" (it's a plain stone with a single colour)
+        // - 1 customizable stone theme for black and white called "Custom" that needs a URL for the image
+
+        // The assumption for laying this out nicely is that we're making the picker dropdown 5 pickers wide,
+
+        // The magic numbers that follow are determined by the above.
+
+        // These are shown all the time.
+
+        const standard_themes = {
+            board: GoThemesSorted.board.slice(0, 5),
+            white: GoThemesSorted.white.slice(0, 5),
+            black: GoThemesSorted.black.slice(0, 5),
+        };
+
+        const extra_themes = {
+            board: GoThemesSorted.board.slice(5, 10),
+            white: [],
+            black: [],
+        };
+
+        // ... then these ones are only shown if the person has clicked the customize toggle
+        // (either "now", or in the past and chosen one of these)
+
+        const plain_themes = {
+            board: [GoThemesSorted.board[10]], // an array just to allow consistent processing below
+            white: [GoThemesSorted.white[5]],
+            black: [GoThemesSorted.black[5]],
+        };
+
+        const url_themes = {
+            board: [GoThemesSorted.board[11]],
+            white: [GoThemesSorted.white[6]],
+            black: [GoThemesSorted.black[6]],
+        };
+
+        let custom_theme_active = false;
+
+        if (
+            GoThemesSorted["board"].findIndex((t) => t.theme_name === this.state.board) > 9 ||
+            GoThemesSorted["white"].findIndex((t) => t.theme_name === this.state.white) > 4 ||
+            GoThemesSorted["black"].findIndex((t) => t.theme_name === this.state.black) > 4
+        ) {
+            custom_theme_active = true;
+            // This is so that the custom section stays open if the try out a non-custom theme while it is open due to custom_theme_active
+            this.setState({ show_customize: true });
+        }
+
         return (
             <div className="GobanThemePicker">
                 <div className="theme-set">
-                    {GoThemesSorted.board.map((theme, idx) => (
+                    {standard_themes.board.map((theme, idx) => (
                         <div
                             key={theme.theme_name}
                             title={_(theme.theme_name)}
@@ -153,67 +215,31 @@ export class GobanThemePicker extends React.PureComponent<
                                 "selector" +
                                 (this.state.board === theme.theme_name ? " active" : "")
                             }
-                            style={{
-                                ...theme.styles,
-                                ...(theme.theme_name === "Plain"
-                                    ? {
-                                          backgroundImage:
-                                              "linear-gradient(-45deg, orange,yellow,green,blue,indigo,violet)",
-                                      }
-                                    : {}),
-                            }}
+                            style={theme.styles}
                             onClick={this.selectTheme["board"][theme.theme_name]}
                         >
-                            {theme.theme_name === "Plain" ? (
-                                <span>{pgettext("Custom board theme", "Custom")}</span>
-                            ) : (
-                                <PersistentElement elt={this.canvases.board[idx]} />
-                            )}
+                            <PersistentElement elt={this.canvases.board[idx]} />
                         </div>
                     ))}
-                    {this.state.board === "Plain" && (
-                        <div>
-                            <input
-                                type="color"
-                                style={inputStyle}
-                                value={boardCustom}
-                                onChange={this.setCustom.bind(this, "board")}
-                            />
-                            <button
-                                className="color-reset"
-                                onClick={this.setCustom.bind(this, "board")}
-                            >
-                                <i className="fa fa-undo" />
-                            </button>
-                            <input
-                                type="color"
-                                style={inputStyle}
-                                value={lineCustom}
-                                onChange={this.setCustom.bind(this, "line")}
-                            />
-                            <button
-                                className="color-reset"
-                                onClick={this.setCustom.bind(this, "line")}
-                            >
-                                <i className="fa fa-undo" />
-                            </button>
-                            <input
-                                className="customUrlSelector"
-                                type="text"
-                                value={urlCustom}
-                                placeholder={pgettext(
-                                    "Custom background image url for the goban",
-                                    "Custom background URL",
-                                )}
-                                onFocus={(e) => e.target.select()}
-                                onChange={this.setCustom.bind(this, "url")}
-                            />
-                        </div>
-                    )}
                 </div>
-
                 <div className="theme-set">
-                    {GoThemesSorted.white.map((theme, idx) => (
+                    {extra_themes.board.map((theme, idx) => (
+                        <div
+                            key={theme.theme_name}
+                            title={_(theme.theme_name)}
+                            className={
+                                "selector" +
+                                (this.state.board === theme.theme_name ? " active" : "")
+                            }
+                            style={theme.styles}
+                            onClick={this.selectTheme["board"][theme.theme_name]}
+                        >
+                            <PersistentElement elt={this.canvases.board[idx]} />
+                        </div>
+                    ))}
+                </div>
+                <div className="theme-set">
+                    {standard_themes.white.map((theme, idx) => (
                         <div
                             key={theme.theme_name}
                             title={_(theme.theme_name)}
@@ -227,41 +253,10 @@ export class GobanThemePicker extends React.PureComponent<
                             <PersistentElement elt={this.canvases.white[idx]} />
                         </div>
                     ))}
-                    {this.state.white === "Plain" && (
-                        <div>
-                            <input
-                                type="color"
-                                style={inputStyle}
-                                value={whiteCustom}
-                                onChange={this.setCustom.bind(this, "white")}
-                            />
-                            <button
-                                className="color-reset"
-                                onClick={this.setCustom.bind(this, "white")}
-                            >
-                                <i className="fa fa-undo" />
-                            </button>
-                        </div>
-                    )}
-                    {this.state.white === "Custom" && (
-                        <div>
-                            <input
-                                className="customUrlSelector"
-                                type="text"
-                                value={white_stone_url}
-                                placeholder={pgettext(
-                                    "A URL pointing to a custom white stone image",
-                                    "Custom white stone URL",
-                                )}
-                                onFocus={(e) => e.target.select()}
-                                onChange={this.setCustom.bind(this, "white_stone_url")}
-                            />
-                        </div>
-                    )}
                 </div>
 
                 <div className="theme-set">
-                    {GoThemesSorted.black.map((theme, idx) => (
+                    {standard_themes.black.map((theme, idx) => (
                         <div
                             key={theme.theme_name}
                             title={_(theme.theme_name)}
@@ -275,38 +270,239 @@ export class GobanThemePicker extends React.PureComponent<
                             <PersistentElement elt={this.canvases.black[idx]} />
                         </div>
                     ))}
-                    {this.state.black === "Plain" && (
-                        <div>
-                            <input
-                                type="color"
-                                style={inputStyle}
-                                value={blackCustom}
-                                onChange={this.setCustom.bind(this, "black")}
-                            />
-                            <button
-                                className="color-reset"
-                                onClick={this.setCustom.bind(this, "black")}
-                            >
-                                <i className="fa fa-undo" />
-                            </button>
-                        </div>
-                    )}
-                    {this.state.black === "Custom" && (
-                        <div>
-                            <input
-                                className="customUrlSelector"
-                                type="text"
-                                value={black_stone_url}
-                                placeholder={pgettext(
-                                    "A URL pointing to a custom black stone image",
-                                    "Custom black stone URL",
-                                )}
-                                onFocus={(e) => e.target.select()}
-                                onChange={this.setCustom.bind(this, "black_stone_url")}
-                            />
-                        </div>
-                    )}
                 </div>
+
+                <div className="show-customize-selector">
+                    <span>{pgettext("Label for a button to show custom stones", "Customize")}</span>
+                    <Toggle
+                        className="show-customize-toggle"
+                        height={14}
+                        width={30}
+                        checked={this.state.show_customize || custom_theme_active}
+                        id="show-customize"
+                        onChange={(checked) => {
+                            this.setState({ show_customize: checked });
+                        }}
+                        disabled={custom_theme_active}
+                    />
+                </div>
+
+                {(custom_theme_active || this.state.show_customize) && (
+                    <>
+                        <div className="custom-theme-set">
+                            {plain_themes.board.map((theme, _idx) => (
+                                <div
+                                    key={theme.theme_name}
+                                    title={_(theme.theme_name)}
+                                    className={
+                                        "selector" +
+                                        (this.state.board === theme.theme_name ? " active" : "")
+                                    }
+                                    style={{
+                                        ...theme.styles,
+                                        ...(theme.theme_name === "Plain"
+                                            ? {
+                                                  backgroundImage:
+                                                      "linear-gradient(-45deg, orange,yellow,green,blue,indigo,violet)",
+                                              }
+                                            : {}),
+                                    }}
+                                    onClick={this.selectTheme["board"][theme.theme_name]}
+                                ></div>
+                            ))}
+
+                            <div className="board-color-selectors">
+                                <input
+                                    type="color"
+                                    style={inputStyle}
+                                    value={boardCustom}
+                                    onChange={this.setCustom.bind(this, "board")}
+                                />
+                                <button
+                                    className="color-reset"
+                                    onClick={this.setCustom.bind(this, "board")}
+                                >
+                                    <i className="fa fa-undo" />
+                                </button>
+                                <input
+                                    type="color"
+                                    style={inputStyle}
+                                    value={lineCustom}
+                                    onChange={this.setCustom.bind(this, "line")}
+                                />
+                                <button
+                                    className="color-reset"
+                                    onClick={this.setCustom.bind(this, "line")}
+                                >
+                                    <i className="fa fa-undo" />
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="custom-theme-set">
+                            {url_themes.board.map((theme, idx) => (
+                                <div
+                                    key={theme.theme_name}
+                                    title={_(theme.theme_name)}
+                                    className={
+                                        "selector" +
+                                        (this.state.board === theme.theme_name ? " active" : "")
+                                    }
+                                    style={{
+                                        ...theme.styles,
+                                        ...(theme.theme_name === "Plain"
+                                            ? {
+                                                  backgroundImage:
+                                                      "linear-gradient(-45deg, orange,yellow,green,blue,indigo,violet)",
+                                              }
+                                            : {}),
+                                    }}
+                                    onClick={this.selectTheme["board"][theme.theme_name]}
+                                >
+                                    <PersistentElement elt={this.canvases.board[idx + 5]} />
+                                </div>
+                            ))}
+
+                            <div className="custom-url-selection">
+                                <input
+                                    className="customUrlSelector"
+                                    type="text"
+                                    value={urlCustom}
+                                    placeholder={pgettext(
+                                        "Custom background image url for the goban",
+                                        "Custom background URL",
+                                    )}
+                                    onFocus={(e) => e.target.select()}
+                                    onChange={this.setCustom.bind(this, "url")}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="custom-theme-set">
+                            {plain_themes.white.map((theme, idx) => (
+                                <div
+                                    key={theme.theme_name}
+                                    title={_(theme.theme_name)}
+                                    className={
+                                        "selector" +
+                                        (this.state.white === theme.theme_name ? " active" : "")
+                                    }
+                                    style={theme.styles}
+                                    onClick={this.selectTheme["white"][theme.theme_name]}
+                                >
+                                    <PersistentElement elt={this.canvases.white[idx + 5]} />
+                                </div>
+                            ))}
+
+                            <div>
+                                <input
+                                    type="color"
+                                    style={inputStyle}
+                                    value={whiteCustom}
+                                    onChange={this.setCustom.bind(this, "white")}
+                                />
+                                <button
+                                    className="color-reset"
+                                    onClick={this.setCustom.bind(this, "white")}
+                                >
+                                    <i className="fa fa-undo" />
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="custom-theme-set">
+                            {url_themes.white.map((theme, idx) => (
+                                <div
+                                    key={theme.theme_name}
+                                    title={_(theme.theme_name)}
+                                    className={
+                                        "selector" +
+                                        (this.state.white === theme.theme_name ? " active" : "")
+                                    }
+                                    style={theme.styles}
+                                    onClick={this.selectTheme["white"][theme.theme_name]}
+                                >
+                                    <PersistentElement elt={this.canvases.white[idx + 6]} />
+                                </div>
+                            ))}
+                            <div className="custom-url-selection">
+                                <input
+                                    className="customUrlSelector"
+                                    type="text"
+                                    value={white_stone_url}
+                                    placeholder={pgettext(
+                                        "A URL pointing to a custom white stone image",
+                                        "Custom white stone URL",
+                                    )}
+                                    onFocus={(e) => e.target.select()}
+                                    onChange={this.setCustom.bind(this, "white_stone_url")}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="custom-theme-set">
+                            {plain_themes.black.map((theme, idx) => (
+                                <div
+                                    key={theme.theme_name}
+                                    title={_(theme.theme_name)}
+                                    className={
+                                        "selector" +
+                                        (this.state.black === theme.theme_name ? " active" : "")
+                                    }
+                                    style={theme.styles}
+                                    onClick={this.selectTheme["black"][theme.theme_name]}
+                                >
+                                    <PersistentElement elt={this.canvases.black[idx + 5]} />
+                                </div>
+                            ))}
+                            <div>
+                                <input
+                                    type="color"
+                                    style={inputStyle}
+                                    value={blackCustom}
+                                    onChange={this.setCustom.bind(this, "black")}
+                                />
+                                <button
+                                    className="color-reset"
+                                    onClick={this.setCustom.bind(this, "black")}
+                                >
+                                    <i className="fa fa-undo" />
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="custom-theme-set">
+                            {url_themes.black.map((theme, idx) => (
+                                <div
+                                    key={theme.theme_name}
+                                    title={_(theme.theme_name)}
+                                    className={
+                                        "selector" +
+                                        (this.state.black === theme.theme_name ? " active" : "")
+                                    }
+                                    style={theme.styles}
+                                    onClick={this.selectTheme["black"][theme.theme_name]}
+                                >
+                                    <PersistentElement elt={this.canvases.black[idx + 6]} />
+                                </div>
+                            ))}
+
+                            <div className="custom-url-selection">
+                                <input
+                                    className="customUrlSelector"
+                                    type="text"
+                                    value={black_stone_url}
+                                    placeholder={pgettext(
+                                        "A URL pointing to a custom black stone image",
+                                        "Custom black stone URL",
+                                    )}
+                                    onFocus={(e) => e.target.select()}
+                                    onChange={this.setCustom.bind(this, "black_stone_url")}
+                                />
+                            </div>
+                        </div>
+                    </>
+                )}
             </div>
         );
     }
