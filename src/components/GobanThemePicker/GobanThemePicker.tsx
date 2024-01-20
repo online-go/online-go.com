@@ -296,7 +296,10 @@ export class GobanThemePicker extends React.PureComponent<
                                     title={_(theme.theme_name)}
                                     className={
                                         "selector" +
-                                        (this.state.board === theme.theme_name ? " active" : "")
+                                        // The board customisation selectors work together
+                                        (["Plain", "Custom"].includes(this.state.board)
+                                            ? " active"
+                                            : "")
                                     }
                                     style={{
                                         ...theme.styles,
@@ -346,7 +349,10 @@ export class GobanThemePicker extends React.PureComponent<
                                     title={_(theme.theme_name)}
                                     className={
                                         "selector" +
-                                        (this.state.board === theme.theme_name ? " active" : "")
+                                        // The board customisation selectors work together
+                                        (["Plain", "Custom"].includes(this.state.board)
+                                            ? " active"
+                                            : "")
                                     }
                                     style={{
                                         ...theme.styles,
