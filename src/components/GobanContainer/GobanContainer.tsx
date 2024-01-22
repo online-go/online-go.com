@@ -108,19 +108,6 @@ export function GobanContainer({
         [goban, goban_div, onResizeCb],
     );
 
-    React.useEffect(() => {
-        console.log("onResize changed");
-    }, [onResize]);
-    React.useEffect(() => {
-        console.log("goban changed");
-    }, [goban]);
-    React.useEffect(() => {
-        console.log("goban_div changed");
-    }, [goban_div]);
-    React.useEffect(() => {
-        console.log("onResizeCb changed");
-    }, [onResizeCb]);
-
     // Trigger resize on new Goban and subsequent "load" events
     //generateGobanHook(() => onResize(/* no_debounce */ true, /* do_cb */ false))(goban || null);
 
