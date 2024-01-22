@@ -147,7 +147,14 @@ export function GameDock({
     };
 
     const showGameInfo = () => {
-        for (const k of ["komi", "rules", "handicap", "rengo", "rengo_teams"] as const) {
+        for (const k of [
+            "komi",
+            "rules",
+            "handicap",
+            "handicap_rank_difference",
+            "rengo",
+            "rengo_teams",
+        ] as const) {
             (goban.config as any)[k] = goban.engine.config[k];
         }
         openGameInfoModal(

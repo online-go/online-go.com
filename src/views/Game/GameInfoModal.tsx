@@ -317,7 +317,18 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
                             {config.width}x{config.height}
                         </dd>
                         <dt>{_("Handicap")}</dt>
-                        <dd>{handicapText(config.handicap ?? -1)}</dd>
+                        <dd>
+                            {handicapText(config.handicap ?? -1)}
+                            {config.handicap_rank_difference &&
+                                config.handicap_rank_difference !== config.handicap && (
+                                    <span>
+                                        {" "}
+                                        (
+                                        {_("Rank") + ": " + String(config.handicap_rank_difference)}
+                                        )
+                                    </span>
+                                )}
+                        </dd>
                         <dt>{_("Result")}</dt>
                         <dd>
                             {editable && config.review_id && !config.game_id ? (
