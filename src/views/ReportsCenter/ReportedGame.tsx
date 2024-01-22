@@ -330,7 +330,7 @@ function GameLog({ goban }: { goban: Goban }): JSX.Element {
                     </table>
                     {!shouldDisplayFullLog && (
                         <button onClick={() => setShouldDisplayFullLog(true)}>
-                            Show all ({log.length})
+                            {`${_("Show all")} (${log.length})`}
                         </button>
                     )}
                 </>
