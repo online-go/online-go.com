@@ -6085,10 +6085,10 @@ glogg@^1.0.0:
   dependencies:
     sparkles "^1.0.0"
 
-goban@=0.7.35:
-  version "0.7.35"
-  resolved "https://registry.yarnpkg.com/goban/-/goban-0.7.35.tgz#eb801e3675f9f27bfae028b0a5f6ab5fd0f5dc75"
-  integrity sha512-OzTTp7ThzNJ58VB8+mdCJXn74a2bdwU16RZee/9823PFngBQdkgH+VzUpDmwpLb/Z0fD4KAfBugyXQKjOXt5nA==
+goban@=0.7.37:
+  version "0.7.37"
+  resolved "https://registry.yarnpkg.com/goban/-/goban-0.7.37.tgz#147ae839bd86b611879694a6eae7bb8cc5190158"
+  integrity sha512-Pw7chB7qBTye0cn0WYVk1b5DgHFiXppSyPMqM34LR6c+N3KcpMSVFuumbQfdq55nQnK9u6zrwDdV9kEI3qAp2g==
   dependencies:
     eventemitter3 "^5.0.0"
 

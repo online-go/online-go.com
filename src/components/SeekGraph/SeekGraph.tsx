@@ -303,11 +303,6 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                     entry.eligible = false;
                     entry.user_challenge = true;
                     entry.ineligible_reason = _("This is your challenge");
-                } else if (entry.ranked && Math.abs(this.userRank() - entry.ranking) > 9) {
-                    entry.eligible = false;
-                    entry.ineligible_reason = _(
-                        "This is a ranked game and the rank difference is more than 9",
-                    );
                 } else if (entry.min_rank <= this.userRank() && entry.max_rank >= this.userRank()) {
                     entry.eligible = true;
                 } else {
@@ -944,9 +939,6 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                         ", <span class='cause'>" +
                         interpolate(_("max. rank: %s"), [rankString(C.max_rank)]) +
                         "</span>";
-                } else if (C.ranked && Math.abs(this.userRank() - C.rank) > 9) {
-                    details_html +=
-                        ", <span class='cause'>" + _("rank difference more than 9") + "</span>";
                 }
             }
 

@@ -45,7 +45,6 @@ interface OgsResizeDetectorProps {
  */
 export function OgsResizeDetector(props: OgsResizeDetectorProps): JSX.Element {
     React.useEffect(() => {
-        console.log("OgsResizeDetector mounted");
         let width = -1;
         let height = -1;
 

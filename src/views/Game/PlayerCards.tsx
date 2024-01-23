@@ -479,36 +479,59 @@ function ScorePopup({ show, goban, color }: ScorePopupProps) {
     const scores = goban.engine.computeScore(false);
     const { stones, prisoners, handicap, komi, territory } = scores[color];
 
+    let first_points = 0;
     return (
         <div className="score_breakdown">
+            {color === "black" && !!goban.engine.handicap && (
+                <div>
+                    <span>{_("Handicap")}</span>
+                    <div>{goban.engine.handicap}</div>
+                    <hr />
+                </div>
+            )}
             {!!stones && (
                 <div>
                     <span>{_("Stones")}</span>
-                    <div>{stones}</div>
+                    <div>
+                        {first_points++ ? "+" : ""}
+                        {stones}
+                    </div>
                 </div>
             )}
             {!!territory && (
                 <div>
                     <span>{_("Territory")}</span>
-                    <div>{territory}</div>
+                    <div>
+                        {first_points++ ? "+" : ""}
+                        {territory}
+                    </div>
                 </div>
             )}
             {!!prisoners && (
                 <div>
                     <span>{_("Prisoners")}</span>
-                    <div>{prisoners}</div>
-                </div>
-            )}
-            {!!handicap && (
-                <div>
-                    <span>{_("Handicap")}</span>
-                    <div>{handicap}</div>
+                    <div>
+                        {first_points++ ? "+" : ""}
+                        {prisoners}
+                    </div>
                 </div>
             )}
             {!!komi && (
                 <div>
                     <span>{_("Komi")}</span>
-                    <div>{komi}</div>
+                    <div>
+                        {first_points++ ? "+" : ""}
+                        {komi}
+                    </div>
+                </div>
+            )}
+            {!!handicap && (
+                <div>
+                    <span>{_("Handicap")}</span>
+                    <div>
+                        {first_points++ ? "+" : ""}
+                        {handicap}
+                    </div>
                 </div>
             )}
             {!stones && !territory && !handicap && !komi && (

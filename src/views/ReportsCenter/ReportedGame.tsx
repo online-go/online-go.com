@@ -18,7 +18,7 @@
 import * as React from "react";
 import * as moment from "moment";
 import { useRefresh } from "hooks";
-import { _ } from "translate";
+import { _, pgettext } from "translate";
 import { Link } from "react-router-dom";
 import { MiniGoban } from "MiniGoban";
 import { alert } from "swal_config";
@@ -155,7 +155,7 @@ export function ReportedGame({
             </h3>
             <div className="reported-game-container">
                 <div className="col">
-                    {reported_at && <div>{_("Reported on turn:") + ` ${reported_at}`}</div>}
+                    <div>{_("Reported on turn:") + ` ${reported_at ?? _("not available")}`}</div>
                     <MiniGoban
                         id={game_id}
                         noLink={true}
@@ -173,9 +173,11 @@ export function ReportedGame({
                             <div>Game Phase: {goban.engine.phase}</div>
                             {(goban.engine.phase === "finished" || null) && (
                                 <div>
-                                    Game Outcome: {winner} (
-                                    <Player user={goban!.engine.winner as number} />) by{" "}
-                                    {goban.engine.outcome} {annulled ? " annulled" : ""}
+                                    {_("Game Outcome:") + ` ${winner} (`}
+                                    <Player user={goban!.engine.winner as number} />
+                                    {` ) ${pgettext("use like: they won 'by' this much", "by")} `}
+                                    {goban.engine.outcome}
+                                    {annulled ? " annulled" : ""}
                                 </div>
                             )}
 
@@ -190,7 +192,7 @@ export function ReportedGame({
                                             )}
                                             {goban.engine.config.ranked && annulled && (
                                                 <button onClick={() => do_annul(false)}>
-                                                    {"Remove annulment"}
+                                                    {_("Remove annulment")}
                                                 </button>
                                             )}
                                         </div>
@@ -280,39 +282,60 @@ function GameLog({ goban }: { goban: Goban }): JSX.Element {
         [goban],
     );
 
+    const [shouldDisplayFullLog, setShouldDisplayFullLog] = React.useState(false);
+
     return (
         <>
-            <h3>Game Log</h3>
+            <h3>{_("Game Log")}</h3>
             {log.length > 0 ? (
-                <table className="game-log">
-                    <thead>
-                        <tr>
-                            <th>Time</th>
-                            <th>Event</th>
-                            <th>Parameters</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {log.map((entry, idx) => (
-                            <tr key={entry.timestamp + ":" + idx} className="entry">
-                                <td className="timestamp">
-                                    {moment(entry.timestamp).format("L LTS")}
-                                </td>
-                                <td className="event">{entry.event.replace(/_/g, " ")}</td>
-                                <td className="data">
-                                    <LogData
-                                        config={goban.engine.config}
-                                        markCoords={markCoords}
-                                        event={entry.event}
-                                        data={entry.data}
-                                    />
-                                </td>
+                <>
+                    <table className="game-log">
+                        <thead>
+                            <tr>
+                                <th>
+                                    {pgettext(
+                                        "A heading: the time when something happened",
+                                        "Time",
+                                    )}
+                                </th>
+                                <th>{pgettext("A heading: something that happened", "Event")}</th>
+                                <th>
+                                    {pgettext(
+                                        "A heading: a column with game parameters in it",
+                                        "Parameters",
+                                    )}
+                                </th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {log
+                                .filter((_, idx) => shouldDisplayFullLog || idx < 25)
+                                .map((entry, idx) => (
+                                    <tr key={entry.timestamp + ":" + idx} className="entry">
+                                        <td className="timestamp">
+                                            {moment(entry.timestamp).format("L LTS")}
+                                        </td>
+                                        <td className="event">{entry.event.replace(/_/g, " ")}</td>
+                                        <td className="data">
+                                            <LogData
+                                                config={goban.engine.config}
+                                                markCoords={markCoords}
+                                                event={entry.event}
+                                                data={entry.data}
+                                            />
+                                        </td>
+                                    </tr>
+                                ))}
+                        </tbody>
+                    </table>
+                    {!shouldDisplayFullLog && (
+                        <button onClick={() => setShouldDisplayFullLog(true)}>
+                            {`${_("Show all")} (${log.length})`}
+                        </button>
+                    )}
+                </>
             ) : (
-                <div>No game log entries</div>
+                <div>{_("No game log entries")}</div>
             )}
         </>
     );

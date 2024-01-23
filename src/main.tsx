@@ -76,6 +76,7 @@ try {
         ignoreErrors: [
             "ReferenceError",
             "coinbase",
+            "ethereum",
             "hideMyLocation",
             "userAgent",
             "zaloJSV2", // cspell:disable-line
