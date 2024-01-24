@@ -25,14 +25,7 @@ import { _, pgettext, interpolate } from "translate";
 import { post, del } from "requests";
 import { Modal, openModal } from "Modal";
 import { socket } from "sockets";
-import {
-    rankString,
-    getUserRating,
-    amateurRanks,
-    allRanks,
-    rankList,
-    bounded_rank,
-} from "rank_utils";
+import { rankString, getUserRating, amateurRanks, allRanks } from "rank_utils";
 import { CreatedChallengeInfo, RuleSet } from "types";
 import { errorLogger, errorAlerter, rulesText, dup } from "misc";
 import { PlayerIcon } from "PlayerIcon";
@@ -135,17 +128,6 @@ for (let i = 1; i <= 36; ++i) {
 
 const ranks = amateurRanks();
 const demo_ranks = allRanks();
-
-const ranked_ranks = (() => {
-    if (!data.get("user")) {
-        return [];
-    }
-
-    const rankedMin = bounded_rank(getUserRating(data.get("user"), "overall", 0).bounded_rank - 9);
-    const rankedMax = bounded_rank(getUserRating(data.get("user"), "overall", 0).bounded_rank + 9);
-
-    return rankList(rankedMin, rankedMax, false);
-})();
 
 const standard_board_sizes: { [k: string]: string | undefined } = {
     "19x19": "19x19",
@@ -1537,10 +1519,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                                                         id="challenge-min-rank"
                                                         className="challenge-dropdown form-control"
                                                     >
-                                                        {(challenge.game.ranked
-                                                            ? ranked_ranks
-                                                            : ranks
-                                                        ).map((r, idx) => (
+                                                        {ranks.map((r, idx) => (
                                                             <option key={idx} value={r.rank}>
                                                                 {r.label}
                                                             </option>
@@ -1565,10 +1544,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                                                         id="challenge-max-rank"
                                                         className="challenge-dropdown form-control"
                                                     >
-                                                        {(challenge.game.ranked
-                                                            ? ranked_ranks
-                                                            : ranks
-                                                        ).map((r, idx) => (
+                                                        {ranks.map((r, idx) => (
                                                             <option key={idx} value={r.rank}>
                                                                 {r.label}
                                                             </option>
