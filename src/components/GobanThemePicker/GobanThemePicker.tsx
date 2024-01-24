@@ -234,7 +234,7 @@ export class GobanThemePicker extends React.PureComponent<
                             style={theme.styles}
                             onClick={this.selectTheme["board"][theme.theme_name]}
                         >
-                            <PersistentElement elt={this.canvases.board[idx]} />
+                            <PersistentElement elt={this.canvases.board[idx + 5]} />
                         </div>
                     ))}
                 </div>
