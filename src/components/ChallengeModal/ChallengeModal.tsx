@@ -176,6 +176,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             rules: "japanese",
             width: 19,
             height: 19,
+            komi_auto: "automatic",
             black_name: _("Black"),
             black_ranking: 1039,
             white_name: _("White"),
@@ -459,6 +460,11 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         const demo: any = {};
         for (const k in next.demo) {
             demo[k] = next.demo[k];
+        }
+
+        // Ignore komi value if komi is automatic.
+        if (demo.komi_auto !== "custom") {
+            delete demo.komi;
         }
 
         demo.black_pro = demo.black_ranking > 1000 ? 1 : 0;
@@ -817,10 +823,11 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         this.upstate(this.gameStateName("rules"), ev);
     update_handicap = (ev: React.ChangeEvent<HTMLSelectElement>) =>
         this.upstate("challenge.game.handicap", ev);
+
     update_komi_auto = (ev: React.ChangeEvent<HTMLSelectElement>) =>
-        this.upstate("challenge.game.komi_auto", ev);
+        this.upstate(this.gameStateName("komi_auto"), ev);
     update_komi = (ev: React.ChangeEvent<HTMLInputElement>) =>
-        this.upstate("challenge.game.komi", ev.target.value || "0");
+        this.upstate(this.gameStateName("komi"), ev.target.value || "0");
     update_challenge_color = (ev: React.ChangeEvent<HTMLSelectElement>) =>
         this.upstate("challenge.challenger_color", ev);
     update_disable_analysis = (ev: React.ChangeEvent<HTMLInputElement>) =>
@@ -1191,6 +1198,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 {!this.state.forking_game && mode !== "demo" && this.rankedSettings()}
                 {(mode === "demo" || null) && this.rulesSettings()}
                 {!this.state.forking_game && this.boardSizeSettings()}
+                {(mode === "demo" || null) && this.komiSettings()}
             </div>
         );
     };
