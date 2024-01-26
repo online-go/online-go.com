@@ -150,13 +150,13 @@ export class GobanThemePicker extends React.PureComponent<
         // The layout of this picker is highly tweaked for the specific themes that Goban provides.
 
         // They are assumed to be, in GoTheme arrays for each of board, black and white:
-        // - 5 board like themes for boards
-        // - 5 weirder coloured themes for boards
+        // - 6 board like themes for boards
+        // - 6 weirder coloured themes for boards
         // - 1 customizable colour board theme called "Plain" (it's a plain board with a single colour)
         // - 1 customizable board theme called "Custom" that needs a URL for the image
 
-        // - 5 standard stone themes for black and white
-        // - 1 customizable colour stone theme for white and black called "Plain" (it's a plain stone with a single colour)
+        // - 6 standard stone themes for black and white
+        // - 1 customizable colour stone theme for white and black called "Coloured" (it's a plain stone with a single colour)
         // - 1 customizable stone theme for black and white called "Custom" that needs a URL for the image
 
         // The assumption for laying this out nicely is that we're making the picker dropdown 5 pickers wide,
@@ -166,13 +166,13 @@ export class GobanThemePicker extends React.PureComponent<
         // These are shown all the time.
 
         const standard_themes = {
-            board: GoThemesSorted.board.slice(0, 5),
-            white: GoThemesSorted.white.slice(0, 5),
-            black: GoThemesSorted.black.slice(0, 5),
+            board: GoThemesSorted.board.slice(0, 6),
+            white: GoThemesSorted.white.slice(0, 6),
+            black: GoThemesSorted.black.slice(0, 6),
         };
 
         const extra_themes = {
-            board: GoThemesSorted.board.slice(5, 10),
+            board: GoThemesSorted.board.slice(6, 12),
             white: [],
             black: [],
         };
@@ -181,23 +181,23 @@ export class GobanThemePicker extends React.PureComponent<
         // (either "now", or in the past and chosen one of these)
 
         const plain_themes = {
-            board: [GoThemesSorted.board[10]], // an array just to allow consistent processing below
-            white: [GoThemesSorted.white[5]],
-            black: [GoThemesSorted.black[5]],
+            board: [GoThemesSorted.board[12]], // an array just to allow consistent processing below
+            white: [GoThemesSorted.white[6]],
+            black: [GoThemesSorted.black[6]],
         };
 
         const url_themes = {
-            board: [GoThemesSorted.board[11]],
-            white: [GoThemesSorted.white[6]],
-            black: [GoThemesSorted.black[6]],
+            board: [GoThemesSorted.board[13]],
+            white: [GoThemesSorted.white[7]],
+            black: [GoThemesSorted.black[7]],
         };
 
         let custom_theme_active = false;
 
         if (
-            GoThemesSorted["board"].findIndex((t) => t.theme_name === this.state.board) > 9 ||
-            GoThemesSorted["white"].findIndex((t) => t.theme_name === this.state.white) > 4 ||
-            GoThemesSorted["black"].findIndex((t) => t.theme_name === this.state.black) > 4
+            GoThemesSorted["board"].findIndex((t) => t.theme_name === this.state.board) > 11 ||
+            GoThemesSorted["white"].findIndex((t) => t.theme_name === this.state.white) > 5 ||
+            GoThemesSorted["black"].findIndex((t) => t.theme_name === this.state.black) > 5
         ) {
             custom_theme_active = true;
             // This is so that the custom section stays open if the try out a non-custom theme while it is open due to custom_theme_active
@@ -234,7 +234,7 @@ export class GobanThemePicker extends React.PureComponent<
                             style={theme.styles}
                             onClick={this.selectTheme["board"][theme.theme_name]}
                         >
-                            <PersistentElement elt={this.canvases.board[idx + 5]} />
+                            <PersistentElement elt={this.canvases.board[idx + 6]} />
                         </div>
                     ))}
                 </div>
@@ -365,7 +365,7 @@ export class GobanThemePicker extends React.PureComponent<
                                     }}
                                     onClick={this.selectTheme["board"][theme.theme_name]}
                                 >
-                                    <PersistentElement elt={this.canvases.board[idx + 5]} />
+                                    <PersistentElement elt={this.canvases.board[idx + 6]} />
                                 </div>
                             ))}
 
@@ -396,7 +396,7 @@ export class GobanThemePicker extends React.PureComponent<
                                     style={theme.styles}
                                     onClick={this.selectTheme["white"][theme.theme_name]}
                                 >
-                                    <PersistentElement elt={this.canvases.white[idx + 5]} />
+                                    <PersistentElement elt={this.canvases.white[idx + 6]} />
                                 </div>
                             ))}
 
@@ -428,7 +428,7 @@ export class GobanThemePicker extends React.PureComponent<
                                     style={theme.styles}
                                     onClick={this.selectTheme["white"][theme.theme_name]}
                                 >
-                                    <PersistentElement elt={this.canvases.white[idx + 6]} />
+                                    <PersistentElement elt={this.canvases.white[idx + 7]} />
                                 </div>
                             ))}
                             <div className="custom-url-selection">
@@ -458,7 +458,7 @@ export class GobanThemePicker extends React.PureComponent<
                                     style={theme.styles}
                                     onClick={this.selectTheme["black"][theme.theme_name]}
                                 >
-                                    <PersistentElement elt={this.canvases.black[idx + 5]} />
+                                    <PersistentElement elt={this.canvases.black[idx + 6]} />
                                 </div>
                             ))}
                             <div>
@@ -489,7 +489,7 @@ export class GobanThemePicker extends React.PureComponent<
                                     style={theme.styles}
                                     onClick={this.selectTheme["black"][theme.theme_name]}
                                 >
-                                    <PersistentElement elt={this.canvases.black[idx + 6]} />
+                                    <PersistentElement elt={this.canvases.black[idx + 7]} />
                                 </div>
                             ))}
 
