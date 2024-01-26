@@ -727,14 +727,6 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
         }
     };
 
-    // This is like GoMath.PrettyCoords except we must always have 3 characters
-    josekiCoords(x: number, y: number, board_height: number): string {
-        if (x >= 0) {
-            return "ABCDEFGHJKLMNOPQRSTUVWXYZ"[x] + String(board_height - y).padStart(2, "0");
-        }
-        return "pass";
-    }
-
     processPlacement(move: { x: number; y: number }, move_string: string) {
         /* They've either
             clicked a stone onto the board in a new position,
@@ -745,7 +737,7 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
             ... otherwise stone placement will be left turned off.
             */
 
-        const placement = move ? this.josekiCoords(move.x, move.y, this.goban.height) : "root";
+        const placement = move ? GoMath.prettyCoords(move.x, move.y, this.goban.height) : "root";
 
         if (this.back_stepping) {
             const play = ".root." + move_string.replace(/,/g, ".");

@@ -319,7 +319,7 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
                         <dt>{_("Handicap")}</dt>
                         <dd>
                             {handicapText(config.handicap ?? -1)}
-                            {config.handicap_rank_difference &&
+                            {(config.handicap_rank_difference || null) &&
                                 config.handicap_rank_difference !== config.handicap && (
                                     <span>
                                         {" "}

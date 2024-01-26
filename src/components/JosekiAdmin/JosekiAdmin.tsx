@@ -250,12 +250,11 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
     };
 
     toggleLockdown = () => {
-        const lockdown_url =
-            this.props.server_url + "lockdown?lockdown=" + !this.props.db_locked_down;
+        const lockdown_url = this.props.server_url + "lockdown";
 
-        put(lockdown_url)
-            .then(() => {
-                this.props.updateDBLockStatus(!this.props.db_locked_down);
+        put(lockdown_url, { lockdown: !this.props.db_locked_down })
+            .then((response) => {
+                this.props.updateDBLockStatus(response.db_locked_down);
             })
             .catch((r) => {
                 console.log("Toggle lockdown failed:", r);
