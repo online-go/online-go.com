@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import { _, pgettext } from "translate";
-import { GoThemesSorted, GoThemes } from "goban";
+import { GoThemesSorted, GoThemes, GoThemeBackgroundCSS } from "goban";
 import { getSelectedThemes } from "preferences";
 import * as preferences from "preferences";
 import { PersistentElement } from "PersistentElement";
@@ -249,7 +249,7 @@ export class GobanThemePicker extends React.PureComponent<
                                 }
                                 style={{
                                     ...custom_board.styles,
-                                    ...(custom_board.getBackgroundCSS() as any),
+                                    ...(css2react(custom_board.getBackgroundCSS()) as any),
                                 }}
                                 onClick={this.selectTheme["board"][custom_board.theme_name]}
                             >
@@ -471,4 +471,13 @@ export class GobanThemePicker extends React.PureComponent<
             draw();
         }
     }
+}
+
+function css2react(style: GoThemeBackgroundCSS): { [k: string]: string } {
+    const react_style = {};
+    for (const k in style) {
+        const react_key = k.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+        (react_style as any)[react_key] = style[k as keyof GoThemeBackgroundCSS];
+    }
+    return react_style;
 }
