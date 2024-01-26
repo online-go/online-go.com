@@ -165,13 +165,13 @@ export class AutomatchSettings extends Modal<
     }
     setLowerRankDiff = (ev: React.ChangeEvent<HTMLInputElement>) => {
         const settings = this.getSelectedSettings();
-        const diff = Math.max(0, Math.min(9, parseInt(ev.target.value)));
+        const diff = Math.max(0, Math.min(40, parseInt(ev.target.value)));
         settings.lower_rank_diff = diff;
         this.setSelectedSettings(settings);
     };
     setUpperRankDiff = (ev: React.ChangeEvent<HTMLInputElement>) => {
         const settings = this.getSelectedSettings();
-        const diff = Math.max(0, Math.min(9, parseInt(ev.target.value)));
+        const diff = Math.max(0, Math.min(40, parseInt(ev.target.value)));
         settings.upper_rank_diff = diff;
         this.setSelectedSettings(settings);
     };
@@ -272,7 +272,7 @@ export class AutomatchSettings extends Modal<
                                         <input
                                             type="number"
                                             min={0}
-                                            max={9}
+                                            max={40}
                                             value={settings.lower_rank_diff}
                                             onChange={this.setLowerRankDiff}
                                         />
@@ -289,7 +289,7 @@ export class AutomatchSettings extends Modal<
                                         <input
                                             type="number"
                                             min={0}
-                                            max={9}
+                                            max={40}
                                             value={settings.upper_rank_diff}
                                             onChange={this.setUpperRankDiff}
                                         />
