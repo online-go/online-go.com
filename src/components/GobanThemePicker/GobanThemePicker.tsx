@@ -249,7 +249,7 @@ export class GobanThemePicker extends React.PureComponent<
                                 }
                                 style={{
                                     ...custom_board.styles,
-                                    ...(css2react(custom_board.getBackgroundCSS()) as any),
+                                    ...css2react(custom_board.getBackgroundCSS()),
                                 }}
                                 onClick={this.selectTheme["board"][custom_board.theme_name]}
                             >
