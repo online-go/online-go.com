@@ -150,4 +150,71 @@ export const CANNED_MESSAGES: rest_api.warnings.WarningMessages = {
         Thank you for helping keep OGS enjoyable for everyone. We appreciate it.`),
             { reported },
         ),
+    warn_beginner_staller: (game_id) =>
+        interpolate(
+            _(`
+        Hi, welcome to OGS!
+
+        It appears that you delayed the end of game #{{game_id}}, which can frustrate your opponent and prevent them from moving on to the next game.
+
+        Since you are a new player, no action will be taken against your account. We simply ask that you learn when to end a game.
+
+        Until you develop the experience to judge better, if your opponent passes and there are no open borders between your stones then you should also pass.
+
+        After passing, promptly accept the correct score.
+
+        If in doubt about this sort of situation. please ask for help in chat or the forums.
+        `),
+            { game_id },
+        ),
+    warn_staller: (game_id) =>
+        interpolate(
+            _(`
+        It has come to our attention that you delayed the end of game #{{game_id}}, which can frustrate your opponent and
+        prevent them from moving on to their next game.
+
+        Players are required to end their games properly, as letting them time out can cause opponents to wait unnecessarily,
+        and prevent them from moving on to the next game.
+
+        Please ensure that you end your games properly by accepting the correct score immediately after passing,
+        or by resigning if you feel the position is hopeless.
+
+        This helps maintain a positive gaming environment for everyone involved.`),
+            { game_id },
+        ),
+    ack_educated_beginner_staller: (reported) =>
+        interpolate(
+            _(`
+        Thanks for the report about {{reported}}, we've asked your newcomer opponent to be more respectful of people’s time.`),
+            { reported },
+        ),
+    ack_educated_beginner_staller_and_annul: (reported) =>
+        interpolate(
+            _(`
+        Thanks for the report about {{reported}}, we've asked your newcomer opponent to be more respectful of people’s time.
+        That incorrectly scored game has been annulled.`),
+            { reported },
+        ),
+    ack_warned_staller: (reported) =>
+        interpolate(
+            _(`
+        Thank you for your report, {{reported}} has been given a formal warning about finishing games properly.`),
+            { reported },
+        ),
+    ack_warned_staller_and_annul: (reported) =>
+        interpolate(
+            _(`
+        Thank you for your report, {{reported}} has been given a formal warning about finishing games properly, and that abandoned game annulled.`),
+            reported,
+        ),
+    no_stalling_evident: (reported) =>
+        interpolate(
+            _(`
+        Thank you for bringing the possible instance of stalling by {{reported}} to
+        our attention. We looked into the report and their actions seemed appropriate. If a pattern of
+        complaints emerges, we will investigate further.
+
+        Thank you for helping keep OGS enjoyable for everyone. We appreciate it.`),
+            { reported },
+        ),
 };

@@ -515,11 +515,13 @@ export function setCurrentLanguage(language_code: string) {
 
         "Black Walnut": _("Black Walnut"),
         Book: _("Book"),
+        Custom: _("Custom"),
         Glass: _("Glass"),
         Granite: _("Granite"),
         "HNG Night": _("HNG Night"),
         HNG: _("HNG"),
         Kaya: _("Kaya"),
+        "Bright Kaya": _("Bright Kaya"),
         "Night Play": _("Night Play"),
         Night: _("Night"),
         Persimmon: _("Persimmon"),

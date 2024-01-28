@@ -1150,6 +1150,11 @@ export const GoResources = () => {
                                 href="http://www.usgo.org/"
                             />,
                             <BasicResource
+                                countries={["pl"]}
+                                title="Polskie Stowarzyszenie Go"
+                                href="https://psg.go.art.pl/"
+                            />,
+                            <BasicResource
                                 countries={["gb"]}
                                 title="British Go Association"
                                 href="http://britgo.org/"

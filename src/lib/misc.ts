@@ -23,8 +23,29 @@ import { alert } from "swal_config";
 import React from "react";
 
 // Must match back-end MODERATOR_POWER
-export const MOD_POWER_HANDLE_SCORE_CHEAT = 0b01;
-export const MOD_POWER_HANDLE_ESCAPING = 0b10;
+
+export enum MODERATOR_POWERS {
+    NONE = 0,
+    HANDLE_SCORE_CHEAT = 0b001,
+    HANDLE_ESCAPING = 0b010,
+    HANDLE_STALLING = 0b100,
+}
+
+export const MOD_POWER_NAMES: { [key in MODERATOR_POWERS]: string } = {
+    [MODERATOR_POWERS.NONE]: pgettext("... as in 'moderators powers: None'", "None"),
+    [MODERATOR_POWERS.HANDLE_SCORE_CHEAT]: pgettext(
+        "A label for a moderator power",
+        "Handle Score Cheating Reports",
+    ),
+    [MODERATOR_POWERS.HANDLE_ESCAPING]: pgettext(
+        "A label for a moderator power",
+        "Handle Score Cheating Reports",
+    ),
+    [MODERATOR_POWERS.HANDLE_STALLING]: pgettext(
+        "A label for a moderator power",
+        "Handle Score Cheating Reports",
+    ),
+};
 
 export type Timeout = ReturnType<typeof setTimeout>;
 

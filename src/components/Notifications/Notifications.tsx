@@ -198,6 +198,8 @@ class NotificationEntry extends React.Component<NotificationEntryProps, any> {
     renderNotification(): JSX.Element | null {
         const notification = this.props.notification;
 
+        const user = data.get("user");
+
         switch (notification.type) {
             case "test":
                 return <div dangerouslySetInnerHTML={{ __html: notification.html }} />;
@@ -534,7 +536,8 @@ class NotificationEntry extends React.Component<NotificationEntryProps, any> {
             case "moderationOffer":
                 return (
                     <ModerationOffer
-                        player_id={notification.player_id}
+                        player_id={user.id}
+                        current_moderator_powers={user.moderator_powers}
                         offered_moderator_powers={notification.offered_moderator_powers}
                         onAck={this.del}
                     />

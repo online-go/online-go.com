@@ -23,7 +23,13 @@
     max-width: 100%;
     justify-content: center;
 
-    .theme-set {
+    .custom-theme-set {
+        justify-content: flex-start !important;
+        padding-left: 2rem;
+        padding-bottom: 1rem;
+    }
+
+    .theme-set, .custom-theme-set {
         display: inline-flex;
         flex-direction: row;
         flex-wrap: wrap;
@@ -34,7 +40,7 @@
         .selector {
             margin: 1px;
             cursor: pointer;
-            border: 1px solid transparent;
+            border: 2px solid transparent;
             opacity: 0.5;
             color: white;
             word-wrap: break-word;
@@ -44,24 +50,58 @@
 
         .selector:hover, .selector.active {
             themed border-color primary
+            border-width: 2px;
             opacity: 1.0;
         }
 
         input[type=color] {
+            width: 1.5rem;
+            height: 1.5rem;
+            margin-left: 1.0rem;
             border: 0;
         }
 
+        .board-color-selectors{
+            display: flex;
+            flex-direction: row;
+        }
         .color-reset {
             vertical-align: top;
             margin-top: 0.4rem;
+            margin-left: 0;
+            margin-right: 0;
+            padding-right: 0;
+            padding-left: 0;
+            .fa-undo {
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+                padding-right: 0;
+                padding-left: 0;
+            }
         }
 
-        .customUrlSelector {
-            width: 212px;
-            height: 24px;
-            border: 1px solid lightgrey;
-            margin-top: 0px;
-            margin-bottom: 10px;
+        .custom-url-selection {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding-bottom: 1rem;
+
+            .customUrlSelector {
+                width: 16rem;
+                border: 1px solid;
+                margin-top: 3px;
+            }
+
+        }
+    }
+
+    .show-customize-selector {
+        flex-grow: 1;
+        display: flex;
+        justify-content: center;
+        margin: 0.5rem;
+        .show-customize-toggle {
+            margin-left: 0.3rem;
         }
     }
 }

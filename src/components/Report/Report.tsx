@@ -44,6 +44,7 @@ export type ReportType =
 export const CommunityModeratorReportTypes: ReadonlyArray<ReportType> = [
     "escaping",
     "score_cheating",
+    "stalling",
 ];
 
 export interface ReportDescription {

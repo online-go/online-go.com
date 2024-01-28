@@ -113,7 +113,9 @@ export interface CustomGobanThemeSchema {
     white: string;
     board: string;
     line: string;
-    url: string;
+    url: string; // this is a board image url
+    black_stone_url: string;
+    white_stone_url: string;
 }
 
 type SoundSchema = {
@@ -188,6 +190,8 @@ interface DemoSettings {
     white_name: string;
     white_ranking: number;
     private: boolean;
+    komi_auto: rest_api.KomiOption;
+    komi?: number;
 }
 
 /**

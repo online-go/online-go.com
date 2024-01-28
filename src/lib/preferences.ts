@@ -49,6 +49,8 @@ export const defaults = {
     "goban-theme-black": null as null | string,
     "goban-theme-board": null as null | string,
     "goban-theme-white": null as null | string,
+    "goban-theme-black_stone_url": null as null | string,
+    "goban-theme-white_stone_url": null as null | string,
     "hide-ranks": false,
     "label-positioning": "all" as LabelPosition,
     "label-positioning-puzzles": "all" as LabelPosition,

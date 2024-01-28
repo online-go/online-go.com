@@ -21,12 +21,13 @@ import { openModal, Modal } from "Modal";
 import { alert } from "swal_config";
 import { patch } from "requests";
 
-import { errorAlerter } from "misc";
+import { MODERATOR_POWERS, MOD_POWER_NAMES, errorAlerter } from "misc";
 
 interface Events {}
 
 interface ModerationOfferModalProperties {
     player_id: number;
+    current_moderator_powers: number;
     offered_moderator_powers: number; // Must be the full bitfield that the person is going to get
     onResolved?: () => void;
 }
@@ -51,6 +52,8 @@ export class ModerationOfferModal extends Modal<Events, ModerationOfferModalProp
             .then(() => {
                 alert.close();
                 this.props.onResolved?.();
+                // reload so that we see the new tools we accepted
+                window.location.reload();
             })
             .catch(errorAlerter);
         this.close();
@@ -77,53 +80,93 @@ export class ModerationOfferModal extends Modal<Events, ModerationOfferModalProp
     };
 
     render() {
-        return (
-            <div className="Modal ModerationOfferModal">
-                <div className="header">
-                    {pgettext(
-                        "Header telling people about community moderation powers they are offered",
-                        "Community Moderation",
-                    )}
+        if (this.props.current_moderator_powers) {
+            const new_power = (this.props.offered_moderator_powers &
+                ~this.props.current_moderator_powers) as MODERATOR_POWERS;
+
+            const new_power_name = MOD_POWER_NAMES[new_power];
+            return (
+                <div className="Modal ModerationOfferModal">
+                    <div className="header">
+                        {pgettext(
+                            "Header telling people about community moderation powers they are offered",
+                            "Community Moderation",
+                        )}
+                    </div>
+                    <div className="moderation-offer-details">
+                        <p>
+                            {pgettext(
+                                "Part of the description offering community moderation powers to a user.",
+                                "You've been offered another moderation power:",
+                            )}
+                        </p>
+                        <p>{new_power_name}</p>
+                    </div>
+                    <button onClick={this.accept}>
+                        {pgettext(
+                            "Button for accepting community moderator powers",
+                            "Yes, please.",
+                        )}
+                    </button>
+                    <button onClick={this.reject}>
+                        {pgettext("Button for declining community moderator powers", "No, thanks.")}
+                    </button>
                 </div>
-                <div className="moderation-offer-details">
-                    <p>
+            );
+        } else {
+            return (
+                <div className="Modal ModerationOfferModal">
+                    <div className="header">
                         {pgettext(
-                            "Part of the description offering community moderation powers to a user.",
-                            "If you're willing, we'd love to have you on board as a community moderator.",
+                            "Header telling people about community moderation powers they are offered",
+                            "Community Moderation",
                         )}
-                    </p>
-                    <p>
+                    </div>
+                    <div className="moderation-offer-details">
+                        <p>
+                            {pgettext(
+                                "Part of the description offering community moderation powers to a user.",
+                                "If you're willing, we'd love to have you on board as a community moderator.",
+                            )}
+                        </p>
+                        <p>
+                            {pgettext(
+                                "Part of the description offering community moderation powers to a user.",
+                                "You'll get access to tools that will allow you to vote on reports raised by users - that will tell us how to handle those reports.",
+                            )}
+                        </p>
+                        <p>
+                            {pgettext(
+                                "Part of the description offering community moderation powers to a user.",
+                                "We just need your agreement to use the powers in the best interests of the OGS community, and in line with current policies and practices.",
+                            )}
+                        </p>
+                    </div>
+                    <button onClick={this.accept}>
                         {pgettext(
-                            "Part of the description offering community moderation powers to a user.",
-                            "You'll get access to tools that will allow you to vote on reports raised by users - that will tell us how to handle those reports.",
+                            "Button for accepting community moderator powers",
+                            "Yes, please.",
                         )}
-                    </p>
-                    <p>
-                        {pgettext(
-                            "Part of the description offering community moderation powers to a user.",
-                            "We just need your agreement to use the powers in the best interests of the OGS community, and in line with current policies and practices.",
-                        )}
-                    </p>
+                    </button>
+                    <button onClick={this.reject}>
+                        {pgettext("Button for declining community moderator powers", "No, thanks.")}
+                    </button>
                 </div>
-                <button onClick={this.accept}>
-                    {pgettext("Button for accepting community moderator powers", "Yes, please.")}
-                </button>
-                <button onClick={this.reject}>
-                    {pgettext("Button for declining community moderator powers", "No, thanks.")}
-                </button>
-            </div>
-        );
+            );
+        }
     }
 }
 
 export function openModerationOfferModal(
     player_id: number,
+    current_moderator_powers: number,
     offered_moderator_powers: number,
     onResolved?: () => void,
 ) {
     openModal(
         <ModerationOfferModal
             player_id={player_id}
+            current_moderator_powers={current_moderator_powers}
             offered_moderator_powers={offered_moderator_powers}
             onResolved={onResolved}
             fastDismiss

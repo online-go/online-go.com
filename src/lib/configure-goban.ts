@@ -105,14 +105,15 @@ export function configure_goban() {
         watchSelectedThemes: (cb) => preferences.watchSelectedThemes(cb),
         getSelectedThemes: () => preferences.getSelectedThemes(),
 
-        discBlackStoneColor: (): string => data.get("custom.black", ""),
-        discBlackTextColor: (): string => data.get("custom.white", ""),
-        discWhiteStoneColor: (): string => data.get("custom.white", ""),
-        discWhiteTextColor: (): string => data.get("custom.black", ""),
-        plainBoardColor: (): string => data.get("custom.board", ""),
-        plainBoardLineColor: (): string => data.get("custom.line", ""),
-        plainBoardUrl: (): string => data.get("custom.url", ""),
-
+        customBlackStoneColor: (): string => data.get("custom.black", ""),
+        customBlackTextColor: (): string => data.get("custom.white", ""),
+        customWhiteStoneColor: (): string => data.get("custom.white", ""),
+        customWhiteTextColor: (): string => data.get("custom.black", ""),
+        customBoardColor: (): string => data.get("custom.board", ""),
+        customBoardLineColor: (): string => data.get("custom.line", ""),
+        customBoardUrl: (): string => data.get("custom.url", ""),
+        customBlackStoneUrl: (): string => data.get("custom.black_stone_url", ""),
+        customWhiteStoneUrl: (): string => data.get("custom.white_stone_url", ""),
         addCoordinatesToChatInput: (coordinates: string): void => {
             const chat_input = $(".chat-input");
 
