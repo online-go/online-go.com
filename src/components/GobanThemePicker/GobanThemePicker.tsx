@@ -122,7 +122,6 @@ export class GobanThemePicker extends React.PureComponent<
         }
         const up = {};
         (up as any)[`${key}Custom`] = this.getCustom(key);
-        console.log(up);
         this.setState(up);
         try {
             this.renderPickers();
@@ -164,6 +163,21 @@ export class GobanThemePicker extends React.PureComponent<
         const custom_black = new GoThemes.black.Custom();
         const custom_white = new GoThemes.white.Custom();
 
+        const active_standard_board_theme = GoThemesSorted.board.filter(
+            (x) => x.theme_name === this.state.board,
+        )[0];
+
+        const board_styles =
+            this.state.board === custom_board.theme_name
+                ? {
+                      backgroundColor: this.state.boardCustom,
+                      backgroundImage: `url(${this.state.urlCustom})`,
+                  }
+                : {
+                      backgroundColor: active_standard_board_theme.styles["backgroundColor"],
+                      backgroundImage: active_standard_board_theme.styles["backgroundImage"],
+                  };
+
         // If the user has selected a custom theme, we need to show the customisation options
         const force_custom_themes_toggle =
             this.state.board === "Custom" ||
@@ -197,7 +211,10 @@ export class GobanThemePicker extends React.PureComponent<
                                 "selector" +
                                 (this.state.white === theme.theme_name ? " active" : "")
                             }
-                            style={theme.styles}
+                            style={{
+                                ...theme.styles,
+                                ...board_styles,
+                            }}
                             onClick={this.selectTheme["white"][theme.theme_name]}
                         >
                             <PersistentElement elt={this.canvases.white[idx]} />
@@ -214,7 +231,10 @@ export class GobanThemePicker extends React.PureComponent<
                                 "selector" +
                                 (this.state.black === theme.theme_name ? " active" : "")
                             }
-                            style={theme.styles}
+                            style={{
+                                ...theme.styles,
+                                ...board_styles,
+                            }}
                             onClick={this.selectTheme["black"][theme.theme_name]}
                         >
                             <PersistentElement elt={this.canvases.black[idx]} />
@@ -244,8 +264,7 @@ export class GobanThemePicker extends React.PureComponent<
                                 title={_(custom_board.theme_name)}
                                 className={
                                     "selector" +
-                                    // The board customisation selectors work together
-                                    (["Custom"].includes(this.state.board) ? " active" : "")
+                                    (this.state.board === custom_board.theme_name ? " active" : "")
                                 }
                                 style={{
                                     ...custom_board.styles,
@@ -307,7 +326,10 @@ export class GobanThemePicker extends React.PureComponent<
                                     "selector" +
                                     (this.state.white === custom_white.theme_name ? " active" : "")
                                 }
-                                style={custom_white.styles}
+                                style={{
+                                    ...custom_white.styles,
+                                    ...board_styles,
+                                }}
                                 onClick={this.selectTheme["white"][custom_white.theme_name]}
                             >
                                 <PersistentElement
@@ -351,7 +373,10 @@ export class GobanThemePicker extends React.PureComponent<
                                     "selector" +
                                     (this.state.black === custom_black.theme_name ? " active" : "")
                                 }
-                                style={custom_black.styles}
+                                style={{
+                                    ...custom_black.styles,
+                                    ...board_styles,
+                                }}
                                 onClick={this.selectTheme["black"][custom_black.theme_name]}
                             >
                                 <PersistentElement
