@@ -190,6 +190,8 @@ interface DemoSettings {
     white_name: string;
     white_ranking: number;
     private: boolean;
+    komi_auto: rest_api.KomiOption;
+    komi?: number;
 }
 
 /**
