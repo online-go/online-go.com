@@ -22,6 +22,7 @@ import { openModerationOfferModal } from "./ModerationOfferModal";
 
 interface ModerationOfferProps {
     player_id: number;
+    current_moderator_powers: number;
     offered_moderator_powers: number;
     onAck?: () => void;
 }
@@ -34,6 +35,7 @@ export function ModerationOffer(props: ModerationOfferProps) {
                 onClick={() =>
                     openModerationOfferModal(
                         props.player_id,
+                        props.current_moderator_powers,
                         props.offered_moderator_powers,
                         props.onAck,
                     )

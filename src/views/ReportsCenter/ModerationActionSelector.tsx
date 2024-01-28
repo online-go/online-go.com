@@ -70,7 +70,27 @@ const ACTION_PROMPTS = {
         "Label for a moderator to select this option",
         "No escaping evident - inform the reporter.",
     ),
-    // Note: keep this last, so it's positioned above the "note to moderator" input
+    annul_stalled: pgettext(
+        "Label for a moderator to select this option",
+        "Wrong result due to stalling - annul and warn the staller.",
+    ),
+    warn_staller: pgettext(
+        "Label for a moderator to select this option",
+        "The accused stalled - warn them.",
+    ),
+    call_stalled_game_for_black: pgettext(
+        "Label for a moderator to select this option",
+        "White stalled - call the game for black, and warn white.",
+    ),
+    call_stalled_game_for_white: pgettext(
+        "Label for a moderator to select this option",
+        "Black stalled - call the game for white, and warn black.",
+    ),
+    no_stalling: pgettext(
+        "Label for a moderator to select this option",
+        "No stalling evident - inform the reporter.",
+    ),
+    // Note: keep this last, so it's positioned above the "note to moderator" input field
     escalate: pgettext(
         "A label for a community moderator to select this option - send report to to full moderators",
         "Escalate: send direct to moderators.",
