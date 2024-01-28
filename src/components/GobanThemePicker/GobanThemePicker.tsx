@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import { _, pgettext } from "translate";
-import { GoThemesSorted, GoThemes, GoThemeBackgroundCSS } from "goban";
+import { GoThemesSorted, GoThemeBackgroundCSS } from "goban";
 import { getSelectedThemes } from "preferences";
 import * as preferences from "preferences";
 import { PersistentElement } from "PersistentElement";
@@ -160,9 +160,9 @@ export class GobanThemePicker extends React.PureComponent<
             black: GoThemesSorted.black.filter((x) => x.theme_name !== "Custom"),
         };
 
-        const custom_board = new GoThemes.board.Custom();
-        const custom_black = new GoThemes.black.Custom();
-        const custom_white = new GoThemes.white.Custom();
+        const custom_board = GoThemesSorted.board.filter((x) => x.theme_name === "Custom")[0];
+        const custom_black = GoThemesSorted.black.filter((x) => x.theme_name === "Custom")[0];
+        const custom_white = GoThemesSorted.white.filter((x) => x.theme_name === "Custom")[0];
 
         // If the user has selected a custom theme, we need to show the customisation options
         const force_custom_themes_toggle =
@@ -479,5 +479,6 @@ function css2react(style: GoThemeBackgroundCSS): { [k: string]: string } {
         const react_key = k.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
         (react_style as any)[react_key] = style[k as keyof GoThemeBackgroundCSS];
     }
+
     return react_style;
 }
