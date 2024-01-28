@@ -1935,7 +1935,7 @@ export function challenge_text_description(challenge: ChallengeDetails) {
     details_html +=
         ", " +
         interpolate(_("%s handicap"), [g.handicap < 0 ? _("auto") : g.handicap]) +
-        (g.komi == null || typeof g.komi === "object"
+        (g?.komi_auto !== "custom" || g.komi == null || typeof g.komi === "object"
             ? ""
             : ", " + interpolate(_("{{komi}} komi"), { komi: g.komi })) +
         (g.disable_analysis ? ", " + _("analysis disabled") : "");
