@@ -33,7 +33,7 @@ import { EventEmitter } from "eventemitter3";
 import { emitNotification } from "Notifications";
 import { browserHistory } from "ogsHistory";
 import { get, post } from "requests";
-import { MOD_POWER_HANDLE_SCORE_CHEAT, MOD_POWER_HANDLE_ESCAPING } from "./misc";
+import { MODERATOR_POWERS } from "./misc";
 
 export const DAILY_REPORT_GOAL = 10;
 
@@ -227,13 +227,19 @@ class ReportManager extends EventEmitter<Events> {
             // Community moderators only get to see reports that they have the power for and
             // that they have not yet voted on.
             const has_handle_score_cheat =
-                (user.moderator_powers & MOD_POWER_HANDLE_SCORE_CHEAT) > 0;
-            const has_handle_escaping = (user.moderator_powers & MOD_POWER_HANDLE_ESCAPING) > 0;
+                (user.moderator_powers & MODERATOR_POWERS.HANDLE_SCORE_CHEAT) > 0;
+            const has_handle_escaping =
+                (user.moderator_powers & MODERATOR_POWERS.HANDLE_ESCAPING) > 0;
+            const has_handle_stalling =
+                (user.moderator_powers & MODERATOR_POWERS.HANDLE_STALLING) > 0;
+
+            const report_type = report.report_type;
             if (
                 !user.is_moderator &&
                 user.moderator_powers &&
-                ((!(report.report_type === "score_cheating" && has_handle_score_cheat) &&
-                    !(report.report_type === "escaping" && has_handle_escaping)) ||
+                ((!(report_type === "score_cheating" && has_handle_score_cheat) &&
+                    !(report_type === "escaping" && has_handle_escaping) &&
+                    !(report_type === "stalling" && has_handle_stalling)) ||
                     report.voters?.some((vote) => vote.voter_id === user.id))
             ) {
                 return false;
@@ -245,8 +251,7 @@ class ReportManager extends EventEmitter<Events> {
                 if (
                     user.is_moderator &&
                     !(report.moderator?.id === user.id) && // maybe they already have it, so they need to see it
-                    (report.report_type === "score_cheating" ||
-                        report.report_type === "escaping") &&
+                    (report_type === "score_cheating" || report_type === "escaping") &&
                     !report.escalated
                 ) {
                     return false;

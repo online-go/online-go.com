@@ -18,6 +18,7 @@
 
 declare namespace rest_api {
     namespace warnings {
+        // These must match voting handling in django moderation.py
         type WarningMessageId =
             | "warn_beginner_score_cheat"
             | "warn_score_cheat"
@@ -32,7 +33,14 @@ declare namespace rest_api {
             | "ack_educated_beginner_escaper_and_annul"
             | "ack_warned_escaper"
             | "ack_warned_escaper_and_annul"
-            | "no_escaping_evident";
+            | "no_escaping_evident"
+            | "warn_beginner_staller"
+            | "warn_staller"
+            | "ack_educated_beginner_staller"
+            | "ack_educated_beginner_staller_and_annul"
+            | "ack_warned_staller"
+            | "ack_warned_staller_and_annul"
+            | "no_stalling_evident";
 
         type Severity = "warning" | "acknowledgement";
 

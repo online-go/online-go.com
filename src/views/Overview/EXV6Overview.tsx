@@ -153,6 +153,7 @@ export class EXV6Overview extends React.Component<{}, OverviewState> {
                         {user && !!user.offered_moderator_powers && (
                             <ModerationOffer
                                 player_id={user.id}
+                                current_moderator_powers={user.moderator_powers}
                                 offered_moderator_powers={user.offered_moderator_powers}
                             />
                         )}

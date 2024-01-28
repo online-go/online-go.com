@@ -19,7 +19,7 @@ import * as React from "react";
 import * as data from "data";
 import { _, pgettext } from "translate";
 import { put, get, del } from "requests";
-import { MOD_POWER_HANDLE_SCORE_CHEAT, MOD_POWER_HANDLE_ESCAPING, errorAlerter } from "misc";
+import { MODERATOR_POWERS, errorAlerter } from "misc";
 import { proRankList } from "rank_utils";
 import { Modal, openModal } from "Modal";
 import { PlayerCacheEntry, lookup } from "player_cache";
@@ -340,7 +340,7 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
                                 "Label for a button to let a community moderator handle score cheating",
                                 "Handle Score Cheat",
                             )}
-                            ability_mask={MOD_POWER_HANDLE_SCORE_CHEAT}
+                            ability_mask={MODERATOR_POWERS.HANDLE_SCORE_CHEAT}
                             currently_offered={this.state.offered_moderator_powers}
                             moderator_powers={this.state.moderator_powers}
                             previously_rejected={this.state.mod_powers_rejected}
@@ -353,7 +353,20 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
                                 "Label for a button to let a community moderator handle escaping",
                                 "Handle Escaping",
                             )}
-                            ability_mask={MOD_POWER_HANDLE_ESCAPING}
+                            ability_mask={MODERATOR_POWERS.HANDLE_ESCAPING}
+                            currently_offered={this.state.offered_moderator_powers}
+                            moderator_powers={this.state.moderator_powers}
+                            previously_rejected={this.state.mod_powers_rejected}
+                            onMakeOffer={this.makeOffer}
+                            onRetractOffer={this.retractOffer}
+                            onRemovePower={this.removePower}
+                        />
+                        <ModerationOfferControl
+                            ability={pgettext(
+                                "Label for a button to let a community moderator handle stalling",
+                                "Handle Stalling",
+                            )}
+                            ability_mask={MODERATOR_POWERS.HANDLE_STALLING}
                             currently_offered={this.state.offered_moderator_powers}
                             moderator_powers={this.state.moderator_powers}
                             previously_rejected={this.state.mod_powers_rejected}
