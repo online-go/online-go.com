@@ -1942,11 +1942,8 @@ export function challenge_text_description(challenge: ChallengeDetails) {
     if (c.challenger_color !== "automatic") {
         let your_color = "";
 
-        if (
-            data.get("user") &&
-            ((c as any)?.challenger?.id !== data.get("user").id ||
-                (c as any)?.user?.id !== data.get("user").id)
-        ) {
+        const challenger_id = (c as any)?.challenger?.id || (c as any)?.user?.id;
+        if (challenger_id && challenger_id !== data.get("user")?.id) {
             if (c.challenger_color === "black") {
                 your_color = _("white");
             } else if (c.challenger_color === "white") {
