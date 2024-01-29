@@ -824,8 +824,41 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
     update_handicap = (ev: React.ChangeEvent<HTMLSelectElement>) =>
         this.upstate("challenge.game.handicap", ev);
 
-    update_komi_auto = (ev: React.ChangeEvent<HTMLSelectElement>) =>
-        this.upstate(this.gameStateName("komi_auto"), ev);
+    update_komi_auto = (ev: React.ChangeEvent<HTMLSelectElement>) => {
+        const game = this.gameState();
+        if (ev.target.value !== "custom" || game.komi_auto === "custom") {
+            this.upstate(this.gameStateName("komi_auto"), ev);
+            return;
+        }
+
+        // Just switched to custom komi.  Set it to the default for the current
+        // rules.
+        let komi: string;
+        const has_handicap = (parseInt(game?.handicap || "0") || 0) > 0;
+        switch (game.rules) {
+            case "japanese":
+            case "korean":
+                komi = has_handicap ? "0.5" : "6.5";
+                break;
+            case "chinese":
+            case "aga":
+            case "ing":
+                komi = has_handicap ? "0.5" : "7.5";
+                break;
+            case "nz":
+                komi = has_handicap ? "0" : "7";
+                break;
+            default:
+                komi = "0";
+                break;
+        }
+
+        this.upstate([
+            [this.gameStateName("komi_auto"), "custom"],
+            [this.gameStateName("komi"), komi],
+        ]);
+    };
+
     update_komi = (ev: React.ChangeEvent<HTMLInputElement>) =>
         this.upstate(this.gameStateName("komi"), ev.target.value || "0");
     update_challenge_color = (ev: React.ChangeEvent<HTMLSelectElement>) =>
