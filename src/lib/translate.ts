@@ -366,6 +366,10 @@ try {
  * @param str - A string containing placeholders
  * @param params - If params is an array, interpolate() will replace instances of %s or %d.
  *                 If params is an object, interpolate() will replace instances of {{key}} with the associated value.
+ *
+ * Use it like this:
+ *    const thing = "some variable"
+ *    interpolate(pgettext("Context of message", "This is a message about {{thing}}"), {thing})
  */
 export function interpolate(str: string, params: Array<any> | { [key: string]: any }): string {
     if (Array.isArray(params)) {
