@@ -1287,9 +1287,7 @@ export function Game(): JSX.Element | null {
                         "double-click-submit-correspondence",
                     );
                 }
-                goban.current.variation_stone_transparency = preferences.get(
-                    "variation-stone-transparency",
-                );
+                goban.current.variation_stone_opacity = preferences.get("variation-stone-opacity");
                 goban.current.visual_undo_request_indicator = preferences.get(
                     "visual-undo-request-indicator",
                 );

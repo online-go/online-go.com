@@ -40,7 +40,7 @@ export const defaults = {
     "dock-delay": 0, // seconds.
     "double-click-submit-correspondence": false,
     "double-click-submit-live": false,
-    "variation-stone-transparency": 0.6,
+    "variation-stone-opacity": 0.6,
     "variation-move-count": 10,
     "visual-undo-request-indicator": true,
     "dynamic-title": true,
