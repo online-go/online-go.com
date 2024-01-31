@@ -39,11 +39,11 @@ export const MOD_POWER_NAMES: { [key in MODERATOR_POWERS]: string } = {
     ),
     [MODERATOR_POWERS.HANDLE_ESCAPING]: pgettext(
         "A label for a moderator power",
-        "Handle Score Cheating Reports",
+        "Handle Escaping Reports",
     ),
     [MODERATOR_POWERS.HANDLE_STALLING]: pgettext(
         "A label for a moderator power",
-        "Handle Score Cheating Reports",
+        "Handle Stalling Reports",
     ),
 };
 
