@@ -28,6 +28,7 @@ import { Clock } from "Clock";
 import { fetch } from "player_cache";
 import { getGameResultText } from "misc";
 import { PlayerCacheEntry } from "player_cache";
+import { usePreference } from "preferences";
 
 export interface MiniGobanProps {
     id?: number;
@@ -78,6 +79,7 @@ export function MiniGoban(props: MiniGobanProps): JSX.Element {
     const [in_stone_removal_phase, setInStoneRemovalPhase] = React.useState(false);
     const [finished, setFinished] = React.useState(false);
     const [game_name, setGameName] = React.useState("");
+    const [last_move_opacity] = usePreference("last-move-opacity");
 
     React.useEffect(() => {
         goban.current = new Goban(
@@ -94,6 +96,7 @@ export function MiniGoban(props: MiniGobanProps): JSX.Element {
                 square_size: "auto",
                 width: props.width || (props.json ? props.json.width : 19),
                 height: props.height || (props.json ? props.json.height : 19),
+                last_move_opacity: last_move_opacity,
             },
             props.json,
         );

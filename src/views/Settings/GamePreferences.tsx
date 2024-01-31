@@ -54,6 +54,7 @@ export function GamePreferences(): JSX.Element {
     const [autoplay_delay, _setAutoplayDelay]: [number, (x: number) => void] = React.useState(
         preferences.get("autoplay-delay") / 1000,
     );
+    const [last_move_opacity, _setLastMoveOpacity] = usePreference("last-move-opacity");
     const [variation_stone_transparency, _setVariationStoneTransparency] = usePreference(
         "variation-stone-transparency",
     );
@@ -115,6 +116,13 @@ export function GamePreferences(): JSX.Element {
     }
     function setCorrSubmitMode(value: string) {
         setSubmitMode("correspondence", value);
+    }
+    function setLastMoveOpacity(ev: React.ChangeEvent<HTMLInputElement>) {
+        const value = parseFloat(ev.target.value);
+
+        if (value >= 0.0 && value <= 1.0) {
+            _setLastMoveOpacity(value);
+        }
     }
     function setVariationStoneTransparency(ev: React.ChangeEvent<HTMLInputElement>) {
         const value = parseFloat(ev.target.value);
@@ -296,6 +304,26 @@ export function GamePreferences(): JSX.Element {
                 )}
             >
                 <Toggle checked={zen_mode_by_default} onChange={toggleZenMode} />
+            </PreferenceLine>
+
+            <PreferenceLine
+                title={_("Last move opacity")}
+                description={_(
+                    "Choose the level of opacity for the 'last move' mark on stones. 0.0 is transparent and 1.0 is opaque.",
+                )}
+            >
+                <input
+                    type="range"
+                    step="0.1"
+                    min="0.0"
+                    max="1.0"
+                    onChange={setLastMoveOpacity}
+                    value={last_move_opacity}
+                />
+                <span>
+                    &nbsp;
+                    {last_move_opacity}
+                </span>
             </PreferenceLine>
 
             <PreferenceLine
