@@ -55,9 +55,8 @@ export function GamePreferences(): JSX.Element {
         preferences.get("autoplay-delay") / 1000,
     );
     const [last_move_opacity, _setLastMoveOpacity] = usePreference("last-move-opacity");
-    const [variation_stone_transparency, _setVariationStoneTransparency] = usePreference(
-        "variation-stone-transparency",
-    );
+    const [variation_stone_opacity, _setVariationStoneOpacity] =
+        usePreference("variation-stone-opacity");
     const [variation_move_count, _setVariationMoveCount] = usePreference("variation-move-count");
     const [visual_undo_request_indicator, setVisualUndoRequestIndicator] = usePreference(
         "visual-undo-request-indicator",
@@ -124,11 +123,11 @@ export function GamePreferences(): JSX.Element {
             _setLastMoveOpacity(value);
         }
     }
-    function setVariationStoneTransparency(ev: React.ChangeEvent<HTMLInputElement>) {
+    function setVariationStoneOpacity(ev: React.ChangeEvent<HTMLInputElement>) {
         const value = parseFloat(ev.target.value);
 
         if (value >= 0.0 && value <= 1.0) {
-            _setVariationStoneTransparency(value);
+            _setVariationStoneOpacity(value);
         }
     }
     function setVariationMoveCount(ev: React.ChangeEvent<HTMLInputElement>) {
@@ -327,9 +326,9 @@ export function GamePreferences(): JSX.Element {
             </PreferenceLine>
 
             <PreferenceLine
-                title={_("Variation stone transparency")}
+                title={_("Variation stone opacity")}
                 description={_(
-                    "Choose the level of transparency for stones shown in variations. 0.0 is transparent and 1.0 is opaque.",
+                    "Choose the level of opacity for stones shown in variations. 0.0 is transparent and 1.0 is opaque.",
                 )}
             >
                 <input
@@ -337,12 +336,12 @@ export function GamePreferences(): JSX.Element {
                     step="0.1"
                     min="0.0"
                     max="1.0"
-                    onChange={setVariationStoneTransparency}
-                    value={variation_stone_transparency}
+                    onChange={setVariationStoneOpacity}
+                    value={variation_stone_opacity}
                 />
                 <span>
                     &nbsp;
-                    {variation_stone_transparency}
+                    {variation_stone_opacity}
                 </span>
             </PreferenceLine>
 
