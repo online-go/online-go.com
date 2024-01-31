@@ -23,6 +23,8 @@ import { GobanCanvas, GobanCanvasConfig } from "goban";
 import { goban_view_mode } from "Game/util";
 //import { generateGobanHook } from "Game/GameHooks";
 
+import { usePreference } from "preferences";
+
 interface GobanContainerProps {
     goban?: GobanCanvas;
     /** callback that is called when the goban detects a resize. */
@@ -41,6 +43,7 @@ export function GobanContainer({
 }: GobanContainerProps): JSX.Element {
     const ref_goban_container = React.useRef<HTMLDivElement>(null);
     const resize_debounce = React.useRef<NodeJS.Timeout | null>(null);
+    const [last_move_opacity] = usePreference("last-move-opacity");
 
     // Since goban is a GobanCanvas, we know goban.config is a GobanCanvasConfig
     const goban_div = (goban?.config as GobanCanvasConfig | undefined)?.board_div;
@@ -91,6 +94,7 @@ export function GobanContainer({
                 }
             }
 
+            goban.setLastMoveOpacity(last_move_opacity);
             if (no_debounce) {
                 // Debouncing is necessary because setting the square size can be an expensive operation.
                 goban.setSquareSizeBasedOnDisplayWidth(
