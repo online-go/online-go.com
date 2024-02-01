@@ -27,7 +27,7 @@ import { browserHistory } from "ogsHistory";
 import { challenge_text_description, ChallengeDetails } from "ChallengeModal";
 import { Player } from "Player";
 import { FabX, FabCheck } from "material";
-import { deepEqual } from "misc";
+import { MODERATOR_POWERS, MOD_POWER_NAMES, deepEqual } from "misc";
 import { isLiveGame, durationString } from "TimeControl";
 
 import { notification_manager } from "./NotificationManager";
@@ -541,6 +541,17 @@ class NotificationEntry extends React.Component<NotificationEntryProps, any> {
                         offered_moderator_powers={notification.offered_moderator_powers}
                         onAck={this.del}
                     />
+                );
+            case "moderationAddition":
+                return (
+                    <div className="moderation-addition">
+                        {interpolate(
+                            _("You have a new moderation power: {{power}}.  Thanks for your help!"),
+                            {
+                                power: MOD_POWER_NAMES[notification.new_power as MODERATOR_POWERS],
+                            },
+                        )}
+                    </div>
                 );
 
             default:

@@ -153,9 +153,15 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
     };
 
     makeOffer = (power_mask: number) => {
-        this.setState({
-            offered_moderator_powers: this.state.moderator_powers | power_mask,
-        });
+        if (this.state.moderator_powers) {
+            // They already have some, we can give it direct
+            this.setState({ moderator_powers: this.state.moderator_powers | power_mask });
+        } else {
+            // They are about to be a new CM ... we have to "offer"
+            this.setState({
+                offered_moderator_powers: this.state.moderator_powers | power_mask,
+            });
+        }
     };
 
     retractOffer = (power_mask: number) => {
