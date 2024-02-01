@@ -544,8 +544,6 @@ export function Tournament(): JSX.Element {
             const last_bucket: any = {};
             let last_cur_bucket: any = {};
             let cur_bucket: any = {};
-            const em_4 = ($("#em10").width() * 0.4) / 10.0;
-            const em_6 = ($("#em10").width() * 0.6) / 10.0;
             const em2_5 = ($("#em10").width() * 2.5) / 10.0;
             const name_width = ($("#em10").width() * 12.0) / 10.0;
             const min_space = ($("#em10").width() * 0.5) / 10.0;
@@ -609,12 +607,16 @@ export function Tournament(): JSX.Element {
                     bindHovers(black, match.black);
                     bindHovers(white, match.white);
 
-                    const result = match.result && match.result.length > 0 ? match.result[0] : "";
-                    if (result === "B") {
+                    const result = match.result || "";
+                    if (result === "B+1") {
                         black.addClass("win");
                     }
-                    if (result === "W") {
+                    if (result === "W+1") {
                         white.addClass("win");
+                    }
+                    if (result === "B+0.5,W+0.5") {
+                        black.addClass("tie");
+                        white.addClass("tie");
                     }
 
                     match_div.append(black);
@@ -624,7 +626,10 @@ export function Tournament(): JSX.Element {
                         div: match_div,
                         black_src: round_num > 0 ? last_bucket[match.black] : null,
                         white_src: round_num > 0 ? last_bucket[match.white] : null,
-                        black_won: result === "B",
+                        black_won: result === "B+1",
+                        white_won: result === "W+1",
+                        black_player: match.black,
+                        white_player: match.white,
                         match: match,
                         second_bracket: false,
                         round: round_num,
@@ -687,20 +692,20 @@ export function Tournament(): JSX.Element {
                 last_cur_bucket_arr.push(last_cur_bucket[k]);
             }
 
-            const playerWon = (obj: { match: TournamentMatch }, player_id: number) => {
+            const playerLost = (obj: { match: TournamentMatch }, player_id: number) => {
                 if (!obj.match) {
-                    return true;
+                    return false; // Bye.
                 }
                 if (!obj.match.result) {
-                    return false;
+                    return false; // Invalid?
                 }
-                if (obj.match.result[0] === "B" && obj.match.black === player_id) {
+                if (obj.match.result === "B+1" && obj.match.white === player_id) {
                     return true;
                 }
-                if (obj.match.result[0] === "W" && obj.match.white === player_id) {
+                if (obj.match.result === "W+1" && obj.match.black === player_id) {
                     return true;
                 }
-                return false;
+                return false; // Tie.
             };
 
             for (let i = 0; i < all_objects.length; ++i) {
@@ -710,12 +715,12 @@ export function Tournament(): JSX.Element {
                 }
                 if (obj.bye_src) {
                     obj.second_bracket =
-                        obj.bye_src.second_bracket || !playerWon(obj.bye_src, obj.player_id);
+                        obj.bye_src.second_bracket || playerLost(obj.bye_src, obj.player_id);
                 }
                 if (obj.black_src && obj.white_src) {
-                    if (playerWon(obj.black_src, obj.match.black)) {
+                    if (!playerLost(obj.black_src, obj.match.black)) {
                         obj.second_bracket = obj.black_src.second_bracket;
-                    } else if (playerWon(obj.white_src, obj.match.white)) {
+                    } else if (!playerLost(obj.white_src, obj.match.white)) {
                         obj.second_bracket = obj.white_src.second_bracket;
                     } else {
                         obj.second_bracket = true;
@@ -961,11 +966,17 @@ export function Tournament(): JSX.Element {
             const bottom_padding = 3.0;
             const left_padding = 5.0;
 
-            const getWinnerBottom = (obj: any) => {
-                if (obj.black_won) {
-                    return Math.round((obj.top + obj.bottom) / 2.0);
-                }
+            const getBlackBottom = (obj: any) => {
+                return Math.round((obj.top + obj.bottom) / 2.0);
+            };
+            const getWhiteBottom = (obj: any) => {
                 return Math.round(obj.bottom + bottom_padding);
+            };
+            const getPlayerBottom = (obj: any, player: number) => {
+                if (obj?.black_player === player || obj?.player_id === player) {
+                    return getBlackBottom(obj);
+                }
+                return getWhiteBottom(obj);
             };
 
             const drawLines = (obj: any) => {
@@ -976,19 +987,21 @@ export function Tournament(): JSX.Element {
                         obj.second_bracket === obj.black_src.second_bracket
                     ) {
                         drawLine([
-                            { x: obj.black_src.left, y: getWinnerBottom(obj.black_src) },
-                            { x: obj.black_src.right, y: getWinnerBottom(obj.black_src) },
+                            {
+                                x: obj.black_src.left,
+                                y: getPlayerBottom(obj.black_src, obj.black_player),
+                            },
+                            {
+                                x: obj.black_src.right,
+                                y: getPlayerBottom(obj.black_src, obj.black_player),
+                            },
                             {
                                 x: obj.left - left_padding,
-                                y: Math.round(
-                                    obj.black_won ? (obj.top + obj.bottom) / 2.0 : obj.top + em_6,
-                                ),
+                                y: getBlackBottom(obj),
                             },
                             {
                                 x: obj.left,
-                                y: Math.round(
-                                    obj.black_won ? (obj.top + obj.bottom) / 2.0 : obj.top + em_6,
-                                ),
+                                y: getBlackBottom(obj),
                             },
                         ]);
                     }
@@ -1000,19 +1013,21 @@ export function Tournament(): JSX.Element {
                         obj.second_bracket === obj.white_src.second_bracket
                     ) {
                         drawLine([
-                            { x: obj.white_src.left, y: getWinnerBottom(obj.white_src) },
-                            { x: obj.white_src.right, y: getWinnerBottom(obj.white_src) },
+                            {
+                                x: obj.white_src.left,
+                                y: getPlayerBottom(obj.white_src, obj.white_player),
+                            },
+                            {
+                                x: obj.white_src.right,
+                                y: getPlayerBottom(obj.white_src, obj.white_player),
+                            },
                             {
                                 x: obj.left - left_padding,
-                                y: Math.round(
-                                    obj.black_won ? obj.bottom - em_4 : obj.bottom + bottom_padding,
-                                ),
+                                y: getWhiteBottom(obj),
                             },
                             {
                                 x: obj.left,
-                                y: Math.round(
-                                    obj.black_won ? obj.bottom - em_4 : obj.bottom + bottom_padding,
-                                ),
+                                y: getWhiteBottom(obj),
                             },
                         ]);
                     }
@@ -1021,9 +1036,13 @@ export function Tournament(): JSX.Element {
                     drawLines(obj.bye_src);
                     if (!obj.second_bracket || obj.second_bracket === obj.bye_src.second_bracket) {
                         drawLine([
-                            { x: obj.bye_src.left, y: getWinnerBottom(obj.bye_src) },
-                            { x: obj.bye_src.right, y: getWinnerBottom(obj.bye_src) },
-                            { x: obj.left, y: Math.round((obj.top + obj.bottom) / 2.0) },
+                            { x: obj.bye_src.left, y: getPlayerBottom(obj.bye_src, obj.player_id) },
+                            {
+                                x: obj.bye_src.right,
+                                y: getPlayerBottom(obj.bye_src, obj.player_id),
+                            },
+                            { x: obj.left - left_padding, y: getBlackBottom(obj) },
+                            { x: obj.left, y: getBlackBottom(obj) },
                         ]);
                     }
                 }
@@ -1059,32 +1078,40 @@ export function Tournament(): JSX.Element {
                 game_id_map[m.black + "x" + m.white] = m.gameid;
                 game_id_map[m.white + "x" + m.black] = m.gameid;
                 result_map[m.black + "x" + m.white] = m.result
-                    ? m.result[0] === "B"
+                    ? m.result === "B+1"
                         ? "win"
-                        : m.result[0] === "W"
+                        : m.result === "W+1"
                           ? "loss"
-                          : "?"
+                          : m.result === "B+0.5,W+0.5"
+                            ? "tie"
+                            : "?"
                     : "?";
                 result_map[m.white + "x" + m.black] = m.result
-                    ? m.result[0] === "W"
+                    ? m.result === "B+1"
                         ? "win"
-                        : m.result[0] === "B"
+                        : m.result === "W+1"
                           ? "loss"
-                          : "?"
+                          : m.result === "B+0.5,W+0.5"
+                            ? "tie"
+                            : "?"
                     : "?";
                 color_map[m.black + "x" + m.white] = m.result
-                    ? m.result[0] === "B"
+                    ? m.result === "B+1"
                         ? "win"
-                        : m.result[0] === "W"
+                        : m.result === "W+1"
                           ? "loss"
-                          : "no-result"
+                          : m.result === "B+0.5,W+0.5"
+                            ? "tie"
+                            : "no-result"
                     : "?";
                 color_map[m.white + "x" + m.black] = m.result
-                    ? m.result[0] === "W"
+                    ? m.result === "B+1"
                         ? "win"
-                        : m.result[0] === "B"
+                        : m.result === "W+1"
                           ? "loss"
-                          : "no-result"
+                          : m.result === "B+0.5,W+0.5"
+                            ? "tie"
+                            : "no-result"
                     : "?";
             }
 

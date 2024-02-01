@@ -192,6 +192,7 @@ light.chat-system                       = #1CA760
 light.private-chat-user                 = #111111
 
 light.win                               = #73D355
+light.tie                               = #F3F3D5
 light.loss                              = #BC4B9A
 
 light.weak-win                          = lighten(light.win, 25%)
@@ -350,6 +351,7 @@ dark.private-chat-user                  = #eeeeee
 
 
 dark.win                                = desaturate(darken(light.win, 30%), 20%)
+dark.tie                                = desaturate(darken(light.tie, 80%), 20%)
 dark.loss                               = desaturate(darken(light.loss, 30%), 20%)
 
 dark.strong-win                         = lighten(dark.win, 25%)
@@ -430,6 +432,7 @@ for key, value in dark
 // And add the different stuff...
 
 accessible.win                                = #0072B2  // blue from https://www.nature.com/articles/nmeth.1618/figures/2
+accessible.tie                                = #CC79A7  // reddish purple from there ^^
 accessible.loss                               = #D55E00  // vermillion from there ^^
 
 // get rid of green indicator light, colors chosen for apparent "looks good" against the bg in this context
