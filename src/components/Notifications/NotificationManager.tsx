@@ -491,10 +491,6 @@ export class NotificationManager {
                 }
             }
 
-            if (notification.type === "moderationOffer") {
-                console.log("Moderation offer notification received...");
-            }
-
             this.rebuildNotificationList();
 
             this.event_emitter.emit("notification", notification);
