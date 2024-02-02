@@ -24,11 +24,11 @@ export const RulesMatrix = () => (
                 <tr>
                     <th></th>
                     <th>AGA</th>
-                    <th>Japanese</th>
-                    <th>Chinese</th>
-                    <th>Korean</th>
-                    <th>Ing's SST Rules</th>
-                    <th>New Zealand</th>
+                    <th>Japanese (JP)</th>
+                    <th>Chinese (CN)</th>
+                    <th>Korean (KR)</th>
+                    <th>Ing's SST Rules (Ing)</th>
+                    <th>New Zealand (NZ)</th>
                 </tr>
 
                 <tr>
