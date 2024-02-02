@@ -284,6 +284,10 @@ export function PlayerCard({
     const their_turn = player_to_move === player.id;
     const highlight_their_turn = their_turn ? `their-turn` : "";
 
+    // Only show the rules for black, since white has komi showing here.
+    const rules =
+        color === "black" ? rulesString(engine.config.rules, engine.config.handicap) : null;
+
     const show_points =
         (engine.phase === "finished" || engine.phase === "stone removal") &&
         goban.mode !== "analyze" &&
@@ -352,13 +356,18 @@ export function PlayerCard({
                         })}
                     </div>
                 )}
-                <NumCapturesText
-                    score={score}
-                    color={color}
-                    zen_mode={zen_mode}
-                    hidden={show_points && !estimating_score}
-                />
-                {!show_points && <div className="komi">{komiString(score.komi)}</div>}
+                {(!show_points || estimating_score) && (
+                    <NumCapturesText
+                        score={score}
+                        color={color}
+                        zen_mode={zen_mode}
+                        hidden={show_points && !estimating_score}
+                    />
+                )}
+                {rules && <div className="rules">{rules}</div>}
+                {!show_points && !!score.komi && (
+                    <div className="komi">{komiString(score.komi)}</div>
+                )}
                 <div id={`${color}-score-details`} className="score-details">
                     <ScorePopup goban={goban} color={color} show={show_score_breakdown} />
                 </div>
@@ -426,6 +435,56 @@ function komiString(komi: number) {
     }
     const abs_komi = Math.abs(komi).toFixed(1);
     return komi > 0 ? `+ ${abs_komi}` : `- ${abs_komi}`;
+}
+
+function rulesString(rules: string | null | undefined, handicap_stones: number | undefined) {
+    const stones = handicap_stones ? stonesString(handicap_stones) : "";
+    let code: string;
+    switch (rules?.toLowerCase()) {
+        default:
+        case "japanese":
+            code = "JP";
+            break;
+        case "nz":
+            code = "NZ";
+            break;
+        case "aga":
+            code = "AGA";
+            break;
+        case "ing":
+        case "ing sst": // Old spelling.
+            code = "Ing";
+            break;
+        case "chinese":
+            code = "CN";
+            break;
+        case "korean":
+            code = "KR";
+            break;
+    }
+    if (!code) {
+        return stones;
+    }
+    return code + " " + stones;
+}
+
+function stonesString(handicap_stones: number) {
+    if (handicap_stones <= 0) {
+        return "";
+    }
+    const one = 0x2460;
+    const twenty_one = 0x3251;
+    const thirty_six = 0x32b1;
+    if (handicap_stones <= 20) {
+        return String.fromCodePoint(one + handicap_stones - 1);
+    }
+    if (handicap_stones <= 35) {
+        return String.fromCodePoint(twenty_one + handicap_stones - 21);
+    }
+    if (handicap_stones <= 50) {
+        return String.fromCodePoint(thirty_six + handicap_stones - 36);
+    }
+    return "(" + handicap_stones + ")";
 }
 
 function useAutoResignExpiration(goban: GobanCore, color: "black" | "white") {

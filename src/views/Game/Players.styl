@@ -95,6 +95,11 @@
             text-align: right;
             font-weight: bold;
         }
+        .rules {
+            flex-grow: 0;
+            text-align: right;
+            font-weight: bold;
+        }
         .captures, .points {
             font-weight: bold;
             position: relative;
@@ -176,6 +181,7 @@
                 color: light[color-attr]!important
             }
         }
+
     }
 
     .black.player-container {
@@ -378,7 +384,7 @@
         font-size: font-size-small;
     }
     .player-container {
-        .captures, .points, .komi {
+        .captures, .points, .komi, .rules {
             font-size: font-size-small;
         }
         padding-bottom: 0;
@@ -540,6 +546,7 @@ body.light .MainGobanView.zen .player-icons {
         .player-name-container,
         .player-name-plain,
         .score-details,
+        .rules,
         .komi {
             display: none;
         }
