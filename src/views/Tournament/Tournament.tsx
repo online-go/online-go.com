@@ -240,6 +240,7 @@ export function Tournament(): JSX.Element {
             get(`groups/${new_tournament_group_id}`)
                 .then((group) => {
                     tournament_ref.current.group = group;
+                    tournament_ref.current.rules = group?.rules ?? "japanese";
                     refresh();
                 })
                 .catch(errorAlerter);
