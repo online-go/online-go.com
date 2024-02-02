@@ -437,10 +437,10 @@ function komiString(komi: number) {
     return komi > 0 ? `+ ${abs_komi}` : `- ${abs_komi}`;
 }
 
-function rulesString(rules: string | null, handicap_stones: number) {
+function rulesString(rules: string | null | undefined, handicap_stones: number | undefined) {
     const stones = handicap_stones ? stonesString(handicap_stones) : "";
     let code: string;
-    switch (rules.toLowerCase()) {
+    switch (rules?.toLowerCase()) {
         default:
         case "japanese":
             code = "JP";
