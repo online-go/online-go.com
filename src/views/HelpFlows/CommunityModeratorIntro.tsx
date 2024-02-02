@@ -62,15 +62,7 @@ export function CommunityModeratorIntro(): JSX.Element {
                     <div>
                         {pgettext(
                             "A help message describing the community moderator incident report indicator",
-                            "Incident report indicator - click it to see your report list",
-                        )}
-                    </div>
-                </HelpItem>
-                <HelpItem target="first-report-button" position={"centre-left"}>
-                    <div>
-                        {pgettext(
-                            "A help message describing the how to see a report",
-                            "Press the 'report button' to see a report",
+                            "Incident report indicator - click it to see the report list",
                         )}
                     </div>
                 </HelpItem>
