@@ -112,7 +112,7 @@ export function ModerationActionSelector({
     };
 
     const { registerTargetItem } = React.useContext(DynamicHelp.Api);
-    const { ref: voting_pane } = registerTargetItem("ModerationActionSelector");
+    const { ref: voting_pane } = registerTargetItem("voting-pane");
     const { ref: escalate_option } = registerTargetItem("escalate-option");
 
     const action_choices = available_actions ? available_actions : ["escalate"];
