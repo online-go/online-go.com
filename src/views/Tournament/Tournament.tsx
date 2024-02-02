@@ -1087,9 +1087,9 @@ export function Tournament(): JSX.Element {
                             : "?"
                     : "?";
                 result_map[m.white + "x" + m.black] = m.result
-                    ? m.result === "B+1"
+                    ? m.result === "W+1"
                         ? "win"
-                        : m.result === "W+1"
+                        : m.result === "B+1"
                           ? "loss"
                           : m.result === "B+0.5,W+0.5"
                             ? "tie"
@@ -1105,9 +1105,9 @@ export function Tournament(): JSX.Element {
                             : "no-result"
                     : "?";
                 color_map[m.white + "x" + m.black] = m.result
-                    ? m.result === "B+1"
+                    ? m.result === "W+1"
                         ? "win"
-                        : m.result === "W+1"
+                        : m.result === "B+1"
                           ? "loss"
                           : m.result === "B+0.5,W+0.5"
                             ? "tie"
