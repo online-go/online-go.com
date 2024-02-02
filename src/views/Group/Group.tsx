@@ -305,7 +305,7 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
     setGroupName = (ev: React.ChangeEvent<HTMLInputElement>) => {
         this.setState({ group: Object.assign({}, this.state.group, { name: ev.target.value }) });
     };
-    setRules = (ev: React.ChangeEvent<HTMLInputElement>) => {
+    setRules = (ev: React.ChangeEvent<HTMLSelectElement>) => {
         this.setState({ group: Object.assign({}, this.state.group, { rules: ev.target.value }) });
     };
     setShortDescription = (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
