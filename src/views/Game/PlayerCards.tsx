@@ -541,7 +541,7 @@ function ScorePopup({ show, goban, color }: ScorePopupProps) {
     let first_points = 0;
     return (
         <div className="score_breakdown">
-            {!!goban.engine.handicap && (
+            {color === "black" && !!goban.engine.handicap && (
                 <div>
                     <span>{_("Handicap")}</span>
                     <div>{goban.engine.handicap}</div>
