@@ -356,7 +356,7 @@ export function PlayerCard({
                         })}
                     </div>
                 )}
-                {!show_points && (
+                {(!show_points || estimating_score) && (
                     <NumCapturesText
                         score={score}
                         color={color}
