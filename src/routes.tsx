@@ -74,7 +74,6 @@ import { AccountWarning } from "AccountWarning";
 import { NetworkStatus } from "NetworkStatus";
 
 import * as docs from "docs";
-import { FakeGameLog } from "./views/FakeGameLog";
 import { useData } from "./lib/hooks";
 
 /*** Layout our main view and routes ***/
@@ -316,7 +315,6 @@ export const routes = (
                 {/* these aren't meant to be linked anywhere, just entered by hand
                 for developers looking to test and play with things */}
                 <Route path="/dev/styling" element={<Styling />} />
-                <Route path="/dev/fake-game-log" element={<FakeGameLog />} />
                 <Route path="/docs/about" element={<docs.About />} />
                 <Route path="/docs/privacy-policy" element={<docs.PrivacyPolicy />} />
                 <Route path="/docs/terms-of-service" element={<docs.TermsOfService />} />
