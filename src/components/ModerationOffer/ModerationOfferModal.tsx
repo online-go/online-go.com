@@ -130,6 +130,11 @@ export class ModerationOfferModal extends Modal<Events, ModerationOfferModalProp
                             )}
                         </p>
                         <p>
+                            <a href="https://github.com/online-go/online-go.com/wiki/Community-Moderation-%E2%80%90-Community-Moderator-Guide">
+                                {pgettext("Link to trial guidelines", "Community Moderation Trial")}
+                            </a>
+                        </p>
+                        <p>
                             {pgettext(
                                 "Part of the description offering community moderation powers to a user.",
                                 "You'll get access to tools that will allow you to vote on reports raised by users - that will tell us how to handle those reports.",
