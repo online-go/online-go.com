@@ -43,6 +43,8 @@ import { socket } from "sockets";
 import { Player } from "Player";
 import { useUser } from "hooks";
 
+const TRUNCATED_GAME_LOG_LENGTH = 25;
+
 export function ReportedGame({
     game_id,
     reported_at,
@@ -309,7 +311,10 @@ function GameLog({ goban }: { goban: Goban }): JSX.Element {
                         </thead>
                         <tbody>
                             {log
-                                .filter((_, idx) => shouldDisplayFullLog || idx < 25)
+                                .filter(
+                                    (_, idx) =>
+                                        shouldDisplayFullLog || idx < TRUNCATED_GAME_LOG_LENGTH,
+                                )
                                 .map((entry, idx) => (
                                     <tr key={entry.timestamp + ":" + idx} className="entry">
                                         <td className="timestamp">
@@ -328,7 +333,7 @@ function GameLog({ goban }: { goban: Goban }): JSX.Element {
                                 ))}
                         </tbody>
                     </table>
-                    {!shouldDisplayFullLog && (
+                    {!shouldDisplayFullLog && log.length > TRUNCATED_GAME_LOG_LENGTH && (
                         <button onClick={() => setShouldDisplayFullLog(true)}>
                             {`${_("Show all")} (${log.length})`}
                         </button>
