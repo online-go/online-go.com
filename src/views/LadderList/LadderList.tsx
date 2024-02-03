@@ -136,9 +136,7 @@ export function LadderList(): JSX.Element {
                             ) : (
                                 <i className="fa fa-list-ol"></i>
                             )}
-                            <Link to={`/ladder/${ladder.id}`}>
-                                {ladder.name} {ladder.board_size + "x" + ladder.board_size}
-                            </Link>
+                            <Link to={`/ladder/${ladder.id}`}>{ladder.name}</Link>
                         </div>
                     ))}
                 </div>
