@@ -543,12 +543,22 @@ function ScorePopup({ show, goban, color }: ScorePopupProps) {
     let first_points = 0;
     return (
         <div className="score_breakdown">
-            {color === "black" && !!goban.engine.handicap && (
-                <div>
-                    <span>{_("Handicap")}</span>
-                    <div>{goban.engine.handicap}</div>
+            {color === "black" && goban.engine.config.rules && (
+                <>
+                    <div className="summary">
+                        <span>
+                            {_("Rules")}: {rulesText(goban.engine.config.rules)}
+                        </span>
+                    </div>
+                    {!!goban.engine.handicap && (
+                        <div className="summary">
+                            <span>
+                                {_("Handicap")}: {goban.engine.handicap}
+                            </span>
+                        </div>
+                    )}
                     <hr />
-                </div>
+                </>
             )}
             {!!stones && (
                 <div>
