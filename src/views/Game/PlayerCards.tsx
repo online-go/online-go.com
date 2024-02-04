@@ -437,7 +437,7 @@ function komiString(komi: number) {
 function rulesCode(rules: string | null | undefined) {
     switch (rules?.toLowerCase()) {
         default:
-            return "";
+            return null;
         case "japanese":
             return "JP";
         case "nz":
@@ -452,6 +452,14 @@ function rulesCode(rules: string | null | undefined) {
         case "korean":
             return "KR";
     }
+}
+
+function rulesParens(rules: string | null | undefined) {
+    const code = rulesCode(rules);
+    if (!code || !rules || code === rulesText(rules)) {
+        return "";
+    }
+    return " (" + code + ")";
 }
 
 function rulesAndHandicap(rules: string | null | undefined, handicap_stones: number | undefined) {
@@ -542,8 +550,8 @@ function ScorePopup({ show, goban, color }: ScorePopupProps) {
                 <>
                     <div className="summary">
                         <span>
-                            {_("Rules")}: {rulesText(goban.engine.config.rules)} (
-                            {rulesCode(goban.engine.config.rules)})
+                            {_("Rules")}: {rulesText(goban.engine.config.rules)}
+                            {rulesParens(goban.engine.config.rules)}
                         </span>
                     </div>
                     {!!goban.engine.handicap && (
