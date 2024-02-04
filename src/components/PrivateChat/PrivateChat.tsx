@@ -393,9 +393,12 @@ class PrivateChat {
             if (this.user_id) {
                 this.input.attr(
                     "placeholder",
-                    pgettext(
-                        "This is the placeholder text for the chat input field in games, chat channels, and private messages",
-                        interpolate("Message {{who}}", { who: this.player.username }),
+                    interpolate(
+                        pgettext(
+                            "This is the placeholder text for the chat input field in games, chat channels, and private messages",
+                            "Message {{who}}",
+                        ),
+                        { who: this.player.username },
                     ),
                 );
                 this.input.removeAttr("disabled");

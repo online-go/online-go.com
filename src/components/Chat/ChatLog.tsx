@@ -546,9 +546,12 @@ function ChatInput({
 
     const placeholder = inputPlaceholderText
         ? inputPlaceholderText
-        : pgettext(
-              "This is the placeholder text for the chat input field in games, chat channels, and private messages",
-              interpolate("Message {{who}}", { who: channel_name || "..." }),
+        : interpolate(
+              pgettext(
+                  "This is the placeholder text for the chat input field in games, chat channels, and private messages",
+                  "Message {{who}}",
+              ),
+              { who: channel_name || "..." },
           );
 
     return (

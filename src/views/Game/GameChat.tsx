@@ -295,9 +295,12 @@ export function GameChat(props: GameChatProperties): JSX.Element {
                                     ? "Message players as a moderator"
                                     : selected_chat_log === "hidden"
                                       ? "Visible only to moderators"
-                                      : pgettext(
-                                            "This is the placeholder text for the chat input field in games, chat channels, and private messages",
-                                            interpolate("Message {{who}}", { who: "..." }),
+                                      : interpolate(
+                                            pgettext(
+                                                "This is the placeholder text for the chat input field in games, chat channels, and private messages",
+                                                "Message {{who}}",
+                                            ),
+                                            { who: "..." },
                                         )
                     }
                     onKeyPress={onKeyPress}
