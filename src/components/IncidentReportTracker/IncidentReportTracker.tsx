@@ -50,17 +50,17 @@ export function IncidentReportTracker(): JSX.Element | null {
         registerTargetItem("first-report-button");
 
     function toggleList() {
-        if (user.is_moderator) {
+        if (user.is_moderator || user.moderator_powers) {
+            signalUsed("incident-report-indicator");
             navigate("/reports-center/");
         } else {
-            signalUsed("incident-report-indicator");
             setShowIncidentList(!show_incident_list);
         }
     }
 
     React.useEffect(() => {
         if (incident_report_indicator && user.moderator_powers) {
-            if (!prefer_hidden && normal_ct > 0) {
+            if (normal_ct > 0) {
                 triggerFlow("community-moderator-with-reports-intro");
             } else {
                 triggerFlow("community-moderator-no-reports-intro");
