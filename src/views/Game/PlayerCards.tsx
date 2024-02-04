@@ -26,6 +26,7 @@ import { ChatPresenceIndicator } from "ChatPresenceIndicator";
 import { Clock } from "Clock";
 import { useUser } from "hooks";
 import { Player } from "Player";
+import { rulesText } from "misc";
 import { lookup, fetch } from "player_cache";
 import { _, interpolate, ngettext } from "translate";
 import * as data from "data";
@@ -284,10 +285,6 @@ export function PlayerCard({
     const their_turn = player_to_move === player.id;
     const highlight_their_turn = their_turn ? `their-turn` : "";
 
-    // Only show the rules for black, since white has komi showing here.
-    const rules =
-        color === "black" ? rulesString(engine.config.rules, engine.config.handicap) : null;
-
     const show_points =
         (engine.phase === "finished" || engine.phase === "stone removal") &&
         goban.mode !== "analyze" &&
@@ -364,7 +361,7 @@ export function PlayerCard({
                         hidden={show_points && !estimating_score}
                     />
                 )}
-                {rules && <div className="rules">{rules}</div>}
+                {color === "black" && rulesAndHandicap(engine.config.rules, engine.config.handicap)}
                 {!show_points && !!score.komi && (
                     <div className="komi">{komiString(score.komi)}</div>
                 )}
@@ -437,11 +434,12 @@ function komiString(komi: number) {
     return komi > 0 ? `+ ${abs_komi}` : `- ${abs_komi}`;
 }
 
-function rulesString(rules: string | null | undefined, handicap_stones: number | undefined) {
+function rulesAndHandicap(rules: string | null | undefined, handicap_stones: number | undefined) {
     const stones = handicap_stones ? stonesString(handicap_stones) : "";
-    let code: string;
+    let code: string | undefined;
     switch (rules?.toLowerCase()) {
         default:
+            break;
         case "japanese":
             code = "JP";
             break;
@@ -462,10 +460,14 @@ function rulesString(rules: string | null | undefined, handicap_stones: number |
             code = "KR";
             break;
     }
-    if (!code) {
-        return stones;
-    }
-    return code + " " + stones;
+
+    return (
+        <div className="rules">
+            {code && <span title={_("Rules") + ": " + rulesText(rules)}>{code}</span>}
+            {code && stones && " "}
+            {stones && <span title={_("Handicap") + ": " + handicap_stones}>{stones}</span>}
+        </div>
+    );
 }
 
 function stonesString(handicap_stones: number) {
