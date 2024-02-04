@@ -26,7 +26,7 @@ import { ChatPresenceIndicator } from "ChatPresenceIndicator";
 import { Clock } from "Clock";
 import { useUser } from "hooks";
 import { Player } from "Player";
-import { rulesText } from "misc";
+import { rulesText, rulesCode } from "misc";
 import { lookup, fetch } from "player_cache";
 import { _, interpolate, ngettext } from "translate";
 import * as data from "data";
@@ -432,26 +432,6 @@ function komiString(komi: number) {
     }
     const abs_komi = Math.abs(komi).toFixed(1);
     return komi > 0 ? `+ ${abs_komi}` : `- ${abs_komi}`;
-}
-
-function rulesCode(rules: string | null | undefined) {
-    switch (rules?.toLowerCase()) {
-        default:
-            return null;
-        case "japanese":
-            return "JP";
-        case "nz":
-            return "NZ";
-        case "aga":
-            return "AGA";
-        case "ing":
-        case "ing sst": // Old spelling.
-            return "Ing";
-        case "chinese":
-            return "CN";
-        case "korean":
-            return "KR";
-    }
 }
 
 function rulesParens(rules: string | null | undefined) {

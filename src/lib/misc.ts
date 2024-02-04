@@ -75,11 +75,32 @@ export function rulesText(rules: string) {
         case "chinese":
             return _("Chinese");
         case "ing":
+        case "ing sst": // Old spelling.
             return _("Ing");
         case "nz":
             return _("New Zealand");
     }
     return "[unknown]";
+}
+
+export function rulesCode(rules: string | null | undefined) {
+    switch (rules?.toLowerCase()) {
+        default:
+            return null;
+        case "japanese":
+            return pgettext("Rules short form (2-3 characters)", "JP");
+        case "nz":
+            return pgettext("Rules short form (2-3 characters)", "NZ");
+        case "aga":
+            return pgettext("Rules short form (2-3 characters)", "AGA");
+        case "ing":
+        case "ing sst": // Old spelling.
+            return pgettext("Rules short form (2-3 characters)", "Ing");
+        case "chinese":
+            return pgettext("Rules short form (2-3 characters)", "CN");
+        case "korean":
+            return pgettext("Rules short form (2-3 characters)", "KR");
+    }
 }
 
 // Create a deep copy of obj
