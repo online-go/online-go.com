@@ -124,7 +124,7 @@ export function LogData({
         if (event === "game_created") {
             return;
         }
-        if (!data?.stones) {
+        if (!data?.hasOwnProperty("stones")) {
             return;
         }
 
