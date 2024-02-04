@@ -27,9 +27,9 @@ import { browserHistory } from "ogsHistory";
 import { challenge_text_description, ChallengeDetails } from "ChallengeModal";
 import { Player } from "Player";
 import { FabX, FabCheck } from "material";
-import { MODERATOR_POWERS, MOD_POWER_NAMES, deepEqual } from "misc";
+import { deepEqual } from "misc";
 import { isLiveGame, durationString } from "TimeControl";
-
+import { MODERATOR_POWERS, MOD_POWER_NAMES } from "moderation";
 import { notification_manager } from "./NotificationManager";
 import { ModerationOffer } from "ModerationOffer";
 

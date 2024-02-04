@@ -33,7 +33,7 @@ import { EventEmitter } from "eventemitter3";
 import { emitNotification } from "Notifications";
 import { browserHistory } from "ogsHistory";
 import { get, post } from "requests";
-import { MODERATOR_POWERS } from "./misc";
+import { MODERATOR_POWERS } from "moderation";
 
 export const DAILY_REPORT_GOAL = 10;
 

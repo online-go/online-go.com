@@ -23,6 +23,64 @@ import { GoEngineConfig } from "goban";
 import { errorAlerter } from "misc";
 import { toast } from "toast";
 
+import { pgettext } from "translate";
+
+export type ReportType =
+    | "all" // not a type, just useful for the enumeration
+    // These need to match those defined in the IncidentReport model on the back end
+    | "stalling"
+    | "inappropriate_content"
+    | "score_cheating"
+    | "harassment"
+    | "ai_use"
+    | "sandbagging"
+    | "escaping"
+    | "appeal"
+    | "other"
+    | "warning" // for moderators only
+    | "troll"; // system generated, for moderators only
+
+// Must match back-end MODERATOR_POWER definition
+
+export enum MODERATOR_POWERS {
+    NONE = 0,
+    HANDLE_SCORE_CHEAT = 0b001,
+    HANDLE_ESCAPING = 0b010,
+    HANDLE_STALLING = 0b100,
+}
+
+export const MOD_POWER_NEEDED: { [key in ReportType]: MODERATOR_POWERS } = {
+    // Note: NONE means there is no CM power that allows this type
+    all: MODERATOR_POWERS.NONE,
+    stalling: MODERATOR_POWERS.HANDLE_STALLING,
+    inappropriate_content: MODERATOR_POWERS.NONE,
+    score_cheating: MODERATOR_POWERS.HANDLE_SCORE_CHEAT,
+    harassment: MODERATOR_POWERS.NONE,
+    ai_use: MODERATOR_POWERS.NONE,
+    sandbagging: MODERATOR_POWERS.NONE,
+    escaping: MODERATOR_POWERS.HANDLE_ESCAPING,
+    appeal: MODERATOR_POWERS.NONE,
+    other: MODERATOR_POWERS.NONE,
+    warning: MODERATOR_POWERS.NONE,
+    troll: MODERATOR_POWERS.NONE,
+};
+
+export const MOD_POWER_NAMES: { [key in MODERATOR_POWERS]: string } = {
+    [MODERATOR_POWERS.NONE]: pgettext("... as in 'moderators powers: None'", "None"),
+    [MODERATOR_POWERS.HANDLE_SCORE_CHEAT]: pgettext(
+        "A label for a moderator power",
+        "Handle Score Cheating Reports",
+    ),
+    [MODERATOR_POWERS.HANDLE_ESCAPING]: pgettext(
+        "A label for a moderator power",
+        "Handle Escaping Reports",
+    ),
+    [MODERATOR_POWERS.HANDLE_STALLING]: pgettext(
+        "A label for a moderator power",
+        "Handle Stalling Reports",
+    ),
+};
+
 export function doAnnul(
     engine: GoEngineConfig,
     tf: boolean,
