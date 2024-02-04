@@ -434,37 +434,32 @@ function komiString(komi: number) {
     return komi > 0 ? `+ ${abs_komi}` : `- ${abs_komi}`;
 }
 
-function rulesAndHandicap(rules: string | null | undefined, handicap_stones: number | undefined) {
-    const stones = handicap_stones ? stonesString(handicap_stones) : "";
-    let code: string | undefined;
+function rulesCode(rules: string | null | undefined) {
     switch (rules?.toLowerCase()) {
         default:
-            break;
+            return "";
         case "japanese":
-            code = "JP";
-            break;
+            return "JP";
         case "nz":
-            code = "NZ";
-            break;
+            return "NZ";
         case "aga":
-            code = "AGA";
-            break;
+            return "AGA";
         case "ing":
         case "ing sst": // Old spelling.
-            code = "Ing";
-            break;
+            return "Ing";
         case "chinese":
-            code = "CN";
-            break;
+            return "CN";
         case "korean":
-            code = "KR";
-            break;
+            return "KR";
     }
+}
 
+function rulesAndHandicap(rules: string | null | undefined, handicap_stones: number | undefined) {
+    const stones = handicap_stones ? stonesString(handicap_stones) : "";
     return (
         <div className="rules">
-            {code && rules && <span title={_("Rules") + ": " + rulesText(rules)}>{code}</span>}
-            {code && stones && " "}
+            {rules && <span title={_("Rules") + ": " + rulesText(rules)}>{rulesCode(rules)}</span>}
+            {rules && stones && " "}
             {stones && <span title={_("Handicap") + ": " + handicap_stones}>{stones}</span>}
         </div>
     );
@@ -547,7 +542,8 @@ function ScorePopup({ show, goban, color }: ScorePopupProps) {
                 <>
                     <div className="summary">
                         <span>
-                            {_("Rules")}: {rulesText(goban.engine.config.rules)}
+                            {_("Rules")}: {rulesText(goban.engine.config.rules)} (
+                            {rulesCode(goban.engine.config.rules)})
                         </span>
                     </div>
                     {!!goban.engine.handicap && (
