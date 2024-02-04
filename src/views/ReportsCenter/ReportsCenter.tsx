@@ -18,13 +18,14 @@
 import * as React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useUser, useRefresh } from "hooks";
-import { CommunityModeratorReportTypes, report_categories, ReportDescription } from "Report";
+import { report_categories, ReportDescription } from "Report";
 import { report_manager, DAILY_REPORT_GOAL } from "report_manager";
 import Select from "react-select";
 import { _ } from "translate";
 import { ViewReport } from "./ViewReport";
 import { ReportsCenterSettings } from "./ReportsCenterSettings";
 import { ReportsCenterHistory } from "./ReportsCenterHistory";
+import { MOD_POWER_NEEDED } from "moderation";
 
 interface OtherView {
     special: string;
@@ -134,8 +135,8 @@ export function ReportsCenter(): JSX.Element | null {
     const visible_categories = user.is_moderator
         ? categories
         : // community moderators supported report types
-          report_categories.filter((category) =>
-              CommunityModeratorReportTypes.includes(category.type),
+          report_categories.filter(
+              (category) => user.moderator_powers & MOD_POWER_NEEDED[category.type],
           );
 
     return (
