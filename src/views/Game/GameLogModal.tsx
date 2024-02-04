@@ -109,6 +109,16 @@ export class GameLogModal extends Modal<Events, GameLogModalProperties, { log: A
     }
 }
 
+// Fields that are only used to enhance the display of other fields,
+// or aren't used at all.
+const HIDDEN_LOG_FIELDS = [
+    // used with "stones"
+    "current_removal_string",
+    "move_number",
+    // isn't used
+    "strict_seki_mode",
+];
+
 export function LogData({
     config,
     event,
@@ -179,7 +189,7 @@ export function LogData({
                             />,
                         );
                     }
-                } else if (k === "current_removal_string" || k === "move_number") {
+                } else if (HIDDEN_LOG_FIELDS.includes(k)) {
                     // skip
                 } else {
                     ret.push(
