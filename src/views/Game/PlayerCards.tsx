@@ -463,7 +463,7 @@ function rulesAndHandicap(rules: string | null | undefined, handicap_stones: num
 
     return (
         <div className="rules">
-            {code && <span title={_("Rules") + ": " + rulesText(rules)}>{code}</span>}
+            {code && rules && <span title={_("Rules") + ": " + rulesText(rules)}>{code}</span>}
             {code && stones && " "}
             {stones && <span title={_("Handicap") + ": " + handicap_stones}>{stones}</span>}
         </div>
