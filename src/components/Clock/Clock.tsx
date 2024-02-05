@@ -115,6 +115,12 @@ export function Clock({
                         {prettyTime(player_clock.main_time)}
                     </span>
                 )}
+                {time_control.system === "absolute" && (
+                    <>
+                        <span className="periods-delimiter">/</span>
+                        <span className="period-moves boxed">*</span>
+                    </>
+                )}
 
                 {time_control.system === "byoyomi" && (
                     <div className="byo-yomi-container">

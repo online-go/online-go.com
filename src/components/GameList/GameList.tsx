@@ -105,6 +105,7 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
         time_control: JGOFTimeControl | undefined,
         clock: AdHocClock,
         player_clock: AdHocPlayerClock | number,
+        guessMovesLeft: () => number,
     ) {
         // Inaccurate for paused clocks.
         switch (time_control?.system) {
@@ -112,7 +113,10 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
                 const time: number = player_clock as number;
                 return time - clock.last_move;
             }
-            case "absolute":
+            case "absolute": {
+                const time: AdHocPlayerClock = player_clock as AdHocPlayerClock;
+                return (time.thinking_time * 1000) / guessMovesLeft();
+            }
             case "fischer": {
                 const time: AdHocPlayerClock = player_clock as AdHocPlayerClock;
                 return time.thinking_time * 1000;
@@ -126,7 +130,10 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
             }
             case "canadian": {
                 const time: AdHocPlayerClock = player_clock as AdHocPlayerClock;
-                return (time.thinking_time + (time.block_time as number)) * 1000;
+                return (
+                    (time.thinking_time + (time.block_time as number) / (time.moves_left || 1)) *
+                    1000
+                );
             }
             case "none":
             default:
@@ -138,6 +145,7 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
         time_control: JGOFTimeControl | undefined,
         clock: JGOFClock,
         player_clock: JGOFPlayerClock,
+        guessMovesLeft: () => number,
     ) {
         if (clock?.start_mode) {
             return clock.start_time_left || 0;
@@ -150,8 +158,10 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
             default:
                 return Number.MAX_SAFE_INTEGER;
 
-            case "fischer":
             case "absolute":
+                return player_clock.main_time / guessMovesLeft();
+
+            case "fischer":
             case "simple":
                 return player_clock.main_time;
 
@@ -166,14 +176,22 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
                 );
             }
             case "canadian":
-                return player_clock.main_time + (player_clock.block_time_left || 0);
+                return (
+                    player_clock.main_time +
+                    (player_clock.block_time_left || 0) / (player_clock.moves_left || 1)
+                );
         }
     }
 
-    extractClockSortFieldsAdHoc(game: GameType, use_this_player: boolean) {
+    extractClockSortFieldsAdHoc(
+        game: GameType,
+        use_this_player: boolean,
+        guessMovesLeft: () => number,
+    ) {
         if (game?.json?.clock === undefined) {
             // No clock at all! Sort last.
             return {
+                live: false,
                 paused: true,
                 is_current_player: false,
                 remaining: Number.MAX_SAFE_INTEGER,
@@ -185,13 +203,16 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
         const is_current_player = clock.current_player === this.props.player?.id;
         const is_black = clock.black_player_id === this.props.player?.id;
         const use_black = use_this_player === is_black;
+        const time_control = game.json?.time_control;
         const remaining = this.computeRemainingTimeAdHoc(
-            game.json?.time_control,
+            time_control,
             clock,
             use_black ? clock.black_time : clock.white_time,
+            guessMovesLeft,
         );
-
+        const live = (time_control?.speed ?? "correspondence") !== "correspondence";
         return {
+            live: live,
             paused: paused,
             is_current_player: is_current_player,
             remaining: remaining,
@@ -199,9 +220,14 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
     }
 
     extractClockSortFields(game: GameType, use_this_player: boolean) {
+        const guessMovesLeft = () => {
+            const total_moves_guess = game.width * game.height * 0.75;
+            return Math.max(10, total_moves_guess - (game?.goban?.engine?.getMoveNumber() || 0));
+        };
+
         if (game?.goban?.last_emitted_clock === undefined) {
             // No JGOFClock yet. Use the AdHocClock.
-            return this.extractClockSortFieldsAdHoc(game, use_this_player);
+            return this.extractClockSortFieldsAdHoc(game, use_this_player, guessMovesLeft);
         }
 
         const clock = game.goban.last_emitted_clock;
@@ -211,12 +237,16 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
         const is_current_player = clock.current_player_id === this.props.player?.id?.toString();
         const is_black = is_current_player === (clock.current_player === "black");
         const use_black = use_this_player === is_black;
+        const time_control = game.goban.config?.time_control;
         const remaining = this.computeRemainingTime(
-            game.goban.config?.time_control,
+            time_control,
             clock,
             use_black ? clock.black_clock : clock.white_clock,
+            guessMovesLeft,
         );
+        const live = (time_control?.speed ?? "correspondence") !== "correspondence";
         return {
+            live: live,
             paused: paused,
             is_current_player: is_current_player,
             remaining: remaining,
@@ -231,6 +261,7 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
                     const a_clock = this.extractClockSortFields(a, true);
                     const b_clock = this.extractClockSortFields(b, true);
                     return (
+                        +b_clock.live - +a_clock.live ||
                         +b_clock.is_current_player - +a_clock.is_current_player ||
                         +a_clock.paused - +b_clock.paused ||
                         a_clock.remaining - b_clock.remaining ||
