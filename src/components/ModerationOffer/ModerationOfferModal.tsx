@@ -21,7 +21,8 @@ import { openModal, Modal } from "Modal";
 import { alert } from "swal_config";
 import { patch } from "requests";
 
-import { MODERATOR_POWERS, MOD_POWER_NAMES, errorAlerter } from "misc";
+import { errorAlerter } from "misc";
+import { MODERATOR_POWERS, MOD_POWER_NAMES } from "moderation";
 
 interface Events {}
 

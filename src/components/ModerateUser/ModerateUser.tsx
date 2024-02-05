@@ -19,10 +19,11 @@ import * as React from "react";
 import * as data from "data";
 import { _, pgettext } from "translate";
 import { put, get, del } from "requests";
-import { MODERATOR_POWERS, errorAlerter } from "misc";
+import { errorAlerter } from "misc";
 import { proRankList } from "rank_utils";
 import { Modal, openModal } from "Modal";
 import { PlayerCacheEntry, lookup } from "player_cache";
+import { MODERATOR_POWERS } from "moderation";
 
 interface Events {}
 
