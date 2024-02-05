@@ -26,6 +26,7 @@ import { ChatPresenceIndicator } from "ChatPresenceIndicator";
 import { Clock } from "Clock";
 import { useUser } from "hooks";
 import { Player } from "Player";
+import { rulesText, rulesCode } from "misc";
 import { lookup, fetch } from "player_cache";
 import { _, interpolate, ngettext } from "translate";
 import * as data from "data";
@@ -284,10 +285,6 @@ export function PlayerCard({
     const their_turn = player_to_move === player.id;
     const highlight_their_turn = their_turn ? `their-turn` : "";
 
-    // Only show the rules for black, since white has komi showing here.
-    const rules =
-        color === "black" ? rulesString(engine.config.rules, engine.config.handicap) : null;
-
     const show_points =
         (engine.phase === "finished" || engine.phase === "stone removal") &&
         goban.mode !== "analyze" &&
@@ -364,7 +361,7 @@ export function PlayerCard({
                         hidden={show_points && !estimating_score}
                     />
                 )}
-                {rules && <div className="rules">{rules}</div>}
+                {color === "black" && rulesAndHandicap(engine.config.rules, engine.config.handicap)}
                 {!show_points && !!score.komi && (
                     <div className="komi">{komiString(score.komi)}</div>
                 )}
@@ -437,35 +434,23 @@ function komiString(komi: number) {
     return komi > 0 ? `+ ${abs_komi}` : `- ${abs_komi}`;
 }
 
-function rulesString(rules: string | null | undefined, handicap_stones: number | undefined) {
+function rulesParens(rules: string | null | undefined) {
+    const code = rulesCode(rules);
+    if (!code || !rules || code === rulesText(rules)) {
+        return "";
+    }
+    return " (" + code + ")";
+}
+
+function rulesAndHandicap(rules: string | null | undefined, handicap_stones: number | undefined) {
     const stones = handicap_stones ? stonesString(handicap_stones) : "";
-    let code: string;
-    switch (rules?.toLowerCase()) {
-        default:
-        case "japanese":
-            code = "JP";
-            break;
-        case "nz":
-            code = "NZ";
-            break;
-        case "aga":
-            code = "AGA";
-            break;
-        case "ing":
-        case "ing sst": // Old spelling.
-            code = "Ing";
-            break;
-        case "chinese":
-            code = "CN";
-            break;
-        case "korean":
-            code = "KR";
-            break;
-    }
-    if (!code) {
-        return stones;
-    }
-    return code + " " + stones;
+    return (
+        <div className="rules">
+            {rules && <span title={_("Rules") + ": " + rulesText(rules)}>{rulesCode(rules)}</span>}
+            {rules && stones && " "}
+            {stones && <span title={_("Handicap") + ": " + handicap_stones}>{stones}</span>}
+        </div>
+    );
 }
 
 function stonesString(handicap_stones: number) {
@@ -541,12 +526,23 @@ function ScorePopup({ show, goban, color }: ScorePopupProps) {
     let first_points = 0;
     return (
         <div className="score_breakdown">
-            {color === "black" && !!goban.engine.handicap && (
-                <div>
-                    <span>{_("Handicap")}</span>
-                    <div>{goban.engine.handicap}</div>
+            {color === "black" && goban.engine.config.rules && (
+                <>
+                    <div className="summary">
+                        <span>
+                            {_("Rules")}: {rulesText(goban.engine.config.rules)}
+                            {rulesParens(goban.engine.config.rules)}
+                        </span>
+                    </div>
+                    {!!goban.engine.handicap && (
+                        <div className="summary">
+                            <span>
+                                {_("Handicap")}: {goban.engine.handicap}
+                            </span>
+                        </div>
+                    )}
                     <hr />
-                </div>
+                </>
             )}
             {!!stones && (
                 <div>
