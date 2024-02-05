@@ -21,7 +21,7 @@ import { RouteComponentProps, rr6ClassShim } from "ogs-rr6-shims";
 import { browserHistory } from "ogsHistory";
 import { _, interpolate, pgettext } from "translate";
 import { post, del, put, get } from "requests";
-import { errorAlerter, slugify } from "misc";
+import { errorAlerter, slugify, rulesText } from "misc";
 import * as data from "data";
 import { Card } from "material";
 import { Player, setExtraActionCallback } from "Player";
@@ -70,6 +70,7 @@ interface GroupInfo {
     has_open_tournaments?: boolean;
     has_active_tournaments?: boolean;
     has_finished_tournaments?: boolean;
+    rules?: string;
 }
 
 // API: group/%id%/news
@@ -304,6 +305,9 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
     setGroupName = (ev: React.ChangeEvent<HTMLInputElement>) => {
         this.setState({ group: Object.assign({}, this.state.group, { name: ev.target.value }) });
     };
+    setRules = (ev: React.ChangeEvent<HTMLSelectElement>) => {
+        this.setState({ group: Object.assign({}, this.state.group, { rules: ev.target.value }) });
+    };
     setShortDescription = (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
         this.setState({
             group: Object.assign({}, this.state.group, { short_description: ev.target.value }),
@@ -486,6 +490,29 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
             this.setState({ user_to_invite: user });
         }
     };
+
+    renderRules() {
+        if (
+            !this.state.group_loaded ||
+            !this.state.group.is_member ||
+            !this.state.is_admin ||
+            !this.state.editing
+        ) {
+            return rulesText(this.state.group?.rules ?? "japanese");
+        }
+
+        const group = this.state.group;
+        return (
+            <select value={group.rules} onChange={this.setRules}>
+                <option value="aga">{_("AGA")}</option>
+                <option value="chinese">{_("Chinese")}</option>
+                <option value="ing">{_("Ing SST")}</option>
+                <option value="japanese">{_("Japanese")}</option>
+                <option value="korean">{_("Korean")}</option>
+                <option value="nz">{_("New Zealand")}</option>
+            </select>
+        );
+    }
 
     render() {
         const user = data.get("user");
@@ -1139,6 +1166,14 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
                         )}
 
                         <Card className="ladders">
+                            <div className="ladder-configuration">
+                                <table>
+                                    <tr>
+                                        <th>{_("Rules")}</th>
+                                        <td>{this.renderRules()}</td>
+                                    </tr>
+                                </table>
+                            </div>
                             <div>
                                 <Link to={`/ladder/${group.ladder_ids[0]}`}>{_("9x9 Ladder")}</Link>
                             </div>
