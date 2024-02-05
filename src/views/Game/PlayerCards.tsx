@@ -434,14 +434,6 @@ function komiString(komi: number) {
     return komi > 0 ? `+ ${abs_komi}` : `- ${abs_komi}`;
 }
 
-function rulesParens(rules: string | null | undefined) {
-    const code = rulesCode(rules);
-    if (!code || !rules || code === rulesText(rules)) {
-        return "";
-    }
-    return " (" + code + ")";
-}
-
 function rulesAndHandicap(rules: string | null | undefined, handicap_stones: number | undefined) {
     const stones = handicap_stones ? stonesString(handicap_stones) : "";
     return (
@@ -528,17 +520,16 @@ function ScorePopup({ show, goban, color }: ScorePopupProps) {
         <div className="score_breakdown">
             {color === "black" && goban.engine.config.rules && (
                 <>
-                    <div className="summary">
+                    <div>
                         <span>
                             {_("Rules")}: {rulesText(goban.engine.config.rules)}
-                            {rulesParens(goban.engine.config.rules)}
                         </span>
+                        <div>{rulesCode(goban.engine.config.rules)}</div>
                     </div>
                     {!!goban.engine.handicap && (
-                        <div className="summary">
-                            <span>
-                                {_("Handicap")}: {goban.engine.handicap}
-                            </span>
+                        <div>
+                            <span>{_("Handicap")}</span>
+                            <div>{goban.engine.handicap}</div>
                         </div>
                     )}
                     <hr />
