@@ -633,6 +633,7 @@ export function Tournament(): JSX.Element {
                         match: match,
                         second_bracket: false,
                         round: round_num,
+                        is_final: round.byes.length === 0 && round.matches.length === 1,
                     };
                     if (obj.black_src) {
                         obj.black_src.parent = obj;
@@ -875,7 +876,14 @@ export function Tournament(): JSX.Element {
                         }
                     }
 
-                    if (!obj.second_bracket) {
+                    if (
+                        obj.is_final &&
+                        ((obj.black_src && obj.black_src.second_bracket) ||
+                            (obj.white_src && obj.white_src.second_bracket))
+                    ) {
+                        // Draw finals for double-elimination in between the two brackets.
+                        obj.top = bracket_spacing;
+                    } else if (!obj.second_bracket) {
                         if (obj.bye_src) {
                             if (obj.bye_src.second_bracket === obj.second_bracket) {
                                 obj.top = obj.bye_src.top;
@@ -983,6 +991,7 @@ export function Tournament(): JSX.Element {
                 if (obj.black_src) {
                     drawLines(obj.black_src);
                     if (
+                        obj.is_final ||
                         !obj.second_bracket ||
                         obj.second_bracket === obj.black_src.second_bracket
                     ) {
@@ -1009,6 +1018,7 @@ export function Tournament(): JSX.Element {
                 if (obj.white_src) {
                     drawLines(obj.white_src);
                     if (
+                        obj.is_final ||
                         !obj.second_bracket ||
                         obj.second_bracket === obj.white_src.second_bracket
                     ) {
