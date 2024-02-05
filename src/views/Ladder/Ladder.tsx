@@ -23,7 +23,7 @@ import * as data from "data";
 import { List, AutoSizer } from "react-virtualized";
 import { Player } from "Player";
 import { UIPush } from "UIPush";
-import { shouldOpenNewTab } from "misc";
+import { shouldOpenNewTab, rulesText } from "misc";
 import { PlayerAutocomplete } from "PlayerAutocomplete";
 import { close_all_popovers, popover } from "popover";
 import { browserHistory } from "ogsHistory";
@@ -43,6 +43,7 @@ interface LadderState {
         name: string;
         player_is_member_of_group: boolean;
         player_rank: number;
+        rules?: string;
     };
     ladder_size: number;
     topVisibleEntry: number;
@@ -167,6 +168,15 @@ class _Ladder extends React.PureComponent<LadderProperties, LadderState> {
                             </button>
                         )}
                         <h2>{this.state.ladder && this.state.ladder.name}</h2>
+
+                        <div className="ladder-configuration">
+                            <table>
+                                <tr>
+                                    <th>{_("Rules")}</th>
+                                    <td>{rulesText(this.state.ladder?.rules ?? "japanese")}</td>
+                                </tr>
+                            </table>
+                        </div>
 
                         <PlayerAutocomplete
                             ladderId={this.props.match.params.ladder_id}
