@@ -800,6 +800,10 @@ export function Game(): JSX.Element | null {
         );
     };
     const frag_game_information = () => {
+        if (zen_mode) {
+            return null;
+        }
+
         const config = goban.current?.engine?.config;
         if (!config) {
             return null;
