@@ -29,7 +29,7 @@ import { Player } from "Player";
 import { lookup, fetch } from "player_cache";
 import { _, interpolate, ngettext } from "translate";
 import * as data from "data";
-import { generateGobanHook, usePlayerToMove, useShowTitle, useTitle } from "./GameHooks";
+import { generateGobanHook, usePlayerToMove } from "./GameHooks";
 import { get_network_latency, get_clock_drift } from "sockets";
 import { useGoban } from "./goban_context";
 import { usePreference } from "preferences";
@@ -61,15 +61,11 @@ export function PlayerCards({
     white_ai_suspected,
 }: PlayerCardsProps): JSX.Element {
     const goban = useGoban();
-    const engine = goban.engine;
 
     const orig_marks = React.useRef<string | null>(null);
     const showing_scores = React.useRef<boolean>(false);
 
     const [show_score_breakdown, set_show_score_breakdown] = React.useState(false);
-
-    const show_title = useShowTitle(goban);
-    const title = useTitle(goban);
 
     const popupScores = () => {
         if (goban.engine.cur_move) {
@@ -125,21 +121,6 @@ export function PlayerCards({
                     ai_suspected={white_ai_suspected}
                 />
             </div>
-            {(engine.rengo || null) && (
-                <div className="rengo-header-block">
-                    {
-                        /* Title logic doesn't really belong in PlayerCards, but it appears it was
-                        added here so that in vertical-mode, the "White/Black to Move" message shows
-                        up above the board, not below it.
-
-                        TODO: move title logic out of this component.
-                        */
-                        ((!goban.review_id && show_title && goban?.engine?.rengo) || null) && (
-                            <div className="game-state">{title}</div>
-                        )
-                    }
-                </div>
-            )}
         </div>
     );
 }

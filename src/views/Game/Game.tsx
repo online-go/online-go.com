@@ -787,6 +787,18 @@ export function Game(): JSX.Element | null {
             return false;
         }
     };
+    const frag_rengo_header = () => {
+        if (!goban.current?.engine?.rengo) {
+            return null;
+        }
+        return (
+            <div className="rengo-header-block">
+                {((!goban.current?.review_id && show_title) || null) && (
+                    <div className="game-state">{title}</div>
+                )}
+            </div>
+        );
+    };
     const frag_game_information = () => {
         const config = goban.current?.engine?.config;
         if (!config) {
@@ -1633,6 +1645,7 @@ export function Game(): JSX.Element | null {
                                     )}
                                 />
                                 {frag_game_information()}
+                                {frag_rengo_header()}
                             </>
                         )}
                         <GobanContainer goban={goban.current} onResize={onResize} />
@@ -1700,6 +1713,7 @@ export function Game(): JSX.Element | null {
                                         )}
                                     />
                                     {frag_game_information()}
+                                    {frag_rengo_header()}
                                 </>
                             )}
 
