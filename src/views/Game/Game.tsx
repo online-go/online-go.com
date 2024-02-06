@@ -811,9 +811,9 @@ export function Game(): JSX.Element | null {
         const rules = config?.rules ? rulesText(config.rules) : null;
         return (
             <div className="condensed-game-information">
-                {(config?.ranked || null) && (
-                    <div className="condensed-game-ranked">{_("Ranked")}</div>
-                )}
+                <div className="condensed-game-ranked">
+                    {config.ranked ? _("Ranked") : _("Unranked")}
+                </div>
                 {rules && (
                     <div className="condensed-game-rules">
                         {_("Rules")}: {rules}
