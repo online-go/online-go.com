@@ -26,7 +26,6 @@ import { ChatPresenceIndicator } from "ChatPresenceIndicator";
 import { Clock } from "Clock";
 import { useUser } from "hooks";
 import { Player } from "Player";
-import { rulesText, rulesCode } from "misc";
 import { lookup, fetch } from "player_cache";
 import { _, interpolate, ngettext } from "translate";
 import * as data from "data";
@@ -361,7 +360,7 @@ export function PlayerCard({
                         hidden={show_points && !estimating_score}
                     />
                 )}
-                {color === "black" && rulesAndHandicap(engine.config.rules, engine.config.handicap)}
+                {color === "black" && handicapStones(engine.config.handicap)}
                 {!show_points && !!score.komi && (
                     <div className="komi">{komiString(score.komi)}</div>
                 )}
@@ -434,12 +433,10 @@ function komiString(komi: number) {
     return komi > 0 ? `+ ${abs_komi}` : `- ${abs_komi}`;
 }
 
-function rulesAndHandicap(rules: string | null | undefined, handicap_stones: number | undefined) {
+function handicapStones(handicap_stones: number | undefined) {
     const stones = handicap_stones ? stonesString(handicap_stones) : "";
     return (
-        <div className="rules">
-            {rules && <span title={_("Rules") + ": " + rulesText(rules)}>{rulesCode(rules)}</span>}
-            {rules && stones && " "}
+        <div className="handicap-stones">
             {stones && <span title={_("Handicap") + ": " + handicap_stones}>{stones}</span>}
         </div>
     );
@@ -518,22 +515,12 @@ function ScorePopup({ show, goban, color }: ScorePopupProps) {
     let first_points = 0;
     return (
         <div className="score_breakdown">
-            {color === "black" && goban.engine.config.rules && (
-                <>
-                    <div>
-                        <span>
-                            {_("Rules")}: {rulesText(goban.engine.config.rules)}
-                        </span>
-                        <div>{rulesCode(goban.engine.config.rules)}</div>
-                    </div>
-                    {!!goban.engine.handicap && (
-                        <div>
-                            <span>{_("Handicap")}</span>
-                            <div>{goban.engine.handicap}</div>
-                        </div>
-                    )}
+            {color === "black" && !!goban.engine.handicap && (
+                <div>
+                    <span>{_("Handicap")}</span>
+                    <div>{goban.engine.handicap}</div>
                     <hr />
-                </>
+                </div>
             )}
             {!!stones && (
                 <div>

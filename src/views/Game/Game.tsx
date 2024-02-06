@@ -26,7 +26,7 @@ import { popover } from "popover";
 import { post, get, abort_requests_in_flight } from "requests";
 import { KBShortcut } from "KBShortcut";
 import { UIPush } from "UIPush";
-import { errorAlerter, ignore } from "misc";
+import { errorAlerter, ignore, rulesText } from "misc";
 import {
     Goban,
     GobanCanvas,
@@ -786,6 +786,25 @@ export function Game(): JSX.Element | null {
             shareAnalysis();
             return false;
         }
+    };
+    const frag_game_information = () => {
+        const config = goban.current?.engine?.config;
+        if (!config) {
+            return null;
+        }
+        const rules = config?.rules ? rulesText(config.rules) : null;
+        return (
+            <div className="condensed-game-information">
+                {(config?.ranked || null) && (
+                    <div className="condensed-game-ranked">{_("Ranked")}</div>
+                )}
+                {rules && (
+                    <div className="condensed-game-rules">
+                        {_("Rules")}: {rules}
+                    </div>
+                )}
+            </div>
+        );
     };
     const frag_estimate_score = () => (
         <EstimateScore
@@ -1598,22 +1617,24 @@ export function Game(): JSX.Element | null {
 
                     <div className="center-col">
                         {(view_mode === "portrait" || null) && (
-                            <PlayerCards
-                                historical_black={historical_black}
-                                historical_white={historical_white}
-                                estimating_score={estimating_score}
-                                zen_mode={zen_mode}
-                                black_flags={black_flags}
-                                white_flags={white_flags}
-                                black_ai_suspected={bot_detection_results?.ai_suspected.includes(
-                                    historical_black?.id,
-                                )}
-                                white_ai_suspected={bot_detection_results?.ai_suspected.includes(
-                                    historical_white?.id,
-                                )}
-                            />
+                            <>
+                                <PlayerCards
+                                    historical_black={historical_black}
+                                    historical_white={historical_white}
+                                    estimating_score={estimating_score}
+                                    zen_mode={zen_mode}
+                                    black_flags={black_flags}
+                                    white_flags={white_flags}
+                                    black_ai_suspected={bot_detection_results?.ai_suspected.includes(
+                                        historical_black?.id,
+                                    )}
+                                    white_ai_suspected={bot_detection_results?.ai_suspected.includes(
+                                        historical_white?.id,
+                                    )}
+                                />
+                                {frag_game_information()}
+                            </>
                         )}
-
                         <GobanContainer goban={goban.current} onResize={onResize} />
 
                         {frag_below_board_controls()}
@@ -1663,20 +1684,23 @@ export function Game(): JSX.Element | null {
                         <div className={"right-col" + (experimental ? " experimental" : "")}>
                             {(zen_mode || null) && <div className="align-col-start"></div>}
                             {(view_mode === "square" || view_mode === "wide" || null) && (
-                                <PlayerCards
-                                    historical_black={historical_black}
-                                    historical_white={historical_white}
-                                    estimating_score={estimating_score}
-                                    zen_mode={zen_mode}
-                                    black_flags={black_flags}
-                                    white_flags={white_flags}
-                                    black_ai_suspected={bot_detection_results?.ai_suspected.includes(
-                                        historical_black?.id,
-                                    )}
-                                    white_ai_suspected={bot_detection_results?.ai_suspected.includes(
-                                        historical_white?.id,
-                                    )}
-                                />
+                                <>
+                                    <PlayerCards
+                                        historical_black={historical_black}
+                                        historical_white={historical_white}
+                                        estimating_score={estimating_score}
+                                        zen_mode={zen_mode}
+                                        black_flags={black_flags}
+                                        white_flags={white_flags}
+                                        black_ai_suspected={bot_detection_results?.ai_suspected.includes(
+                                            historical_black?.id,
+                                        )}
+                                        white_ai_suspected={bot_detection_results?.ai_suspected.includes(
+                                            historical_white?.id,
+                                        )}
+                                    />
+                                    {frag_game_information()}
+                                </>
                             )}
 
                             {(view_mode === "square" || view_mode === "wide" || null) &&
