@@ -113,13 +113,13 @@ export function Clock({
                         className={"main-time boxed " + (need_small_main_time_font ? " small" : "")}
                     >
                         {prettyTime(player_clock.main_time)}
+                        {time_control.system === "absolute" && (
+                            <>
+                                <span className="periods-delimiter">/</span>
+                                <span className="period-moves boxed">*</span>
+                            </>
+                        )}
                     </span>
-                )}
-                {time_control.system === "absolute" && (
-                    <>
-                        <span className="periods-delimiter">/</span>
-                        <span className="period-moves boxed">*</span>
-                    </>
                 )}
 
                 {time_control.system === "byoyomi" && (
