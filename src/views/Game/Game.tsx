@@ -1633,7 +1633,7 @@ export function Game(): JSX.Element | null {
 
                     <div className="center-col">
                         {(view_mode === "portrait" || null) && (
-                            <>
+                            <div>
                                 <PlayerCards
                                     historical_black={historical_black}
                                     historical_white={historical_white}
@@ -1650,7 +1650,7 @@ export function Game(): JSX.Element | null {
                                 />
                                 {frag_game_information()}
                                 {frag_rengo_header()}
-                            </>
+                            </div>
                         )}
                         <GobanContainer goban={goban.current} onResize={onResize} />
 
@@ -1701,7 +1701,7 @@ export function Game(): JSX.Element | null {
                         <div className={"right-col" + (experimental ? " experimental" : "")}>
                             {(zen_mode || null) && <div className="align-col-start"></div>}
                             {(view_mode === "square" || view_mode === "wide" || null) && (
-                                <>
+                                <div>
                                     <PlayerCards
                                         historical_black={historical_black}
                                         historical_white={historical_white}
@@ -1718,7 +1718,7 @@ export function Game(): JSX.Element | null {
                                     />
                                     {frag_game_information()}
                                     {frag_rengo_header()}
-                                </>
+                                </div>
                             )}
 
                             {(view_mode === "square" || view_mode === "wide" || null) &&
