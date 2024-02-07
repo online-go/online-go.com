@@ -115,8 +115,7 @@ export function Clock({
                         {prettyTime(player_clock.main_time)}
                         {time_control.system === "absolute" && (
                             <>
-                                <span className="periods-delimiter">/</span>
-                                <span className="period-moves boxed">*</span>
+                                <span className="absolute-time">+0</span>
                             </>
                         )}
                     </span>
