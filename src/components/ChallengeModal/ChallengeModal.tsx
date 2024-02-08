@@ -38,7 +38,7 @@ import {
 } from "TimeControl";
 import { sfx } from "sfx";
 import { notification_manager, NotificationManagerEvents } from "Notifications/NotificationManager";
-import { one_bot, bot_count, bots_list } from "bots";
+import { one_bot, bots, bot_count, bots_list } from "bots";
 import { goban_view_mode } from "Game/util";
 import {
     Goban,
@@ -949,19 +949,27 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                         <label className="control-label" htmlFor="engine">
                             {pgettext("Computer opponent", "AI Player")}
                         </label>
-                        <div className="controls">
-                            <select
-                                id="challenge-ai"
-                                value={this.state.conf.bot_id}
-                                onChange={this.update_conf_bot_id}
-                                required={true}
-                            >
-                                {bots_list().map((bot, idx) => (
-                                    <option key={idx} value={bot.id}>
-                                        {bot.username} ({rankString(getUserRating(bot).rank)})
-                                    </option>
-                                ))}
-                            </select>
+                        <div>
+                            <div className="controls">
+                                <select
+                                    id="challenge-ai"
+                                    value={this.state.conf.bot_id}
+                                    onChange={this.update_conf_bot_id}
+                                    required={true}
+                                >
+                                    {bots_list().map((bot, idx) => (
+                                        <option key={idx} value={bot.id}>
+                                            {bot.username} ({rankString(getUserRating(bot).rank)})
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div>
+                                <a href={`/user/view/${this.state.conf.bot_id}`}>
+                                    <PlayerIcon id={this.state.conf.bot_id} size={16} />{" "}
+                                    {bots()[this.state.conf.bot_id].username}'s profile
+                                </a>
+                            </div>
                         </div>
                     </div>
                 )}
