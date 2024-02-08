@@ -60,8 +60,8 @@ declare namespace rest_api {
         professional: boolean;
         ranking: number;
         provisional: 0 | 1; // change to boolean?
-        need_rank: boolean;
-        starting_rank_hint: StartingRankHint;
+        need_rank?: boolean;
+        starting_rank_hint?: StartingRankHint;
         can_create_tournaments: boolean;
         is_moderator: boolean;
         is_superuser: boolean;
