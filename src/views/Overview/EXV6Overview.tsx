@@ -38,6 +38,7 @@ import { DismissableMessages } from "DismissableMessages";
 import { EmailBanner } from "EmailBanner";
 import { ActiveDroppedGameList } from "ActiveDroppedGameList";
 import { ModerationOffer } from "ModerationOffer";
+import { NewUserRankChooser } from "./NewUserRankChooser";
 
 declare let ogs_missing_translation_count: number;
 
@@ -143,43 +144,53 @@ export class EXV6Overview extends React.Component<{}, OverviewState> {
     render() {
         const user = this.state.user;
 
+        // debug
+        if (user) {
+            user.need_rank = true;
+            user.starting_rank_hint = "none";
+        }
+
         return (
             <div id="Overview-Container">
-                <div id="Overview">
-                    <div className="left">
-                        <DismissableMessages />
-                        <EmailBanner />
-                        <ActiveAnnouncements />
-                        {user && !!user.offered_moderator_powers && (
-                            <ModerationOffer
-                                player_id={user.id}
-                                current_moderator_powers={user.moderator_powers}
-                                offered_moderator_powers={user.offered_moderator_powers}
-                            />
-                        )}
-                        <ChallengesList onAccept={() => this.refresh()} />
-                        <InviteList />
+                {!!user && user.need_rank && user.starting_rank_hint === "none" ? (
+                    <NewUserRankChooser />
+                ) : (
+                    <div id="Overview">
+                        <div className="left">
+                            <DismissableMessages />
+                            <EmailBanner />
+                            <ActiveAnnouncements />
+                            {user && !!user.offered_moderator_powers && (
+                                <ModerationOffer
+                                    player_id={user.id}
+                                    current_moderator_powers={user.moderator_powers}
+                                    offered_moderator_powers={user.offered_moderator_powers}
+                                />
+                            )}
+                            <ChallengesList onAccept={() => this.refresh()} />
+                            <InviteList />
 
-                        {((user && user.provisional) || null) && (
-                            <DismissableNotification
-                                className="learn-how-to-play"
-                                dismissedKey="learn-how-to-play"
-                            >
-                                <Link to="/learn-to-play-go">
-                                    {_("New to Go? Click here to learn how to play!")}
-                                </Link>
-                            </DismissableNotification>
-                        )}
+                            {((user && user.provisional) || null) && (
+                                <DismissableNotification
+                                    className="learn-how-to-play"
+                                    dismissedKey="learn-how-to-play"
+                                >
+                                    <Link to="/learn-to-play-go">
+                                        {_("New to Go? Click here to learn how to play!")}
+                                    </Link>
+                                </DismissableNotification>
+                            )}
 
-                        {this.state.resolved && user && (
-                            <ActiveDroppedGameList
-                                games={this.state.overview.active_games}
-                                user={user}
-                                noActiveGamesView={this.noActiveGames()}
-                            ></ActiveDroppedGameList>
-                        )}
+                            {this.state.resolved && user && (
+                                <ActiveDroppedGameList
+                                    games={this.state.overview.active_games}
+                                    user={user}
+                                    noActiveGamesView={this.noActiveGames()}
+                                ></ActiveDroppedGameList>
+                            )}
+                        </div>
                     </div>
-                </div>
+                )}
             </div>
         );
     }

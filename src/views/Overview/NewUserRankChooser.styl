@@ -1,0 +1,65 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.NewUserRankChooser {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    .centered-content{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        max-width: 50rem;  // contains the width of instructions to about the width of the 3 buttons below them
+
+        .instructions {
+            font-size: x-large;
+            text-align: center;
+            padding: 3rem;
+
+        }
+        .rank-chooser-buttons {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+
+
+            button {
+                font-size: 1.1rem;
+                font-weight: bold;
+                flex-grow: 1;
+                flex-basis: 13rem;
+                max-width: 13rem;
+                height: 4rem;
+                margin: 0.5rem;
+                white-space: nowrap;
+                display: flex;
+                align-items: center;
+                align-content: center;
+                justify-content: center;
+            }
+        }
+
+        .skip-button {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            padding: 2rem;
+        }
+    }
+}
+
