@@ -262,8 +262,8 @@ export const routes = (
                     element={<Tournament />}
                 />
                 <Route path="/tournament/clone/:src_tournament_id" element={<Tournament />} />
-                <Route key="current" path="/tournament/:tournament_id" element={<Tournament />} />
-                <Route key="current" path="/tournaments/:tournament_id" element={<Tournament />} />
+                <Route path="/tournament/:tournament_id" element={<Tournament />} />
+                <Route path="/tournaments/:tournament_id" element={<Tournament />} />
                 <Route path="/tournaments" element={<TournamentListMainView />} />
                 <Route path="/tournaments/" element={<TournamentListMainView />} />
                 <Route
