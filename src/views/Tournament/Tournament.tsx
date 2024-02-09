@@ -129,6 +129,8 @@ interface TournamentInterface {
     opengotha_standings?: boolean;
 }
 
+type EditSaveState = "none" | "saving" | "reload";
+
 //class _Tournament extends React.PureComponent<TournamentProperties, TournamentState> {
 export function Tournament(): JSX.Element {
     const user = useUser();
@@ -146,6 +148,7 @@ export function Tournament(): JSX.Element {
         document.createElementNS("http://www.w3.org/2000/svg", "svg"),
     );
 
+    const [edit_save_state, setEditSaveState] = React.useState("none" as EditSaveState);
     const [, _refresh] = React.useState(0);
     const refresh = () => _refresh(Math.random());
     const [loading, setLoading] = React.useState(true);
@@ -315,7 +318,11 @@ export function Tournament(): JSX.Element {
             .catch(errorAlerter);
     };
     const reloadTournament = () => {
-        resolve();
+        if (edit_save_state === "none") {
+            resolve();
+        } else {
+            setEditSaveState("reload");
+        }
     };
     const refreshPlayerList = () => {
         const ret = get(`tournaments/${tournament_id}/players/all`);
@@ -1279,19 +1286,28 @@ export function Tournament(): JSX.Element {
         delete tournament.settings.active_round;
         //tournament.round_start_times = round_start_times;
 
-        const onError = (err: any) => {
-            setEditing(true);
-            errorAlerter(err);
-        };
-
         if (tournament.id) {
+            setEditSaveState("saving" as EditSaveState);
             put(`tournaments/${tournament.id}`, tournament)
-                .then(() => resolve())
-                .catch(onError);
+                .then(() => {
+                    resolve();
+                    setEditSaveState("none" as EditSaveState);
+                })
+                .catch((err: any) => {
+                    setEditing(true);
+                    errorAlerter(err);
+                    if (edit_save_state === "reload") {
+                        resolve();
+                    }
+                    setEditSaveState("none" as EditSaveState);
+                });
         } else {
             post("tournaments/", tournament)
                 .then((res) => browserHistory.push(`/tournament/${res.id}`))
-                .catch(onError);
+                .catch((err: any) => {
+                    setEditing(true);
+                    errorAlerter(err);
+                });
         }
 
         setEditing(false);
