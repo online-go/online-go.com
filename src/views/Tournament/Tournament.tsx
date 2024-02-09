@@ -87,6 +87,14 @@ interface TournamentPlayers {
     [k: string]: TournamentPlayer;
 }
 
+interface TournamentSettings {
+    lower_bar: string;
+    upper_bar: string;
+    num_rounds: string;
+    group_size: string;
+    maximum_players: number | string;
+    active_round?: number;
+}
 interface TournamentInterface {
     id?: number;
     name: string;
@@ -108,14 +116,7 @@ interface TournamentInterface {
     first_pairing_method: string;
     subsequent_pairing_method: string;
     players_start: number;
-    settings: {
-        lower_bar: string;
-        upper_bar: string;
-        num_rounds: string;
-        group_size: string;
-        maximum_players: number | string;
-        active_round?: number;
-    };
+    settings: TournamentSettings;
     lead_time_seconds: number;
     base_points: number;
     started?: string;
@@ -126,6 +127,9 @@ interface TournamentInterface {
     start_waiting?: boolean;
     group?: any;
     opengotha_standings?: boolean;
+}
+interface LoadedTournamentInterface extends TournamentInterface {
+    id: number;
 }
 
 type EditSaveState = "none" | "saving" | "reload";
@@ -142,7 +146,7 @@ export function Tournament(): JSX.Element {
 
     const [edit_save_state, setEditSaveState] = React.useState<EditSaveState>("none");
 
-    const [tournament, setTournament] = React.useState<TournamentInterface>({
+    const default_tournament: TournamentInterface = {
         name: "",
         // TODO: replace {} with something that makes type sense. -bpj
         director: tournament_id === 0 ? user : ({} as any),
@@ -179,7 +183,9 @@ export function Tournament(): JSX.Element {
         },
         lead_time_seconds: 1800,
         base_points: 10.0,
-    });
+    };
+    const [tournament, setTournament] = React.useState<TournamentInterface>(default_tournament);
+    const ref_tournament_to_clone = React.useRef<LoadedTournamentInterface | null>(null);
 
     const [editing, setEditing] = React.useState(tournament_id === 0);
     const [raw_rounds, setRawRounds] = React.useState<any[] | null>(null);
@@ -190,7 +196,7 @@ export function Tournament(): JSX.Element {
     const [invite_result, setInviteResult] = React.useState<string | null>(null);
     const [user_to_invite, setUserToInvite] = React.useState<PlayerCacheEntry | null>(null);
 
-    const tournament_loaded = tournament_id !== 0 && tournament.id === tournament_id;
+    const tournament_loaded = tournament_id !== 0 && tournament?.id === tournament_id;
     const rounds_loaded = raw_rounds !== null;
     const players_loaded = raw_players !== null;
     const loading = !rounds_loaded || !players_loaded || !tournament_loaded;
@@ -259,7 +265,7 @@ export function Tournament(): JSX.Element {
     React.useEffect(() => {
         if (user.id === 1 && tournament_id === 0) {
             setTournament({
-                ...tournament,
+                ...default_tournament,
                 name: "Culture: join 4",
                 time_start: moment(new Date()).add(1, "minute").format(),
                 rules: "japanese",
@@ -293,18 +299,19 @@ export function Tournament(): JSX.Element {
         setExtraActionCallback(renderExtraPlayerActions);
         if (tournament_id) {
             resolve();
-        }
-        if (new_tournament_group_id) {
-            get(`groups/${new_tournament_group_id}`)
-                .then((group) => {
-                    setTournament({
-                        ...tournament,
-                        group: group,
-                        rules: group?.rules ?? "japanese",
-                        handicap: String(group?.handicap ?? 0),
-                    });
-                })
-                .catch(errorAlerter);
+        } else if (ref_tournament_to_clone.current?.id) {
+            // Clone tournament.
+            copyTournamentToClone(ref_tournament_to_clone.current);
+            ref_tournament_to_clone.current = null;
+        } else {
+            // New tournament.
+            setTournament(default_tournament);
+            if (new_tournament_group_id) {
+                // New tournament in a group.
+                get(`groups/${new_tournament_group_id}`)
+                    .then((group) => copyGroup(group))
+                    .catch(errorAlerter);
+            }
         }
 
         return () => {
@@ -359,6 +366,39 @@ export function Tournament(): JSX.Element {
             })
             .catch(errorAlerter);
     };
+    const copyGroup = (group: any) =>
+        setTournament({
+            ...default_tournament,
+            group: group,
+            rules: group?.rules ?? "japanese",
+            handicap: String(group?.handicap ?? 0),
+        });
+    const copyTournamentToClone = (src_tournament: LoadedTournamentInterface) => {
+        // Clean tournament settings.
+        const clean_settings: any = {};
+        for (const key in src_tournament.settings) {
+            if (key in default_tournament.settings) {
+                clean_settings[key] = src_tournament.settings[key as keyof TournamentSettings];
+            }
+        }
+
+        // Clean tournament.
+        const clean_tournament: any = {};
+        for (const key in src_tournament) {
+            if (key in default_tournament) {
+                clean_tournament[key] = src_tournament[key as keyof TournamentInterface];
+            }
+        }
+
+        setTournament({
+            ...clean_tournament,
+            group: src_tournament.group,
+            settings: clean_settings,
+            director: default_tournament.director,
+            time_start: default_tournament.time_start,
+        });
+    };
+
     const reloadTournament = () => {
         if (edit_save_state === "none") {
             resolve();
@@ -465,6 +505,14 @@ export function Tournament(): JSX.Element {
     };
 
     const startEditing = () => setEditing(true);
+    const cloneTournament = () => {
+        ref_tournament_to_clone.current = tournament as LoadedTournamentInterface;
+        if (tournament?.group?.id) {
+            browserHistory.push(`/tournament/new/${tournament.group.id}`);
+        } else {
+            browserHistory.push(`/tournament/new`);
+        }
+    };
     const save = () => {
         const clean_tournament: any = dup(tournament);
         const group = clean_tournament.group;
@@ -1005,6 +1053,12 @@ export function Tournament(): JSX.Element {
                                 null) && (
                                 <button className="xs" onClick={startEditing}>
                                     {_("Edit Tournament")}
+                                </button>
+                            )}
+
+                            {(tournament.can_administer || null) && (
+                                <button className="primary xs" onClick={cloneTournament}>
+                                    {_("Clone Tournament")}
                                 </button>
                             )}
 
