@@ -144,12 +144,6 @@ export class EXV6Overview extends React.Component<{}, OverviewState> {
     render() {
         const user = this.state.user;
 
-        // debug
-        if (user) {
-            user.need_rank = true;
-            user.starting_rank_hint = "none";
-        }
-
         return (
             <div id="Overview-Container">
                 {!!user && user.need_rank && user.starting_rank_hint === "none" ? (
