@@ -257,8 +257,13 @@ export const routes = (
                 <Route path="/groupadmin/:group_id/*" element={<Group />} />
                 <Route path="/tournament/new/:group_id" element={<Tournament />} />
                 <Route path="/tournament/new" element={<Tournament />} />
-                <Route path="/tournament/:tournament_id" element={<Tournament />} />
-                <Route path="/tournaments/:tournament_id" element={<Tournament />} />
+                <Route
+                    path="/tournament/clone/:src_tournament_id/:group_id"
+                    element={<Tournament />}
+                />
+                <Route path="/tournament/clone/:src_tournament_id" element={<Tournament />} />
+                <Route key="current" path="/tournament/:tournament_id" element={<Tournament />} />
+                <Route key="current" path="/tournaments/:tournament_id" element={<Tournament />} />
                 <Route path="/tournaments" element={<TournamentListMainView />} />
                 <Route path="/tournaments/" element={<TournamentListMainView />} />
                 <Route

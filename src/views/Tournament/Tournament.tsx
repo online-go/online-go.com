@@ -135,6 +135,7 @@ export function Tournament(): JSX.Element {
     const params = useParams<{ tournament_id: string; group_id: string }>();
     const tournament_id = parseInt(params.tournament_id ?? "0");
     const new_tournament_group_id = parseInt(params.group_id ?? "0");
+    const clone_src_tournament_id = parseInt(params.src_tournament_id ?? "0");
 
     const ref_tournament_name = React.useRef<HTMLInputElement>(null);
     const ref_description = React.useRef<HTMLTextAreaElement>(null);
@@ -240,7 +241,41 @@ export function Tournament(): JSX.Element {
             get(`groups/${new_tournament_group_id}`)
                 .then((group) => {
                     tournament_ref.current.group = group;
-                    tournament_ref.current.rules = group?.rules ?? "japanese";
+                    if (!clone_src_tournament_id) {
+                        tournament_ref.current.rules = group?.rules ?? "japanese";
+                    }
+                    refresh();
+                })
+                .catch(errorAlerter);
+        }
+        if (clone_src_tournament_id) {
+            get(`tournaments/${clone_src_tournament_id}`)
+                .then((t) => {
+                    const cloned_values = {
+                        settings: {},
+                        time_control_parameters: {} as TimeControl,
+                    } as TournamentInterface;
+                    for (const key in tournament_ref.current) {
+                        if (
+                            ![
+                                "id",
+                                "director",
+                                "group",
+                                "time_start",
+                                "settings",
+                                "time_control_parameters",
+                            ].includes(key)
+                        ) {
+                            cloned_values[key] = t[key];
+                        }
+                    }
+                    for (const key in tournament_ref.current.time_control_parameters) {
+                        cloned_values.time_control_parameters[key] = t.time_control_parameters[key];
+                    }
+                    for (const key in tournament_ref.current.settings) {
+                        cloned_values.settings[key] = t.settings[key];
+                    }
+                    Object.assign(tournament_ref.current, cloned_values);
                     refresh();
                 })
                 .catch(errorAlerter);
@@ -1238,6 +1273,15 @@ export function Tournament(): JSX.Element {
     };
 
     const startEditing = () => setEditing(true);
+    const cloneTournament = () => {
+        if (tournament_ref.current?.group?.id) {
+            browserHistory.push(
+                `/tournament/clone/${tournament_ref.current.id}/${tournament_ref.current.group.id}`,
+            );
+        } else {
+            browserHistory.push(`/tournament/clone/${tournament_ref.current.id}`);
+        }
+    };
     const save = () => {
         const tournament: any = dup(tournament_ref.current);
         const group = tournament.group;
@@ -1800,6 +1844,14 @@ export function Tournament(): JSX.Element {
                                 null) && (
                                 <button className="xs" onClick={startEditing}>
                                     {_("Edit Tournament")}
+                                </button>
+                            )}
+
+                            {(user.is_tournament_moderator ||
+                                user.id === tournament.director.id ||
+                                null) && (
+                                <button className="primary xs" onClick={cloneTournament}>
+                                    {_("Clone Tournament")}
                                 </button>
                             )}
 
