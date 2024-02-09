@@ -967,7 +967,9 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                             <div>
                                 <a href={`/user/view/${this.state.conf.bot_id}`}>
                                     <PlayerIcon id={this.state.conf.bot_id} size={16} />{" "}
-                                    {bots()[this.state.conf.bot_id].username}'s profile
+                                    {interpolate(_("{{who}}'s profile"), {
+                                        who: bots()[this.state.conf.bot_id].username,
+                                    })}
                                 </a>
                             </div>
                         </div>
