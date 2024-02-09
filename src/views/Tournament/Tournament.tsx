@@ -1290,16 +1290,17 @@ export function Tournament(): JSX.Element {
             setEditSaveState("saving" as EditSaveState);
             put(`tournaments/${tournament.id}`, tournament)
                 .then(() => {
-                    resolve();
                     setEditSaveState("none" as EditSaveState);
+                    resolve();
                 })
                 .catch((err: any) => {
+                    const should_reload = edit_save_state === "reload";
+                    setEditSaveState("none" as EditSaveState);
                     setEditing(true);
                     errorAlerter(err);
-                    if (edit_save_state === "reload") {
+                    if (should_reload) {
                         resolve();
                     }
-                    setEditSaveState("none" as EditSaveState);
                 });
         } else {
             post("tournaments/", tournament)
