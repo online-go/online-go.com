@@ -26,11 +26,10 @@ import { ChatPresenceIndicator } from "ChatPresenceIndicator";
 import { Clock } from "Clock";
 import { useUser } from "hooks";
 import { Player } from "Player";
-import { rulesText, rulesCode } from "misc";
 import { lookup, fetch } from "player_cache";
 import { _, interpolate, ngettext } from "translate";
 import * as data from "data";
-import { generateGobanHook, usePlayerToMove, useShowTitle, useTitle } from "./GameHooks";
+import { generateGobanHook, usePlayerToMove } from "./GameHooks";
 import { get_network_latency, get_clock_drift } from "sockets";
 import { useGoban } from "./goban_context";
 import { usePreference } from "preferences";
@@ -62,15 +61,11 @@ export function PlayerCards({
     white_ai_suspected,
 }: PlayerCardsProps): JSX.Element {
     const goban = useGoban();
-    const engine = goban.engine;
 
     const orig_marks = React.useRef<string | null>(null);
     const showing_scores = React.useRef<boolean>(false);
 
     const [show_score_breakdown, set_show_score_breakdown] = React.useState(false);
-
-    const show_title = useShowTitle(goban);
-    const title = useTitle(goban);
 
     const popupScores = () => {
         if (goban.engine.cur_move) {
@@ -126,21 +121,6 @@ export function PlayerCards({
                     ai_suspected={white_ai_suspected}
                 />
             </div>
-            {(engine.rengo || null) && (
-                <div className="rengo-header-block">
-                    {
-                        /* Title logic doesn't really belong in PlayerCards, but it appears it was
-                        added here so that in vertical-mode, the "White/Black to Move" message shows
-                        up above the board, not below it.
-
-                        TODO: move title logic out of this component.
-                        */
-                        ((!goban.review_id && show_title && goban?.engine?.rengo) || null) && (
-                            <div className="game-state">{title}</div>
-                        )
-                    }
-                </div>
-            )}
         </div>
     );
 }
@@ -361,7 +341,7 @@ export function PlayerCard({
                         hidden={show_points && !estimating_score}
                     />
                 )}
-                {color === "black" && rulesAndHandicap(engine.config.rules, engine.config.handicap)}
+                {color === "black" && handicapStones(engine.config.handicap)}
                 {!show_points && !!score.komi && (
                     <div className="komi">{komiString(score.komi)}</div>
                 )}
@@ -434,12 +414,10 @@ function komiString(komi: number) {
     return komi > 0 ? `+ ${abs_komi}` : `- ${abs_komi}`;
 }
 
-function rulesAndHandicap(rules: string | null | undefined, handicap_stones: number | undefined) {
+function handicapStones(handicap_stones: number | undefined) {
     const stones = handicap_stones ? stonesString(handicap_stones) : "";
     return (
-        <div className="rules">
-            {rules && <span title={_("Rules") + ": " + rulesText(rules)}>{rulesCode(rules)}</span>}
-            {rules && stones && " "}
+        <div className="handicap-stones">
             {stones && <span title={_("Handicap") + ": " + handicap_stones}>{stones}</span>}
         </div>
     );
@@ -518,22 +496,12 @@ function ScorePopup({ show, goban, color }: ScorePopupProps) {
     let first_points = 0;
     return (
         <div className="score_breakdown">
-            {color === "black" && goban.engine.config.rules && (
-                <>
-                    <div>
-                        <span>
-                            {_("Rules")}: {rulesText(goban.engine.config.rules)}
-                        </span>
-                        <div>{rulesCode(goban.engine.config.rules)}</div>
-                    </div>
-                    {!!goban.engine.handicap && (
-                        <div>
-                            <span>{_("Handicap")}</span>
-                            <div>{goban.engine.handicap}</div>
-                        </div>
-                    )}
+            {color === "black" && !!goban.engine.handicap && (
+                <div>
+                    <span>{_("Handicap")}</span>
+                    <div>{goban.engine.handicap}</div>
                     <hr />
-                </>
+                </div>
             )}
             {!!stones && (
                 <div>
