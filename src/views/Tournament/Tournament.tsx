@@ -132,7 +132,11 @@ interface TournamentInterface {
 //class _Tournament extends React.PureComponent<TournamentProperties, TournamentState> {
 export function Tournament(): JSX.Element {
     const user = useUser();
-    const params = useParams<{ tournament_id: string; group_id: string }>();
+    const params = useParams<{
+        tournament_id: string;
+        group_id: string;
+        src_tournament_id: string;
+    }>();
     const tournament_id = parseInt(params.tournament_id ?? "0");
     const new_tournament_group_id = parseInt(params.group_id ?? "0");
     const clone_src_tournament_id = parseInt(params.src_tournament_id ?? "0");
@@ -285,7 +289,7 @@ export function Tournament(): JSX.Element {
             abort_requests();
             setExtraActionCallback(null);
         };
-    }, [tournament_id]);
+    }, [tournament_id, clone_src_tournament_id]);
 
     const abort_requests = () => {
         abort_requests_in_flight(`tournaments/${tournament_id}`);
