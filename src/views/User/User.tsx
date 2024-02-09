@@ -53,6 +53,7 @@ import { VersusCard } from "./VersusCard";
 import { AvatarCard, AvatarCardEditableFields } from "./AvatarCard";
 import { ActivityCard } from "./ActivityCard";
 import { ActiveDroppedGameList } from "ActiveDroppedGameList";
+import { NewUserRankChooser } from "NewUserRankChooser";
 
 type RatingsSpeed = "overall" | "blitz" | "live" | "correspondence";
 type RatingsSize = 0 | 9 | 13 | 19;
@@ -344,26 +345,39 @@ export function User(props: { user_id?: number }): JSX.Element {
                         />
 
                         {(!preferences.get("hide-ranks") || temporary_show_ratings) &&
-                            (!user.professional || global_user.id === user.id) && (
+                            (!user.professional || global_user.id === user.id) &&
+                            // prevent flash while starting_rank_hint is determined
+                            !!user.starting_rank_hint && (
                                 <div className="ratings-container">
-                                    {/* Ratings  */}
-                                    <h3 className="ratings-title">
-                                        {_("Ratings")}
-                                        <Toggle
-                                            height={14}
-                                            width={30}
-                                            checked={show_ratings_in_rating_grid}
-                                            id="show-ratings-or-ranks"
-                                            onChange={(checked) => {
-                                                setShowRatingsInRatingGrid(checked);
-                                                preferences.set(
-                                                    "show-ratings-in-rating-grid",
-                                                    checked,
-                                                );
-                                            }}
-                                        />
-                                    </h3>
-                                    {renderRatingGrid(show_ratings_in_rating_grid)}
+                                    {!!user &&
+                                    user.need_rank &&
+                                    user.starting_rank_hint &&
+                                    ["skip", "none"].includes(user.starting_rank_hint) ? (
+                                        <Card>
+                                            <NewUserRankChooser />
+                                        </Card>
+                                    ) : (
+                                        <>
+                                            {/* Ratings  */}
+                                            <h3 className="ratings-title">
+                                                {_("Ratings")}
+                                                <Toggle
+                                                    height={14}
+                                                    width={30}
+                                                    checked={show_ratings_in_rating_grid}
+                                                    id="show-ratings-or-ranks"
+                                                    onChange={(checked) => {
+                                                        setShowRatingsInRatingGrid(checked);
+                                                        preferences.set(
+                                                            "show-ratings-in-rating-grid",
+                                                            checked,
+                                                        );
+                                                    }}
+                                                />
+                                            </h3>
+                                            {renderRatingGrid(show_ratings_in_rating_grid)}
+                                        </>
+                                    )}
                                 </div>
                             )}
                     </div>

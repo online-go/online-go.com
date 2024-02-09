@@ -38,7 +38,7 @@ import { DismissableMessages } from "DismissableMessages";
 import { EmailBanner } from "EmailBanner";
 import { ActiveDroppedGameList } from "ActiveDroppedGameList";
 import { ModerationOffer } from "ModerationOffer";
-import { NewUserRankChooser } from "./NewUserRankChooser";
+import { NewUserRankChooser } from "NewUserRankChooser";
 
 declare let ogs_missing_translation_count: number;
 

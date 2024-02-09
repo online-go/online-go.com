@@ -121,6 +121,8 @@ declare namespace rest_api {
             about: string;
             supporter: boolean;
             ui_class_extra: null;
+            need_rank?: boolean;
+            starting_rank_hint?: StartingRankHint;
             is_moderator: boolean;
             is_superuser: boolean;
             moderator_powers: number;
