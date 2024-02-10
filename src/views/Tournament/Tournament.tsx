@@ -148,7 +148,7 @@ export function Tournament(): JSX.Element {
         document.createElementNS("http://www.w3.org/2000/svg", "svg"),
     );
 
-    const [edit_save_state, setEditSaveState] = React.useState("none" as EditSaveState);
+    const [edit_save_state, setEditSaveState] = React.useState<EditSaveState>("none");
     const [, _refresh] = React.useState(0);
     const refresh = () => _refresh(Math.random());
     const [loading, setLoading] = React.useState(true);
@@ -1287,15 +1287,15 @@ export function Tournament(): JSX.Element {
         //tournament.round_start_times = round_start_times;
 
         if (tournament.id) {
-            setEditSaveState("saving" as EditSaveState);
+            setEditSaveState("saving");
             put(`tournaments/${tournament.id}`, tournament)
                 .then(() => {
-                    setEditSaveState("none" as EditSaveState);
+                    setEditSaveState("none");
                     resolve();
                 })
                 .catch((err: any) => {
                     const should_reload = edit_save_state === "reload";
-                    setEditSaveState("none" as EditSaveState);
+                    setEditSaveState("none");
                     setEditing(true);
                     errorAlerter(err);
                     if (should_reload) {
