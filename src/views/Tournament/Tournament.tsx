@@ -3171,48 +3171,48 @@ function createEliminationNodes(rounds: any[]) {
     organizeEliminationBrackets(all_objects, rounds.length, last_cur_bucket_arr.length);
     return { all_objects: all_objects, last_cur_bucket: last_cur_bucket };
 }
+function eliminationMouseOver(id: number) {
+    $(".elimination-player-hover").removeClass("elimination-player-hover");
+    $(".elimination-player-" + id).addClass("elimination-player-hover");
+}
+function eliminationMouseOut() {
+    $(".elimination-player-hover").removeClass("elimination-player-hover");
+}
+interface EliminationPlayerProps {
+    id: number;
+    user: TournamentPlayer;
+}
+export function EliminationBye(props: EliminationPlayerProps): JSX.Element {
+    return (
+        <div
+            className={`bye elimination-player-${props.id}`}
+            onMouseOver={() => eliminationMouseOver(props.id)}
+            onMouseOut={eliminationMouseOut}
+        >
+            <Player user={props.user} icon rank />
+        </div>
+    );
+}
 function renderEliminationNodes(
     container: HTMLDivElement,
     all_objects: any[],
     players: { [id: string]: TournamentPlayer },
 ) {
-    const bindHovers = (div: JQuery, id: number | object) => {
-        if (typeof id !== "number") {
-            try {
-                console.warn("ID = ", id);
-                for (const k in id) {
-                    console.warn("ID.", k, "=", (id as any)[k]);
-                }
-            } catch (e) {
-                // ignore error
-            }
-            console.error("Tournament bind hover called with non numeric id");
-        }
-
-        div.mouseover(() => {
-            $(".elimination-player-hover").removeClass("elimination-player-hover");
-            $(".elimination-player-" + id).addClass("elimination-player-hover");
-        });
-        div.mouseout(() => {
-            $(".elimination-player-hover").removeClass("elimination-player-hover");
-        });
+    const bindHovers = (div: JQuery, id: number) => {
+        div.mouseover(() => eliminationMouseOver(id));
+        div.mouseout(eliminationMouseOut);
     };
 
     for (const obj of all_objects) {
         if (obj.match === undefined) {
-            const bye = obj.player_id;
+            const bye = obj.player_id as number;
             const bye_div = $("<div>").addClass("bye-div");
-            const bye_entry = $("<div>")
-                .addClass("bye")
-                .addClass("elimination-player-" + bye);
-            const root = ReactDOM.createRoot(bye_entry[0]);
+            const root = ReactDOM.createRoot(bye_div[0]);
             root.render(
                 <React.StrictMode>
-                    <Player user={players[bye]} icon rank />
+                    <EliminationBye id={bye} user={players[bye]} />
                 </React.StrictMode>,
             );
-            bindHovers(bye_entry, bye);
-            bye_div.append(bye_entry);
             obj.div = bye_div;
             container.appendChild(bye_div[0]);
             continue;
