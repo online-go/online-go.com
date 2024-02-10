@@ -3193,7 +3193,8 @@ export function EliminationTree(props: EliminationTreeProps): JSX.Element | null
     }, [svg_extents, last_cur_bucket]);
 
     // Render the graph.
-    if (num_rounds === 0 || Object.keys(players).length === 0) {
+    const num_players = React.useMemo(() => Object.keys(players).length, [players]);
+    if (num_rounds === 0 || num_players === 0) {
         return null;
     }
     return (
