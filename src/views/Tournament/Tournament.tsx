@@ -3182,6 +3182,10 @@ interface EliminationPlayer {
     id: number;
     user: TournamentPlayer;
 }
+interface EliminationLocation {
+    top: number;
+    left: number;
+}
 type EliminationNodeKind = "bye" | "black" | "white";
 interface EliminationNodeProps {
     player: EliminationPlayer;
@@ -3189,11 +3193,16 @@ interface EliminationNodeProps {
     result_class?: string;
     gameid?: any;
 }
+interface EliminationByeProps {
+    player: EliminationPlayer;
+    location: EliminationLocation;
+}
 interface EliminationMatchProps {
     black: EliminationPlayer;
     white: EliminationPlayer;
     gameid: any;
     result: any;
+    location: EliminationLocation;
 }
 export function EliminationNode(props: EliminationNodeProps): JSX.Element {
     const player = props.player;
@@ -3216,6 +3225,13 @@ export function EliminationNode(props: EliminationNodeProps): JSX.Element {
         </>
     );
 }
+export function EliminationBye(props: EliminationByeProps): JSX.Element {
+    return (
+        <div className="bye-div" style={props.location}>
+            <EliminationNode player={props.player} kind="bye" />
+        </div>
+    );
+}
 export function EliminationMatch(props: EliminationMatchProps): JSX.Element {
     let black_result: string | undefined;
     let white_result: string | undefined;
@@ -3228,7 +3244,7 @@ export function EliminationMatch(props: EliminationMatchProps): JSX.Element {
         white_result = "tie";
     }
     return (
-        <>
+        <div className="match-div" style={props.location}>
             <EliminationNode
                 player={props.black}
                 kind="black"
@@ -3241,7 +3257,7 @@ export function EliminationMatch(props: EliminationMatchProps): JSX.Element {
                 result_class={white_result}
                 gameid={props.gameid}
             />
-        </>
+        </div>
     );
 }
 function renderEliminationNodes(
@@ -3250,21 +3266,21 @@ function renderEliminationNodes(
     players: { [id: string]: TournamentPlayer },
 ) {
     for (const obj of all_objects) {
+        const location = { top: obj.top, left: obj.left } as EliminationLocation;
         if (obj.match === undefined) {
             const bye = obj.player_id as number;
-            const bye_div = $("<div>").addClass("bye-div");
+            const bye_div = $("<div>");
             const root = ReactDOM.createRoot(bye_div[0]);
             root.render(
                 <React.StrictMode>
-                    <EliminationNode player={{ id: bye, user: players[bye] }} kind="bye" />
+                    <EliminationBye player={{ id: bye, user: players[bye] }} location={location} />
                 </React.StrictMode>,
             );
-            obj.div = bye_div;
             container.appendChild(bye_div[0]);
             continue;
         }
         const match = obj.match;
-        const match_div = $("<div>").addClass("match-div");
+        const match_div = $("<div>");
         const root = ReactDOM.createRoot(match_div[0]);
         root.render(
             <React.StrictMode>
@@ -3273,19 +3289,11 @@ function renderEliminationNodes(
                     white={{ id: match.white, user: players[match.white] }}
                     gameid={match.gameid}
                     result={match.result}
+                    location={location}
                 />
             </React.StrictMode>,
         );
-
-        obj.div = match_div;
         container.appendChild(match_div[0]);
-    }
-
-    for (const obj of all_objects) {
-        obj.div.css({
-            top: obj.top,
-            left: obj.left,
-        });
     }
 }
 function renderEliminationEdges(
