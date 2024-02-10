@@ -71,6 +71,7 @@ interface GroupInfo {
     has_active_tournaments?: boolean;
     has_finished_tournaments?: boolean;
     rules?: string;
+    handicap?: number;
 }
 
 // API: group/%id%/news
@@ -308,6 +309,11 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
     setRules = (ev: React.ChangeEvent<HTMLSelectElement>) => {
         this.setState({ group: Object.assign({}, this.state.group, { rules: ev.target.value }) });
     };
+    setHandicap = (ev: React.ChangeEvent<HTMLSelectElement>) => {
+        this.setState({
+            group: Object.assign({}, this.state.group, { handicap: Number(ev.target.value) }),
+        });
+    };
     setShortDescription = (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
         this.setState({
             group: Object.assign({}, this.state.group, { short_description: ev.target.value }),
@@ -510,6 +516,25 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
                 <option value="japanese">{_("Japanese")}</option>
                 <option value="korean">{_("Korean")}</option>
                 <option value="nz">{_("New Zealand")}</option>
+            </select>
+        );
+    }
+
+    renderHandicap() {
+        if (
+            !this.state.group_loaded ||
+            !this.state.group.is_member ||
+            !this.state.is_admin ||
+            !this.state.editing
+        ) {
+            return this.state.group?.handicap === -1 ? _("Automatic") : _("None");
+        }
+
+        const group = this.state.group;
+        return (
+            <select value={group.handicap} onChange={this.setHandicap}>
+                <option value="0">{_("None")}</option>
+                <option value="-1">{_("Automatic")}</option>
             </select>
         );
     }
@@ -1171,6 +1196,10 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
                                     <tr>
                                         <th>{_("Rules")}</th>
                                         <td>{this.renderRules()}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>{_("Handicap")}</th>
+                                        <td>{this.renderHandicap()}</td>
                                     </tr>
                                 </table>
                             </div>

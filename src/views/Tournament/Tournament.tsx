@@ -241,6 +241,7 @@ export function Tournament(): JSX.Element {
                 .then((group) => {
                     tournament_ref.current.group = group;
                     tournament_ref.current.rules = group?.rules ?? "japanese";
+                    tournament_ref.current.handicap = String(group?.handicap ?? 0);
                     refresh();
                 })
                 .catch(errorAlerter);

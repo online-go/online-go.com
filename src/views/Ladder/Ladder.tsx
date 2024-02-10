@@ -44,6 +44,7 @@ interface LadderState {
         player_is_member_of_group: boolean;
         player_rank: number;
         rules?: string;
+        handicap?: number;
     };
     ladder_size: number;
     topVisibleEntry: number;
@@ -174,6 +175,14 @@ class _Ladder extends React.PureComponent<LadderProperties, LadderState> {
                                 <tr>
                                     <th>{_("Rules")}</th>
                                     <td>{rulesText(this.state.ladder?.rules ?? "japanese")}</td>
+                                </tr>
+                                <tr>
+                                    <th>{_("Handicap")}</th>
+                                    <td>
+                                        {this.state.ladder?.handicap === -1
+                                            ? _("Automatic")
+                                            : _("None")}
+                                    </td>
                                 </tr>
                             </table>
                         </div>
