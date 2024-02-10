@@ -535,534 +535,535 @@ export function Tournament(): JSX.Element {
     };
     const updateEliminationTrees = () => {
         if (
-            tournament_ref.current.tournament_type === "elimination" ||
-            tournament_ref.current.tournament_type === "double_elimination"
+            tournament_ref.current.tournament_type !== "elimination" &&
+            tournament_ref.current.tournament_type !== "double_elimination"
         ) {
-            if (Object.keys(players).length === 0 || rounds.length === 0) {
-                return;
+            return;
+        }
+        if (Object.keys(players).length === 0 || rounds.length === 0) {
+            return;
+        }
+
+        const container = elimination_tree_container.current;
+        const last_bucket: any = {};
+        let last_cur_bucket: any = {};
+        let cur_bucket: any = {};
+        const em2_5 = ($("#em10").width() * 2.5) / 10.0;
+        const name_width = ($("#em10").width() * 12.0) / 10.0;
+        const min_space = ($("#em10").width() * 0.5) / 10.0;
+        const h = em2_5 + min_space;
+        const w = name_width + ($("#em10").width() * 4.0) / 10.0;
+
+        const bindHovers = (div: JQuery, id: number | object) => {
+            if (typeof id !== "number") {
+                try {
+                    console.warn("ID = ", id);
+                    for (const k in id) {
+                        console.warn("ID.", k, "=", (id as any)[k]);
+                    }
+                } catch (e) {
+                    // ignore error
+                }
+                console.error("Tournament bind hover called with non numeric id");
             }
 
-            const container = elimination_tree_container.current;
-            const last_bucket: any = {};
-            let last_cur_bucket: any = {};
-            let cur_bucket: any = {};
-            const em2_5 = ($("#em10").width() * 2.5) / 10.0;
-            const name_width = ($("#em10").width() * 12.0) / 10.0;
-            const min_space = ($("#em10").width() * 0.5) / 10.0;
-            const h = em2_5 + min_space;
-            const w = name_width + ($("#em10").width() * 4.0) / 10.0;
+            div.mouseover(() => {
+                $(".elimination-player-hover").removeClass("elimination-player-hover");
+                $(".elimination-player-" + id).addClass("elimination-player-hover");
+            });
+            div.mouseout(() => {
+                $(".elimination-player-hover").removeClass("elimination-player-hover");
+            });
+        };
 
-            const bindHovers = (div: JQuery, id: number | object) => {
-                if (typeof id !== "number") {
-                    try {
-                        console.warn("ID = ", id);
-                        for (const k in id) {
-                            console.warn("ID.", k, "=", (id as any)[k]);
-                        }
-                    } catch (e) {
-                        // ignore error
-                    }
-                    console.error("Tournament bind hover called with non numeric id");
+        const all_objects: any[] = [];
+        for (let round_num = 0; round_num < rounds.length; ++round_num) {
+            const round = rounds[round_num];
+
+            for (let match_num = 0; match_num < round.matches.length; ++match_num) {
+                const match = round.matches[match_num];
+                const match_div = $("<div>").addClass("match-div");
+                const black = $("<div>")
+                    .addClass("black")
+                    .addClass("elimination-player-" + match.black);
+                const white = $("<div>")
+                    .addClass("white")
+                    .addClass("elimination-player-" + match.white);
+                const black_root = ReactDOM.createRoot(black[0]);
+                black_root.render(
+                    <React.StrictMode>
+                        <a className="elimination-game" href={`/game/view/${match.gameid}`}>
+                            <i className="ogs-goban"></i>
+                        </a>
+                        <Player user={players[match.black]} icon rank />
+                    </React.StrictMode>,
+                );
+                const white_root = ReactDOM.createRoot(white[0]);
+                white_root.render(
+                    <React.StrictMode>
+                        <a className="elimination-game" href={`/game/view/${match.gameid}`}>
+                            <i className="ogs-goban"></i>
+                        </a>
+                        <Player user={players[match.white]} icon rank />
+                    </React.StrictMode>,
+                );
+
+                bindHovers(black, match.black);
+                bindHovers(white, match.white);
+
+                const result = match.result || "";
+                if (result === "B+1") {
+                    black.addClass("win");
+                }
+                if (result === "W+1") {
+                    white.addClass("win");
+                }
+                if (result === "B+0.5,W+0.5") {
+                    black.addClass("tie");
+                    white.addClass("tie");
                 }
 
-                div.mouseover(() => {
-                    $(".elimination-player-hover").removeClass("elimination-player-hover");
-                    $(".elimination-player-" + id).addClass("elimination-player-hover");
-                });
-                div.mouseout(() => {
-                    $(".elimination-player-hover").removeClass("elimination-player-hover");
-                });
-            };
+                match_div.append(black);
+                match_div.append(white);
 
-            const all_objects: any[] = [];
-            for (let round_num = 0; round_num < rounds.length; ++round_num) {
-                const round = rounds[round_num];
-
-                for (let match_num = 0; match_num < round.matches.length; ++match_num) {
-                    const match = round.matches[match_num];
-                    const match_div = $("<div>").addClass("match-div");
-                    const black = $("<div>")
-                        .addClass("black")
-                        .addClass("elimination-player-" + match.black);
-                    const white = $("<div>")
-                        .addClass("white")
-                        .addClass("elimination-player-" + match.white);
-                    const black_root = ReactDOM.createRoot(black[0]);
-                    black_root.render(
-                        <React.StrictMode>
-                            <a className="elimination-game" href={`/game/view/${match.gameid}`}>
-                                <i className="ogs-goban"></i>
-                            </a>
-                            <Player user={players[match.black]} icon rank />
-                        </React.StrictMode>,
-                    );
-                    const white_root = ReactDOM.createRoot(white[0]);
-                    white_root.render(
-                        <React.StrictMode>
-                            <a className="elimination-game" href={`/game/view/${match.gameid}`}>
-                                <i className="ogs-goban"></i>
-                            </a>
-                            <Player user={players[match.white]} icon rank />
-                        </React.StrictMode>,
-                    );
-
-                    bindHovers(black, match.black);
-                    bindHovers(white, match.white);
-
-                    const result = match.result || "";
-                    if (result === "B+1") {
-                        black.addClass("win");
-                    }
-                    if (result === "W+1") {
-                        white.addClass("win");
-                    }
-                    if (result === "B+0.5,W+0.5") {
-                        black.addClass("tie");
-                        white.addClass("tie");
-                    }
-
-                    match_div.append(black);
-                    match_div.append(white);
-
-                    const obj = {
-                        div: match_div,
-                        black_src: round_num > 0 ? last_bucket[match.black] : null,
-                        white_src: round_num > 0 ? last_bucket[match.white] : null,
-                        black_won: result === "B+1",
-                        white_won: result === "W+1",
-                        black_player: match.black,
-                        white_player: match.white,
-                        match: match,
-                        second_bracket: false,
-                        round: round_num,
-                        is_final: round.byes.length === 0 && round.matches.length === 1,
-                    };
-                    if (obj.black_src) {
-                        obj.black_src.parent = obj;
-                        obj.black_src.feeding_black = true;
-                    }
-                    if (obj.white_src) {
-                        obj.white_src.parent = obj;
-                        obj.black_src.feeding_white = true;
-                    }
-                    all_objects.push(obj);
-
-                    cur_bucket[match.black] = obj;
-                    cur_bucket[match.white] = obj;
-
-                    container.appendChild(match_div[0]);
+                const obj = {
+                    div: match_div,
+                    black_src: round_num > 0 ? last_bucket[match.black] : null,
+                    white_src: round_num > 0 ? last_bucket[match.white] : null,
+                    black_won: result === "B+1",
+                    white_won: result === "W+1",
+                    black_player: match.black,
+                    white_player: match.white,
+                    match: match,
+                    second_bracket: false,
+                    round: round_num,
+                    is_final: round.byes.length === 0 && round.matches.length === 1,
+                };
+                if (obj.black_src) {
+                    obj.black_src.parent = obj;
+                    obj.black_src.feeding_black = true;
                 }
-                for (let bye_num = 0; bye_num < round.byes.length; ++bye_num) {
-                    const bye = round.byes[bye_num];
-                    const bye_div = $("<div>").addClass("bye-div");
-                    const bye_entry = $("<div>")
-                        .addClass("bye")
-                        .addClass("elimination-player-" + bye);
-                    const root = ReactDOM.createRoot(bye_entry[0]);
-                    root.render(
-                        <React.StrictMode>
-                            <Player user={players[bye]} icon rank />
-                        </React.StrictMode>,
-                    );
-                    bindHovers(bye_entry, bye);
-                    bye_div.append(bye_entry);
-                    const obj = {
-                        div: bye_div,
-                        bye_src: round_num > 0 ? last_bucket[bye] : null,
-                        black_won: true,
-                        second_bracket: false,
-                        round: round_num,
-                        player_id: bye,
-                    };
-                    if (obj.bye_src) {
-                        obj.bye_src.parent = obj;
-                    }
-                    cur_bucket[bye] = obj;
-                    all_objects.push(obj);
-
-                    container.appendChild(bye_div[0]);
+                if (obj.white_src) {
+                    obj.white_src.parent = obj;
+                    obj.black_src.feeding_white = true;
                 }
+                all_objects.push(obj);
 
-                for (const k in cur_bucket) {
-                    last_bucket[k] = cur_bucket[k];
-                }
-                last_cur_bucket = cur_bucket;
-                cur_bucket = {};
+                cur_bucket[match.black] = obj;
+                cur_bucket[match.white] = obj;
+
+                container.appendChild(match_div[0]);
             }
-
-            const last_cur_bucket_arr: any[] = [];
-            for (const k in last_cur_bucket) {
-                last_cur_bucket_arr.push(last_cur_bucket[k]);
-            }
-
-            const playerLost = (obj: { match: TournamentMatch }, player_id: number) => {
-                if (!obj.match) {
-                    return false; // Bye.
-                }
-                if (!obj.match.result) {
-                    return false; // Invalid?
-                }
-                if (obj.match.result === "B+1" && obj.match.white === player_id) {
-                    return true;
-                }
-                if (obj.match.result === "W+1" && obj.match.black === player_id) {
-                    return true;
-                }
-                return false; // Tie.
-            };
-
-            for (let i = 0; i < all_objects.length; ++i) {
-                const obj = all_objects[i];
-                if (obj.round === 0) {
-                    continue;
-                }
+            for (let bye_num = 0; bye_num < round.byes.length; ++bye_num) {
+                const bye = round.byes[bye_num];
+                const bye_div = $("<div>").addClass("bye-div");
+                const bye_entry = $("<div>")
+                    .addClass("bye")
+                    .addClass("elimination-player-" + bye);
+                const root = ReactDOM.createRoot(bye_entry[0]);
+                root.render(
+                    <React.StrictMode>
+                        <Player user={players[bye]} icon rank />
+                    </React.StrictMode>,
+                );
+                bindHovers(bye_entry, bye);
+                bye_div.append(bye_entry);
+                const obj = {
+                    div: bye_div,
+                    bye_src: round_num > 0 ? last_bucket[bye] : null,
+                    black_won: true,
+                    second_bracket: false,
+                    round: round_num,
+                    player_id: bye,
+                };
                 if (obj.bye_src) {
-                    obj.second_bracket =
-                        obj.bye_src.second_bracket || playerLost(obj.bye_src, obj.player_id);
+                    obj.bye_src.parent = obj;
                 }
-                if (obj.black_src && obj.white_src) {
-                    if (!playerLost(obj.black_src, obj.match.black)) {
-                        obj.second_bracket = obj.black_src.second_bracket;
-                    } else if (!playerLost(obj.white_src, obj.match.white)) {
-                        obj.second_bracket = obj.white_src.second_bracket;
-                    } else {
-                        obj.second_bracket = true;
-                    }
-                }
+                cur_bucket[bye] = obj;
+                all_objects.push(obj);
 
-                if (obj.round === rounds.length - 1 && last_cur_bucket_arr.length <= 2) {
-                    obj.second_bracket = false;
-                }
+                container.appendChild(bye_div[0]);
+            }
 
-                if (obj.second_bracket) {
-                    //obj.div.css({"background-color": "red", "opacity": 0.5});
+            for (const k in cur_bucket) {
+                last_bucket[k] = cur_bucket[k];
+            }
+            last_cur_bucket = cur_bucket;
+            cur_bucket = {};
+        }
+
+        const last_cur_bucket_arr: any[] = [];
+        for (const k in last_cur_bucket) {
+            last_cur_bucket_arr.push(last_cur_bucket[k]);
+        }
+
+        const playerLost = (obj: { match: TournamentMatch }, player_id: number) => {
+            if (!obj.match) {
+                return false; // Bye.
+            }
+            if (!obj.match.result) {
+                return false; // Invalid?
+            }
+            if (obj.match.result === "B+1" && obj.match.white === player_id) {
+                return true;
+            }
+            if (obj.match.result === "W+1" && obj.match.black === player_id) {
+                return true;
+            }
+            return false; // Tie.
+        };
+
+        for (let i = 0; i < all_objects.length; ++i) {
+            const obj = all_objects[i];
+            if (obj.round === 0) {
+                continue;
+            }
+            if (obj.bye_src) {
+                obj.second_bracket =
+                    obj.bye_src.second_bracket || playerLost(obj.bye_src, obj.player_id);
+            }
+            if (obj.black_src && obj.white_src) {
+                if (!playerLost(obj.black_src, obj.match.black)) {
+                    obj.second_bracket = obj.black_src.second_bracket;
+                } else if (!playerLost(obj.white_src, obj.match.white)) {
+                    obj.second_bracket = obj.white_src.second_bracket;
+                } else {
+                    obj.second_bracket = true;
                 }
             }
 
-            const svg_extents = { x: 0, y: 0 };
+            if (obj.round === rounds.length - 1 && last_cur_bucket_arr.length <= 2) {
+                obj.second_bracket = false;
+            }
 
-            let last_visit_order = 0;
-            const layout = (collection: any) => {
-                const computeVisitOrder = (obj: any) => {
-                    if (obj.visit_order) {
-                        return;
-                    }
+            if (obj.second_bracket) {
+                //obj.div.css({"background-color": "red", "opacity": 0.5});
+            }
+        }
 
-                    if (!obj.second_bracket && obj.black_src && obj.black_src.second_bracket) {
-                        if (obj.white_src) {
-                            computeVisitOrder(obj.white_src);
-                        }
-                    }
-                    if (!obj.second_bracket && obj.white_src && obj.white_src.second_bracket) {
-                        if (obj.black_src) {
-                            computeVisitOrder(obj.black_src);
-                        }
-                    }
+        const svg_extents = { x: 0, y: 0 };
 
-                    if (obj.bye_src) {
-                        computeVisitOrder(obj.bye_src);
-                    }
-                    if (obj.black_src) {
-                        computeVisitOrder(obj.black_src);
-                    }
+        let last_visit_order = 0;
+        const layout = (collection: any) => {
+            const computeVisitOrder = (obj: any) => {
+                if (obj.visit_order) {
+                    return;
+                }
+
+                if (!obj.second_bracket && obj.black_src && obj.black_src.second_bracket) {
                     if (obj.white_src) {
                         computeVisitOrder(obj.white_src);
                     }
-
-                    obj.visit_order = ++last_visit_order;
-                };
-
-                const arr: any[] = [];
-                for (const k in collection) {
-                    arr.push(collection[k]);
                 }
-                arr.sort((a, b) => {
-                    const d = a.second_bracket - b.second_bracket;
-                    if (d !== 0) {
-                        return d;
-                    }
-
-                    const compute_rank = (e: TournamentRecord) => {
-                        if (e.player_id && e.player_id in players) {
-                            return (players as any)[e.player_id].ranking * 2;
-                        }
-                        if (
-                            e.match &&
-                            e.match.black &&
-                            e.match.white &&
-                            e.match.black in players &&
-                            e.match.white in players
-                        ) {
-                            return (
-                                (players as any)[e.match.black].ranking +
-                                (players as any)[e.match.white].ranking
-                            );
-                        }
-                        return -1000;
-                    };
-
-                    return -(compute_rank(a) - compute_rank(b));
-                });
-
-                /* If we have the leader in the top bracket drop out before the second bracket completes so we get
-                 * to our final match, the final match players both come from the second bracket. To account for this
-                 * we look for the most recently finished game in the top bracket, make sure it's not the end game (that's
-                 * the black/white_src.second_bracket check), and run our layout first starting from that node. */
-                let max_se_round = 0;
-                for (let i = 0; i < all_objects.length; ++i) {
-                    if (!all_objects[i].second_bracket) {
-                        if (
-                            all_objects[i].black_src &&
-                            all_objects[i].black_src.second_bracket &&
-                            all_objects[i].white_src &&
-                            all_objects[i].white_src.second_bracket
-                        ) {
-                            continue;
-                        }
-                        max_se_round = Math.max(max_se_round, all_objects[i].round);
+                if (!obj.second_bracket && obj.white_src && obj.white_src.second_bracket) {
+                    if (obj.black_src) {
+                        computeVisitOrder(obj.black_src);
                     }
                 }
 
-                for (let i = 0; i < all_objects.length; ++i) {
-                    if (!all_objects[i].second_bracket && max_se_round === all_objects[i].round) {
-                        if (
-                            all_objects[i].black_src &&
-                            all_objects[i].black_src.second_bracket &&
-                            all_objects[i].white_src &&
-                            all_objects[i].white_src.second_bracket
-                        ) {
-                            continue;
-                        }
-                        computeVisitOrder(all_objects[i]);
-                    }
+                if (obj.bye_src) {
+                    computeVisitOrder(obj.bye_src);
                 }
-
-                /* Now lay out our collections from the very end */
-                for (let i = 0; i < arr.length; ++i) {
-                    computeVisitOrder(arr[i]);
-                    //console.log(arr[i].second_bracket);
-                }
-
-                //computeVisitOrder(obj);
-                all_objects.sort((a, b) => {
-                    if (!a.visit_order) {
-                        a.visit_order = ++last_visit_order;
-                    }
-                    if (!b.visit_order) {
-                        b.visit_order = ++last_visit_order;
-                    }
-
-                    if (a.second_bracket !== b.second_bracket) {
-                        return a.second_bracket - b.second_bracket;
-                    }
-                    if (a.round !== b.round) {
-                        return a.round - b.round;
-                    }
-                    return a.visit_order - b.visit_order;
-                });
-
-                const y: any = { 0: 0 };
-                let base_y = 0;
-                const bracket_spacing = 75;
-                for (let i = 0; i < all_objects.length; ++i) {
-                    const obj = all_objects[i];
-                    obj.laid_out = true;
-
-                    if (
-                        obj.round === 0 &&
-                        i + 1 < all_objects.length &&
-                        all_objects[i + 1].round === 1
-                    ) {
-                        for (let r = 1; r < rounds.length; ++r) {
-                            y[r] = base_y + bracket_spacing;
-                        }
-                    }
-
-                    if (
-                        obj.is_final &&
-                        ((obj.black_src && obj.black_src.second_bracket) ||
-                            (obj.white_src && obj.white_src.second_bracket))
-                    ) {
-                        // Draw finals for double-elimination in between the two brackets.
-                        obj.top = bracket_spacing;
-                    } else if (!obj.second_bracket) {
-                        if (obj.bye_src) {
-                            if (obj.bye_src.second_bracket === obj.second_bracket) {
-                                obj.top = obj.bye_src.top;
-                            } else {
-                                obj.top = y[obj.round];
-                                y[obj.round] += h;
-                            }
-                        } else {
-                            if (
-                                obj.black_src &&
-                                obj.black_src.second_bracket === obj.second_bracket &&
-                                obj.white_src &&
-                                obj.white_src.second_bracket === obj.second_bracket
-                                //|| obj.round === rounds.length-1
-                            ) {
-                                obj.top = (obj.black_src.top + obj.white_src.top) / 2.0;
-                            } else if (
-                                obj.black_src &&
-                                obj.black_src.second_bracket === obj.second_bracket
-                            ) {
-                                obj.top = obj.black_src.top;
-                            } else if (
-                                obj.white_src &&
-                                obj.white_src.second_bracket === obj.second_bracket
-                            ) {
-                                obj.top = obj.white_src.top;
-                            } else {
-                                obj.top = y[obj.round];
-                                y[obj.round] += h;
-                            }
-                        }
-                    } else {
-                        obj.top = y[obj.round];
-                        y[obj.round] += h;
-                    }
-
-                    obj.left = w * obj.round;
-                    obj.right = obj.left + name_width;
-                    obj.bottom = obj.top + em2_5;
-
-                    obj.div.css({
-                        top: obj.top,
-                        left: obj.left,
-                    });
-
-                    svg_extents.x = Math.max(svg_extents.x, obj.right);
-                    svg_extents.y = Math.max(svg_extents.y, obj.bottom + 10);
-
-                    if (obj.round === 0) {
-                        base_y = Math.max(base_y, obj.bottom + h + 10);
-                    }
-                }
-            };
-
-            layout(last_cur_bucket);
-
-            let not_laid_out = 0;
-            for (let i = 0; i < all_objects.length; ++i) {
-                if (!all_objects[i].laid_out) {
-                    ++not_laid_out;
-                }
-            }
-            if (not_laid_out) {
-                void alert.fire("Warning: " + not_laid_out + " matches not laid out");
-            }
-
-            const svg = d3.select(elimination_tree.current);
-            svg.attr("width", svg_extents.x);
-            svg.attr("height", svg_extents.y);
-
-            //let line_style = "basis";
-            //let line_style = "linear";
-            //let line_style = "step-before";
-
-            const drawLine = (path: any) => {
-                const line_function = d3
-                    .line()
-                    .curve(d3.curveMonotoneX)
-                    .x((xy: any) => xy.x)
-                    .y((xy: any) => xy.y);
-                svg.append("path")
-                    .attr("d", line_function(path))
-                    .attr("stroke", "#888")
-                    .attr("stroke-width", 1.0)
-                    .attr("fill", "none");
-            };
-
-            const bottom_padding = 3.0;
-            const left_padding = 5.0;
-
-            const getBlackBottom = (obj: any) => {
-                return Math.round((obj.top + obj.bottom) / 2.0);
-            };
-            const getWhiteBottom = (obj: any) => {
-                return Math.round(obj.bottom + bottom_padding);
-            };
-            const getPlayerBottom = (obj: any, player: number) => {
-                if (obj?.black_player === player || obj?.player_id === player) {
-                    return getBlackBottom(obj);
-                }
-                return getWhiteBottom(obj);
-            };
-
-            const drawLines = (obj: any) => {
                 if (obj.black_src) {
-                    drawLines(obj.black_src);
-                    if (
-                        obj.is_final ||
-                        !obj.second_bracket ||
-                        obj.second_bracket === obj.black_src.second_bracket
-                    ) {
-                        drawLine([
-                            {
-                                x: obj.black_src.left,
-                                y: getPlayerBottom(obj.black_src, obj.black_player),
-                            },
-                            {
-                                x: obj.black_src.right,
-                                y: getPlayerBottom(obj.black_src, obj.black_player),
-                            },
-                            {
-                                x: obj.left - left_padding,
-                                y: getBlackBottom(obj),
-                            },
-                            {
-                                x: obj.left,
-                                y: getBlackBottom(obj),
-                            },
-                        ]);
-                    }
+                    computeVisitOrder(obj.black_src);
                 }
                 if (obj.white_src) {
-                    drawLines(obj.white_src);
-                    if (
-                        obj.is_final ||
-                        !obj.second_bracket ||
-                        obj.second_bracket === obj.white_src.second_bracket
-                    ) {
-                        drawLine([
-                            {
-                                x: obj.white_src.left,
-                                y: getPlayerBottom(obj.white_src, obj.white_player),
-                            },
-                            {
-                                x: obj.white_src.right,
-                                y: getPlayerBottom(obj.white_src, obj.white_player),
-                            },
-                            {
-                                x: obj.left - left_padding,
-                                y: getWhiteBottom(obj),
-                            },
-                            {
-                                x: obj.left,
-                                y: getWhiteBottom(obj),
-                            },
-                        ]);
-                    }
+                    computeVisitOrder(obj.white_src);
                 }
-                if (obj.bye_src) {
-                    drawLines(obj.bye_src);
-                    if (!obj.second_bracket || obj.second_bracket === obj.bye_src.second_bracket) {
-                        drawLine([
-                            { x: obj.bye_src.left, y: getPlayerBottom(obj.bye_src, obj.player_id) },
-                            {
-                                x: obj.bye_src.right,
-                                y: getPlayerBottom(obj.bye_src, obj.player_id),
-                            },
-                            { x: obj.left - left_padding, y: getBlackBottom(obj) },
-                            { x: obj.left, y: getBlackBottom(obj) },
-                        ]);
-                    }
-                }
+
+                obj.visit_order = ++last_visit_order;
             };
 
-            for (const k in last_cur_bucket) {
-                drawLines(last_cur_bucket[k]);
+            const arr: any[] = [];
+            for (const k in collection) {
+                arr.push(collection[k]);
             }
+            arr.sort((a, b) => {
+                const d = a.second_bracket - b.second_bracket;
+                if (d !== 0) {
+                    return d;
+                }
+
+                const compute_rank = (e: TournamentRecord) => {
+                    if (e.player_id && e.player_id in players) {
+                        return (players as any)[e.player_id].ranking * 2;
+                    }
+                    if (
+                        e.match &&
+                        e.match.black &&
+                        e.match.white &&
+                        e.match.black in players &&
+                        e.match.white in players
+                    ) {
+                        return (
+                            (players as any)[e.match.black].ranking +
+                            (players as any)[e.match.white].ranking
+                        );
+                    }
+                    return -1000;
+                };
+
+                return -(compute_rank(a) - compute_rank(b));
+            });
+
+            /* If we have the leader in the top bracket drop out before the second bracket completes so we get
+             * to our final match, the final match players both come from the second bracket. To account for this
+             * we look for the most recently finished game in the top bracket, make sure it's not the end game (that's
+             * the black/white_src.second_bracket check), and run our layout first starting from that node. */
+            let max_se_round = 0;
+            for (let i = 0; i < all_objects.length; ++i) {
+                if (!all_objects[i].second_bracket) {
+                    if (
+                        all_objects[i].black_src &&
+                        all_objects[i].black_src.second_bracket &&
+                        all_objects[i].white_src &&
+                        all_objects[i].white_src.second_bracket
+                    ) {
+                        continue;
+                    }
+                    max_se_round = Math.max(max_se_round, all_objects[i].round);
+                }
+            }
+
+            for (let i = 0; i < all_objects.length; ++i) {
+                if (!all_objects[i].second_bracket && max_se_round === all_objects[i].round) {
+                    if (
+                        all_objects[i].black_src &&
+                        all_objects[i].black_src.second_bracket &&
+                        all_objects[i].white_src &&
+                        all_objects[i].white_src.second_bracket
+                    ) {
+                        continue;
+                    }
+                    computeVisitOrder(all_objects[i]);
+                }
+            }
+
+            /* Now lay out our collections from the very end */
+            for (let i = 0; i < arr.length; ++i) {
+                computeVisitOrder(arr[i]);
+                //console.log(arr[i].second_bracket);
+            }
+
+            //computeVisitOrder(obj);
+            all_objects.sort((a, b) => {
+                if (!a.visit_order) {
+                    a.visit_order = ++last_visit_order;
+                }
+                if (!b.visit_order) {
+                    b.visit_order = ++last_visit_order;
+                }
+
+                if (a.second_bracket !== b.second_bracket) {
+                    return a.second_bracket - b.second_bracket;
+                }
+                if (a.round !== b.round) {
+                    return a.round - b.round;
+                }
+                return a.visit_order - b.visit_order;
+            });
+
+            const y: any = { 0: 0 };
+            let base_y = 0;
+            const bracket_spacing = 75;
+            for (let i = 0; i < all_objects.length; ++i) {
+                const obj = all_objects[i];
+                obj.laid_out = true;
+
+                if (
+                    obj.round === 0 &&
+                    i + 1 < all_objects.length &&
+                    all_objects[i + 1].round === 1
+                ) {
+                    for (let r = 1; r < rounds.length; ++r) {
+                        y[r] = base_y + bracket_spacing;
+                    }
+                }
+
+                if (
+                    obj.is_final &&
+                    ((obj.black_src && obj.black_src.second_bracket) ||
+                        (obj.white_src && obj.white_src.second_bracket))
+                ) {
+                    // Draw finals for double-elimination in between the two brackets.
+                    obj.top = bracket_spacing;
+                } else if (!obj.second_bracket) {
+                    if (obj.bye_src) {
+                        if (obj.bye_src.second_bracket === obj.second_bracket) {
+                            obj.top = obj.bye_src.top;
+                        } else {
+                            obj.top = y[obj.round];
+                            y[obj.round] += h;
+                        }
+                    } else {
+                        if (
+                            obj.black_src &&
+                            obj.black_src.second_bracket === obj.second_bracket &&
+                            obj.white_src &&
+                            obj.white_src.second_bracket === obj.second_bracket
+                            //|| obj.round === rounds.length-1
+                        ) {
+                            obj.top = (obj.black_src.top + obj.white_src.top) / 2.0;
+                        } else if (
+                            obj.black_src &&
+                            obj.black_src.second_bracket === obj.second_bracket
+                        ) {
+                            obj.top = obj.black_src.top;
+                        } else if (
+                            obj.white_src &&
+                            obj.white_src.second_bracket === obj.second_bracket
+                        ) {
+                            obj.top = obj.white_src.top;
+                        } else {
+                            obj.top = y[obj.round];
+                            y[obj.round] += h;
+                        }
+                    }
+                } else {
+                    obj.top = y[obj.round];
+                    y[obj.round] += h;
+                }
+
+                obj.left = w * obj.round;
+                obj.right = obj.left + name_width;
+                obj.bottom = obj.top + em2_5;
+
+                obj.div.css({
+                    top: obj.top,
+                    left: obj.left,
+                });
+
+                svg_extents.x = Math.max(svg_extents.x, obj.right);
+                svg_extents.y = Math.max(svg_extents.y, obj.bottom + 10);
+
+                if (obj.round === 0) {
+                    base_y = Math.max(base_y, obj.bottom + h + 10);
+                }
+            }
+        };
+
+        layout(last_cur_bucket);
+
+        let not_laid_out = 0;
+        for (let i = 0; i < all_objects.length; ++i) {
+            if (!all_objects[i].laid_out) {
+                ++not_laid_out;
+            }
+        }
+        if (not_laid_out) {
+            void alert.fire("Warning: " + not_laid_out + " matches not laid out");
+        }
+
+        const svg = d3.select(elimination_tree.current);
+        svg.attr("width", svg_extents.x);
+        svg.attr("height", svg_extents.y);
+
+        //let line_style = "basis";
+        //let line_style = "linear";
+        //let line_style = "step-before";
+
+        const drawLine = (path: any) => {
+            const line_function = d3
+                .line()
+                .curve(d3.curveMonotoneX)
+                .x((xy: any) => xy.x)
+                .y((xy: any) => xy.y);
+            svg.append("path")
+                .attr("d", line_function(path))
+                .attr("stroke", "#888")
+                .attr("stroke-width", 1.0)
+                .attr("fill", "none");
+        };
+
+        const bottom_padding = 3.0;
+        const left_padding = 5.0;
+
+        const getBlackBottom = (obj: any) => {
+            return Math.round((obj.top + obj.bottom) / 2.0);
+        };
+        const getWhiteBottom = (obj: any) => {
+            return Math.round(obj.bottom + bottom_padding);
+        };
+        const getPlayerBottom = (obj: any, player: number) => {
+            if (obj?.black_player === player || obj?.player_id === player) {
+                return getBlackBottom(obj);
+            }
+            return getWhiteBottom(obj);
+        };
+
+        const drawLines = (obj: any) => {
+            if (obj.black_src) {
+                drawLines(obj.black_src);
+                if (
+                    obj.is_final ||
+                    !obj.second_bracket ||
+                    obj.second_bracket === obj.black_src.second_bracket
+                ) {
+                    drawLine([
+                        {
+                            x: obj.black_src.left,
+                            y: getPlayerBottom(obj.black_src, obj.black_player),
+                        },
+                        {
+                            x: obj.black_src.right,
+                            y: getPlayerBottom(obj.black_src, obj.black_player),
+                        },
+                        {
+                            x: obj.left - left_padding,
+                            y: getBlackBottom(obj),
+                        },
+                        {
+                            x: obj.left,
+                            y: getBlackBottom(obj),
+                        },
+                    ]);
+                }
+            }
+            if (obj.white_src) {
+                drawLines(obj.white_src);
+                if (
+                    obj.is_final ||
+                    !obj.second_bracket ||
+                    obj.second_bracket === obj.white_src.second_bracket
+                ) {
+                    drawLine([
+                        {
+                            x: obj.white_src.left,
+                            y: getPlayerBottom(obj.white_src, obj.white_player),
+                        },
+                        {
+                            x: obj.white_src.right,
+                            y: getPlayerBottom(obj.white_src, obj.white_player),
+                        },
+                        {
+                            x: obj.left - left_padding,
+                            y: getWhiteBottom(obj),
+                        },
+                        {
+                            x: obj.left,
+                            y: getWhiteBottom(obj),
+                        },
+                    ]);
+                }
+            }
+            if (obj.bye_src) {
+                drawLines(obj.bye_src);
+                if (!obj.second_bracket || obj.second_bracket === obj.bye_src.second_bracket) {
+                    drawLine([
+                        { x: obj.bye_src.left, y: getPlayerBottom(obj.bye_src, obj.player_id) },
+                        {
+                            x: obj.bye_src.right,
+                            y: getPlayerBottom(obj.bye_src, obj.player_id),
+                        },
+                        { x: obj.left - left_padding, y: getBlackBottom(obj) },
+                        { x: obj.left, y: getBlackBottom(obj) },
+                    ]);
+                }
+            }
+        };
+
+        for (const k in last_cur_bucket) {
+            drawLines(last_cur_bucket[k]);
         }
     };
     const groupify = (round: TournamentRound, players: TournamentPlayers): any => {
