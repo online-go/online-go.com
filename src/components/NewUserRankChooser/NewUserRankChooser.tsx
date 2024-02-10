@@ -27,17 +27,22 @@ const sendRankChoice = (choice: string): void => {
 
 interface NewUserRankChooserProps {
     show_skip?: boolean;
+    show_welcome?: boolean;
 }
 
-export function NewUserRankChooser({ show_skip = true }: NewUserRankChooserProps): JSX.Element {
+export function NewUserRankChooser({
+    show_skip = true,
+    show_welcome = true,
+}: NewUserRankChooserProps): JSX.Element {
     /* render */
     return (
         <div className="NewUserRankChooser">
             <div className="centered-content">
+                {show_welcome && <div className="welcome">{_("Welcome!")}</div>}
                 <div className="instructions">
                     {pgettext(
                         "Instructions for rank chooser buttons",
-                        "Welcome! To help us find you suitable opponents, please select the option below that best describes your skill at Go.",
+                        "To help us find you suitable opponents, please select the option below that best describes your skill at Go.",
                     )}
                 </div>
                 <div className="rank-chooser-buttons">
@@ -54,7 +59,7 @@ export function NewUserRankChooser({ show_skip = true }: NewUserRankChooserProps
                             "Intermediate",
                         )}
                         choice={"intermediate"}
-                        explainer={_("Your go rank is 16k-1k")}
+                        explainer={_("Your Go rank is 16k-1k")}
                     />
                     <NewRankChooserButton
                         label={pgettext(

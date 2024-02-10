@@ -26,13 +26,22 @@
         justify-content: center;
         max-width: 50rem;  // contains the width of instructions to about the width of the 3 buttons below them
 
-        .instructions {
+        .instructions, .welcome {
             font-size: x-large;
             text-align: center;
-            padding: 3rem;
-
         }
+
+        .welcome {
+            margin-top: 2rem;
+        }
+
+        .instructions {
+            margin: 2rem;
+            margin-top: 1.5rem;
+        }
+
         .rank-chooser-buttons {
+            margin-bottom: 1.5rem;
             display: flex;
             flex-direction: row;
             justify-content: center;
@@ -66,7 +75,7 @@
 
                 button {
                     height: auto;
-                    padding: 1rem;
+                    padding: 0.5rem 1rem 0.5rem 1rem;
 
                     font-size: large;
                     font-weight: bold;
@@ -90,7 +99,6 @@
             display: flex;
             flex-direction: row;
             justify-content: center;
-            padding: 1.5rem;
         }
     }
 }
