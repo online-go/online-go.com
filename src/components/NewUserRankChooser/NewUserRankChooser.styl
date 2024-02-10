@@ -47,14 +47,23 @@
             justify-content: center;
             gap: 1rem;
 
+            @media screen and (max-width: 600px) {
+                flex-direction: column;
+                align-items: center;
+
+                .rank-chooser-button {
+                    min-width: 13rem;
+                    max-height: 7rem;
+                }
+            }
+
             .rank-chooser-button {
                 flex-grow: 1;
                 flex-basis: 13rem;
                 max-width: 13rem;
 
                 themed background-color shade5
-                border-bottom-left-radius: 0.5rem;
-                border-bottom-right-radius: 0.5rem;
+                border-radius: 0.5rem;
 
                 display: flex;
                 flex-direction: column;
