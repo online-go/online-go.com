@@ -59,7 +59,7 @@ export function NewUserRankChooser({
                             "Intermediate",
                         )}
                         choice={"intermediate"}
-                        explainer={_("Your Go rank is 16k-1k")}
+                        explainer={_("Your Go rank is roughly 16k-1k")}
                     />
                     <NewRankChooserButton
                         label={pgettext(
