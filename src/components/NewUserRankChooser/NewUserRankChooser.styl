@@ -36,21 +36,53 @@
             display: flex;
             flex-direction: row;
             justify-content: center;
+            gap: 1rem;
 
-
-            button {
-                font-size: 1.1rem;
-                font-weight: bold;
+            .rank-chooser-button {
                 flex-grow: 1;
                 flex-basis: 13rem;
                 max-width: 13rem;
-                height: 4rem;
-                margin: 0.5rem;
-                white-space: nowrap;
+
+                themed background-color shade5
+                border-bottom-left-radius: 0.5rem;
+                border-bottom-right-radius: 0.5rem;
+
                 display: flex;
+                flex-direction: column;
                 align-items: center;
-                align-content: center;
-                justify-content: center;
+
+                .rank-chooser-heading {
+                    width: 100%
+                    display: flex;
+                    border-top-left-radius: 0.5rem;
+                    border-top-right-radius: 0.5rem;
+                    justify-content: center;
+                    themed background-color shade4
+                    align-items: center;
+                    font-size: large;
+                    font-weight: bold;
+                    min-height: 2rem;
+                }
+
+                button {
+                    height: auto;
+                    padding: 1rem;
+
+                    font-size: large;
+                    font-weight: bold;
+                    margin: 0.5rem;
+                    white-space: nowrap;
+                }
+
+                .explainer-text {
+                    font-size: small;
+                    font-weight: normal;
+                    margin-top: 0.5rem;
+                }
+            }
+
+            .fa {
+                margin: 0.3rem;
             }
         }
 
@@ -58,7 +90,7 @@
             display: flex;
             flex-direction: row;
             justify-content: center;
-            padding: 2rem;
+            padding: 1.5rem;
         }
     }
 }

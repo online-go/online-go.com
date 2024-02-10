@@ -17,27 +17,19 @@
 
 import * as React from "react";
 
-import { pgettext } from "translate";
+import { _, pgettext } from "translate";
 import { put } from "requests";
 import { errorAlerter, ignore } from "misc";
 
-export function NewUserRankChooser(): JSX.Element {
-    const sendRankChoice = (choice: string): void => {
-        put(`me/starting_rank`, { choice: choice }).then(ignore).catch(errorAlerter);
-    };
-    const chooseBeginner = () => {
-        sendRankChoice("beginner");
-    };
-    const chooseIntermediate = () => {
-        sendRankChoice("intermediate");
-    };
-    const chooseAdvanced = () => {
-        sendRankChoice("advanced");
-    };
-    const chooseToSkip = () => {
-        sendRankChoice("skip");
-    };
+const sendRankChoice = (choice: string): void => {
+    put(`me/starting_rank`, { choice: choice }).then(ignore).catch(errorAlerter);
+};
 
+interface NewUserRankChooserProps {
+    show_skip?: boolean;
+}
+
+export function NewUserRankChooser({ show_skip = true }: NewUserRankChooserProps): JSX.Element {
     /* render */
     return (
         <div className="NewUserRankChooser">
@@ -45,35 +37,82 @@ export function NewUserRankChooser(): JSX.Element {
                 <div className="instructions">
                     {pgettext(
                         "Instructions for rank chooser buttons",
-                        "Welcome! To help us find you the best games, please select the option below that best describes your skill at Go.",
+                        "Welcome! To help us find you suitable opponents, please select the option below that best describes your skill at Go.",
                     )}
                 </div>
                 <div className="rank-chooser-buttons">
-                    <button className="primary" onClick={chooseBeginner}>
-                        {pgettext("Label for the button used to say I'm a beginner", "Beginner")}
-                    </button>
-                    <button className="primary" onClick={chooseIntermediate}>
-                        {pgettext(
-                            "Label for the button used to say I'm an intermediate player",
+                    <NewRankChooserButton
+                        label={pgettext(
+                            "Label for the button used to say I'm a beginner",
+                            "Beginner",
+                        )}
+                        choice={"beginner"}
+                    />
+                    <NewRankChooserButton
+                        label={pgettext(
+                            "Label for the button used to say I'm an intermediate plater",
                             "Intermediate",
                         )}
-                    </button>
-                    <button className="primary" onClick={chooseAdvanced}>
-                        {pgettext(
-                            "Label for the button used to say I'm an advanced player",
+                        choice={"intermediate"}
+                        explainer={_("Your go rank is 16k-1k")}
+                    />
+                    <NewRankChooserButton
+                        label={pgettext(
+                            "Label for the button used to say I'm an advanced plater",
                             "Advanced",
                         )}
-                    </button>
+                        choice={"advanced"}
+                        explainer={_("You're a Dan level player")}
+                    />
                 </div>
-                <div className="skip-button">
-                    <button className="primary" onClick={chooseToSkip}>
-                        {pgettext(
-                            "Label for the button used to say skip choosing an initial rank",
-                            "Skip",
-                        )}
-                    </button>
-                </div>
+                {show_skip && (
+                    <div className="skip-button">
+                        <button className="primary" onClick={() => sendRankChoice("skip")}>
+                            {pgettext(
+                                "Label for the button used to say 'skip choosing an initial rank'",
+                                "Skip",
+                            )}
+                        </button>
+                    </div>
+                )}
             </div>
+        </div>
+    );
+}
+
+interface NewRankChooserButtonProps {
+    label: string;
+    choice: string;
+    explainer?: string;
+}
+
+function NewRankChooserButton({
+    label,
+    choice,
+    explainer,
+}: NewRankChooserButtonProps): JSX.Element {
+    const [explainer_open, setExplainerOpen] = React.useState(false);
+
+    const toggleExplainer = () => {
+        setExplainerOpen(!explainer_open);
+    };
+
+    return (
+        <div className="rank-chooser-button">
+            <div className="rank-chooser-heading">
+                {label}
+                {explainer && <i className="fa fa-question-circle-o" onClick={toggleExplainer} />}
+            </div>
+
+            <div
+                className="explainer-text"
+                style={{ visibility: explainer_open ? "visible" : "hidden" }}
+            >
+                {explainer || "(invisible filler)"}
+            </div>
+            <button className={"primary"} onClick={() => sendRankChoice(choice)}>
+                {pgettext("label on a button to select a choice", "Select")}
+            </button>
         </div>
     );
 }
