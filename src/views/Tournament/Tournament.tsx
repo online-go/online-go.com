@@ -289,10 +289,7 @@ export function Tournament(): JSX.Element {
                 }
 
                 let use_elimination_trees = false;
-                if (
-                    tournament.tournament_type === "elimination" ||
-                    tournament.tournament_type === "double_elimination"
-                ) {
+                if (is_elimination(tournament.tournament_type)) {
                     use_elimination_trees = true;
                     setTimeout(() => updateEliminationTrees(), 1);
                 } else {
@@ -534,10 +531,7 @@ export function Tournament(): JSX.Element {
             .catch(errorAlerter);
     };
     const updateEliminationTrees = () => {
-        if (
-            tournament_ref.current.tournament_type !== "elimination" &&
-            tournament_ref.current.tournament_type !== "double_elimination"
-        ) {
+        if (!is_elimination(tournament_ref.current.tournament_type)) {
             return;
         }
         if (Object.keys(players).length === 0 || rounds.length === 0) {
@@ -1708,10 +1702,7 @@ export function Tournament(): JSX.Element {
         tournament.board_size,
     );
 
-    if (
-        tournament.tournament_type === "elimination" ||
-        tournament.tournament_type === "double_elimination"
-    ) {
+    if (is_elimination(tournament.tournament_type)) {
         setTimeout(() => updateEliminationTrees(), 1);
     }
 
@@ -3504,6 +3495,10 @@ export const TOURNAMENT_PAIRING_METHODS = {
     slide: pgettext("Tournament type", "Slide"),
     opengotha: pgettext("Tournament director will pair opponents with OpenGotha", "OpenGotha"),
 };
+
+function is_elimination(tournament_type: string) {
+    return ["elimination", "double_elimination"].includes(tournament_type);
+}
 
 function fromNow(t: number | string) {
     const d = new Date(t).getTime();
