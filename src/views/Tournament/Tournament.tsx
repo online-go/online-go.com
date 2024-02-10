@@ -3178,19 +3178,70 @@ function eliminationMouseOver(id: number) {
 function eliminationMouseOut() {
     $(".elimination-player-hover").removeClass("elimination-player-hover");
 }
-interface EliminationPlayerProps {
+interface EliminationPlayer {
     id: number;
     user: TournamentPlayer;
 }
-export function EliminationBye(props: EliminationPlayerProps): JSX.Element {
+type EliminationNodeKind = "bye" | "black" | "white";
+interface EliminationNodeProps {
+    player: EliminationPlayer;
+    kind: EliminationNodeKind;
+    result_class?: string;
+    gameid?: any;
+}
+interface EliminationMatchProps {
+    black: EliminationPlayer;
+    white: EliminationPlayer;
+    gameid: any;
+    result: any;
+}
+export function EliminationNode(props: EliminationNodeProps): JSX.Element {
+    const player = props.player;
     return (
-        <div
-            className={`bye elimination-player-${props.id}`}
-            onMouseOver={() => eliminationMouseOver(props.id)}
-            onMouseOut={eliminationMouseOut}
-        >
-            <Player user={props.user} icon rank />
-        </div>
+        <>
+            <div
+                className={`${props.kind} ${props.result_class ?? ""} elimination-player-${
+                    player.id
+                }`}
+                onMouseOver={() => eliminationMouseOver(player.id)}
+                onMouseOut={eliminationMouseOut}
+            >
+                {(props.gameid || null) && (
+                    <a className="elimination-game" href={`/game/view/${props.gameid}`}>
+                        <i className="ogs-goban"></i>
+                    </a>
+                )}
+                <Player user={player.user} icon rank />
+            </div>
+        </>
+    );
+}
+export function EliminationMatch(props: EliminationMatchProps): JSX.Element {
+    let black_result: string | undefined;
+    let white_result: string | undefined;
+    if (props.result === "B+1") {
+        black_result = "win";
+    } else if (props.result === "W+1") {
+        white_result = "win";
+    } else if (props.result === "B+0.5,W+0.5") {
+        black_result = "tie";
+        white_result = "tie";
+    }
+    return (
+        <>
+            <EliminationNode
+                player={props.black}
+                kind="black"
+                result_class={black_result}
+                gameid={props.gameid}
+            />
+            <EliminationNode
+                player={props.white}
+                kind="white"
+                result_class={white_result}
+                gameid={props.gameid}
+            />
+        </>
     );
 }
 function renderEliminationNodes(
@@ -3198,11 +3249,6 @@ function renderEliminationNodes(
     all_objects: any[],
     players: { [id: string]: TournamentPlayer },
 ) {
-    const bindHovers = (div: JQuery, id: number) => {
-        div.mouseover(() => eliminationMouseOver(id));
-        div.mouseout(eliminationMouseOut);
-    };
-
     for (const obj of all_objects) {
         if (obj.match === undefined) {
             const bye = obj.player_id as number;
@@ -3210,7 +3256,7 @@ function renderEliminationNodes(
             const root = ReactDOM.createRoot(bye_div[0]);
             root.render(
                 <React.StrictMode>
-                    <EliminationBye id={bye} user={players[bye]} />
+                    <EliminationNode player={{ id: bye, user: players[bye] }} kind="bye" />
                 </React.StrictMode>,
             );
             obj.div = bye_div;
@@ -3219,48 +3265,17 @@ function renderEliminationNodes(
         }
         const match = obj.match;
         const match_div = $("<div>").addClass("match-div");
-        const black = $("<div>")
-            .addClass("black")
-            .addClass("elimination-player-" + match.black);
-        const white = $("<div>")
-            .addClass("white")
-            .addClass("elimination-player-" + match.white);
-        const black_root = ReactDOM.createRoot(black[0]);
-        black_root.render(
+        const root = ReactDOM.createRoot(match_div[0]);
+        root.render(
             <React.StrictMode>
-                <a className="elimination-game" href={`/game/view/${match.gameid}`}>
-                    <i className="ogs-goban"></i>
-                </a>
-                <Player user={players[match.black]} icon rank />
+                <EliminationMatch
+                    black={{ id: match.black, user: players[match.black] }}
+                    white={{ id: match.white, user: players[match.white] }}
+                    gameid={match.gameid}
+                    result={match.result}
+                />
             </React.StrictMode>,
         );
-        const white_root = ReactDOM.createRoot(white[0]);
-        white_root.render(
-            <React.StrictMode>
-                <a className="elimination-game" href={`/game/view/${match.gameid}`}>
-                    <i className="ogs-goban"></i>
-                </a>
-                <Player user={players[match.white]} icon rank />
-            </React.StrictMode>,
-        );
-
-        bindHovers(black, match.black);
-        bindHovers(white, match.white);
-
-        const result = match.result || "";
-        if (result === "B+1") {
-            black.addClass("win");
-        }
-        if (result === "W+1") {
-            white.addClass("win");
-        }
-        if (result === "B+0.5,W+0.5") {
-            black.addClass("tie");
-            white.addClass("tie");
-        }
-
-        match_div.append(black);
-        match_div.append(white);
 
         obj.div = match_div;
         container.appendChild(match_div[0]);
