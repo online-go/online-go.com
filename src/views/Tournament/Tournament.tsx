@@ -142,12 +142,6 @@ export function Tournament(): JSX.Element {
     const ref_description = React.useRef<HTMLTextAreaElement>(null);
     const ref_max_players = React.useRef<HTMLInputElement>(null);
 
-    const elimination_tree_container = React.useRef<HTMLDivElement>(document.createElement("div"));
-
-    const elimination_tree = React.useRef(
-        document.createElementNS("http://www.w3.org/2000/svg", "svg"),
-    );
-
     const [edit_save_state, setEditSaveState] = React.useState<EditSaveState>("none");
     const [, _refresh] = React.useState(0);
     const refresh = () => _refresh(Math.random());
@@ -206,13 +200,6 @@ export function Tournament(): JSX.Element {
     const [user_to_invite, setUserToInvite] = React.useState<PlayerCacheEntry | null>(null);
 
     //const tournament = tournament_ref.current;
-
-    // This sets up our manual elimination tree containers, this is a pretty
-    // legacy way of doing things
-    React.useEffect(() => {
-        elimination_tree_container.current.className = "tournament-elimination-container";
-        elimination_tree_container.current.append(elimination_tree.current);
-    }, []);
 
     // this is so anoek (user id 1) can quickly test tournaments
     React.useEffect(() => {
@@ -294,7 +281,6 @@ export function Tournament(): JSX.Element {
                 let use_elimination_trees = false;
                 if (is_elimination(tournament.tournament_type)) {
                     use_elimination_trees = true;
-                    setTimeout(() => updateEliminationTrees(), 1);
                 } else {
                     rounds = rounds.map((r: any) => groupify(r, players));
                     linkPlayersToRoundMatches(rounds, players);
@@ -362,9 +348,6 @@ export function Tournament(): JSX.Element {
             if (rounds.length) {
                 setRounds(rounds.map((r) => groupify(r, players)));
             }
-
-            //linkPlayersToRoundMatches(rounds, players);
-            setTimeout(() => updateEliminationTrees(), 1);
         }).catch(errorAlerter);
         return ret;
     };
@@ -536,22 +519,6 @@ export function Tournament(): JSX.Element {
                 }
             })
             .catch(errorAlerter);
-    };
-    const updateEliminationTrees = () => {
-        if (!is_elimination(tournament_ref.current.tournament_type)) {
-            return;
-        }
-        if (Object.keys(players).length === 0 || rounds.length === 0) {
-            return;
-        }
-
-        // Plan the graph.
-        const { all_objects, last_cur_bucket } = createEliminationNodes(rounds);
-        const svg_extents = layoutEliminationGraph(last_cur_bucket, all_objects, players, rounds);
-
-        // Draw the graph.
-        renderEliminationNodes(elimination_tree_container.current, all_objects, players);
-        renderEliminationEdges(elimination_tree.current, svg_extents, last_cur_bucket);
     };
     const groupify = (round: TournamentRound, players: TournamentPlayers): any => {
         try {
@@ -1204,10 +1171,6 @@ export function Tournament(): JSX.Element {
         tournament.board_size,
         tournament.board_size,
     );
-
-    if (is_elimination(tournament.tournament_type)) {
-        setTimeout(() => updateEliminationTrees(), 1);
-    }
 
     const opengotha = tournament.tournament_type === "opengotha";
     const has_fixed_number_of_rounds =
@@ -2041,7 +2004,7 @@ export function Tournament(): JSX.Element {
                 <div className="bottom-details">
                     <div className="results">
                         {use_elimination_trees ? (
-                            <PersistentElement elt={elimination_tree_container.current} />
+                            <EliminationTree rounds={rounds} players={players} />
                         ) : (
                             <div>
                                 {rounds.length > 1 && (
@@ -3203,6 +3166,39 @@ interface EliminationMatchProps {
     gameid: any;
     result: any;
     location: EliminationLocation;
+}
+interface EliminationTreeProps {
+    rounds: any[];
+    players: { [id: string]: TournamentPlayer };
+}
+export function EliminationTree(props: EliminationTreeProps): JSX.Element | null {
+    const rounds = props.rounds;
+    const players = props.players;
+    const elimination_tree_container = React.useRef<HTMLDivElement>(document.createElement("div"));
+    const elimination_tree = React.useRef(
+        document.createElementNS("http://www.w3.org/2000/svg", "svg"),
+    );
+
+    // This sets up our manual elimination tree containers, this is a pretty
+    // legacy way of doing things
+    React.useEffect(() => {
+        elimination_tree_container.current.className = "tournament-elimination-container";
+        elimination_tree_container.current.append(elimination_tree.current);
+    }, []);
+
+    if (rounds.length === 0 || Object.keys(players).length === 0) {
+        return null;
+    }
+
+    // Plan the graph.
+    const { all_objects, last_cur_bucket } = createEliminationNodes(rounds);
+    const svg_extents = layoutEliminationGraph(last_cur_bucket, all_objects, players, rounds);
+
+    // Draw the graph.
+    renderEliminationNodes(elimination_tree_container.current, all_objects, players);
+    renderEliminationEdges(elimination_tree.current, svg_extents, last_cur_bucket);
+
+    return <PersistentElement elt={elimination_tree_container.current} />;
 }
 export function EliminationNode(props: EliminationNodeProps): JSX.Element {
     const player = props.player;
