@@ -18,7 +18,6 @@
 /* cspell: words gameid tourn */
 
 import * as React from "react";
-import * as ReactDOM from "react-dom/client";
 import { LoadingPage } from "Loading";
 import { Link, useParams } from "react-router-dom";
 import { browserHistory } from "ogsHistory";
@@ -36,7 +35,6 @@ import { UIPush } from "UIPush";
 import { Card } from "material";
 import { EmbeddedChatCard } from "Chat";
 import * as data from "data";
-import { PersistentElement } from "PersistentElement";
 import { PlayerAutocomplete } from "PlayerAutocomplete";
 import { MiniGoban } from "MiniGoban";
 import * as player_cache from "player_cache";
@@ -3174,31 +3172,36 @@ interface EliminationTreeProps {
 export function EliminationTree(props: EliminationTreeProps): JSX.Element | null {
     const rounds = props.rounds;
     const players = props.players;
-    const elimination_tree_container = React.useRef<HTMLDivElement>(document.createElement("div"));
     const elimination_tree = React.useRef(
         document.createElementNS("http://www.w3.org/2000/svg", "svg"),
     );
 
-    // This sets up our manual elimination tree containers, this is a pretty
-    // legacy way of doing things
-    React.useEffect(() => {
-        elimination_tree_container.current.className = "tournament-elimination-container";
-        elimination_tree_container.current.append(elimination_tree.current);
-    }, []);
+    // Plan the graph.
+    const num_rounds = React.useMemo(() => rounds.length, [rounds]);
+    const { all_objects, last_cur_bucket } = React.useMemo(
+        () => createEliminationNodes(rounds),
+        [rounds],
+    );
+    const svg_extents = React.useMemo(
+        () => layoutEliminationGraph(last_cur_bucket, all_objects, players, num_rounds),
+        [all_objects, last_cur_bucket, players, num_rounds],
+    );
 
-    if (rounds.length === 0 || Object.keys(players).length === 0) {
+    // Draw the edges.
+    React.useEffect(() => {
+        renderEliminationEdges(elimination_tree.current, svg_extents, last_cur_bucket);
+    }, [svg_extents, last_cur_bucket]);
+
+    // Render the graph.
+    if (num_rounds === 0 || Object.keys(players).length === 0) {
         return null;
     }
-
-    // Plan the graph.
-    const { all_objects, last_cur_bucket } = createEliminationNodes(rounds);
-    const svg_extents = layoutEliminationGraph(last_cur_bucket, all_objects, players, rounds);
-
-    // Draw the graph.
-    renderEliminationNodes(elimination_tree_container.current, all_objects, players);
-    renderEliminationEdges(elimination_tree.current, svg_extents, last_cur_bucket);
-
-    return <PersistentElement elt={elimination_tree_container.current} />;
+    return (
+        <div className="tournament-elimination-container">
+            <svg ref={elimination_tree} />
+            {renderEliminationNodes(all_objects, players)}
+        </div>
+    );
 }
 export function EliminationNode(props: EliminationNodeProps): JSX.Element {
     const player = props.player;
@@ -3256,41 +3259,24 @@ export function EliminationMatch(props: EliminationMatchProps): JSX.Element {
         </div>
     );
 }
-function renderEliminationNodes(
-    container: HTMLDivElement,
-    all_objects: any[],
-    players: { [id: string]: TournamentPlayer },
-) {
-    for (const obj of all_objects) {
+function renderEliminationNodes(all_objects: any[], players: { [id: string]: TournamentPlayer }) {
+    return all_objects.map((obj) => {
         const location = { top: obj.top, left: obj.left } as EliminationLocation;
         if (obj.match === undefined) {
             const bye = obj.player_id as number;
-            const bye_div = $("<div>");
-            const root = ReactDOM.createRoot(bye_div[0]);
-            root.render(
-                <React.StrictMode>
-                    <EliminationBye player={{ id: bye, user: players[bye] }} location={location} />
-                </React.StrictMode>,
-            );
-            container.appendChild(bye_div[0]);
-            continue;
+            return <EliminationBye player={{ id: bye, user: players[bye] }} location={location} />;
         }
         const match = obj.match;
-        const match_div = $("<div>");
-        const root = ReactDOM.createRoot(match_div[0]);
-        root.render(
-            <React.StrictMode>
-                <EliminationMatch
-                    black={{ id: match.black, user: players[match.black] }}
-                    white={{ id: match.white, user: players[match.white] }}
-                    gameid={match.gameid}
-                    result={match.result}
-                    location={location}
-                />
-            </React.StrictMode>,
+        return (
+            <EliminationMatch
+                black={{ id: match.black, user: players[match.black] }}
+                white={{ id: match.white, user: players[match.white] }}
+                gameid={match.gameid}
+                result={match.result}
+                location={location}
+            />
         );
-        container.appendChild(match_div[0]);
-    }
+    });
 }
 function renderEliminationEdges(
     elimination_tree: SVGSVGElement,
@@ -3298,6 +3284,7 @@ function renderEliminationEdges(
     last_cur_bucket: any,
 ) {
     const svg = d3.select(elimination_tree);
+    svg.selectAll("*").remove();
     svg.attr("width", svg_extents.x);
     svg.attr("height", svg_extents.y);
 
@@ -3413,7 +3400,7 @@ function layoutEliminationGraph(
     collection: any,
     all_objects: any[],
     players: { [id: string]: TournamentPlayer },
-    rounds: any[],
+    num_rounds: number,
 ) {
     const svg_extents = { x: 0, y: 0 };
 
@@ -3549,7 +3536,7 @@ function layoutEliminationGraph(
         obj.laid_out = true;
 
         if (obj.round === 0 && i + 1 < all_objects.length && all_objects[i + 1].round === 1) {
-            for (let r = 1; r < rounds.length; ++r) {
+            for (let r = 1; r < num_rounds; ++r) {
                 y[r] = base_y + bracket_spacing;
             }
         }
@@ -3575,7 +3562,7 @@ function layoutEliminationGraph(
                     obj.black_src.second_bracket === obj.second_bracket &&
                     obj.white_src &&
                     obj.white_src.second_bracket === obj.second_bracket
-                    //|| obj.round === rounds.length-1
+                    //|| obj.round === num_rounds-1
                 ) {
                     obj.top = (obj.black_src.top + obj.white_src.top) / 2.0;
                 } else if (obj.black_src && obj.black_src.second_bracket === obj.second_bracket) {
