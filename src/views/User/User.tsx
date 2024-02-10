@@ -346,8 +346,9 @@ export function User(props: { user_id?: number }): JSX.Element {
 
                         {(!preferences.get("hide-ranks") || temporary_show_ratings) &&
                             (!user.professional || global_user.id === user.id) &&
-                            // prevent flash while starting_rank_hint is determined
-                            !!user.starting_rank_hint && (
+                            // prevent flash while starting_rank_hint is determined, handle case where
+                            // if the back end for some reason doesn't send starting_rank_hint
+                            (!!user.starting_rank_hint || resolved) && (
                                 <div className="ratings-container">
                                     {!!user &&
                                     user.need_rank &&
