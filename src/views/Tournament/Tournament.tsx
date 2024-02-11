@@ -454,7 +454,7 @@ export function Tournament(): JSX.Element {
             .catch(errorAlerter);
     };
     const setSelectedRound = (idx: number | "standings" | "roster") => {
-        setExplicitlySelectedRound(idx);
+        setExplicitlySelectedRound(idx === default_round ? null : idx);
     };
 
     const startEditing = () => setEditing(true);
