@@ -3144,30 +3144,13 @@ interface EliminationLocation {
     left: number;
 }
 type EliminationNodeKind = "bye" | "black" | "white";
-interface EliminationNodeProps {
-    player: EliminationPlayer;
-    kind: EliminationNodeKind;
-    result_class?: string;
-    gameid?: any;
-}
-interface EliminationByeProps {
-    player: EliminationPlayer;
-    location: EliminationLocation;
-}
-interface EliminationMatchProps {
-    black: EliminationPlayer;
-    white: EliminationPlayer;
-    gameid: any;
-    result: any;
-    location: EliminationLocation;
-}
-interface EliminationTreeProps {
+export function EliminationTree({
+    rounds,
+    players,
+}: {
     rounds: any[];
-    players: { [id: string]: TournamentPlayer };
-}
-export function EliminationTree(props: EliminationTreeProps): JSX.Element | null {
-    const rounds = props.rounds;
-    const players = props.players;
+    players: TournamentPlayers;
+}): JSX.Element | null {
     const elimination_tree = React.useRef(
         document.createElementNS("http://www.w3.org/2000/svg", "svg"),
     );
@@ -3195,23 +3178,30 @@ export function EliminationTree(props: EliminationTreeProps): JSX.Element | null
     return (
         <div className="tournament-elimination-container">
             <svg ref={elimination_tree} />
-            {renderEliminationNodes(all_objects, players)}
+            <EliminationNodes all_objects={all_objects} players={players} />
         </div>
     );
 }
-export function EliminationNode(props: EliminationNodeProps): JSX.Element {
-    const player = props.player;
+export function EliminationNode({
+    player,
+    kind,
+    result_class,
+    gameid,
+}: {
+    player: EliminationPlayer;
+    kind: EliminationNodeKind;
+    result_class?: string;
+    gameid?: any;
+}): JSX.Element {
     return (
         <>
             <div
-                className={`${props.kind} ${props.result_class ?? ""} elimination-player-${
-                    player.id
-                }`}
+                className={`${kind} ${result_class ?? ""} elimination-player-${player.id}`}
                 onMouseOver={() => eliminationMouseOver(player.id)}
                 onMouseOut={eliminationMouseOut}
             >
-                {(props.gameid || null) && (
-                    <a className="elimination-game" href={`/game/view/${props.gameid}`}>
+                {(gameid || null) && (
+                    <a className="elimination-game" href={`/game/view/${gameid}`}>
                         <i className="ogs-goban"></i>
                     </a>
                 )}
@@ -3220,59 +3210,92 @@ export function EliminationNode(props: EliminationNodeProps): JSX.Element {
         </>
     );
 }
-export function EliminationBye(props: EliminationByeProps): JSX.Element {
+export function EliminationBye({
+    player,
+    location,
+}: {
+    player: EliminationPlayer;
+    location: EliminationLocation;
+}): JSX.Element {
     return (
-        <div className="bye-div" style={props.location}>
-            <EliminationNode player={props.player} kind="bye" />
+        <div className="bye-div" style={location}>
+            <EliminationNode player={player} kind="bye" />
         </div>
     );
 }
-export function EliminationMatch(props: EliminationMatchProps): JSX.Element {
+export function EliminationMatch({
+    black,
+    white,
+    gameid,
+    result,
+    location,
+}: {
+    black: EliminationPlayer;
+    white: EliminationPlayer;
+    gameid: any;
+    result: any;
+    location: EliminationLocation;
+}): JSX.Element {
     let black_result: string | undefined;
     let white_result: string | undefined;
-    if (props.result === "B+1") {
+    if (result === "B+1") {
         black_result = "win";
-    } else if (props.result === "W+1") {
+    } else if (result === "W+1") {
         white_result = "win";
-    } else if (props.result === "B+0.5,W+0.5") {
+    } else if (result === "B+0.5,W+0.5") {
         black_result = "tie";
         white_result = "tie";
     }
     return (
-        <div className="match-div" style={props.location}>
+        <div className="match-div" style={location}>
             <EliminationNode
-                player={props.black}
+                player={black}
                 kind="black"
                 result_class={black_result}
-                gameid={props.gameid}
+                gameid={gameid}
             />
             <EliminationNode
-                player={props.white}
+                player={white}
                 kind="white"
                 result_class={white_result}
-                gameid={props.gameid}
+                gameid={gameid}
             />
         </div>
     );
 }
-function renderEliminationNodes(all_objects: any[], players: { [id: string]: TournamentPlayer }) {
-    return all_objects.map((obj) => {
-        const location = { top: obj.top, left: obj.left } as EliminationLocation;
-        if (obj.match === undefined) {
-            const bye = obj.player_id as number;
-            return <EliminationBye player={{ id: bye, user: players[bye] }} location={location} />;
-        }
-        const match = obj.match;
-        return (
-            <EliminationMatch
-                black={{ id: match.black, user: players[match.black] }}
-                white={{ id: match.white, user: players[match.white] }}
-                gameid={match.gameid}
-                result={match.result}
-                location={location}
-            />
-        );
-    });
+function EliminationNodes({
+    all_objects,
+    players,
+}: {
+    all_objects: any[];
+    players: TournamentPlayers;
+}) {
+    return (
+        <>
+            {all_objects.map((obj) => {
+                const location = { top: obj.top, left: obj.left } as EliminationLocation;
+                if (obj.match === undefined) {
+                    const bye = obj.player_id as number;
+                    return (
+                        <EliminationBye
+                            player={{ id: bye, user: players[bye] }}
+                            location={location}
+                        />
+                    );
+                }
+                const match = obj.match;
+                return (
+                    <EliminationMatch
+                        black={{ id: match.black, user: players[match.black] }}
+                        white={{ id: match.white, user: players[match.white] }}
+                        gameid={match.gameid}
+                        result={match.result}
+                        location={location}
+                    />
+                );
+            })}
+        </>
+    );
 }
 function renderEliminationEdges(
     elimination_tree: SVGSVGElement,
@@ -3395,7 +3418,7 @@ function renderEliminationEdges(
 function layoutEliminationGraph(
     collection: any,
     all_objects: any[],
-    players: { [id: string]: TournamentPlayer },
+    players: TournamentPlayers,
     num_rounds: number,
 ) {
     const svg_extents = { x: 0, y: 0 };
