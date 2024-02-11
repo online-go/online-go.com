@@ -53,20 +53,11 @@ interface ReportProperties {
 
 export const report_categories: ReportDescription[] = [
     {
-        type: "stalling",
-        title: pgettext("Report user for stalling in a game", "Game Stalling"),
-        description: pgettext(
-            "Report user for stalling in a game",
-            "User is stalling at the end of a game to annoy their opponent.",
-        ),
-        game_id_required: true,
-    },
-    {
         type: "escaping",
         title: pgettext("Report user for escaping", "Escaping"),
         description: pgettext(
             "Report user for escaping",
-            "User purposefully left the game without concluding it.",
+            "User left the game without concluding it properly.",
         ),
         game_id_required: true,
     },
@@ -75,7 +66,16 @@ export const report_categories: ReportDescription[] = [
         title: pgettext("Report user for score cheating", "Score Cheating"),
         description: pgettext(
             "Report user for score cheating",
-            "User is attempting to cheat in the stone removal phase or the game has been mis-scored.",
+            "User is attempting to cheat in the stone removal phase, or the game has been mis-scored.",
+        ),
+        game_id_required: true,
+    },
+    {
+        type: "stalling",
+        title: pgettext("Report user for stalling in a game", "Game Stalling"),
+        description: pgettext(
+            "Report user for stalling in a game",
+            "User is playing time wasting moves, or passing and resuming needlessly, delaying completion of the game.",
         ),
         game_id_required: true,
     },
@@ -318,7 +318,7 @@ export function Report(props: ReportProperties): JSX.Element {
                         </option>
                     ))}
                 </select>
-                <div>{category?.description}</div>
+                <div className="report-category-description">{category?.description}</div>
             </div>
             <div className="details">
                 {((category && !show_game_id_required_text) || null) && (
@@ -334,7 +334,7 @@ export function Report(props: ReportProperties): JSX.Element {
                         value={note}
                         onChange={(ev) => set_note(ev.target.value)}
                         placeholder={_(
-                            "Please provide any relevant details pertaining to what you are reporting the user for.",
+                            "Please provide any relevant details about the problem you are reporting.",
                         )}
                     />
                 )}
