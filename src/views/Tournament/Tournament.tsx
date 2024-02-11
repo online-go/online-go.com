@@ -217,7 +217,9 @@ export function Tournament(): JSX.Element {
 
     const opengotha = tournament.tournament_type === "opengotha";
 
-    // Figure out the selected round.
+    // Figure out the selected round.  The default is to follow along as the
+    // tournament progresses, but if the user has clicked on some earlier
+    // round, stay there.
     const default_round =
         tournament.ended && opengotha && tournament.opengotha_standings
             ? "standings"
@@ -454,6 +456,8 @@ export function Tournament(): JSX.Element {
             .catch(errorAlerter);
     };
     const setSelectedRound = (idx: number | "standings" | "roster") => {
+        // If the user clicks on the currently-active round, revert back to
+        // following along with the tournament.
         setExplicitlySelectedRound(idx === default_round ? null : idx);
     };
 
