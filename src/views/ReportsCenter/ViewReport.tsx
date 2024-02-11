@@ -475,7 +475,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                                 void report_manager.vote(report.id, action, note);
                                 next();
                             }}
-                            enable={report.state === "pending"}
+                            enable={report.state === "pending" && !report.escalated}
                             // clear the selection for subsequent reports
                             key={report.id}
                         />
