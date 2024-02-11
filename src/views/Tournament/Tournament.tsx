@@ -217,17 +217,22 @@ export function Tournament(): JSX.Element {
 
     const opengotha = tournament.tournament_type === "opengotha";
 
-    // If (still) valid, keep the user's choice selected; otherwise pick the default.
-    const selected_round_idx =
+    // Figure out the selected round.
+    const default_round =
+        tournament.ended && opengotha && tournament.opengotha_standings
+            ? "standings"
+            : (tournament.settings.active_round || 1) - 1;
+    const is_explicit_selection_valid: boolean =
         (typeof explicitly_selected_round === "number" &&
-            rounds &&
+            !!rounds &&
             rounds.length > explicitly_selected_round) ||
-        (explicitly_selected_round === "roster" && opengotha) ||
-        (explicitly_selected_round === "standings" && opengotha && tournament.opengotha_standings)
-            ? explicitly_selected_round
-            : tournament.ended && opengotha && tournament.opengotha_standings
-              ? "standings"
-              : (tournament.settings.active_round || 1) - 1;
+        (opengotha &&
+            (explicitly_selected_round === "roster" ||
+                (explicitly_selected_round === "standings" && !!tournament.opengotha_standings)));
+
+    const selected_round_idx = is_explicit_selection_valid
+        ? explicitly_selected_round
+        : default_round;
 
     const selected_round =
         typeof selected_round_idx === "number" && rounds && rounds.length > selected_round_idx
