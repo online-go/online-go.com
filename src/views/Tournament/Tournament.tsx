@@ -191,7 +191,7 @@ export function Tournament(): JSX.Element {
         number | "standings" | "roster"
     >(0);
     const [sorted_players, setSortedPlayers] = React.useState<any[]>([]);
-    const [players, setPlayers] = React.useState<{ [id: string]: TournamentPlayer }>({});
+    const [players, setPlayers] = React.useState<TournamentPlayers>({});
     const [is_joined, setIsJoined] = React.useState(false);
     const [invite_result, setInviteResult] = React.useState<string | null>(null);
     const [use_elimination_trees, setUseEliminationTrees] = React.useState(false);
@@ -349,7 +349,7 @@ export function Tournament(): JSX.Element {
         }).catch(errorAlerter);
         return ret;
     };
-    const linkPlayersToRoundMatches = (rounds: any, players: PlayerCacheEntry[]) => {
+    const linkPlayersToRoundMatches = (rounds: any, players: TournamentPlayers) => {
         for (const round of rounds) {
             if (!round.groupify) {
                 for (const match of round.matches) {
