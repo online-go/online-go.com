@@ -188,7 +188,7 @@ export function Tournament(): JSX.Element {
 
     const [editing, setEditing] = React.useState(tournament_id === 0);
     const [raw_rounds, setRawRounds] = React.useState<any[]>([]);
-    const [explicitly_selected_round_idx, setExplicitlySelectedRoundIdx] = React.useState<
+    const [explicitly_selected_round, setExplicitlySelectedRound] = React.useState<
         null | number | "standings" | "roster"
     >(null);
     const [players, setPlayers] = React.useState<TournamentPlayers>({});
@@ -219,14 +219,12 @@ export function Tournament(): JSX.Element {
 
     // If (still) valid, keep the user's choice selected; otherwise pick the default.
     const selected_round_idx =
-        (typeof explicitly_selected_round_idx === "number" &&
+        (typeof explicitly_selected_round === "number" &&
             rounds &&
-            rounds.length > explicitly_selected_round_idx) ||
-        (explicitly_selected_round_idx === "roster" && opengotha) ||
-        (explicitly_selected_round_idx === "standings" &&
-            opengotha &&
-            tournament.opengotha_standings)
-            ? explicitly_selected_round_idx
+            rounds.length > explicitly_selected_round) ||
+        (explicitly_selected_round === "roster" && opengotha) ||
+        (explicitly_selected_round === "standings" && opengotha && tournament.opengotha_standings)
+            ? explicitly_selected_round
             : tournament.ended && opengotha && tournament.opengotha_standings
               ? "standings"
               : (tournament.settings.active_round || 1) - 1;
@@ -274,7 +272,7 @@ export function Tournament(): JSX.Element {
         setTournamentLoaded(false);
         setEditSaveState("none");
         setRawRounds([]);
-        setExplicitlySelectedRoundIdx(null);
+        setExplicitlySelectedRound(null);
         setPlayers({});
         setInviteResult(null);
         setUserToInvite(null);
@@ -451,7 +449,7 @@ export function Tournament(): JSX.Element {
             .catch(errorAlerter);
     };
     const setSelectedRound = (idx: number | "standings" | "roster") => {
-        setExplicitlySelectedRoundIdx(idx);
+        setExplicitlySelectedRound(idx);
     };
 
     const startEditing = () => setEditing(true);
