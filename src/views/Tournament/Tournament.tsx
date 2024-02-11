@@ -3177,14 +3177,13 @@ export function EliminationTree(props: EliminationTreeProps): JSX.Element | null
     );
 
     // Plan the graph.
-    const num_rounds = React.useMemo(() => rounds.length, [rounds]);
     const { all_objects, last_cur_bucket } = React.useMemo(
         () => createEliminationNodes(rounds),
         [rounds],
     );
     const svg_extents = React.useMemo(
-        () => layoutEliminationGraph(last_cur_bucket, all_objects, players, num_rounds),
-        [all_objects, last_cur_bucket, players, num_rounds],
+        () => layoutEliminationGraph(last_cur_bucket, all_objects, players, rounds.length),
+        [all_objects, last_cur_bucket, players, rounds.length],
     );
 
     // Draw the edges.
@@ -3194,7 +3193,7 @@ export function EliminationTree(props: EliminationTreeProps): JSX.Element | null
 
     // Render the graph.
     const num_players = React.useMemo(() => Object.keys(players).length, [players]);
-    if (num_rounds === 0 || num_players === 0) {
+    if (rounds.length === 0 || num_players === 0) {
         return null;
     }
     return (
