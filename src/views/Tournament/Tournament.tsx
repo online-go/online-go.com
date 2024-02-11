@@ -188,7 +188,7 @@ export function Tournament(): JSX.Element {
 
     const [editing, setEditing] = React.useState(tournament_id === 0);
     const [raw_rounds, setRawRounds] = React.useState<any[]>([]);
-    const [clicked_round_idx, setClickedRoundIdx] = React.useState<
+    const [explicitly_selected_round_idx, setExplicitlySelectedRoundIdx] = React.useState<
         null | number | "standings" | "roster"
     >(null);
     const [players, setPlayers] = React.useState<TournamentPlayers>({});
@@ -219,10 +219,14 @@ export function Tournament(): JSX.Element {
 
     // If (still) valid, keep the user's choice selected; otherwise pick the default.
     const selected_round_idx =
-        (typeof clicked_round_idx === "number" && rounds && rounds.length > clicked_round_idx) ||
-        (clicked_round_idx === "roster" && opengotha) ||
-        (clicked_round_idx === "standings" && opengotha && tournament.opengotha_standings)
-            ? clicked_round_idx
+        (typeof explicitly_selected_round_idx === "number" &&
+            rounds &&
+            rounds.length > explicitly_selected_round_idx) ||
+        (explicitly_selected_round_idx === "roster" && opengotha) ||
+        (explicitly_selected_round_idx === "standings" &&
+            opengotha &&
+            tournament.opengotha_standings)
+            ? explicitly_selected_round_idx
             : tournament.ended && opengotha && tournament.opengotha_standings
               ? "standings"
               : (tournament.settings.active_round || 1) - 1;
@@ -270,7 +274,7 @@ export function Tournament(): JSX.Element {
         setTournamentLoaded(false);
         setEditSaveState("none");
         setRawRounds([]);
-        setClickedRoundIdx(null);
+        setExplicitlySelectedRoundIdx(null);
         setPlayers({});
         setInviteResult(null);
         setUserToInvite(null);
@@ -447,7 +451,7 @@ export function Tournament(): JSX.Element {
             .catch(errorAlerter);
     };
     const setSelectedRound = (idx: number | "standings" | "roster") => {
-        setClickedRoundIdx(idx);
+        setExplicitlySelectedRoundIdx(idx);
     };
 
     const startEditing = () => setEditing(true);
