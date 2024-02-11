@@ -306,21 +306,21 @@ export function Tournament(): JSX.Element {
     const resolve = () => {
         abort_requests();
 
-        void get(`tournaments/${tournament_id}`)
+        get(`tournaments/${tournament_id}`)
             .then((t) => {
                 setTournament(t);
                 setTournamentLoaded(true);
             })
             .catch(errorAlerter);
 
-        void get(`tournaments/${tournament_id}/rounds`)
+        get(`tournaments/${tournament_id}/rounds`)
             .then((rounds) => {
                 setRawRounds(rounds);
                 setRoundsLoaded(true);
             })
             .catch(errorAlerter);
 
-        void get(`tournaments/${tournament_id}/players/all`)
+        get(`tournaments/${tournament_id}/players/all`)
             .then((players) => {
                 for (const id in players) {
                     const p = players[id];
