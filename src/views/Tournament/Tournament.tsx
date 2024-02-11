@@ -3273,7 +3273,7 @@ function EliminationNodes({
     return (
         <>
             {all_objects.map((obj) => {
-                const location = { top: obj.top, left: obj.left } as EliminationLocation;
+                const location: EliminationLocation = { top: obj.top, left: obj.left };
                 if (obj.match === undefined) {
                     const bye = obj.player_id as number;
                     return (
