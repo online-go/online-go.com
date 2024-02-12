@@ -38,7 +38,7 @@ import {
 } from "TimeControl";
 import { sfx } from "sfx";
 import { notification_manager, NotificationManagerEvents } from "Notifications/NotificationManager";
-import { one_bot, bots, bot_count, bots_list } from "bots";
+import { one_bot, bot_count, bots_list } from "bots";
 import { goban_view_mode } from "Game/util";
 import {
     Goban,
@@ -963,13 +963,13 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                                         </option>
                                     ))}
                                 </select>
-                            </div>
-                            <div>
-                                <a href={`/user/view/${this.state.conf.bot_id}`}>
-                                    <PlayerIcon id={this.state.conf.bot_id} size={16} />{" "}
-                                    {interpolate(_("{{who}}'s profile"), {
-                                        who: bots()[this.state.conf.bot_id].username,
-                                    })}
+                                &nbsp;
+                                <a
+                                    href={`/user/view/${this.state.conf.bot_id}`}
+                                    target="_blank"
+                                    title={_("Selected AI profile")}
+                                >
+                                    <i className="fa fa-link" />
                                 </a>
                             </div>
                         </div>
