@@ -114,6 +114,7 @@ interface TournamentInterface {
         num_rounds: string;
         group_size: string;
         maximum_players: number | string;
+        active_round?: number;
     };
     lead_time_seconds: number;
     base_points: number;
@@ -129,7 +130,6 @@ interface TournamentInterface {
 
 type EditSaveState = "none" | "saving" | "reload";
 
-//class _Tournament extends React.PureComponent<TournamentProperties, TournamentState> {
 export function Tournament(): JSX.Element {
     const user = useUser();
     const params = useParams<{ tournament_id: string; group_id: string }>();
@@ -141,11 +141,12 @@ export function Tournament(): JSX.Element {
     const ref_max_players = React.useRef<HTMLInputElement>(null);
 
     const [edit_save_state, setEditSaveState] = React.useState<EditSaveState>("none");
-    const [, _refresh] = React.useState(0);
-    const refresh = () => _refresh(Math.random());
-    const [loading, setLoading] = React.useState(true);
-    const [info_loaded, setInfoLoaded] = React.useState(false);
-    const tournament_ref = React.useRef<TournamentInterface>({
+    const [tournament_loaded, setTournamentLoaded] = React.useState(false);
+    const [rounds_loaded, setRoundsLoaded] = React.useState(false);
+    const [players_loaded, setPlayersLoaded] = React.useState(false);
+    const loading = !rounds_loaded || !players_loaded || !tournament_loaded;
+
+    const [tournament, setTournament] = React.useState<TournamentInterface>({
         id: tournament_id,
         name: "",
         // TODO: replace {} with something that makes type sense. -bpj
@@ -184,53 +185,118 @@ export function Tournament(): JSX.Element {
         lead_time_seconds: 1800,
         base_points: 10.0,
     });
-    const [rounds, setRounds] = React.useState<any[]>([]);
+
     const [editing, setEditing] = React.useState(tournament_id === 0);
     const [raw_rounds, setRawRounds] = React.useState<any[]>([]);
-    const [selected_round_idx, setSelectedRoundIdx] = React.useState<
-        number | "standings" | "roster"
-    >(0);
-    const [sorted_players, setSortedPlayers] = React.useState<any[]>([]);
-    const [players, setPlayers] = React.useState<{ [id: string]: TournamentPlayer }>({});
-    const [is_joined, setIsJoined] = React.useState(false);
+    const [explicitly_selected_round, setExplicitlySelectedRound] = React.useState<
+        null | number | "standings" | "roster"
+    >(null);
+    const [players, setPlayers] = React.useState<TournamentPlayers>({});
     const [invite_result, setInviteResult] = React.useState<string | null>(null);
-    const [use_elimination_trees, setUseEliminationTrees] = React.useState(false);
     const [user_to_invite, setUserToInvite] = React.useState<PlayerCacheEntry | null>(null);
 
-    //const tournament = tournament_ref.current;
+    const use_elimination_trees = is_elimination(tournament.tournament_type);
+    const rounds = React.useMemo<any[]>(
+        () => computeRounds(raw_rounds, players, tournament.tournament_type),
+        [tournament.tournament_type, raw_rounds, players],
+    );
+    const sorted_players = React.useMemo<any[]>(
+        () =>
+            Object.keys(players)
+                .map((id) => players[id])
+                .sort((a: TournamentPlayer, b: TournamentPlayer) =>
+                    compareUserRankWithPlayers(a, b, players),
+                ),
+        [players],
+    );
+    const is_joined =
+        user.id in players &&
+        !players[user.id].disqualified &&
+        !players[user.id].resigned &&
+        !players[user.id].eliminated;
+
+    const opengotha = tournament.tournament_type === "opengotha";
+
+    // Figure out the selected round.  The default is to follow along as the
+    // tournament progresses, but if the user has clicked on some earlier
+    // round, stay there.
+    const default_round =
+        tournament.ended && opengotha && tournament.opengotha_standings
+            ? "standings"
+            : (tournament.settings.active_round || 1) - 1;
+    const is_explicit_selection_valid: boolean =
+        (typeof explicitly_selected_round === "number" &&
+            !!rounds &&
+            rounds.length > explicitly_selected_round) ||
+        (opengotha &&
+            (explicitly_selected_round === "roster" ||
+                (explicitly_selected_round === "standings" && !!tournament.opengotha_standings)));
+
+    const selected_round_idx = is_explicit_selection_valid
+        ? explicitly_selected_round
+        : default_round;
+
+    const selected_round =
+        typeof selected_round_idx === "number" && rounds && rounds.length > selected_round_idx
+            ? rounds[selected_round_idx]
+            : null;
+
+    const raw_selected_round =
+        typeof selected_round_idx === "number" && rounds && rounds.length > selected_round_idx
+            ? raw_rounds[selected_round_idx]
+            : null;
 
     // this is so anoek (user id 1) can quickly test tournaments
     React.useEffect(() => {
         if (user.id === 1 && tournament_id === 0) {
-            tournament_ref.current.name = "Culture: join 4";
-            tournament_ref.current.time_start = moment(new Date()).add(1, "minute").format();
-            tournament_ref.current.rules = "japanese";
-            tournament_ref.current.description =
-                /* cspell: disable-next-line */
-                "Aliquam dolor blanditiis voluptatem et harum officiis atque. Eum eos aut consequatur quis sunt. Minima nisi aut ratione. Consequatur deleniti vitae minima exercitationem illum debitis debitis sunt. Culpa officia voluptates quos sit. Reprehenderit fuga ad quo ipsam assumenda nihil quos qui.";
-            tournament_ref.current.tournament_type = "elimination";
-            tournament_ref.current.first_pairing_method = "slide";
-            tournament_ref.current.subsequent_pairing_method = "slaughter";
-            // tournament_ref.current.tournament_type = "opengotha";
-            // tournament_ref.current.first_pairing_method = "opengotha";
-            // tournament_ref.current.subsequent_pairing_method = "opengotha";
-            refresh();
+            setTournament({
+                ...tournament,
+                name: "Culture: join 4",
+                time_start: moment(new Date()).add(1, "minute").format(),
+                rules: "japanese",
+                description:
+                    /* cspell: disable-next-line */
+                    "Aliquam dolor blanditiis voluptatem et harum officiis atque. Eum eos aut consequatur quis sunt. Minima nisi aut ratione. Consequatur deleniti vitae minima exercitationem illum debitis debitis sunt. Culpa officia voluptates quos sit. Reprehenderit fuga ad quo ipsam assumenda nihil quos qui.",
+                tournament_type: "elimination",
+                first_pairing_method: "slide",
+                subsequent_pairing_method: "slaughter",
+                // tournament_type: "opengotha",
+                // first_pairing_method: "opengotha",
+                // subsequent_pairing_method: "opengotha",
+            });
         }
     }, [tournament_id]);
 
     React.useEffect(() => {
+        window.document.title = tournament_id ? tournament.name : _("Tournament");
+    }, [tournament_id, tournament.name]);
+
+    React.useEffect(() => {
+        // Reset all other state if the user navigates to a new tournament.
+        setEditing(tournament_id === 0);
+        setPlayersLoaded(false);
+        setRoundsLoaded(false);
+        setTournamentLoaded(false);
+        setEditSaveState("none");
+        setRawRounds([]);
+        setExplicitlySelectedRound(null);
+        setPlayers({});
+        setInviteResult(null);
+        setUserToInvite(null);
+
         setExtraActionCallback(renderExtraPlayerActions);
-        window.document.title = _("Tournament");
         if (tournament_id) {
             resolve();
         }
         if (new_tournament_group_id) {
             get(`groups/${new_tournament_group_id}`)
                 .then((group) => {
-                    tournament_ref.current.group = group;
-                    tournament_ref.current.rules = group?.rules ?? "japanese";
-                    tournament_ref.current.handicap = String(group?.handicap ?? 0);
-                    refresh();
+                    setTournament({
+                        ...tournament,
+                        group: group,
+                        rules: group?.rules ?? "japanese",
+                        handicap: String(group?.handicap ?? 0),
+                    });
                 })
                 .catch(errorAlerter);
         }
@@ -249,53 +315,44 @@ export function Tournament(): JSX.Element {
     const resolve = () => {
         abort_requests();
 
-        const tournament_info_promise = get(`tournaments/${tournament_id}`).then((t) => {
-            tournament_ref.current = t;
-            setInfoLoaded(true);
-            refresh();
-            return t;
-        });
+        get(`tournaments/${tournament_id}`)
+            .then((t) => {
+                setTournament(t);
+                setTournamentLoaded(true);
+            })
+            .catch(errorAlerter);
 
-        Promise.all([
-            tournament_info_promise,
-            get(`tournaments/${tournament_id}/rounds`),
-            refreshPlayerList(),
-        ])
-            .then((res) => {
-                const tournament = res[0];
-                tournament_ref.current = tournament;
-                let rounds = res[1];
-                const raw_rounds = res[1];
-                const players = res[2];
+        get(`tournaments/${tournament_id}/rounds`)
+            .then((rounds) => {
+                setRawRounds(rounds);
+                setRoundsLoaded(true);
+            })
+            .catch(errorAlerter);
 
-                window.document.title = tournament.name;
+        get(`tournaments/${tournament_id}/players/all`)
+            .then((players) => {
+                for (const id in players) {
+                    const p = players[id];
+                    player_cache.update(p);
 
-                if (tournament.tournament_type !== "opengotha") {
-                    while (rounds.length && rounds[rounds.length - 1].matches.length === 0) {
-                        rounds.pop(); /* account for server bugs that can create empty last rounds */
+                    p.points = parseFloat(p.points);
+                    p.sos = parseFloat(p.sos);
+                    p.sodos = parseFloat(p.sodos);
+                    p.net_points = parseFloat(p.net_points);
+
+                    p.notes = "";
+                    if (p.disqualified) {
+                        p.notes = _("Disqualified");
+                    }
+                    if (p.resigned) {
+                        p.notes = _("Resigned");
+                    }
+                    if (p.eliminated) {
+                        p.notes = _("Eliminated");
                     }
                 }
-
-                let use_elimination_trees = false;
-                if (is_elimination(tournament.tournament_type)) {
-                    use_elimination_trees = true;
-                } else {
-                    rounds = rounds.map((r: any) => groupify(r, players));
-                    linkPlayersToRoundMatches(rounds, players);
-                }
-
-                setLoading(false);
-                tournament_ref.current = { ...tournament_ref.current, ...tournament };
-                setRawRounds(raw_rounds);
-                setRounds(rounds);
-                setSelectedRound(
-                    tournament.ended &&
-                        tournament.tournament_type === "opengotha" &&
-                        tournament.opengotha_standings
-                        ? "standings"
-                        : (tournament.settings.active_round || 1) - 1,
-                );
-                setUseEliminationTrees(use_elimination_trees);
+                setPlayers(players);
+                setPlayersLoaded(true);
             })
             .catch(errorAlerter);
     };
@@ -305,116 +362,6 @@ export function Tournament(): JSX.Element {
         } else {
             setEditSaveState("reload");
         }
-    };
-    const refreshPlayerList = () => {
-        const ret = get(`tournaments/${tournament_id}/players/all`);
-
-        ret.then((players) => {
-            for (const id in players) {
-                const p = players[id];
-                player_cache.update(p);
-
-                p.points = parseFloat(p.points);
-                p.sos = parseFloat(p.sos);
-                p.sodos = parseFloat(p.sodos);
-                p.net_points = parseFloat(p.net_points);
-
-                p.notes = "";
-                if (p.disqualified) {
-                    p.notes = _("Disqualified");
-                }
-                if (p.resigned) {
-                    p.notes = _("Resigned");
-                }
-                if (p.eliminated) {
-                    p.notes = _("Eliminated");
-                }
-            }
-
-            const sorted = Object.keys(players)
-                .map((id) => players[id])
-                .sort(compareUserRank);
-
-            setSortedPlayers(sorted);
-            setPlayers(players);
-            setIsJoined(
-                user.id in players &&
-                    !players[user.id].disqualified &&
-                    !players[user.id].resigned &&
-                    !players[user.id].eliminated,
-            );
-            if (rounds.length) {
-                setRounds(rounds.map((r) => groupify(r, players)));
-            }
-        }).catch(errorAlerter);
-        return ret;
-    };
-    const linkPlayersToRoundMatches = (rounds: any, players: PlayerCacheEntry[]) => {
-        for (const round of rounds) {
-            if (!round.groupify) {
-                for (const match of round.matches) {
-                    if (match?.player?.id) {
-                        match.player = players[match.player.id];
-                    }
-                }
-            }
-        }
-    };
-    const compareUserRank = (a: TournamentPlayer, b: TournamentPlayer) => {
-        if (!a && !b) {
-            return 0;
-        }
-        if (!a) {
-            return -1;
-        }
-        if (!b) {
-            return 1;
-        }
-
-        const pa = players[a.id];
-        const pb = players[b.id];
-        if (!pa && !pb) {
-            return 0;
-        }
-        if (!pa) {
-            console.log(
-                "Tournament game listed user " +
-                    a.id +
-                    " but player was not in TournamentPlayer list for this tournament",
-            );
-            return -1;
-        }
-        if (!pb) {
-            console.log(
-                "Tournament game listed user " +
-                    b.id +
-                    " but player was not in TournamentPlayer list for this tournament",
-            );
-            return 1;
-        }
-        if (pa.rank !== pb.rank) {
-            return pa.rank - pb.rank;
-        }
-        if (pa.points !== pb.points) {
-            return Number(pb.points) - Number(pa.points);
-        }
-        if (pa.sos !== pb.sos) {
-            return Number(pb.sos) - Number(pa.sos);
-        }
-        if (pa.sodos !== pb.sodos) {
-            return Number(pb.sodos) - Number(pa.sodos);
-        }
-        //if (pa.net_points !== pb.net_points) return parseFloat(pb.net_points) - parseFloat(pa.net_points);
-        if (pa.ranking !== pb.ranking) {
-            return (pb.ranking ?? 0) - (pa.ranking ?? 0);
-        }
-        if (pa.username < pb.username) {
-            return 1;
-        }
-        if (pa.username > pb.username) {
-            return -1;
-        }
-        return 0;
     };
 
     const startTournament = () => {
@@ -426,9 +373,7 @@ export function Tournament(): JSX.Element {
             })
             .then(({ value: accept }) => {
                 if (accept) {
-                    post(`tournaments/${tournament_ref.current.id}/start`, {})
-                        .then(ignore)
-                        .catch(errorAlerter);
+                    post(`tournaments/${tournament_id}/start`, {}).then(ignore).catch(errorAlerter);
                 }
             });
     };
@@ -441,7 +386,7 @@ export function Tournament(): JSX.Element {
             })
             .then(({ value: accept }) => {
                 if (accept) {
-                    del(`tournaments/${tournament_ref.current.id}`)
+                    del(`tournaments/${tournament_id}`)
                         .then(() => {
                             browserHistory.push("/");
                         })
@@ -458,7 +403,7 @@ export function Tournament(): JSX.Element {
             })
             .then(({ value: accept }) => {
                 if (accept) {
-                    post(`tournaments/${tournament_ref.current.id}/end`, {})
+                    post(`tournaments/${tournament_id}/end`, {})
                         .then(() => {
                             reloadTournament();
                         })
@@ -489,18 +434,10 @@ export function Tournament(): JSX.Element {
             });
     };
     const joinTournament = () => {
-        post(`tournaments/${tournament_id}/players`, {})
-            .then(() => {
-                setIsJoined(true);
-            })
-            .catch(errorAlerter);
+        post(`tournaments/${tournament_id}/players`, {}).catch(errorAlerter);
     };
     const partTournament = () => {
-        post(`tournaments/${tournament_id}/players`, { delete: true })
-            .then(() => {
-                setIsJoined(false);
-            })
-            .catch(errorAlerter);
+        post(`tournaments/${tournament_id}/players`, { delete: true }).catch(errorAlerter);
     };
     const resign = () => {
         alert
@@ -518,201 +455,34 @@ export function Tournament(): JSX.Element {
             })
             .catch(errorAlerter);
     };
-    const groupify = (round: TournamentRound, players: TournamentPlayers): any => {
-        try {
-            const match_map: any = {};
-            const result_map: any = {};
-            const color_map: any = {};
-            const game_id_map: any = {};
-            let matches: any[] = [];
-            let byes: any[] = [];
-
-            for (let i = 0; i < round.matches.length; ++i) {
-                const m = round.matches[i];
-                //console.log(m.result, m);
-                matches.push({ player: players[m.black], opponent: players[m.white] });
-                matches.push({ player: players[m.white], opponent: players[m.black] });
-                if (!(m.black in match_map)) {
-                    match_map[m.black] = { matches: {}, id: m.black, player: players[m.black] };
-                }
-                if (!(m.white in match_map)) {
-                    match_map[m.white] = { matches: {}, id: m.white, player: players[m.white] };
-                }
-                match_map[m.black].matches[m.white] = m;
-                match_map[m.white].matches[m.black] = m;
-                game_id_map[m.black + "x" + m.white] = m.gameid;
-                game_id_map[m.white + "x" + m.black] = m.gameid;
-                result_map[m.black + "x" + m.white] = m.result
-                    ? m.result === "B+1"
-                        ? "win"
-                        : m.result === "W+1"
-                          ? "loss"
-                          : m.result === "B+0.5,W+0.5"
-                            ? "tie"
-                            : "?"
-                    : "?";
-                result_map[m.white + "x" + m.black] = m.result
-                    ? m.result === "W+1"
-                        ? "win"
-                        : m.result === "B+1"
-                          ? "loss"
-                          : m.result === "B+0.5,W+0.5"
-                            ? "tie"
-                            : "?"
-                    : "?";
-                color_map[m.black + "x" + m.white] = m.result
-                    ? m.result === "B+1"
-                        ? "win"
-                        : m.result === "W+1"
-                          ? "loss"
-                          : m.result === "B+0.5,W+0.5"
-                            ? "tie"
-                            : "no-result"
-                    : "?";
-                color_map[m.white + "x" + m.black] = m.result
-                    ? m.result === "W+1"
-                        ? "win"
-                        : m.result === "B+1"
-                          ? "loss"
-                          : m.result === "B+0.5,W+0.5"
-                            ? "tie"
-                            : "no-result"
-                    : "?";
-            }
-
-            for (let i = 0; i < round.byes.length; ++i) {
-                byes.push(players[round.byes[i]]);
-            }
-
-            let last_group = 0;
-            for (const player_id in match_map) {
-                let group = -1;
-                if ("group" in match_map[player_id]) {
-                    group = match_map[player_id].group;
-                } else {
-                    group = match_map[player_id].group = last_group++;
-                }
-
-                for (const opponent_id in match_map[player_id].matches) {
-                    const ogr = match_map[opponent_id].group;
-                    if (ogr && ogr !== group) {
-                        console.log(
-                            "Group collision detected between player ",
-                            match_map[player_id],
-                            "and",
-                            match_map[opponent_id],
-                        );
-
-                        for (const id in match_map) {
-                            if (match_map[id].group === ogr || match_map[id].group === group) {
-                                match_map[id].group = -1;
-                                //console.log("Moved ", id, " out of group and into generic list group")
-                            }
-                        }
-
-                        //throw "Group collision: " + ogr + " !== " + group + " hmm..";
-                    } else {
-                        match_map[opponent_id].group = group;
-                    }
-                }
-            }
-
-            let groups: TournamentGroup[] = new Array(last_group);
-            let broken_list: any[] = [];
-            for (let i = 0; i < groups.length; ++i) {
-                groups[i] = { players: [] };
-            }
-            for (const player_id in match_map) {
-                const m = match_map[player_id];
-                if (m.group === -1) {
-                    broken_list.push(match_map[player_id]);
-                } else {
-                    groups[m.group].players.push(match_map[player_id]);
-                }
-            }
-
-            let max_len = 0;
-            for (let i = 0; i < groups.length; ++i) {
-                groups[i].players = groups[i].players.sort(compareUserRank);
-                max_len = Math.max(max_len, groups[i].players.length);
-            }
-            groups = groups.sort((a, b) => {
-                return compareUserRank(a.players[0], b.players[0]);
-            });
-            matches = matches.sort((a, b) => {
-                return compareUserRank(a.player, b.player);
-            });
-            byes = byes.sort(compareUserRank);
-
-            //console.log("Byes: ", byes);
-
-            for (let i = groups.length - 1; i >= 0; --i) {
-                if (groups[i].players.length === 0) {
-                    console.log("Removing  group", i);
-                    groups.splice(i, 1);
-                }
-            }
-
-            broken_list = broken_list.sort(compareUserRank);
-            const broken_players: any = {};
-            for (let i = 0; i < broken_list.length; ++i) {
-                broken_players[broken_list[i].player.id] = broken_list[i].player;
-            }
-            for (let i = 0; i < broken_list.length; ++i) {
-                const opponents: any[] = [];
-                for (const opponent_id in broken_list[i].matches) {
-                    //let opponent_id = broken_list[i].matches[j].black === broken_list[i].id ? broken_list[i].matches[j].white : broken_list[i].matches[j].black;
-                    opponents.push({
-                        game_id: broken_list[i].matches[opponent_id].gameid,
-                        player: broken_players[opponent_id],
-                    });
-                    broken_list[i].opponents = opponents;
-                }
-            }
-
-            return {
-                groups: groups,
-                broken_list: broken_list,
-                matches: matches,
-                byes: byes,
-                groupify: max_len > 2,
-                results: result_map,
-                game_ids: game_id_map,
-                colors: color_map,
-                match_map: match_map,
-            };
-        } catch (e) {
-            setTimeout(() => {
-                throw e;
-            }, 1);
-        }
-    };
     const setSelectedRound = (idx: number | "standings" | "roster") => {
-        setSelectedRoundIdx(idx);
+        // If the user clicks on the currently-active round, revert back to
+        // following along with the tournament.
+        setExplicitlySelectedRound(idx === default_round ? null : idx);
     };
 
     const startEditing = () => setEditing(true);
     const save = () => {
-        const tournament: any = dup(tournament_ref.current);
-        const group = tournament.group;
+        const clean_tournament: any = dup(tournament);
+        const group = clean_tournament.group;
 
-        tournament.name = tournament.name.trim();
-        tournament.description = tournament.description.trim();
+        clean_tournament.name = clean_tournament.name.trim();
+        clean_tournament.description = clean_tournament.description.trim();
 
-        if (tournament.name.length < 5) {
+        if (clean_tournament.name.length < 5) {
             ref_tournament_name.current?.focus();
             void alert.fire(_("Please provide a name for the tournament"));
             return;
         }
 
-        if (tournament.description.length < 5) {
+        if (clean_tournament.description.length < 5) {
             ref_description.current?.focus();
             void alert.fire(_("Please provide a description for the tournament"));
             return;
         }
 
-        const max_players = parseInt(tournament.settings.maximum_players);
-        if (max_players > 10 && tournament.tournament_type === "roundrobin") {
+        const max_players = parseInt(clean_tournament.settings.maximum_players);
+        if (max_players > 10 && clean_tournament.tournament_type === "roundrobin") {
             ref_max_players.current?.focus();
             void alert.fire(_("Round Robin tournaments are limited to a maximum of 10 players"));
             return;
@@ -723,19 +493,20 @@ export function Tournament(): JSX.Element {
             return;
         }
 
-        tournament.time_start = moment(new Date(tournament.time_start)).utc().format();
-        tournament.group = new_tournament_group_id || (group && group.id);
-        if (!tournament.group) {
-            delete tournament.group;
+        clean_tournament.time_start = moment(new Date(clean_tournament.time_start)).utc().format();
+        clean_tournament.group = new_tournament_group_id || (group && group.id);
+        if (!clean_tournament.group) {
+            delete clean_tournament.group;
         }
-        tournament.time_control_parameters.time_control = tournament.time_control_parameters.system;
+        clean_tournament.time_control_parameters.time_control =
+            clean_tournament.time_control_parameters.system;
 
-        delete tournament.settings.active_round;
+        delete clean_tournament.settings.active_round;
         //tournament.round_start_times = round_start_times;
 
-        if (tournament.id) {
+        if (clean_tournament.id) {
             setEditSaveState("saving");
-            put(`tournaments/${tournament.id}`, tournament)
+            put(`tournaments/${clean_tournament.id}`, clean_tournament)
                 .then(() => {
                     setEditSaveState("none");
                     resolve();
@@ -750,7 +521,7 @@ export function Tournament(): JSX.Element {
                     }
                 });
         } else {
-            post("tournaments/", tournament)
+            post("tournaments/", clean_tournament)
                 .then((res) => browserHistory.push(`/tournament/${res.id}`))
                 .catch((err: any) => {
                     setEditing(true);
@@ -761,13 +532,11 @@ export function Tournament(): JSX.Element {
         setEditing(false);
     };
     const setTournamentName = (ev: React.ChangeEvent<HTMLInputElement>) => {
-        tournament_ref.current.name = ev.target.value;
-        refresh();
+        setTournament({ ...tournament, name: ev.target.value });
     };
     const setStartTime = (t: any) => {
         if (t && t.format) {
-            tournament_ref.current.time_start = t.format();
-            refresh();
+            setTournament({ ...tournament, time_start: t.format() });
         }
     };
 
@@ -781,41 +550,38 @@ export function Tournament(): JSX.Element {
             update.rules = "aga";
         } else {
             if (
-                tournament_ref.current.first_pairing_method === "opengotha" ||
-                tournament_ref.current.subsequent_pairing_method === "opengotha"
+                tournament.first_pairing_method === "opengotha" ||
+                tournament.subsequent_pairing_method === "opengotha"
             ) {
                 update.first_pairing_method = "slide";
                 update.subsequent_pairing_method = "slaughter";
             }
         }
-        tournament_ref.current = Object.assign(tournament_ref.current, update);
-        refresh();
+        setTournament({ ...tournament, ...update });
     };
     const setLowerBar = (ev: React.ChangeEvent<HTMLSelectElement>) => {
-        const newSettings = Object.assign({}, tournament_ref.current.settings, {
-            lower_bar: ev.target.value,
+        setTournament({
+            ...tournament,
+            settings: { ...tournament.settings, lower_bar: ev.target.value },
         });
-        tournament_ref.current.settings = newSettings;
-        refresh();
     };
     const setUpperBar = (ev: React.ChangeEvent<HTMLSelectElement>) => {
-        const newSettings = Object.assign({}, tournament_ref.current.settings, {
-            upper_bar: ev.target.value,
+        setTournament({
+            ...tournament,
+            settings: { ...tournament.settings, upper_bar: ev.target.value },
         });
-        tournament_ref.current.settings = newSettings;
-        refresh();
     };
     const setPlayersStart = (ev: React.ChangeEvent<HTMLInputElement>) => {
-        tournament_ref.current.players_start = Number(ev.target.value);
-        refresh();
+        setTournament({ ...tournament, players_start: Number(ev.target.value) });
     };
     const setMaximumPlayers = (ev: React.ChangeEvent<HTMLInputElement>) => {
-        tournament_ref.current.settings.maximum_players = ev.target.value;
-        refresh();
+        setTournament({
+            ...tournament,
+            settings: { ...tournament.settings, maximum_players: ev.target.value },
+        });
     };
     const setAutoStartOnMax = (ev: React.ChangeEvent<HTMLInputElement>) => {
-        tournament_ref.current.auto_start_on_max = ev.target.checked;
-        refresh();
+        setTournament({ ...tournament, auto_start_on_max: ev.target.checked });
     };
     const setFirstPairingMethod = (ev: React.ChangeEvent<HTMLSelectElement>) => {
         const update: any = {
@@ -823,80 +589,68 @@ export function Tournament(): JSX.Element {
         };
         if (
             ev.target.value === "opengotha" ||
-            tournament_ref.current.subsequent_pairing_method === "opengotha"
+            tournament.subsequent_pairing_method === "opengotha"
         ) {
             update.subsequent_pairing_method = ev.target.value;
         }
-        tournament_ref.current = Object.assign(tournament_ref.current, update);
-        refresh();
+        setTournament({ ...tournament, ...update });
     };
 
     const setSubsequentPairingMethod = (ev: React.ChangeEvent<HTMLSelectElement>) => {
         const update: any = {
             subsequent_pairing_method: ev.target.value,
         };
-        if (
-            ev.target.value === "opengotha" ||
-            tournament_ref.current.first_pairing_method === "opengotha"
-        ) {
+        if (ev.target.value === "opengotha" || tournament.first_pairing_method === "opengotha") {
             update.first_pairing_method = ev.target.value;
         }
-        tournament_ref.current = Object.assign(tournament_ref.current, update);
-        refresh();
+        setTournament({ ...tournament, ...update });
     };
     const setTournamentExclusivity = (ev: React.ChangeEvent<HTMLSelectElement>) => {
-        tournament_ref.current.exclusivity = ev.target.value;
-        refresh();
+        setTournament({ ...tournament, exclusivity: ev.target.value });
     };
 
     const setNumberOfRounds = (ev: React.ChangeEvent<HTMLSelectElement>) => {
-        tournament_ref.current.settings.num_rounds = ev.target.value;
-        refresh();
+        setTournament({
+            ...tournament,
+            settings: { ...tournament.settings, num_rounds: ev.target.value },
+        });
     };
     const setGroupSize = (ev: React.ChangeEvent<HTMLSelectElement>) => {
-        tournament_ref.current.settings.group_size = ev.target.value;
-        refresh();
+        setTournament({
+            ...tournament,
+            settings: { ...tournament.settings, group_size: ev.target.value },
+        });
     };
     const setRules = (ev: React.ChangeEvent<HTMLSelectElement>) => {
-        tournament_ref.current.rules = ev.target.value as any;
-        refresh();
+        setTournament({ ...tournament, rules: ev.target.value as GoEngineRules });
     };
     const setHandicap = (ev: React.ChangeEvent<HTMLSelectElement>) => {
-        tournament_ref.current.handicap = ev.target.value;
-        refresh();
+        setTournament({ ...tournament, handicap: ev.target.value });
     };
     const setBoardSize = (ev: React.ChangeEvent<HTMLSelectElement>) => {
-        tournament_ref.current.board_size = parseInt(ev.target.value);
-        refresh();
+        setTournament({ ...tournament, board_size: parseInt(ev.target.value) });
     };
     const setAnalysisEnabled = (ev: React.ChangeEvent<HTMLInputElement>) => {
-        tournament_ref.current.analysis_enabled = ev.target.checked;
-        refresh();
+        setTournament({ ...tournament, analysis_enabled: ev.target.checked });
     };
     const setMinRank = (ev: React.ChangeEvent<HTMLSelectElement>) => {
-        tournament_ref.current.min_ranking = ev.target.value;
-        refresh();
+        setTournament({ ...tournament, min_ranking: ev.target.value });
     };
     const setMaxRank = (ev: React.ChangeEvent<HTMLSelectElement>) => {
-        tournament_ref.current.max_ranking = ev.target.value;
-        refresh();
+        setTournament({ ...tournament, max_ranking: ev.target.value });
     };
     const setExcludeProvisionalPlayers = (ev: React.ChangeEvent<HTMLInputElement>) => {
-        tournament_ref.current.exclude_provisional = !ev.target.checked;
-        refresh();
+        setTournament({ ...tournament, exclude_provisional: !ev.target.checked });
     };
     const setDescription = (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
-        tournament_ref.current.description = ev.target.value;
-        refresh();
+        setTournament({ ...tournament, description: ev.target.value });
     };
     const setTimeControl = (tc: TimeControl) => {
-        tournament_ref.current.time_control_parameters = tc;
-        refresh();
+        setTournament({ ...tournament, time_control_parameters: tc });
     };
     const updateNotes = (data: { [k: string]: any }) => {
-        const newSettings = Object.assign({}, tournament_ref.current.settings, data);
-        tournament_ref.current.settings = newSettings;
-        refresh();
+        const newSettings = Object.assign({}, tournament.settings, data);
+        setTournament({ ...tournament, settings: newSettings });
     };
 
     const kick = (player_id: number) => {
@@ -915,7 +669,7 @@ export function Tournament(): JSX.Element {
             })
             .then(({ value: accept }) => {
                 if (accept) {
-                    post(`tournaments/${tournament_ref.current.id}/players`, {
+                    post(`tournaments/${tournament_id}/players`, {
                         delete: true,
                         player_id: user.id,
                     })
@@ -967,7 +721,7 @@ export function Tournament(): JSX.Element {
                 const adjustments: any = {};
                 adjustments[user.id] = v;
 
-                put(`tournaments/${tournament_ref.current.id}/players`, {
+                put(`tournaments/${tournament_id}/players`, {
                     adjust: adjustments,
                 })
                     .then(ignore)
@@ -990,7 +744,7 @@ export function Tournament(): JSX.Element {
             })
             .then(({ value: accept }) => {
                 if (accept) {
-                    put(`tournaments/${tournament_ref.current.id}/players`, {
+                    put(`tournaments/${tournament_id}/players`, {
                         disqualify: user.id,
                     })
                         .then(ignore)
@@ -1002,7 +756,6 @@ export function Tournament(): JSX.Element {
     };
 
     const renderExtraPlayerActions = (player_id: number): any => {
-        const tournament = tournament_ref.current;
         if (
             !(
                 user.is_tournament_moderator ||
@@ -1034,13 +787,6 @@ export function Tournament(): JSX.Element {
         }
     };
 
-    const tournament = tournament_ref.current;
-    const selected_round =
-        typeof selected_round_idx === "number" && rounds && rounds.length > selected_round_idx
-            ? rounds[selected_round_idx]
-            : null;
-    const raw_selected_round =
-        rounds && rounds.length > selected_round ? raw_rounds[selected_round] : null;
     (window as any)["tournament"] = tournament;
 
     let tournament_time_start_text = "";
@@ -1170,14 +916,13 @@ export function Tournament(): JSX.Element {
         tournament.board_size,
     );
 
-    const opengotha = tournament.tournament_type === "opengotha";
     const has_fixed_number_of_rounds =
         tournament.tournament_type === "mcmahon" ||
         tournament.tournament_type === "s_mcmahon" ||
         tournament.tournament_type === "opengotha" ||
         null;
 
-    if (!info_loaded && !editing) {
+    if (!tournament_loaded && !editing) {
         return <LoadingPage />;
     }
 
@@ -1248,7 +993,7 @@ export function Tournament(): JSX.Element {
                         />
                     )}
 
-                    {!editing && info_loaded && (
+                    {!editing && tournament_loaded && (
                         <div>
                             {(((user.is_tournament_moderator ||
                                 user.id === tournament.director.id) &&
@@ -1286,10 +1031,10 @@ export function Tournament(): JSX.Element {
                         </div>
                     )}
 
-                    {info_loaded && (!tournament.started || null) && (
+                    {tournament_loaded && (!tournament.started || null) && (
                         <h4>{tournament_time_start_text}</h4>
                     )}
-                    {!editing && info_loaded && <h4>{date_text}</h4>}
+                    {!editing && tournament_loaded && <h4>{date_text}</h4>}
                     {editing && (
                         <div className="form-group" style={{ marginTop: "1rem" }}>
                             <label className="control-label" htmlFor="start-time">
@@ -1307,7 +1052,7 @@ export function Tournament(): JSX.Element {
                             </div>
                         </div>
                     )}
-                    {!editing && info_loaded && (
+                    {!editing && tournament_loaded && (
                         <p>
                             <b>{_("Clock:")}</b> {time_control_text}
                         </p>
@@ -1391,7 +1136,7 @@ export function Tournament(): JSX.Element {
                                             id="tournament-type"
                                             value={tournament.tournament_type}
                                             onChange={setTournamentType}
-                                            disabled={tournament.id > 0}
+                                            disabled={tournament_id > 0}
                                         >
                                             <option value="mcmahon">{_("McMahon")}</option>
                                             <option value="s_mcmahon">
@@ -1814,7 +1559,7 @@ export function Tournament(): JSX.Element {
             {editing && (
                 <div style={{ textAlign: "center", marginTop: "3rem" }}>
                     <button className="primary" onClick={save}>
-                        {tournament.id === 0 ? _("Create Tournament") : _("Save Tournament")}
+                        {tournament_id === 0 ? _("Create Tournament") : _("Save Tournament")}
                     </button>
                 </div>
             )}
@@ -1845,11 +1590,11 @@ export function Tournament(): JSX.Element {
                 </div>
             )}
 
-            {info_loaded && (
+            {tournament_loaded && (
                 <EmbeddedChatCard channel={`tournament-${tournament_id}`} updateTitle={false} />
             )}
 
-            {info_loaded && loading && <LoadingPage />}
+            {tournament_loaded && loading && <LoadingPage />}
 
             {!loading && !tournament.started && (
                 <div className={"bottom-details not-started"}>
@@ -2537,6 +2282,268 @@ export function Tournament(): JSX.Element {
             )}
         </div>
     );
+}
+
+function compareUserRankWithPlayers(
+    a: TournamentPlayer,
+    b: TournamentPlayer,
+    players: { [id: string]: TournamentPlayer },
+): number {
+    if (!a && !b) {
+        return 0;
+    }
+    if (!a) {
+        return -1;
+    }
+    if (!b) {
+        return 1;
+    }
+
+    const pa = players[a.id];
+    const pb = players[b.id];
+    if (!pa && !pb) {
+        return 0;
+    }
+    if (!pa) {
+        console.log(
+            "Tournament game listed user " +
+                a.id +
+                " but player was not in TournamentPlayer list for this tournament",
+        );
+        return -1;
+    }
+    if (!pb) {
+        console.log(
+            "Tournament game listed user " +
+                b.id +
+                " but player was not in TournamentPlayer list for this tournament",
+        );
+        return 1;
+    }
+    if (pa.rank !== pb.rank) {
+        return pa.rank - pb.rank;
+    }
+    if (pa.points !== pb.points) {
+        return Number(pb.points) - Number(pa.points);
+    }
+    if (pa.sos !== pb.sos) {
+        return Number(pb.sos) - Number(pa.sos);
+    }
+    if (pa.sodos !== pb.sodos) {
+        return Number(pb.sodos) - Number(pa.sodos);
+    }
+    //if (pa.net_points !== pb.net_points) return parseFloat(pb.net_points) - parseFloat(pa.net_points);
+    if (pa.ranking !== pb.ranking) {
+        return (pb.ranking ?? 0) - (pa.ranking ?? 0);
+    }
+    if (pa.username < pb.username) {
+        return 1;
+    }
+    if (pa.username > pb.username) {
+        return -1;
+    }
+    return 0;
+}
+function computeRounds(
+    raw_rounds: any[],
+    players: { [id: string]: TournamentPlayer },
+    tournament_type: string,
+) {
+    const compareUserRank = (a: TournamentPlayer, b: TournamentPlayer) =>
+        compareUserRankWithPlayers(a, b, players);
+    const linkPlayersToRoundMatches = (rounds: any, players: TournamentPlayers) => {
+        for (const round of rounds) {
+            if (!round.groupify) {
+                for (const match of round.matches) {
+                    if (match?.player?.id) {
+                        match.player = players[match.player.id];
+                    }
+                }
+            }
+        }
+    };
+    const groupify = (round: TournamentRound, players: TournamentPlayers): any => {
+        try {
+            const match_map: any = {};
+            const result_map: any = {};
+            const color_map: any = {};
+            const game_id_map: any = {};
+            let matches: any[] = [];
+            let byes: any[] = [];
+
+            for (let i = 0; i < round.matches.length; ++i) {
+                const m = round.matches[i];
+                //console.log(m.result, m);
+                matches.push({ player: players[m.black], opponent: players[m.white] });
+                matches.push({ player: players[m.white], opponent: players[m.black] });
+                if (!(m.black in match_map)) {
+                    match_map[m.black] = { matches: {}, id: m.black, player: players[m.black] };
+                }
+                if (!(m.white in match_map)) {
+                    match_map[m.white] = { matches: {}, id: m.white, player: players[m.white] };
+                }
+                match_map[m.black].matches[m.white] = m;
+                match_map[m.white].matches[m.black] = m;
+                game_id_map[m.black + "x" + m.white] = m.gameid;
+                game_id_map[m.white + "x" + m.black] = m.gameid;
+                result_map[m.black + "x" + m.white] = m.result
+                    ? m.result === "B+1"
+                        ? "win"
+                        : m.result === "W+1"
+                          ? "loss"
+                          : m.result === "B+0.5,W+0.5"
+                            ? "tie"
+                            : "?"
+                    : "?";
+                result_map[m.white + "x" + m.black] = m.result
+                    ? m.result === "W+1"
+                        ? "win"
+                        : m.result === "B+1"
+                          ? "loss"
+                          : m.result === "B+0.5,W+0.5"
+                            ? "tie"
+                            : "?"
+                    : "?";
+                color_map[m.black + "x" + m.white] = m.result
+                    ? m.result === "B+1"
+                        ? "win"
+                        : m.result === "W+1"
+                          ? "loss"
+                          : m.result === "B+0.5,W+0.5"
+                            ? "tie"
+                            : "no-result"
+                    : "?";
+                color_map[m.white + "x" + m.black] = m.result
+                    ? m.result === "W+1"
+                        ? "win"
+                        : m.result === "B+1"
+                          ? "loss"
+                          : m.result === "B+0.5,W+0.5"
+                            ? "tie"
+                            : "no-result"
+                    : "?";
+            }
+
+            for (let i = 0; i < round.byes.length; ++i) {
+                byes.push(players[round.byes[i]]);
+            }
+
+            let last_group = 0;
+            for (const player_id in match_map) {
+                let group = -1;
+                if ("group" in match_map[player_id]) {
+                    group = match_map[player_id].group;
+                } else {
+                    group = match_map[player_id].group = last_group++;
+                }
+
+                for (const opponent_id in match_map[player_id].matches) {
+                    const ogr = match_map[opponent_id].group;
+                    if (ogr && ogr !== group) {
+                        console.log(
+                            "Group collision detected between player ",
+                            match_map[player_id],
+                            "and",
+                            match_map[opponent_id],
+                        );
+
+                        for (const id in match_map) {
+                            if (match_map[id].group === ogr || match_map[id].group === group) {
+                                match_map[id].group = -1;
+                                //console.log("Moved ", id, " out of group and into generic list group")
+                            }
+                        }
+
+                        //throw "Group collision: " + ogr + " !== " + group + " hmm..";
+                    } else {
+                        match_map[opponent_id].group = group;
+                    }
+                }
+            }
+
+            let groups: TournamentGroup[] = new Array(last_group);
+            let broken_list: any[] = [];
+            for (let i = 0; i < groups.length; ++i) {
+                groups[i] = { players: [] };
+            }
+            for (const player_id in match_map) {
+                const m = match_map[player_id];
+                if (m.group === -1) {
+                    broken_list.push(match_map[player_id]);
+                } else {
+                    groups[m.group].players.push(match_map[player_id]);
+                }
+            }
+
+            let max_len = 0;
+            for (let i = 0; i < groups.length; ++i) {
+                groups[i].players = groups[i].players.sort(compareUserRank);
+                max_len = Math.max(max_len, groups[i].players.length);
+            }
+            groups = groups.sort((a, b) => {
+                return compareUserRank(a.players[0], b.players[0]);
+            });
+            matches = matches.sort((a, b) => {
+                return compareUserRank(a.player, b.player);
+            });
+            byes = byes.sort(compareUserRank);
+
+            //console.log("Byes: ", byes);
+
+            for (let i = groups.length - 1; i >= 0; --i) {
+                if (groups[i].players.length === 0) {
+                    console.log("Removing  group", i);
+                    groups.splice(i, 1);
+                }
+            }
+
+            broken_list = broken_list.sort(compareUserRank);
+            const broken_players: any = {};
+            for (let i = 0; i < broken_list.length; ++i) {
+                broken_players[broken_list[i].player.id] = broken_list[i].player;
+            }
+            for (let i = 0; i < broken_list.length; ++i) {
+                const opponents: any[] = [];
+                for (const opponent_id in broken_list[i].matches) {
+                    //let opponent_id = broken_list[i].matches[j].black === broken_list[i].id ? broken_list[i].matches[j].white : broken_list[i].matches[j].black;
+                    opponents.push({
+                        game_id: broken_list[i].matches[opponent_id].gameid,
+                        player: broken_players[opponent_id],
+                    });
+                    broken_list[i].opponents = opponents;
+                }
+            }
+
+            return {
+                groups: groups,
+                broken_list: broken_list,
+                matches: matches,
+                byes: byes,
+                groupify: max_len > 2,
+                results: result_map,
+                game_ids: game_id_map,
+                colors: color_map,
+                match_map: match_map,
+            };
+        } catch (e) {
+            setTimeout(() => {
+                throw e;
+            }, 1);
+        }
+    };
+
+    let rounds = [...raw_rounds];
+    if (tournament_type !== "opengotha") {
+        while (rounds.length && rounds[rounds.length - 1].matches.length === 0) {
+            rounds.pop(); /* account for server bugs that can create empty last rounds */
+        }
+    }
+
+    if (!is_elimination(tournament_type)) {
+        rounds = rounds.map((r: any) => groupify(r, players));
+        linkPlayersToRoundMatches(rounds, players);
+    }
+    return rounds;
 }
 
 function OpenGothaRoster({ players }: { tournament: any; players: Array<any> }): JSX.Element {
