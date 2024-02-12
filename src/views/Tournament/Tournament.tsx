@@ -18,7 +18,6 @@
 /* cspell: words gameid tourn */
 
 import * as React from "react";
-import * as ReactDOM from "react-dom/client";
 import { LoadingPage } from "Loading";
 import { Link, useParams } from "react-router-dom";
 import { browserHistory } from "ogsHistory";
@@ -36,7 +35,6 @@ import { UIPush } from "UIPush";
 import { Card } from "material";
 import { EmbeddedChatCard } from "Chat";
 import * as data from "data";
-import { PersistentElement } from "PersistentElement";
 import { PlayerAutocomplete } from "PlayerAutocomplete";
 import { MiniGoban } from "MiniGoban";
 import * as player_cache from "player_cache";
@@ -142,12 +140,6 @@ export function Tournament(): JSX.Element {
     const ref_description = React.useRef<HTMLTextAreaElement>(null);
     const ref_max_players = React.useRef<HTMLInputElement>(null);
 
-    const elimination_tree_container = React.useRef<HTMLDivElement>(document.createElement("div"));
-
-    const elimination_tree = React.useRef(
-        document.createElementNS("http://www.w3.org/2000/svg", "svg"),
-    );
-
     const [edit_save_state, setEditSaveState] = React.useState<EditSaveState>("none");
     const [, _refresh] = React.useState(0);
     const refresh = () => _refresh(Math.random());
@@ -206,13 +198,6 @@ export function Tournament(): JSX.Element {
     const [user_to_invite, setUserToInvite] = React.useState<PlayerCacheEntry | null>(null);
 
     //const tournament = tournament_ref.current;
-
-    // This sets up our manual elimination tree containers, this is a pretty
-    // legacy way of doing things
-    React.useEffect(() => {
-        elimination_tree_container.current.className = "tournament-elimination-container";
-        elimination_tree_container.current.append(elimination_tree.current);
-    }, []);
 
     // this is so anoek (user id 1) can quickly test tournaments
     React.useEffect(() => {
@@ -294,7 +279,6 @@ export function Tournament(): JSX.Element {
                 let use_elimination_trees = false;
                 if (is_elimination(tournament.tournament_type)) {
                     use_elimination_trees = true;
-                    setTimeout(() => updateEliminationTrees(), 1);
                 } else {
                     rounds = rounds.map((r: any) => groupify(r, players));
                     linkPlayersToRoundMatches(rounds, players);
@@ -362,9 +346,6 @@ export function Tournament(): JSX.Element {
             if (rounds.length) {
                 setRounds(rounds.map((r) => groupify(r, players)));
             }
-
-            //linkPlayersToRoundMatches(rounds, players);
-            setTimeout(() => updateEliminationTrees(), 1);
         }).catch(errorAlerter);
         return ret;
     };
@@ -536,22 +517,6 @@ export function Tournament(): JSX.Element {
                 }
             })
             .catch(errorAlerter);
-    };
-    const updateEliminationTrees = () => {
-        if (!is_elimination(tournament_ref.current.tournament_type)) {
-            return;
-        }
-        if (Object.keys(players).length === 0 || rounds.length === 0) {
-            return;
-        }
-
-        // Plan the graph.
-        const { all_objects, last_cur_bucket } = createEliminationNodes(rounds);
-        const svg_extents = layoutEliminationGraph(last_cur_bucket, all_objects, players, rounds);
-
-        // Draw the graph.
-        renderEliminationNodes(elimination_tree_container.current, all_objects, players);
-        renderEliminationEdges(elimination_tree.current, svg_extents, last_cur_bucket);
     };
     const groupify = (round: TournamentRound, players: TournamentPlayers): any => {
         try {
@@ -1204,10 +1169,6 @@ export function Tournament(): JSX.Element {
         tournament.board_size,
         tournament.board_size,
     );
-
-    if (is_elimination(tournament.tournament_type)) {
-        setTimeout(() => updateEliminationTrees(), 1);
-    }
 
     const opengotha = tournament.tournament_type === "opengotha";
     const has_fixed_number_of_rounds =
@@ -2041,7 +2002,7 @@ export function Tournament(): JSX.Element {
                 <div className="bottom-details">
                     <div className="results">
                         {use_elimination_trees ? (
-                            <PersistentElement elt={elimination_tree_container.current} />
+                            <EliminationTree rounds={rounds} players={players} />
                         ) : (
                             <div>
                                 {rounds.length > 1 && (
@@ -3171,107 +3132,174 @@ function createEliminationNodes(rounds: any[]) {
     organizeEliminationBrackets(all_objects, rounds.length, last_cur_bucket_arr.length);
     return { all_objects: all_objects, last_cur_bucket: last_cur_bucket };
 }
-function renderEliminationNodes(
-    container: HTMLDivElement,
-    all_objects: any[],
-    players: { [id: string]: TournamentPlayer },
-) {
-    const bindHovers = (div: JQuery, id: number | object) => {
-        if (typeof id !== "number") {
-            try {
-                console.warn("ID = ", id);
-                for (const k in id) {
-                    console.warn("ID.", k, "=", (id as any)[k]);
+function eliminationMouseOver(id: number) {
+    $(".elimination-player-hover").removeClass("elimination-player-hover");
+    $(".elimination-player-" + id).addClass("elimination-player-hover");
+}
+function eliminationMouseOut() {
+    $(".elimination-player-hover").removeClass("elimination-player-hover");
+}
+interface EliminationPlayer {
+    id: number;
+    user: TournamentPlayer;
+}
+interface EliminationLocation {
+    top: number;
+    left: number;
+}
+type EliminationNodeKind = "bye" | "black" | "white";
+export function EliminationTree({
+    rounds,
+    players,
+}: {
+    rounds: any[];
+    players: TournamentPlayers;
+}): JSX.Element | null {
+    const elimination_tree = React.useRef(
+        document.createElementNS("http://www.w3.org/2000/svg", "svg"),
+    );
+
+    // Plan the graph.
+    const { all_objects, last_cur_bucket } = React.useMemo(
+        () => createEliminationNodes(rounds),
+        [rounds],
+    );
+    const svg_extents = React.useMemo(
+        () => layoutEliminationGraph(last_cur_bucket, all_objects, players, rounds.length),
+        [all_objects, last_cur_bucket, players, rounds.length],
+    );
+
+    // Draw the edges.
+    React.useEffect(() => {
+        renderEliminationEdges(elimination_tree.current, svg_extents, last_cur_bucket);
+    }, [svg_extents, last_cur_bucket]);
+
+    // Render the graph.
+    const num_players = React.useMemo(() => Object.keys(players).length, [players]);
+    if (rounds.length === 0 || num_players === 0) {
+        return null;
+    }
+    return (
+        <div className="tournament-elimination-container">
+            <svg ref={elimination_tree} />
+            <EliminationNodes all_objects={all_objects} players={players} />
+        </div>
+    );
+}
+export function EliminationNode({
+    player,
+    kind,
+    result_class,
+    gameid,
+}: {
+    player: EliminationPlayer;
+    kind: EliminationNodeKind;
+    result_class?: string;
+    gameid?: any;
+}): JSX.Element {
+    return (
+        <>
+            <div
+                className={`${kind} ${result_class ?? ""} elimination-player-${player.id}`}
+                onMouseOver={() => eliminationMouseOver(player.id)}
+                onMouseOut={eliminationMouseOut}
+            >
+                {(gameid || null) && (
+                    <a className="elimination-game" href={`/game/view/${gameid}`}>
+                        <i className="ogs-goban"></i>
+                    </a>
+                )}
+                <Player user={player.user} icon rank />
+            </div>
+        </>
+    );
+}
+export function EliminationBye({
+    player,
+    location,
+}: {
+    player: EliminationPlayer;
+    location: EliminationLocation;
+}): JSX.Element {
+    return (
+        <div className="bye-div" style={location}>
+            <EliminationNode player={player} kind="bye" />
+        </div>
+    );
+}
+export function EliminationMatch({
+    black,
+    white,
+    gameid,
+    result,
+    location,
+}: {
+    black: EliminationPlayer;
+    white: EliminationPlayer;
+    gameid: any;
+    result: any;
+    location: EliminationLocation;
+}): JSX.Element {
+    let black_result: string | undefined;
+    let white_result: string | undefined;
+    if (result === "B+1") {
+        black_result = "win";
+    } else if (result === "W+1") {
+        white_result = "win";
+    } else if (result === "B+0.5,W+0.5") {
+        black_result = "tie";
+        white_result = "tie";
+    }
+    return (
+        <div className="match-div" style={location}>
+            <EliminationNode
+                player={black}
+                kind="black"
+                result_class={black_result}
+                gameid={gameid}
+            />
+            <EliminationNode
+                player={white}
+                kind="white"
+                result_class={white_result}
+                gameid={gameid}
+            />
+        </div>
+    );
+}
+function EliminationNodes({
+    all_objects,
+    players,
+}: {
+    all_objects: any[];
+    players: TournamentPlayers;
+}) {
+    return (
+        <>
+            {all_objects.map((obj) => {
+                const location: EliminationLocation = { top: obj.top, left: obj.left };
+                if (obj.match === undefined) {
+                    const bye = obj.player_id as number;
+                    return (
+                        <EliminationBye
+                            player={{ id: bye, user: players[bye] }}
+                            location={location}
+                        />
+                    );
                 }
-            } catch (e) {
-                // ignore error
-            }
-            console.error("Tournament bind hover called with non numeric id");
-        }
-
-        div.mouseover(() => {
-            $(".elimination-player-hover").removeClass("elimination-player-hover");
-            $(".elimination-player-" + id).addClass("elimination-player-hover");
-        });
-        div.mouseout(() => {
-            $(".elimination-player-hover").removeClass("elimination-player-hover");
-        });
-    };
-
-    for (const obj of all_objects) {
-        if (obj.match === undefined) {
-            const bye = obj.player_id;
-            const bye_div = $("<div>").addClass("bye-div");
-            const bye_entry = $("<div>")
-                .addClass("bye")
-                .addClass("elimination-player-" + bye);
-            const root = ReactDOM.createRoot(bye_entry[0]);
-            root.render(
-                <React.StrictMode>
-                    <Player user={players[bye]} icon rank />
-                </React.StrictMode>,
-            );
-            bindHovers(bye_entry, bye);
-            bye_div.append(bye_entry);
-            obj.div = bye_div;
-            container.appendChild(bye_div[0]);
-            continue;
-        }
-        const match = obj.match;
-        const match_div = $("<div>").addClass("match-div");
-        const black = $("<div>")
-            .addClass("black")
-            .addClass("elimination-player-" + match.black);
-        const white = $("<div>")
-            .addClass("white")
-            .addClass("elimination-player-" + match.white);
-        const black_root = ReactDOM.createRoot(black[0]);
-        black_root.render(
-            <React.StrictMode>
-                <a className="elimination-game" href={`/game/view/${match.gameid}`}>
-                    <i className="ogs-goban"></i>
-                </a>
-                <Player user={players[match.black]} icon rank />
-            </React.StrictMode>,
-        );
-        const white_root = ReactDOM.createRoot(white[0]);
-        white_root.render(
-            <React.StrictMode>
-                <a className="elimination-game" href={`/game/view/${match.gameid}`}>
-                    <i className="ogs-goban"></i>
-                </a>
-                <Player user={players[match.white]} icon rank />
-            </React.StrictMode>,
-        );
-
-        bindHovers(black, match.black);
-        bindHovers(white, match.white);
-
-        const result = match.result || "";
-        if (result === "B+1") {
-            black.addClass("win");
-        }
-        if (result === "W+1") {
-            white.addClass("win");
-        }
-        if (result === "B+0.5,W+0.5") {
-            black.addClass("tie");
-            white.addClass("tie");
-        }
-
-        match_div.append(black);
-        match_div.append(white);
-
-        obj.div = match_div;
-        container.appendChild(match_div[0]);
-    }
-
-    for (const obj of all_objects) {
-        obj.div.css({
-            top: obj.top,
-            left: obj.left,
-        });
-    }
+                const match = obj.match;
+                return (
+                    <EliminationMatch
+                        black={{ id: match.black, user: players[match.black] }}
+                        white={{ id: match.white, user: players[match.white] }}
+                        gameid={match.gameid}
+                        result={match.result}
+                        location={location}
+                    />
+                );
+            })}
+        </>
+    );
 }
 function renderEliminationEdges(
     elimination_tree: SVGSVGElement,
@@ -3279,6 +3307,7 @@ function renderEliminationEdges(
     last_cur_bucket: any,
 ) {
     const svg = d3.select(elimination_tree);
+    svg.selectAll("*").remove();
     svg.attr("width", svg_extents.x);
     svg.attr("height", svg_extents.y);
 
@@ -3393,8 +3422,8 @@ function renderEliminationEdges(
 function layoutEliminationGraph(
     collection: any,
     all_objects: any[],
-    players: { [id: string]: TournamentPlayer },
-    rounds: any[],
+    players: TournamentPlayers,
+    num_rounds: number,
 ) {
     const svg_extents = { x: 0, y: 0 };
 
@@ -3530,7 +3559,7 @@ function layoutEliminationGraph(
         obj.laid_out = true;
 
         if (obj.round === 0 && i + 1 < all_objects.length && all_objects[i + 1].round === 1) {
-            for (let r = 1; r < rounds.length; ++r) {
+            for (let r = 1; r < num_rounds; ++r) {
                 y[r] = base_y + bracket_spacing;
             }
         }
@@ -3556,7 +3585,7 @@ function layoutEliminationGraph(
                     obj.black_src.second_bracket === obj.second_bracket &&
                     obj.white_src &&
                     obj.white_src.second_bracket === obj.second_bracket
-                    //|| obj.round === rounds.length-1
+                    //|| obj.round === num_rounds-1
                 ) {
                     obj.top = (obj.black_src.top + obj.white_src.top) / 2.0;
                 } else if (obj.black_src && obj.black_src.second_bracket === obj.second_bracket) {
