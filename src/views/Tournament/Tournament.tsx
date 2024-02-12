@@ -146,7 +146,7 @@ export function Tournament(): JSX.Element {
 
     const [edit_save_state, setEditSaveState] = React.useState<EditSaveState>("none");
 
-    const default_tournament: TournamentInterface = {
+    const user_default_tournament: TournamentInterface = {
         name: "",
         // TODO: replace {} with something that makes type sense. -bpj
         director: tournament_id === 0 ? user : ({} as any),
@@ -184,6 +184,22 @@ export function Tournament(): JSX.Element {
         lead_time_seconds: 1800,
         base_points: 10.0,
     };
+    // this is so anoek (user id 1) can quickly test tournaments
+    const default_tournament: TournamentInterface =
+        user.id === 1
+            ? {
+                  ...user_default_tournament,
+                  name: "Culture: join 4",
+                  time_start: moment(new Date()).add(1, "minute").format(),
+                  rules: "japanese",
+                  description:
+                      /* cspell: disable-next-line */
+                      "Aliquam dolor blanditiis voluptatem et harum officiis atque. Eum eos aut consequatur quis sunt. Minima nisi aut ratione. Consequatur deleniti vitae minima exercitationem illum debitis debitis sunt. Culpa officia voluptates quos sit. Reprehenderit fuga ad quo ipsam assumenda nihil quos qui.",
+                  tournament_type: "elimination",
+                  first_pairing_method: "slide",
+                  subsequent_pairing_method: "slaughter",
+              }
+            : user_default_tournament;
     const [tournament, setTournament] = React.useState<TournamentInterface>(default_tournament);
     const ref_tournament_to_clone = React.useRef<LoadedTournamentInterface | null>(null);
 
@@ -260,27 +276,6 @@ export function Tournament(): JSX.Element {
         raw_rounds.length > selected_round_idx
             ? raw_rounds[selected_round_idx]
             : null;
-
-    // this is so anoek (user id 1) can quickly test tournaments
-    React.useEffect(() => {
-        if (user.id === 1 && tournament_id === 0) {
-            setTournament({
-                ...default_tournament,
-                name: "Culture: join 4",
-                time_start: moment(new Date()).add(1, "minute").format(),
-                rules: "japanese",
-                description:
-                    /* cspell: disable-next-line */
-                    "Aliquam dolor blanditiis voluptatem et harum officiis atque. Eum eos aut consequatur quis sunt. Minima nisi aut ratione. Consequatur deleniti vitae minima exercitationem illum debitis debitis sunt. Culpa officia voluptates quos sit. Reprehenderit fuga ad quo ipsam assumenda nihil quos qui.",
-                tournament_type: "elimination",
-                first_pairing_method: "slide",
-                subsequent_pairing_method: "slaughter",
-                // tournament_type: "opengotha",
-                // first_pairing_method: "opengotha",
-                // subsequent_pairing_method: "opengotha",
-            });
-        }
-    }, [tournament_id]);
 
     React.useEffect(() => {
         window.document.title = tournament_id ? tournament.name : _("Tournament");
