@@ -969,7 +969,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                                     target="_blank"
                                     title={_("Selected AI profile")}
                                 >
-                                    <i className="fa fa-link" />
+                                    <i className="fa fa-external-link" />
                                 </a>
                             </div>
                         </div>
