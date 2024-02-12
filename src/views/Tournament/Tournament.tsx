@@ -88,7 +88,7 @@ interface TournamentPlayers {
 }
 
 interface TournamentInterface {
-    id: number;
+    id?: number;
     name: string;
     director: player_cache.PlayerCacheEntry;
     time_start: string;
@@ -141,13 +141,8 @@ export function Tournament(): JSX.Element {
     const ref_max_players = React.useRef<HTMLInputElement>(null);
 
     const [edit_save_state, setEditSaveState] = React.useState<EditSaveState>("none");
-    const [tournament_loaded, setTournamentLoaded] = React.useState(false);
-    const [rounds_loaded, setRoundsLoaded] = React.useState(false);
-    const [players_loaded, setPlayersLoaded] = React.useState(false);
-    const loading = !rounds_loaded || !players_loaded || !tournament_loaded;
 
     const [tournament, setTournament] = React.useState<TournamentInterface>({
-        id: tournament_id,
         name: "",
         // TODO: replace {} with something that makes type sense. -bpj
         director: tournament_id === 0 ? user : ({} as any),
@@ -187,19 +182,27 @@ export function Tournament(): JSX.Element {
     });
 
     const [editing, setEditing] = React.useState(tournament_id === 0);
-    const [raw_rounds, setRawRounds] = React.useState<any[]>([]);
+    const [raw_rounds, setRawRounds] = React.useState<any[] | null>(null);
     const [explicitly_selected_round, setExplicitlySelectedRound] = React.useState<
         null | number | "standings" | "roster"
     >(null);
-    const [players, setPlayers] = React.useState<TournamentPlayers>({});
+    const [raw_players, setRawPlayers] = React.useState<TournamentPlayers | null>(null);
     const [invite_result, setInviteResult] = React.useState<string | null>(null);
     const [user_to_invite, setUserToInvite] = React.useState<PlayerCacheEntry | null>(null);
 
+    const tournament_loaded = tournament_id !== 0 && tournament.id === tournament_id;
+    const rounds_loaded = raw_rounds !== null;
+    const players_loaded = raw_players !== null;
+    const loading = !rounds_loaded || !players_loaded || !tournament_loaded;
+
     const use_elimination_trees = is_elimination(tournament.tournament_type);
-    const rounds = React.useMemo<any[]>(
-        () => computeRounds(raw_rounds, players, tournament.tournament_type),
-        [tournament.tournament_type, raw_rounds, players],
-    );
+
+    const players: TournamentPlayers = raw_players === null ? {} : raw_players;
+    const rounds = React.useMemo<any[]>(() => {
+        return raw_rounds === null
+            ? []
+            : computeRounds(raw_rounds, players, tournament.tournament_type);
+    }, [tournament.tournament_type, raw_rounds, players]);
     const sorted_players = React.useMemo<any[]>(
         () =>
             Object.keys(players)
@@ -242,7 +245,9 @@ export function Tournament(): JSX.Element {
             : null;
 
     const raw_selected_round =
-        typeof selected_round_idx === "number" && rounds && rounds.length > selected_round_idx
+        typeof selected_round_idx === "number" &&
+        raw_rounds &&
+        raw_rounds.length > selected_round_idx
             ? raw_rounds[selected_round_idx]
             : null;
 
@@ -274,13 +279,10 @@ export function Tournament(): JSX.Element {
     React.useEffect(() => {
         // Reset all other state if the user navigates to a new tournament.
         setEditing(tournament_id === 0);
-        setPlayersLoaded(false);
-        setRoundsLoaded(false);
-        setTournamentLoaded(false);
         setEditSaveState("none");
-        setRawRounds([]);
+        setRawRounds(null);
         setExplicitlySelectedRound(null);
-        setPlayers({});
+        setRawPlayers(null);
         setInviteResult(null);
         setUserToInvite(null);
 
@@ -318,14 +320,12 @@ export function Tournament(): JSX.Element {
         get(`tournaments/${tournament_id}`)
             .then((t) => {
                 setTournament(t);
-                setTournamentLoaded(true);
             })
             .catch(errorAlerter);
 
         get(`tournaments/${tournament_id}/rounds`)
             .then((rounds) => {
                 setRawRounds(rounds);
-                setRoundsLoaded(true);
             })
             .catch(errorAlerter);
 
@@ -351,8 +351,7 @@ export function Tournament(): JSX.Element {
                         p.notes = _("Eliminated");
                     }
                 }
-                setPlayers(players);
-                setPlayersLoaded(true);
+                setRawPlayers(players);
             })
             .catch(errorAlerter);
     };
