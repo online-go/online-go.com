@@ -195,6 +195,10 @@ export function Tournament(): JSX.Element {
     const players_loaded = raw_players !== null;
     const loading = !rounds_loaded || !players_loaded || !tournament_loaded;
 
+    const new_tournament_group_loaded =
+        !new_tournament_group_id || new_tournament_group_id === (tournament.group?.id ?? 0);
+    const ready_to_edit = editing && new_tournament_group_loaded;
+
     const use_elimination_trees = is_elimination(tournament.tournament_type);
 
     const players: TournamentPlayers = raw_players === null ? {} : raw_players;
@@ -921,7 +925,7 @@ export function Tournament(): JSX.Element {
         tournament.tournament_type === "opengotha" ||
         null;
 
-    if (!tournament_loaded && !editing) {
+    if (!tournament_loaded && !ready_to_edit) {
         return <LoadingPage />;
     }
 
