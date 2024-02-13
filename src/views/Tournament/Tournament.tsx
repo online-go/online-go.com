@@ -197,8 +197,8 @@ export function Tournament(): JSX.Element {
 
     const use_elimination_trees = is_elimination(tournament.tournament_type);
     const rounds = React.useMemo<any[]>(
-        () => computeRounds(raw_rounds, players, tournament.tournament_type),
-        [tournament.tournament_type, raw_rounds, players],
+        () => (loading ? [] : computeRounds(raw_rounds, players, tournament.tournament_type)),
+        [tournament.tournament_type, raw_rounds, players, loading],
     );
     const sorted_players = React.useMemo<any[]>(
         () =>
