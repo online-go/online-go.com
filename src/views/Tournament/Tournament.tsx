@@ -224,11 +224,10 @@ export function Tournament(): JSX.Element {
     const use_elimination_trees = is_elimination(tournament.tournament_type);
 
     const players: TournamentPlayers = raw_players === null ? {} : raw_players;
-    const rounds = React.useMemo<any[]>(() => {
-        return raw_rounds === null
-            ? []
-            : computeRounds(raw_rounds, players, tournament.tournament_type);
-    }, [tournament.tournament_type, raw_rounds, players]);
+    const rounds = React.useMemo<any[]>(
+        () => (loading ? [] : computeRounds(raw_rounds, players, tournament.tournament_type)),
+        [tournament.tournament_type, raw_rounds, players, loading],
+    );
     const sorted_players = React.useMemo<any[]>(
         () =>
             Object.keys(players)
