@@ -27,25 +27,31 @@ const sendRankChoice = (choice: string): void => {
 
 interface NewUserRankChooserProps {
     show_skip?: boolean;
-    show_welcome?: boolean;
+    show_explainers?: boolean;
 }
 
 export function NewUserRankChooser({
     show_skip = true,
-    show_welcome = true,
+    show_explainers = false,
 }: NewUserRankChooserProps): JSX.Element {
     /* render */
     return (
         <div className="NewUserRankChooser">
             <div className="centered-content">
-                {show_welcome && <div className="welcome">{_("Welcome!")}</div>}
                 <div className="instructions">
                     {pgettext(
                         "Instructions for rank chooser buttons",
-                        "To help us find you suitable opponents, please select the option below that best describes your skill at Go.",
+                        "What is your Go skill level?",
                     )}
                 </div>
                 <div className="rank-chooser-buttons">
+                    <NewRankChooserButton
+                        label={pgettext(
+                            "Label for the button used to say they 'I haven't played before'",
+                            "New to Go",
+                        )}
+                        choice={"tpk"}
+                    />
                     <NewRankChooserButton
                         label={pgettext(
                             "Label for the button used to say I'm a beginner",
@@ -59,7 +65,7 @@ export function NewUserRankChooser({
                             "Intermediate",
                         )}
                         choice={"intermediate"}
-                        explainer={_("Your Go rank is roughly 16k-1k")}
+                        explainer={show_explainers ? _("Your Go rank is roughly 16k-1k") : ""}
                     />
                     <NewRankChooserButton
                         label={pgettext(
@@ -67,7 +73,7 @@ export function NewUserRankChooser({
                             "Advanced",
                         )}
                         choice={"advanced"}
-                        explainer={_("You're a Dan level player")}
+                        explainer={show_explainers ? _("You're a Dan level player") : ""}
                     />
                 </div>
                 {show_skip && (
@@ -85,38 +91,19 @@ export function NewUserRankChooser({
     );
 }
 
+// This has an optional explainer in case we decide we want them again.
+// As of this writing, it's not used.
 interface NewRankChooserButtonProps {
     label: string;
     choice: string;
     explainer?: string;
 }
 
-function NewRankChooserButton({
-    label,
-    choice,
-    explainer,
-}: NewRankChooserButtonProps): JSX.Element {
-    const [explainer_open, setExplainerOpen] = React.useState(false);
-
-    const toggleExplainer = () => {
-        setExplainerOpen(!explainer_open);
-    };
-
+function NewRankChooserButton({ label, choice }: NewRankChooserButtonProps): JSX.Element {
     return (
         <div className="rank-chooser-button">
-            <div className="rank-chooser-heading">
-                {label}
-                {explainer && <i className="fa fa-question-circle-o" onClick={toggleExplainer} />}
-            </div>
-
-            <div
-                className="explainer-text"
-                style={{ visibility: explainer_open ? "visible" : "hidden" }}
-            >
-                {explainer || "(invisible filler)"}
-            </div>
             <button className={"primary"} onClick={() => sendRankChoice(choice)}>
-                {pgettext("label on a button to select a choice", "Select")}
+                {label}
             </button>
         </div>
     );

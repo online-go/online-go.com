@@ -147,7 +147,10 @@ export class EXV6Overview extends React.Component<{}, OverviewState> {
         return (
             <div id="Overview-Container">
                 {!!user && user.need_rank && user.starting_rank_hint === "none" ? (
-                    <NewUserRankChooser />
+                    <>
+                        <div className="welcome">{_("Welcome!")}</div>
+                        <NewUserRankChooser />
+                    </>
                 ) : (
                     <div id="Overview">
                         <div className="left">

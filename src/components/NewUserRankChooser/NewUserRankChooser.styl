@@ -26,13 +26,9 @@
         justify-content: center;
         max-width: 50rem;  // contains the width of instructions to about the width of the 3 buttons below them
 
-        .instructions, .welcome {
+        .instructions {
             font-size: x-large;
             text-align: center;
-        }
-
-        .welcome {
-            margin-top: 2rem;
         }
 
         .instructions {
@@ -43,65 +39,22 @@
         .rank-chooser-buttons {
             margin-bottom: 1.5rem;
             display: flex;
-            flex-direction: row;
-            justify-content: center;
+            flex-direction: column;
+            align-items: center;
             gap: 1rem;
 
-            @media screen and (max-width: 600px) {
-                flex-direction: column;
-                align-items: center;
-
-                .rank-chooser-button {
-                    min-width: 13rem;
-                    max-height: 7rem;
-                }
-            }
-
             .rank-chooser-button {
-                flex-grow: 1;
-                flex-basis: 13rem;
-                max-width: 13rem;
-
-                themed background-color shade5
-                border-radius: 0.5rem;
-
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-
-                .rank-chooser-heading {
-                    width: 100%
-                    display: flex;
-                    border-top-left-radius: 0.5rem;
-                    border-top-right-radius: 0.5rem;
-                    justify-content: center;
-                    themed background-color shade4
-                    align-items: center;
-                    font-size: large;
-                    font-weight: bold;
-                    min-height: 2rem;
-                }
-
                 button {
-                    height: auto;
-                    padding: 0.5rem 1rem 0.5rem 1rem;
-
+                    height: 4rem;
+                    min-width: 13em;
+                    padding: 1rem 0 1rem 0;
                     font-size: large;
                     font-weight: bold;
-                    margin: 0.5rem;
                     white-space: nowrap;
-                }
 
-                .explainer-text {
-                    font-size: small;
-                    font-weight: normal;
-                    margin-top: 0.5rem;
                 }
             }
 
-            .fa {
-                margin: 0.3rem;
-            }
         }
 
         .skip-button {
