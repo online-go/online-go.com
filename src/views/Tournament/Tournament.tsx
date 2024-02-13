@@ -87,8 +87,16 @@ interface TournamentPlayers {
     [k: string]: TournamentPlayer;
 }
 
+interface TournamentSettings {
+    lower_bar: string;
+    upper_bar: string;
+    num_rounds: string;
+    group_size: string;
+    maximum_players: number | string;
+    active_round?: number;
+}
 interface TournamentInterface {
-    id: number;
+    id?: number;
     name: string;
     director: player_cache.PlayerCacheEntry;
     time_start: string;
@@ -108,14 +116,7 @@ interface TournamentInterface {
     first_pairing_method: string;
     subsequent_pairing_method: string;
     players_start: number;
-    settings: {
-        lower_bar: string;
-        upper_bar: string;
-        num_rounds: string;
-        group_size: string;
-        maximum_players: number | string;
-        active_round?: number;
-    };
+    settings: TournamentSettings;
     lead_time_seconds: number;
     base_points: number;
     started?: string;
@@ -126,6 +127,9 @@ interface TournamentInterface {
     start_waiting?: boolean;
     group?: any;
     opengotha_standings?: boolean;
+}
+interface LoadedTournamentInterface extends TournamentInterface {
+    id: number;
 }
 
 type EditSaveState = "none" | "saving" | "reload";
@@ -141,13 +145,8 @@ export function Tournament(): JSX.Element {
     const ref_max_players = React.useRef<HTMLInputElement>(null);
 
     const [edit_save_state, setEditSaveState] = React.useState<EditSaveState>("none");
-    const [tournament_loaded, setTournamentLoaded] = React.useState(false);
-    const [rounds_loaded, setRoundsLoaded] = React.useState(false);
-    const [players_loaded, setPlayersLoaded] = React.useState(false);
-    const loading = !rounds_loaded || !players_loaded || !tournament_loaded;
 
-    const [tournament, setTournament] = React.useState<TournamentInterface>({
-        id: tournament_id,
+    const user_default_tournament: TournamentInterface = {
         name: "",
         // TODO: replace {} with something that makes type sense. -bpj
         director: tournament_id === 0 ? user : ({} as any),
@@ -184,18 +183,47 @@ export function Tournament(): JSX.Element {
         },
         lead_time_seconds: 1800,
         base_points: 10.0,
-    });
+    };
+    // this is so anoek (user id 1) can quickly test tournaments
+    const default_tournament: TournamentInterface =
+        user.id === 1
+            ? {
+                  ...user_default_tournament,
+                  name: "Culture: join 4",
+                  time_start: moment(new Date()).add(1, "minute").format(),
+                  rules: "japanese",
+                  description:
+                      /* cspell: disable-next-line */
+                      "Aliquam dolor blanditiis voluptatem et harum officiis atque. Eum eos aut consequatur quis sunt. Minima nisi aut ratione. Consequatur deleniti vitae minima exercitationem illum debitis debitis sunt. Culpa officia voluptates quos sit. Reprehenderit fuga ad quo ipsam assumenda nihil quos qui.",
+                  tournament_type: "elimination",
+                  first_pairing_method: "slide",
+                  subsequent_pairing_method: "slaughter",
+              }
+            : user_default_tournament;
+    const [tournament, setTournament] = React.useState<TournamentInterface>(default_tournament);
+    const ref_tournament_to_clone = React.useRef<LoadedTournamentInterface | null>(null);
 
     const [editing, setEditing] = React.useState(tournament_id === 0);
-    const [raw_rounds, setRawRounds] = React.useState<any[]>([]);
+    const [raw_rounds, setRawRounds] = React.useState<any[] | null>(null);
     const [explicitly_selected_round, setExplicitlySelectedRound] = React.useState<
         null | number | "standings" | "roster"
     >(null);
-    const [players, setPlayers] = React.useState<TournamentPlayers>({});
+    const [raw_players, setRawPlayers] = React.useState<TournamentPlayers | null>(null);
     const [invite_result, setInviteResult] = React.useState<string | null>(null);
     const [user_to_invite, setUserToInvite] = React.useState<PlayerCacheEntry | null>(null);
 
+    const tournament_loaded = tournament_id !== 0 && tournament?.id === tournament_id;
+    const rounds_loaded = raw_rounds !== null;
+    const players_loaded = raw_players !== null;
+    const loading = !rounds_loaded || !players_loaded || !tournament_loaded;
+
+    const new_tournament_group_loaded =
+        !new_tournament_group_id || new_tournament_group_id === (tournament.group?.id ?? 0);
+    const ready_to_edit = editing && new_tournament_group_loaded;
+
     const use_elimination_trees = is_elimination(tournament.tournament_type);
+
+    const players: TournamentPlayers = raw_players === null ? {} : raw_players;
     const rounds = React.useMemo<any[]>(
         () => (loading ? [] : computeRounds(raw_rounds, players, tournament.tournament_type)),
         [tournament.tournament_type, raw_rounds, players, loading],
@@ -242,30 +270,11 @@ export function Tournament(): JSX.Element {
             : null;
 
     const raw_selected_round =
-        typeof selected_round_idx === "number" && rounds && rounds.length > selected_round_idx
+        typeof selected_round_idx === "number" &&
+        raw_rounds &&
+        raw_rounds.length > selected_round_idx
             ? raw_rounds[selected_round_idx]
             : null;
-
-    // this is so anoek (user id 1) can quickly test tournaments
-    React.useEffect(() => {
-        if (user.id === 1 && tournament_id === 0) {
-            setTournament({
-                ...tournament,
-                name: "Culture: join 4",
-                time_start: moment(new Date()).add(1, "minute").format(),
-                rules: "japanese",
-                description:
-                    /* cspell: disable-next-line */
-                    "Aliquam dolor blanditiis voluptatem et harum officiis atque. Eum eos aut consequatur quis sunt. Minima nisi aut ratione. Consequatur deleniti vitae minima exercitationem illum debitis debitis sunt. Culpa officia voluptates quos sit. Reprehenderit fuga ad quo ipsam assumenda nihil quos qui.",
-                tournament_type: "elimination",
-                first_pairing_method: "slide",
-                subsequent_pairing_method: "slaughter",
-                // tournament_type: "opengotha",
-                // first_pairing_method: "opengotha",
-                // subsequent_pairing_method: "opengotha",
-            });
-        }
-    }, [tournament_id]);
 
     React.useEffect(() => {
         window.document.title = tournament_id ? tournament.name : _("Tournament");
@@ -274,31 +283,29 @@ export function Tournament(): JSX.Element {
     React.useEffect(() => {
         // Reset all other state if the user navigates to a new tournament.
         setEditing(tournament_id === 0);
-        setPlayersLoaded(false);
-        setRoundsLoaded(false);
-        setTournamentLoaded(false);
         setEditSaveState("none");
-        setRawRounds([]);
+        setRawRounds(null);
         setExplicitlySelectedRound(null);
-        setPlayers({});
+        setRawPlayers(null);
         setInviteResult(null);
         setUserToInvite(null);
 
         setExtraActionCallback(renderExtraPlayerActions);
         if (tournament_id) {
             resolve();
-        }
-        if (new_tournament_group_id) {
-            get(`groups/${new_tournament_group_id}`)
-                .then((group) => {
-                    setTournament({
-                        ...tournament,
-                        group: group,
-                        rules: group?.rules ?? "japanese",
-                        handicap: String(group?.handicap ?? 0),
-                    });
-                })
-                .catch(errorAlerter);
+        } else if (ref_tournament_to_clone.current?.id) {
+            // Clone tournament.
+            copyTournamentToClone(ref_tournament_to_clone.current);
+            ref_tournament_to_clone.current = null;
+        } else {
+            // New tournament.
+            setTournament(default_tournament);
+            if (new_tournament_group_id) {
+                // New tournament in a group.
+                get(`groups/${new_tournament_group_id}`)
+                    .then((group) => copyGroup(group))
+                    .catch(errorAlerter);
+            }
         }
 
         return () => {
@@ -318,14 +325,12 @@ export function Tournament(): JSX.Element {
         get(`tournaments/${tournament_id}`)
             .then((t) => {
                 setTournament(t);
-                setTournamentLoaded(true);
             })
             .catch(errorAlerter);
 
         get(`tournaments/${tournament_id}/rounds`)
             .then((rounds) => {
                 setRawRounds(rounds);
-                setRoundsLoaded(true);
             })
             .catch(errorAlerter);
 
@@ -351,11 +356,43 @@ export function Tournament(): JSX.Element {
                         p.notes = _("Eliminated");
                     }
                 }
-                setPlayers(players);
-                setPlayersLoaded(true);
+                setRawPlayers(players);
             })
             .catch(errorAlerter);
     };
+    const copyGroup = (group: any) =>
+        setTournament({
+            ...default_tournament,
+            group: group,
+            rules: group?.rules ?? "japanese",
+            handicap: String(group?.handicap ?? 0),
+        });
+    const copyTournamentToClone = (src_tournament: LoadedTournamentInterface) => {
+        // Clean tournament settings.
+        const clean_settings: any = {};
+        for (const key in src_tournament.settings) {
+            if (key in default_tournament.settings) {
+                clean_settings[key] = src_tournament.settings[key as keyof TournamentSettings];
+            }
+        }
+
+        // Clean tournament.
+        const clean_tournament: any = {};
+        for (const key in src_tournament) {
+            if (key in default_tournament) {
+                clean_tournament[key] = src_tournament[key as keyof TournamentInterface];
+            }
+        }
+
+        setTournament({
+            ...clean_tournament,
+            group: src_tournament.group,
+            settings: clean_settings,
+            director: default_tournament.director,
+            time_start: default_tournament.time_start,
+        });
+    };
+
     const reloadTournament = () => {
         if (edit_save_state === "none") {
             resolve();
@@ -462,6 +499,14 @@ export function Tournament(): JSX.Element {
     };
 
     const startEditing = () => setEditing(true);
+    const cloneTournament = () => {
+        ref_tournament_to_clone.current = tournament as LoadedTournamentInterface;
+        if (tournament?.group?.id) {
+            browserHistory.push(`/tournament/new/${tournament.group.id}`);
+        } else {
+            browserHistory.push(`/tournament/new`);
+        }
+    };
     const save = () => {
         const clean_tournament: any = dup(tournament);
         const group = clean_tournament.group;
@@ -922,7 +967,7 @@ export function Tournament(): JSX.Element {
         tournament.tournament_type === "opengotha" ||
         null;
 
-    if (!tournament_loaded && !editing) {
+    if (!tournament_loaded && !ready_to_edit) {
         return <LoadingPage />;
     }
 
@@ -1002,6 +1047,12 @@ export function Tournament(): JSX.Element {
                                 null) && (
                                 <button className="xs" onClick={startEditing}>
                                     {_("Edit Tournament")}
+                                </button>
+                            )}
+
+                            {(tournament.can_administer || null) && (
+                                <button className="primary xs" onClick={cloneTournament}>
+                                    {_("Clone Tournament")}
                                 </button>
                             )}
 
