@@ -949,19 +949,29 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                         <label className="control-label" htmlFor="engine">
                             {pgettext("Computer opponent", "AI Player")}
                         </label>
-                        <div className="controls">
-                            <select
-                                id="challenge-ai"
-                                value={this.state.conf.bot_id}
-                                onChange={this.update_conf_bot_id}
-                                required={true}
-                            >
-                                {bots_list().map((bot, idx) => (
-                                    <option key={idx} value={bot.id}>
-                                        {bot.username} ({rankString(getUserRating(bot).rank)})
-                                    </option>
-                                ))}
-                            </select>
+                        <div>
+                            <div className="controls">
+                                <select
+                                    id="challenge-ai"
+                                    value={this.state.conf.bot_id}
+                                    onChange={this.update_conf_bot_id}
+                                    required={true}
+                                >
+                                    {bots_list().map((bot, idx) => (
+                                        <option key={idx} value={bot.id}>
+                                            {bot.username} ({rankString(getUserRating(bot).rank)})
+                                        </option>
+                                    ))}
+                                </select>
+                                &nbsp;
+                                <a
+                                    href={`/user/view/${this.state.conf.bot_id}`}
+                                    target="_blank"
+                                    title={_("Selected AI profile")}
+                                >
+                                    <i className="fa fa-external-link" />
+                                </a>
+                            </div>
                         </div>
                     </div>
                 )}
