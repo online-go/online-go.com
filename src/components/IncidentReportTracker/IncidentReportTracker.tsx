@@ -221,7 +221,11 @@ export function IncidentReportTracker(): JSX.Element | null {
                         className={`fa fa-exclamation-triangle ${normal_ct > 0 ? "active" : ""}`}
                         ref={incident_report_indicator}
                     />
-                    <span className={`count ${normal_ct > 0 ? "active" : ""}`}>{normal_ct}</span>
+                    {user.is_moderator && (
+                        <span className={`count ${normal_ct > 0 ? "active" : ""}`}>
+                            {normal_ct}
+                        </span>
+                    )}
                 </div>
             )}
             {show_incident_list && (
