@@ -169,7 +169,8 @@ class ReportManager extends EventEmitter<Events> {
 
         if (
             report.state === "resolved" ||
-            report.voters?.some((vote) => vote.voter_id === user.id)
+            report.voters?.some((vote) => vote.voter_id === user.id) ||
+            (user.moderator_powers && report.escalated)
         ) {
             delete this.active_incident_reports[report.id];
         } else {
@@ -240,7 +241,8 @@ class ReportManager extends EventEmitter<Events> {
                 ((!(report_type === "score_cheating" && has_handle_score_cheat) &&
                     !(report_type === "escaping" && has_handle_escaping) &&
                     !(report_type === "stalling" && has_handle_stalling)) ||
-                    report.voters?.some((vote) => vote.voter_id === user.id))
+                    report.voters?.some((vote) => vote.voter_id === user.id) ||
+                    report.escalated)
             ) {
                 return false;
             }
@@ -251,7 +253,7 @@ class ReportManager extends EventEmitter<Events> {
                 if (
                     user.is_moderator &&
                     !(report.moderator?.id === user.id) && // maybe they already have it, so they need to see it
-                    (report_type === "score_cheating" || report_type === "escaping") &&
+                    ["escaping", "score_cheating", "stalling"].includes(report_type) &&
                     !report.escalated
                 ) {
                     return false;
@@ -399,10 +401,8 @@ class ReportManager extends EventEmitter<Events> {
         this.updateIncidentReport(res);
         return res;
     }
-    public async vote(report_id: number, voted_action: string, mod_note: string) {
-        delete this.active_incident_reports[report_id];
-        this.update();
-        const res = await post(`moderation/incident/${report_id}`, {
+    public vote(report_id: number, voted_action: string, mod_note: string): Promise<Report> {
+        const res = post(`moderation/incident/${report_id}`, {
             action: "vote", // darn, yes, two different uses of the word "action" collide here
             voted_action: voted_action,
             mod_note,
@@ -413,9 +413,10 @@ class ReportManager extends EventEmitter<Events> {
                 </div>,
                 2000,
             );
+            this.updateIncidentReport(res);
             return res;
         });
-        this.updateIncidentReport(res);
+        return res;
     }
 
     public getHandledTodayCount(): number {
