@@ -211,7 +211,10 @@ export function Settings(): JSX.Element {
             <div id="SettingsContainer">
                 <SettingsGroupSelector>
                     {groups
-                        .filter((x) => x.key !== "moderator" || user.is_moderator)
+                        .filter(
+                            (x) =>
+                                x.key !== "moderator" || user.is_moderator || user.moderator_powers,
+                        )
                         .map((x) => (
                             <SettingsGroup
                                 key={x.key}
