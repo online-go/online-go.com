@@ -35,8 +35,6 @@ import { browserHistory } from "ogsHistory";
 import { get, post } from "requests";
 import { MODERATOR_POWERS } from "moderation";
 
-export const DAILY_REPORT_GOAL = 10;
-
 const DONT_OFFER_COMMUNITY_MODERATION_TYPES_TO_MODERATORS = false;
 
 interface Vote {
@@ -204,7 +202,15 @@ class ReportManager extends EventEmitter<Events> {
         this.emit("update");
     }
 
-    public getAvailableReports(): Report[] {
+    public getEligibleReports(): Report[] {
+        const quota = preferences.get("moderator.report-quota");
+        return !quota || this.getHandledTodayCount() < preferences.get("moderator.report-quota")
+            ? this.getAvailableReports()
+            : [];
+    }
+
+    // Clients should use getEligibleReports
+    private getAvailableReports(): Report[] {
         const user = data.get("user");
 
         return this.sorted_active_incident_reports.filter((report) => {
@@ -226,7 +232,7 @@ class ReportManager extends EventEmitter<Events> {
             }
 
             // Community moderators only get to see reports that they have the power for and
-            // that they have not yet voted on.
+            // that they have not yet voted on, and are not escalated
             const has_handle_score_cheat =
                 (user.moderator_powers & MODERATOR_POWERS.HANDLE_SCORE_CHEAT) > 0;
             const has_handle_escaping =
@@ -423,9 +429,10 @@ class ReportManager extends EventEmitter<Events> {
         return data.get("user").reports_handled_today || 0;
     }
     public getReportsLeftUntilGoal(): number {
+        const report_quota = preferences.get("moderator.report-quota");
         const count = this.getAvailableReports().length;
         const handled_today = this.getHandledTodayCount();
-        return Math.max(0, Math.min(count, DAILY_REPORT_GOAL - handled_today));
+        return Math.max(0, Math.min(count, report_quota - handled_today));
     }
 }
 

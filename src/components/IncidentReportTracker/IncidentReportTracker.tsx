@@ -29,7 +29,7 @@ import { ignore, errorAlerter } from "misc";
 import { openReportedConversationModal } from "ReportedConversationModal";
 import { AutoTranslate } from "AutoTranslate";
 import { report_categories } from "Report";
-import { Report, report_manager, DAILY_REPORT_GOAL } from "report_manager";
+import { Report, report_manager } from "report_manager";
 import { useRefresh, useUser } from "hooks";
 import * as DynamicHelp from "react-dynamic-help";
 
@@ -39,6 +39,7 @@ export function IncidentReportTracker(): JSX.Element | null {
     const [show_incident_list, setShowIncidentList] = React.useState(false);
     const [normal_ct, setNormalCt] = React.useState(0);
     const [prefer_hidden] = usePreference("hide-incident-reports");
+    const [report_quota] = usePreference("moderator.report-quota");
     const refresh = useRefresh();
 
     const { registerTargetItem, triggerFlow, signalUsed } = React.useContext(DynamicHelp.Api);
@@ -151,16 +152,16 @@ export function IncidentReportTracker(): JSX.Element | null {
                 return;
             }
 
-            if (user.is_moderator || user.moderator_powers > 0) {
+            if ((user.is_moderator || user.moderator_powers > 0) && !!report_quota) {
                 const handled_today = user.reports_handled_today || 0;
-                setNormalCt(Math.max(0, Math.min(count, DAILY_REPORT_GOAL - handled_today)));
+                setNormalCt(Math.max(0, Math.min(count, report_quota - handled_today)));
             } else {
                 setNormalCt(count);
             }
         }
 
         function updateUser() {
-            updateCt(report_manager.getAvailableReports().length);
+            updateCt(report_manager.getEligibleReports().length);
         }
 
         data.watch("user", updateUser);
@@ -186,7 +187,7 @@ export function IncidentReportTracker(): JSX.Element | null {
         return null;
     }
 
-    const reports = report_manager.getAvailableReports();
+    const reports = report_manager.getEligibleReports();
     const hide_indicator = (reports.length === 0 && !user.is_moderator) || prefer_hidden;
 
     function getReportType(report: Report): string {
@@ -221,11 +222,7 @@ export function IncidentReportTracker(): JSX.Element | null {
                         className={`fa fa-exclamation-triangle ${normal_ct > 0 ? "active" : ""}`}
                         ref={incident_report_indicator}
                     />
-                    {user.is_moderator && (
-                        <span className={`count ${normal_ct > 0 ? "active" : ""}`}>
-                            {normal_ct}
-                        </span>
-                    )}
+                    <span className={`count ${normal_ct > 0 ? "active" : ""}`}>{normal_ct}</span>
                 </div>
             )}
             {show_incident_list && (

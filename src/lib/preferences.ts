@@ -131,6 +131,7 @@ export const defaults = {
     "moderator.join-games-anonymously": true,
     "moderator.hide-flags": false,
     "moderator.hide-profile-information": false, // hide extra moderator information
+    "moderator.report-quota": 10,
     "moderator.report-settings": {} as {
         [category: string]: {
             priority: number;

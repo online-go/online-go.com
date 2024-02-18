@@ -19,13 +19,14 @@ import * as React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useUser, useRefresh } from "hooks";
 import { report_categories, ReportDescription } from "Report";
-import { report_manager, DAILY_REPORT_GOAL } from "report_manager";
+import { report_manager } from "report_manager";
 import Select from "react-select";
 import { _ } from "translate";
 import { ViewReport } from "./ViewReport";
 import { ReportsCenterSettings } from "./ReportsCenterSettings";
 import { ReportsCenterHistory } from "./ReportsCenterHistory";
 import { MOD_POWER_NEEDED } from "moderation";
+import { usePreference } from "preferences";
 
 interface OtherView {
     special: string;
@@ -66,7 +67,10 @@ export function ReportsCenter(): JSX.Element | null {
     const report_id = parseInt(params["report_id"] || "0");
     const category = params["category"] || "all";
 
-    const reports = report_manager.getAvailableReports();
+    const [report_quota] = usePreference("moderator.report-quota");
+
+    const reports = report_manager.getEligibleReports();
+
     const counts: any = {};
     for (const report of reports) {
         counts[report.report_type] = (counts[report.report_type] || 0) + 1;
@@ -89,7 +93,7 @@ export function ReportsCenter(): JSX.Element | null {
 
         const setToFirstAvailableReport = () => {
             if (!report_id) {
-                const reports = report_manager.getAvailableReports();
+                const reports = report_manager.getEligibleReports();
 
                 if (reports.length) {
                     for (let i = 0; i < reports.length; ++i) {
@@ -146,7 +150,7 @@ export function ReportsCenter(): JSX.Element | null {
                 {_("Reports Center")}
             </h2>
 
-            {user.is_moderator && (
+            {!!report_quota && (
                 <div className="progress" style={{ minWidth: "10rem" }}>
                     <div
                         className="progress-bar primary"
@@ -155,10 +159,10 @@ export function ReportsCenter(): JSX.Element | null {
                                 report_manager.getReportsLeftUntilGoal() <= 0
                                     ? 100
                                     : (Math.min(
-                                          DAILY_REPORT_GOAL,
+                                          report_quota,
                                           report_manager.getHandledTodayCount(),
                                       ) /
-                                          DAILY_REPORT_GOAL) *
+                                          report_quota) *
                                       100
                             }%`,
                         }}
@@ -173,13 +177,12 @@ export function ReportsCenter(): JSX.Element | null {
                             className="progress-bar empty"
                             style={{
                                 width: `${
-                                    (report_manager.getReportsLeftUntilGoal() / DAILY_REPORT_GOAL) *
-                                    100
+                                    (report_manager.getReportsLeftUntilGoal() / report_quota) * 100
                                 }%`,
                             }}
                         >
                             {report_manager.getHandledTodayCount() === 0
-                                ? "Daily report goal: " + DAILY_REPORT_GOAL
+                                ? "Daily report goal: " + report_quota
                                 : ""}
                         </div>
                     )}
