@@ -35,7 +35,7 @@ import { browserHistory } from "ogsHistory";
 import { get, post } from "requests";
 import { MODERATOR_POWERS } from "moderation";
 
-const DONT_OFFER_COMMUNITY_MODERATION_TYPES_TO_MODERATORS = false;
+const DONT_OFFER_COMMUNITY_MODERATION_TYPES_TO_MODERATORS = true;
 
 interface Vote {
     voter_id: number;
