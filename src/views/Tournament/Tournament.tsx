@@ -87,6 +87,12 @@ interface TournamentPlayers {
     [k: string]: TournamentPlayer;
 }
 
+interface Round {
+    matches: Array<{ result: string; black: number; white: number; player?: { id: number } }>;
+    byes: number[];
+    groupify?: boolean;
+}
+
 interface TournamentSettings {
     lower_bar: string;
     upper_bar: string;
@@ -2396,13 +2402,13 @@ function compareUserRankWithPlayers(
     return 0;
 }
 function computeRounds(
-    raw_rounds: any[],
+    raw_rounds: Round[],
     players: { [id: string]: TournamentPlayer },
     tournament_type: string,
 ) {
     const compareUserRank = (a: TournamentPlayer, b: TournamentPlayer) =>
         compareUserRankWithPlayers(a, b, players);
-    const linkPlayersToRoundMatches = (rounds: any, players: TournamentPlayers) => {
+    const linkPlayersToRoundMatches = (rounds: Round[], players: TournamentPlayers) => {
         for (const round of rounds) {
             if (!round.groupify) {
                 for (const match of round.matches) {
@@ -3123,7 +3129,8 @@ function organizeEliminationBrackets(
         }
     }
 }
-function createEliminationNodes(rounds: any[]) {
+
+function createEliminationNodes(rounds: Round[]) {
     let cur_bucket: any = {};
     let last_cur_bucket: any = {};
     const last_bucket: any = {};
@@ -3210,7 +3217,7 @@ export function EliminationTree({
     rounds,
     players,
 }: {
-    rounds: any[];
+    rounds: Round[];
     players: TournamentPlayers;
 }): JSX.Element | null {
     const elimination_tree = React.useRef(
