@@ -472,8 +472,9 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                                 /* community moderators don't claim reports */
                             }}
                             submit={(action, note) => {
-                                void report_manager.vote(report.id, action, note);
-                                next();
+                                void report_manager
+                                    .vote(report.id, action, note)
+                                    .then(() => next());
                             }}
                             enable={report.state === "pending" && !report.escalated}
                             // clear the selection for subsequent reports

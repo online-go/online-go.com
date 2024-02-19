@@ -22,6 +22,7 @@ import { usePreference } from "preferences";
 import { Toggle } from "Toggle";
 import { SettingGroupPageProps, PreferenceLine } from "SettingsCommon";
 import { ReportsCenterSettings } from "ReportsCenter";
+import * as preferences from "preferences";
 
 export function ModeratorPreferences(_props: SettingGroupPageProps): JSX.Element | null {
     const [incident_report_notifications, setIncidentReportNotifications] = usePreference(
@@ -38,42 +39,76 @@ export function ModeratorPreferences(_props: SettingGroupPageProps): JSX.Element
         "moderator.hide-player-card-mod-controls",
     );
 
+    const [report_quota, _setReportQuota] = React.useState(
+        preferences.get("moderator.report-quota"),
+    );
+
     const user = data.get("user");
 
-    if (!user.is_moderator) {
+    function updateReportQuota(ev: React.ChangeEvent<HTMLInputElement>) {
+        let quota = parseInt(ev.target.value);
+        if (!isNaN(quota)) {
+            quota = Math.min(200, Math.max(0, quota));
+            preferences.set("moderator.report-quota", quota);
+            _setReportQuota(quota);
+        } else {
+            _setReportQuota(ev.target.value as any);
+        }
+    }
+    if (!user.is_moderator && !user.moderator_powers) {
         return null;
     }
 
     return (
         <div>
-            <PreferenceLine title={_("Notify me when an incident is submitted for moderation")}>
-                <Toggle
-                    checked={incident_report_notifications}
-                    onChange={setIncidentReportNotifications}
+            <PreferenceLine title={_("Report quota")} description={_("Set to 0 for no quota.")}>
+                <input
+                    value={report_quota}
+                    onChange={updateReportQuota}
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="1"
                 />
             </PreferenceLine>
-            <PreferenceLine title="Hide incident reports">
-                <Toggle checked={hide_incident_reports} onChange={setHideIncidentReports} />
-            </PreferenceLine>
-            <PreferenceLine title="Hide claimed reports">
-                <Toggle checked={hide_claimed_reports} onChange={setHideClaimedReports} />
-            </PreferenceLine>
-            <PreferenceLine title="Join games anonymously">
-                <Toggle checked={join_games_anonymously} onChange={setJoinGamesAnonymously} />
-            </PreferenceLine>
-            <PreferenceLine title="Hide flags">
-                <Toggle checked={hide_flags} onChange={setHideFlags} />
-            </PreferenceLine>
-            <PreferenceLine title="Hide moderator information on profile pages">
-                <Toggle checked={hide_profile} onChange={setHideProfile} />
-            </PreferenceLine>
-            <PreferenceLine title="Hide moderator controls on player cards">
-                <Toggle
-                    checked={hide_player_card_mod_controls}
-                    onChange={setHidePlayerCardModControls}
-                />
-            </PreferenceLine>
-            <ReportsCenterSettings />
+            {user.is_moderator && (
+                <>
+                    <PreferenceLine
+                        title={_("Notify me when an incident is submitted for moderation")}
+                    >
+                        <Toggle
+                            checked={incident_report_notifications}
+                            onChange={setIncidentReportNotifications}
+                        />
+                    </PreferenceLine>
+                    <PreferenceLine title="Hide incident reports">
+                        <Toggle checked={hide_incident_reports} onChange={setHideIncidentReports} />
+                    </PreferenceLine>
+                    <PreferenceLine title="Hide claimed reports">
+                        <Toggle checked={hide_claimed_reports} onChange={setHideClaimedReports} />
+                    </PreferenceLine>
+                    <PreferenceLine title="Join games anonymously">
+                        <Toggle
+                            checked={join_games_anonymously}
+                            onChange={setJoinGamesAnonymously}
+                        />
+                    </PreferenceLine>
+                    <PreferenceLine title="Hide flags">
+                        <Toggle checked={hide_flags} onChange={setHideFlags} />
+                    </PreferenceLine>
+                    <PreferenceLine title="Hide moderator information on profile pages">
+                        <Toggle checked={hide_profile} onChange={setHideProfile} />
+                    </PreferenceLine>
+                    <PreferenceLine title="Hide moderator controls on player cards">
+                        <Toggle
+                            checked={hide_player_card_mod_controls}
+                            onChange={setHidePlayerCardModControls}
+                        />
+                    </PreferenceLine>
+
+                    <ReportsCenterSettings />
+                </>
+            )}
         </div>
     );
 }
