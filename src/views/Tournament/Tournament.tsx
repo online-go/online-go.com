@@ -88,7 +88,13 @@ interface TournamentPlayers {
 }
 
 interface Round {
-    matches: Array<{ result: string; black: number; white: number; player?: { id: number } }>;
+    matches: Array<{
+        result: string;
+        black: number;
+        white: number;
+        player?: { id: number };
+        opponent?: object;
+    }>;
     byes: number[];
     groupify?: boolean;
 }
@@ -230,7 +236,7 @@ export function Tournament(): JSX.Element {
     const use_elimination_trees = is_elimination(tournament.tournament_type);
 
     const players: TournamentPlayers = raw_players === null ? {} : raw_players;
-    const rounds = React.useMemo<any[]>(
+    const rounds = React.useMemo<Round[]>(
         () => (loading ? [] : computeRounds(raw_rounds, players, tournament.tournament_type)),
         [tournament.tournament_type, raw_rounds, players, loading],
     );
@@ -270,7 +276,12 @@ export function Tournament(): JSX.Element {
         ? explicitly_selected_round
         : default_round;
 
-    const selected_round =
+    // Unfortunately, selected_round is used below in a way that TypeScript can't see that it's
+    // null or not. Hence, I am typing it "any" for now.
+    //
+    // TODO: extract the JSX that relies on non-null selected_round in into its own component,
+    // and do a proper non-null assertion once before mounting this component.
+    const selected_round: any =
         typeof selected_round_idx === "number" && rounds && rounds.length > selected_round_idx
             ? rounds[selected_round_idx]
             : null;
