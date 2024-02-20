@@ -106,6 +106,7 @@ interface TournamentSettings {
     group_size: string;
     maximum_players: number | string;
     active_round?: number;
+    "opengotha-staged-games"?: { [key: number]: { [key: string]: unknown } };
 }
 interface TournamentInterface {
     id?: number;
@@ -240,7 +241,7 @@ export function Tournament(): JSX.Element {
         () => (loading ? [] : computeRounds(raw_rounds, players, tournament.tournament_type)),
         [tournament.tournament_type, raw_rounds, players, loading],
     );
-    const sorted_players = React.useMemo<any[]>(
+    const sorted_players = React.useMemo(
         () =>
             Object.keys(players)
                 .map((id) => players[id])
@@ -2614,7 +2615,12 @@ function computeRounds(
     return rounds;
 }
 
-function OpenGothaRoster({ players }: { tournament: any; players: Array<any> }): JSX.Element {
+function OpenGothaRoster({
+    players,
+}: {
+    tournament: TournamentInterface;
+    players: TournamentPlayer[];
+}): JSX.Element {
     (window as any)["players"] = players;
     players.sort((a, b) => a.username.localeCompare(b.username));
     return (
@@ -2648,10 +2654,10 @@ function OpenGothaTournamentRound({
     selectedRound,
     rounds,
 }: {
-    tournament: any;
+    tournament: TournamentInterface;
     roundNotes: string;
     selectedRound: number;
-    players: Array<any>;
+    players: TournamentPlayer[];
     rounds: Array<any>;
 }): JSX.Element {
     //let [notes, _set_notes]:[string, (s) => void] = React.useState(tournament.settings[`notes-round-${selectedRound}`] || "");
