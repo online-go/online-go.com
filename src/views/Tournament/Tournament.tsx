@@ -3148,7 +3148,7 @@ function organizeEliminationBrackets(
 }
 
 function createEliminationNodes(rounds: Round[]) {
-    // I appologize for the vague naming here.  Please change to a better
+    // I apologize for the vague naming here.  Please change to a better
     // name if you have more familiarity with this code.
     //  -bpj
     type ObjectType = {
