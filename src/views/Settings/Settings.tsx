@@ -209,6 +209,7 @@ export function Settings(): JSX.Element {
             </h2>
 
             <div id="SettingsContainer">
+                {/* Desktop selector - mobile below */}
                 <SettingsGroupSelector>
                     {groups
                         .filter(
@@ -227,6 +228,7 @@ export function Settings(): JSX.Element {
                         ))}
                 </SettingsGroupSelector>
 
+                {/* Mobile selector - desktop above */}
                 <Select
                     id="SettingsGroupDropdown"
                     className="settings-group-option-select"
