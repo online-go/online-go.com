@@ -3131,10 +3131,29 @@ function organizeEliminationBrackets(
 }
 
 function createEliminationNodes(rounds: Round[]) {
-    let cur_bucket: any = {};
-    let last_cur_bucket: any = {};
-    const last_bucket: any = {};
-    const all_objects: any[] = [];
+    // I appologize for the vague naming here.  Please change to a better
+    // name if you have more familiarity with this code.
+    //  -bpj
+    type ObjectType = {
+        black_src?: ObjectType | null;
+        white_src?: ObjectType | null;
+        bye_src?: ObjectType | null;
+        black_won?: boolean;
+        white_won?: boolean;
+        black_player?: number;
+        white_player?: number;
+        match?: Round["matches"][number];
+        second_bracket: boolean;
+        round: number;
+        is_final?: boolean;
+        parent?: ObjectType;
+        feeding_black?: boolean;
+        feeding_white?: boolean;
+    };
+    let cur_bucket: { [key: number]: ObjectType } = {};
+    let last_cur_bucket: { [key: number]: ObjectType } = {};
+    const last_bucket: { [key: number]: ObjectType } = {};
+    const all_objects: ObjectType[] = [];
     for (let round_num = 0; round_num < rounds.length; ++round_num) {
         const round = rounds[round_num];
 
@@ -3159,7 +3178,10 @@ function createEliminationNodes(rounds: Round[]) {
             }
             if (obj.white_src) {
                 obj.white_src.parent = obj;
-                obj.black_src.feeding_white = true;
+                // Is this a bug?  TypeScript complains because black_src
+                // can be null.  Perhaps this should be white_src.feeding_white?
+                //  -bpj
+                (obj.black_src as ObjectType).feeding_white = true;
             }
             all_objects.push(obj);
 
