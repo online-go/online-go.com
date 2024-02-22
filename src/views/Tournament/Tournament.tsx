@@ -87,6 +87,18 @@ interface TournamentPlayers {
     [k: string]: TournamentPlayer;
 }
 
+interface Round {
+    matches: Array<{
+        result: string;
+        black: number;
+        white: number;
+        player?: { id: number };
+        opponent?: object;
+    }>;
+    byes: number[];
+    groupify?: boolean;
+}
+
 interface TournamentSettings {
     lower_bar: string;
     upper_bar: string;
@@ -94,6 +106,7 @@ interface TournamentSettings {
     group_size: string;
     maximum_players: number | string;
     active_round?: number;
+    "opengotha-staged-games"?: { [key: number]: { [key: string]: unknown } };
 }
 interface TournamentInterface {
     id?: number;
@@ -224,11 +237,11 @@ export function Tournament(): JSX.Element {
     const use_elimination_trees = is_elimination(tournament.tournament_type);
 
     const players: TournamentPlayers = raw_players === null ? {} : raw_players;
-    const rounds = React.useMemo<any[]>(
+    const rounds = React.useMemo<Round[]>(
         () => (loading ? [] : computeRounds(raw_rounds, players, tournament.tournament_type)),
         [tournament.tournament_type, raw_rounds, players, loading],
     );
-    const sorted_players = React.useMemo<any[]>(
+    const sorted_players = React.useMemo(
         () =>
             Object.keys(players)
                 .map((id) => players[id])
@@ -264,7 +277,12 @@ export function Tournament(): JSX.Element {
         ? explicitly_selected_round
         : default_round;
 
-    const selected_round =
+    // Unfortunately, selected_round is used below in a way that TypeScript can't see that it's
+    // null or not. Hence, I am typing it "any" for now.
+    //
+    // TODO: extract the JSX that relies on non-null selected_round in into its own component,
+    // and do a proper non-null assertion once before mounting this component.
+    const selected_round: any =
         typeof selected_round_idx === "number" && rounds && rounds.length > selected_round_idx
             ? rounds[selected_round_idx]
             : null;
@@ -2396,13 +2414,13 @@ function compareUserRankWithPlayers(
     return 0;
 }
 function computeRounds(
-    raw_rounds: any[],
+    raw_rounds: Round[],
     players: { [id: string]: TournamentPlayer },
     tournament_type: string,
 ) {
     const compareUserRank = (a: TournamentPlayer, b: TournamentPlayer) =>
         compareUserRankWithPlayers(a, b, players);
-    const linkPlayersToRoundMatches = (rounds: any, players: TournamentPlayers) => {
+    const linkPlayersToRoundMatches = (rounds: Round[], players: TournamentPlayers) => {
         for (const round of rounds) {
             if (!round.groupify) {
                 for (const match of round.matches) {
@@ -2597,7 +2615,12 @@ function computeRounds(
     return rounds;
 }
 
-function OpenGothaRoster({ players }: { tournament: any; players: Array<any> }): JSX.Element {
+function OpenGothaRoster({
+    players,
+}: {
+    tournament: TournamentInterface;
+    players: TournamentPlayer[];
+}): JSX.Element {
     (window as any)["players"] = players;
     players.sort((a, b) => a.username.localeCompare(b.username));
     return (
@@ -2631,10 +2654,10 @@ function OpenGothaTournamentRound({
     selectedRound,
     rounds,
 }: {
-    tournament: any;
+    tournament: TournamentInterface;
     roundNotes: string;
     selectedRound: number;
-    players: Array<any>;
+    players: TournamentPlayer[];
     rounds: Array<any>;
 }): JSX.Element {
     //let [notes, _set_notes]:[string, (s) => void] = React.useState(tournament.settings[`notes-round-${selectedRound}`] || "");
@@ -3123,11 +3146,31 @@ function organizeEliminationBrackets(
         }
     }
 }
-function createEliminationNodes(rounds: any[]) {
-    let cur_bucket: any = {};
-    let last_cur_bucket: any = {};
-    const last_bucket: any = {};
-    const all_objects: any[] = [];
+
+function createEliminationNodes(rounds: Round[]) {
+    // I apologize for the vague naming here.  Please change to a better
+    // name if you have more familiarity with this code.
+    //  -bpj
+    type ObjectType = {
+        black_src?: ObjectType | null;
+        white_src?: ObjectType | null;
+        bye_src?: ObjectType | null;
+        black_won?: boolean;
+        white_won?: boolean;
+        black_player?: number;
+        white_player?: number;
+        match?: Round["matches"][number];
+        second_bracket: boolean;
+        round: number;
+        is_final?: boolean;
+        parent?: ObjectType;
+        feeding_black?: boolean;
+        feeding_white?: boolean;
+    };
+    let cur_bucket: { [key: number]: ObjectType } = {};
+    let last_cur_bucket: { [key: number]: ObjectType } = {};
+    const last_bucket: { [key: number]: ObjectType } = {};
+    const all_objects: ObjectType[] = [];
     for (let round_num = 0; round_num < rounds.length; ++round_num) {
         const round = rounds[round_num];
 
@@ -3152,7 +3195,10 @@ function createEliminationNodes(rounds: any[]) {
             }
             if (obj.white_src) {
                 obj.white_src.parent = obj;
-                obj.black_src.feeding_white = true;
+                // Is this a bug?  TypeScript complains because black_src
+                // can be null.  Perhaps this should be white_src.feeding_white?
+                //  -bpj
+                (obj.black_src as ObjectType).feeding_white = true;
             }
             all_objects.push(obj);
 
@@ -3210,7 +3256,7 @@ export function EliminationTree({
     rounds,
     players,
 }: {
-    rounds: any[];
+    rounds: Round[];
     players: TournamentPlayers;
 }): JSX.Element | null {
     const elimination_tree = React.useRef(

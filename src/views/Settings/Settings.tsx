@@ -209,6 +209,7 @@ export function Settings(): JSX.Element {
             </h2>
 
             <div id="SettingsContainer">
+                {/* Desktop selector - mobile below */}
                 <SettingsGroupSelector>
                     {groups
                         .filter(
@@ -227,6 +228,7 @@ export function Settings(): JSX.Element {
                         ))}
                 </SettingsGroupSelector>
 
+                {/* Mobile selector - desktop above */}
                 <Select
                     id="SettingsGroupDropdown"
                     className="settings-group-option-select"
@@ -234,7 +236,9 @@ export function Settings(): JSX.Element {
                     value={groups.filter((opt) => opt.key === selected)[0]}
                     getOptionValue={(data) => data.key}
                     onChange={(data: any) => select(data.key)}
-                    options={groups.filter((x) => x.key !== "moderator" || user.is_moderator)}
+                    options={groups.filter(
+                        (x) => x.key !== "moderator" || user.is_moderator || user.moderator_powers,
+                    )}
                     isClearable={false}
                     isSearchable={false}
                     blurInputOnSelect={true}

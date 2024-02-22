@@ -57,7 +57,7 @@ export interface PlayerObjectType {
 export interface PlayerProperties {
     icon?: boolean;
     iconSize?: number;
-    user: number | PlayerObjectType;
+    user?: number | PlayerObjectType;
     historical?: PlayerObjectType;
     flag?: boolean;
     rank?: boolean;
