@@ -35,8 +35,6 @@ import { browserHistory } from "ogsHistory";
 import { get, post } from "requests";
 import { MODERATOR_POWERS } from "moderation";
 
-const DONT_OFFER_COMMUNITY_MODERATION_TYPES_TO_MODERATORS = true;
-
 interface Vote {
     voter_id: number;
     action: string;
@@ -253,8 +251,10 @@ class ReportManager extends EventEmitter<Events> {
                 return false;
             }
 
-            if (DONT_OFFER_COMMUNITY_MODERATION_TYPES_TO_MODERATORS) {
+            const show_cm_reports = preferences.get("show-cm-reports");
+            if (!show_cm_reports) {
                 // don't hand community moderation reports to full mods unless the report is escalated,
+                // or they've asked to show them explicitly in settings,
                 // because community moderators are supposed to do these!
                 if (
                     user.is_moderator &&
