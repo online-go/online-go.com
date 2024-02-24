@@ -35,7 +35,8 @@ export const TabCompleteInput = React.forwardRef<HTMLInputElement, TabCompleteIn
         }, [(ref as any).current]);
 
         // The input is wrapped in a form so that it presents a send button
-        // properly on mobile.
+        // properly on mobile, avoiding Smart Go Next kind of problems:
+        // https://www.androidpolice.com/2017/10/10/samsung-internet-browser-will-get-smart-go-next-better-form-navigation-also-coming-chrome/.
         return (
             <form className="TabCompleteInput" onSubmit={(e) => e.preventDefault()}>
                 <input ref={ref} enterKeyHint="send" {...props} />
