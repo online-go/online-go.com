@@ -30,6 +30,7 @@ export function ModeratorPreferences(_props: SettingGroupPageProps): JSX.Element
     );
     const [hide_incident_reports, setHideIncidentReports] = usePreference("hide-incident-reports");
     const [hide_claimed_reports, setHideClaimedReports] = usePreference("hide-claimed-reports");
+    const [show_cm_reports, setShowCMReports] = usePreference("show-cm-reports");
     const [join_games_anonymously, setJoinGamesAnonymously] = usePreference(
         "moderator.join-games-anonymously",
     );
@@ -86,6 +87,10 @@ export function ModeratorPreferences(_props: SettingGroupPageProps): JSX.Element
                     </PreferenceLine>
                     <PreferenceLine title="Hide claimed reports">
                         <Toggle checked={hide_claimed_reports} onChange={setHideClaimedReports} />
+                    </PreferenceLine>
+                    <PreferenceLine title="Show un-escalated reports">
+                        <Toggle checked={show_cm_reports} onChange={setShowCMReports} />
+                        <span>This will include for you reports that CMs can still vote on</span>
                     </PreferenceLine>
                     <PreferenceLine title="Join games anonymously">
                         <Toggle
