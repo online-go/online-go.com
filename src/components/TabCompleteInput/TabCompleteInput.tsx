@@ -17,7 +17,7 @@
 
 import * as React from "react";
 
-interface TabCompleteInputProperties {
+interface TabCompleteInputProperties extends React.HTMLProps<HTMLInputElement> {
     id?: string;
     placeholder?: string;
     disabled?: boolean;
@@ -25,15 +25,22 @@ interface TabCompleteInputProperties {
     className?: string;
     onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void;
     autoFocus?: boolean;
+    enterKeyHint?: "search" | "enter" | "done" | "go" | "next" | "previous" | "send" | undefined;
 }
 
-export const TabCompleteInput = React.forwardRef<
-    HTMLInputElement,
-    React.HTMLProps<HTMLInputElement>
->((props: TabCompleteInputProperties, ref): JSX.Element => {
-    React.useEffect(() => {
-        ($((ref as any).current) as any).nicknameTabComplete();
-    }, [(ref as any).current]);
+export const TabCompleteInput = React.forwardRef<HTMLInputElement, TabCompleteInputProperties>(
+    (props, ref): JSX.Element => {
+        React.useEffect(() => {
+            ($((ref as any).current) as any).nicknameTabComplete();
+        }, [(ref as any).current]);
 
-    return <input ref={ref} {...props} />;
-});
+        // The input is wrapped in a form so that it presents a send button
+        // properly on mobile, avoiding Smart Go Next kind of problems:
+        // https://www.androidpolice.com/2017/10/10/samsung-internet-browser-will-get-smart-go-next-better-form-navigation-also-coming-chrome/.
+        return (
+            <form className="TabCompleteInput" onSubmit={(e) => e.preventDefault()}>
+                <input ref={ref} enterKeyHint="send" {...props} />
+            </form>
+        );
+    },
+);
