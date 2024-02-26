@@ -1745,13 +1745,18 @@ export function Tournament(): JSX.Element {
                             </div>
                         )}
                         {(sorted_players.length > 0 || null) && (
-                            <Card>
-                                {sorted_players.map((player) => (
+                            <>
+                                <Card>
+                                    {sorted_players.map((player) => (
                                     <div key={player.id}>
-                                        <Player icon user={player} />
-                                    </div>
-                                ))}
-                            </Card>
+                                            <Player icon user={player} />
+                                        </div>
+                                    ))}
+                                </Card>
+                                <div className="player-count">
+                                    Number of players: {sorted_players.length}
+                                </div>
+                            </>
                         )}
                     </div>
                 </div>
