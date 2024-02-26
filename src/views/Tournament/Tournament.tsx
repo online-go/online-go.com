@@ -1748,7 +1748,7 @@ export function Tournament(): JSX.Element {
                             <>
                                 <Card>
                                     {sorted_players.map((player) => (
-                                    <div key={player.id}>
+                                        <div key={player.id}>
                                             <Player icon user={player} />
                                         </div>
                                     ))}
