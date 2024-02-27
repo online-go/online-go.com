@@ -248,6 +248,7 @@ function dev_server(done) {
     dev_server.use("/OGSScoreEstimator", backend_proxy("/OGSScoreEstimator"));
     dev_server.use("/oje", backend_proxy("/oje"));
     dev_server.use("/firewall", backend_proxy("/firewall"));
+    dev_server.use("/__debug__", backend_proxy("/__debug__"));
 
     dev_server.get("/locale/*", (req, res) => {
         let options = {
