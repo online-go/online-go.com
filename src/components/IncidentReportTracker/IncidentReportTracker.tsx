@@ -160,6 +160,8 @@ export function IncidentReportTracker(): JSX.Element | null {
         }
 
         data.watch("user", updateUser);
+        data.watch("preferences.moderator.report-quota", updateUser);
+        data.watch("preferences.show-cm-reports", updateUser);
         report_manager.on("incident-report", onReport);
         report_manager.on("active-count", updateCt);
         report_manager.on("update", refresh);
@@ -169,6 +171,8 @@ export function IncidentReportTracker(): JSX.Element | null {
             report_manager.off("active-count", updateCt);
             report_manager.off("update", refresh);
             data.unwatch("user", updateUser);
+            data.unwatch("preferences.moderator.report-quota", updateUser);
+            data.unwatch("preferences.show-cm-reports", updateUser);
         };
     }, []);
 
