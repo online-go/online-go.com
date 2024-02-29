@@ -26,29 +26,34 @@ LANGUAGE_VERSION=`md5sum i18n/locale/*.js | sort | md5sum | awk '{print $$1}'`
 SUPPORTED_LANGUAGES=`python -c 'import json; print(json.dumps(json.loads(open("i18n/languages.json", "r").read())))'`
 GOBAN_VERSION=`python -c 'import json; print(json.loads(open("package.json", "r").read())["devDependencies"]["goban"][1:])'`
 
-INDEX_HEADERS=-H "Content-Type: text/plain" \
-	-H "X-OGS-Index-Auth: $(SUPER_SECURE_INDEX_AUTH)" \
+BASE_INDEX_HEADERS=-H "Content-Type: text/plain" \
 	-H "X-OGS-Index-Release: $(RELEASE)"  \
 	-H "X-OGS-Index-Version: $(VERSION)"  \
 	-H "X-OGS-Supported-Languages: $(SUPPORTED_LANGUAGES)"  \
 	-H "X-OGS-Goban-Js: https://cdn.online-go.com/goban/$(GOBAN_VERSION)/goban.min.js"  \
 	-H "X-OGS-Language-Version: $(LANGUAGE_VERSION)"  \
 
-dev-put: push-cdn
-	OGS_VERSION_HASH=$(OGS_VERSION_HASH) VENDOR_HASH=$(VENDOR_HASH) npm run minify-index --silent | curl -X PUT $(INDEX_HEADERS) -d @- http://localhost:1080/_index
+DEV_INDEX_HEADERS=$(BASE_INDEX_HEADERS) -H "X-OGS-Index-Auth: $(DEV_INDEX_AUTH)"
+BETA_INDEX_HEADERS=$(BASE_INDEX_HEADERS) -H "X-OGS-Index-Auth: $(BETA_INDEX_AUTH)"
+PROD_INDEX_HEADERS=$(BASE_INDEX_HEADERS) -H "X-OGS-Index-Auth: $(PROD_INDEX_AUTH)"
+
+#dev-put: push-cdn
+dev-put:
+	OGS_VERSION_HASH=$(OGS_VERSION_HASH) VENDOR_HASH=$(VENDOR_HASH) npm run minify-index --silent | curl -X PUT $(DEV_INDEX_HEADERS) -d @- http://localhost:1080/_index
+
 dev-del:
-	curl -X DELETE $(INDEX_HEADERS)  http://localhost:1080/_index
+	curl -X DELETE $(BETA_INDEX_HEADERS)  http://localhost:1080/_index
 
 beta-put: sync-translations audit-translations jsonify-po-files push-cdn upload-sentry-source-maps
-	OGS_VERSION_HASH=$(OGS_VERSION_HASH) VENDOR_HASH=$(VENDOR_HASH) npm run minify-index --silent | curl -X PUT $(INDEX_HEADERS) -d @- https://beta.online-go.com/_index
+	OGS_VERSION_HASH=$(OGS_VERSION_HASH) VENDOR_HASH=$(VENDOR_HASH) npm run minify-index --silent | curl -X PUT $(BETA_INDEX_HEADERS) -d @- https://beta.online-go.com/_index
 	make beta-notify-slack
 
 live-put: confirm-go-live push-cdn
-	OGS_VERSION_HASH=$(OGS_VERSION_HASH) VENDOR_HASH=$(VENDOR_HASH) npm run minify-index --silent | curl -X PUT $(INDEX_HEADERS) -d @- https://online-go.com/_index
+	OGS_VERSION_HASH=$(OGS_VERSION_HASH) VENDOR_HASH=$(VENDOR_HASH) npm run minify-index --silent | curl -X PUT $(PROD_INDEX_HEADERS) -d @- https://online-go.com/_index
 	make live-notify-slack
 
 live-maint: confirm-go-live 
-	curl -X PUT $(INDEX_HEADERS) -T src/maint.html  https://online-go.com/_index
+	curl -X PUT $(PROD_INDEX_HEADERS) -T src/maint.html  https://online-go.com/_index
 
 beta-notify-slack:
 	MSG=`git log -1 --pretty="%B" | sed s/\"//g | sed s/\'//g `; \
