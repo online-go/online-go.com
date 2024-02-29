@@ -818,6 +818,7 @@ export function Tournament(): JSX.Element {
 
     React.useEffect(() => {
         setExtraActionCallback(renderExtraPlayerActions);
+        return () => setExtraActionCallback(null);
     }, [tournament.director, tournament.started, tournament.ended]);
     const renderExtraPlayerActions = (player_id: number): any => {
         if (
