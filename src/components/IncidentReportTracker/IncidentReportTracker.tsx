@@ -147,11 +147,6 @@ export function IncidentReportTracker(): JSX.Element | null {
         function updateCt(count: number) {
             const user = data.get("user");
 
-            if (user.is_superuser) {
-                setNormalCt(count);
-                return;
-            }
-
             if ((user.is_moderator || user.moderator_powers > 0) && !!report_quota) {
                 const handled_today = user.reports_handled_today || 0;
                 setNormalCt(Math.max(0, Math.min(count, report_quota - handled_today)));
@@ -165,6 +160,8 @@ export function IncidentReportTracker(): JSX.Element | null {
         }
 
         data.watch("user", updateUser);
+        data.watch("preferences.moderator.report-quota", updateUser);
+        data.watch("preferences.show-cm-reports", updateUser);
         report_manager.on("incident-report", onReport);
         report_manager.on("active-count", updateCt);
         report_manager.on("update", refresh);
@@ -174,6 +171,8 @@ export function IncidentReportTracker(): JSX.Element | null {
             report_manager.off("active-count", updateCt);
             report_manager.off("update", refresh);
             data.unwatch("user", updateUser);
+            data.unwatch("preferences.moderator.report-quota", updateUser);
+            data.unwatch("preferences.show-cm-reports", updateUser);
         };
     }, []);
 

@@ -72,7 +72,7 @@ export const report_categories: ReportDescription[] = [
     },
     {
         type: "stalling",
-        title: pgettext("Report user for stalling in a game", "Game Stalling"),
+        title: pgettext("Report user for stalling in a game", "Playing Stalling Moves"),
         description: pgettext(
             "Report user for stalling in a game",
             "User is playing time wasting moves, or passing and resuming needlessly, delaying completion of the game.",

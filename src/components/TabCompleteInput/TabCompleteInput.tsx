@@ -35,5 +35,5 @@ export const TabCompleteInput = React.forwardRef<
         ($((ref as any).current) as any).nicknameTabComplete();
     }, [(ref as any).current]);
 
-    return <input ref={ref} {...props} />;
+    return <input ref={ref} enterKeyHint="send" {...props} />;
 });

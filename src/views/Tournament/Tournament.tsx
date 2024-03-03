@@ -308,7 +308,6 @@ export function Tournament(): JSX.Element {
         setInviteResult(null);
         setUserToInvite(null);
 
-        setExtraActionCallback(renderExtraPlayerActions);
         if (tournament_id) {
             resolve();
         } else if (ref_tournament_to_clone.current?.id) {
@@ -328,7 +327,6 @@ export function Tournament(): JSX.Element {
 
         return () => {
             abort_requests();
-            setExtraActionCallback(null);
         };
     }, [tournament_id]);
 
@@ -818,6 +816,10 @@ export function Tournament(): JSX.Element {
         close_all_popovers();
     };
 
+    React.useEffect(() => {
+        setExtraActionCallback(renderExtraPlayerActions);
+        return () => setExtraActionCallback(null);
+    }, [tournament.director, tournament.started, tournament.ended]);
     const renderExtraPlayerActions = (player_id: number): any => {
         if (
             !(
