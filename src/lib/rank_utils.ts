@@ -125,9 +125,7 @@ export function is_provisional(user: { ratings?: RatingsType }): boolean {
     const ratings: RatingsType = user.ratings || {};
 
     const rating = ratings.overall || {
-        rating: 1500,
-        deviation: 350,
-        volatility: 0.06,
+        deviation: 350, // this is a typical default value
     };
 
     return rating.deviation >= PROVISIONAL_RATING_CUTOFF;
