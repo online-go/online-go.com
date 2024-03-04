@@ -355,7 +355,12 @@ export function User(props: { user_id?: number }): JSX.Element {
                                     user.starting_rank_hint &&
                                     ["skip", "none"].includes(user.starting_rank_hint) ? (
                                         <Card>
-                                            <NewUserRankChooser show_skip={false} />
+                                            <NewUserRankChooser
+                                                show_skip={false}
+                                                onChosen={() => {
+                                                    resolve(user_id);
+                                                }}
+                                            />
                                         </Card>
                                     ) : (
                                         <>

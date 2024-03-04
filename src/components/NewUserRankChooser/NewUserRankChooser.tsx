@@ -19,21 +19,44 @@ import * as React from "react";
 
 import { _, pgettext } from "translate";
 import { put } from "requests";
-import { errorAlerter, ignore } from "misc";
-
-const sendRankChoice = (choice: string): void => {
-    put(`me/starting_rank`, { choice: choice }).then(ignore).catch(errorAlerter);
-};
+import { errorAlerter } from "misc";
 
 interface NewUserRankChooserProps {
     show_skip?: boolean;
     show_explainers?: boolean;
+    onChosen?: () => void;
 }
 
 export function NewUserRankChooser({
     show_skip = true,
     show_explainers = false,
+    onChosen = () => {},
 }: NewUserRankChooserProps): JSX.Element {
+    const sendRankChoice = (choice: string): void => {
+        put(`me/starting_rank`, { choice: choice })
+            .then(() => {
+                onChosen?.();
+            })
+            .catch(errorAlerter);
+    };
+
+    // This has an optional explainer in case we decide we want them again.
+    // As of this writing, it's not used.
+    interface NewRankChooserButtonProps {
+        label: string;
+        choice: string;
+        explainer?: string;
+    }
+
+    function NewRankChooserButton({ label, choice }: NewRankChooserButtonProps): JSX.Element {
+        return (
+            <div className="rank-chooser-button">
+                <button className={"primary"} onClick={() => sendRankChoice(choice)}>
+                    {label}
+                </button>
+            </div>
+        );
+    }
     /* render */
     return (
         <div className="NewUserRankChooser">
@@ -87,24 +110,6 @@ export function NewUserRankChooser({
                     </div>
                 )}
             </div>
-        </div>
-    );
-}
-
-// This has an optional explainer in case we decide we want them again.
-// As of this writing, it's not used.
-interface NewRankChooserButtonProps {
-    label: string;
-    choice: string;
-    explainer?: string;
-}
-
-function NewRankChooserButton({ label, choice }: NewRankChooserButtonProps): JSX.Element {
-    return (
-        <div className="rank-chooser-button">
-            <button className={"primary"} onClick={() => sendRankChoice(choice)}>
-                {label}
-            </button>
         </div>
     );
 }
