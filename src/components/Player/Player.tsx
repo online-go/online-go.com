@@ -331,7 +331,7 @@ export function Player(props: PlayerProperties): JSX.Element {
     let display_username = username_string;
 
     if (username_string.toLowerCase().startsWith("deleted-")) {
-        display_username = display_username.substring(0, 15)+"...";
+        display_username = display_username.substring(0, 15) + "...";
     }
 
     const username = <span className="Player-username">{display_username}</span>;
