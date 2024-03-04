@@ -1756,7 +1756,9 @@ export function Tournament(): JSX.Element {
                                     ))}
                                 </Card>
                                 <div className="player-count">
-                                    {interpolate(_("Number of players: {{num_players}}"), { num_players: sorted_players.length })}
+                                    {interpolate(_("Number of players: {{num_players}}"), {
+                                        num_players: sorted_players.length,
+                                    })}
                                 </div>
                             </>
                         )}
