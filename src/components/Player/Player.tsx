@@ -328,7 +328,13 @@ export function Player(props: PlayerProperties): JSX.Element {
     }
 
     const username_string = unicodeFilter(combined.username || combined.name || "<error>");
-    const username = <span className="Player-username">{username_string}</span>;
+    let display_username = username_string;
+
+    if (username_string.toLowerCase().startsWith("deleted-")) {
+        display_username = display_username.substring(0, 15) + "...";
+    }
+
+    const username = <span className="Player-username">{display_username}</span>;
 
     const player_note_indicator =
         props.shownotesindicator && has_notes ? (
