@@ -73,18 +73,18 @@ export function NewUserRankChooser({
                             "Label for the button used to say they 'I haven't played before'",
                             "New to Go",
                         )}
-                        choice={"tpk"}
+                        choice={"new"}
                     />
                     <NewRankChooserButton
                         label={pgettext(
-                            "Label for the button used to say I'm a beginner",
-                            "Beginner",
+                            "Label for the button used to say 'I have basic skills'",
+                            "Basic",
                         )}
-                        choice={"beginner"}
+                        choice={"basic"}
                     />
                     <NewRankChooserButton
                         label={pgettext(
-                            "Label for the button used to say I'm an intermediate plater",
+                            "Label for the button used to say 'I'm an intermediate player'",
                             "Intermediate",
                         )}
                         choice={"intermediate"}
@@ -92,7 +92,7 @@ export function NewUserRankChooser({
                     />
                     <NewRankChooserButton
                         label={pgettext(
-                            "Label for the button used to say I'm an advanced plater",
+                            "Label for the button used to say 'I'm an advanced player'",
                             "Advanced",
                         )}
                         choice={"advanced"}
