@@ -92,32 +92,32 @@ export function starting_rating(starting_rank_hint: rest_api.StartingRankHint): 
     switch (starting_rank_hint) {
         case "new":
             return {
-                rating: rank_to_rating(rank_25k) + hint_deviation,
+                rating: rank_to_rating(rank_25k),
                 deviation: hint_deviation,
                 volatility: hint_volatility,
             };
         case "basic":
             return {
-                rating: rank_to_rating(rank_20k) + hint_deviation,
+                rating: rank_to_rating(rank_20k),
                 deviation: hint_deviation,
                 volatility: hint_volatility,
             };
         case "intermediate":
             return {
-                rating: rank_to_rating(rank_12k) + hint_deviation,
+                rating: rank_to_rating(rank_12k),
                 deviation: hint_deviation,
                 volatility: hint_volatility,
             };
         case "advanced":
             return {
-                rating: rank_to_rating(rank_2k) + hint_deviation,
+                rating: rank_to_rating(rank_2k),
                 deviation: hint_deviation,
                 volatility: hint_volatility,
             };
         case "skip":
             // Treat "skip" like "intermediate", but with full deviation.
             return {
-                rating: rank_to_rating(rank_12k) + fallback_deviation,
+                rating: rank_to_rating(rank_12k),
                 deviation: fallback_deviation,
                 volatility: fallback_volatility,
             };
@@ -408,19 +408,14 @@ export function allRanks(): IRankInfo[] {
 }
 
 /**
- * For new players we pretend their rating is lower than it actually is for the purposes of
+ * For new players we USED TO pretend their rating is lower than it actually is for the purposes of
  * matchmaking and the like. See:
  * https://forums.online-go.com/t/i-think-the-13k-default-rank-is-doing-harm/13480/192
  * for the history surrounding that.
  */
-export function humble_rating(rating: number, deviation: number): number {
-    return (
-        rating -
-        ((Math.min(350, Math.max(PROVISIONAL_RATING_CUTOFF, deviation)) -
-            PROVISIONAL_RATING_CUTOFF) /
-            (350 - PROVISIONAL_RATING_CUTOFF)) *
-            deviation
-    );
+
+export function humble_rating(rating: number, _deviation: number): number {
+    return rating;
 }
 
 export interface EffectiveOutcome {
