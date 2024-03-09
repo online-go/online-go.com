@@ -29,7 +29,8 @@ import { ignore, errorAlerter } from "misc";
 import { openReportedConversationModal } from "ReportedConversationModal";
 import { AutoTranslate } from "AutoTranslate";
 import { report_categories } from "Report";
-import { Report, report_manager } from "report_manager";
+import { report_manager } from "report_manager";
+import { Report } from "report_util";
 import { useRefresh, useUser } from "hooks";
 import * as DynamicHelp from "react-dynamic-help";
 
