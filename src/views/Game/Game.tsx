@@ -1091,6 +1091,7 @@ export function Game(): JSX.Element | null {
             draw_right_labels: label_position === "all" || label_position.indexOf("right") >= 0,
             draw_bottom_labels: label_position === "all" || label_position.indexOf("bottom") >= 0,
             visual_undo_request_indicator: preferences.get("visual-undo-request-indicator"),
+            variation_stone_opacity: preferences.get("variation-stone-opacity"),
             onScoreEstimationUpdated: () => {
                 goban.current?.redraw(true);
             },
@@ -1322,7 +1323,6 @@ export function Game(): JSX.Element | null {
                         "double-click-submit-correspondence",
                     );
                 }
-                goban.current.variation_stone_opacity = preferences.get("variation-stone-opacity");
                 goban.current.visual_undo_request_indicator = preferences.get(
                     "visual-undo-request-indicator",
                 );
