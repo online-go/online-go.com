@@ -21,7 +21,8 @@ import * as ReactSelect from "react-select";
 import Select from "react-select";
 import { useUser } from "hooks";
 import { report_categories } from "Report";
-import { report_manager, Report } from "report_manager";
+import { report_manager } from "report_manager";
+import { Report } from "report_util";
 import { AutoTranslate } from "AutoTranslate";
 import { _, pgettext } from "translate";
 import { Player } from "Player";
@@ -484,24 +485,24 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                 )}
             </div>
 
-            {user.is_moderator && (
-                <>
-                    <div className="actions">
-                        <div className="related-reports">
-                            {related.length > 0 && (
-                                <>
-                                    <h4>{_("Related Reports")}</h4>
-                                    <ul>
-                                        {related.map((r) => (
-                                            <li key={r.report.id}>
-                                                <Link to={`/reports-center/all/${r.report.id}`}>
-                                                    {R(r.report.id)}: {r.relationship}
-                                                </Link>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </>
-                            )}
+            <div className="actions">
+                <div className="related-reports">
+                    {related.length > 0 && (
+                        <>
+                            <h4>{_("Related Reports")}</h4>
+                            <ul>
+                                {related.map((r) => (
+                                    <li key={r.report.id}>
+                                        <Link to={`/reports-center/all/${r.report.id}`}>
+                                            {R(r.report.id)}: {r.relationship}
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
+                        </>
+                    )}
+                    {user.is_moderator && (
+                        <>
                             {report.voters?.length > 0 && (
                                 <div className="voters">
                                     <h4>{_("Voters:")}</h4>
@@ -520,51 +521,53 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                                     <div className="Card">{report.community_mod_note}</div>
                                 </div>
                             )}
-                        </div>
+                        </>
+                    )}
+                </div>
+                {user.is_moderator && (
+                    <div className="actions-right">
+                        {reportState !== "resolved" && report.detected_ai_games?.length > 0 ? (
+                            <button onClick={() => openAnnulQueueModal(setIsAnnulQueueModalOpen)}>
+                                Inspect & Annul Games
+                            </button>
+                        ) : null}
+                        {reportState !== "resolved" && claimed_by_me && (
+                            <button
+                                className="success"
+                                onClick={() => {
+                                    void report_manager.good_report(report.id);
+                                    next();
+                                }}
+                            >
+                                Close as good report
+                            </button>
+                        )}
 
-                        <div className="actions-right">
-                            {reportState !== "resolved" && report.detected_ai_games?.length > 0 ? (
-                                <button
-                                    onClick={() => openAnnulQueueModal(setIsAnnulQueueModalOpen)}
-                                >
-                                    Inspect & Annul Games
-                                </button>
-                            ) : null}
-                            {reportState !== "resolved" && claimed_by_me && (
-                                <button
-                                    className="success"
-                                    onClick={() => {
-                                        void report_manager.good_report(report.id);
-                                        next();
-                                    }}
-                                >
-                                    Close as good report
-                                </button>
-                            )}
+                        {reportState !== "resolved" && claimed_by_me && (
+                            <button
+                                className="reject"
+                                onClick={() => {
+                                    void report_manager.bad_report(report.id);
+                                    next();
+                                }}
+                            >
+                                Close as bad report
+                            </button>
+                        )}
 
-                            {reportState !== "resolved" && claimed_by_me && (
-                                <button
-                                    className="reject"
-                                    onClick={() => {
-                                        void report_manager.bad_report(report.id);
-                                        next();
-                                    }}
-                                >
-                                    Close as bad report
-                                </button>
-                            )}
-
-                            {reportState === "resolved" && (
-                                <button
-                                    className="default"
-                                    onClick={() => void report_manager.reopen(report.id)}
-                                >
-                                    Re-open
-                                </button>
-                            )}
-                        </div>
+                        {reportState === "resolved" && (
+                            <button
+                                className="default"
+                                onClick={() => void report_manager.reopen(report.id)}
+                            >
+                                Re-open
+                            </button>
+                        )}
                     </div>
-
+                )}
+            </div>
+            {user.is_moderator && (
+                <>
                     <hr />
                     <div className="automod-analysis">
                         <b>Automod Analysis:</b>{" "}
@@ -598,7 +601,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                         )}
                     </div>
                     <hr />
-                    {(user.is_moderator || null) && <UserHistory user={report.reported_user} />}
+                    <UserHistory user={report.reported_user} />
                     <hr />
                     {(report.url || null) && (
                         <a href={report.url} target="_blank">
