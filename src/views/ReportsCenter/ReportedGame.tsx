@@ -156,7 +156,7 @@ export function ReportedGame({
                 Game: <Link to={`/game/${game_id}`}>#{game_id}</Link>
             </h3>
             <div className="reported-game-container">
-                <div className="col">
+                <div className="col reported-game-mini-goban">
                     <div>{_("Reported on turn:") + ` ${reported_at ?? _("not available")}`}</div>
                     <MiniGoban
                         id={game_id}
@@ -168,7 +168,7 @@ export function ReportedGame({
 
                 {goban && goban.engine && (
                     <GobanContext.Provider value={goban}>
-                        <div className="col">
+                        <div className="col reported-game-info">
                             <div>Creator: {game && <Player user={game.creator} />}</div>
                             <div>Black: {game && <Player user={game.black} />}</div>
                             <div>White: {game && <Player user={game.white} />}</div>
