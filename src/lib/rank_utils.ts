@@ -81,7 +81,8 @@ export function starting_rating(starting_rank_hint: rest_api.StartingRankHint): 
     const rank_1d = 30;
     const rank_2k = rank_1d - 2;
     const rank_12k = rank_1d - 12;
-    const rank_20k = rank_1d - 20;
+    const rank_15k = rank_1d - 15;
+    const rank_22k = rank_1d - 22;
     const rank_25k = rank_1d - 25;
     const hint_deviation = 250;
     const hint_volatility = 0.06;
@@ -98,7 +99,7 @@ export function starting_rating(starting_rank_hint: rest_api.StartingRankHint): 
             };
         case "basic":
             return {
-                rating: rank_to_rating(rank_20k),
+                rating: rank_to_rating(rank_22k),
                 deviation: hint_deviation,
                 volatility: hint_volatility,
             };
@@ -114,17 +115,10 @@ export function starting_rating(starting_rank_hint: rest_api.StartingRankHint): 
                 deviation: hint_deviation,
                 volatility: hint_volatility,
             };
-        case "skip":
-            // Treat "skip" like "intermediate", but with full deviation.
-            return {
-                rating: rank_to_rating(rank_12k),
-                deviation: fallback_deviation,
-                volatility: fallback_volatility,
-            };
         default:
-            // Fallback for old users who did not specify anything.
+            // Set "skip" and "none" to mid-DDK, with higher volatility to let them rank quickly
             return {
-                rating: 1500,
+                rating: rank_to_rating(rank_15k),
                 deviation: fallback_deviation,
                 volatility: fallback_volatility,
             };
