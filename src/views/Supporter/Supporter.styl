@@ -13,16 +13,16 @@
         display: grid;
     }
 
-
     .Payment {
-        //display: grid-row;
-        //display: flex;
-        //flex-direction: row;
-        //justify-content: center;
-        //align-items: center;
+        // display: grid-row;
+        // display: flex;
+        // flex-direction: row;
+        // justify-content: center;
+        // align-items: center;
         .fa-check {
             color: green;
         }
+
         .fa-times {
             color: red;
         }
@@ -32,7 +32,7 @@
             width: 12rem;
             text-align: right;
         }
-        
+
         .amount {
             display: inline-block;
             width: 6rem;
@@ -46,6 +46,7 @@
         flex-direction: row;
         justify-content: center;
         align-items: center;
+
         .fa-lock {
             color: green;
         }
@@ -69,7 +70,7 @@
 
         .last4, .expiration {
             display: inline-block;
-            themed background-color shade5
+            themed: background-color shade5;
             width: 4rem;
             text-align: center;
             border-radius: 0.3rem;
@@ -85,7 +86,7 @@
             text-align: left;
         }
 
-        button { 
+        button {
             margin: 0.5rem;
         }
     }
@@ -97,9 +98,10 @@
         margin-bottom: 1rem;
 
         .PriceBox:nth-of-type(2) {
-            box-shadow: 0.0rem 0.3rem 0.8rem #000;
+            box-shadow: 0rem 0.3rem 0.8rem #000;
+
             /body.light .PriceBox:nth-of-type(2) {
-                box-shadow: 0.0rem 0.3rem 0.8rem #888 !important;
+                box-shadow: 0rem 0.3rem 0.8rem #888 !important;
             }
         }
     }
@@ -109,27 +111,26 @@
         flex-direction: column;
         width: 20rem;
         max-width: 95vw;
-        //themed background-color shade3
-        //margin: 1rem;
+        // themed background-color shade3
+        // margin: 1rem;
         margin-left: 0.2rem;
         margin-right: 0.2rem;
         margin-bottom: 1rem;
         margin-top: 1rem;
-        //padding: 0.5rem;
+        // padding: 0.5rem;
         text-align: center;
         border-radius: 0.7rem;
-        font-family: "Tahoma", sans-serif;
+        font-family: 'Tahoma', sans-serif;
         background-color: #0097C7;
         color: #ffffff;
-
         box-shadow: 0.2rem 0.2rem 0.7rem #000;
+
         /body.light .PriceBox {
             box-shadow: 0.2rem 0.2rem 0.9rem #888 !important;
         }
-        //body.dark {
-        //}
 
-
+        // body.dark {
+        // }
         h3, p {
             width: 100%;
         }
@@ -155,13 +156,12 @@
                 position: relative;
 
                 &:before {
-                    font-family: "FontAwesome";
-                    content: "\f00c";
+                    font-family: 'FontAwesome';
+                    content: '\f00c';
                     margin-left: -2rem;
                     position: absolute;
                 }
             }
-            
         }
 
         > h1 {
@@ -184,7 +184,7 @@
         max-width: 40rem;
         text-align: center;
         border-radius: 0.7rem;
-        font-family: "Tahoma", sans-serif;
+        font-family: 'Tahoma', sans-serif;
         background-color: #0097C7;
         color: #ffffff;
         padding: 1rem;
@@ -194,8 +194,9 @@
         width: 100vw;
         max-width: 50rem;
         text-align: justify;
+
         p {
-            padding: 1.0rem;
+            padding: 1rem;
         }
     }
 
@@ -208,6 +209,7 @@
         align-items: center;
         justify-items: center;
         align-content: center;
+
         label {
             font-size: 1.1rem;
             font-weight: bold;
@@ -234,10 +236,11 @@
             display: inline-flex;
             align-items: center;
             align-content: center;
-            //width: 8rem;
+            // width: 8rem;
             font-size: 1.2rem;
             font-weight: bold;
             background-color: #FFC439;
+
             i {
                 margin-left: 0.5rem;
             }
@@ -245,6 +248,7 @@
             &.sign-up, &.paddle-sign-up {
                 background-color: #67478A;
                 color: #fff;
+
                 &:hover {
                     border-color: #67478A;
                     background-color: lighten(#67478A, 10%);
@@ -255,13 +259,14 @@
                 margin-left: 0.5rem;
             }
         }
+
         padding-bottom: 1rem;
     }
 
     .developer-options {
         text-align: center;
         color: #000;
-        padding: 1rem
+        padding: 1rem;
         width: 100%;
         font-weight: bold;
         max-width: 40rem;
@@ -275,16 +280,20 @@
             min-width: 3rem;
             display: inline-block;
         }
+
         dl {
             text-align: left;
             background-color: rgba(255, 255, 255, 0.5);
             padding: 0.5rem;
         }
 
-        input[type="text"] {
+        input {
+            color: #000 !important;
+        }
+
+        input[type='text'] {
             width: 4rem;
             margin-left: 0.5rem;
-            color: #000;
         }
 
         input#paddle_promo_code {
@@ -302,39 +311,39 @@
     }
 }
 
-
-
 .payment-method {
     display: inline-block;
     background-size: contain;
-    width: 2.0rem;
-    height: 2.0rem;
+    width: 2rem;
+    height: 2rem;
     border-radius: 0.3rem;
     margin: 0.3rem;
     background-color: #fff;
 
     &.card {
-        background-image: svg-load("../assets/payment_methods/card.svg");
+        background-image: svg-load('../assets/payment_methods/card.svg');
     }
+
     &.apple {
-        background-image: svg-load("../assets/payment_methods/apple.svg");
+        background-image: svg-load('../assets/payment_methods/apple.svg');
     }
+
     &.google {
-        background-image: svg-load("../assets/payment_methods/google.svg");
+        background-image: svg-load('../assets/payment_methods/google.svg');
     }
+
     &.bank {
-        background-image: svg-load("../assets/payment_methods/bank.svg");
+        background-image: svg-load('../assets/payment_methods/bank.svg');
     }
+
     &.sepa {
-        background-image: svg-load("../assets/payment_methods/sepa.svg");
+        background-image: svg-load('../assets/payment_methods/sepa.svg');
     }
 }
-
 
 .HighlightNumbers {
     .highlight {
         color: #99FB21;
         font-weight: bold;
-
     }
 }

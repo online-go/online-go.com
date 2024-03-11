@@ -84,7 +84,7 @@ export const GoResources = () => {
     const au = getLanguageFlag("au", country, "au");
     const ca = getLanguageFlag("ca", country, "ca");
     const ru = getLanguageFlag("ru", country, "ru");
-    const hk = getLanguageFlag("hk", country, "hk");
+    //const hk = getLanguageFlag("hk", country, "hk");
     const gr = "gr";
     const br = "br";
     const _in = "in";
@@ -126,14 +126,7 @@ export const GoResources = () => {
                                 countries={[en]}
                                 title="Relentless (2016)"
                                 href="https://cdn.online-go.com/relentless.pdf"
-                                authors={[
-                                    "Younggil An",
-                                    "Josh Hoak",
-                                    "David Ormerod",
-                                    <a rel="noopener" href="http://gogameguru.com/relentless/">
-                                        Go Game Guru
-                                    </a>,
-                                ]}
+                                authors={["Younggil An", "Josh Hoak", "David Ormerod"]}
                             />,
                             <Book
                                 countries={[en]}
@@ -158,6 +151,12 @@ export const GoResources = () => {
                                 title="River Mountain Go 2 (20k-8k)"
                                 href="http://tigersmouth.org/downloads/RiverMtnGo-20k-8k.pdf"
                                 authors={["Oliver Richman"]}
+                            />,
+                            <Book
+                                countries={[fr]}
+                                title="Le Maitre ou le Tournoi de Go"
+                                href="https://archive.org/details/lemaitreouletour0000kawa/mode/2up"
+                                authors={["Albin Michel"]}
                             />,
                             <Book
                                 countries={[es]}
@@ -339,6 +338,11 @@ export const GoResources = () => {
                                 href="https://internetgoschool.com/index.vhtml.com"
                             />,
                             <BasicResource
+                                countries={[en, "pl"]}
+                                title="Polgote"
+                                href="https://polgote.com/"
+                            />,
+                            <BasicResource
                                 countries={[en]}
                                 title="Yunguseng Dojang's Online Go School"
                                 href="https://www.yunguseng.com/"
@@ -367,6 +371,11 @@ export const GoResources = () => {
                                 countries={[en]}
                                 title="[PDF] Tsumego Collection"
                                 href="http://tsumego.tasuki.org/"
+                            />,
+                            <BasicResource
+                                countries={[cn]}
+                                title="101weiqi.com"
+                                href="https://www.101weiqi.com/"
                             />,
                             <BasicResource
                                 countries={[en]}
@@ -425,16 +434,6 @@ export const GoResources = () => {
                             />,
                             <BasicResource
                                 countries={[eu]}
-                                title="EuroGoTV Go Broadcasts"
-                                href="http://eurogotv.com/"
-                            />,
-                            <BasicResource
-                                countries={[en]}
-                                title="Twitch Live Streams for Go"
-                                href="https://go.twitch.tv/directory/game/Go"
-                            />,
-                            <BasicResource
-                                countries={[eu]}
                                 title="TED talk - How the ancient game of Go is a guide to modern life"
                                 href="https://www.youtube.com/watch?v=wQuh9YI8rn0"
                             />,
@@ -473,6 +472,16 @@ export const GoResources = () => {
                                     女流棋士 田口美星 YouTube
                                 </a>
                             </span>,
+                            <BasicResource
+                                countries={[en]}
+                                title="European go federation Twitch"
+                                href="http://twitch.tv/europeangofederation"
+                            />,
+                            <BasicResource
+                                countries={[en]}
+                                title="Twitch Live Streams for Go"
+                                href="https://go.twitch.tv/directory/game/Go"
+                            />,
                             <BasicResource
                                 countries={[en]}
                                 title="Awesome Baduk"
@@ -737,6 +746,11 @@ export const GoResources = () => {
                                 href="https://awesomebaduk.com/"
                             />,
                             <BasicResource
+                                countries={[en]}
+                                title="Top player rating list"
+                                href="https://www.goratings.org/en/"
+                            />,
+                            <BasicResource
                                 countries={[eu]}
                                 title="EGF Academy"
                                 href="https://academy.eurogofed.org/"
@@ -786,11 +800,6 @@ export const GoResources = () => {
                                 countries={[en]}
                                 title="Sensei's Library"
                                 href="http://senseis.xmp.net/"
-                            />,
-                            <BasicResource
-                                countries={[en]}
-                                title="GoGameGuru"
-                                href="https://gogameguru.com/"
                             />,
                             <BasicResource
                                 countries={[en]}
@@ -1018,11 +1027,6 @@ export const GoResources = () => {
                                 href="http://www.lifein19x19.com/forum/"
                             />,
                             <BasicResource
-                                countries={[hk]}
-                                title="香港圍棋網 / hkgof.com"
-                                href="http://hkgof.com/"
-                            />,
-                            <BasicResource
                                 countries={[fr]}
                                 title="GO.ON"
                                 href="http://go-on.forumactif.com/"
@@ -1133,6 +1137,11 @@ export const GoResources = () => {
                                 countries={["si"]}
                                 title="Go Zveza Slovenije"
                                 href="https://go-zveza.si/"
+                            />,
+                            <BasicResource
+                                countries={[fr]}
+                                title="Fédération Française de Go"
+                                href="http://ffg.jeudego.org/"
                             />,
                             <BasicResource
                                 countries={["in"]}
@@ -1438,7 +1447,7 @@ export const GoResources = () => {
                             <BasicResource
                                 countries={[en]}
                                 title="Aji's Quest"
-                                href="http://home.earthlink.net/~inkwolf/Inkwolf/Ajis_Quest.html"
+                                href="https://web.archive.org/web/20200217094816/http://home.earthlink.net/~inkwolf/Inkwolf/Ajis_Quest.html"
                             />,
                             <BasicResource
                                 countries={[de]}
