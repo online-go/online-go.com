@@ -116,6 +116,10 @@ reports_center_content_width=56rem
         flex-wrap: wrap;
         max-width: reports_center_content_width;
 
+        .reported-game-info {
+            order: -1; // put this first so mobile layout is nice
+        }
+
         .col {
             flex: 1;
             flex-basis: 45%;
