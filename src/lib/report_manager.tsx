@@ -27,66 +27,11 @@ import { toast } from "toast";
 import { alert } from "swal_config";
 import { socket } from "sockets";
 import { pgettext } from "translate";
-import { ReportedConversation } from "Report";
-import { PlayerCacheEntry } from "player_cache";
+import { Report, community_mod_can_handle } from "report_util";
 import { EventEmitter } from "eventemitter3";
 import { emitNotification } from "Notifications";
 import { browserHistory } from "ogsHistory";
 import { get, post } from "requests";
-import { MODERATOR_POWERS } from "moderation";
-
-interface Vote {
-    voter_id: number;
-    action: string;
-}
-
-export interface Report {
-    // TBD put this into /models, in a suitable namespace?
-    // TBD: relationship between this and SeverToClient['incident-report']
-    id: number;
-    created: string;
-    updated: string;
-    state: string;
-    escalated: boolean;
-    source: string;
-    report_type: string;
-    reporting_user: any;
-    reported_user: any;
-    reported_game: number;
-    reported_game_move?: number;
-    reported_review: number;
-    reported_conversation: ReportedConversation;
-    url: string;
-    moderator: PlayerCacheEntry;
-    cleared_by_user: boolean;
-    was_helpful: boolean;
-    reporter_note: string;
-    reporter_note_translation: {
-        source_language: string;
-        target_language: string;
-        source_text: string;
-        target_text: string;
-    };
-    moderator_note: string;
-    system_note: string;
-    detected_ai_games: Array<Object>;
-
-    automod_to_moderator?: string; // Suggestions from "automod"
-    automod_to_reporter?: string;
-    automod_to_reported?: string;
-
-    available_actions: Array<string>; // community moderator actions
-    voters: Vote[]; // votes from community moderators on this report
-    community_mod_note: string;
-
-    unclaim: () => void;
-    claim: () => void;
-    steal: () => void;
-    bad_report: () => void;
-    good_report: () => void;
-    cancel: () => void;
-    set_note: () => void;
-}
 
 export interface ReportRelation {
     relationship: string;
@@ -231,23 +176,8 @@ class ReportManager extends EventEmitter<Events> {
 
             // Community moderators only get to see reports that they have the power for and
             // that they have not yet voted on, and are not escalated
-            const has_handle_score_cheat =
-                (user.moderator_powers & MODERATOR_POWERS.HANDLE_SCORE_CHEAT) > 0;
-            const has_handle_escaping =
-                (user.moderator_powers & MODERATOR_POWERS.HANDLE_ESCAPING) > 0;
-            const has_handle_stalling =
-                (user.moderator_powers & MODERATOR_POWERS.HANDLE_STALLING) > 0;
 
-            const report_type = report.report_type;
-            if (
-                !user.is_moderator &&
-                user.moderator_powers &&
-                ((!(report_type === "score_cheating" && has_handle_score_cheat) &&
-                    !(report_type === "escaping" && has_handle_escaping) &&
-                    !(report_type === "stalling" && has_handle_stalling)) ||
-                    report.voters?.some((vote) => vote.voter_id === user.id) ||
-                    report.escalated)
-            ) {
+            if (!community_mod_can_handle(user, report)) {
                 return false;
             }
 
@@ -259,7 +189,7 @@ class ReportManager extends EventEmitter<Events> {
                 if (
                     user.is_moderator &&
                     !(report.moderator?.id === user.id) && // maybe they already have it, so they need to see it
-                    ["escaping", "score_cheating", "stalling"].includes(report_type) &&
+                    ["escaping", "score_cheating", "stalling"].includes(report.report_type) &&
                     !report.escalated
                 ) {
                     return false;
