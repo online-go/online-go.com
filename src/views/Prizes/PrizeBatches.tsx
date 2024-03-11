@@ -16,30 +16,25 @@
  */
 
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { get, post } from "requests";
 
 interface PrizeBatch {
     id: string;
     created_at: string;
-    created_by: { username: string };
+    expiration_date: string;
+    created_by: number;
     notes: string;
 }
 
-interface PrizeBatchListProps {
-    history: {
-        push: (path: string) => void;
-    };
-}
-
-export const PrizeBatchList: React.FC<PrizeBatchListProps> = ({ history }) => {
+export const PrizeBatchList: React.FC = () => {
     const [prizeBatches, setPrizeBatches] = useState<PrizeBatch[]>([]);
     const [expirationDate, setExpirationDate] = useState<string>(calculateExpirationDate());
     const [notes, setNotes] = useState<string>("");
+    const navigate = useNavigate();
 
     useEffect(() => {
         get("prizes/batches")
-            .then((response) => response.json())
             .then((data: PrizeBatch[]) => setPrizeBatches(data))
             .catch((error) => console.error("Error fetching prize batches:", error));
     }, []);
@@ -58,10 +53,8 @@ export const PrizeBatchList: React.FC<PrizeBatchListProps> = ({ history }) => {
             notes: notes,
         })
             .then((res) => {
-                const newBatchId = res.id; // Replace 'id' with the actual property name from your response
-
-                // Redirect to the batch management page for the newly created batch
-                history.push(`/prize-batches/${newBatchId}`);
+                const url = "/prize-batches" + res.id;
+                navigate(url);
             })
             .catch((error: any) => console.error("Error creating prize batch:", error));
     };
@@ -83,7 +76,7 @@ export const PrizeBatchList: React.FC<PrizeBatchListProps> = ({ history }) => {
                     <li key={batch.id}>
                         <strong>Date Created:</strong> {new Date(batch.created_at).toLocaleString()}{" "}
                         <br />
-                        <strong>Created by:</strong> {batch.created_by.username} <br />
+                        <strong>Created by:</strong> {batch.created_by} <br />
                         <strong>Notes:</strong> {batch.notes} <br />
                         <Link to={`/prize-batches/${batch.id}`}>View Batch</Link>
                     </li>
