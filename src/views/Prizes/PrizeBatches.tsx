@@ -17,6 +17,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { get, post } from "requests";
 
 interface PrizeBatch {
     id: string;
@@ -25,15 +26,54 @@ interface PrizeBatch {
     notes: string;
 }
 
-export const PrizeBatchList: React.FC = () => {
+interface PrizeBatchListProps {
+    history: {
+        push: (path: string) => void;
+    };
+}
+
+export const PrizeBatchList: React.FC<PrizeBatchListProps> = ({ history }) => {
     const [prizeBatches, setPrizeBatches] = useState<PrizeBatch[]>([]);
+    const [expirationDate, setExpirationDate] = useState<string>(calculateExpirationDate());
+    const [notes, setNotes] = useState<string>("");
 
     useEffect(() => {
-        fetch("prizes/batches")
+        get("prizes/batches")
             .then((response) => response.json())
             .then((data: PrizeBatch[]) => setPrizeBatches(data))
             .catch((error) => console.error("Error fetching prize batches:", error));
     }, []);
+
+    const handleExpirationDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setExpirationDate(event.target.value);
+    };
+
+    const handleNotesChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+        setNotes(event.target.value);
+    };
+
+    const handleCreateBatch = () => {
+        post("prizes/batches", {
+            expiration: expirationDate,
+            notes: notes,
+        })
+            .then((res) => {
+                const newBatchId = res.id; // Replace 'id' with the actual property name from your response
+
+                // Redirect to the batch management page for the newly created batch
+                history.push(`/prize-batches/${newBatchId}`);
+            })
+            .catch((error: any) => console.error("Error creating prize batch:", error));
+    };
+    function calculateExpirationDate(): string {
+        const currentDate = new Date();
+        const oneYearLater = new Date(
+            currentDate.getFullYear() + 1,
+            currentDate.getMonth(),
+            currentDate.getDate(),
+        );
+        return oneYearLater.toISOString().split("T")[0];
+    }
 
     return (
         <div>
@@ -50,6 +90,29 @@ export const PrizeBatchList: React.FC = () => {
                 ))}
             </ul>
             <Link to="/prize-batches/create">Create New Batch</Link>
+            <div className="new-batch-form">
+                <h3>Create New Batch</h3>
+                <form>
+                    <label>
+                        Expiration Date:
+                        <input
+                            type="date"
+                            value={expirationDate}
+                            onChange={handleExpirationDateChange}
+                        />
+                    </label>
+                    <br />
+                    <label>
+                        Notes:
+                        <br />
+                        <textarea value={notes} onChange={handleNotesChange} rows={4} cols={50} />
+                    </label>
+                    <br />
+                    <button type="button" onClick={handleCreateBatch}>
+                        Create Batch
+                    </button>
+                </form>
+            </div>
         </div>
     );
 };
