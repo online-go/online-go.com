@@ -152,12 +152,8 @@ export function ReportedGame({
 
     return (
         <div className="reported-game">
-            <h3>
-                Game: <Link to={`/game/${game_id}`}>#{game_id}</Link>
-            </h3>
             <div className="reported-game-container">
-                <div className="col">
-                    <div>{_("Reported on turn:") + ` ${reported_at ?? _("not available")}`}</div>
+                <div className="col reported-game-mini-goban">
                     <MiniGoban
                         id={game_id}
                         noLink={true}
@@ -165,11 +161,19 @@ export function ReportedGame({
                         chat={true}
                     />
                 </div>
-
                 {goban && goban.engine && (
                     <GobanContext.Provider value={goban}>
-                        <div className="col">
-                            <div>Creator: {game && <Player user={game.creator} />}</div>
+                        <div className="col reported-game-info">
+                            <h3>
+                                Game: <Link to={`/game/${game_id}`}>#{game_id}</Link>
+                                <span className="created-note">
+                                    (created by:
+                                    {game && <Player user={game.creator} />})
+                                </span>
+                            </h3>
+                            <div>
+                                {_("Reported on turn:") + ` ${reported_at ?? _("not available")}`}
+                            </div>
                             <div>Black: {game && <Player user={game.black} />}</div>
                             <div>White: {game && <Player user={game.white} />}</div>
                             <div>Game Phase: {goban.engine.phase}</div>
