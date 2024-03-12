@@ -54,7 +54,7 @@ interface ReportProperties {
 export const report_categories: ReportDescription[] = [
     {
         type: "escaping",
-        title: pgettext("Report user for escaping", "Stopped Playing"),
+        title: pgettext("Report user for escaping from the game", "Stopped Playing"),
         description: pgettext(
             "Report user for not finishing the game properly",
             "User left the game or stopped playing without concluding it properly.",
