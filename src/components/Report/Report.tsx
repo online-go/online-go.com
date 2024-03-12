@@ -54,10 +54,10 @@ interface ReportProperties {
 export const report_categories: ReportDescription[] = [
     {
         type: "escaping",
-        title: pgettext("Report user for escaping", "Escaping"),
+        title: pgettext("Report user for escaping from the game", "Stopped Playing"),
         description: pgettext(
-            "Report user for escaping",
-            "User left the game without concluding it properly.",
+            "Report user for not finishing the game properly",
+            "User left the game or stopped playing without concluding it properly.",
         ),
         game_id_required: true,
     },
@@ -78,6 +78,7 @@ export const report_categories: ReportDescription[] = [
             "User is playing time wasting moves, or passing and resuming needlessly, delaying completion of the game.",
         ),
         game_id_required: true,
+        min_description_length: 20,
     },
     {
         type: "inappropriate_content",
