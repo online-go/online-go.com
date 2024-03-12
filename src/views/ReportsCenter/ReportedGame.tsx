@@ -42,6 +42,7 @@ import { Resizable } from "Resizable";
 import { socket } from "sockets";
 import { Player } from "Player";
 import { useUser } from "hooks";
+import { shortTimeControl } from "TimeControl";
 
 const TRUNCATED_GAME_LOG_LENGTH = 25;
 
@@ -171,7 +172,7 @@ export function ReportedGame({
                                     {game && <Player user={game.creator} />})
                                 </span>
                             </h3>
-                            <div>
+                            <div className="reported-turn">
                                 {_("Reported on turn:") + ` ${reported_at ?? _("not available")}`}
                             </div>
                             <div>Black: {game && <Player user={game.black} />}</div>
@@ -240,6 +241,11 @@ export function ReportedGame({
                                 className="vertically-resizable"
                                 ref={(ref) => ref?.div && goban.setMoveTreeContainer(ref.div)}
                             />
+                            {!!goban?.engine && (
+                                <div className="reported-game-timing">
+                                    {`Time control: ${shortTimeControl(goban.engine.time_control)}`}
+                                </div>
+                            )}
                         </div>
 
                         <div className="col">
