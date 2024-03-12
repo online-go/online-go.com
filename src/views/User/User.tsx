@@ -353,7 +353,7 @@ export function User(props: { user_id?: number }): JSX.Element {
                                     {!!user &&
                                     user.need_rank &&
                                     user.starting_rank_hint &&
-                                    ["skip", "none"].includes(user.starting_rank_hint) ? (
+                                    ["skip", "not provided"].includes(user.starting_rank_hint) ? (
                                         <Card>
                                             <NewUserRankChooser
                                                 show_skip={false}

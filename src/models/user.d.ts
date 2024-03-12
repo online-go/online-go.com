@@ -45,7 +45,14 @@ declare namespace rest_api {
             | `${import("../lib/types").Speed}-${import("../lib/types").Size}`]?: RatingsConfig;
     };
 
-    type StartingRankHint = "new" | "basic" | "intermediate" | "advanced" | "skip" | "none" | null;
+    type StartingRankHint =
+        | "new"
+        | "basic"
+        | "intermediate"
+        | "advanced"
+        | "skip"
+        | "not provided"
+        | null; // null is for users who were never offered this.
 
     /**
      * The type of `config.user` passed back by the `ui/config` endpoint.
