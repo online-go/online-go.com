@@ -16,3 +16,4 @@
  */
 
 export * from "./PrizeBatchList";
+export * from "./PrizeBatch";
