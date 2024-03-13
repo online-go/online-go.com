@@ -42,8 +42,8 @@ export interface Rating {
     partial_bounded_rank_label: string;
 }
 
-export const MinRank = 5;
-export const MaxRank = 38;
+export const MinRank = 5.01;
+export const MaxRank = 38.99;
 export const PROVISIONAL_RATING_CUTOFF = 160;
 
 const MIN_RATING = 100;
@@ -245,21 +245,15 @@ export function rankString(
         return "?";
     }
 
-    if (r < 30) {
-        if (with_tenths) {
-            (r as any) = (Math.ceil((30 - r) * 10) / 10).toFixed(1);
-        } else {
-            r = Math.ceil(30 - r);
-        }
-        return interpolate(pgettext("Kyu", "%sk"), [r]);
+    let is_kyu = (r < 30);
+    r = 1 + Math.abs(r - 30);
+    r = Math.floor(r * 10) / 10;
+    let r_str = r.toFixed(1);
+    if (!with_tenths) {
+        r_str = r_str.split('.')[0];
+        // n.b. Working in string space to avoid any floating point conversion inconsistencies.
     }
-
-    if (with_tenths) {
-        (r as any) = (Math.floor((r - 29) * 10) / 10).toFixed(1);
-    } else {
-        r = Math.floor(r - 29);
-    }
-    return interpolate(pgettext("Dan", "%sd"), [r]);
+    return interpolate(is_kyu ? pgettext("Kyu", "%sk") : pgettext("Dan", "%sd"),[r_str]);
 }
 
 /**
