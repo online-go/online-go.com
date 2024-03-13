@@ -245,15 +245,15 @@ export function rankString(
         return "?";
     }
 
-    let is_kyu = (r < 30);
+    const is_kyu = r < 30;
     r = 1 + Math.abs(r - 30);
     r = Math.floor(r * 10) / 10;
     let r_str = r.toFixed(1);
     if (!with_tenths) {
-        r_str = r_str.split('.')[0];
+        r_str = r_str.split(".")[0];
         // n.b. Working in string space to avoid any floating point conversion inconsistencies.
     }
-    return interpolate(is_kyu ? pgettext("Kyu", "%sk") : pgettext("Dan", "%sd"),[r_str]);
+    return interpolate(is_kyu ? pgettext("Kyu", "%sk") : pgettext("Dan", "%sd"), [r_str]);
 }
 
 /**
