@@ -152,7 +152,7 @@ test("getUserRating", () => {
             professional: false,
             provisional: false,
             rank: 23,
-            rank_deviation_labels: ["8.1k", "6.2k"],
+            rank_deviation_labels: ["8.2k", "6.2k"],
             rank_label: "7k",
             rating: 1465,
             unset: false,
