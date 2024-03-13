@@ -98,8 +98,6 @@ export function User(props: { user_id?: number }): JSX.Element {
     const [trophies, setTrophies] = React.useState<rest_api.FullPlayerDetail["trophies"]>();
     const [vs, setVs] = React.useState<rest_api.FullPlayerDetail["vs"]>();
 
-    const show_graph_type_toggle = !preferences.get("rating-graph-always-use");
-
     const resolve = (user_id: number) => {
         setUser(undefined);
         setEditing(/edit/.test(location.hash));
@@ -330,6 +328,18 @@ export function User(props: { user_id?: number }): JSX.Element {
     const cdn_release = data.get("config.cdn_release");
     const account_links = user.self_reported_account_linkages;
 
+    const show_rank_chooser =
+        user?.need_rank &&
+        user?.starting_rank_hint &&
+        ["skip", "not provided"].includes(user.starting_rank_hint);
+
+    const show_graph_type_toggle =
+        // We don't show the toggle if they have turned it off in prefs, or if they have no ratings to show.
+        // This implementation is using `user.need_rank` to infer whether we have any ratings to show,
+        // ... done this way because it's handy, we don't have another easy way to find out right here
+        // (that lookup is buried in the ratings chart component)
+        !preferences.get("rating-graph-always-use") && !user?.need_rank;
+
     return (
         <div className="User container">
             <div>
@@ -350,10 +360,7 @@ export function User(props: { user_id?: number }): JSX.Element {
                             // if the back end for some reason doesn't send starting_rank_hint
                             (!!user.starting_rank_hint || resolved) && (
                                 <div className="ratings-container">
-                                    {!!user &&
-                                    user.need_rank &&
-                                    user.starting_rank_hint &&
-                                    ["skip", "not provided"].includes(user.starting_rank_hint) ? (
+                                    {show_rank_chooser ? (
                                         <Card>
                                             <NewUserRankChooser
                                                 show_skip={false}
