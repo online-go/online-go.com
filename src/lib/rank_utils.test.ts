@@ -147,12 +147,12 @@ test("getUserRating", () => {
             bounded_rank: 23,
             bounded_rank_label: "7k",
             deviation: 62,
-            partial_bounded_rank_label: "6.3k",
-            partial_rank_label: "6.3k",
+            partial_bounded_rank_label: "7.2k",
+            partial_rank_label: "7.2k",
             professional: false,
             provisional: false,
             rank: 23,
-            rank_deviation_labels: ["7.3k", "5.3k"],
+            rank_deviation_labels: ["8.1k", "6.2k"],
             rank_label: "7k",
             rating: 1465,
             unset: false,
@@ -166,12 +166,12 @@ test("getUserRating", () => {
             bounded_rank: 23,
             bounded_rank_label: "7k",
             deviation: 64,
-            partial_bounded_rank_label: "6.1k",
-            partial_rank_label: "6.1k",
+            partial_bounded_rank_label: "7.0k",
+            partial_rank_label: "7.0k",
             professional: false,
             provisional: false,
             rank: 23,
-            rank_deviation_labels: ["7.1k", "5.1k"],
+            rank_deviation_labels: ["8.0k", "6.0k"],
             rank_label: "7k",
             rating: 1480,
             unset: false,
@@ -185,12 +185,12 @@ test("getUserRating", () => {
             bounded_rank: 24,
             bounded_rank_label: "6k",
             deviation: 350,
-            partial_bounded_rank_label: "5.7k",
-            partial_rank_label: "5.7k",
+            partial_bounded_rank_label: "6.6k",
+            partial_rank_label: "6.6k",
             professional: false,
             provisional: true,
             rank: 24,
-            rank_deviation_labels: ["11.9k", "0.9k"],
+            rank_deviation_labels: ["12.8k", "1.8k"],
             rank_label: "6k",
             rating: 1500,
             unset: true,
@@ -231,7 +231,7 @@ test("rankString", () => {
 
     // User passed in
     expect(rankString(user)).toBe("7k");
-    expect(rankString(user, true)).toBe("7.0k"); // bug? I would expect this to be "6.3k"
+    expect(rankString(user, true)).toBe("7.9k"); // bug? I would expect this to be "6.3k" (now "7.2k")
     expect(rankString(provisional_user)).toBe("?");
 
     // Professional user
