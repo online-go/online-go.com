@@ -247,7 +247,7 @@ export function rankString(
 
     if (r < 30) {
         if (with_tenths) {
-            (r as any) = (Math.ceil((30 - r) * 10) / 10).toFixed(1);
+            (r as any) = (Math.ceil((30 - r + 0.9) * 10) / 10).toFixed(1);
         } else {
             r = Math.ceil(30 - r);
         }
