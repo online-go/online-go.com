@@ -17,7 +17,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { get, post } from "requests";
+import { get, post, del } from "requests";
 
 interface PrizeBatch {
     id: string;
@@ -75,6 +75,19 @@ export const PrizeBatch: React.FC = () => {
             });
     };
 
+    function deleteCode(code) {
+        if (confirm(`Delete code: ${code.code}`) === true) {
+            console.log("delete clicked for code: ", code.code);
+            del("prizes/" + code.code)
+                .then((res) => {
+                    setBatch(res);
+                })
+                .catch((err) => {
+                    console.error(err);
+                });
+        }
+    }
+
     return (
         <div className="prize-batch">
             <div className="batch-info">
@@ -86,13 +99,34 @@ export const PrizeBatch: React.FC = () => {
             </div>
             <div className="codes">
                 <h3>Codes:</h3>
-                {batch?.codes.map((code, i) => {
-                    return (
-                        <li key={i}>
-                            {code.code} - {code.redeemed_at ? code.redeemed_at : "N/A"}
-                        </li>
-                    );
-                })}
+                <table>
+                    <tr>
+                        <th>Code</th>
+                        <th>Duration</th>
+                        <th>Redeemed By</th>
+                        <th>Redeemed At</th>
+                        <th></th>
+                    </tr>
+                    {batch?.codes.map((code, i) => {
+                        return (
+                            <tr key={i}>
+                                <td>{code.code}</td>
+                                <td>{code.duration} days</td>
+                                <td>{code.redeemed_by}</td>
+                                <td>{code.redeemed_at}</td>
+                                <td>
+                                    {code.redeemed_at ? (
+                                        ""
+                                    ) : (
+                                        <button className="sm" onClick={() => deleteCode(code)}>
+                                            Delete
+                                        </button>
+                                    )}
+                                </td>
+                            </tr>
+                        );
+                    })}
+                </table>
             </div>
             <div className="add-codes-form">
                 <h3>Add Codes</h3>
