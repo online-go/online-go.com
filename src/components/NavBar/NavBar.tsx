@@ -310,6 +310,12 @@ export function NavBar(): JSX.Element {
                         </Link>
                     )}
                     {user.is_superuser && (
+                        <Link className="admin-link" to="/prize-batches">
+                            <i className="fa fa-trophy"></i>
+                            Prize Batches
+                        </Link>
+                    )}
+                    {user.is_superuser && (
                         <Link className="admin-link" to="/admin">
                             <i className="fa fa-wrench"></i> Admin
                         </Link>
