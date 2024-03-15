@@ -88,6 +88,38 @@ export const PrizeBatch: React.FC = () => {
         }
     }
 
+    const formatDate = (dateString: string) => {
+        const date = new Date(dateString);
+        const year = date.getFullYear();
+        let month: string | number = date.getMonth() + 1;
+        let day: string | number = date.getDate();
+        month = month < 10 ? "0" + month : month;
+        day = day < 10 ? "0" + day : day;
+        return `${year}-${month}-${day}`;
+    };
+
+    const generateTicketContent = () => {
+        let content = "";
+        batch?.codes.forEach((code) => {
+            content += `Code: ${code.code}\nLevel: ${code.supporter_level}\nDuration: ${
+                code.duration
+            } days\nExpires: ${formatDate(
+                batch?.expiration_date,
+            )}\nRedeem code at https://online-go.com/redeem\n\n`;
+        });
+        return content;
+    };
+
+    const handlePrint = () => {
+        const ticketContent = generateTicketContent();
+        const printWindow = window.open("", "_blank");
+        printWindow!.document.write("<html><head><title>Tickets</title></head><body>");
+        printWindow!.document.write("<pre>" + ticketContent + "</pre>");
+        printWindow!.document.write("</body></html>");
+        printWindow!.document.close();
+        printWindow!.print();
+    };
+
     return (
         <div className="prize-batch">
             <div className="batch-info">
@@ -100,32 +132,34 @@ export const PrizeBatch: React.FC = () => {
             <div className="codes">
                 <h3>Codes:</h3>
                 <table>
-                    <tr>
-                        <th>Code</th>
-                        <th>Duration</th>
-                        <th>Redeemed By</th>
-                        <th>Redeemed At</th>
-                        <th></th>
-                    </tr>
-                    {batch?.codes.map((code, i) => {
-                        return (
-                            <tr key={i}>
-                                <td>{code.code}</td>
-                                <td>{code.duration} days</td>
-                                <td>{code.redeemed_by}</td>
-                                <td>{code.redeemed_at}</td>
-                                <td>
-                                    {code.redeemed_at ? (
-                                        ""
-                                    ) : (
-                                        <button className="sm" onClick={() => deleteCode(code)}>
-                                            Delete
-                                        </button>
-                                    )}
-                                </td>
-                            </tr>
-                        );
-                    })}
+                    <tbody>
+                        <tr>
+                            <th>Code</th>
+                            <th>Duration</th>
+                            <th>Redeemed By</th>
+                            <th>Redeemed At</th>
+                            <th></th>
+                        </tr>
+                        {batch?.codes.map((code, i) => {
+                            return (
+                                <tr key={i}>
+                                    <td>{code.code}</td>
+                                    <td>{code.duration} days</td>
+                                    <td>{code.redeemed_by}</td>
+                                    <td>{code.redeemed_at}</td>
+                                    <td>
+                                        {code.redeemed_at ? (
+                                            ""
+                                        ) : (
+                                            <button className="sm" onClick={() => deleteCode(code)}>
+                                                Delete
+                                            </button>
+                                        )}
+                                    </td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
                 </table>
             </div>
             <div className="add-codes-form">
@@ -146,6 +180,9 @@ export const PrizeBatch: React.FC = () => {
                     </select>
                     <input type="submit" value="Add Codes" />
                 </form>
+            </div>
+            <div className="print-tickets">
+                <button onClick={handlePrint}>Print Tickets</button>
             </div>
         </div>
     );

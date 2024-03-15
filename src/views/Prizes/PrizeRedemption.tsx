@@ -16,10 +16,26 @@
  */
 
 import React, { useState } from "react";
-import { get } from "requests";
+import { get, post } from "requests";
+import { useUser } from "hooks";
+import { useNavigate } from "react-router-dom";
+
+interface Prize {
+    batch: string;
+    id: number;
+    duration: number;
+    code: string;
+    redeemed_ad: string;
+    redeemed_by: number;
+    supporter_level: string;
+}
 
 export const PrizeRedemption: React.FC = () => {
     const [code, setCode] = useState("");
+    const [prizeInfo, setPrizeInfo] = useState<Prize>();
+    const [showForm, setShowForm] = useState(true);
+    const user = useUser();
+    const navigate = useNavigate();
 
     const handleCodeChange = (event: any) => {
         setCode(event.target.value.toUpperCase());
@@ -27,21 +43,77 @@ export const PrizeRedemption: React.FC = () => {
 
     const handleSubmit = (event: any) => {
         event.preventDefault();
-        get("prizes/redeem")
+        const data = {
+            code: code,
+        };
+
+        get(`/billing/summary/${user.id}`)
+            .then((res) => {
+                console.debug("BILLING SUMMARY IS: ", res);
+                console.debug("USER IS:", user);
+            })
+            .catch((err) => {
+                console.error(err);
+            });
+
+        get("prizes/redeem", data)
+            .then((res) => {
+                setPrizeInfo(res);
+                setShowForm(false);
+            })
+            .catch((err) => console.error(err));
+    };
+
+    const onRedeem = () => {
+        const data = {
+            code: code,
+        };
+
+        post("prizes/redeem", data)
             .then((res) => {
                 console.log(res);
             })
             .catch((err) => console.error(err));
     };
 
+    const onCancel = () => {
+        navigate("/");
+    };
+
     return (
         <div className="prize-redemption">
-            <form onSubmit={handleSubmit}>
-                <label>Please Enter Prize Code:</label>
-                <br />
-                <input type="text" value={code} onChange={handleCodeChange} />
-                <input type="submit" value="Submit" />
-            </form>
+            {showForm && (
+                <form onSubmit={handleSubmit}>
+                    <label>Please Enter Prize Code:</label>
+                    <br />
+                    <input type="text" value={code} onChange={handleCodeChange} />
+                    <input type="submit" value="Submit" />
+                </form>
+            )}
+
+            {prizeInfo && (
+                <div className="prize-info">
+                    <h3>Prize Info</h3>
+                    <p>
+                        Prize Level: {prizeInfo.supporter_level} <br />
+                        Duration: {prizeInfo.duration} days
+                    </p>
+                    <div>
+                        Redeem this prize?
+                        <button onClick={onRedeem}>Redeem</button>
+                        <button onClick={onCancel}>Cancel</button>
+                    </div>
+                </div>
+            )}
+
+            <div className="status">
+                <h3>current supporter status</h3>
+                <p>
+                    Logged in as: {user.id} <br />
+                    supporter: {user.supporter} <br />
+                    level: {user.supporter_level}
+                </p>
+            </div>
         </div>
     );
 };
