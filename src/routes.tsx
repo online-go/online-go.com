@@ -72,7 +72,7 @@ import { Experiment, Variant, Default as ExDefault } from "Experiment";
 import { RatingCalculator } from "RatingCalculator";
 import { AccountWarning } from "AccountWarning";
 import { NetworkStatus } from "NetworkStatus";
-import { PrizeBatchList, PrizeBatch } from "Prizes";
+import { PrizeBatchList, PrizeBatch, PrizeRedemption } from "Prizes";
 
 import * as docs from "docs";
 import { useData } from "./lib/hooks";
@@ -299,6 +299,7 @@ export const routes = (
                 <Route path="/admin/online_leagues" element={<OnlineLeaguesAdmin />} />
                 <Route path="/admin" element={<Admin />} />
                 <Route path="/announcement-center" element={<AnnouncementCenter />} />
+                <Route path="/redeem" element={<PrizeRedemption />} />
                 <Route path="/prize-batches/:id" element={<PrizeBatch />} />
                 <Route path="/prize-batches" element={<PrizeBatchList />} />
                 {/*

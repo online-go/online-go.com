@@ -58,7 +58,7 @@ export const PrizeBatch: React.FC = () => {
         setLevel(event.target.value);
     };
 
-    const handleSubmit = (event) => {
+    const handleSubmit = (event: any) => {
         event.preventDefault();
         const data = {
             qty: qty,
@@ -75,7 +75,7 @@ export const PrizeBatch: React.FC = () => {
             });
     };
 
-    function deleteCode(code) {
+    function deleteCode(code: any) {
         if (confirm(`Delete code: ${code.code}`) === true) {
             console.log("delete clicked for code: ", code.code);
             del("prizes/" + code.code)
