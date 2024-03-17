@@ -1348,6 +1348,11 @@
   resolved "https://registry.yarnpkg.com/@protobufjs/utf8/-/utf8-1.1.0.tgz#a777360b5b39a1a2e5106f8e858f2fd2d060c570"
   integrity sha512-Vvn3zZrhQZkkBE8LSuW3em98c0FwgO4nxzv6OdSxPKJIEKY2bGbHn+mhGIPerzI4twdxaP8/0+06HBpwf345Lw==
 
+"@reach/observe-rect@^1.2.0":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@reach/observe-rect/-/observe-rect-1.2.0.tgz#d7a6013b8aafcc64c778a0ccb83355a11204d3b2"
+  integrity sha512-Ba7HmkFgfQxZqqaeIWWkNK0rEhpxVQHIoVyW1YDSkGsGIXzcaW4deC8B0pZrNSSyLTdIk7y+5olKt5+g0GmFIQ==
+
 "@sentry-internal/feedback@7.92.0":
   version "7.92.0"
   resolved "https://registry.yarnpkg.com/@sentry-internal/feedback/-/feedback-7.92.0.tgz#1293b0a332f81cdf3970abd36894b9d25670c4e6"
@@ -4192,7 +4197,7 @@ d3-shape@^2.1.0:
   dependencies:
     d3-time "1 - 2"
 
-"d3-time-format@2 - 4", d3-time-format@4, d3-time-format@^4.1.0:
+"d3-time-format@2 - 4", d3-time-format@4:
   version "4.1.0"
   resolved "https://registry.yarnpkg.com/d3-time-format/-/d3-time-format-4.1.0.tgz#7ab5257a5041d11ecb4fe70a5c7d16a195bb408a"
   integrity sha512-dJxPBlzC7NugB2PDLwo9Q8JiTR3M3e4/XANkreKSUxF8vvXKqm1Yfq4Q5dl8budlunRVlUUaDUgFt7eA8D6NLg==
@@ -9716,12 +9721,13 @@ react-autosuggest@^10.1.0:
     section-iterator "^2.0.0"
     shallow-equal "^1.2.1"
 
-react-charts@^3.0.0-beta.36:
-  version "3.0.0-beta.55"
-  resolved "https://registry.yarnpkg.com/react-charts/-/react-charts-3.0.0-beta.55.tgz#07b91432f18bd739030cb742bcde915a62760633"
-  integrity sha512-PuPGoK/3B4SgmnANqh1+biuJAN/iYAvLO/juLKJ2dtF0+Wzfa0KarGbgAij2o8P83bAn9bZnu46RCevNvYwOjQ==
+react-charts@=3.0.0-beta.36:
+  version "3.0.0-beta.36"
+  resolved "https://registry.yarnpkg.com/react-charts/-/react-charts-3.0.0-beta.36.tgz#31de0996c4fa4e312ea5d30bf9d529b83b8027c1"
+  integrity sha512-nR3BoggE/0JkZKV0P+xpUKqkuuvrtG1NXeOLIoC1AXBsNqW81y7xJ3Q6h2zz64imUe+4rhDXpZ3qAX69sIRkpw==
   dependencies:
     "@babel/runtime" "^7.14.6"
+    "@reach/observe-rect" "^1.2.0"
     "@types/d3-array" "^3.0.1"
     "@types/d3-scale" "^4.0.1"
     "@types/d3-shape" "^3.0.1"
@@ -9733,7 +9739,6 @@ react-charts@^3.0.0-beta.36:
     d3-scale "^3.3.0"
     d3-shape "^2.1.0"
     d3-time "^2.1.1"
-    d3-time-format "^4.1.0"
     ts-toolbelt "^9.6.0"
 
 react-datetime@^3.0.4:
