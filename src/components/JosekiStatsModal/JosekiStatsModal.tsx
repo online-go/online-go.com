@@ -88,10 +88,11 @@ function StatsChart(props: JosekiStatsModalProperties) {
             data={chart_data}
             animate
             curve="monotoneX"
+            enablePoints={false}
             enableSlices="x"
             axisBottom={{
-                format: "%b %d",
-                tickValues: "every month",
+                format: "%b %g",
+                tickValues: "every 3 months",
             }}
             xFormat="time:%Y-%m-%d"
             xScale={{
@@ -100,9 +101,10 @@ function StatsChart(props: JosekiStatsModalProperties) {
                 type: "time",
                 useUTC: false,
             }}
+            axisLeft={{ tickValues: 6 }}
             margin={{
                 bottom: 40,
-                left: 40,
+                left: 60,
                 right: 20,
                 top: 20,
             }}
