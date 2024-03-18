@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import * as moment from "moment";
-import { Chart, AxisOptions } from "react-charts";
+import { ResponsiveLine } from "@nivo/line";
 import * as data from "data";
 import { _ } from "translate";
 import { Modal } from "Modal";
@@ -36,11 +36,6 @@ interface JosekiStatsModalProperties {
     daily_page_visits: Array<JosekiPageVisits>;
 }
 
-interface DailyPageVisits {
-    date: Date;
-    visits: number;
-}
-
 function round_date(the_date: Date): Date {
     return new Date(the_date.setHours(0, 0, 0, 0));
 }
@@ -48,57 +43,74 @@ function round_date(the_date: Date): Date {
 function StatsChart(props: JosekiStatsModalProperties) {
     const chart_data = [
         {
-            label: "Total Page Visits",
+            id: "Total Page Visits",
             data: props.daily_page_visits.map((day) => ({
-                date: round_date(new Date(day.date)),
-                visits: day.pageVisits,
+                x: round_date(new Date(day.date)),
+                y: day.pageVisits,
             })),
         },
         {
-            label: "Explore Page Visits",
+            id: "Explore Page Visits",
             data: props.daily_page_visits.map((day) => ({
-                date: round_date(new Date(day.date)),
-                visits: day.explorePageVisits,
+                x: round_date(new Date(day.date)),
+                y: day.explorePageVisits,
             })),
         },
         {
-            label: "Play Mode Visits",
+            id: "Play Mode Visits",
             data: props.daily_page_visits.map((day) => ({
-                date: round_date(new Date(day.date)),
-                visits: day.playPageVisits,
+                x: round_date(new Date(day.date)),
+                y: day.playPageVisits,
             })),
         },
         {
-            label: "Guest Visits",
+            id: "Guest Visits",
             data: props.daily_page_visits.map((day) => ({
-                date: round_date(new Date(day.date)),
-                visits: day.guestPageVisits,
+                x: round_date(new Date(day.date)),
+                y: day.guestPageVisits,
             })),
         },
     ];
-    const primaryAxis = React.useMemo(
-        (): AxisOptions<DailyPageVisits> => ({
-            getValue: (datum) => {
-                //console.log(datum.date);
-                return datum.date;
-            },
-        }),
-        [],
+
+    const chart_theme =
+        data.get("theme") === "light" // (Accessible theme TBD - this assumes accessible is dark for now)
+            ? {
+                  /* nivo defaults work well with our light theme */
+              }
+            : {
+                  text: { fill: "#FFFFFF" },
+                  tooltip: { container: { color: "#111111" } },
+                  grid: { line: { stroke: "#444444" } },
+              };
+
+    return (
+        <ResponsiveLine
+            data={chart_data}
+            animate
+            curve="monotoneX"
+            enablePoints={false}
+            enableSlices="x"
+            axisBottom={{
+                format: "%b %g",
+                tickValues: "every 3 months",
+            }}
+            xFormat="time:%Y-%m-%d"
+            xScale={{
+                format: "%Y-%m-%d",
+                precision: "day",
+                type: "time",
+                useUTC: false,
+            }}
+            axisLeft={{ tickValues: 6 }}
+            margin={{
+                bottom: 40,
+                left: 60,
+                right: 20,
+                top: 20,
+            }}
+            theme={chart_theme}
+        />
     );
-
-    const secondaryAxes = React.useMemo(
-        (): AxisOptions<DailyPageVisits>[] => [
-            {
-                getValue: (datum) => datum.visits,
-            },
-        ],
-        [],
-    );
-
-    // Accessible theme TBD - this assumes accessible is dark for now
-    const dark_mode = data.get("theme") === "light" ? false : true;
-
-    return <Chart options={{ data: chart_data, primaryAxis, secondaryAxes, dark: dark_mode }} />;
 }
 
 export class JosekiStatsModal extends Modal<Events, JosekiStatsModalProperties, any> {
