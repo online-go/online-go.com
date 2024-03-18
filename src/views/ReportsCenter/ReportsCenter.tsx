@@ -252,7 +252,7 @@ export function ReportsCenter(): JSX.Element | null {
                     }
                     getOptionValue={(data: any) => data.type || data.special}
                     onChange={(data: any) => setCategory(data.type || data.special)}
-                    options={categories.filter((opt: any) => opt.special !== "hr")}
+                    options={visible_categories.filter((opt: any) => opt.special !== "hr")}
                     isClearable={false}
                     isSearchable={false}
                     blurInputOnSelect={true}
