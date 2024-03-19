@@ -105,6 +105,7 @@ export function ModerationActionSelector({
 }: ModerationActionSelectorProps): JSX.Element {
     const [selectedOption, setSelectedOption] = React.useState("");
     const [mod_note, setModNote] = React.useState("");
+    const [voted, setVoted] = React.useState(false);
 
     const updateSelectedAction = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSelectedOption(e.target.value);
@@ -163,7 +164,14 @@ export function ModerationActionSelector({
                 />
             )}
             {((action_choices && enable) || null) && (
-                <button className="success" onClick={() => submit(selectedOption, mod_note)}>
+                <button
+                    className="success"
+                    disabled={voted || !selectedOption}
+                    onClick={() => {
+                        setVoted(true);
+                        submit(selectedOption, mod_note);
+                    }}
+                >
                     {pgettext("A label on a button for submitting a vote", "Vote")}
                 </button>
             )}
