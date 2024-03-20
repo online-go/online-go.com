@@ -15,16 +15,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 import * as React from "react";
-import { _ } from "translate";
+import { _, pgettext } from "translate";
 import { Link } from "react-router-dom";
 import { daysOnlyDurationString } from "TimeControl";
 import { Card } from "material";
+import UserVoteActivityGraph from "./VoteActivityGraph";
+// import VoteActivityGraph from "./VoteActivityGraph";
 
 /** Activity card doesn't care about that many user traits */
 interface ActivityCardUser {
+    id: number;
     supporter: boolean;
     is_moderator: boolean;
     is_superuser: boolean;
+    moderator_powers: number;
     on_vacation: boolean;
     vacation_left: number;
 }
@@ -122,7 +126,7 @@ export function ActivityCard({
                     <div>{_("Not a member of any groups")}</div>
                 </div>
             )}
-            {online_leagues?.length ? (
+            {!!online_leagues?.length && (
                 <>
                     <h4>{_("Online Leagues")}</h4>
                     <div>
@@ -136,7 +140,24 @@ export function ActivityCard({
                         </dl>
                     </div>
                 </>
-            ) : null}
+            )}
+            {!!user.moderator_powers && (
+                <>
+                    <h4>
+                        {pgettext(
+                            "Header of 'community moderation activity stats' section",
+                            "Community Moderation",
+                        )}
+                    </h4>
+                    <div className="mod-action-label">
+                        {pgettext(
+                            "header for a graph showing how often the moderator voted with the others",
+                            "consensus votes",
+                        )}
+                    </div>
+                    <UserVoteActivityGraph user_id={user.id} />
+                </>
+            )}
         </Card>
     );
 }
@@ -147,7 +168,6 @@ function vacationAccrued(vacation_time_accrued: number, user: ActivityCardUser) 
     } else {
         return daysOnlyDurationString(vacation_time_accrued) + " " + _("out of 30 Days");
     }
-    return "User not Found";
 }
 
 function isSpecialUser(user: ActivityCardUser) {

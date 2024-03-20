@@ -18,3 +18,4 @@
 export * from "./User";
 export * from "./UserByName";
 export * from "./ModTools";
+export * from "./VoteActivityGraph";
