@@ -88,6 +88,153 @@ export const PrizeBatch: React.FC = () => {
         }
     }
 
+    const generateTicketHTML = () => {
+        let html = "";
+        if (batch?.codes.length) {
+            batch?.codes.forEach((code) => {
+                html += `
+                    <div class="voucher">
+                        <div class="header">
+                            <img src="/ogs_light.svg" alt="OGS Logo" class="logo" />
+                            <h2>Prize Voucher</h2>
+                        </div>
+                        <div class="content">
+                            <p class="congratulations">Congratulations!</p>
+                            <p class="message">You've won a special prize voucher from Online-Go.com for your outstanding performance at this tournament.</p>
+                            <div class="code-info">
+                                <p><strong>Code:</strong> ${code.code}</p>
+                                <p><strong>Expiration Date:</strong> ${formatDate(
+                                    batch?.expiration_date,
+                                )}</p>
+                                <p><strong>Duration:</strong> ${code.duration} days</p>
+                                <p><strong>Level:</strong> ${code.supporter_level}</p>
+                            </div>
+                            <p class="redemption-instructions">To redeem this voucher, visit <a href="https://online-go.com/redeem" target="_blank">https://online-go.com/redeem</a> and enter the code above. This voucher entitles you to a ${
+                                code.supporter_level
+                            } level of VIP service or an equivalent upgrade to your current subscription on Online-Go.com for the duration listed.</p>
+                        </div>
+                    </div>
+                `;
+            });
+        } else {
+            html = "<p>No codes available.</p>";
+        }
+        return html;
+    };
+
+    const handlePrint = () => {
+        const printWindow = window.open("", "_blank");
+        const htmlContent = `
+            <html>
+                <head>
+                    <title>Prize Vouchers</title>
+                    <style>
+                            @media print {
+                                body {
+                                    display: flex;
+                                    justify-content: center;
+                                    align-items: center;
+                                    height: 100vh;
+                                    margin: 0;
+                                    font-family: Arial, sans-serif;
+                                    background-color: #f7f7f7;
+                                }
+        
+                                .voucher {
+                                    border: 2px solid #3498db;
+                                    padding: 20px;
+                                    max-width: 600px;
+                                    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                                    background-color: #ffffff;
+                                    border-radius: 10px;
+                                    overflow: hidden;
+                                    page-break-after: always;
+                                }
+        
+                                .header {
+                                    display: flex;
+                                    justify-content: center;
+                                    align-items: center;
+                                    margin-bottom: 20px;
+                                    background-color: #3498db;
+                                    color: #ffffff;
+                                    padding: 10px;
+                                    border-radius: 5px;
+                                }
+        
+                                .logo {
+                                    max-width: 100px;
+                                    height: auto;
+                                    margin-right: 20px;
+                                }
+        
+                                .content {
+                                    line-height: 1.6;
+                                    text-align: center;
+                                }
+        
+                                .congratulations {
+                                    font-size: 28px;
+                                    font-weight: bold;
+                                    color: #2ecc71;
+                                    margin-bottom: 10px;
+                                }
+        
+                                .message {
+                                    font-size: 20px;
+                                    color: #34495e;
+                                    margin-bottom: 30px;
+                                }
+        
+                                .code-info {
+                                    margin-bottom: 30px;
+                                    text-align: left;
+                                    padding: 20px;
+                                    background-color: #f5f5f5;
+                                    border-radius: 5px;
+                                    border: 1px solid #ddd;
+                                }
+        
+                                .code-info p {
+                                    margin: 10px 0;
+                                }
+        
+                                .fine-print {
+                                    font-size: 14px;
+                                    color: #666;
+                                    margin-top: 10px;
+                                }
+        
+                                .divider {
+                                    border-top: 1px solid #ddd;
+                                    margin: 30px 0;
+                                }
+        
+                                .terms-and-conditions {
+                                    font-size: 12px;
+                                    color: #777;
+                                    line-height: 1.4;
+                                    text-align: left;
+                                }
+                            }
+                        </style>
+                </head>
+                <body>
+                    <div id="tickets-container">${generateTicketHTML()}</div>
+                </body>
+            </html>
+        `;
+
+        printWindow!.document.open();
+        printWindow!.document.write(htmlContent);
+        printWindow!.document.close();
+
+        const printFunction = printWindow!.print;
+        setTimeout(() => {
+            printFunction();
+        }, 500);
+    };
+
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
         const year = date.getFullYear();
@@ -98,28 +245,6 @@ export const PrizeBatch: React.FC = () => {
         return `${year}-${month}-${day}`;
     };
 
-    const generateTicketContent = () => {
-        let content = "";
-        batch?.codes.forEach((code) => {
-            content += `Code: ${code.code}\nLevel: ${code.supporter_level}\nDuration: ${
-                code.duration
-            } days\nExpires: ${formatDate(
-                batch?.expiration_date,
-            )}\nRedeem code at https://online-go.com/redeem\n\n`;
-        });
-        return content;
-    };
-
-    const handlePrint = () => {
-        const ticketContent = generateTicketContent();
-        const printWindow = window.open("", "_blank");
-        printWindow!.document.write("<html><head><title>Tickets</title></head><body>");
-        printWindow!.document.write("<pre>" + ticketContent + "</pre>");
-        printWindow!.document.write("</body></html>");
-        printWindow!.document.close();
-        printWindow!.print();
-    };
-
     return (
         <div className="prize-batch">
             <div className="batch-info">
@@ -127,7 +252,7 @@ export const PrizeBatch: React.FC = () => {
                 <br />
                 Created By: {batch?.created_by}
                 <br />
-                Expires: {batch?.expiration_date}
+                Expires: {batch?.expiration_date ? formatDate(batch?.expiration_date) : ""}
             </div>
             <div className="codes">
                 <h3>Codes:</h3>
@@ -173,10 +298,10 @@ export const PrizeBatch: React.FC = () => {
                     <br />
                     <label>Level: </label>
                     <select value={level} onChange={handleLevelChange}>
-                        <option value="aji">Aji</option>
-                        <option value="hane">Hane</option>
-                        <option value="tenuki">Tenuki</option>
-                        <option value="meijin">Meijin</option>
+                        <option value="Aji">Aji</option>
+                        <option value="Hane">Hane</option>
+                        <option value="Tenuki">Tenuki</option>
+                        <option value="Meijin">Meijin</option>
                     </select>
                     <input type="submit" value="Add Codes" />
                 </form>
