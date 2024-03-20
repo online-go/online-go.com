@@ -144,8 +144,17 @@ export function ActivityCard({
             {!!user.moderator_powers && (
                 <>
                     <h4>
-                        {pgettext("Header of 'moderation activity stats' section", "Moderation")}
+                        {pgettext(
+                            "Header of 'community moderation activity stats' section",
+                            "Community Moderation",
+                        )}
                     </h4>
+                    <div className="mod-action-label">
+                        {pgettext(
+                            "header for a graph showing how often the moderator voted with the others",
+                            "consensus votes",
+                        )}
+                    </div>
                     <UserVoteActivityGraph user_id={user.id} />
                 </>
             )}

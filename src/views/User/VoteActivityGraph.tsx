@@ -18,7 +18,8 @@
 import React, { useEffect, useState } from "react";
 
 import { get } from "requests";
-import { AxisOptions, AxisTimeOptions, Chart } from "react-charts";
+import * as data from "data";
+import { ResponsiveLine } from "@nivo/line";
 
 interface VoteCountPerDay {
     date: string; // assuming the date is returned as a string, e.g., "2024-03-17"
@@ -31,58 +32,73 @@ interface ModeratorVoteCountData {
 }
 
 interface VoteActivityGraphProps {
-    data: ModeratorVoteCountData;
+    vote_data: ModeratorVoteCountData;
 }
 
 function round_date(the_date: Date): Date {
     return new Date(the_date.setHours(0, 0, 0, 0));
 }
 
-const VoteActivityGraph = ({ data }: VoteActivityGraphProps) => {
-    const chartData = React.useMemo(
+const VoteActivityGraph = ({ vote_data }: VoteActivityGraphProps) => {
+    const chart_data = React.useMemo(
         () => [
             {
-                label: "votes",
-                data: data?.counts ?? [],
+                id: "votes",
+                data:
+                    vote_data?.counts.map((day) => ({
+                        x: round_date(new Date(day.date)),
+                        y: day.count,
+                    })) ?? [],
             },
         ],
-        [data],
+        [vote_data],
     );
 
-    const primaryAxis: AxisTimeOptions<VoteCountPerDay> = React.useMemo(
-        () => ({
-            scaleType: "time",
-            tickCount: data.counts.length - 1,
-            shouldNice: false,
-            getValue: (datum: VoteCountPerDay) => {
-                console.log(round_date(new Date(datum.date)));
-                return round_date(new Date(datum.date));
-            },
-        }),
-        [data],
-    );
+    const chart_theme =
+        data.get("theme") === "light" // (Accessible theme TBD - this assumes accessible is dark for now)
+            ? {
+                  /* nivo defaults work well with our light theme */
+              }
+            : {
+                  text: { fill: "#FFFFFF" },
+                  tooltip: { container: { color: "#111111" } },
+                  grid: { line: { stroke: "#444444" } },
+              };
 
-    const secondaryAxes: AxisOptions<VoteCountPerDay>[] = React.useMemo(
-        () => [
-            {
-                min: 0,
-                //formatters: {
-                //    scale: (value: number) => Math.round(value).toString(),
-                //},
-                getValue: (datum: VoteCountPerDay) => {
-                    console.log("count:", datum.count);
-                    return datum.count;
-                },
-                elementType: "line",
-            },
-        ],
-        [],
-    );
+    if (!chart_data[0].data.length) {
+        return <div>No activity yet</div>;
+    }
 
-    console.log("chart render", chartData);
     return (
         <div className="vote-activity-graph">
-            <Chart options={{ data: chartData, primaryAxis, secondaryAxes, dark: true }} />
+            <ResponsiveLine
+                data={chart_data}
+                animate
+                curve="monotoneX"
+                enablePoints={false}
+                enableSlices="x"
+                axisBottom={{
+                    format: "%d %b %g",
+                    tickValues: "every month",
+                }}
+                xFormat="time:%Y-%m-%d"
+                xScale={{
+                    format: "%Y-%m-%d",
+                    precision: "day",
+                    type: "time",
+                    useUTC: false,
+                }}
+                axisLeft={{
+                    tickValues: 6,
+                }}
+                margin={{
+                    bottom: 40,
+                    left: 60,
+                    right: 20,
+                    top: 5,
+                }}
+                theme={chart_theme}
+            />
         </div>
     );
 };
@@ -92,14 +108,14 @@ interface UserVoteActivityGraphProps {
 }
 
 const UserVoteActivityGraph = ({ user_id }: UserVoteActivityGraphProps) => {
-    const [data, setData] = useState<ModeratorVoteCountData | null>(null);
+    const [vote_data, setVoteData] = useState<ModeratorVoteCountData | null>(null);
 
     // Data fetch
     useEffect(() => {
         const fetchData = async () => {
             const response = await get(`players/${user_id}/moderation?aggregate_by=day`);
             const fetchedData: ModeratorVoteCountData = await response;
-            setData(fetchedData);
+            setVoteData(fetchedData);
         };
 
         fetchData().catch((err) => {
@@ -107,11 +123,11 @@ const UserVoteActivityGraph = ({ user_id }: UserVoteActivityGraphProps) => {
         });
     }, [user_id]);
 
-    if (!data) {
+    if (!vote_data) {
         return <div>Loading...</div>;
     }
-    console.log("graph render", data);
-    return <VoteActivityGraph data={data} />;
+    console.log("graph render", vote_data);
+    return <VoteActivityGraph vote_data={vote_data} />;
 };
 
 export default UserVoteActivityGraph;
