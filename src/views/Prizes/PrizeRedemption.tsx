@@ -120,8 +120,9 @@ export const PrizeRedemption: React.FC = () => {
 
         post("prizes/redeem", data)
             .then((res) => {
-                console.log(res);
-                setRedeemed(true);
+                if (res === 200) {
+                    setRedeemed(true);
+                }
             })
             .catch((err) => {
                 console.error(err);
