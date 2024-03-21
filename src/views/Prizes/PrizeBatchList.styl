@@ -4,6 +4,13 @@
     padding 20px
     font-family Arial, sans-serif
 
+    .header {
+        display flex
+        justify-content space-between
+        align-items center
+        margin-bottom 20px
+    }
+
     .batch-list {
         list-style-type none
         padding 0
@@ -38,7 +45,28 @@
         padding 10px 20px
         border-radius 5px
         cursor pointer
-        margin-top 20px
+        margin-top 0
+    }
+
+    .popup {
+        position fixed
+        top 0
+        left 0
+        width 100%
+        height 100%
+        background-color rgba(0, 0, 0, 0.5)
+        display flex
+        justify-content center
+        align-items center
+        z-index 100
+    }
+
+    .popup-content {
+        themed background-color background-color
+        padding 20px
+        border-radius 5px
+        max-width 500px
+        width 100%
     }
 
     .new-batch-form {
@@ -61,14 +89,20 @@
             margin-top 5px
         }
 
-        button {
-            themed background-color primary
-            themed color colored-background-fg
-            border none
-            padding 10px 20px
-            border-radius 5px
-            cursor pointer
-            margin-top 10px
+        .form-buttons {
+            display flex
+            justify-content flex-end
+            margin-top 20px
+
+            button {
+                themed background-color primary
+                themed color colored-background-fg
+                border none
+                padding 10px 20px
+                border-radius 5px
+                cursor pointer
+                margin-left 10px
+            }
         }
     }
 }

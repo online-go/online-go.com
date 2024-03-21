@@ -82,7 +82,12 @@ export const PrizeBatchList: React.FC = () => {
 
     return (
         <div className="prize-batch-list">
-            <h2>Prize Batches</h2>
+            <div className="header">
+                <h2>Prize Batches</h2>
+                <button className="new-batch-btn" onClick={toggleNewBatchForm}>
+                    Create New Batch
+                </button>
+            </div>
             <ul className="batch-list">
                 {prizeBatches.map((batch) => (
                     <li key={batch.id} className="batch-item">
@@ -98,17 +103,19 @@ export const PrizeBatchList: React.FC = () => {
                     </li>
                 ))}
             </ul>
-            <button className="new-batch-btn" onClick={toggleNewBatchForm}>
-                {showNewBatchForm ? "Cancel" : "Create New Batch"}
-            </button>
             {showNewBatchForm && (
-                <NewBatchForm
-                    expirationDate={expirationDate}
-                    notes={notes}
-                    handleExpirationDateChange={handleExpirationDateChange}
-                    handleNotesChange={handleNotesChange}
-                    handleCreateBatch={handleCreateBatch}
-                />
+                <div className="popup">
+                    <div className="popup-content">
+                        <NewBatchForm
+                            expirationDate={expirationDate}
+                            notes={notes}
+                            handleExpirationDateChange={handleExpirationDateChange}
+                            handleNotesChange={handleNotesChange}
+                            handleCreateBatch={handleCreateBatch}
+                            onClose={toggleNewBatchForm}
+                        />
+                    </div>
+                </div>
             )}
         </div>
     );
@@ -120,12 +127,14 @@ const NewBatchForm: React.FC<{
     handleExpirationDateChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     handleNotesChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
     handleCreateBatch: () => void;
+    onClose: () => void;
 }> = ({
     expirationDate,
     notes,
     handleExpirationDateChange,
     handleNotesChange,
     handleCreateBatch,
+    onClose,
 }) => {
     return (
         <div className="new-batch-form">
@@ -146,9 +155,14 @@ const NewBatchForm: React.FC<{
                     <textarea value={notes} onChange={handleNotesChange} rows={4} cols={50} />
                 </label>
                 <br />
-                <button type="button" onClick={handleCreateBatch}>
-                    Create Batch
-                </button>
+                <div className="form-buttons">
+                    <button type="button" onClick={handleCreateBatch}>
+                        Create Batch
+                    </button>
+                    <button type="button" onClick={onClose}>
+                        Cancel
+                    </button>
+                </div>
             </form>
         </div>
     );
