@@ -59,7 +59,7 @@ export const PrizeBatchList: React.FC = () => {
             notes: notes,
         })
             .then((res) => {
-                const url = "/prize-batches" + res.id;
+                const url = "/prize-batches/" + res.id;
                 navigate(url);
             })
             .catch((error: any) => console.error("Error creating prize batch:", error));
