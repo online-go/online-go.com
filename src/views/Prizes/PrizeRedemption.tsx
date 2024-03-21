@@ -18,6 +18,7 @@
 import React, { useState, useRef } from "react";
 import { get, post } from "requests";
 import { useNavigate } from "react-router-dom";
+import { useUser } from "hooks";
 
 interface Prize {
     batch: string;
@@ -38,6 +39,11 @@ export const PrizeRedemption: React.FC = () => {
     const [redeemed, setRedeemed] = useState(false);
     const navigate = useNavigate();
     const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
+    const user = useUser();
+
+    if (user.anonymous) {
+        navigate("/sign-in");
+    }
 
     const handleCodeChange = (event: any, index: number) => {
         const newCode = [...code];
