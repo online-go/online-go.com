@@ -18,6 +18,8 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { get, post, del } from "requests";
+import { useUser } from "hooks";
+import { Player } from "Player";
 
 interface PrizeBatch {
     id: string;
@@ -39,6 +41,8 @@ export const PrizeBatch: React.FC = () => {
     const [duration, setDuration] = useState(30);
     const [level, setLevel] = useState("aji");
     const [showModal, setShowModal] = useState(false);
+
+    const user = useUser();
 
     useEffect(() => {
         const url = "prizes/batches/" + params.id;
@@ -237,7 +241,7 @@ export const PrizeBatch: React.FC = () => {
                     <strong>Batch ID:</strong> {batch?.id}
                 </p>
                 <p>
-                    <strong>Created By:</strong> {batch?.created_by}
+                    <strong>Created By:</strong> <Player user={batch?.created_by} />
                 </p>
                 <p>
                     <strong>Expires:</strong>{" "}
@@ -252,42 +256,50 @@ export const PrizeBatch: React.FC = () => {
                     <h3>Codes</h3>
                     <div className="actions">
                         <button className="print-btn" onClick={handlePrint}>
-                            Print Tickets
+                            Print Vouchers
                         </button>
-                        <button className="add-codes-btn" onClick={() => setShowModal(true)}>
-                            Add Codes
-                        </button>
+                        {user.is_superuser && (
+                            <button className="add-codes-btn" onClick={() => setShowModal(true)}>
+                                Add Codes
+                            </button>
+                        )}
                     </div>
                 </div>
                 <table>
                     <thead>
                         <tr>
                             <th>Code</th>
+                            <th>Level</th>
                             <th>Duration</th>
                             <th>Redeemed By</th>
                             <th>Redeemed At</th>
-                            <th>Actions</th>
+                            {user.is_superuser && <th>Actions</th>}
                         </tr>
                     </thead>
                     <tbody>
                         {batch?.codes.map((code, i) => (
                             <tr key={i}>
                                 <td>{code.code}</td>
+                                <td>{code.supporter_level}</td>
                                 <td>{code.duration} days</td>
-                                <td>{code.redeemed_by}</td>
-                                <td>{code.redeemed_at}</td>
                                 <td>
-                                    {code.redeemed_at ? (
-                                        ""
-                                    ) : (
-                                        <button
-                                            className="delete-btn"
-                                            onClick={() => deleteCode(code)}
-                                        >
-                                            Delete
-                                        </button>
-                                    )}
+                                    {code.redeemed_by ? <Player user={code.redeemed_by} /> : "N/A"}
                                 </td>
+                                <td>{code.redeemed_at}</td>
+                                {user.is_superuser && (
+                                    <td>
+                                        {code.redeemed_at ? (
+                                            ""
+                                        ) : (
+                                            <button
+                                                className="delete-btn"
+                                                onClick={() => deleteCode(code)}
+                                            >
+                                                Delete
+                                            </button>
+                                        )}
+                                    </td>
+                                )}
                             </tr>
                         ))}
                     </tbody>
