@@ -38,6 +38,7 @@ export const PrizeBatch: React.FC = () => {
     const [qty, setQty] = useState(1);
     const [duration, setDuration] = useState(30);
     const [level, setLevel] = useState("aji");
+    const [showModal, setShowModal] = useState(false);
 
     useEffect(() => {
         const url = "prizes/batches/" + params.id;
@@ -69,6 +70,7 @@ export const PrizeBatch: React.FC = () => {
             .then((res) => {
                 console.log("RESPONSE: ", res);
                 setBatch(res);
+                setShowModal(false);
             })
             .catch((err) => {
                 console.error(err);
@@ -129,95 +131,77 @@ export const PrizeBatch: React.FC = () => {
                 <head>
                     <title>Prize Vouchers</title>
                     <style>
-                            @media print {
-                                body {
-                                    display: flex;
-                                    justify-content: center;
-                                    align-items: center;
-                                    height: 100vh;
-                                    margin: 0;
-                                    font-family: Arial, sans-serif;
-                                    background-color: #f7f7f7;
-                                }
-        
-                                .voucher {
-                                    border: 2px solid #3498db;
-                                    padding: 20px;
-                                    max-width: 600px;
-                                    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-                                    background-color: #ffffff;
-                                    border-radius: 10px;
-                                    overflow: hidden;
-                                    page-break-after: always;
-                                }
-        
-                                .header {
-                                    display: flex;
-                                    justify-content: center;
-                                    align-items: center;
-                                    margin-bottom: 20px;
-                                    background-color: #3498db;
-                                    color: #ffffff;
-                                    padding: 10px;
-                                    border-radius: 5px;
-                                }
-        
-                                .logo {
-                                    max-width: 100px;
-                                    height: auto;
-                                    margin-right: 20px;
-                                }
-        
-                                .content {
-                                    line-height: 1.6;
-                                    text-align: center;
-                                }
-        
-                                .congratulations {
-                                    font-size: 28px;
-                                    font-weight: bold;
-                                    color: #2ecc71;
-                                    margin-bottom: 10px;
-                                }
-        
-                                .message {
-                                    font-size: 20px;
-                                    color: #34495e;
-                                    margin-bottom: 30px;
-                                }
-        
-                                .code-info {
-                                    margin-bottom: 30px;
-                                    text-align: left;
-                                    padding: 20px;
-                                    background-color: #f5f5f5;
-                                    border-radius: 5px;
-                                    border: 1px solid #ddd;
-                                }
-        
-                                .code-info p {
-                                    margin: 10px 0;
-                                }
-        
-                                .fine-print {
-                                    font-size: 14px;
-                                    color: #666;
-                                    margin-top: 10px;
-                                }
-        
-                                .divider {
-                                    border-top: 1px solid #ddd;
-                                    margin: 30px 0;
-                                }
-        
-                                .terms-and-conditions {
-                                    font-size: 12px;
-                                    color: #777;
-                                    line-height: 1.4;
-                                    text-align: left;
-                                }
+                        @media print {
+                            body {
+                                display: flex;
+                                justify-content: center;
+                                align-items: center;
+                                height: 100vh;
+                                margin: 0;
+                                font-family: Arial, sans-serif;
+                                background-color: #f7f7f7;
                             }
-                        </style>
+    
+                            .voucher {
+                                border: 2px solid #3498db;
+                                padding: 20px;
+                                max-width: 600px;
+                                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                                background-color: #ffffff;
+                                border-radius: 10px;
+                                overflow: hidden;
+                                page-break-after: always;
+                            }
+    
+                            .header {
+                                display: flex;
+                                justify-content: center;
+                                align-items: center;
+                                margin-bottom: 20px;
+                                background-color: #3498db;
+                                color: #ffffff;
+                                padding: 10px;
+                                border-radius: 5px;
+                            }
+    
+                            .logo {
+                                max-width: 100px;
+                                height: auto;
+                                margin-right: 20px;
+                            }
+    
+                            .content {
+                                line-height: 1.6;
+                                text-align: center;
+                            }
+    
+                            .congratulations {
+                                font-size: 28px;
+                                font-weight: bold;
+                                color: #2ecc71;
+                                margin-bottom: 10px;
+                            }
+    
+                            .message {
+                                font-size: 20px;
+                                color: #34495e;
+                                margin-bottom: 30px;
+                            }
+    
+                            .code-info {
+                                margin-bottom: 30px;
+                                text-align: left;
+                                padding: 20px;
+                                background-color: #f5f5f5;
+                                border-radius: 5px;
+                                border: 1px solid #ddd;
+                            }
+    
+                            .code-info p {
+                                margin: 10px 0;
+                            }
+                        }
+                    </style>
                 </head>
                 <body>
                     <div id="tickets-container">${generateTicketHTML()}</div>
@@ -248,67 +232,110 @@ export const PrizeBatch: React.FC = () => {
     return (
         <div className="prize-batch">
             <div className="batch-info">
-                Batch ID: {batch?.id}
-                <br />
-                Created By: {batch?.created_by}
-                <br />
-                Expires: {batch?.expiration_date ? formatDate(batch?.expiration_date) : ""}
+                <h2>Batch Details</h2>
+                <p>
+                    <strong>Batch ID:</strong> {batch?.id}
+                </p>
+                <p>
+                    <strong>Created By:</strong> {batch?.created_by}
+                </p>
+                <p>
+                    <strong>Expires:</strong>{" "}
+                    {batch?.expiration_date ? formatDate(batch?.expiration_date) : ""}
+                </p>
+                <p>
+                    <strong>Notes:</strong> {batch?.notes}
+                </p>
             </div>
             <div className="codes">
-                <h3>Codes:</h3>
+                <div className="codes-header">
+                    <h3>Codes</h3>
+                    <div className="actions">
+                        <button className="print-btn" onClick={handlePrint}>
+                            Print Tickets
+                        </button>
+                        <button className="add-codes-btn" onClick={() => setShowModal(true)}>
+                            Add Codes
+                        </button>
+                    </div>
+                </div>
                 <table>
-                    <tbody>
+                    <thead>
                         <tr>
                             <th>Code</th>
                             <th>Duration</th>
                             <th>Redeemed By</th>
                             <th>Redeemed At</th>
-                            <th></th>
+                            <th>Actions</th>
                         </tr>
-                        {batch?.codes.map((code, i) => {
-                            return (
-                                <tr key={i}>
-                                    <td>{code.code}</td>
-                                    <td>{code.duration} days</td>
-                                    <td>{code.redeemed_by}</td>
-                                    <td>{code.redeemed_at}</td>
-                                    <td>
-                                        {code.redeemed_at ? (
-                                            ""
-                                        ) : (
-                                            <button className="sm" onClick={() => deleteCode(code)}>
-                                                Delete
-                                            </button>
-                                        )}
-                                    </td>
-                                </tr>
-                            );
-                        })}
+                    </thead>
+                    <tbody>
+                        {batch?.codes.map((code, i) => (
+                            <tr key={i}>
+                                <td>{code.code}</td>
+                                <td>{code.duration} days</td>
+                                <td>{code.redeemed_by}</td>
+                                <td>{code.redeemed_at}</td>
+                                <td>
+                                    {code.redeemed_at ? (
+                                        ""
+                                    ) : (
+                                        <button
+                                            className="delete-btn"
+                                            onClick={() => deleteCode(code)}
+                                        >
+                                            Delete
+                                        </button>
+                                    )}
+                                </td>
+                            </tr>
+                        ))}
                     </tbody>
                 </table>
             </div>
-            <div className="add-codes-form">
-                <h3>Add Codes</h3>
-                <form onSubmit={handleSubmit}>
-                    <label>Quantity: </label>
-                    <input type="number" value={qty} onChange={handleQtyChange} />
-                    <br />
-                    <label>Duration: </label>
-                    <input type="number" value={duration} onChange={handleDurationChange} /> days
-                    <br />
-                    <label>Level: </label>
-                    <select value={level} onChange={handleLevelChange}>
-                        <option value="Aji">Aji</option>
-                        <option value="Hane">Hane</option>
-                        <option value="Tenuki">Tenuki</option>
-                        <option value="Meijin">Meijin</option>
-                    </select>
-                    <input type="submit" value="Add Codes" />
-                </form>
-            </div>
-            <div className="print-tickets">
-                <button onClick={handlePrint}>Print Tickets</button>
-            </div>
+            {showModal && (
+                <div className="modal-overlay">
+                    <div className="modal">
+                        <h3>Add Codes</h3>
+                        <form onSubmit={handleSubmit}>
+                            <div className="form-group">
+                                <label>Quantity:</label>
+                                <input type="number" value={qty} onChange={handleQtyChange} />
+                            </div>
+                            <div className="form-group">
+                                <label>Duration:</label>
+                                <input
+                                    type="number"
+                                    value={duration}
+                                    onChange={handleDurationChange}
+                                />{" "}
+                                days
+                            </div>
+                            <div className="form-group">
+                                <label>Level:</label>
+                                <select value={level} onChange={handleLevelChange}>
+                                    <option value="Aji">Aji</option>
+                                    <option value="Hane">Hane</option>
+                                    <option value="Tenuki">Tenuki</option>
+                                    <option value="Meijin">Meijin</option>
+                                </select>
+                            </div>
+                            <div className="form-actions">
+                                <button type="submit" className="add-codes-btn">
+                                    Add Codes
+                                </button>
+                                <button
+                                    type="button"
+                                    className="cancel-btn"
+                                    onClick={() => setShowModal(false)}
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
