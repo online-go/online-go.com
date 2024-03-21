@@ -1,0 +1,74 @@
+.prize-batch-list {
+    max-width 800px
+    margin 0 auto
+    padding 20px
+    font-family Arial, sans-serif
+
+    .batch-list {
+        list-style-type none
+        padding 0
+    }
+
+    .batch-item {
+        themed background-color card-background-color
+        padding 10px
+        margin-bottom 10px
+        border-radius 5px
+        display flex
+        justify-content space-between
+        align-items center
+    }
+
+    .batch-details {
+        margin-right 20px
+    }
+
+    .view-batch-link {
+        themed color link-color
+
+        &:hover {
+            themed color link-color-active
+        }
+    }
+
+    .new-batch-btn {
+        themed background-color primary
+        themed color colored-background-fg
+        border none
+        padding 10px 20px
+        border-radius 5px
+        cursor pointer
+        margin-top 20px
+    }
+
+    .new-batch-form {
+        margin-top 20px
+        padding 20px
+        themed background-color card-background-color
+        border-radius 5px
+
+        label {
+            display block
+            margin-bottom 10px
+        }
+
+        input, textarea {
+            display block
+            width 100%
+            padding 5px
+            border 1px solid #ccc
+            border-radius 3px
+            margin-top 5px
+        }
+
+        button {
+            themed background-color primary
+            themed color colored-background-fg
+            border none
+            padding 10px 20px
+            border-radius 5px
+            cursor pointer
+            margin-top 10px
+        }
+    }
+}
