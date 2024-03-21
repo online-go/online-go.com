@@ -94,6 +94,7 @@
         "@dnd-kit/sortable": "^7.0.0",
         "@nivo/core": "=0.84.0",
         "@nivo/line": "=0.84.0",
+        "@nivo/pie": "^0.85.1",
         "@sentry/browser": "^7.92.0",
         "@types/d3": "^7.4.0",
         "@types/howler": "^2.2.2",

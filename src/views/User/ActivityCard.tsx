@@ -19,8 +19,9 @@ import { _, pgettext } from "translate";
 import { Link } from "react-router-dom";
 import { daysOnlyDurationString } from "TimeControl";
 import { Card } from "material";
+import * as data from "data";
+import UserVoteActionSummary from "./UserVoteActionSummary";
 import UserVoteActivityGraph from "./VoteActivityGraph";
-// import VoteActivityGraph from "./VoteActivityGraph";
 
 /** Activity card doesn't care about that many user traits */
 interface ActivityCardUser {
@@ -63,6 +64,7 @@ export function ActivityCard({
     tournaments,
     online_leagues,
 }: ActivityCardProps) {
+    const viewer = data.get("user");
     return (
         <Card className="activity-card">
             <h4>
@@ -149,13 +151,25 @@ export function ActivityCard({
                             "Community Moderation",
                         )}
                     </h4>
-                    <div className="mod-action-label">
+                    <div className="mod-graph-header">
                         {pgettext(
                             "header for a graph showing how often the moderator voted with the others",
                             "consensus votes",
                         )}
                     </div>
                     <UserVoteActivityGraph user_id={user.id} />
+
+                    {(viewer.id === user.id || viewer.is_moderator) && (
+                        <>
+                            <div className="mod-graph-header">
+                                {pgettext(
+                                    "header for a graph showing breakdown of moderator's vote outcomes",
+                                    "vote outcome summary",
+                                )}
+                            </div>
+                            <UserVoteActionSummary user_id={user.id} />
+                        </>
+                    )}
                 </>
             )}
         </Card>
