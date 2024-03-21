@@ -72,7 +72,6 @@ export const PrizeBatch: React.FC = () => {
         };
         post("prizes/batches/" + params.id, data)
             .then((res) => {
-                console.log("RESPONSE: ", res);
                 setBatch(res);
                 setShowModal(false);
             })
@@ -83,7 +82,6 @@ export const PrizeBatch: React.FC = () => {
 
     function deleteCode(code: any) {
         if (confirm(`Delete code: ${code.code}`) === true) {
-            console.log("delete clicked for code: ", code.code);
             del("prizes/" + code.code)
                 .then((res) => {
                     setBatch(res);
