@@ -37,6 +37,7 @@ export const PrizeRedemption: React.FC = () => {
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
     const [redeemed, setRedeemed] = useState(false);
+    const [currentSupportLevel, setCurrentSupportLevel] = useState(0);
     const navigate = useNavigate();
     const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
     const user = useUser();
@@ -97,7 +98,8 @@ export const PrizeRedemption: React.FC = () => {
                     setError("Sorry, this code has already been redeemed.");
                     setCode(["", "", "", "", "", ""]);
                 } else {
-                    setPrizeInfo(res);
+                    setCurrentSupportLevel(res.supporter_level);
+                    setPrizeInfo(res.voucher);
                     setShowForm(false);
                 }
             })
@@ -137,13 +139,40 @@ export const PrizeRedemption: React.FC = () => {
         navigate("/");
     };
 
+    const getSupportTier = (support_level: number) => {
+        switch (support_level) {
+            case 1:
+                return "Aji";
+            case 2:
+                return "Hane";
+            case 3:
+                return "Tenuki";
+            case 4:
+                return "Meijin";
+            default:
+                return null;
+        }
+    };
+
+    const getTierValue = (tierName: string) => {
+        switch (tierName.toLowerCase()) {
+            case "aji":
+                return 1;
+            case "hane":
+                return 2;
+            case "tenuki":
+                return 3;
+            case "meijin":
+                return 4;
+            default:
+                return 0;
+        }
+    };
+
     return (
         <div className="prize-redemption">
             <h2>Prize Redemption</h2>
-            <p>
-                Enter your prize code below to redeem your prize and unlock special benefits on
-                Online-Go.com.
-            </p>
+            <p>Enter your prize code below to redeem your prize.</p>
             {showForm && (
                 <form onSubmit={handleSubmit}>
                     <label>Prize Code:</label>
@@ -175,9 +204,37 @@ export const PrizeRedemption: React.FC = () => {
                         <li>Prize Level: {prizeInfo.supporter_level}</li>
                         <li>Duration: {prizeInfo.duration} days</li>
                     </ul>
+                    {currentSupportLevel > 0 ? (
+                        currentSupportLevel === 4 ? (
+                            <p>
+                                You are currently at the highest supporter tier (Meijin). To use
+                                this voucher, you will need to cancel your current subscription
+                                first.
+                            </p>
+                        ) : (
+                            <p>
+                                You are currently a supporter at the{" "}
+                                {getSupportTier(currentSupportLevel)} tier. This prize will upgrade
+                                you to the{" "}
+                                {getSupportTier(
+                                    Math.min(
+                                        currentSupportLevel +
+                                            getTierValue(prizeInfo.supporter_level),
+                                        4,
+                                    ),
+                                )}{" "}
+                                tier.
+                            </p>
+                        )
+                    ) : (
+                        <p>
+                            This prize will grant you the {prizeInfo.supporter_level} tier supporter
+                            status.
+                        </p>
+                    )}
                     <p>Are you sure you want to redeem this prize?</p>
                     <div className="actions">
-                        <button onClick={onRedeem} disabled={loading}>
+                        <button onClick={onRedeem} disabled={loading || currentSupportLevel === 4}>
                             {loading ? "Redeeming..." : "Redeem"}
                         </button>
                         <button onClick={onCancel}>Cancel</button>
