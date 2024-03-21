@@ -15,9 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { get, post } from "requests";
-import { useUser } from "hooks";
 import { useNavigate } from "react-router-dom";
 
 interface Prize {
@@ -31,49 +30,100 @@ interface Prize {
 }
 
 export const PrizeRedemption: React.FC = () => {
-    const [code, setCode] = useState("");
+    const [code, setCode] = useState(["", "", "", "", "", ""]);
     const [prizeInfo, setPrizeInfo] = useState<Prize>();
     const [showForm, setShowForm] = useState(true);
-    const user = useUser();
+    const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [redeemed, setRedeemed] = useState(false);
     const navigate = useNavigate();
+    const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
 
-    const handleCodeChange = (event: any) => {
-        setCode(event.target.value.toUpperCase());
+    const handleCodeChange = (event: any, index: number) => {
+        const newCode = [...code];
+        newCode[index] = event.target.value.toUpperCase();
+        setCode(newCode);
+
+        if (event.target.value !== "" && index < code.length - 1) {
+            inputRefs.current[index + 1]?.focus();
+        }
+    };
+
+    const handleKeyDown = (event: any, index: number) => {
+        if (event.key === "Backspace" && code[index] === "") {
+            if (index > 0) {
+                inputRefs.current[index - 1]?.focus();
+            }
+        }
+    };
+
+    const handlePaste = (event: any) => {
+        event.preventDefault();
+        const pastedCode = event.clipboardData.getData("text").slice(0, 6).toUpperCase();
+
+        const newCode = [...code];
+        for (let i = 0; i < pastedCode.length; i++) {
+            newCode[i] = pastedCode[i];
+        }
+        setCode(newCode);
+
+        inputRefs.current[pastedCode.length - 1]?.focus();
     };
 
     const handleSubmit = (event: any) => {
         event.preventDefault();
-        const data = {
-            code: code,
-        };
 
-        get(`/billing/summary/${user.id}`)
-            .then((res) => {
-                console.debug("BILLING SUMMARY IS: ", res);
-                console.debug("USER IS:", user);
-            })
-            .catch((err) => {
-                console.error(err);
-            });
+        const enteredCode = code.join("");
+
+        if (enteredCode.length !== 6) {
+            setError("Invalid code. Please enter a 6-character code.");
+            return;
+        }
+
+        setLoading(true);
+        setError("");
+
+        const data = { code: enteredCode };
 
         get("prizes/redeem", data)
             .then((res) => {
-                setPrizeInfo(res);
-                setShowForm(false);
+                if (res.redeemed_by) {
+                    setError("Sorry, this code has already been redeemed.");
+                    setCode(["", "", "", "", "", ""]);
+                } else {
+                    setPrizeInfo(res);
+                    setShowForm(false);
+                }
             })
-            .catch((err) => console.error(err));
+            .catch((err) => {
+                console.error(err);
+                setError("Invalid prize code. Please try again.");
+                setCode(["", "", "", "", "", ""]);
+            })
+            .finally(() => {
+                setLoading(false);
+            });
     };
 
     const onRedeem = () => {
-        const data = {
-            code: code,
-        };
+        setLoading(true);
+        setError("");
+
+        const enteredCode = code.join("");
+        const data = { code: enteredCode };
 
         post("prizes/redeem", data)
             .then((res) => {
                 console.log(res);
+                setRedeemed(true);
             })
-            .catch((err) => console.error(err));
+            .catch((err) => {
+                console.error(err);
+                setError("Failed to redeem the prize. Please try again.");
+            })
+            .finally(() => {
+                setLoading(false);
+            });
     };
 
     const onCancel = () => {
@@ -82,38 +132,61 @@ export const PrizeRedemption: React.FC = () => {
 
     return (
         <div className="prize-redemption">
+            <h2>Prize Redemption</h2>
+            <p>
+                Enter your prize code below to redeem your prize and unlock special benefits on
+                Online-Go.com.
+            </p>
             {showForm && (
                 <form onSubmit={handleSubmit}>
-                    <label>Please Enter Prize Code:</label>
-                    <br />
-                    <input type="text" value={code} onChange={handleCodeChange} />
-                    <input type="submit" value="Submit" />
+                    <label>Prize Code:</label>
+                    <div className="code-input">
+                        {code.map((char, index) => (
+                            <input
+                                key={index}
+                                type="text"
+                                maxLength={1}
+                                value={char}
+                                onChange={(event) => handleCodeChange(event, index)}
+                                onKeyDown={(event) => handleKeyDown(event, index)}
+                                onPaste={handlePaste}
+                                ref={(ref) => (inputRefs.current[index] = ref)}
+                            />
+                        ))}
+                    </div>
+                    <button type="submit" disabled={loading}>
+                        {loading ? "Submitting..." : "Submit"}
+                    </button>
                 </form>
             )}
-
-            {prizeInfo && (
+            {error && <p className="error">{error}</p>}
+            {prizeInfo && !redeemed && (
                 <div className="prize-info">
-                    <h3>Prize Info</h3>
-                    <p>
-                        Prize Level: {prizeInfo.supporter_level} <br />
-                        Duration: {prizeInfo.duration} days
-                    </p>
-                    <div>
-                        Redeem this prize?
-                        <button onClick={onRedeem}>Redeem</button>
+                    <h3>Prize Details</h3>
+                    <p>You are about to redeem the following prize:</p>
+                    <ul>
+                        <li>Prize Level: {prizeInfo.supporter_level}</li>
+                        <li>Duration: {prizeInfo.duration} days</li>
+                    </ul>
+                    <p>Are you sure you want to redeem this prize?</p>
+                    <div className="actions">
+                        <button onClick={onRedeem} disabled={loading}>
+                            {loading ? "Redeeming..." : "Redeem"}
+                        </button>
                         <button onClick={onCancel}>Cancel</button>
                     </div>
                 </div>
             )}
-
-            <div className="status">
-                <h3>current supporter status</h3>
-                <p>
-                    Logged in as: {user.id} <br />
-                    supporter: {user.supporter} <br />
-                    level: {user.supporter_level}
-                </p>
-            </div>
+            {redeemed && (
+                <div className="success-message">
+                    <h3>Congratulations!</h3>
+                    <p>
+                        Your prize has been successfully redeemed. Enjoy your enhanced experience on
+                        Online-Go.com!
+                    </p>
+                    <button onClick={onCancel}>Close</button>
+                </div>
+            )}
         </div>
     );
 };
