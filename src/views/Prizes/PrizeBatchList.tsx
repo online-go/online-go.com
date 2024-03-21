@@ -29,6 +29,7 @@ interface PrizeBatch {
 
 export const PrizeBatchList: React.FC = () => {
     const [prizeBatches, setPrizeBatches] = useState<PrizeBatch[]>([]);
+    const [showNewBatchForm, setShowNewBatchForm] = useState<boolean>(false);
     const [expirationDate, setExpirationDate] = useState<string>(calculateExpirationDate());
     const [notes, setNotes] = useState<string>("");
     const navigate = useNavigate();
@@ -58,6 +59,7 @@ export const PrizeBatchList: React.FC = () => {
             })
             .catch((error: any) => console.error("Error creating prize batch:", error));
     };
+
     function calculateExpirationDate(): string {
         const currentDate = new Date();
         const oneYearLater = new Date(
@@ -68,44 +70,80 @@ export const PrizeBatchList: React.FC = () => {
         return oneYearLater.toISOString().split("T")[0];
     }
 
+    const toggleNewBatchForm = () => {
+        setShowNewBatchForm(!showNewBatchForm);
+    };
+
     return (
-        <div>
+        <div className="prize-batch-list">
             <h2>Prize Batches</h2>
-            <ul>
+            <ul className="batch-list">
                 {prizeBatches.map((batch) => (
-                    <li key={batch.id}>
-                        <strong>Date Created:</strong> {new Date(batch.created_at).toLocaleString()}{" "}
-                        <br />
-                        <strong>Created by:</strong> {batch.created_by} <br />
-                        <strong>Notes:</strong> {batch.notes} <br />
-                        <Link to={`/prize-batches/${batch.id}`}>View Batch</Link>
+                    <li key={batch.id} className="batch-item">
+                        <div className="batch-details">
+                            <strong>Date Created:</strong>{" "}
+                            {new Date(batch.created_at).toLocaleString()} <br />
+                            <strong>Created by:</strong> {batch.created_by} <br />
+                            <strong>Notes:</strong> {batch.notes}
+                        </div>
+                        <Link to={`/prize-batches/${batch.id}`} className="view-batch-link">
+                            View Batch
+                        </Link>
                     </li>
                 ))}
             </ul>
-            <Link to="/prize-batches/create">Create New Batch</Link>
-            <div className="new-batch-form">
-                <h3>Create New Batch</h3>
-                <form>
-                    <label>
-                        Expiration Date:
-                        <input
-                            type="date"
-                            value={expirationDate}
-                            onChange={handleExpirationDateChange}
-                        />
-                    </label>
+            <button className="new-batch-btn" onClick={toggleNewBatchForm}>
+                {showNewBatchForm ? "Cancel" : "Create New Batch"}
+            </button>
+            {showNewBatchForm && (
+                <NewBatchForm
+                    expirationDate={expirationDate}
+                    notes={notes}
+                    handleExpirationDateChange={handleExpirationDateChange}
+                    handleNotesChange={handleNotesChange}
+                    handleCreateBatch={handleCreateBatch}
+                />
+            )}
+        </div>
+    );
+};
+
+const NewBatchForm: React.FC<{
+    expirationDate: string;
+    notes: string;
+    handleExpirationDateChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    handleNotesChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
+    handleCreateBatch: () => void;
+}> = ({
+    expirationDate,
+    notes,
+    handleExpirationDateChange,
+    handleNotesChange,
+    handleCreateBatch,
+}) => {
+    return (
+        <div className="new-batch-form">
+            <h3>Create New Batch</h3>
+            <form>
+                <label>
+                    Expiration Date:
+                    <input
+                        type="date"
+                        value={expirationDate}
+                        onChange={handleExpirationDateChange}
+                    />
+                </label>
+                <br />
+                <label>
+                    Notes:
                     <br />
-                    <label>
-                        Notes:
-                        <br />
-                        <textarea value={notes} onChange={handleNotesChange} rows={4} cols={50} />
-                    </label>
-                    <br />
-                    <button type="button" onClick={handleCreateBatch}>
-                        Create Batch
-                    </button>
-                </form>
-            </div>
+                    <textarea value={notes} onChange={handleNotesChange} rows={4} cols={50} />
+                </label>
+                <br />
+                <button type="button" onClick={handleCreateBatch}>
+                    Create Batch
+                </button>
+            </form>
         </div>
     );
 };
