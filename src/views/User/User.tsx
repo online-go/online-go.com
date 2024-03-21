@@ -328,7 +328,12 @@ export function User(props: { user_id?: number }): JSX.Element {
     const cdn_release = data.get("config.cdn_release");
     const account_links = user.self_reported_account_linkages;
 
+    const viewer = data.get("user");
+
+    // The User's own Profile page is where they can choose their starting rank if they
+    // skipped it before.
     const show_rank_chooser =
+        viewer.id === user.id &&
         user?.need_rank &&
         user?.starting_rank_hint &&
         ["skip", "not provided"].includes(user.starting_rank_hint);
