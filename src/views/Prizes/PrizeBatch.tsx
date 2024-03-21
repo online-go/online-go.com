@@ -99,7 +99,7 @@ export const PrizeBatch: React.FC = () => {
                 html += `
                     <div class="voucher">
                         <div class="header">
-                            <img src="/ogs_light.svg" alt="OGS Logo" class="logo" />
+                            <img src="/ogs_bw.svg" alt="OGS Logo" class="logo" />
                             <h2>Prize Voucher</h2>
                         </div>
                         <div class="content">
