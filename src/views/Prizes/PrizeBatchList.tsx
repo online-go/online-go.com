@@ -18,6 +18,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { get, post } from "requests";
+import { useUser } from "hooks";
 
 interface PrizeBatch {
     id: string;
@@ -33,8 +34,12 @@ export const PrizeBatchList: React.FC = () => {
     const [expirationDate, setExpirationDate] = useState<string>(calculateExpirationDate());
     const [notes, setNotes] = useState<string>("");
     const navigate = useNavigate();
+    const user = useUser();
 
     useEffect(() => {
+        if (!user.is_superuser) {
+            navigate("/");
+        }
         get("prizes/batches")
             .then((data: PrizeBatch[]) => setPrizeBatches(data))
             .catch((error) => console.error("Error fetching prize batches:", error));
