@@ -19,6 +19,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { get, post } from "requests";
 import { useUser } from "hooks";
+import { Player } from "Player";
 
 interface PrizeBatch {
     id: string;
@@ -88,7 +89,7 @@ export const PrizeBatchList: React.FC = () => {
                         <div className="batch-details">
                             <strong>Date Created:</strong>{" "}
                             {new Date(batch.created_at).toLocaleString()} <br />
-                            <strong>Created by:</strong> {batch.created_by} <br />
+                            <strong>Created by:</strong> <Player user={batch.created_by} /> <br />
                             <strong>Notes:</strong> {batch.notes}
                         </div>
                         <Link to={`/prize-batches/${batch.id}`} className="view-batch-link">
