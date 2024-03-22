@@ -20,6 +20,7 @@ import React, { useEffect, useState } from "react";
 import { get } from "requests";
 import * as data from "data";
 import { ResponsivePie } from "@nivo/pie";
+import { ReportType } from "moderation";
 
 interface VoteSummaryData {
     report_type: string;
@@ -42,6 +43,11 @@ const VoteSummaryPie = ({ summary_data }: VoteSummaryPieProps) => {
         [summary_data],
     );
 
+    const have_data =
+        summary_data["total_consensus"] ||
+        summary_data["total_escalated"] ||
+        summary_data["total_non_consensus"];
+
     const chart_theme =
         data.get("theme") === "light" // (Accessible theme TBD - this assumes accessible is dark for now)
             ? {
@@ -53,13 +59,16 @@ const VoteSummaryPie = ({ summary_data }: VoteSummaryPieProps) => {
                   grid: { line: { stroke: "#444444" } },
               };
 
+    if (!have_data) {
+        return <div className="empty-vote-outcome-summary">-</div>;
+    }
     return (
         <div className="vote-outcome-summary">
             <ResponsivePie
                 data={chart_data}
                 animate
                 enableArcLabels={false}
-                margin={{ top: 5, right: 100, bottom: 20, left: 100 }}
+                margin={{ top: 5, right: 100, bottom: 30, left: 100 }}
                 theme={chart_theme}
             />
         </div>
@@ -68,15 +77,21 @@ const VoteSummaryPie = ({ summary_data }: VoteSummaryPieProps) => {
 
 interface UserVoteActionSummaryProps {
     user_id: number;
+    report_type?: ReportType;
 }
 
-const UserVoteActionSummary = ({ user_id }: UserVoteActionSummaryProps) => {
+const UserVoteActionSummary = ({ user_id, report_type }: UserVoteActionSummaryProps) => {
     const [summary_data, setSummaryData] = useState<VoteSummaryData | null>(null);
 
     // Data fetch
     useEffect(() => {
+        let query_url = `players/${user_id}/vote_summary`;
+
+        if (report_type) {
+            query_url += `?report_type=${report_type}`;
+        }
         const fetchData = async () => {
-            const response = await get(`players/${user_id}/vote_summary`);
+            const response = await get(query_url);
             const fetchedData: VoteSummaryData = await response;
             setSummaryData(fetchedData);
         };
@@ -84,7 +99,7 @@ const UserVoteActionSummary = ({ user_id }: UserVoteActionSummaryProps) => {
         fetchData().catch((err) => {
             console.error(err);
         });
-    }, [user_id]);
+    }, [user_id, report_type]);
 
     if (!summary_data) {
         return <div>Loading...</div>;
