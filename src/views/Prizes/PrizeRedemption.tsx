@@ -94,7 +94,7 @@ export const PrizeRedemption: React.FC = () => {
 
         get("prizes/redeem", data)
             .then((res) => {
-                if (res.redeemed_by) {
+                if (res.voucher.redeemed_by) {
                     setError("Sorry, this code has already been redeemed.");
                     setCode(["", "", "", "", "", ""]);
                 } else {
