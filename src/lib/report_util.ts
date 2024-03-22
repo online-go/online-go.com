@@ -72,6 +72,14 @@ export interface Report {
     set_note: () => void;
 }
 
+type CommunityModeratorReportTypes = Partial<Record<ReportType, string>>;
+
+export const COMMUNITY_MODERATION_REPORT_TYPES: CommunityModeratorReportTypes = {
+    stalling: "stalling",
+    score_cheating: "score cheating",
+    escaping: "escaping",
+};
+
 export function community_mod_has_power(
     moderator_powers: number,
     report_type: ReportType,
