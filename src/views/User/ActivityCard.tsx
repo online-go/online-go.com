@@ -178,7 +178,7 @@ export function ActivityCard({
                                     ),
                                 )
                                 .map(([report_type, _flag]) => (
-                                    <div className="mod-graph-header">
+                                    <div className="mod-graph-header" key={report_type}>
                                         {interpolate(
                                             pgettext(
                                                 "header for a graph showing breakdown of moderator's vote outcomes",

@@ -68,7 +68,7 @@ const VoteSummaryPie = ({ summary_data }: VoteSummaryPieProps) => {
                 data={chart_data}
                 animate
                 enableArcLabels={false}
-                margin={{ top: 5, right: 100, bottom: 20, left: 100 }}
+                margin={{ top: 5, right: 100, bottom: 30, left: 100 }}
                 theme={chart_theme}
             />
         </div>
