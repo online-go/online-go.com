@@ -949,7 +949,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
 
                 {this.state.hovered_game_id && (
                     <MiniGoban
-                        id={this.state.hovered_game_id}
+                        game_id={this.state.hovered_game_id}
                         displayWidth={200}
                         width={19}
                         height={19}

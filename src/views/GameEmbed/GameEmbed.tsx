@@ -29,12 +29,13 @@ import { MiniGoban } from "MiniGoban";
 const PADDING = 36;
 
 export function GameEmbed(): JSX.Element {
-    const params = useParams<"game_id">();
+    const params = useParams<{ game_id?: string; review_id?: string }>();
     const [searchParams] = useSearchParams();
     // Suppressing unused var lint error - we'll use this soon!
     React.useEffect(() => console.log(searchParams), [searchParams]);
 
     const game_id = params.game_id ? parseInt(params.game_id) : 0;
+    const review_id = params.review_id ? parseInt(params.review_id) : 0;
 
     // Hide NavBar, announcements, PMs etc.
     React.useEffect(() => {
@@ -50,7 +51,12 @@ export function GameEmbed(): JSX.Element {
 
     return (
         <div className="goban-embed" ref={ref}>
-            <MiniGoban id={game_id} displayWidth={(width ?? 100) - PADDING} openLinksInNewTab />
+            <MiniGoban
+                game_id={game_id}
+                review_id={review_id}
+                displayWidth={(width ?? 100) - PADDING}
+                openLinksInNewTab
+            />
         </div>
     );
 }

@@ -135,7 +135,7 @@ function PuzzleEntry({ puzzle }: { puzzle: PuzzleEntryInterface }) {
             <span className="minigoban">
                 <MiniGoban
                     noLink
-                    id={undefined}
+                    game_id={undefined}
                     json={puzzle.puzzle}
                     displayWidth={64}
                     white={undefined}

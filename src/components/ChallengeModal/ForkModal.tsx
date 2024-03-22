@@ -74,7 +74,7 @@ export class ForkModal extends Modal<Events, ForkModalProperties, any> {
                 </div>
                 <div className="body space-around">
                     <MiniGoban
-                        id={0}
+                        game_id={0}
                         black={undefined}
                         white={undefined}
                         json={this.state.fork_preview}
