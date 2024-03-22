@@ -97,25 +97,27 @@ export const PrizeBatch: React.FC = () => {
         if (batch?.codes.length) {
             batch?.codes.forEach((code) => {
                 html += `
-                    <div class="voucher">
-                        <div class="header">
-                            <img src="https://cdn.online-go.com/assets/ogs_bw.svg" alt="OGS Logo" class="logo" />
-                            <h2>Prize Voucher</h2>
-                        </div>
-                        <div class="content">
-                            <p class="congratulations">Congratulations!</p>
-                            <p class="message">You've won a special prize voucher from Online-Go.com for your outstanding performance at this tournament.</p>
-                            <div class="code-info">
-                                <p><strong>Code:</strong> ${code.code}</p>
-                                <p><strong>Expiration Date:</strong> ${formatDate(
-                                    batch?.expiration_date,
-                                )}</p>
-                                <p><strong>Duration:</strong> ${code.duration} days</p>
-                                <p><strong>Level:</strong> ${code.supporter_level}</p>
+                    <div class="voucher-container">
+                        <div class="voucher">
+                            <div class="header">
+                                <img src="https://cdn.online-go.com/assets/ogs_bw.svg" alt="OGS Logo" class="logo" />
+                                <h2>Prize Voucher</h2>
                             </div>
-                            <p class="redemption-instructions">To redeem this voucher, visit <a href="https://online-go.com/redeem" target="_blank">https://online-go.com/redeem</a> and enter the code above. This voucher entitles you to a ${
-                                code.supporter_level
-                            } level of VIP service or an equivalent upgrade to your current subscription on Online-Go.com for the duration listed.</p>
+                            <div class="content">
+                                <p class="congratulations">Congratulations!</p>
+                                <p class="message">You've won a special prize voucher from Online-Go.com for your outstanding performance at this tournament.</p>
+                                <div class="code-info">
+                                    <p><strong>Code:</strong> ${code.code}</p>
+                                    <p><strong>Expiration Date:</strong> ${formatDate(
+                                        batch?.expiration_date,
+                                    )}</p>
+                                    <p><strong>Duration:</strong> ${code.duration} days</p>
+                                    <p><strong>Level:</strong> ${code.supporter_level}</p>
+                                </div>
+                                <p class="redemption-instructions">To redeem this voucher, visit <a href="https://online-go.com/redeem" target="_blank">https://online-go.com/redeem</a> and enter the code above. This voucher entitles you to a ${
+                                    code.supporter_level
+                                } level of VIP service or an equivalent upgrade to your current subscription on Online-Go.com for the duration listed.</p>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -140,15 +142,21 @@ export const PrizeBatch: React.FC = () => {
                         }
 
                         @media print {
+                            @page {
+                                margin: 0;
+                            }
+                        
                             body {
-                                display: flex;
-                                flex-direction: column;
-                                align-items: center;
                                 margin: 0;
                                 font-family: Arial, sans-serif;
-                                background-color: #f7f7f7;
                             }
-    
+                        
+                            .voucher-container {
+                                padding: 2cm;
+                                padding-top: 3cm;
+                                page-break-after: always;
+                            }
+                        
                             .voucher {
                                 border: 2px solid #3498db;
                                 padding: 20px;
@@ -157,45 +165,44 @@ export const PrizeBatch: React.FC = () => {
                                 background-color: #ffffff;
                                 border-radius: 10px;
                                 overflow: hidden;
-                                page-break-after: always;
-                                margin-bottom: 20px;
+                                page-break-inside: avoid;
+                                margin-bottom: 1.6cm;
                             }
-    
+                        
                             .header {
                                 display: flex;
                                 justify-content: center;
                                 align-items: center;
+                                color: black;
                                 margin-bottom: 20px;
-                                background-color: #3498db;
-                                color: #ffffff;
                                 padding: 10px;
                                 border-radius: 5px;
                             }
-    
+                        
                             .logo {
                                 max-width: 100px;
                                 height: auto;
                                 margin-right: 20px;
                             }
-    
+                        
                             .content {
                                 line-height: 1.6;
                                 text-align: center;
                             }
-    
+                        
                             .congratulations {
                                 font-size: 28px;
                                 font-weight: bold;
                                 color: #2ecc71;
                                 margin-bottom: 10px;
                             }
-    
+                        
                             .message {
                                 font-size: 20px;
                                 color: #34495e;
                                 margin-bottom: 30px;
                             }
-    
+                        
                             .code-info {
                                 margin-bottom: 30px;
                                 text-align: left;
@@ -204,12 +211,20 @@ export const PrizeBatch: React.FC = () => {
                                 border-radius: 5px;
                                 border: 1px solid #ddd;
                             }
-    
+                        
                             .code-info p {
                                 margin: 10px 0;
                             }
                         }
                     </style>
+                    <script>
+                        window.onload = () => {
+                            window.print();
+                            window.onafterprint = () => {
+                                window.close();
+                            };
+                        };
+                    </script>
                 </head>
                 <body>
                     <div id="tickets-container">${generateTicketHTML()}</div>
@@ -220,10 +235,6 @@ export const PrizeBatch: React.FC = () => {
         printWindow!.document.open();
         printWindow!.document.write(htmlContent);
         printWindow!.document.close();
-
-        printWindow!.onload = () => {
-            printWindow!.print();
-        };
     };
 
     const formatDate = (dateString: string) => {
