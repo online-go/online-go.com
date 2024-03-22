@@ -92,6 +92,7 @@
     "dependencies": {
         "@dnd-kit/core": "^6.0.3",
         "@dnd-kit/sortable": "^7.0.0",
+        "@nivo/api": "^0.74.1",
         "@nivo/core": "=0.84.0",
         "@nivo/line": "=0.84.0",
         "@nivo/pie": "^0.85.1",
