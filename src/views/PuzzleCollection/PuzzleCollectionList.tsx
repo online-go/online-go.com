@@ -65,7 +65,7 @@ export function PuzzleCollectionList(): JSX.Element {
                                 render: (X) => (
                                     <MiniGoban
                                         noLink
-                                        id={undefined}
+                                        game_id={undefined}
                                         json={X.starting_puzzle}
                                         displayWidth={64}
                                         white={undefined}

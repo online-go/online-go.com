@@ -274,7 +274,7 @@ export function AnnulQueueModal({
                             {currentGame && (
                                 <MiniGoban
                                     key={selectedGameIndex}
-                                    id={currentGame.id}
+                                    game_id={currentGame.id}
                                     noLink={true}
                                     onGobanCreated={onGobanCreated}
                                     chat={true}

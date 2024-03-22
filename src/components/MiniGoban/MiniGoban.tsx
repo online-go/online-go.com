@@ -31,7 +31,8 @@ import { PlayerCacheEntry } from "player_cache";
 import { usePreference } from "preferences";
 
 export interface MiniGobanProps {
-    id?: number;
+    game_id?: number;
+    review_id?: number;
     width?: number;
     height?: number;
     displayWidth?: number;
@@ -90,7 +91,8 @@ export function MiniGoban(props: MiniGobanProps): JSX.Element {
                 draw_left_labels: false,
                 draw_right_labels: false,
                 connect_to_chat: !!props.chat,
-                game_id: props.id,
+                game_id: props.game_id,
+                review_id: props.review_id,
                 display_width:
                     props.displayWidth || Math.min($("body").width() - 50, $("#em10").width() * 2),
                 square_size: "auto",
@@ -259,7 +261,7 @@ export function MiniGoban(props: MiniGobanProps): JSX.Element {
             goban.current?.destroy();
             goban_div.current.childNodes.forEach((node) => node.remove());
         };
-    }, [props.id]);
+    }, [props.game_id, props.review_id]);
 
     // Update displayWidth dynamically
     React.useEffect(() => {
@@ -330,13 +332,29 @@ export function MiniGoban(props: MiniGobanProps): JSX.Element {
         new_tab_attributes = { target: "_blank", rel: "noopener noreferrer" };
     }
 
-    if (props.noLink) {
+    if (props.noLink || (!props.game_id && !props.review_id)) {
         return <div className="MiniGoban nolink">{inner}</div>;
     } else {
-        return (
-            <Link to={`/game/${props.id}`} className="MiniGoban link" {...new_tab_attributes}>
-                {inner}
-            </Link>
-        );
+        if (props.game_id) {
+            return (
+                <Link
+                    to={`/game/${props.game_id}`}
+                    className="MiniGoban link"
+                    {...new_tab_attributes}
+                >
+                    {inner}
+                </Link>
+            );
+        } else {
+            return (
+                <Link
+                    to={`/review/${props.review_id}`}
+                    className="MiniGoban link"
+                    {...new_tab_attributes}
+                >
+                    {inner}
+                </Link>
+            );
+        }
     }
 }

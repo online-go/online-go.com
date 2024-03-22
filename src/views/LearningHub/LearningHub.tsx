@@ -122,7 +122,7 @@ class Index extends React.PureComponent<{}, any> {
                                         >
                                             <MiniGoban
                                                 noLink
-                                                id={undefined}
+                                                game_id={undefined}
                                                 json={config}
                                                 displayWidth={64}
                                                 white={undefined}
