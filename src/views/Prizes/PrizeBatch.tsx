@@ -136,9 +136,8 @@ export const PrizeBatch: React.FC = () => {
                         @media print {
                             body {
                                 display: flex;
-                                justify-content: center;
+                                flex-direction: column;
                                 align-items: center;
-                                height: 100vh;
                                 margin: 0;
                                 font-family: Arial, sans-serif;
                                 background-color: #f7f7f7;
@@ -153,6 +152,7 @@ export const PrizeBatch: React.FC = () => {
                                 border-radius: 10px;
                                 overflow: hidden;
                                 page-break-after: always;
+                                margin-bottom: 20px;
                             }
     
                             .header {
@@ -215,10 +215,9 @@ export const PrizeBatch: React.FC = () => {
         printWindow!.document.write(htmlContent);
         printWindow!.document.close();
 
-        const printFunction = printWindow!.print;
-        setTimeout(() => {
-            printFunction();
-        }, 500);
+        printWindow!.onload = () => {
+            printWindow!.print();
+        };
     };
 
     const formatDate = (dateString: string) => {
