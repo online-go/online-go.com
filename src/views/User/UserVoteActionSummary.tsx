@@ -34,7 +34,6 @@ interface VoteSummaryPieProps {
 }
 
 const VoteSummaryPie = ({ summary_data }: VoteSummaryPieProps) => {
-    return null;
     const chart_data = React.useMemo(
         () => [
             { id: "consensus", value: summary_data["total_consensus"] },
