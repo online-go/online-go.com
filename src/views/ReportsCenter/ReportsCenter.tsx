@@ -25,8 +25,8 @@ import { _ } from "translate";
 import { ViewReport } from "./ViewReport";
 import { ReportsCenterSettings } from "./ReportsCenterSettings";
 import { ReportsCenterHistory } from "./ReportsCenterHistory";
-import { MOD_POWER_NEEDED } from "moderation";
 import { usePreference } from "preferences";
+import { community_mod_has_power } from "report_util";
 
 interface OtherView {
     special: string;
@@ -139,8 +139,8 @@ export function ReportsCenter(): JSX.Element | null {
     const visible_categories = user.is_moderator
         ? categories
         : // community moderators supported report types
-          report_categories.filter(
-              (category) => user.moderator_powers & MOD_POWER_NEEDED[category.type],
+          report_categories.filter((category) =>
+              community_mod_has_power(user.moderator_powers, category.type),
           );
 
     return (

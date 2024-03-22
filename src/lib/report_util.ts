@@ -73,13 +73,12 @@ export interface Report {
 }
 
 export function community_mod_has_power(
-    user: rest_api.UserConfig,
+    moderator_powers: number,
     report_type: ReportType,
 ): boolean {
-    const has_handle_score_cheat =
-        (user.moderator_powers & MODERATOR_POWERS.HANDLE_SCORE_CHEAT) > 0;
-    const has_handle_escaping = (user.moderator_powers & MODERATOR_POWERS.HANDLE_ESCAPING) > 0;
-    const has_handle_stalling = (user.moderator_powers & MODERATOR_POWERS.HANDLE_STALLING) > 0;
+    const has_handle_score_cheat = (moderator_powers & MODERATOR_POWERS.HANDLE_SCORE_CHEAT) > 0;
+    const has_handle_escaping = (moderator_powers & MODERATOR_POWERS.HANDLE_ESCAPING) > 0;
+    const has_handle_stalling = (moderator_powers & MODERATOR_POWERS.HANDLE_STALLING) > 0;
 
     return (
         (report_type === "score_cheating" && has_handle_score_cheat) ||
@@ -96,7 +95,7 @@ export function community_mod_can_handle(user: rest_api.UserConfig, report: Repo
         return false;
     }
     if (
-        community_mod_has_power(user, report.report_type) &&
+        community_mod_has_power(user.moderator_powers, report.report_type) &&
         !(report.voters?.some((vote) => vote.voter_id === user.id) || report.escalated)
     ) {
         return true;
