@@ -39,7 +39,7 @@ export const PrizeBatch: React.FC = () => {
     const [batch, setBatch] = useState<PrizeBatch>();
     const [qty, setQty] = useState(1);
     const [duration, setDuration] = useState(30);
-    const [level, setLevel] = useState("aji");
+    const [level, setLevel] = useState("Aji");
     const [showModal, setShowModal] = useState(false);
 
     const user = useUser();
