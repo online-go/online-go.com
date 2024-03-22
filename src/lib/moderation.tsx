@@ -49,22 +49,6 @@ export enum MODERATOR_POWERS {
     HANDLE_STALLING = 0b100,
 }
 
-export const MOD_POWER_NEEDED: { [key in ReportType]: MODERATOR_POWERS } = {
-    // Note: NONE means there is no CM power that allows this type
-    all: MODERATOR_POWERS.NONE,
-    stalling: MODERATOR_POWERS.HANDLE_STALLING,
-    inappropriate_content: MODERATOR_POWERS.NONE,
-    score_cheating: MODERATOR_POWERS.HANDLE_SCORE_CHEAT,
-    harassment: MODERATOR_POWERS.NONE,
-    ai_use: MODERATOR_POWERS.NONE,
-    sandbagging: MODERATOR_POWERS.NONE,
-    escaping: MODERATOR_POWERS.HANDLE_ESCAPING,
-    appeal: MODERATOR_POWERS.NONE,
-    other: MODERATOR_POWERS.NONE,
-    warning: MODERATOR_POWERS.NONE,
-    troll: MODERATOR_POWERS.NONE,
-};
-
 export const MOD_POWER_NAMES: { [key in MODERATOR_POWERS]: string } = {
     [MODERATOR_POWERS.NONE]: pgettext("... as in 'moderators powers: None'", "None"),
     [MODERATOR_POWERS.HANDLE_SCORE_CHEAT]: pgettext(
