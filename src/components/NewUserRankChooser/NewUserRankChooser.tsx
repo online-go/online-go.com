@@ -94,7 +94,7 @@ export function NewUserRankChooser({
                             "Intermediate",
                         )}
                         choice={"intermediate"}
-                        explainer={show_explainers ? "(16k-2k)" : ""}
+                        explainer={show_explainers ? "(16k-1k)" : ""}
                     />
                     <NewRankChooserButton
                         label={pgettext(
@@ -102,7 +102,7 @@ export function NewUserRankChooser({
                             "Advanced",
                         )}
                         choice={"advanced"}
-                        explainer={show_explainers ? "(2k-9d)" : ""}
+                        explainer={show_explainers ? "(4k-9d)" : ""}
                     />
                 </div>
                 {show_skip && (
