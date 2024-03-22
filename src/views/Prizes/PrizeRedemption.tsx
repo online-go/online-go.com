@@ -172,9 +172,10 @@ export const PrizeRedemption: React.FC = () => {
     return (
         <div className="prize-redemption">
             <h2>Prize Redemption</h2>
-            <p>Enter your prize code below to redeem your prize.</p>
             {showForm && (
                 <form onSubmit={handleSubmit}>
+                    <p>Enter your prize code below to redeem your prize.</p>
+
                     <label>Prize Code:</label>
                     <div className="code-input">
                         {code.map((char, index) => (
