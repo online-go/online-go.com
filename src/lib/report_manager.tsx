@@ -177,7 +177,7 @@ class ReportManager extends EventEmitter<Events> {
             // Community moderators only get to see reports that they have the power for and
             // that they have not yet voted on, and are not escalated
 
-            if (!community_mod_can_handle(user, report)) {
+            if (user.moderator_powers && !community_mod_can_handle(user, report)) {
                 return false;
             }
 
