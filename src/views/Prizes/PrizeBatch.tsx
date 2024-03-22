@@ -133,6 +133,12 @@ export const PrizeBatch: React.FC = () => {
                 <head>
                     <title>Prize Vouchers</title>
                     <style>
+                        @media screen {
+                            body {
+                                display: none;
+                            }
+                        }
+
                         @media print {
                             body {
                                 display: flex;
