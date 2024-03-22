@@ -17,7 +17,7 @@
 
 import * as React from "react";
 
-import { _, pgettext } from "translate";
+import { pgettext } from "translate";
 import { put } from "requests";
 import { errorAlerter } from "misc";
 
@@ -48,11 +48,16 @@ export function NewUserRankChooser({
         explainer?: string;
     }
 
-    function NewRankChooserButton({ label, choice }: NewRankChooserButtonProps): JSX.Element {
+    function NewRankChooserButton({
+        label,
+        choice,
+        explainer,
+    }: NewRankChooserButtonProps): JSX.Element {
         return (
             <div className="rank-chooser-button">
                 <button className={"primary"} onClick={() => sendRankChoice(choice)}>
-                    {label}
+                    <span className="label-text">{label}</span>
+                    <span className="explainer-text">{explainer}</span>
                 </button>
             </div>
         );
@@ -81,6 +86,7 @@ export function NewUserRankChooser({
                             "Basic",
                         )}
                         choice={"basic"}
+                        explainer={show_explainers ? "(25k-12k)" : ""}
                     />
                     <NewRankChooserButton
                         label={pgettext(
@@ -88,7 +94,7 @@ export function NewUserRankChooser({
                             "Intermediate",
                         )}
                         choice={"intermediate"}
-                        explainer={show_explainers ? _("Your Go rank is roughly 16k-1k") : ""}
+                        explainer={show_explainers ? "(16k-2k)" : ""}
                     />
                     <NewRankChooserButton
                         label={pgettext(
@@ -96,7 +102,7 @@ export function NewUserRankChooser({
                             "Advanced",
                         )}
                         choice={"advanced"}
-                        explainer={show_explainers ? _("You're a Dan level player") : ""}
+                        explainer={show_explainers ? "(2k-9d)" : ""}
                     />
                 </div>
                 {show_skip && (

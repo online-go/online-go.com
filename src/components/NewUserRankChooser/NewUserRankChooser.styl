@@ -44,7 +44,13 @@
             gap: 1rem;
 
             .rank-chooser-button {
+                display: flex;
+                align-items: center;
+
                 button {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
                     height: 4rem;
                     min-width: 13em;
                     padding: 1rem 0 1rem 0;
@@ -52,6 +58,13 @@
                     font-weight: bold;
                     white-space: nowrap;
 
+                    .label-text {
+                        margin-right: 10px;
+                    }
+
+                    .explainer-text {
+                        font-size: smaller;
+                    }
                 }
             }
 
