@@ -234,7 +234,11 @@ export const PrizeRedemption: React.FC = () => {
                     )}
                     <p>Are you sure you want to redeem this prize?</p>
                     <div className="actions">
-                        <button onClick={onRedeem} disabled={loading || currentSupportLevel === 4}>
+                        <button
+                            onClick={onRedeem}
+                            disabled={loading || currentSupportLevel === 4}
+                            className={currentSupportLevel === 4 ? "disabled" : "primary"}
+                        >
                             {loading ? "Redeeming..." : "Redeem"}
                         </button>
                         <button onClick={onCancel}>Cancel</button>
