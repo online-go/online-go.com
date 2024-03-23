@@ -108,11 +108,11 @@ export const PrizeBatch: React.FC = () => {
                                 <p class="message">You've won a special prize voucher from Online-Go.com for your outstanding performance at this tournament.</p>
                                 <div class="code-info">
                                     <p><strong>Code:</strong> ${code.code}</p>
+                                    <p><strong>Level:</strong> ${code.supporter_level}</p>
+                                    <p><strong>Duration:</strong> ${code.duration} days</p>
                                     <p><strong>Expiration Date:</strong> ${formatDate(
                                         batch?.expiration_date,
                                     )}</p>
-                                    <p><strong>Duration:</strong> ${code.duration} days</p>
-                                    <p><strong>Level:</strong> ${code.supporter_level}</p>
                                 </div>
                                 <p class="redemption-instructions">To redeem this voucher, visit <a href="https://online-go.com/redeem" target="_blank">https://online-go.com/redeem</a> and enter the code above. This voucher entitles you to a ${
                                     code.supporter_level
