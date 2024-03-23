@@ -178,19 +178,21 @@ export function ActivityCard({
                                     ),
                                 )
                                 .map(([report_type, _flag]) => (
-                                    <div className="mod-graph-header" key={report_type}>
-                                        {interpolate(
-                                            pgettext(
-                                                "header for a graph showing breakdown of moderator's vote outcomes",
-                                                "vote outcomes: {{report_type}}",
-                                            ),
-                                            { report_type },
-                                        )}
+                                    <>
+                                        <div className="mod-graph-header" key={report_type}>
+                                            {interpolate(
+                                                pgettext(
+                                                    "header for a graph showing breakdown of moderator's vote outcomes",
+                                                    "vote outcomes: {{report_type}}",
+                                                ),
+                                                { report_type },
+                                            )}
+                                        </div>
                                         <UserVoteActionSummary
                                             user_id={user.id}
                                             report_type={report_type as ReportType}
                                         />
-                                    </div>
+                                    </>
                                 ))}
                         </>
                     )}

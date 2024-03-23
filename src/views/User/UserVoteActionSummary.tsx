@@ -51,10 +51,10 @@ const VoteSummaryPie = ({ summary_data }: VoteSummaryPieProps) => {
     const chart_theme =
         data.get("theme") === "light" // (Accessible theme TBD - this assumes accessible is dark for now)
             ? {
-                  /* nivo defaults work well with our light theme */
+                  grid: { line: { stroke: "#bbbbbb" } },
               }
             : {
-                  text: { fill: "#FFFFFF" },
+                  text: { fill: "#bbbbbb" },
                   tooltip: { container: { color: "#111111" } },
                   grid: { line: { stroke: "#444444" } },
               };
@@ -68,7 +68,7 @@ const VoteSummaryPie = ({ summary_data }: VoteSummaryPieProps) => {
                 data={chart_data}
                 animate
                 enableArcLabels={false}
-                margin={{ top: 5, right: 100, bottom: 30, left: 100 }}
+                margin={{ top: 20, right: 100, bottom: 30, left: 120 }}
                 theme={chart_theme}
             />
         </div>
