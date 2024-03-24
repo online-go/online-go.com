@@ -22,15 +22,18 @@ import { report_categories, ReportDescription } from "Report";
 import { report_manager } from "report_manager";
 import Select from "react-select";
 import { _ } from "translate";
+import { usePreference } from "preferences";
+import { community_mod_has_power } from "report_util";
+
 import { ViewReport } from "./ViewReport";
 import { ReportsCenterSettings } from "./ReportsCenterSettings";
 import { ReportsCenterHistory } from "./ReportsCenterHistory";
-import { usePreference } from "preferences";
-import { community_mod_has_power } from "report_util";
+import { ReportsCenterCMInfo } from "./ReportsCenterCMInfo";
 
 interface OtherView {
     special: string;
     title: string;
+    show_cm: boolean;
 }
 
 const categories: (ReportDescription | OtherView)[] = [
@@ -49,9 +52,10 @@ const categories: (ReportDescription | OtherView)[] = [
         },
     ])
     .concat([
-        { special: "hr", title: "" },
-        { special: "history", title: "History" },
-        { special: "settings", title: "Settings" },
+        { special: "hr", title: "", show_cm: true },
+        { special: "history", title: "History", show_cm: false },
+        { special: "cm", title: "Community Moderation", show_cm: true },
+        { special: "settings", title: "Settings", show_cm: false },
     ]);
 
 const category_priorities: { [type: string]: number } = {};
@@ -139,8 +143,11 @@ export function ReportsCenter(): JSX.Element | null {
     const visible_categories = user.is_moderator
         ? categories
         : // community moderators supported report types
-          report_categories.filter((category) =>
-              community_mod_has_power(user.moderator_powers, category.type),
+          categories.filter(
+              (category) =>
+                  ("special" in category && category.show_cm) ||
+                  (!("special" in category) &&
+                      community_mod_has_power(user.moderator_powers, category.type)),
           );
 
     return (
@@ -220,6 +227,7 @@ export function ReportsCenter(): JSX.Element | null {
                                     return <hr key={idx} />;
                                 case "settings":
                                 case "history":
+                                case "cm":
                                     return (
                                         <div
                                             key={report_type.special}
@@ -295,6 +303,8 @@ export function ReportsCenter(): JSX.Element | null {
                     <ReportsCenterSettings />
                 ) : category === "history" ? (
                     <ReportsCenterHistory />
+                ) : category === "cm" ? (
+                    <ReportsCenterCMInfo />
                 ) : category === "hr" ? null : (
                     <ViewReport
                         reports={
