@@ -42,6 +42,7 @@ import { EXV6Overview } from "./EXV6Overview";
 import { EmailBanner } from "EmailBanner";
 import { PaymentProblemBanner } from "PaymentProblemBanner";
 import { ActiveDroppedGameList } from "ActiveDroppedGameList";
+import { NewUserRankChooser } from "NewUserRankChooser";
 
 declare let ogs_missing_translation_count: number;
 
@@ -163,94 +164,101 @@ export class OldOverview extends React.Component<{}, OverviewState> {
 
         return (
             <div id="Overview-Container">
-                <div id="Overview">
-                    <div className="left">
-                        <DismissableMessages />
-                        <EmailBanner />
-                        <PaymentProblemBanner />
-                        <ActiveAnnouncements />
-                        <ChallengesList onAccept={() => this.refresh()} />
-                        <InviteList />
+                {!!user && user.need_rank && user.starting_rank_hint === "not provided" ? (
+                    <>
+                        <div className="welcome">{_("Welcome!")}</div>
+                        <NewUserRankChooser />
+                    </>
+                ) : (
+                    <div id="Overview">
+                        <div className="left">
+                            <DismissableMessages />
+                            <EmailBanner />
+                            <PaymentProblemBanner />
+                            <ActiveAnnouncements />
+                            <ChallengesList onAccept={() => this.refresh()} />
+                            <InviteList />
 
-                        {((user && user.provisional) || null) && (
-                            <DismissableNotification
-                                className="learn-how-to-play"
-                                dismissedKey="learn-how-to-play"
-                            >
-                                <Link to="/learn-to-play-go">
-                                    {_("New to Go? Click here to learn how to play!")}
-                                </Link>
-                            </DismissableNotification>
-                        )}
-
-                        {this.state.resolved && user && (
-                            <ActiveDroppedGameList
-                                games={this.state.overview.active_games}
-                                user={user}
-                                noActiveGamesView={this.noActiveGames()}
-                            ></ActiveDroppedGameList>
-                        )}
-                    </div>
-                    <div className="right">
-                        <ProfileCard user={user} />
-
-                        <div className="overview-categories">
-                            {this.state.show_translation_dialog && (
-                                <Card className="translation-dialog">
-                                    <FabX onClick={this.dismissTranslationDialog} />
-
-                                    <div>
-                                        {_(
-                                            "Hello! Did you know that online-go.com is translated entirely volunteers in the Go community? Because of that, sometimes our translations get behind, like right now. In this language there are some missing translation strings. If you would like to help fix this, click the green button below, and thanks in advance!",
-                                        )}
-                                    </div>
-
-                                    <a
-                                        className="btn success"
-                                        href="https://translate.online-go.com/"
-                                    >
-                                        {_("I'll help translate!")}
-                                    </a>
-
-                                    <button
-                                        className="btn xs never-show-this-message-button"
-                                        onClick={this.neverShowTranslationDialog}
-                                    >
-                                        {_("Never show this message")}
-                                    </button>
-                                </Card>
+                            {((user && user.provisional) || null) && (
+                                <DismissableNotification
+                                    className="learn-how-to-play"
+                                    dismissedKey="learn-how-to-play"
+                                >
+                                    <Link to="/learn-to-play-go">
+                                        {_("New to Go? Click here to learn how to play!")}
+                                    </Link>
+                                </DismissableNotification>
                             )}
 
-                            <h3>
-                                <Link to="/tournaments">
-                                    <i className="fa fa-trophy"></i> {_("Tournaments")}
-                                </Link>
-                            </h3>
-                            <TournamentList />
+                            {this.state.resolved && user && (
+                                <ActiveDroppedGameList
+                                    games={this.state.overview.active_games}
+                                    user={user}
+                                    noActiveGamesView={this.noActiveGames()}
+                                ></ActiveDroppedGameList>
+                            )}
+                        </div>
+                        <div className="right">
+                            <ProfileCard user={user} />
 
-                            <h3>
-                                <Link to="/ladders">
-                                    <i className="fa fa-list-ol"></i> {_("Ladders")}
-                                </Link>
-                            </h3>
-                            <LadderList />
+                            <div className="overview-categories">
+                                {this.state.show_translation_dialog && (
+                                    <Card className="translation-dialog">
+                                        <FabX onClick={this.dismissTranslationDialog} />
 
-                            <h3>
-                                <Link to="/groups">
-                                    <i className="fa fa-users"></i> {_("Groups")}
-                                </Link>
-                            </h3>
-                            <GroupList />
+                                        <div>
+                                            {_(
+                                                "Hello! Did you know that online-go.com is translated entirely volunteers in the Go community? Because of that, sometimes our translations get behind, like right now. In this language there are some missing translation strings. If you would like to help fix this, click the green button below, and thanks in advance!",
+                                            )}
+                                        </div>
 
-                            <h3>
-                                <Link to="/chat">
-                                    <i className="fa fa-comment-o"></i> {_("Chat with friends")}
-                                </Link>
-                            </h3>
-                            <FriendList />
+                                        <a
+                                            className="btn success"
+                                            href="https://translate.online-go.com/"
+                                        >
+                                            {_("I'll help translate!")}
+                                        </a>
+
+                                        <button
+                                            className="btn xs never-show-this-message-button"
+                                            onClick={this.neverShowTranslationDialog}
+                                        >
+                                            {_("Never show this message")}
+                                        </button>
+                                    </Card>
+                                )}
+
+                                <h3>
+                                    <Link to="/tournaments">
+                                        <i className="fa fa-trophy"></i> {_("Tournaments")}
+                                    </Link>
+                                </h3>
+                                <TournamentList />
+
+                                <h3>
+                                    <Link to="/ladders">
+                                        <i className="fa fa-list-ol"></i> {_("Ladders")}
+                                    </Link>
+                                </h3>
+                                <LadderList />
+
+                                <h3>
+                                    <Link to="/groups">
+                                        <i className="fa fa-users"></i> {_("Groups")}
+                                    </Link>
+                                </h3>
+                                <GroupList />
+
+                                <h3>
+                                    <Link to="/chat">
+                                        <i className="fa fa-comment-o"></i> {_("Chat with friends")}
+                                    </Link>
+                                </h3>
+                                <FriendList />
+                            </div>
                         </div>
                     </div>
-                </div>
+                )}
             </div>
         );
     }

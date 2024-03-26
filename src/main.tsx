@@ -230,6 +230,7 @@ player_cache.update(user);
 data.set("user", user);
 (window as any)["user"] = user;
 
+console.log("initial user", user);
 /***
  * Test if local storage is disabled for some reason (Either because the user
  * turned it off, the browser doesn't support it, or because the user is using

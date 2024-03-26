@@ -53,6 +53,7 @@ import { VersusCard } from "./VersusCard";
 import { AvatarCard, AvatarCardEditableFields } from "./AvatarCard";
 import { ActivityCard } from "./ActivityCard";
 import { ActiveDroppedGameList } from "ActiveDroppedGameList";
+import { NewUserRankChooser } from "NewUserRankChooser";
 
 type RatingsSpeed = "overall" | "blitz" | "live" | "correspondence";
 type RatingsSize = 0 | 9 | 13 | 19;
@@ -96,8 +97,6 @@ export function User(props: { user_id?: number }): JSX.Element {
     const [titles, setTitles] = React.useState<rest_api.FullPlayerDetail["titles"]>();
     const [trophies, setTrophies] = React.useState<rest_api.FullPlayerDetail["trophies"]>();
     const [vs, setVs] = React.useState<rest_api.FullPlayerDetail["vs"]>();
-
-    const show_graph_type_toggle = !preferences.get("rating-graph-always-use");
 
     const resolve = (user_id: number) => {
         setUser(undefined);
@@ -329,6 +328,23 @@ export function User(props: { user_id?: number }): JSX.Element {
     const cdn_release = data.get("config.cdn_release");
     const account_links = user.self_reported_account_linkages;
 
+    const viewer = data.get("user");
+
+    // The User's own Profile page is where they can choose their starting rank if they
+    // skipped it before.
+    const show_rank_chooser =
+        viewer.id === user.id &&
+        user?.need_rank &&
+        user?.starting_rank_hint &&
+        ["skip", "not provided"].includes(user.starting_rank_hint);
+
+    const show_graph_type_toggle =
+        // We don't show the toggle if they have turned it off in prefs, or if they have no ratings to show.
+        // This implementation is using `user.need_rank` to infer whether we have any ratings to show,
+        // ... done this way because it's handy, we don't have another easy way to find out right here
+        // (that lookup is buried in the ratings chart component)
+        !preferences.get("rating-graph-always-use") && !user?.need_rank;
+
     return (
         <div className="User container">
             <div>
@@ -344,26 +360,42 @@ export function User(props: { user_id?: number }): JSX.Element {
                         />
 
                         {(!preferences.get("hide-ranks") || temporary_show_ratings) &&
-                            (!user.professional || global_user.id === user.id) && (
+                            (!user.professional || global_user.id === user.id) &&
+                            // prevent flash while starting_rank_hint is determined, handle case where
+                            // if the back end for some reason doesn't send starting_rank_hint
+                            (!!user.starting_rank_hint || resolved) && (
                                 <div className="ratings-container">
-                                    {/* Ratings  */}
-                                    <h3 className="ratings-title">
-                                        {_("Ratings")}
-                                        <Toggle
-                                            height={14}
-                                            width={30}
-                                            checked={show_ratings_in_rating_grid}
-                                            id="show-ratings-or-ranks"
-                                            onChange={(checked) => {
-                                                setShowRatingsInRatingGrid(checked);
-                                                preferences.set(
-                                                    "show-ratings-in-rating-grid",
-                                                    checked,
-                                                );
-                                            }}
-                                        />
-                                    </h3>
-                                    {renderRatingGrid(show_ratings_in_rating_grid)}
+                                    {show_rank_chooser ? (
+                                        <Card>
+                                            <NewUserRankChooser
+                                                show_skip={false}
+                                                onChosen={() => {
+                                                    resolve(user_id);
+                                                }}
+                                            />
+                                        </Card>
+                                    ) : (
+                                        <>
+                                            {/* Ratings  */}
+                                            <h3 className="ratings-title">
+                                                {_("Ratings")}
+                                                <Toggle
+                                                    height={14}
+                                                    width={30}
+                                                    checked={show_ratings_in_rating_grid}
+                                                    id="show-ratings-or-ranks"
+                                                    onChange={(checked) => {
+                                                        setShowRatingsInRatingGrid(checked);
+                                                        preferences.set(
+                                                            "show-ratings-in-rating-grid",
+                                                            checked,
+                                                        );
+                                                    }}
+                                                />
+                                            </h3>
+                                            {renderRatingGrid(show_ratings_in_rating_grid)}
+                                        </>
+                                    )}
                                 </div>
                             )}
                     </div>

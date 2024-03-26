@@ -45,6 +45,15 @@ declare namespace rest_api {
             | `${import("../lib/types").Speed}-${import("../lib/types").Size}`]?: RatingsConfig;
     };
 
+    type StartingRankHint =
+        | "new"
+        | "basic"
+        | "intermediate"
+        | "advanced"
+        | "skip"
+        | "not provided"
+        | null; // null is for users who were never offered this.
+
     /**
      * The type of `config.user` passed back by the `ui/config` endpoint.
      */
@@ -58,6 +67,8 @@ declare namespace rest_api {
         professional: boolean;
         ranking: number;
         provisional: 0 | 1; // change to boolean?
+        need_rank?: boolean;
+        starting_rank_hint?: StartingRankHint;
         can_create_tournaments: boolean;
         is_moderator: boolean;
         is_superuser: boolean;
@@ -117,6 +128,8 @@ declare namespace rest_api {
             about: string;
             supporter: boolean;
             ui_class_extra: null;
+            need_rank?: boolean;
+            starting_rank_hint?: StartingRankHint;
             is_moderator: boolean;
             is_superuser: boolean;
             moderator_powers: number;

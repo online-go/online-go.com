@@ -770,7 +770,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
     /* Callback function for data retrieval, which plots the retrieved data */
     //loadDataAndPlot = (err, data) => {
     loadDataAndPlot = (data: RatingEntry[]) => {
-        /* There's always a starting 1500 rating entry at least, so if that's all there
+        /* There's always a starting rating entry at least, so if that's all there
          * is let's just zero out the array and show a "No data" text */
         if (!data || data.length === 1) {
             // Note that the following causes a render, before the subsequent "Plot Graph" code.
