@@ -163,6 +163,8 @@ class NotificationEntry extends React.Component<NotificationEntryProps, any> {
 
             case "aiReviewDone":
                 return `/game/${notification.game_id}`;
+            case "prizeCodeExpiring":
+                return "/supporter";
         }
 
         return null;
@@ -551,6 +553,14 @@ class NotificationEntry extends React.Component<NotificationEntryProps, any> {
                                 power: MOD_POWER_NAMES[notification.new_power as MODERATOR_POWERS],
                             },
                         )}
+                    </div>
+                );
+            case "prizeCodeExpiring":
+                return (
+                    <div>
+                        Your {notification.code_level} tier prize code expires in{" "}
+                        {notification.expires_in_days} days. Please consider supporting to extend
+                        your benefits.{" "}
                     </div>
                 );
 

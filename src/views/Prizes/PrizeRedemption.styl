@@ -1,0 +1,119 @@
+.prize-redemption
+    max-width 500px
+    margin 0 auto
+    padding 20px
+    font-family Arial, sans-serif
+
+    h2
+        themed color fg
+        margin-bottom 20px
+        text-align center
+
+    p
+        margin-bottom 20px
+
+    form
+        display flex
+        flex-direction column
+        margin-bottom 20px
+
+        label
+            themed color text-color
+            font-weight bold
+            margin-bottom 10px
+
+        input
+            padding 10px
+            border 1px solid input-border
+            border-radius 5px
+            themed background-color input-bg
+            themed color input-fg
+            font-size 16px
+            margin-bottom 10px
+
+        button
+            themed background-color primary
+            themed color colored-background-fg
+            border none
+            padding 10px 20px
+            border-radius 5px
+            cursor pointer
+            font-size 16px
+
+    .error
+        themed color danger
+        margin-bottom 20px
+
+    .prize-info
+        themed background-color card-background-color
+        padding 20px
+        border-radius 5px
+        margin-bottom 20px
+
+        h3
+            themed color fg
+            margin-bottom 10px
+
+        ul
+            list-style-type disc
+            margin-left 20px
+            margin-bottom 20px
+
+        .actions
+            display flex
+            justify-content flex-end
+
+            button
+                border none
+                padding 10px 20px
+                border-radius 5px
+                cursor pointer
+                font-size 16px
+                margin-left 10px
+
+                &.disabled
+                    cursor not-allowed
+
+    .success-message
+        text-align center
+
+        h3
+            themed color success
+            margin-bottom 10px
+
+        p
+            margin-bottom 20px
+
+        button
+            themed background-color primary
+            themed color colored-background-fg
+            border none
+            padding 10px 20px
+            border-radius 5px
+            cursor pointer
+            font-size 16px
+
+.code-input
+    display flex
+    justify-content center
+    margin-bottom 20px
+
+    input
+        width 60px
+        height 60px
+        margin 0 8px
+        text-align center
+        font-size 28px
+        font-weight 500
+        border none
+        border-radius 8px
+        box-shadow 0 2px 6px rgba(0, 0, 0, 0.1)
+        themed background-color input-bg
+        themed color input-fg
+        text-transform uppercase
+        transition border-color 0.3s, box-shadow 0.3s
+
+        &:focus
+            outline none
+            themed border-color primary
+            box-shadow 0 4px 12px rgba(0, 0, 0, 0.2)
