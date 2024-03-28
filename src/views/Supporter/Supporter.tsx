@@ -462,7 +462,9 @@ export function Supporter(props: SupporterProperties): JSX.Element {
                 <p className="prize-status">
                     {daysRemaining !== null
                         ? interpolate(
-                              _("Your {{level}} tier prize code expires in {{daysRemaining}} days"),
+                              _(
+                                  "Your {{level}} tier prize code expires in {{daysRemaining}} days.",
+                              ),
                               { level: level, daysRemaining: daysRemaining },
                           )
                         : interpolate(_("Your {{level}} prize code has expired."), {
