@@ -225,10 +225,10 @@ export const PrizeRedemption: React.FC = () => {
                             <p>
                                 {interpolate(
                                     _(
-                                        "You are currently a supporter at the {{}currentSupporterLevel}} tier. This prize will upgrade you to the {{supportTier}} tier.",
+                                        "You are currently a supporter at the {{currentSupporterLevel}} tier. This prize will upgrade you to the {{supportTier}} tier.",
                                     ),
                                     {
-                                        currentSupportLevel: getSupportTier(currentSupportLevel),
+                                        currentSupporterLevel: getSupportTier(currentSupportLevel),
                                         supportTier: getSupportTier(
                                             Math.min(
                                                 currentSupportLevel +
