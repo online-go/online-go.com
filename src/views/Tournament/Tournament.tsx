@@ -2342,7 +2342,7 @@ export function Tournament(): JSX.Element {
                                                 (m: TournamentMatch, idx: number) => (
                                                     <MiniGoban
                                                         key={idx}
-                                                        id={m.gameid}
+                                                        game_id={m.gameid}
                                                         width={tournament.board_size}
                                                         height={tournament.board_size}
                                                         black={players[m.black]}

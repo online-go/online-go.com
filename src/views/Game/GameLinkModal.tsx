@@ -47,6 +47,9 @@ export class GameLinkModal extends Modal<Events, GameLinkModalProperties, {}> {
         } else {
             sgf_url = `${window.location.protocol}//${window.location.hostname}/api/v1/reviews/${goban.review_id}/sgf/${goban.review_id}.sgf`;
             png_url = `${window.location.protocol}//${window.location.hostname}/api/v1/reviews/${goban.review_id}/png/${goban.review_id}.png`;
+            const embed_url = `${window.location.protocol}//${window.location.hostname}/review/${goban.review_id}/embed`;
+            /* cspell: disable-next-line */
+            embed_html = `<iframe src="${embed_url}" width="345px" height="345px" allowtransparency="true" scrolling="no" frameborder="0"></iframe>`;
         }
 
         return (

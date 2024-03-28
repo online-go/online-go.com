@@ -15,6 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// These are the "templates for messages offered to full moderators"
+//  ("canned messages" voted for by CMs are in CannedMessages.ts)
+
 import * as React from "react";
 import { PlayerCacheEntry } from "player_cache";
 import { Player } from "Player";

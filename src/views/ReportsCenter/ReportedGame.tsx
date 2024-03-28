@@ -156,7 +156,7 @@ export function ReportedGame({
             <div className="reported-game-container">
                 <div className="col reported-game-mini-goban">
                     <MiniGoban
-                        id={game_id}
+                        game_id={game_id}
                         noLink={true}
                         onGobanCreated={onGobanCreated}
                         chat={true}

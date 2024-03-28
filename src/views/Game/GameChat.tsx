@@ -286,8 +286,8 @@ export function GameChat(props: GameChatProperties): JSX.Element {
                               ? _("Chat will be enabled once your email address has been validated")
                               : selected_chat_log === "malkovich"
                                 ? pgettext(
-                                      "Malkovich logs are only visible after the game has ended",
-                                      "Visible after the game",
+                                      "Malkovich logs are only visible to the opponent after the game has ended",
+                                      "Hidden from opponent during the game",
                                   )
                                 : selected_chat_log === "personal"
                                   ? _("Visible only to you")

@@ -533,7 +533,7 @@ function MiniGobanList(
                 const miniGoban = (
                     <MiniGoban
                         key={!withNames ? game.id : undefined}
-                        id={game.id}
+                        game_id={game.id}
                         width={game.width}
                         height={game.height}
                         onGobanCreated={(goban) => onGobanCreated(game, goban)}

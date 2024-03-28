@@ -17,6 +17,8 @@
 
 import { _, interpolate } from "translate";
 
+// These are the "canned messages" that Community Moderators can vote for.
+
 export const CANNED_MESSAGES: rest_api.warnings.WarningMessages = {
     warn_beginner_score_cheat: (game_id) =>
         interpolate(
@@ -86,8 +88,10 @@ export const CANNED_MESSAGES: rest_api.warnings.WarningMessages = {
         interpolate(
             _(`
         Thank you for bringing the possible instance of score cheating by {{reported}} to
-        our attention. We looked into the report and their actions seemed appropriate. If a pattern of
-        complaints emerges, we will investigate further.
+        our attention. We looked into the report and couldn't see evidence of score cheating.
+
+        It may be that you need to report a different type of problem, or provide more explanation -
+        you are welcome to raise a new report if that is the case.
 
         Thank you for helping keep OGS enjoyable for everyone. We appreciate it.`),
             { reported },
@@ -143,9 +147,11 @@ export const CANNED_MESSAGES: rest_api.warnings.WarningMessages = {
     no_escaping_evident: (reported) =>
         interpolate(
             _(`
-        Thank you for bringing the possible instance of escaping by {{reported}} to
-        our attention. We looked into the report and their actions seemed appropriate. If a pattern of
-        complaints emerges, we will investigate further.
+        Thank you for bringing the possible instance of {{reported}} abandoning the game to
+        our attention. We looked into the game and did not see them failing to finish the game properly.
+
+        It may be that you need to report a different type of problem, or provide more explanation -
+        you are welcome to raise a new report if that is the case.
 
         Thank you for helping keep OGS enjoyable for everyone. We appreciate it.`),
             { reported },
@@ -210,9 +216,11 @@ export const CANNED_MESSAGES: rest_api.warnings.WarningMessages = {
     no_stalling_evident: (reported) =>
         interpolate(
             _(`
-        Thank you for bringing the possible instance of stalling by {{reported}} to
-        our attention. We looked into the report and their actions seemed appropriate. If a pattern of
-        complaints emerges, we will investigate further.
+        Thank you for bringing the possible instance of stalling play by {{reported}} to
+        our attention. We looked into the report and don't see evidence of stalling.
+
+        It may be that you need to report a different type of problem, or provide more explanation -
+        you are welcome to raise a new report if that is the case.
 
         Thank you for helping keep OGS enjoyable for everyone. We appreciate it.`),
             { reported },

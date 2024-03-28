@@ -17,7 +17,7 @@
 
 import { ReportedConversation } from "Report";
 import { PlayerCacheEntry } from "player_cache";
-import { MODERATOR_POWERS } from "moderation";
+import { MODERATOR_POWERS, ReportType } from "moderation";
 
 interface Vote {
     voter_id: number;
@@ -33,7 +33,7 @@ export interface Report {
     state: string;
     escalated: boolean;
     source: string;
-    report_type: string;
+    report_type: ReportType;
     reporting_user: any;
     reported_user: any;
     reported_game: number;
@@ -72,27 +72,41 @@ export interface Report {
     set_note: () => void;
 }
 
+type CommunityModeratorReportTypes = Partial<Record<ReportType, string>>;
+
+export const COMMUNITY_MODERATION_REPORT_TYPES: CommunityModeratorReportTypes = {
+    stalling: "stalling",
+    score_cheating: "score cheating",
+    escaping: "escaping",
+};
+
+export function community_mod_has_power(
+    moderator_powers: number,
+    report_type: ReportType,
+): boolean {
+    const has_handle_score_cheat = (moderator_powers & MODERATOR_POWERS.HANDLE_SCORE_CHEAT) > 0;
+    const has_handle_escaping = (moderator_powers & MODERATOR_POWERS.HANDLE_ESCAPING) > 0;
+    const has_handle_stalling = (moderator_powers & MODERATOR_POWERS.HANDLE_STALLING) > 0;
+
+    return (
+        (report_type === "score_cheating" && has_handle_score_cheat) ||
+        (report_type === "escaping" && has_handle_escaping) ||
+        (report_type === "stalling" && has_handle_stalling)
+    );
+}
+
 export function community_mod_can_handle(user: rest_api.UserConfig, report: Report): boolean {
     // Community moderators only get to see reports that they have the power for and
     // that they have not yet voted on, and are not escalated
-    const has_handle_score_cheat =
-        (user.moderator_powers & MODERATOR_POWERS.HANDLE_SCORE_CHEAT) > 0;
-    const has_handle_escaping = (user.moderator_powers & MODERATOR_POWERS.HANDLE_ESCAPING) > 0;
-    const has_handle_stalling = (user.moderator_powers & MODERATOR_POWERS.HANDLE_STALLING) > 0;
 
-    const report_type = report.report_type;
-
-    if (
-        !user.is_moderator &&
-        user.moderator_powers &&
-        ((!(report_type === "score_cheating" && has_handle_score_cheat) &&
-            !(report_type === "escaping" && has_handle_escaping) &&
-            !(report_type === "stalling" && has_handle_stalling)) ||
-            report.voters?.some((vote) => vote.voter_id === user.id) ||
-            report.escalated)
-    ) {
+    if (!user.moderator_powers) {
         return false;
     }
-
-    return true;
+    if (
+        community_mod_has_power(user.moderator_powers, report.report_type) &&
+        !(report.voters?.some((vote) => vote.voter_id === user.id) || report.escalated)
+    ) {
+        return true;
+    }
+    return false;
 }
