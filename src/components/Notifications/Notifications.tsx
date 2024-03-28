@@ -558,9 +558,15 @@ class NotificationEntry extends React.Component<NotificationEntryProps, any> {
             case "prizeCodeExpiring":
                 return (
                     <div>
-                        Your {notification.code_level} tier prize code expires in{" "}
-                        {notification.expires_in_days} days. Please consider supporting to extend
-                        your benefits.{" "}
+                        {interpolate(
+                            _(
+                                "Your {{code_level}} prize code expires in {{expires_in_days}} days. Click here to visit the supporter page if you'd like to sign up or manage your AI review level.",
+                            ),
+                            {
+                                code_level: notification.code_level,
+                                expires_in_days: notification.expires_in_days,
+                            },
+                        )}
                     </div>
                 );
 
