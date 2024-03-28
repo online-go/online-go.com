@@ -19,6 +19,7 @@ import React, { useState, useRef } from "react";
 import { get, post } from "requests";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "hooks";
+import { _, interpolate } from "translate";
 
 interface Prize {
     batch: string;
@@ -83,7 +84,7 @@ export const PrizeRedemption: React.FC = () => {
         const enteredCode = code.join("");
 
         if (enteredCode.length !== 6) {
-            setError("Invalid code. Please enter a 6-character code.");
+            setError(_("Invalid code. Please enter a 6-character code."));
             return;
         }
 
@@ -95,7 +96,7 @@ export const PrizeRedemption: React.FC = () => {
         get("prizes/redeem", data)
             .then((res) => {
                 if (res.voucher.redeemed_by) {
-                    setError("Sorry, this code has already been redeemed.");
+                    setError(_("Sorry, this code has already been redeemed."));
                     setCode(["", "", "", "", "", ""]);
                 } else {
                     setCurrentSupportLevel(res.supporter_level);
@@ -105,7 +106,7 @@ export const PrizeRedemption: React.FC = () => {
             })
             .catch((err) => {
                 console.error(err);
-                setError("Invalid prize code. Please try again.");
+                setError(_("Invalid prize code. Please try again."));
                 setCode(["", "", "", "", "", ""]);
             })
             .finally(() => {
@@ -128,7 +129,7 @@ export const PrizeRedemption: React.FC = () => {
             })
             .catch((err) => {
                 console.error(err);
-                setError("Failed to redeem the prize. Please try again.");
+                setError(_("Failed to redeem the prize. Please try again."));
             })
             .finally(() => {
                 setLoading(false);
@@ -171,12 +172,12 @@ export const PrizeRedemption: React.FC = () => {
 
     return (
         <div className="prize-redemption">
-            <h2>Prize Redemption</h2>
+            <h2>{_("Prize Redemption")}</h2>
             {showForm && (
                 <form onSubmit={handleSubmit}>
-                    <p>Enter your prize code below to redeem your prize.</p>
+                    <p>{_("Enter your prize code below to redeem your prize.")}</p>
 
-                    <label>Prize Code:</label>
+                    <label>{_("Prize Code:")}</label>
                     <div className="code-input">
                         {code.map((char, index) => (
                             <input
@@ -192,68 +193,85 @@ export const PrizeRedemption: React.FC = () => {
                         ))}
                     </div>
                     <button type="submit" disabled={loading}>
-                        {loading ? "Submitting..." : "Submit"}
+                        {loading ? _("Submitting...") : _("Submit")}
                     </button>
                 </form>
             )}
             {error && <p className="error">{error}</p>}
             {prizeInfo && !redeemed && (
                 <div className="prize-info">
-                    <h3>Prize Details</h3>
-                    <p>You are about to redeem the following prize:</p>
+                    <h3>{_("Prize Details")}</h3>
+                    <p>{_("You are about to redeem the following prize:")}</p>
                     <ul>
-                        <li>Prize Level: {prizeInfo.supporter_level}</li>
-                        <li>Duration: {prizeInfo.duration} days</li>
+                        <li>
+                            {interpolate(_("Prize Level: {{prizeLevel}}"), {
+                                prizeLevel: prizeInfo.supporter_level,
+                            })}
+                        </li>
+                        <li>
+                            {interpolate(_("Duration: {{duration}} days"), {
+                                duration: prizeInfo.duration,
+                            })}
+                        </li>
                     </ul>
                     {currentSupportLevel > 0 ? (
                         currentSupportLevel === 4 ? (
                             <p>
-                                You are currently at the highest supporter tier (Meijin). To use
-                                this voucher, you will need to cancel your current subscription
-                                first.
+                                {_(
+                                    "You are currently at the highest supporter tier (Meijin). To use this voucher, you will need to cancel your current subscription first.",
+                                )}
                             </p>
                         ) : (
                             <p>
-                                You are currently a supporter at the{" "}
-                                {getSupportTier(currentSupportLevel)} tier. This prize will upgrade
-                                you to the{" "}
-                                {getSupportTier(
-                                    Math.min(
-                                        currentSupportLevel +
-                                            getTierValue(prizeInfo.supporter_level),
-                                        4,
+                                {interpolate(
+                                    _(
+                                        "You are currently a supporter at the {{}currentSupporterLevel}} tier. This prize will upgrade you to the {{supportTier}} tier.",
                                     ),
-                                )}{" "}
-                                tier.
+                                    {
+                                        currentSupportLevel: getSupportTier(currentSupportLevel),
+                                        supportTier: getSupportTier(
+                                            Math.min(
+                                                currentSupportLevel +
+                                                    getTierValue(prizeInfo.supporter_level),
+                                                4,
+                                            ),
+                                        ),
+                                    },
+                                )}
                             </p>
                         )
                     ) : (
                         <p>
-                            This prize will grant you the {prizeInfo.supporter_level} tier supporter
-                            status.
+                            {interpolate(
+                                _(
+                                    "This prize will grant you the {{supporterLevel}} tier supporter status.",
+                                ),
+                                { supporterLevel: prizeInfo.supporter_level },
+                            )}
                         </p>
                     )}
-                    <p>Are you sure you want to redeem this prize?</p>
+                    <p>{_("Are you sure you want to redeem this prize?")}</p>
                     <div className="actions">
                         <button
                             onClick={onRedeem}
                             disabled={loading || currentSupportLevel === 4}
                             className={currentSupportLevel === 4 ? "disabled" : "primary"}
                         >
-                            {loading ? "Redeeming..." : "Redeem"}
+                            {loading ? _("Redeeming...") : _("Redeem")}
                         </button>
-                        <button onClick={onCancel}>Cancel</button>
+                        <button onClick={onCancel}>{_("Cancel")}</button>
                     </div>
                 </div>
             )}
             {redeemed && (
                 <div className="success-message">
-                    <h3>Congratulations!</h3>
+                    <h3>{_("Congratulations!")}</h3>
                     <p>
-                        Your prize has been successfully redeemed. Enjoy your enhanced experience on
-                        Online-Go.com!
+                        {_(
+                            "Your prize has been successfully redeemed. Enjoy your enhanced experience on Online-Go.com!",
+                        )}
                     </p>
-                    <button onClick={onCancel}>Close</button>
+                    <button onClick={onCancel}>{_("Close")}</button>
                 </div>
             )}
         </div>
