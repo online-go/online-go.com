@@ -78,7 +78,7 @@ export function CommunityModeratorIntro(): JSX.Element {
                     <div>
                         {pgettext(
                             "A help message describing a community moderator voting option",
-                            "Use this option if a full moderator needs to act on this report: a repeat offender or serious offense.   This will go straight to the moderator queue.",
+                            "Use this option if you think a full moderator needs to take a look - if the outcome is not clear to you.   This will go straight to the moderator queue.",
                         )}
                     </div>
                 </HelpItem>
