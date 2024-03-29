@@ -28,7 +28,7 @@ import { errorAlerter, rulesText, yesno, getGameResultText } from "misc";
 import { rankString } from "rank_utils";
 import { browserHistory } from "ogsHistory";
 import { alert } from "swal_config";
-import { GobanConfig, GoEnginePlayerEntry } from "goban";
+import { GobanConfig, GoEnginePlayerEntry, GoEngineRules } from "goban";
 
 interface Events {}
 
@@ -39,9 +39,16 @@ interface GameInfoModalProperties {
     annulled: boolean;
     creatorId: number;
 }
-export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
+
+interface GameInfoModalState {
+    komi: string;
+}
+export class GameInfoModal extends Modal<Events, GameInfoModalProperties, GameInfoModalState> {
     constructor(props: ModalConstructorInput<GameInfoModalProperties>) {
         super(props);
+        this.state = {
+            komi: props.config.komi?.toFixed(1) || "",
+        };
     }
 
     save = () => {
@@ -67,6 +74,10 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
                 name: config.game_name,
                 outcome: config.outcome,
             };
+            if (review_id) {
+                settings["komi"] = config.komi;
+                settings["rules"] = config.rules;
+            }
             if (config.black_player_id === 0 || !config.players?.black?.id) {
                 settings["black_player_name"] = config.players?.black.name;
                 settings["black_player_rank"] = config.players?.black.rank;
@@ -155,7 +166,15 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
         this.props.config.outcome = ev.target.value;
         this.forceUpdate();
     };
-
+    updateKomi = (ev: React.ChangeEvent<HTMLInputElement>) => {
+        this.setState({ komi: ev.target.value });
+        this.props.config.komi = parseFloat(ev.target.value);
+        //this.forceUpdate();
+    };
+    updateRules = (ev: React.ChangeEvent<HTMLSelectElement>) => {
+        this.props.config.rules = ev.target.value as GoEngineRules;
+        this.forceUpdate();
+    };
     twoPlayerTeamList = () => (
         <h3>
             <Player disableCacheUpdate icon rank user={this.props.black} />
@@ -307,7 +326,21 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
                                 : ""}
                         </dd>
                         <dt>{_("Rules")}</dt>
-                        <dd>{rulesText(config.rules ?? "<error>")}</dd>
+                        <dd>
+                            {editable && review_id ? (
+                                <select value={config.rules} onChange={this.updateRules}>
+                                    {["aga", "chinese", "ing", "japanese", "korean", "nz"].map(
+                                        (rules) => (
+                                            <option key={rules} value={rules}>
+                                                {rulesText(rules)}
+                                            </option>
+                                        ),
+                                    )}
+                                </select>
+                            ) : (
+                                <span>{rulesText(config.rules ?? "<error>")}</span>
+                            )}
+                        </dd>
                         <dt>{_("Ranked")}</dt>
                         <dd>{yesno(config.ranked)}</dd>
                         <dt>{_("Annulled")}</dt>
@@ -344,7 +377,13 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
                             )}
                         </dd>
                         <dt>{_("Komi")}</dt>
-                        <dd>{config.komi!.toFixed(1)}</dd>
+                        <dd>
+                            {editable && review_id ? (
+                                <input value={this.state.komi} onChange={this.updateKomi} />
+                            ) : (
+                                <span>{config.komi!.toFixed(1)}</span>
+                            )}
+                        </dd>
                         <dt>{_("Analysis")}</dt>
                         <dd>
                             {config.original_disable_analysis
