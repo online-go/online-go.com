@@ -1753,7 +1753,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 <div className="buttons">
                     <button onClick={this.close}>{_("Close")}</button>
                     {(mode === "demo" || null) && (
-                        <button onClick={this.createDemo} className="primary">
+                        <button onClick={this.createDemo} className="danger sm">
                             {_("Create Demo")}
                         </button>
                     )}
