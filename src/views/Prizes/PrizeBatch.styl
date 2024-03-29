@@ -1,0 +1,131 @@
+.prize-batch
+    max-width 800px
+    margin 0 auto
+    padding 20px
+    font-family Arial, sans-serif
+
+.batch-info
+    themed background-color card-background-color
+    padding 20px
+    border-radius 5px
+    margin-bottom 20px
+
+    h2
+        themed color fg
+        margin-bottom 10px
+
+    p
+        margin 5px 0
+
+.codes
+    margin-bottom 20px
+
+    .codes-header
+        display flex
+        justify-content space-between
+        align-items center
+        margin-bottom 10px
+
+        h3
+            themed color fg
+            margin 0
+
+        .actions
+            display flex
+            gap 10px
+
+            .print-btn, .add-codes-btn
+                themed background-color primary
+                themed color colored-background-fg
+                border none
+                padding 10px 20px
+                border-radius 5px
+                cursor pointer
+
+    table
+        width 100%
+        border-collapse collapse
+        margin-top 10px
+
+        th, td
+            padding 10px
+            text-align left
+            border-bottom 1px solid shade3
+
+        th
+            themed background-color shade4
+            themed color text-color
+
+        .delete-btn
+            themed background-color danger
+            themed color colored-background-fg
+            border none
+            padding 5px 10px
+            border-radius 3px
+            cursor pointer
+
+.modal-overlay
+    position fixed
+    top 0
+    left 0
+    width 100%
+    height 100%
+    background-color rgba(0, 0, 0, 0.5)
+    display flex
+    justify-content center
+    align-items center
+
+.modal
+    themed background-color card-background-color
+    padding 20px
+    border-radius 5px
+    max-width 400px
+    width 100%
+
+    h3
+        themed color fg
+        margin-bottom 20px
+        text-align center
+
+    form
+        .form-group
+            margin-bottom 20px
+            display flex
+            align-items center
+
+            label
+                themed color text-color
+                font-weight bold
+                margin-right 10px
+                flex-basis 100px
+
+            input, select
+                flex-grow 1
+                padding 10px
+                border 1px solid input-border
+                border-radius 5px
+                themed background-color input-bg
+                themed color input-fg
+                font-size 16px
+
+            input[type="number"]
+                width 80px
+
+        .form-actions
+            display flex
+            justify-content center
+            margin-top 30px
+
+            .add-codes-btn, .cancel-btn
+                themed background-color primary
+                themed color colored-background-fg
+                border none
+                padding 10px 20px
+                border-radius 5px
+                cursor pointer
+                font-size 16px
+                margin 0 10px
+
+            .cancel-btn
+                themed background-color shade4
+                themed color text-color
