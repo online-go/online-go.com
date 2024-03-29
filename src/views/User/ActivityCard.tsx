@@ -156,7 +156,7 @@ export function ActivityCard({
                     <div className="mod-graph-header">
                         {pgettext(
                             "header for a graph showing how often the moderator voted with the others",
-                            "consensus votes",
+                            "consensus votes (by week)",
                         )}
                     </div>
                     <UserVoteActivityGraph user_id={user.id} />
@@ -178,7 +178,7 @@ export function ActivityCard({
                                     ),
                                 )
                                 .map(([report_type, _flag]) => (
-                                    <>
+                                    <div key={report_type}>
                                         <div className="mod-graph-header" key={report_type}>
                                             {interpolate(
                                                 pgettext(
@@ -192,7 +192,7 @@ export function ActivityCard({
                                             user_id={user.id}
                                             report_type={report_type as ReportType}
                                         />
-                                    </>
+                                    </div>
                                 ))}
                         </>
                     )}

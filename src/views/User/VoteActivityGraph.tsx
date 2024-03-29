@@ -35,24 +35,42 @@ interface VoteActivityGraphProps {
     vote_data: ModeratorVoteCountData;
 }
 
-function round_date(the_date: Date): Date {
-    return new Date(the_date.setHours(0, 0, 0, 0));
+function startOfWeek(the_date: Date): Date {
+    const date = new Date(the_date);
+    const day = date.getDay(); // Get current day of week (0 is Sunday)
+    const diff = date.getDate() - day;
+    return new Date(date.setDate(diff));
 }
 
 const VoteActivityGraph = ({ vote_data }: VoteActivityGraphProps) => {
-    const chart_data = React.useMemo(
-        () => [
+    const chart_data = React.useMemo(() => {
+        const aggregatedByWeek: {
+            [key: string]: number;
+        } = {};
+
+        vote_data.counts.forEach((day) => {
+            const weekStart = startOfWeek(new Date(day.date)).toISOString().slice(0, 10); // Format as YYYY-MM-DD
+            if (!aggregatedByWeek[weekStart]) {
+                aggregatedByWeek[weekStart] = 0;
+            }
+            aggregatedByWeek[weekStart] += day.count;
+        });
+
+        const min_date = new Date("2024-02-01");
+        const data = Object.entries(aggregatedByWeek)
+            .filter(([date, _count]) => new Date(date) >= min_date)
+            .map(([date, count]) => ({
+                x: date, // x-axis will use the week start date
+                y: count, // y-axis will use the aggregated count
+            }));
+
+        return [
             {
                 id: "votes",
-                data:
-                    vote_data?.counts.map((day) => ({
-                        x: round_date(new Date(day.date)),
-                        y: day.count,
-                    })) ?? [],
+                data,
             },
-        ],
-        [vote_data],
-    );
+        ];
+    }, [vote_data]);
 
     const chart_theme =
         data.get("theme") === "light" // (Accessible theme TBD - this assumes accessible is dark for now)
@@ -79,10 +97,11 @@ const VoteActivityGraph = ({ vote_data }: VoteActivityGraphProps) => {
                 enableSlices="x"
                 axisBottom={{
                     format: "%d %b %g",
-                    tickValues: "every month",
+                    tickValues: "every 2 weeks",
                 }}
                 xFormat="time:%Y-%m-%d"
                 xScale={{
+                    min: "2024-02-01",
                     format: "%Y-%m-%d",
                     precision: "day",
                     type: "time",
@@ -95,7 +114,7 @@ const VoteActivityGraph = ({ vote_data }: VoteActivityGraphProps) => {
                 margin={{
                     bottom: 40,
                     left: 60,
-                    right: 20,
+                    right: 40,
                     top: 5,
                 }}
                 theme={chart_theme}
