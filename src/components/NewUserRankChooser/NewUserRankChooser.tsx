@@ -23,13 +23,11 @@ import { errorAlerter } from "misc";
 
 interface NewUserRankChooserProps {
     show_skip?: boolean;
-    show_explainers?: boolean;
     onChosen?: () => void;
 }
 
 export function NewUserRankChooser({
     show_skip = true,
-    show_explainers = false,
     onChosen = () => {},
 }: NewUserRankChooserProps): JSX.Element {
     const sendRankChoice = (choice: string): void => {
@@ -86,7 +84,7 @@ export function NewUserRankChooser({
                             "Basic",
                         )}
                         choice={"basic"}
-                        explainer={show_explainers ? "(25k-12k)" : ""}
+                        explainer={"(25k-12k)"}
                     />
                     <NewRankChooserButton
                         label={pgettext(
@@ -94,7 +92,7 @@ export function NewUserRankChooser({
                             "Intermediate",
                         )}
                         choice={"intermediate"}
-                        explainer={show_explainers ? "(16k-1k)" : ""}
+                        explainer={"(16k-1k)"}
                     />
                     <NewRankChooserButton
                         label={pgettext(
@@ -102,7 +100,7 @@ export function NewUserRankChooser({
                             "Advanced",
                         )}
                         choice={"advanced"}
-                        explainer={show_explainers ? "(4k-9d)" : ""}
+                        explainer={"(4k-9d)"}
                     />
                 </div>
                 {show_skip && (

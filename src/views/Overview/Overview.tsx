@@ -167,7 +167,7 @@ export class OldOverview extends React.Component<{}, OverviewState> {
                 {!!user && user.need_rank && user.starting_rank_hint === "not provided" ? (
                     <>
                         <div className="welcome">{_("Welcome!")}</div>
-                        <NewUserRankChooser show_explainers />
+                        <NewUserRankChooser />
                     </>
                 ) : (
                     <div id="Overview">
