@@ -24,14 +24,10 @@
         display: flex;
         flex-direction: column;
         justify-content: center;
-        max-width: 50rem;  // contains the width of instructions to about the width of the 3 buttons below them
 
         .instructions {
             font-size: x-large;
             text-align: center;
-        }
-
-        .instructions {
             margin: 2rem;
             margin-top: 1.5rem;
         }
@@ -49,21 +45,22 @@
 
                 button {
                     display: flex;
+                    flex-direction: column;
                     align-items: center;
                     justify-content: center;
                     height: 4rem;
                     min-width: 13em;
-                    padding: 1rem 0 1rem 0;
                     font-size: large;
                     font-weight: bold;
                     white-space: nowrap;
 
-                    .label-text {
-                        margin-right: 10px;
+                    .explainer-text {
+                        margin-top: 0.5rem;
+                        font-size: small;
                     }
 
-                    .explainer-text {
-                        font-size: smaller;
+                    .label-text {
+                        padding-top: 0.5rem;
                     }
                 }
             }

@@ -77,7 +77,7 @@ export interface Glicko2 {
     games_played?: number;
 }
 
-// Note: must match function of same name in Node.
+// Note: must match function of same name in Django AND Node.
 export function starting_rating(starting_rank_hint: rest_api.StartingRankHint): Glicko2 {
     const rank_1d = 30;
     const rank_1k = rank_1d - 1;
