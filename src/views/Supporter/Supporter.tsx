@@ -235,6 +235,7 @@ export function Supporter(props: SupporterProperties): JSX.Element {
     const currency =
         overrides.currency || guessCurrency(config, overrides.country || config.country_code);
     const interval = annualBilling ? "year" : "month";
+    const [prizes, setPrizes] = React.useState<Service[]>([]);
 
     React.useEffect(() => {
         Promise.all([
@@ -263,6 +264,11 @@ export function Supporter(props: SupporterProperties): JSX.Element {
                         .catch(ignore);
 
                     setConfig(config);
+                    setPrizes(
+                        config.services.filter((service) =>
+                            service.key.startsWith("prize_code_redemption"),
+                        ),
+                    );
                 })
                 .catch((err) => {
                     console.error(err);
@@ -416,9 +422,66 @@ export function Supporter(props: SupporterProperties): JSX.Element {
 
     const current_plan_slug = getCurrentPlanSlug(config);
 
+    const generatePrizeText = () => {
+        const highestLevel = Math.max(...prizes.map((prize) => prize.level));
+        const expirationDate = prizes.reduce((latest, current) => {
+            const latestExpiration = latest.soft_expiration
+                ? new Date(latest.soft_expiration)
+                : null;
+            const currentExpiration = current.soft_expiration
+                ? new Date(current.soft_expiration)
+                : null;
+
+            if (latestExpiration && currentExpiration) {
+                return currentExpiration > latestExpiration ? current : latest;
+            } else if (currentExpiration) {
+                return current;
+            } else {
+                return latest;
+            }
+        }).soft_expiration;
+
+        let daysRemaining = null;
+        if (expirationDate) {
+            daysRemaining = Math.ceil(
+                (new Date(expirationDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+            );
+
+            let level = "";
+            if (highestLevel >= 29) {
+                level = "Meijin";
+            } else if (highestLevel >= 11) {
+                level = "Tenuki";
+            } else if (highestLevel >= 7) {
+                level = "Hane";
+            } else if (highestLevel >= 4) {
+                level = "Aji";
+            }
+
+            return (
+                <p className="prize-status">
+                    {daysRemaining !== null
+                        ? interpolate(
+                              _(
+                                  "Your {{level}} tier prize code expires in {{daysRemaining}} days.",
+                              ),
+                              { level: level, daysRemaining: daysRemaining },
+                          )
+                        : interpolate(_("Your {{level}} prize code has expired."), {
+                              level: level,
+                          })}
+                </p>
+            );
+        }
+
+        return;
+    };
+
     return (
         <div className="Supporter">
             <SiteSupporterText />
+
+            {prizes.length > 0 && generatePrizeText()}
 
             <div className="Prices">
                 {prices.map((price, idx) => (

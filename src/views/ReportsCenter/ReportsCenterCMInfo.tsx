@@ -35,40 +35,66 @@ interface AggregatedReportsData {
 interface VoteActivityGraphProps {
     vote_data: ReportCount[];
 }
-
+/*
 function round_date(the_date: Date): Date {
     return new Date(the_date.setHours(0, 0, 0, 0));
 }
+*/
+function startOfWeek(the_date: Date): Date {
+    const date = new Date(the_date);
+    const day = date.getDay(); // Get current day of week (0 is Sunday)
+    const diff = date.getDate() - day; // Calculate difference to the start of the week
+
+    return new Date(date.setDate(diff));
+}
 
 const CMVoteActivityGraph = ({ vote_data }: VoteActivityGraphProps) => {
+    const aggregateDataByWeek = React.useMemo(() => {
+        const aggregated: {
+            [key: string]: { escalated: number; consensus: number; non_consensus: number };
+        } = {};
+
+        vote_data.forEach((entry) => {
+            const weekStart = startOfWeek(new Date(entry.date)).toISOString().slice(0, 10); // Get week start and convert to ISO string for key
+            if (!aggregated[weekStart]) {
+                aggregated[weekStart] = { escalated: 0, consensus: 0, non_consensus: 0 };
+            }
+            aggregated[weekStart].escalated += entry.escalated;
+            aggregated[weekStart].consensus += entry.consensus;
+            aggregated[weekStart].non_consensus += entry.non_consensus;
+        });
+
+        return Object.entries(aggregated).map(([date, counts]) => ({
+            date,
+            ...counts,
+        }));
+    }, [vote_data]);
+
     const chart_data = React.useMemo(
         () => [
             {
                 id: "escalated",
-                data:
-                    vote_data?.map((day) => ({
-                        x: round_date(new Date(day.date)),
-                        y: day.escalated,
-                    })) ?? [],
+                data: aggregateDataByWeek.map((week) => ({
+                    x: week.date,
+                    y: week.escalated,
+                })),
             },
             {
                 id: "consensus",
-                data:
-                    vote_data?.map((day) => ({
-                        x: round_date(new Date(day.date)),
-                        y: day.consensus,
-                    })) ?? [],
+                data: aggregateDataByWeek.map((week) => ({
+                    x: week.date,
+                    y: week.consensus,
+                })),
             },
             {
                 id: "non-consensus",
-                data:
-                    vote_data?.map((day) => ({
-                        x: round_date(new Date(day.date)),
-                        y: day.non_consensus,
-                    })) ?? [],
+                data: aggregateDataByWeek.map((week) => ({
+                    x: week.date,
+                    y: week.non_consensus,
+                })),
             },
         ],
-        [vote_data],
+        [aggregateDataByWeek],
     );
 
     const chart_theme =
@@ -82,29 +108,36 @@ const CMVoteActivityGraph = ({ vote_data }: VoteActivityGraphProps) => {
                   grid: { line: { stroke: "#444444" } },
               };
 
+    const line_colors = {
+        consensus: "green",
+        "non-consensus": "red",
+        escalated: "orange",
+    };
+
     if (!chart_data[0].data.length) {
         return <div className="aggregate-vote-activity-graph">No activity yet</div>;
     }
 
-    console.log(chart_data);
     return (
         <div className="aggregate-vote-activity-graph">
             <ResponsiveLine
                 data={chart_data}
+                colors={({ id }) => line_colors[id as keyof typeof line_colors]}
                 animate
                 curve="monotoneX"
                 enablePoints={false}
                 enableSlices="x"
                 axisBottom={{
                     format: "%d %b %g",
-                    tickValues: "every month",
+                    tickValues: "every week",
                 }}
                 xFormat="time:%Y-%m-%d"
                 xScale={{
-                    format: "%Y-%m-%d",
-                    precision: "day",
                     type: "time",
+                    min: "2023-12-31",
+                    format: "%Y-%m-%d",
                     useUTC: false,
+                    precision: "day",
                 }}
                 axisLeft={{
                     tickValues: 6,
@@ -112,7 +145,7 @@ const CMVoteActivityGraph = ({ vote_data }: VoteActivityGraphProps) => {
                 margin={{
                     bottom: 40,
                     left: 60,
-                    right: 20,
+                    right: 40,
                     top: 5,
                 }}
                 theme={chart_theme}
@@ -144,10 +177,10 @@ export function ReportsCenterCMInfo(): JSX.Element {
     return (
         <div className="ReportsCenterCMInfo">
             {["overall", "escaping", "stalling", "score_cheating"].map((report_type) => (
-                <>
+                <div key={report_type}>
                     <h3>{report_type}</h3>
-                    <CMVoteActivityGraph vote_data={vote_data[report_type]} key={report_type} />
-                </>
+                    <CMVoteActivityGraph vote_data={vote_data[report_type]} />
+                </div>
             ))}
         </div>
     );
