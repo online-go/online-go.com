@@ -77,13 +77,13 @@ export interface Glicko2 {
     games_played?: number;
 }
 
+// Note: must match function of same name in Node.
 export function starting_rating(starting_rank_hint: rest_api.StartingRankHint): Glicko2 {
     const rank_1d = 30;
-    const rank_2k = rank_1d - 2;
-    const rank_12k = rank_1d - 12;
-    const rank_15k = rank_1d - 15;
-    const rank_22k = rank_1d - 22;
-    const rank_25k = rank_1d - 25;
+    const rank_1k = rank_1d - 1;
+    const glicko_1500 = 1500;
+    const rank_17k = rank_1d - 17;
+    const rank_23k = rank_1d - 23;
     const hint_deviation = 250;
     const hint_volatility = 0.06;
 
@@ -93,32 +93,32 @@ export function starting_rating(starting_rank_hint: rest_api.StartingRankHint): 
     switch (starting_rank_hint) {
         case "new":
             return {
-                rating: rank_to_rating(rank_25k),
+                rating: rank_to_rating(rank_23k),
                 deviation: hint_deviation,
                 volatility: hint_volatility,
             };
         case "basic":
             return {
-                rating: rank_to_rating(rank_22k),
+                rating: rank_to_rating(rank_17k),
                 deviation: hint_deviation,
                 volatility: hint_volatility,
             };
         case "intermediate":
             return {
-                rating: rank_to_rating(rank_12k),
+                rating: 1500,
                 deviation: hint_deviation,
                 volatility: hint_volatility,
             };
         case "advanced":
             return {
-                rating: rank_to_rating(rank_2k),
+                rating: rank_to_rating(rank_1k),
                 deviation: hint_deviation,
                 volatility: hint_volatility,
             };
         default:
-            // Set "skip" and "not provided" to mid-DDK, with higher volatility to let them rank quickly
+            // Set "skip" and "not provided" to 1500, with higher volatility to let them rank quickly
             return {
-                rating: rank_to_rating(rank_15k),
+                rating: glicko_1500,
                 deviation: fallback_deviation,
                 volatility: fallback_volatility,
             };
