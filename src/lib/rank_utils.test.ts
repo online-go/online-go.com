@@ -186,7 +186,7 @@ test("getUserRating", () => {
             bounded_rank_label: "6k",
             deviation: 350,
             partial_bounded_rank_label: "5.7k",
-            partial_rank_label: "5.7k",
+            partial_bounded_rank: 24.30338218214439,
             professional: false,
             provisional: true,
             rank: 24,
@@ -337,7 +337,7 @@ test("allRanks", () => {
 });
 
 test("humble_rating", () => {
-    expect(humble_rating(1500, 350)).toBe(1150);
+    expect(humble_rating(1500, 350)).toBe(1500);
 });
 
 test("effective_outcome", () => {

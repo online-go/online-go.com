@@ -70,6 +70,61 @@ interface UserType {
 }
 type UserOrRank = UserType | rest_api.UserConfig | number;
 
+export interface Glicko2 {
+    rating: number;
+    deviation: number;
+    volatility: number;
+    games_played?: number;
+}
+
+// Note: must match function of same name in Django AND Node.
+export function starting_rating(starting_rank_hint: rest_api.StartingRankHint): Glicko2 {
+    const rank_1d = 30;
+    const rank_1k = rank_1d - 1;
+    const glicko_1500 = 1500;
+    const rank_17k = rank_1d - 17;
+    const rank_23k = rank_1d - 23;
+    const hint_deviation = 250;
+    const hint_volatility = 0.06;
+
+    const fallback_deviation = 350;
+    const fallback_volatility = 0.06;
+
+    switch (starting_rank_hint) {
+        case "new":
+            return {
+                rating: rank_to_rating(rank_23k),
+                deviation: hint_deviation,
+                volatility: hint_volatility,
+            };
+        case "basic":
+            return {
+                rating: rank_to_rating(rank_17k),
+                deviation: hint_deviation,
+                volatility: hint_volatility,
+            };
+        case "intermediate":
+            return {
+                rating: 1500,
+                deviation: hint_deviation,
+                volatility: hint_volatility,
+            };
+        case "advanced":
+            return {
+                rating: rank_to_rating(rank_1k),
+                deviation: hint_deviation,
+                volatility: hint_volatility,
+            };
+        default:
+            // Set "skip" and "not provided" to 1500, with higher volatility to let them rank quickly
+            return {
+                rating: glicko_1500,
+                deviation: fallback_deviation,
+                volatility: fallback_volatility,
+            };
+    }
+}
+
 /** Returns the Glicko2 rating corresponding to OGS rank. */
 export function rank_to_rating(rank: number): number {
     return A * Math.exp(rank / C);
@@ -122,15 +177,11 @@ export function bounded_rank(user_or_rank: UserOrRank): number {
  * This determines whether rank shows up as [?] around OGS
  */
 export function is_provisional(user: { ratings?: RatingsType }): boolean {
-    const ratings: RatingsType = user.ratings || {};
-
-    const rating = ratings.overall || {
-        rating: 1500,
-        deviation: 350,
-        volatility: 0.06,
-    };
-
-    return rating.deviation >= PROVISIONAL_RATING_CUTOFF;
+    const deviation = user.ratings?.overall?.deviation;
+    if (deviation && deviation < PROVISIONAL_RATING_CUTOFF) {
+        return false;
+    }
+    return true;
 }
 
 /**
@@ -154,11 +205,10 @@ export function getUserRating(
         }
     }
 
-    let rating = {
-        rating: 1500,
-        deviation: 350,
-        volatility: 0.06,
-    };
+    let rating = starting_rating(
+        // this mess due to the union type of `user`
+        "starting_rank_hint" in user ? user.starting_rank_hint ?? "not provided" : "not provided",
+    );
     ret.unset = true;
     if (key in ratings) {
         ret.unset = false;
@@ -352,19 +402,14 @@ export function allRanks(): IRankInfo[] {
 }
 
 /**
- * For new players we pretend their rating is lower than it actually is for the purposes of
+ * For new players we USED TO pretend their rating is lower than it actually is for the purposes of
  * matchmaking and the like. See:
  * https://forums.online-go.com/t/i-think-the-13k-default-rank-is-doing-harm/13480/192
  * for the history surrounding that.
  */
-export function humble_rating(rating: number, deviation: number): number {
-    return (
-        rating -
-        ((Math.min(350, Math.max(PROVISIONAL_RATING_CUTOFF, deviation)) -
-            PROVISIONAL_RATING_CUTOFF) /
-            (350 - PROVISIONAL_RATING_CUTOFF)) *
-            deviation
-    );
+
+export function humble_rating(rating: number, _deviation: number): number {
+    return rating;
 }
 
 export interface EffectiveOutcome {

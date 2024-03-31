@@ -1,0 +1,77 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.NewUserRankChooser {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    .centered-content{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+
+        .instructions {
+            font-size: x-large;
+            text-align: center;
+            margin: 2rem;
+            margin-top: 1.5rem;
+        }
+
+        .rank-chooser-buttons {
+            margin-bottom: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+
+            .rank-chooser-button {
+                display: flex;
+                align-items: center;
+
+                button {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    height: 4rem;
+                    min-width: 13em;
+                    font-size: large;
+                    font-weight: bold;
+                    white-space: nowrap;
+
+                    .explainer-text {
+                        margin-top: 0.5rem;
+                        font-size: small;
+                    }
+
+                    .label-text {
+                        padding-top: 0.5rem;
+                    }
+                }
+            }
+
+        }
+
+        .skip-button {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+        }
+    }
+}
+
