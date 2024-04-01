@@ -262,7 +262,7 @@ function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(
         setOrderBy(new_order_by);
     }
 
-    function getHeader(order: string[], header: string): JSX.Element {
+    function getHeader(order: string[] | undefined, header: string): JSX.Element {
         let el: JSX.Element;
         if (order && order.length > 0) {
             let clsName = "";
@@ -343,7 +343,7 @@ function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(
                                             : null
                                     }
                                 >
-                                    {column.orderBy ? getHeader(column.orderBy, column.header) : ""}
+                                    {getHeader(column.orderBy, column.header)}
                                 </th>
                             ))}
                         </tr>
