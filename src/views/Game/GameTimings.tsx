@@ -240,9 +240,9 @@ export function GameTimings(props: GameTimingProperties): JSX.Element {
             <div>Totals:</div>
             <div>{moment.duration(black_elapsed).format()}</div>
             <div>{moment.duration(white_elapsed).format()}</div>
-            <div>{/* empty cell at end of row */}</div>
-            <div className="span-3">Final action:</div>
-            <div>
+            <div>{moment.duration(game_elapsed).format()}</div>
+            <div className="span-3 final-action-row">Final action:</div>
+            <div className="final-action-row">
                 {props.end_time &&
                     show_seconds_resolution(
                         moment
@@ -250,7 +250,6 @@ export function GameTimings(props: GameTimingProperties): JSX.Element {
                             .subtract(game_elapsed),
                     )}
             </div>
-            <div>{/* empty cell at end of row */}</div>
         </div>
     );
 }
