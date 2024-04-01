@@ -387,7 +387,11 @@ export function TournamentList(props: TournamentListProperties) {
                     {
                         header: _("Players"),
                         className: "nobr",
-                        render: (tournament) => tournament.player_count,
+                        render: (tournament) =>
+                            tournament.started ||
+                            tournament.player_count >= tournament.players_start
+                                ? tournament.player_count
+                                : `${tournament.player_count}/${tournament.players_start}`,
                     },
                     {
                         header: _("Ranks"),
