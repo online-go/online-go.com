@@ -20,6 +20,7 @@ import { useParams } from "react-router-dom";
 import { get, post, del } from "requests";
 import { useUser } from "hooks";
 import { Player } from "Player";
+import { _, interpolate } from "translate";
 
 interface PrizeBatch {
     id: string;
@@ -94,6 +95,8 @@ export const PrizeBatch: React.FC = () => {
 
     const generateTicketHTML = () => {
         let html = "";
+        const redemptionLink =
+            '<a href="https://online-go.com/redeem" target="_blank">https://online-go.com/redeem</a>';
         if (batch?.codes.length) {
             batch?.codes.forEach((code) => {
                 html += `
@@ -101,29 +104,34 @@ export const PrizeBatch: React.FC = () => {
                         <div class="voucher">
                             <div class="header">
                                 <img src="https://cdn.online-go.com/assets/ogs_bw.svg" alt="OGS Logo" class="logo" />
-                                <h2>Prize Voucher</h2>
+                                <h2>${_("Prize Voucher")}</h2>
                             </div>
                             <div class="content">
-                                <p class="congratulations">Congratulations!</p>
-                                <p class="message">You've won a special prize voucher from Online-Go.com for your outstanding performance at this tournament.</p>
+                                <p class="congratulations">${_("Congratulations!")}</p>
+                                <p class="message">${_(
+                                    "You've won a special prize voucher from Online-Go.com for your outstanding performance at this tournament.",
+                                )}</p>
                                 <div class="code-info">
-                                    <p><strong>Code:</strong> ${code.code}</p>
-                                    <p><strong>Level:</strong> ${code.supporter_level}</p>
-                                    <p><strong>Duration:</strong> ${code.duration} days</p>
-                                    <p><strong>Expiration Date:</strong> ${formatDate(
+                                    <p><strong>${_("Code:")}</strong> ${code.code}</p>
+                                    <p><strong>${_("Level:")}</strong> ${code.supporter_level}</p>
+                                    <p><strong>${_("Duration:")}</strong> ${code.duration} days</p>
+                                    <p><strong>${_("Expiration Date:")}</strong> ${formatDate(
                                         batch?.expiration_date,
                                     )}</p>
                                 </div>
-                                <p class="redemption-instructions">To redeem this voucher, visit <a href="https://online-go.com/redeem" target="_blank">https://online-go.com/redeem</a> and enter the code above. This voucher entitles you to a ${
-                                    code.supporter_level
-                                } level of VIP service or an equivalent upgrade to your current subscription on Online-Go.com for the duration listed.</p>
+                                <p class="redemption-instructions">${interpolate(
+                                    _(
+                                        "To redeem this voucher, visit {{url}} and enter the code above. This voucher entitles you to a {{supporter_level}} level of VIP service or an equivalent upgrade to your current subscription on Online-Go.com for the duration listed.",
+                                    ),
+                                    { url: redemptionLink, supporter_level: code.supporter_level },
+                                )}</p>
                             </div>
                         </div>
                     </div>
                 `;
             });
         } else {
-            html = "<p>No codes available.</p>";
+            html = `<p>${_("No codes available.")}</p>`;
         }
         return html;
     };
