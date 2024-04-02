@@ -888,7 +888,8 @@ export function Game(): JSX.Element | null {
             cur_move &&
             goban.current.engine &&
             goban.current.engine.phase === "finished" &&
-            goban.current.engine.game_id === game_id &&
+            (goban.current.engine.game_id === game_id ||
+                (review && goban.current.engine.game_id === goban.current.config.game_id)) &&
             ((goban.current.engine.width === 19 && goban.current.engine.height === 19) ||
                 (goban.current.engine.width === 13 && goban.current.engine.height === 13) ||
                 (goban.current.engine.width === 9 && goban.current.engine.height === 9))
@@ -896,7 +897,7 @@ export function Game(): JSX.Element | null {
             return (
                 <AIReview
                     onAIReviewSelected={(r) => set_selected_ai_review_uuid(r?.uuid)}
-                    game_id={game_id}
+                    game_id={goban.current.engine.game_id}
                     move={cur_move}
                     hidden={!ai_review_enabled}
                 />
