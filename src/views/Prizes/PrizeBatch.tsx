@@ -121,9 +121,13 @@ export const PrizeBatch: React.FC = () => {
                                 </div>
                                 <p class="redemption-instructions">${interpolate(
                                     _(
-                                        "To redeem this voucher, visit {{url}} and enter the code above. This voucher entitles you to a {{supporter_level}} level of VIP service or an equivalent upgrade to your current subscription on Online-Go.com for the duration listed.",
+                                        "To redeem this voucher, visit {{url}} and enter the code above. This voucher entitles you to {{supporter_level}} level VIP service or an equivalent upgrade to your current subscription on Online-Go.com for {{duration}} days.",
                                     ),
-                                    { url: redemptionLink, supporter_level: code.supporter_level },
+                                    {
+                                        url: redemptionLink,
+                                        supporter_level: code.supporter_level,
+                                        duration: code.duration,
+                                    },
                                 )}</p>
                             </div>
                         </div>
