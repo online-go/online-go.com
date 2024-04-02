@@ -51,6 +51,10 @@ function render_achievement_entry(entry: AchievementEntry): JSX.Element {
             title = "Western Server Challenge Contender";
             description = "Played 100 or more games during the 2023 Western Server Challenge";
             break;
+        case "wsc2024":
+            title = "Western Server Challenge Contender";
+            description = "Played 100 or more games during the 2024 Western Server Challenge";
+            break;
     }
 
     return (
