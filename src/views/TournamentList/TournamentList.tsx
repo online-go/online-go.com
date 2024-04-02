@@ -171,87 +171,10 @@ export function TournamentListMainView(): JSX.Element {
 
 function MyTournaments(): JSX.Element {
     return (
-        <div className="TournamentList">
-            <PaginatedTable
-                className="TournamentList-table"
-                name="game-history"
-                source={`me/tournaments/`}
-                //filter={filter}
-                orderBy={["-ended", "-started", "time_start"]}
-                columns={[
-                    {
-                        header: _("Tournament"),
-                        className: () => "name",
-                        render: (tournament: rest_api.Tournament) => (
-                            <div className="tournament-name">
-                                <i
-                                    className={
-                                        timeIcon(tournament.time_per_move) +
-                                        (tournament.group ? " group-tourny" : " site-tourny")
-                                    }
-                                />
-                                {tournament.group ? (
-                                    <Link to={`/group/${tournament.group.id}`}>
-                                        <img
-                                            src={mk32icon(tournament.icon)}
-                                            data-title={tournament.group.name}
-                                            onMouseOver={tooltip}
-                                            onMouseOut={tooltip}
-                                            onMouseMove={tooltip}
-                                        />
-                                    </Link>
-                                ) : (
-                                    <img
-                                        src={tournament.icon}
-                                        data-title={_("OGS Site Wide Tournament")}
-                                        onMouseOver={tooltip}
-                                        onMouseOut={tooltip}
-                                        onMouseMove={tooltip}
-                                    />
-                                )}
-                                <Link to={`/tournament/${tournament.id}`}>{tournament.name}</Link>
-                            </div>
-                        ),
-                    },
-
-                    {
-                        header: _("When"),
-                        className: "nobr",
-                        render: (tournament) =>
-                            tournament.ended
-                                ? when(tournament.started) + " - " + when(tournament.ended)
-                                : tournament.started
-                                  ? when(tournament.started)
-                                  : when(tournament.time_start),
-                    },
-                    {
-                        header: _("Time Control"),
-                        className: "nobr",
-                        render: (tournament) =>
-                            shortShortTimeControl(tournament.time_control_parameters as any),
-                    },
-                    {
-                        header: _("Size"),
-                        className: "nobr",
-                        render: (tournament) => `${tournament.board_size}x${tournament.board_size}`,
-                    },
-                    {
-                        header: _("Players"),
-                        className: "nobr",
-                        render: (tournament) => tournament.player_count,
-                    },
-                    {
-                        header: _("Ranks"),
-                        className: "nobr",
-                        render: (tournament) =>
-                            shortRankRestrictionText(
-                                tournament.min_ranking,
-                                tournament.max_ranking,
-                            ),
-                    },
-                ]}
-            />
-        </div>
+        <TournamentListImpl
+            source={`me/tournaments/`}
+            orderBy={["-ended", "-started", "time_start"]}
+        />
     );
 }
 
@@ -325,13 +248,31 @@ export function TournamentList(props: TournamentListProperties) {
     );
 
     return (
+        <TournamentListImpl
+            filter={filter}
+            source={`tournaments/`}
+            orderBy={["-started", "time_start", "name"]}
+        />
+    );
+}
+
+function TournamentListImpl({
+    filter,
+    source,
+    orderBy,
+}: {
+    filter?: Filter;
+    source: string;
+    orderBy: Array<string>;
+}): JSX.Element {
+    return (
         <div className="TournamentList">
             <PaginatedTable
                 className="TournamentList-table"
                 name="game-history"
-                source={`tournaments/`}
+                source={source}
                 filter={filter}
-                orderBy={["-started", "time_start", "name"]}
+                orderBy={orderBy}
                 columns={[
                     {
                         header: _("Tournament"),
@@ -371,7 +312,12 @@ export function TournamentList(props: TournamentListProperties) {
                     {
                         header: _("When"),
                         className: "nobr",
-                        render: (tournament) => when(tournament.time_start),
+                        render: (tournament) =>
+                            tournament.ended
+                                ? when(tournament.started) + " - " + when(tournament.ended)
+                                : tournament.started
+                                  ? when(tournament.started)
+                                  : when(tournament.time_start),
                     },
                     {
                         header: _("Time Control"),
