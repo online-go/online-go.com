@@ -1,4 +1,4 @@
-import { Clock } from "./Clock";
+import { Clock, prettyTime } from "./Clock";
 import * as React from "react";
 import { TestGoban } from "goban";
 import { act, render } from "@testing-library/react";
@@ -46,4 +46,21 @@ test("Byo-yomi with days and hours", () => {
     expect(container.querySelector(".main-time")).toHaveTextContent("2 Days 12 Hours");
     expect(container.querySelector(".period-time")).toHaveTextContent("7 Days");
     expect(container.querySelector(".byo-yomi-periods")).toHaveTextContent("(5)");
+});
+
+test("prettyTime", () => {
+    expect(prettyTime(0)).toBe("0.0");
+    expect(prettyTime(5000)).toBe("0:05");
+    expect(prettyTime(3.3e5)).toBe("5:30");
+    expect(prettyTime(5.4e6)).toBe("1h 30m");
+    expect(prettyTime(2.16e7)).toBe("6h 0m");
+    expect(prettyTime(1.296e8)).toBe("36h");
+    expect(prettyTime(2.16e8)).toBe("2 Days 12 Hours");
+    expect(prettyTime(2.592e8)).toBe("3 Days");
+});
+
+test("prettyTime bad input", () => {
+    expect(prettyTime(NaN)).toBe("0.0");
+    expect(prettyTime(-1)).toBe("0.0");
+    expect(prettyTime(Infinity)).toBe("Infinity Days");
 });

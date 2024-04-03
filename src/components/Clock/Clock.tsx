@@ -231,7 +231,8 @@ function ClockPauseReason({
     return <span className="pause-text">{pause_text}</span>;
 }
 
-function prettyTime(ms: number): string {
+// exported for testing
+export function prettyTime(ms: number): string {
     //return shortDurationString(Math.round(ms / 1000));
 
     let seconds = Math.ceil((ms - 1) / 1000);
