@@ -18,7 +18,7 @@
 import * as React from "react";
 import * as data from "data";
 import { useEffect, useState } from "react";
-import { Goban, JGOFClockWithTransmitting, JGOFPlayerClock, JGOFTimeControl } from "goban";
+import { GobanCore, JGOFClockWithTransmitting, JGOFPlayerClock, JGOFTimeControl } from "goban";
 import { _, pgettext, interpolate, ngettext } from "translate";
 
 type clock_color = "black" | "white" | "stone-removal";
@@ -30,7 +30,7 @@ export function Clock({
     compact,
     lineSummary,
 }: {
-    goban: Goban;
+    goban: GobanCore;
     color: clock_color;
     className?: string;
     compact?: boolean;
