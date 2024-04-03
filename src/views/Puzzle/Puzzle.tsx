@@ -907,9 +907,28 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
         const show_correct = this.state.show_correct;
 
         let next_id = 0;
+        let random_id = 0;
+        let temp_id = 0;
         for (let i = 0; i < this.state.puzzle_collection_summary.length - 1; ++i) {
             if (this.state.puzzle_collection_summary[i].id === puzzle.id) {
                 next_id = this.state.puzzle_collection_summary[i + 1].id;
+            }
+        }
+        if (this.state.puzzle_collection_summary.length > 1) {
+            temp_id = Math.floor(Math.random() * this.state.puzzle_collection_summary.length);
+            random_id = this.state.puzzle_collection_summary[temp_id].id;
+            if (random_id === puzzle.id) {
+                if (temp_id === 0) {
+                    random_id = this.state.puzzle_collection_summary[1].id;
+                }
+                if (temp_id === this.state.puzzle_collection_summary.length - 1) {
+                    random_id =
+                        this.state.puzzle_collection_summary[
+                            this.state.puzzle_collection_summary.length - 2
+                        ].id;
+                } else {
+                    random_id = this.state.puzzle_collection_summary[temp_id - 1].id;
+                }
             }
         }
 
@@ -938,6 +957,15 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
 
                 {(show_correct || null) && (
                     <div className="actions">
+                        {(random_id !== 0 || null) && (
+                            <Link
+                                ref={this.next_link}
+                                to={`/puzzle/${random_id}`}
+                                className="btn danger"
+                            >
+                                {_("Random")}
+                            </Link>
+                        )}
                         {((next_id !== 0 && next_id !== puzzle.id) || null) && (
                             <Link
                                 ref={this.next_link}
