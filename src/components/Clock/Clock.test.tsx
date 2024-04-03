@@ -43,7 +43,7 @@ test("Byo-yomi with days and hours", () => {
         });
     });
 
-    expect(container.querySelector(".main-time")).toHaveTextContent("2 Days 12 Hours");
+    expect(container.querySelector(".main-time")).toHaveTextContent("2d 12h");
     expect(container.querySelector(".period-time")).toHaveTextContent("7 Days");
     expect(container.querySelector(".byo-yomi-periods")).toHaveTextContent("(5)");
 });
@@ -55,7 +55,7 @@ test("prettyTime", () => {
     expect(prettyTime(5.4e6)).toBe("1h 30m");
     expect(prettyTime(2.16e7)).toBe("6h 0m");
     expect(prettyTime(1.296e8)).toBe("36h");
-    expect(prettyTime(2.16e8)).toBe("2 Days 12 Hours");
+    expect(prettyTime(2.16e8)).toBe("2d 12h");
     expect(prettyTime(2.592e8)).toBe("3 Days");
 });
 

@@ -245,11 +245,9 @@ export function prettyTime(ms: number): string {
         return "0.0";
     }
     if (days > 1) {
-        let ret = days + " " + ngettext("Day", "Days", days);
-        if (hours > 0) {
-            ret += " " + hours + " " + ngettext("Hour", "Hours", hours);
-        }
-        return ret;
+        return hours > 0
+            ? interpolate(pgettext("Game clock: Days and hours", "%sd %sh"), [days, hours])
+            : days + " " + ngettext("Day", "Days", days);
     }
     if (hours || days === 1) {
         return days === 0
