@@ -18,7 +18,7 @@
 import * as React from "react";
 import * as data from "data";
 import { useEffect, useState } from "react";
-import { Goban, JGOFClockWithTransmitting, JGOFPlayerClock, JGOFTimeControl } from "goban";
+import { GobanCore, JGOFClockWithTransmitting, JGOFPlayerClock, JGOFTimeControl } from "goban";
 import { _, pgettext, interpolate, ngettext } from "translate";
 
 type clock_color = "black" | "white" | "stone-removal";
@@ -30,7 +30,7 @@ export function Clock({
     compact,
     lineSummary,
 }: {
-    goban: Goban;
+    goban: GobanCore;
     color: clock_color;
     className?: string;
     compact?: boolean;
@@ -231,9 +231,8 @@ function ClockPauseReason({
     return <span className="pause-text">{pause_text}</span>;
 }
 
-function prettyTime(ms: number): string {
-    //return shortDurationString(Math.round(ms / 1000));
-
+// exported for testing
+export function prettyTime(ms: number): string {
     let seconds = Math.ceil((ms - 1) / 1000);
     const days = Math.floor(seconds / 86400);
     seconds -= days * 86400;
@@ -242,25 +241,18 @@ function prettyTime(ms: number): string {
     const minutes = Math.floor(seconds / 60);
     seconds -= minutes * 60;
 
-    let ret = "";
     if (ms <= 0 || isNaN(ms)) {
-        ret = "0.0";
-    } else if (days > 1) {
-        ret += days + " " + ngettext("Day", "Days", days);
-        if (hours > 0) {
-            ret += " " + (hours + (hours ? " " + ngettext("Hour", "Hours", hours) : ""));
-        }
-    } else if (hours || days === 1) {
-        ret =
-            days === 0
-                ? interpolate(pgettext("Game clock: Hours and minutes", "%sh %sm"), [
-                      hours,
-                      minutes,
-                  ])
-                : interpolate(pgettext("Game clock: hours", "%sh"), [hours + 24]);
-    } else {
-        ret = minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
+        return "0.0";
     }
-
-    return ret;
+    if (days > 1) {
+        return hours > 0
+            ? interpolate(pgettext("Game clock: Days and hours", "%sd %sh"), [days, hours])
+            : days + " " + ngettext("Day", "Days", days);
+    }
+    if (hours || days === 1) {
+        return days === 0
+            ? interpolate(pgettext("Game clock: Hours and minutes", "%sh %sm"), [hours, minutes])
+            : interpolate(pgettext("Game clock: hours", "%sh"), [hours + 24]);
+    }
+    return minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
 }
