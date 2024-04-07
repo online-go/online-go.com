@@ -225,4 +225,20 @@ export const CANNED_MESSAGES: rest_api.warnings.WarningMessages = {
         Thank you for helping keep OGS enjoyable for everyone. We appreciate it.`),
             { reported },
         ),
+    report_type_changed: (change) =>
+        interpolate(
+            _(
+                `
+        Thanks for your recent report.   We've had to change the 'report type':
+
+            {{change}}.
+
+        It makes it easier and quicker to process reports if they are raised with the
+        correct type - if you could help with that we'd appreciate it.
+
+        If this change seems wrong, we'd welcome feedback about that - please contact a moderator to let them know.
+        `,
+            ),
+            { change },
+        ),
 };

@@ -25,23 +25,7 @@ import { toast } from "toast";
 
 import { pgettext } from "translate";
 
-export type ReportType =
-    | "all" // not a type, just useful for the enumeration
-    // These need to match those defined in the IncidentReport model on the back end
-    | "stalling"
-    | "inappropriate_content"
-    | "score_cheating"
-    | "harassment"
-    | "ai_use"
-    | "sandbagging"
-    | "escaping"
-    | "appeal"
-    | "other"
-    | "warning" // for moderators only
-    | "troll"; // system generated, for moderators only
-
 // Must match back-end MODERATOR_POWER definition
-
 export enum MODERATOR_POWERS {
     NONE = 0,
     HANDLE_SCORE_CHEAT = 0b001,
