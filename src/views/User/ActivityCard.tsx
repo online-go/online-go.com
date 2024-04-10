@@ -22,7 +22,7 @@ import { Card } from "material";
 import * as data from "data";
 import UserVoteActionSummary from "./UserVoteActionSummary";
 import UserVoteActivityGraph from "./VoteActivityGraph";
-import { ReportType } from "moderation";
+import { ReportType } from "Report";
 import { COMMUNITY_MODERATION_REPORT_TYPES, community_mod_has_power } from "report_util";
 
 /** Activity card doesn't care about that many user traits */

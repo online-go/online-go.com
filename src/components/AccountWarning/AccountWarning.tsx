@@ -74,6 +74,7 @@ export function AccountWarning() {
     const Renderers = {
         warning: WarningModal,
         acknowledgement: AckModal,
+        info: AckModal,
     };
 
     const MessageRenderer = Renderers[warning.severity];

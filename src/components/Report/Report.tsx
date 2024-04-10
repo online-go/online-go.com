@@ -25,7 +25,21 @@ import { post } from "requests";
 import { alert } from "swal_config";
 import { setIgnore } from "BlockPlayer";
 import { useUser } from "hooks";
-import { ReportType } from "moderation";
+
+export type ReportType =
+    | "all" // not a type, just useful for the enumeration
+    // These need to match those defined in the IncidentReport model on the back end
+    | "stalling"
+    | "inappropriate_content"
+    | "score_cheating"
+    | "harassment"
+    | "ai_use"
+    | "sandbagging"
+    | "escaping"
+    | "appeal"
+    | "other"
+    | "warning" // for moderators only
+    | "troll"; // system generated, for moderators only
 
 export interface ReportDescription {
     type: ReportType;

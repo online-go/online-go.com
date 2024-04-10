@@ -17,7 +17,8 @@
 
 import { ReportedConversation } from "Report";
 import { PlayerCacheEntry } from "player_cache";
-import { MODERATOR_POWERS, ReportType } from "moderation";
+import { MODERATOR_POWERS } from "moderation";
+import { ReportType } from "Report";
 
 interface Vote {
     voter_id: number;
@@ -32,6 +33,7 @@ export interface Report {
     updated: string;
     state: string;
     escalated: boolean;
+    retyped: boolean;
     source: string;
     report_type: ReportType;
     reporting_user: any;

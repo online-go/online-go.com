@@ -40,9 +40,10 @@ declare namespace rest_api {
             | "ack_educated_beginner_staller_and_annul"
             | "ack_warned_staller"
             | "ack_warned_staller_and_annul"
-            | "no_stalling_evident";
+            | "no_stalling_evident"
+            | "report_type_changed";
 
-        type Severity = "warning" | "acknowledgement";
+        type Severity = "warning" | "acknowledgement" | "info";
 
         type InterpolatedMessage = (data: any) => string;
 

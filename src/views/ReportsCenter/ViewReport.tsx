@@ -20,7 +20,7 @@ import * as moment from "moment";
 import * as ReactSelect from "react-select";
 import Select from "react-select";
 import { useUser } from "hooks";
-import { report_categories } from "Report";
+import { report_categories, ReportType } from "Report";
 import { report_manager } from "report_manager";
 import { Report } from "report_util";
 import { AutoTranslate } from "AutoTranslate";
@@ -37,6 +37,7 @@ import { get } from "requests";
 import { MessageTemplate, WARNING_TEMPLATES, REPORTER_RESPONSE_TEMPLATES } from "./MessageTemplate";
 import { ModerationActionSelector } from "./ModerationActionSelector";
 import { openAnnulQueueModal, AnnulQueueModal } from "AnnulQueueModal";
+import { ReportTypeSelector } from "./ReportTypeSelector";
 
 // Used for saving updates to the report
 let report_note_id = 0;
@@ -257,6 +258,21 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
         setIsAnnulQueueModalOpen(false);
     };
 
+    const changeReportType = (new_type: ReportType) => {
+        setReport({ ...report, retyped: true }); // this disables the selector on this page for this report, while action happens...
+        post(`moderation/incident/${report.id}`, {
+            id: report.id,
+            action: "retype",
+            new_type: new_type,
+        })
+            .then((_res) => {
+                // We need to move on to the next report, because this one is getting updated in the
+                // back end, and we'll get it back via that route, not by directly manipulating it here.
+                next();
+            })
+            .catch(errorAlerter);
+    };
+
     return (
         <div id="ViewReport">
             {isAnnulQueueModalOpen && (
@@ -400,18 +416,28 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                 </span>
             </div>
             <div className="reported-user">
-                <h3 className="users">
-                    <span className="reported-user">
-                        {category?.title}
-                        : <Player user={report.reported_user} />
-                    </span>
+                <h3 className="users-header">
+                    <div className="reported-user">
+                        <ReportTypeSelector
+                            current_type={category?.type}
+                            lock={report.retyped}
+                            onUpdate={changeReportType}
+                        />
+                        <span>
+                            {pgettext(
+                                "This is a header saying who is reported - 'offence by <Player>'",
+                                "by",
+                            )}
+                            <Player user={report.reported_user} />
+                        </span>
+                    </div>
                     <div>
                         <span className="reporting-user">
                             {pgettext(
                                 "A label for the user name that reported an incident (followed by colon and the username)",
                                 "Reported by",
                             )}
-                            :{" "}
+                            :
                             {report.reporting_user ? (
                                 <Player user={report.reporting_user} />
                             ) : (

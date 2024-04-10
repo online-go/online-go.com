@@ -12,7 +12,7 @@
         visibility: hidden;
     }
 
-    h3.users {
+    .users-header {
         display: flex;
         flex-direction: row;
         justify-content: space-between;
@@ -22,11 +22,22 @@
             white-space: nowrap;
         }
 
+        .reported-user {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: left;
+            > span {
+                margin-left: 0.5rem;
+            }
+
+        }
+
         .reporting-user {
             float: right;
             font-size: 0.8rem;
             font-weight: 400;
-        }
+       }
     }
 
     .view-report-header {

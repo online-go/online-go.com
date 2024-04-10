@@ -20,7 +20,7 @@ import React, { useEffect, useState } from "react";
 import { get } from "requests";
 import * as data from "data";
 import { ResponsivePie } from "@nivo/pie";
-import { ReportType } from "moderation";
+import { ReportType } from "Report";
 
 interface VoteSummaryData {
     report_type: string;
