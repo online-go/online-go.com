@@ -907,6 +907,13 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
         const show_correct = this.state.show_correct;
 
         let next_id = 0;
+        const ids = this.state.puzzle_collection_summary
+            .map((p) => p.id)
+            .filter((id) => id !== puzzle.id);
+        let random_id = 0;
+        if (ids.length > 0) {
+            random_id = ids[Math.floor(Math.random() * ids.length)];
+        }
         for (let i = 0; i < this.state.puzzle_collection_summary.length - 1; ++i) {
             if (this.state.puzzle_collection_summary[i].id === puzzle.id) {
                 next_id = this.state.puzzle_collection_summary[i + 1].id;
@@ -938,6 +945,15 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
 
                 {(show_correct || null) && (
                     <div className="actions">
+                        {(random_id !== 0 || null) && (
+                            <Link
+                                ref={this.next_link}
+                                to={`/puzzle/${random_id}`}
+                                className="btn danger"
+                            >
+                                {_("Random")}
+                            </Link>
+                        )}
                         {((next_id !== 0 && next_id !== puzzle.id) || null) && (
                             <Link
                                 ref={this.next_link}
