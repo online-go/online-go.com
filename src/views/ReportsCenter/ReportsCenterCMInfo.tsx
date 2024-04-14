@@ -51,17 +51,24 @@ function startOfWeek(the_date: Date): Date {
 const CMVoteActivityGraph = ({ vote_data }: VoteActivityGraphProps) => {
     const aggregateDataByWeek = React.useMemo(() => {
         const aggregated: {
-            [key: string]: { escalated: number; consensus: number; non_consensus: number };
+            [key: string]: {
+                escalated: number;
+                consensus: number;
+                non_consensus: number;
+                total: number;
+            };
         } = {};
 
-        vote_data.forEach((entry) => {
-            const weekStart = startOfWeek(new Date(entry.date)).toISOString().slice(0, 10); // Get week start and convert to ISO string for key
+        vote_data.forEach(({ date, escalated, consensus, non_consensus }) => {
+            const weekStart = startOfWeek(new Date(date)).toISOString().slice(0, 10); // Get week start and convert to ISO string for key
+
             if (!aggregated[weekStart]) {
-                aggregated[weekStart] = { escalated: 0, consensus: 0, non_consensus: 0 };
+                aggregated[weekStart] = { escalated: 0, consensus: 0, non_consensus: 0, total: 0 };
             }
-            aggregated[weekStart].escalated += entry.escalated;
-            aggregated[weekStart].consensus += entry.consensus;
-            aggregated[weekStart].non_consensus += entry.non_consensus;
+            aggregated[weekStart].escalated += escalated;
+            aggregated[weekStart].consensus += consensus;
+            aggregated[weekStart].non_consensus += non_consensus;
+            aggregated[weekStart].total += escalated + consensus + non_consensus;
         });
 
         return Object.entries(aggregated).map(([date, counts]) => ({
@@ -70,27 +77,67 @@ const CMVoteActivityGraph = ({ vote_data }: VoteActivityGraphProps) => {
         }));
     }, [vote_data]);
 
-    const chart_data = React.useMemo(
-        () => [
+    const totals_data = React.useMemo(() => {
+        const dropCurrentWeek = (data: { x: string; y: number | null }[]) => {
+            const newData = [...data];
+            if (newData.length > 0) {
+                const lastIndex = newData.length - 1;
+                newData[lastIndex] = { ...newData[lastIndex], y: null };
+            }
+            return newData;
+        };
+        return [
+            {
+                id: "consensus",
+                data: dropCurrentWeek(
+                    aggregateDataByWeek.map((week) => ({
+                        x: week.date,
+                        y: week.consensus,
+                    })),
+                ),
+            },
             {
                 id: "escalated",
-                data: aggregateDataByWeek.map((week) => ({
-                    x: week.date,
-                    y: week.escalated,
-                })),
+                data: dropCurrentWeek(
+                    aggregateDataByWeek.map((week) => ({
+                        x: week.date,
+                        y: week.escalated,
+                    })),
+                ),
             },
+            {
+                id: "non-consensus",
+                data: dropCurrentWeek(
+                    aggregateDataByWeek.map((week) => ({
+                        x: week.date,
+                        y: week.non_consensus,
+                    })),
+                ),
+            },
+        ];
+    }, [aggregateDataByWeek]);
+
+    const percent_data = React.useMemo(
+        () => [
             {
                 id: "consensus",
                 data: aggregateDataByWeek.map((week) => ({
                     x: week.date,
-                    y: week.consensus,
+                    y: week.consensus / week.total,
+                })),
+            },
+            {
+                id: "escalated",
+                data: aggregateDataByWeek.map((week) => ({
+                    x: week.date,
+                    y: week.escalated / week.total,
                 })),
             },
             {
                 id: "non-consensus",
                 data: aggregateDataByWeek.map((week) => ({
                     x: week.date,
-                    y: week.non_consensus,
+                    y: week.non_consensus / week.total,
                 })),
             },
         ],
@@ -109,47 +156,96 @@ const CMVoteActivityGraph = ({ vote_data }: VoteActivityGraphProps) => {
               };
 
     const line_colors = {
-        consensus: "green",
-        "non-consensus": "red",
-        escalated: "orange",
+        consensus: "rgba(0, 128, 0, 1)", // green
+        escalated: "rgba(255, 165, 0, 1)", // orange
+        "non-consensus": "rgba(255, 0, 0, 1)", // red
     };
 
-    if (!chart_data[0].data.length) {
+    const percent_line_colours = {
+        consensus: "rgba(0, 128, 0, 0.4)",
+        escalated: "rgba(255, 165, 0, 0.4)",
+        "non-consensus": "rgba(255, 0, 0, 0.4)",
+    };
+
+    if (!totals_data[0].data.length) {
         return <div className="aggregate-vote-activity-graph">No activity yet</div>;
     }
 
     return (
         <div className="aggregate-vote-activity-graph">
-            <ResponsiveLine
-                data={chart_data}
-                colors={({ id }) => line_colors[id as keyof typeof line_colors]}
-                animate
-                curve="monotoneX"
-                enablePoints={false}
-                enableSlices="x"
-                axisBottom={{
-                    format: "%d %b %g",
-                    tickValues: "every week",
-                }}
-                xFormat="time:%Y-%m-%d"
-                xScale={{
-                    type: "time",
-                    min: "2023-12-31",
-                    format: "%Y-%m-%d",
-                    useUTC: false,
-                    precision: "day",
-                }}
-                axisLeft={{
-                    tickValues: 6,
-                }}
-                margin={{
-                    bottom: 40,
-                    left: 60,
-                    right: 40,
-                    top: 5,
-                }}
-                theme={chart_theme}
-            />
+            <div className="totals-graph">
+                <ResponsiveLine
+                    data={totals_data}
+                    colors={({ id }) => line_colors[id as keyof typeof line_colors]}
+                    animate
+                    curve="monotoneX"
+                    enablePoints={false}
+                    enableSlices="x"
+                    axisBottom={{
+                        format: "%d %b %g",
+                        tickValues: "every week",
+                    }}
+                    xFormat="time:%Y-%m-%d"
+                    xScale={{
+                        type: "time",
+                        min: "2023-12-31",
+                        format: "%Y-%m-%d",
+                        useUTC: false,
+                        precision: "day",
+                    }}
+                    axisLeft={{
+                        tickValues: 6,
+                    }}
+                    margin={{
+                        bottom: 40,
+                        left: 60,
+                        right: 40,
+                        top: 5,
+                    }}
+                    theme={chart_theme}
+                />
+            </div>
+            <div className="percent-graph">
+                <ResponsiveLine
+                    areaOpacity={1}
+                    enableArea
+                    data={percent_data}
+                    colors={({ id }) =>
+                        percent_line_colours[id as keyof typeof percent_line_colours]
+                    }
+                    animate
+                    curve="monotoneX"
+                    enablePoints={false}
+                    enableSlices="x"
+                    axisBottom={{
+                        format: "%d %b %g",
+                        tickValues: "every week",
+                    }}
+                    xFormat="time:%Y-%m-%d"
+                    xScale={{
+                        type: "time",
+                        min: "2023-12-31",
+                        format: "%Y-%m-%d",
+                        useUTC: false,
+                        precision: "day",
+                    }}
+                    axisLeft={{
+                        tickValues: 6,
+                    }}
+                    yFormat=" >-.0p"
+                    yScale={{
+                        stacked: true,
+                        type: "linear",
+                    }}
+                    margin={{
+                        bottom: 40,
+                        left: 60,
+                        right: 40,
+                        top: 5,
+                    }}
+                    theme={chart_theme}
+                />
+            </div>
         </div>
     );
 };
