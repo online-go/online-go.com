@@ -483,7 +483,7 @@ export function GameChatLine(props: GameChatLineProperties): JSX.Element {
                     goban.setMode("analyze");
                 }
 
-                goban.engine.followPath(line.from as number, line.moves);
+                goban.engine.followPath(line.from as number, line.moves as string);
                 goban.syncReviewMove();
                 goban.drawPenMarks(goban.engine.cur_move.pen_marks);
                 goban.redraw();
@@ -494,7 +494,7 @@ export function GameChatLine(props: GameChatLineProperties): JSX.Element {
                     goban.setMode("analyze");
                 }
 
-                goban.engine.followPath(line.move_number, "");
+                goban.engine.followPath(line.move_number as number, "");
                 goban.redraw();
 
                 if (goban.isAnalysisDisabled()) {
