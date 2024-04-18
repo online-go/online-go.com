@@ -43,15 +43,15 @@ export const CANNED_MESSAGES: rest_api.warnings.WarningMessages = {
     warn_score_cheat: (game_id) =>
         interpolate(
             _(`
-    Our records show that you attempted to illegally change the score at the end of
-    game #{{game_id}}. This is a form of cheating and is prohibited by the
-    OGS Terms of Service.
+            We noticed that you incorrectly changed the score at the end of game #{{game_id}}.
 
-    https://online-go.com/docs/terms-of-service
+            While this might be a genuine mistake, please review the game and be sure you understand the final score.
 
-    We ask that you end your games properly by accepting the correct score
-    immediately after passing. Further instances of score cheating will result
-    in suspension of your account.`),
+            In future, we hope that you will end your games properly by first closing all the borders of your territory and secondly by accepting the correct score immediately after passing. 
+
+            In case of a disagreement over what the correct score is, we ask you to contact a moderator.
+
+            Unfortunately, some users use this form of score manipulation to cheat, if this happens repeatedly we’ll have no alternative than to suspend your account.`),
             { game_id },
         ),
     ack_educated_beginner_score_cheat: (reported) =>
