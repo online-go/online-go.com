@@ -1344,7 +1344,7 @@ export function Game(): JSX.Element | null {
         });
 
         if (params.move_number) {
-            goban.current.once("gamedata", () => {
+            goban.current.once(review_id ? "review.load-end" : "gamedata", () => {
                 nav_goto_move(parseInt(params.move_number as string));
             });
         }

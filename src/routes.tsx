@@ -217,8 +217,10 @@ export const routes = (
                 <Route path="/game/:game_id/:move_number" element={<Game />} />
                 <Route path="/game/:game_id" element={<Game />} />
                 <Route path="/review/view/:review_id" element={<Game />} />
+                <Route path="/review/:review_id/:move_number" element={<Game />} />
                 <Route path="/review/:review_id" element={<Game />} />
                 <Route path="/demo/view/:review_id" element={<Game />} />
+                <Route path="/demo/:review_id/:move_number" element={<Game />} />
                 <Route path="/demo/:review_id" element={<Game />} />
                 <Route path="/game/:game_id/embed" element={<GameEmbed />} />
                 <Route path="/review/:review_id/embed" element={<GameEmbed />} />
