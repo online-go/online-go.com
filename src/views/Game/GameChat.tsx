@@ -51,7 +51,7 @@ interface ChatLine {
         | protocol.GameChatReviewMessage
         | protocol.GameChatTranslatedMessage;
     date: number;
-    move_number: number;
+    move_number?: number;
     from?: number;
     moves?: string;
     channel: string;
@@ -475,12 +475,26 @@ export function GameChatLine(props: GameChatLineProperties): JSX.Element {
             game_control.emit("stopEstimatingScore");
             const line = props.line;
 
-            if ("move_number" in line) {
+            // In a demo/review, line.move_number is never set. For lines that
+            // link to a specific move, line.from is set, and line.moves is an
+            // empty string (which is falsy).
+            if ((line.from ?? -1) >= 0 && "moves" in line) {
+                if (goban.isAnalysisDisabled()) {
+                    goban.setMode("analyze");
+                }
+
+                goban.engine.followPath(line.from as number, line.moves as string);
+                goban.syncReviewMove();
+                goban.drawPenMarks(goban.engine.cur_move.pen_marks);
+                goban.redraw();
+                //last_move_number[type] = line.from;
+                //last_moves[type] = line.moves;
+            } else if ("move_number" in line) {
                 if (!goban.isAnalysisDisabled()) {
                     goban.setMode("analyze");
                 }
 
-                goban.engine.followPath(line.move_number, "");
+                goban.engine.followPath(line.move_number as number, "");
                 goban.redraw();
 
                 if (goban.isAnalysisDisabled()) {
@@ -489,25 +503,11 @@ export function GameChatLine(props: GameChatLineProperties): JSX.Element {
 
                 goban.emit("update");
             }
-
-            if ((line.from ?? -1) >= 0 && line.moves) {
-                if (goban.isAnalysisDisabled()) {
-                    goban.setMode("analyze");
-                }
-
-                goban.engine.followPath(line.from as number, line.moves);
-                goban.syncReviewMove();
-                goban.drawPenMarks(goban.engine.cur_move.pen_marks);
-                goban.redraw();
-                //last_move_number[type] = line.from;
-                //last_moves[type] = line.moves;
-            }
         };
 
-        // It's unclear to me if we still need this "move_number" in (line as any) check,
-        // our typing says that field should always exist so the second case isn't necessary,
-        // but I'm not sure why we had it to begin with then, so I'm leaving it in place
-        // for the time being. - anoek 2023-01-02
+        // line.move_number is not set in review/demo gobans. The move number
+        // is only available in line.from, and line.moves is an empty string if
+        // there's no variation.
         move_number = (
             <LineText className="move-number" onClick={jumpToMove}>
                 Move{" "}
