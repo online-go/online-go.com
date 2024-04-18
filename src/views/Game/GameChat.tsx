@@ -479,10 +479,6 @@ export function GameChatLine(props: GameChatLineProperties): JSX.Element {
             // link to a specific move, line.from is set, and line.moves is an
             // empty string (which is falsy).
             if ((line.from ?? -1) >= 0 && "moves" in line) {
-                if (goban.isAnalysisDisabled()) {
-                    goban.setMode("analyze");
-                }
-
                 goban.engine.followPath(line.from as number, line.moves as string);
                 goban.syncReviewMove();
                 goban.drawPenMarks(goban.engine.cur_move.pen_marks);
