@@ -29,6 +29,7 @@ const REPORT_TYPE_SELECTIONS: ReportTypeSelection[] = [
     { value: "harassment", label: "Harassment" },
     { value: "sandbagging", label: "Sandbagging" },
     { value: "ai_use", label: "AI Use" },
+    { value: "other", label: "Other" },
 ];
 
 export interface ReportTypeSelection {
