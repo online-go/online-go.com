@@ -41,7 +41,8 @@ declare namespace rest_api {
             | "ack_warned_staller"
             | "ack_warned_staller_and_annul"
             | "no_stalling_evident"
-            | "report_type_changed";
+            | "report_type_changed"
+            | "bot_owner_notified";
 
         type Severity = "warning" | "acknowledgement" | "info";
 
