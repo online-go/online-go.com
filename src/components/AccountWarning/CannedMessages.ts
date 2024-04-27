@@ -241,4 +241,15 @@ export const CANNED_MESSAGES: rest_api.warnings.WarningMessages = {
             ),
             { change },
         ),
+    bot_owner_notified: (bot) =>
+        interpolate(
+            _(
+                `
+            Thanks for your recent report about {{bot}}.
+    
+            We've notified the owner of that bot.
+            `,
+            ),
+            { bot },
+        ),
 };
