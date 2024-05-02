@@ -30,7 +30,7 @@ import { FabX, FabCheck } from "material";
 import { deepEqual } from "misc";
 import { isLiveGame, durationString } from "TimeControl";
 import { MODERATOR_POWERS, MOD_POWER_NAMES } from "moderation";
-import { notification_manager } from "./NotificationManager";
+import { notification_manager, Notification } from "./NotificationManager";
 import { ModerationOffer } from "ModerationOffer";
 
 export function NotificationList(): JSX.Element {
@@ -73,11 +73,6 @@ export function NotificationList(): JSX.Element {
             )}
         </div>
     );
-}
-
-interface Notification {
-    type: string;
-    [key: string]: any;
 }
 
 interface NotificationEntryProps {
@@ -163,6 +158,7 @@ class NotificationEntry extends React.Component<NotificationEntryProps, any> {
 
             case "aiReviewDone":
                 return `/game/${notification.game_id}`;
+
             case "prizeCodeExpiring":
                 return "/supporter";
         }

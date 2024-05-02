@@ -39,6 +39,8 @@ import { EmailBanner } from "EmailBanner";
 import { ActiveDroppedGameList } from "ActiveDroppedGameList";
 import { ModerationOffer } from "ModerationOffer";
 import { NewUserRankChooser } from "NewUserRankChooser";
+import { FreeTrialBanner } from "FreeTrialBanner";
+import { SupporterProblems } from "SupporterProblems";
 
 declare let ogs_missing_translation_count: number;
 
@@ -154,6 +156,8 @@ export class EXV6Overview extends React.Component<{}, OverviewState> {
                 ) : (
                     <div id="Overview">
                         <div className="left">
+                            <SupporterProblems />
+                            <FreeTrialBanner />
                             <DismissableMessages />
                             <EmailBanner />
                             <ActiveAnnouncements />

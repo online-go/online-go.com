@@ -43,6 +43,8 @@ import { EmailBanner } from "EmailBanner";
 import { PaymentProblemBanner } from "PaymentProblemBanner";
 import { ActiveDroppedGameList } from "ActiveDroppedGameList";
 import { NewUserRankChooser } from "NewUserRankChooser";
+import { FreeTrialBanner } from "FreeTrialBanner";
+import { SupporterProblems } from "SupporterProblems";
 
 declare let ogs_missing_translation_count: number;
 
@@ -172,6 +174,8 @@ export class OldOverview extends React.Component<{}, OverviewState> {
                 ) : (
                     <div id="Overview">
                         <div className="left">
+                            <SupporterProblems />
+                            <FreeTrialBanner />
                             <DismissableMessages />
                             <EmailBanner />
                             <PaymentProblemBanner />

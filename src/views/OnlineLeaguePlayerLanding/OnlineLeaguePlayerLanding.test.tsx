@@ -50,6 +50,7 @@ const TEST_USER = {
     email: "",
     email_validated: "",
     is_announcer: false,
+    last_supporter_trial: "",
 } as const;
 
 const UNSTARTED_MATCH = {
