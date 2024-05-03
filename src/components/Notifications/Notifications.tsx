@@ -106,7 +106,7 @@ class NotificationEntry extends React.Component<NotificationEntryProps, any> {
 
     onError(err: any) {
         console.error(err);
-        if (err.status === 404) {
+        if (err.status === 404 || err.error === "Request not found") {
             notification_manager.deleteNotification(this.props.notification);
         } else {
             this.setState({ message: _("An error has occurred") });
