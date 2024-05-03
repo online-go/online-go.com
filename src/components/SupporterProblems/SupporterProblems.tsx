@@ -28,7 +28,6 @@ export function SupporterProblems(): JSX.Element | null {
     const notifications = useNotifications(["supporterExpired"]);
 
     if (!user || !notifications || notifications.length === 0) {
-        console.log("Skipping rendering", notifications);
         return null;
     }
 
