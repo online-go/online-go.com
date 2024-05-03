@@ -33,6 +33,7 @@ const TEST_USER = {
     email: "",
     email_validated: false,
     is_announcer: false,
+    last_supporter_trial: "",
 } as const;
 
 const BASE_PROPS = {

@@ -31,7 +31,13 @@ import { ogs_has_focus, getCurrentGameId, shouldOpenNewTab } from "misc";
 import { lookingAtOurLiveGame } from "TimeControl/util";
 import { PlayerCacheEntry } from "src/lib/player_cache";
 
-declare let Notification: any;
+//declare let Notification: any;
+
+export interface Notification {
+    id: string;
+    type: string;
+    [k: string]: any;
+}
 
 export interface NotificationManagerEvents {
     "turn-count": number;
@@ -84,7 +90,7 @@ export function emitNotification(title: string, body: string, cb?: () => void) {
                                         .catch((err: any) => console.error(err));
                                 } catch (e) {
                                     /* deprecated usage, but only way supported on safari currently */
-                                    Notification.requestPermission(() => {
+                                    void Notification.requestPermission(() => {
                                         emitNotification(title, body, cb);
                                     });
                                 }
@@ -180,8 +186,8 @@ export function emitNotification(title: string, body: string, cb?: () => void) {
 export class NotificationManager {
     user?: PlayerCacheEntry;
 
-    notifications: { [k: string]: any };
-    ordered_notifications: any[];
+    notifications: { [k: string]: Notification };
+    ordered_notifications: Notification[];
     unread_notification_count: number = 0;
     boards_to_move_on: { [k: string]: any };
     active_boards: { [k: string]: any };
@@ -304,7 +310,7 @@ export class NotificationManager {
         }
     }
 
-    deleteNotification(notification: any, dont_rebuild?: boolean) {
+    deleteNotification(notification: Notification, dont_rebuild?: boolean) {
         socket.send("notification/delete", {
             notification_id: notification.id,
         });
@@ -323,6 +329,7 @@ export class NotificationManager {
                 case "groupInvitation":
                 case "tournamentInvitation":
                 case "moderationOffer":
+                case "supporterExpired":
                     /* these are actionable, so skip */
                     continue;
             }

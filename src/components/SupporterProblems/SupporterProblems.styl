@@ -14,7 +14,25 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+.SupporterProblems-container {
+    display: flex;
+    justify-content: center;
+    margin: 2rem 1rem;
+}
 
-export * from "./Notifications";
-export * from "./NotificationManager";
-export * from "./hooks";
+.SupporterProblem {
+    border-radius: 0.5rem;
+    width: 60rem;
+    max-width: 100%;
+    border: 1px solid;
+    padding: 0.5rem;
+    font-size: 1.1rem;
+    themed background-color supporter-error-bg;
+    themed border-color supporter-error-border; 
+    
+    .buttons {
+        display: flex;
+        justify-content: space-around;
+        margin-top: 1rem;
+    }
+}
