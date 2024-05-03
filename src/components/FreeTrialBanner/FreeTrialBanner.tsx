@@ -70,6 +70,10 @@ export function FreeTrialBanner() {
         return null;
     }
 
+    if (user.is_moderator) {
+        return null;
+    }
+
     return (
         <div className="FreeTrialBanner-container">
             <div className="FreeTrialBanner">
