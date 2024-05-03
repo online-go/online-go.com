@@ -58,20 +58,16 @@ export function FreeTrialBanner() {
         openModal(<LearnMore />);
     }, []);
 
-    const disable_disabling = false;
+    if (!account_age_days || account_age_days < 5 * DAYS_PER_YEAR) {
+        return null;
+    }
 
-    if (disable_disabling) {
-        if (!account_age_days || account_age_days < 5 * DAYS_PER_YEAR) {
-            return null;
-        }
+    if (last_offered_trial_days_ago && last_offered_trial_days_ago < DAYS_PER_YEAR) {
+        return null;
+    }
 
-        if (last_offered_trial_days_ago && last_offered_trial_days_ago < DAYS_PER_YEAR) {
-            return null;
-        }
-
-        if (user.supporter) {
-            return null;
-        }
+    if (user.supporter) {
+        return null;
     }
 
     return (
