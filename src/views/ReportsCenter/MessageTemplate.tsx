@@ -66,15 +66,36 @@ export const WARNING_TEMPLATES: MessageTemplates = {
         },
         "Score cheating": {
             message: `
-                Our records show that you attempted to illegally change the score at the end of
-                game #XXXXXXXX. This is a form of cheating and is prohibited by the
-                OGS Terms of Service.
+            It appears that you delayed the end of game game #XXXXXXXX, by clicking
+            on the board to change the score incorrectly.   This can frustrate your
+            opponent and prevent them from moving on to the next game.
 
-                https://online-go.com/docs/terms-of-service
+            After passing, please promptly accept the correct score.
 
-                We ask that you end your games properly by accepting the correct score
-                immediately after passing. Further instances of score cheating will result
-                in suspension of your account.`,
+            If you are unable to end games properly, your account may be suspended.
+
+            If in doubt about this sort of situation. please ask for help in chat
+            or the forums.
+            `,
+            show_warning_button: true,
+        },
+        "Score cheating, beginner": {
+            message: `
+            It appears that you delayed the end of game game #XXXXXXXX, by clicking
+            on the board to change the score incorrectly.   This can frustrate your
+            opponent and prevent them from moving on to the next game.
+
+            Since you are a new player, no action will be taken against
+            your account. We simply ask that you learn when to end a game.
+
+            Until you develop the experience to judge better, if your
+            opponent passes and there are no open borders between your
+            stones then you should also pass.
+
+            After passing, promptly accept the correct score.
+
+            If in doubt about this sort of situation. please ask for help in chat
+            or the forums.`,
             show_warning_button: true,
         },
     },
