@@ -103,7 +103,7 @@ export function AutoTranslate({
     );
 }
 
-async function auto_translate(text: string): Promise<Translation> {
+export async function auto_translate(text: string): Promise<Translation> {
     let res: Promise<Translation>;
 
     if (current_language === "debug") {
