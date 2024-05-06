@@ -50,7 +50,7 @@ export class Dock extends React.Component<DockProperties, DockState> {
         setTimeout(() => {
             dock.style.transition = this.getTransitionStyle();
             dock.style.webkitTransition = this.getTransitionStyle();
-        }, 500);
+        }, 100);
     };
 
     getTransitionStyle = () => {
