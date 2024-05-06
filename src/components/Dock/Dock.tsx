@@ -36,17 +36,9 @@ export class Dock extends React.Component<DockProperties, DockState> {
     }
 
     mouseEntered = () => {
-        let delay = this.state.dock_delay;
-        if (delay === MAX_DOCK_DELAY) {
-            console.log("NO slide out");
-            delay = 99999;
-        }
-        // open dock at speed set by preference 'dock-delay'
-        const modified_transition = `all 0.1s ease-in ${delay}s`;
         const dock = document.getElementsByClassName("Dock")[0] as HTMLElement;
-        // tested on Opera, Chrome, Safari, Edge, Firefox
-        dock.style.transition = modified_transition;
-        dock.style.webkitTransition = modified_transition;
+        dock.style.transition = this.getTransitionStyle();
+        dock.style.webkitTransition = this.getTransitionStyle();
     };
 
     mouseExited = () => {
@@ -57,6 +49,15 @@ export class Dock extends React.Component<DockProperties, DockState> {
         dock.style.webkitTransition = fast_transition;
     };
 
+    getTransitionStyle = () => {
+        let delay = this.state.dock_delay;
+        if (delay === MAX_DOCK_DELAY) {
+            delay = 99999;
+        }
+        const modified_transition = `all 0.1s ease-in ${delay}s`;
+        return modified_transition;
+    };
+
     render() {
         return (
             <div
@@ -64,6 +65,7 @@ export class Dock extends React.Component<DockProperties, DockState> {
                 onMouseLeave={this.mouseExited}
                 {...this.props}
                 className={"Dock" + (this.props.className || "")}
+                style={{ transition: this.getTransitionStyle() }}
             >
                 {this.props.children}
             </div>
