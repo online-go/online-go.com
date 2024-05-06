@@ -494,6 +494,7 @@ export function Supporter(props: SupporterProperties): JSX.Element {
                         config={config}
                         overrides={overrides}
                         account_id={account_id}
+                        slug={price.slug}
                     />
                 ))}
             </div>
@@ -629,6 +630,7 @@ interface PriceBoxProperties {
     config: Config;
     overrides: SupporterOverrides;
     interval: "month" | "year";
+    slug: "aji" | "hane" | "tenuki" | "meijin";
 }
 
 export function PriceBox({
@@ -638,6 +640,7 @@ export function PriceBox({
     config,
     account_id,
     overrides,
+    slug,
 }: PriceBoxProperties): JSX.Element | null {
     const user = data.get("user");
     const [mor_locations, setMorLocations] = React.useState<string[]>(
@@ -678,7 +681,7 @@ export function PriceBox({
             interval: interval,
             currency: currency,
             amount: amount,
-            review_level: "kyu",
+            review_level: slug,
             redirect_url: window.location.href,
             name: _("Supporter"),
             description: _("Supporter"),
