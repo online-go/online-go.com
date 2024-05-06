@@ -47,6 +47,10 @@ export class Dock extends React.Component<DockProperties, DockState> {
         const dock = document.getElementsByClassName("Dock")[0] as HTMLElement;
         dock.style.transition = fast_transition;
         dock.style.webkitTransition = fast_transition;
+        setTimeout(() => {
+            dock.style.transition = this.getTransitionStyle();
+            dock.style.webkitTransition = this.getTransitionStyle();
+        }, 500);
     };
 
     getTransitionStyle = () => {
