@@ -99,7 +99,7 @@ export function OnlineLeagueSpectatorLanding(): JSX.Element {
             {((!loading && match) || null) && (
                 <div className="unstarted-match">
                     <div ref={spectatorWaitMessage}>
-                        {_("You will be taken to the game it starts...")}
+                        {_("You will be taken to the game when it starts...")}
                     </div>
                     <div className="waiting-chat">
                         <EmbeddedChatCard
