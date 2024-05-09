@@ -193,12 +193,17 @@ function SettingsRedirect(): JSX.Element {
     return <Navigate to={`/settings/${last_settings_page}`} replace />;
 }
 
-function Reload(): JSX.Element | null {
-    if (window.location.hash && window.location.hash[1] === "/") {
-        window.location.pathname = window.location.hash.substring(1);
-    } else {
-        window.location.pathname = "/";
-    }
+function WaitForUser(): JSX.Element | null {
+    data.watch("config.user", (user) => {
+        if (user.anonymous) {
+            return;
+        }
+        if (window.location.hash && window.location.hash[1] === "/") {
+            window.location.pathname = window.location.hash.substring(1);
+        } else {
+            window.location.pathname = "/";
+        }
+    });
     return null;
 }
 
@@ -208,7 +213,7 @@ export const routes = (
             <Routes>
                 <Route path="/sign-in" element={<SignIn />} />
                 <Route path="/register" element={<Register />} />
-                <Route path="/reload" element={<Reload />} />
+                <Route path="/wait-for-user" element={<WaitForUser />} />
                 <Route path="/welcome/*" element={<ChallengeLinkLanding />} />
                 <Route path="/appeal/:player_id" element={<Appeal />} />
                 <Route path="/appeal" element={<Appeal />} />
