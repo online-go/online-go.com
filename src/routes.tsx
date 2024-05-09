@@ -18,7 +18,13 @@
 /* cspell: words groupadmin cotsen */
 
 import * as React from "react";
-import { unstable_HistoryRouter as Router, Route, Routes, Navigate } from "react-router-dom";
+import {
+    unstable_HistoryRouter as Router,
+    Route,
+    Routes,
+    Navigate,
+    useNavigate,
+} from "react-router-dom";
 
 import * as data from "data";
 import { _ } from "translate";
@@ -194,14 +200,15 @@ function SettingsRedirect(): JSX.Element {
 }
 
 function WaitForUser(): JSX.Element | null {
+    const navigate = useNavigate();
     data.watch("config.user", (user) => {
         if (user.anonymous) {
             return;
         }
         if (window.location.hash && window.location.hash[1] === "/") {
-            window.location.pathname = window.location.hash.substring(1);
+            navigate(window.location.hash.substring(1), { replace: true });
         } else {
-            window.location.pathname = "/";
+            navigate("/", { replace: true });
         }
     });
     return null;
