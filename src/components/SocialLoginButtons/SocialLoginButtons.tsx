@@ -37,7 +37,7 @@ export function SocialLoginButtons(props: SocialLoginButtonsProps): JSX.Element 
                 <i className="twitter twitter-icon fa fa-twitter" />
                 {_("Sign in with Twitter")}
             </a>
-            <a href={`/login/apple/${next}`} className="s btn md-icon" target="_self">
+            <a href={`/login/apple-id/${next}`} className="s btn md-icon" target="_self">
                 <i className="apple apple-id-icon fa fa-apple" />
                 {_("Sign in with Apple")}
             </a>
