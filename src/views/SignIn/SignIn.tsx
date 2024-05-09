@@ -253,7 +253,9 @@ export function SignIn(): JSX.Element {
                         ) /* translators: username or password, or sign in with social authentication */
                     }
                 </span>
-                <SocialLoginButtons next_url={window.location.hash.substring(1)} />
+                <SocialLoginButtons
+                    next_url={"/wait-for-user#" + window.location.hash.substring(1)}
+                />
             </Card>
 
             <div className="registration">
