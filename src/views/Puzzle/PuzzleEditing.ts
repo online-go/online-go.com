@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { GobanCanvasConfig, GoMath, PuzzleConfig, PuzzlePlacementSetting } from "goban";
+import { GobanRendererConfig, GoMath, PuzzleConfig, PuzzlePlacementSetting } from "goban";
 import { errorAlerter, dup } from "misc";
 import { PuzzleTransform } from "./PuzzleTransform";
 import { _Puzzle } from "./Puzzle";
@@ -214,7 +214,7 @@ export class PuzzleEditor {
         goban_div: HTMLDivElement,
         editing: boolean,
         replacementSettingsFunction: () => PuzzlePlacementSetting,
-    ): GobanCanvasConfig {
+    ): GobanRendererConfig {
         const puzzle = (this.puzzle_config = dup(this.orig_puzzle_config));
 
         if (!puzzle) {
@@ -237,7 +237,7 @@ export class PuzzleEditor {
             goban_div.removeChild(goban_div.firstChild);
         }
 
-        const opts: GobanCanvasConfig = Object.assign(
+        const opts: GobanRendererConfig = Object.assign(
             {
                 board_div: goban_div,
                 interactive: true,

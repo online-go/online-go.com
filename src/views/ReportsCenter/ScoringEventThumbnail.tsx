@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { GoMath, Goban, GobanConfig } from "goban";
+import { GoMath, GobanRenderer, GobanRendererConfig, createGoban } from "goban";
 import React from "react";
 import { PersistentElement } from "../../components/PersistentElement";
 
@@ -25,7 +25,7 @@ export function ScoringEventThumbnail({
     move_number,
     removal_string,
 }: {
-    config: GobanConfig;
+    config: GobanRendererConfig;
     move_number: number | undefined;
     removal_string: string | undefined;
 }) {
@@ -36,10 +36,10 @@ export function ScoringEventThumbnail({
             return ret;
         })(),
     );
-    const goban = React.useRef<Goban>();
+    const goban = React.useRef<GobanRenderer>();
 
     React.useEffect(() => {
-        goban.current = new Goban({
+        goban.current = createGoban({
             ...config,
             board_div: goban_div.current,
             server_socket: undefined,

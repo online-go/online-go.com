@@ -16,16 +16,16 @@
  */
 
 import * as React from "react";
-import { Goban } from "goban";
+import { GobanRenderer } from "goban";
 
-export const GobanContext = React.createContext<Goban | null>(null);
+export const GobanContext = React.createContext<GobanRenderer | null>(null);
 
 /**
  * A React hook that provides the goban.
  *
  * Throws if a goban is not set.
  */
-export function useGoban(): Goban {
+export function useGoban(): GobanRenderer {
     const goban = React.useContext(GobanContext);
 
     if (goban === null) {

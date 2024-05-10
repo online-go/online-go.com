@@ -41,7 +41,7 @@ import { notification_manager, NotificationManagerEvents } from "Notifications/N
 import { one_bot, bot_count, bots_list } from "bots";
 import { goban_view_mode } from "Game/util";
 import {
-    Goban,
+    GobanRenderer,
     GoEngineConfig,
     GoEngineInitialState,
     GoEnginePlayerEntry,
@@ -1889,7 +1889,7 @@ export function challengeComputer() {
     return challenge(undefined, null, true);
 }
 export function challengeRematch(
-    goban: Goban,
+    goban: GobanRenderer,
     opponent: GoEnginePlayerEntry,
     original_game_meta: GoEngineConfig & { pause_on_weekends?: boolean },
 ) {

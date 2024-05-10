@@ -29,7 +29,7 @@ import * as data from "data";
 import { _, interpolate, pgettext, npgettext } from "translate";
 import { get, put, post } from "requests";
 import { KBShortcut } from "KBShortcut";
-import { Goban, GoMath, GobanConfig, JGOFMove } from "goban";
+import { GobanRenderer, GoMath, GobanRendererConfig, JGOFMove, createGoban } from "goban";
 import { AutoTranslate } from "AutoTranslate";
 import { Markdown } from "Markdown";
 import { chat_manager } from "chat_manager";
@@ -194,7 +194,7 @@ interface JosekiState {
 }
 
 class _Joseki extends React.Component<JosekiProps, JosekiState> {
-    goban!: Goban;
+    goban!: GobanRenderer;
     goban_div: HTMLDivElement;
     goban_opts: any = {};
     goban_container!: HTMLDivElement;
@@ -322,7 +322,7 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
             this.goban.destroy();
         }
 
-        const opts: GobanConfig = {
+        const opts: GobanRendererConfig = {
             board_div: this.goban_div,
             interactive: true,
             mode: "puzzle",
@@ -335,7 +335,7 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
             opts["moves"] = initial_position as any;
         }
         this.goban_opts = opts;
-        this.goban = new Goban(opts);
+        this.goban = createGoban(opts);
         this.goban.setMode("puzzle");
         this.goban.on("update", () => this.onBoardUpdate());
         (window as any)["global_goban"] = this.goban;

@@ -19,7 +19,7 @@ import * as React from "react";
 import * as data from "data";
 import { _ } from "translate";
 import { Modal, openModal } from "Modal";
-import { Goban } from "goban";
+import { GobanRenderer } from "goban";
 import { PlayerAutocomplete } from "PlayerAutocomplete";
 import { MiniGoban } from "MiniGoban";
 import { challenge } from "ChallengeModal";
@@ -28,7 +28,7 @@ import { PlayerCacheEntry } from "src/lib/player_cache";
 interface Events {}
 
 interface ForkModalProperties {
-    goban: Goban;
+    goban: GobanRenderer;
 }
 
 export class ForkModal extends Modal<Events, ForkModalProperties, any> {
@@ -99,10 +99,10 @@ export class ForkModal extends Modal<Events, ForkModalProperties, any> {
     }
 }
 
-export function openForkModal(goban: Goban) {
+export function openForkModal(goban: GobanRenderer) {
     return openModal(<ForkModal goban={goban} />);
 }
-export function challengeFromBoardPosition(goban: Goban) {
+export function challengeFromBoardPosition(goban: GobanRenderer) {
     if (!goban) {
         return;
     }

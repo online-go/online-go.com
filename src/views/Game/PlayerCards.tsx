@@ -18,7 +18,7 @@
 import * as React from "react";
 import { get } from "requests";
 
-import { Goban, GobanCore, PlayerScore, JGOFPlayerSummary } from "goban";
+import { GobanRenderer, GobanCore, PlayerScore, JGOFPlayerSummary } from "goban";
 import { icon_size_url } from "PlayerIcon";
 import { CountDown } from "./CountDown";
 import { Flag } from "Flag";
@@ -181,7 +181,7 @@ const useScore = generateGobanHook(
 );
 interface PlayerCardProps {
     color: "black" | "white";
-    goban: Goban;
+    goban: GobanRenderer;
     historical: PlayerType | null;
     estimating_score: boolean;
     show_score_breakdown: boolean;

@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { Goban } from "goban";
+import { createGoban, GobanRenderer } from "goban";
 import { sfx } from "sfx";
 import { PersistentElement } from "PersistentElement";
 
@@ -31,7 +31,7 @@ interface InstructionalGobanProps {
 
 export class InstructionalGoban extends React.Component<InstructionalGobanProps> {
     goban_div: HTMLDivElement;
-    goban?: Goban;
+    goban?: GobanRenderer;
 
     constructor(props: InstructionalGobanProps) {
         super(props);
@@ -61,7 +61,7 @@ export class InstructionalGoban extends React.Component<InstructionalGobanProps>
     }
 
     initialize() {
-        this.goban = new Goban(
+        this.goban = createGoban(
             {
                 board_div: this.goban_div,
                 initial_player: "black",

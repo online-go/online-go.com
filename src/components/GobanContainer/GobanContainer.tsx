@@ -18,7 +18,7 @@
 import * as React from "react";
 import { PersistentElement } from "PersistentElement";
 import { OgsResizeDetector } from "OgsResizeDetector";
-import { GobanCanvas, GobanCanvasConfig } from "goban";
+import { GobanRenderer, GobanRendererConfig } from "goban";
 // Pull this out its own util
 import { goban_view_mode } from "Game/util";
 //import { generateGobanHook } from "Game/GameHooks";
@@ -26,7 +26,7 @@ import { goban_view_mode } from "Game/util";
 import { usePreference } from "preferences";
 
 interface GobanContainerProps {
-    goban?: GobanCanvas;
+    goban?: GobanRenderer;
     /** callback that is called when the goban detects a resize. */
     onResize?: () => void;
     /** Additional props to pass to the PersistentElement that wraps the goban_div */
@@ -45,8 +45,7 @@ export function GobanContainer({
     const resize_debounce = React.useRef<NodeJS.Timeout | null>(null);
     const [last_move_opacity] = usePreference("last-move-opacity");
 
-    // Since goban is a GobanCanvas, we know goban.config is a GobanCanvasConfig
-    const goban_div = (goban?.config as GobanCanvasConfig | undefined)?.board_div;
+    const goban_div = (goban?.config as GobanRendererConfig | undefined)?.board_div;
 
     const recenterGoban = () => {
         if (!ref_goban_container.current || !goban || !goban_div) {
@@ -112,7 +111,7 @@ export function GobanContainer({
         [goban, goban_div, onResizeCb],
     );
 
-    // Trigger resize on new Goban and subsequent "load" events
+    // Trigger resize on createGoban and subsequent "load" events
     //generateGobanHook(() => onResize(/* no_debounce */ true, /* do_cb */ false))(goban || null);
 
     if (!goban || !goban_div) {

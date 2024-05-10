@@ -20,7 +20,7 @@ import { Link } from "react-router-dom";
 import { npgettext, interpolate } from "translate";
 import * as moment from "moment";
 import * as preferences from "preferences";
-import { Goban } from "goban";
+import { GobanRenderer, createGoban } from "goban";
 import * as data from "data";
 import { PersistentElement } from "PersistentElement";
 import { getUserRating, PROVISIONAL_RATING_CUTOFF } from "rank_utils";
@@ -51,7 +51,7 @@ export interface MiniGobanProps {
     openLinksInNewTab?: boolean;
     noText?: boolean;
     title?: boolean;
-    onGobanCreated?: (goban: Goban) => void;
+    onGobanCreated?: (goban: GobanRenderer) => void;
     chat?: boolean;
 }
 
@@ -63,7 +63,7 @@ export function MiniGoban(props: MiniGobanProps): JSX.Element {
             return ret;
         })(),
     );
-    const goban = React.useRef<Goban>();
+    const goban = React.useRef<GobanRenderer>();
 
     const [white_points, setWhitePoints] = React.useState("");
     const [black_points, setBlackPoints] = React.useState("");
@@ -83,7 +83,7 @@ export function MiniGoban(props: MiniGobanProps): JSX.Element {
     const [last_move_opacity] = usePreference("last-move-opacity");
 
     React.useEffect(() => {
-        goban.current = new Goban(
+        goban.current = createGoban(
             {
                 board_div: goban_div.current,
                 draw_top_labels: false,
