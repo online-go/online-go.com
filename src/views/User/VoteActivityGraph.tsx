@@ -146,7 +146,6 @@ const UserVoteActivityGraph = ({ user_id }: UserVoteActivityGraphProps) => {
     if (!vote_data) {
         return <div>Loading...</div>;
     }
-    console.log("graph render", vote_data);
     return <VoteActivityGraph vote_data={vote_data} />;
 };
 

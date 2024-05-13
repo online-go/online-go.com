@@ -116,6 +116,7 @@ export function ModerationActionSelector({
     const { ref: voting_pane } = registerTargetItem("voting-pane");
     const { ref: escalate_option } = registerTargetItem("escalate-option");
 
+    // If for some reason we didn't get any actions to offer, we'll just offer "escalate"
     const action_choices = available_actions ? available_actions : ["escalate"];
 
     return (
