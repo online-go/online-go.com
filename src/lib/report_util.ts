@@ -62,6 +62,7 @@ export interface Report {
     automod_to_reported?: string;
 
     available_actions: Array<string>; // community moderator actions
+    vote_counts: { [action: string]: number };
     voters: Vote[]; // votes from community moderators on this report
     community_mod_note: string;
 

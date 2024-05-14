@@ -67,6 +67,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
         report?.detected_ai_games,
     );
     const [availableActions, setAvailableActions] = React.useState<string[] | null>(null);
+    const [voteCounts, setVoteCounts] = React.useState<{ [action: string]: number }>({});
 
     const related = report_manager.getRelatedReports(report_id);
 
@@ -84,6 +85,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                     setReportState(report?.state);
                     setAnnulQueue(report?.detected_ai_games);
                     setAvailableActions(report?.available_actions);
+                    setVoteCounts(report?.vote_counts);
                 })
                 .catch((err) => {
                     console.error(err);
@@ -495,6 +497,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                     <div className="voting">
                         <ModerationActionSelector
                             available_actions={availableActions ?? []}
+                            vote_counts={voteCounts}
                             claim={() => {
                                 /* community moderators don't claim reports */
                             }}
