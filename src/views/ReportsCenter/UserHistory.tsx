@@ -16,20 +16,32 @@
  */
 
 import * as React from "react";
+import { useUser } from "hooks";
+
 import { Player } from "Player";
 import { ModTools } from "User";
+import { ModLog } from "User";
 
-export function UserHistory({ user }: { user: any }): JSX.Element | null {
-    if (!user) {
+export function UserHistory({
+    target_user: target_user,
+}: {
+    target_user: any;
+}): JSX.Element | null {
+    const user = useUser();
+
+    if (!target_user) {
         return null;
     }
 
     return (
         <>
             <h3>
-                History for <Player user={user} />
+                History for <Player user={target_user} />
             </h3>
-            <ModTools user_id={user.id} show_mod_log={true} collapse_same_users={true} />
+            {user.is_moderator && (
+                <ModTools user_id={target_user.id} show_mod_log={true} collapse_same_users={true} />
+            )}
+            {!user.is_moderator && !!user.moderator_powers && <ModLog user_id={target_user.id} />}
         </>
     );
 }
