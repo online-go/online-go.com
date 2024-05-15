@@ -53,7 +53,7 @@ const ACTION_PROMPTS = {
     ),
     annul_escaped: pgettext(
         "Label for a moderator to select this option",
-        "Wrong result due to escape - annul and warn the escaper.",
+        "Wrong result due to escape - annul game, warn the escaper.",
     ),
     warn_escaper: pgettext(
         "Label for a moderator to select this option",
@@ -73,7 +73,7 @@ const ACTION_PROMPTS = {
     ),
     annul_stalled: pgettext(
         "Label for a moderator to select this option",
-        "Wrong result due to stalling - annul and warn the staller.",
+        "Wrong result due to stalling - annul game, warn the staller.",
     ),
     warn_staller: pgettext(
         "Label for a moderator to select this option",
@@ -154,8 +154,12 @@ export function ModerationActionSelector({
                             value={a}
                             onChange={updateSelectedAction}
                         />
-                        <label htmlFor={a}>{(ACTION_PROMPTS as any)[a]}</label>
-                        <span>({vote_counts[a] ?? 0})</span>
+                        <label htmlFor={a}>
+                            {(ACTION_PROMPTS as any)[a]}
+                            <span className="vote-count">
+                                ({(!!a && !!vote_counts && vote_counts[a]) ?? 0})
+                            </span>
+                        </label>
                     </div>
                 ))}
             {selectedOption === "escalate" && (
