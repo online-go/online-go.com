@@ -22,13 +22,14 @@ import * as DynamicHelp from "react-dynamic-help";
 
 interface ModerationActionSelectorProps {
     available_actions: string[];
+    vote_counts: { [action: string]: number };
     enable: boolean;
     claim: () => void;
     submit: (action: string, note: string) => void;
 }
 
 // Translatable versions of the prompts for Community Moderators.
-// The set of keys (choices) here is determined by the server VotableActions class.
+// The set of keys (choices) here is determined by the server's VotableActions class.
 const ACTION_PROMPTS = {
     annul_score_cheat: pgettext(
         "Label for a moderator to select this option",
@@ -52,7 +53,7 @@ const ACTION_PROMPTS = {
     ),
     annul_escaped: pgettext(
         "Label for a moderator to select this option",
-        "Wrong result due to escape - annul and warn the escaper.",
+        "Wrong result due to escape - annul game, warn the escaper.",
     ),
     warn_escaper: pgettext(
         "Label for a moderator to select this option",
@@ -72,7 +73,7 @@ const ACTION_PROMPTS = {
     ),
     annul_stalled: pgettext(
         "Label for a moderator to select this option",
-        "Wrong result due to stalling - annul and warn the staller.",
+        "Wrong result due to stalling - annul game, warn the staller.",
     ),
     warn_staller: pgettext(
         "Label for a moderator to select this option",
@@ -99,6 +100,7 @@ const ACTION_PROMPTS = {
 
 export function ModerationActionSelector({
     available_actions,
+    vote_counts,
     enable,
     claim,
     submit,
@@ -152,7 +154,12 @@ export function ModerationActionSelector({
                             value={a}
                             onChange={updateSelectedAction}
                         />
-                        <label htmlFor={a}>{(ACTION_PROMPTS as any)[a]}</label>
+                        <label htmlFor={a}>
+                            {(ACTION_PROMPTS as any)[a]}
+                            <span className="vote-count">
+                                ({(!!a && !!vote_counts && vote_counts[a]) ?? 0})
+                            </span>
+                        </label>
                     </div>
                 ))}
             {selectedOption === "escalate" && (
