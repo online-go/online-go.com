@@ -1,0 +1,33 @@
+.moderator-log {
+    td {
+        vertical-align: top;
+
+    }
+
+    .date {
+        @extend .monospace
+        width: 7em;
+        text-align: left;
+        padding-right: 1em;
+        font-size: 0.7rem;
+    }
+
+    .logging-user {
+        padding-right: 1rem;
+    }
+
+    .action {
+        @extend .monospace
+        font-size: 0.8rem;
+
+        a {
+            padding-right: 1rem;
+        }
+    }
+
+    pre {
+        margin: 0;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+}
