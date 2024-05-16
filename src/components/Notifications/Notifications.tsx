@@ -565,6 +565,14 @@ class NotificationEntry extends React.Component<NotificationEntryProps, any> {
                         )}
                     </div>
                 );
+            case "supporterExpired":
+                return (
+                    <div>
+                        <a href={`/supporter`}>
+                            {_("Your supporter status has expired, click here to visit the supporter page")}
+                        </a>
+                    </div>
+                );
 
             default:
                 console.error("Unsupported notification: ", notification.type, notification);
