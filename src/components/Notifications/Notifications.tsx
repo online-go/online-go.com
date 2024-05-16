@@ -182,9 +182,8 @@ class NotificationEntry extends React.Component<NotificationEntryProps, any> {
 
         return (
             <div
-                className={`notification ${this.props.notification.type} ${
-                    this.isClickable() ? "clickable" : ""
-                }`}
+                className={`notification ${this.props.notification.type} ${this.isClickable() ? "clickable" : ""
+                    }`}
                 onClick={this.open}
             >
                 {this.isDismissable() && <i className="fa fa-times-circle" onClick={this.del} />}
@@ -569,7 +568,9 @@ class NotificationEntry extends React.Component<NotificationEntryProps, any> {
                 return (
                     <div>
                         <a href={`/supporter`}>
-                            {_("Your supporter status has expired, click here to visit the supporter page")}
+                            {_(
+                                "Your supporter status has expired, click here to visit the supporter page"
+                            )}
                         </a>
                     </div>
                 );
