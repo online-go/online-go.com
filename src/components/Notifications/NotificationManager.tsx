@@ -526,7 +526,12 @@ export class NotificationManager {
 
         this.unread_notification_count = 0;
         for (const k in this.notifications) {
-            this.unread_notification_count += !this.notifications[k].read ? 1 : 0;
+            let should_count = !this.notifications[k].read;
+            if (this.notifications[k].type === "supporterExpired") {
+                should_count = false;
+            }
+
+            this.unread_notification_count += should_count ? 1 : 0;
             this.ordered_notifications.push(this.notifications[k]);
         }
 
