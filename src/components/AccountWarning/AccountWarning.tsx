@@ -95,7 +95,9 @@ function MessageTextRender(props: MessageTextRenderProps): JSX.Element {
     console.log("rendering", props);
     if (props.warning.message_id) {
         return (
-            <div>{CANNED_MESSAGES[props.warning.message_id](props.warning.interpolation_data)}</div>
+            <div className="canned-message">
+                {CANNED_MESSAGES[props.warning.message_id](props.warning.interpolation_data)}
+            </div>
         );
     } else {
         return (
