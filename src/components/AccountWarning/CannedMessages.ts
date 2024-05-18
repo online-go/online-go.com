@@ -156,6 +156,19 @@ export const CANNED_MESSAGES: rest_api.warnings.WarningMessages = {
         Thank you for helping keep OGS enjoyable for everyone. We appreciate it.`),
             { reported },
         ),
+    not_escaping_cancel: (reported) =>
+        interpolate(
+            _(`
+            Thank you for bringing the possible instance of {{reported}} abandoning the game to
+            our attention. We looked into the game and see that they used "Cancel".
+
+            Players are allowed to "Cancel" a game during the first moves.
+
+            If you think the person is abusing this feature, please file a report with more details.
+
+            Thank you for helping keep OGS enjoyable for everyone. We appreciate it.`),
+            { reported },
+        ),
     warn_beginner_staller: (game_id) =>
         interpolate(
             _(`
