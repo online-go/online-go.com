@@ -71,6 +71,10 @@ const ACTION_PROMPTS = {
         "Label for a moderator to select this option",
         "No escaping evident - inform the reporter.",
     ),
+    not_escaping_cancel: pgettext(
+        "Label for a moderator to select this option",
+        "Not escaping, they used 'cancel'.",
+    ),
     annul_stalled: pgettext(
         "Label for a moderator to select this option",
         "Wrong result due to stalling - annul game, warn the staller.",
