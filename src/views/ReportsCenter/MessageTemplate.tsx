@@ -103,21 +103,20 @@ export const WARNING_TEMPLATES: MessageTemplates = {
     "Chat Abuse": {
         "Objectionable chat": {
             message: `
-                Our team has observed that some of your recent comments have
-                been harmful, threatening, abusive, defamatory, offensive,
-                vulgar, obscene, libelous, hateful, or otherwise objectionable.
+We have noticed that some of your recent comments have not been in line with our community guidelines.
 
-                Such behavior is prohibited and violates our terms of service.
+While this may not have been your intention, it is your responsibility to ensure that your comments are \
+respectful and courteous to all users. Please review our terms of service and community guidelines:
 
-                    https://online-go.com/docs/terms-of-service
+https://online-go.com/docs/terms-of-service
 
-                We urge you to refrain from such actions in the future as they
-                will not be tolerated.
+We expect all users to maintain a positive and friendly environment. If you have any disagreements or concerns, \
+please contact a moderator for assistance.
 
-                Failure to comply with this warning will result in removal of your chat privileges.
+If you are unable to judge what is appropriate behavior, and this type of conduct continues, we will have no \
+choice but to remove your chat privileges.
 
-                Please maintain a respectful and courteous environment for all
-                users.`,
+Thank you for your understanding and cooperation.`,
             show_warning_button: true,
         },
     },
