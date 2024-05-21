@@ -34,8 +34,8 @@ data.setDefault("custom.line", "#000000");
 data.setDefault("custom.url", "");
 
 export function configure_goban() {
-    data.watch("experiments.v6", () => {
-        const v = data.get("experiments.v6");
+    data.watch("experiments.svg", () => {
+        const v = data.get("experiments.svg");
         if (v === "enabled") {
             setGobanRenderer("svg");
         }

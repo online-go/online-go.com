@@ -71,6 +71,9 @@ export function GeneralPreferences(props: SettingGroupPageProps): JSX.Element {
     const [enable_v6, setEnableV6]: [boolean, (x: boolean) => void] = React.useState(
         data.get("experiments.v6") === "enabled",
     );
+    const [enable_svg, setEnableSVG]: [boolean, (x: boolean) => void] = React.useState(
+        data.get("experiments.svg") === "enabled",
+    );
     const [show_slow_internet_warning, setShowSlowInternetWarning] = usePreference(
         "show-slow-internet-warning",
     );
@@ -314,6 +317,16 @@ export function GeneralPreferences(props: SettingGroupPageProps): JSX.Element {
                     onChange={(tf) => {
                         data.set("experiments.v6", tf ? "enabled" : undefined);
                         setEnableV6(tf);
+                    }}
+                />
+            </PreferenceLine>
+
+            <PreferenceLine title={"Enable SVG goban renderer"}>
+                <Toggle
+                    checked={enable_svg}
+                    onChange={(tf) => {
+                        data.set("experiments.svg", tf ? "enabled" : undefined);
+                        setEnableSVG(tf);
                     }}
                 />
             </PreferenceLine>
