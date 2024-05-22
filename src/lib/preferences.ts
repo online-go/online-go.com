@@ -223,18 +223,22 @@ export function getSelectedThemes(): { board: string; black: string; white: stri
     const default_plain = $(window).width() * (window.devicePixelRatio || 1) <= 768;
 
     let board = get("goban-theme-board") || (default_plain ? "Plain" : "Kaya");
-    let white = get("goban-theme-white") || (default_plain ? "Plain" : "Plain");
-    let black = get("goban-theme-black") || (default_plain ? "Plain" : "Plain");
+    //let white = get("goban-theme-white") || (default_plain ? "Plain" : "Plain");
+    //let black = get("goban-theme-black") || (default_plain ? "Plain" : "Plain");
+    let white = get("goban-theme-white") || (default_plain ? "Plain" : "Shell");
+    let black = get("goban-theme-black") || (default_plain ? "Plain" : "Slate");
 
     if (!(board in GoThemes["board"])) {
         board = default_plain ? "Plain" : "Kaya";
     }
     if (!(white in GoThemes["white"])) {
-        white = default_plain ? "Plain" : "Plain";
+        //white = default_plain ? "Plain" : "Plain";
+        white = default_plain ? "Plain" : "Shell";
     }
     if (!(black in GoThemes["black"])) {
         console.log("Theme ", black, "didn't exist, so resetting");
-        black = default_plain ? "Plain" : "Plain";
+        //black = default_plain ? "Plain" : "Plain";
+        black = default_plain ? "Plain" : "Slate";
     }
 
     return {
