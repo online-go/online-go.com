@@ -37,7 +37,7 @@ import {
     LogEntry,
     LogData,
 } from "Game";
-import { Goban } from "goban";
+import { GobanRenderer } from "goban";
 import { Resizable } from "Resizable";
 import { socket } from "sockets";
 import { Player } from "Player";
@@ -53,10 +53,10 @@ export function ReportedGame({
     game_id: number;
     reported_at: number | undefined;
 }): JSX.Element | null {
-    const [goban, setGoban] = React.useState<Goban | null>(null);
+    const [goban, setGoban] = React.useState<GobanRenderer | null>(null);
     const [selectedChatLog, setSelectedChatLog] = React.useState<ChatMode>("main");
     const refresh = useRefresh();
-    const onGobanCreated = React.useCallback((goban: Goban) => {
+    const onGobanCreated = React.useCallback((goban: GobanRenderer) => {
         setGoban(goban);
     }, []);
     const cur_move = useCurrentMove(goban);
@@ -279,7 +279,7 @@ export function ReportedGame({
     );
 }
 
-function GameLog({ goban }: { goban: Goban }): JSX.Element {
+function GameLog({ goban }: { goban: GobanRenderer }): JSX.Element {
     const [log, setLog] = React.useState<LogEntry[]>([]);
     const game_id = goban.engine.game_id;
 

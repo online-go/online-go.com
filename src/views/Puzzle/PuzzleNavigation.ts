@@ -15,12 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Goban } from "goban";
+import { GobanRenderer } from "goban";
 
 export class PuzzleNavigation {
-    _goban!: Goban;
+    _goban!: GobanRenderer;
 
-    set goban(newValue: Goban) {
+    set goban(newValue: GobanRenderer) {
         this._goban = newValue;
     }
 

@@ -22,7 +22,7 @@ import { Toggle } from "Toggle";
 import { uuid } from "misc";
 import * as preferences from "preferences";
 import { usePreference } from "preferences";
-import { JGOFNumericPlayerColor, ColoredCircle, MoveTree, Goban } from "goban";
+import { JGOFNumericPlayerColor, ColoredCircle, MoveTree, GobanRenderer } from "goban";
 import { useUser } from "hooks";
 
 const cached_data: { [review_id: number]: { [board_string: string]: any } } = {};
@@ -36,7 +36,7 @@ export function AIDemoReview({
     goban,
     controller,
 }: {
-    goban: Goban;
+    goban: GobanRenderer;
     controller: number;
 }): JSX.Element | null {
     const user = useUser();
@@ -324,7 +324,7 @@ function stringifyBoardState(move: MoveTree): string {
     return move.state.board.reduce((a, b) => a + b.reduce((a, b) => a + b, ""), "");
 }
 
-function clearAnalysis(goban: Goban) {
+function clearAnalysis(goban: GobanRenderer) {
     goban.setMarks({}, true); /* draw the remaining AI sequence as ghost marks, if any */
     goban.setHeatmap(undefined, true);
     goban.setColoredCircles([], false);
@@ -334,7 +334,7 @@ function computePrediction(data: any): any {
     return { score: data.analysis.score, win_rate: data.analysis.win_rate };
 }
 
-function renderAnalysis(goban: Goban, data: any) {
+function renderAnalysis(goban: GobanRenderer, data: any) {
     if (!preferences.get("ai-review-enabled")) {
         return;
     }

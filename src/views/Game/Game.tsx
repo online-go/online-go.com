@@ -28,9 +28,9 @@ import { KBShortcut } from "KBShortcut";
 import { UIPush } from "UIPush";
 import { errorAlerter, ignore, rulesText } from "misc";
 import {
-    Goban,
-    GobanCanvas,
-    GobanCanvasConfig,
+    createGoban,
+    GobanRenderer,
+    GobanRendererConfig,
     GoMath,
     MoveTree,
     AudioClockEvent,
@@ -99,7 +99,7 @@ export function Game(): JSX.Element | null {
     const copied_node = React.useRef<MoveTree>();
     const white_username = React.useRef<string>("White");
     const black_username = React.useRef<string>("Black");
-    const goban = React.useRef<Goban | null>(null);
+    const goban = React.useRef<GobanRenderer | null>(null);
     const return_url_debounce = React.useRef<boolean>(false);
     const last_phase = React.useRef<string>("");
     const page_loaded_time = React.useRef<number>(Date.now()); // when we first created this view
@@ -1041,7 +1041,7 @@ export function Game(): JSX.Element | null {
     const setMoveTreeContainer = (resizable: Resizable): void => {
         ref_move_tree_container.current = resizable ? resizable.div ?? undefined : undefined;
         if (goban.current && ref_move_tree_container.current) {
-            (goban.current as GobanCanvas).setMoveTreeContainer(ref_move_tree_container.current);
+            (goban.current as GobanRenderer).setMoveTreeContainer(ref_move_tree_container.current);
         }
     };
 
@@ -1073,7 +1073,7 @@ export function Game(): JSX.Element | null {
         document.addEventListener("keypress", setLabelHandler);
 
         const label_position = preferences.get("label-positioning");
-        const opts: GobanCanvasConfig = {
+        const opts: GobanRendererConfig = {
             board_div: goban_div.current,
             move_tree_container: ref_move_tree_container.current,
             interactive: true,
@@ -1107,7 +1107,7 @@ export function Game(): JSX.Element | null {
                 goban.current?.review_controller_id === data.get("user").id;
         }
 
-        goban.current = new Goban(opts);
+        goban.current = createGoban(opts);
 
         onResize(true);
         (window as any)["global_goban"] = goban.current;
@@ -1772,7 +1772,7 @@ export function Game(): JSX.Element | null {
     );
 }
 
-function bindAudioEvents(goban: Goban): void {
+function bindAudioEvents(goban: GobanRenderer): void {
     // called by init
     const user = data.get("user");
 
