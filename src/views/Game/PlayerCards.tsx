@@ -36,6 +36,7 @@ import { usePreference } from "preferences";
 import { browserHistory } from "ogsHistory";
 import { player_is_ignored } from "BlockPlayer";
 import { doAnnul } from "moderation";
+import moment from "moment";
 
 type PlayerType = rest_api.games.Player;
 
@@ -362,7 +363,9 @@ export function PlayerCard({
                                 <i className="fa fa-flag" /> {flag}:{" "}
                                 {flag === "blur_rate"
                                     ? `${Math.round((flags[flag] as number) * 100.0)}%`
-                                    : flags[flag]}
+                                    : flag === "slow_moving"
+                                      ? moment.duration(flags[flag] as number).humanize()
+                                      : flags[flag]}
                             </div>
                         ))}
                     </div>
