@@ -252,6 +252,8 @@ export function PlayControls({
         return false;
     };
 
+    const sse = engine.stalling_score_estimate;
+
     return (
         <div className="PlayControls">
             <div className="game-action-buttons">
@@ -293,24 +295,48 @@ export function PlayControls({
                 {(mode === "score estimation" || null) && renderEstimateScore()}
 
                 {((mode === "play" && phase === "finished") || null) && (
-                    <span style={{ textDecoration: annulled ? "line-through" : "none" }}>
-                        {winner
-                            ? interpolate(
-                                  pgettext("Game winner", "{{color}} wins by {{outcome}}"),
-                                  {
-                                      // When is winner an id?
-                                      color:
-                                          (winner as any) === engine.players.black.id ||
-                                          winner === "black"
-                                              ? _("Black")
-                                              : _("White"),
-                                      outcome: getOutcomeTranslation(engine.outcome),
-                                  },
-                              )
-                            : interpolate(pgettext("Game winner", "Tie by {{outcome}}"), {
-                                  outcome: pgettext("Game outcome", engine.outcome),
-                              })}
-                    </span>
+                    <>
+                        <span style={{ textDecoration: annulled ? "line-through" : "none" }}>
+                            {winner
+                                ? interpolate(
+                                      pgettext("Game winner", "{{color}} wins by {{outcome}}"),
+                                      {
+                                          // When is winner an id?
+                                          color:
+                                              (winner as any) === engine.players.black.id ||
+                                              winner === "black"
+                                                  ? _("Black")
+                                                  : _("White"),
+                                          outcome: getOutcomeTranslation(engine.outcome),
+                                      },
+                                  )
+                                : interpolate(pgettext("Game winner", "Tie by {{outcome}}"), {
+                                      outcome: pgettext("Game outcome", engine.outcome),
+                                  })}
+                        </span>
+                        {engine.stalling_score_estimate && sse && (
+                            <div className="stalling-score-estimate">
+                                <span>
+                                    {interpolate(
+                                        _(
+                                            "The AI has concluded {{color}} will win with {{certainty}}% certainty. This result has been accepted by one or more players",
+                                        ),
+                                        {
+                                            color:
+                                                sse.predicted_winner === "black"
+                                                    ? _("Black")
+                                                    : _("White"),
+                                            certainty: (
+                                                (sse.predicted_winner === "black"
+                                                    ? sse.win_rate
+                                                    : 1.0 - sse.win_rate) * 100.0
+                                            ).toFixed(2),
+                                        },
+                                    )}
+                                </span>
+                            </div>
+                        )}
+                    </>
                 )}
             </div>
             <div className="annulled-indicator">

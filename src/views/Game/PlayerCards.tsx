@@ -270,7 +270,8 @@ export function PlayerCard({
         goban.mode !== "analyze" &&
         engine.outcome !== "Timeout" &&
         engine.outcome !== "Resignation" &&
-        engine.outcome !== "Cancellation";
+        engine.outcome !== "Cancellation" &&
+        !engine.outcome.startsWith("Server Decision");
 
     return (
         <div className={`${color} ${highlight_their_turn} player-container`}>

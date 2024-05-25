@@ -1251,8 +1251,17 @@ export function Game(): JSX.Element | null {
                 engine.outcome !== "Cancellation" &&
                 goban.current!.mode === "play"
             ) {
-                const s = engine.computeScore(false);
-                goban.current!.showScores(s);
+                if (
+                    engine.phase === "finished" &&
+                    engine.outcome.indexOf("Server Decision") === 0
+                ) {
+                    if (engine.stalling_score_estimate) {
+                        goban.current!.showStallingScoreEstimate(engine.stalling_score_estimate);
+                    }
+                } else {
+                    const s = engine.computeScore(false);
+                    goban.current!.showScores(s);
+                }
             }
         };
 
