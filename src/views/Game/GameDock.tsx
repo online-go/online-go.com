@@ -129,6 +129,31 @@ export function GameDock({
         ? api1(`reviews/${review_id}/sgf`)
         : null;
 
+    // Function to copy SGF content to clipboard
+    const copySGFToClipboard = () => {
+        fetch(sgf_url)
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error("Network response was not ok");
+                }
+                return response.text();
+            })
+            .then((sgfData) => {
+                navigator.clipboard
+                    .writeText(sgfData)
+                    .then(() => {
+                        toast(<div>{_("SGF content copied to clipboard!")}</div>, 2000);
+                    })
+                    .catch((err) => {
+                        console.error("Failed to copy text to clipboard", err);
+                    });
+            })
+            .catch((error) => {
+                console.error("Fetch error:", error);
+                toast(<div>{_("Failed to fetch SGF data.")}</div>, 2000);
+            });
+    };
+
     const openACL = () => {
         if (game_id) {
             openACLModal({ game_id: game_id });
@@ -494,6 +519,24 @@ export function GameDock({
                     }
                 >
                     <i className="fa fa-download"></i> {_("Download SGF")}
+                </a>
+            )}
+            {sgf_download_enabled ? (
+                <Tooltip tooltipRequired={tooltipRequired} title={_("Copy SGF")}>
+                    <a onClick={copySGFToClipboard}>
+                        <i className="fa fa-clipboard"></i> {_("Copy SGF")}
+                    </a>
+                </Tooltip>
+            ) : (
+                <a
+                    className="disabled"
+                    onClick={() =>
+                        void alert.fire(
+                            _("SGF copying for this game is disabled until the game is complete."),
+                        )
+                    }
+                >
+                    <i className="fa fa-clipboard"></i> {_("Copy SGF")}
                 </a>
             )}
             {sgf_download_enabled && sgf_with_ai_review_url && (
