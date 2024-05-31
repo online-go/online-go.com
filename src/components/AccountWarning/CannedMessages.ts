@@ -152,7 +152,7 @@ Thank you for your report, {{reported}} has been given a formal warning about fi
             _(`
 Thank you for your report, {{reported}} has been given a formal warning about finishing games properly, \
 and that abandoned game annulled.`),
-            reported,
+            { reported },
         ),
     no_escaping_evident: (reported) =>
         interpolate(
@@ -243,7 +243,7 @@ Thank you for your report, {{reported}} has been given a formal warning about fi
             _(`
 Thank you for your report, {{reported}} has been given a formal warning about finishing games properly, \
 and that abandoned game annulled.`),
-            reported,
+            { reported },
         ),
     no_stalling_evident: (reported) =>
         interpolate(
