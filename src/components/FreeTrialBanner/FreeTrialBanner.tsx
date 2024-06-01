@@ -87,7 +87,7 @@ export function FreeTrialBanner({ show_even_if_saved_for_later }: FreeTrialBanne
         return null;
     }
 
-    if (last_offered_trial_days_ago && last_offered_trial_days_ago < DAYS_PER_YEAR) {
+    if (last_offered_trial_days_ago !== null && last_offered_trial_days_ago < DAYS_PER_YEAR) {
         return null;
     }
 
