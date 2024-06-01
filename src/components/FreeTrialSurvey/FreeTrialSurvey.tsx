@@ -47,6 +47,8 @@ Thank you!
 `;
 
 export function FreeTrialSurvey(): JSX.Element | null {
+    return null;
+
     const user = useUser();
     const [surveySubmitted] = useData("free-trial-survey-submitted-timestamp", 0);
 
