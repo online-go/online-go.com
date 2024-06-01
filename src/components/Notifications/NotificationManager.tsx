@@ -50,6 +50,7 @@ export interface NotificationManagerEvents {
 const boot_time = Date.now();
 let notification_timeout: ReturnType<typeof setTimeout> | null = null;
 const sent: { [k: string]: boolean } = {};
+const game_turn_notifications_sent: { [k: string]: boolean } = {};
 
 $(window).on("storage", (event) => {
     //console.log(event);
@@ -367,18 +368,28 @@ export class NotificationManager {
             if (this.boards_to_move_on[game.id]) {
                 const current_game_id = getCurrentGameId();
                 if (current_game_id !== game.id || !document.hasFocus()) {
-                    //if (game.avg_move_time > 3600) {
+                    // don't notify for realtime games ever
                     if (game.time_per_move > 3600) {
-                        // don't notify for realtime games ever
-                        emitNotification(
-                            _("Your Turn"),
-                            interpolate("It's your turn in game {{game_id}}", { game_id: game.id }),
-                            () => {
-                                if (window.location.pathname !== "/game/" + game.id) {
-                                    browserHistory.push("/game/" + game.id);
-                                }
-                            },
-                        );
+                        /* When we reconnect, which for some clients happens a
+                         * lot, we don't want to spam the user with
+                         * notifications for the same game if the move hasn't
+                         * changed */
+                        const game_notification_key = `${game.id}-${game.move_number}`;
+
+                        if (!game_turn_notifications_sent[game_notification_key]) {
+                            emitNotification(
+                                _("Your Turn"),
+                                interpolate("It's your turn in game {{game_id}}", {
+                                    game_id: game.id,
+                                }),
+                                () => {
+                                    if (window.location.pathname !== "/game/" + game.id) {
+                                        browserHistory.push("/game/" + game.id);
+                                    }
+                                },
+                            );
+                            game_turn_notifications_sent[game_notification_key] = true;
+                        }
                     }
                 }
             }
