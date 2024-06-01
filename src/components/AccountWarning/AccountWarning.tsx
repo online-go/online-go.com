@@ -25,7 +25,6 @@ import { get, patch } from "requests";
 import { useUser } from "hooks";
 import { AutoTranslate } from "AutoTranslate";
 import { useLocation } from "react-router";
-
 import { CANNED_MESSAGES } from "./CannedMessages";
 
 const BUTTON_COUNTDOWN_TIME = 10000; // ms;
@@ -34,6 +33,7 @@ export function AccountWarning() {
     const user = useUser();
     const location = useLocation();
     const [warning, setWarning] = React.useState<rest_api.warnings.Warning | null>(null);
+    const [liveGameInProgress, setLiveGameInProgress] = React.useState<boolean>(false);
 
     React.useEffect(() => {
         if (user && !user.anonymous && user.has_active_warning_flag) {
@@ -53,6 +53,25 @@ export function AccountWarning() {
             setWarning(null);
         }
     }, [user, user?.has_active_warning_flag]);
+
+    const mainGoban = (window as any)["global_goban"];
+
+    if (location.pathname.indexOf("game/") > 0) {
+        // On the Game page, we need to delay displaying the warning until the game is over
+        if (liveGameInProgress) {
+            return null;
+        } else if (mainGoban?.engine.phase === "play" && mainGoban.engine.game_id) {
+            setLiveGameInProgress(true);
+            const checking = setInterval(() => {
+                if (mainGoban?.engine.phase !== "play" || !mainGoban?.engine.game_id) {
+                    setLiveGameInProgress(false);
+                    clearInterval(checking);
+                }
+            }, 1000);
+
+            return null;
+        }
+    }
 
     if (!user || user.anonymous || !user.has_active_warning_flag) {
         return null;
@@ -79,11 +98,7 @@ export function AccountWarning() {
 
     const MessageRenderer = Renderers[warning.severity];
 
-    return (
-        <>
-            <MessageRenderer warning={warning} accept={ok} />
-        </>
-    );
+    return <MessageRenderer warning={warning} accept={ok} />;
 }
 
 // Support warnings that carry messages either as a reference to a a canned message, or explicit text...
@@ -92,7 +107,6 @@ interface MessageTextRenderProps {
     warning: rest_api.warnings.Warning;
 }
 function MessageTextRender(props: MessageTextRenderProps): JSX.Element {
-    console.log("rendering", props);
     if (props.warning.message_id) {
         return (
             <div className="canned-message">
@@ -146,7 +160,7 @@ function WarningModal(props: WarningModalProps): JSX.Element {
                 if (Date.now() - now > BUTTON_COUNTDOWN_TIME) {
                     clearInterval(interval);
                 }
-            }, 100);
+            }, 1000);
         }
     }, [props.warning]);
 
