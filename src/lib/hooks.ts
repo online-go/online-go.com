@@ -18,6 +18,7 @@
 import * as React from "react";
 import * as data from "data";
 import { DataSchema } from "./data_schema";
+import { GobanCore } from "goban";
 
 /**
  * React Hook that gives the value for a given key.  This should be preferred
@@ -63,4 +64,8 @@ export function useUser(): rest_api.UserConfig {
 export function useRefresh(): () => void {
     const [, refresh] = React.useState(0);
     return React.useCallback(() => refresh(() => Math.random()), [refresh]);
+}
+
+export function useMainGoban(): GobanCore | null {
+    return (window as any)["global_goban"];
 }
