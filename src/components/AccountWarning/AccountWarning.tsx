@@ -22,7 +22,7 @@
 import * as React from "react";
 import { _, pgettext } from "translate";
 import { get, patch } from "requests";
-import { useUser } from "hooks";
+import { useMainGoban, useUser } from "hooks";
 import { AutoTranslate } from "AutoTranslate";
 import { useLocation } from "react-router";
 import { CANNED_MESSAGES } from "./CannedMessages";
@@ -33,7 +33,14 @@ export function AccountWarning() {
     const user = useUser();
     const location = useLocation();
     const [warning, setWarning] = React.useState<rest_api.warnings.Warning | null>(null);
-    const [liveGameInProgress, setLiveGameInProgress] = React.useState<boolean>(false);
+    const [displayPending, setDisplayPending] = React.useState<boolean>(false);
+    const mainGoban = useMainGoban();
+
+    const liveGameInProgress =
+        mainGoban &&
+        mainGoban.engine.game_id &&
+        mainGoban.engine.phase !== "finished" &&
+        mainGoban.engine.time_control.speed !== "correspondence";
 
     React.useEffect(() => {
         if (user && !user.anonymous && user.has_active_warning_flag) {
@@ -54,23 +61,29 @@ export function AccountWarning() {
         }
     }, [user, user?.has_active_warning_flag]);
 
-    const mainGoban = (window as any)["global_goban"];
+    // If a live game is in progress, we'll need to check back later to see if it has
+    // finished so we can display the warning...
 
-    if (location.pathname.indexOf("game/") > 0) {
-        // On the Game page, we need to delay displaying the warning until the game is over
-        if (liveGameInProgress) {
-            return null;
-        } else if (mainGoban?.engine.phase === "play" && mainGoban.engine.game_id) {
-            setLiveGameInProgress(true);
-            const checking = setInterval(() => {
-                if (mainGoban?.engine.phase !== "play" || !mainGoban?.engine.game_id) {
-                    setLiveGameInProgress(false);
-                    clearInterval(checking);
-                }
-            }, 1000);
-
-            return null;
+    React.useEffect(() => {
+        let pending: NodeJS.Timeout | undefined;
+        if (location.pathname.indexOf("game/") > 0) {
+            if (liveGameInProgress) {
+                setDisplayPending(true);
+                pending = setInterval(() => {
+                    if (mainGoban?.engine.phase !== "play") {
+                        setDisplayPending(false);
+                        clearInterval(pending);
+                    }
+                }, 1000);
+            }
         }
+        return () => {
+            clearInterval(pending);
+        };
+    }, [mainGoban, location.pathname, displayPending, liveGameInProgress]);
+
+    if (location.pathname.indexOf("game/") > 0 && liveGameInProgress) {
+        return null;
     }
 
     if (!user || user.anonymous || !user.has_active_warning_flag) {
@@ -153,15 +166,19 @@ function WarningModal(props: WarningModalProps): JSX.Element {
     const [boxChecked, setBoxChecked] = React.useState<boolean>(false);
 
     React.useEffect(() => {
+        let interval: NodeJS.Timeout | undefined;
         if (props.warning) {
             const now = Date.now();
-            const interval = setInterval(() => {
+            interval = setInterval(() => {
                 setAcceptTime(BUTTON_COUNTDOWN_TIME - (Date.now() - now));
-                if (Date.now() - now > BUTTON_COUNTDOWN_TIME) {
+                if (Date.now() - now > BUTTON_COUNTDOWN_TIME && interval) {
                     clearInterval(interval);
                 }
             }, 1000);
         }
+        return () => {
+            clearInterval(interval);
+        };
     }, [props.warning]);
 
     return (
