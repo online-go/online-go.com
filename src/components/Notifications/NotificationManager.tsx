@@ -30,6 +30,7 @@ import { sfx } from "sfx";
 import { ogs_has_focus, getCurrentGameId, shouldOpenNewTab } from "misc";
 import { lookingAtOurLiveGame } from "TimeControl/util";
 import { PlayerCacheEntry } from "src/lib/player_cache";
+import { GameListEntry } from "goban/lib/protocol";
 
 //declare let Notification: any;
 
@@ -342,7 +343,7 @@ export class NotificationManager {
         this.rebuildNotificationList();
     }
     connect() {
-        socket.on("active_game", (game) => {
+        socket.on("active_game", (game: GameListEntry) => {
             delete this.boards_to_move_on[game.id];
             if (game.phase === "finished") {
                 delete this.active_boards[game.id];
@@ -379,9 +380,15 @@ export class NotificationManager {
                         if (!game_turn_notifications_sent[game_notification_key]) {
                             emitNotification(
                                 _("Your Turn"),
-                                interpolate("It's your turn in game {{game_id}}", {
-                                    game_id: game.id,
-                                }),
+                                interpolate(
+                                    "It's your turn to play against {{opponent_username}}",
+                                    {
+                                        opponent_username:
+                                            data.get("user").id === game.black.id
+                                                ? game.white.username
+                                                : game.black.username,
+                                    },
+                                ),
                                 () => {
                                     if (window.location.pathname !== "/game/" + game.id) {
                                         browserHistory.push("/game/" + game.id);
