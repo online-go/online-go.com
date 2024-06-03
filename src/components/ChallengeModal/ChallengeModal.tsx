@@ -489,7 +489,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         post("demos", demo)
             .then((res) => {
                 console.log("Demo create response: ", res);
-                browserHistory.push(`/demo/view/${res.id}`);
+                browserHistory.push(`/demo/${res.id}`);
             })
             .catch(errorAlerter);
     };

@@ -3319,7 +3319,7 @@ export function EliminationNode({
                 onMouseOut={eliminationMouseOut}
             >
                 {(gameid || null) && (
-                    <a className="elimination-game" href={`/game/view/${gameid}`}>
+                    <a className="elimination-game" href={`/game/${gameid}`}>
                         <i className="ogs-goban"></i>
                     </a>
                 )}

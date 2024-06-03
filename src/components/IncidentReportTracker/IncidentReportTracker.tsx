@@ -330,7 +330,7 @@ export function IncidentReportTracker(): JSX.Element | null {
                                     {(report.reported_game || null) && (
                                         <span>
                                             {_("Game")}:{" "}
-                                            <Link to={`/game/view/${report.reported_game}`}>
+                                            <Link to={`/game/${report.reported_game}`}>
                                                 #{report.reported_game}
                                             </Link>
                                         </span>
