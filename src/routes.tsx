@@ -235,13 +235,13 @@ export const routes = (
                 <Route path="/chat/:channel/**/*" element={<ChatView />} />
                 <Route path="/chat" element={<ChatRedirect />} />
                 <Route path="/observe-games" element={<ObserveGames />} />
-                <Route path="/game/:game_id" element={<Game />} />
+                <Route path="/game/view/:game_id" element={<Game />} />
                 <Route path="/game/:game_id/:move_number" element={<Game />} />
                 <Route path="/game/:game_id" element={<Game />} />
-                <Route path="/review/:review_id" element={<Game />} />
+                <Route path="/review/view/:review_id" element={<Game />} />
                 <Route path="/review/:review_id/:move_number" element={<Game />} />
                 <Route path="/review/:review_id" element={<Game />} />
-                <Route path="/demo/:review_id" element={<Game />} />
+                <Route path="/demo/view/:review_id" element={<Game />} />
                 <Route path="/demo/:review_id/:move_number" element={<Game />} />
                 <Route path="/demo/:review_id" element={<Game />} />
                 <Route path="/game/:game_id/embed" element={<GameEmbed />} />
