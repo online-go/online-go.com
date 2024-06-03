@@ -196,11 +196,12 @@ function dev_server(done) {
     dev_server.use(body_parser.text());
 
     http.createServer(dev_server).listen(port, null, function () {
-        console.info(`#############################################`);
+        console.info(`\n\n#############################################`);
         console.info(`## Development server started on port ${port}`);
         console.info(`##  ( http://localhost:${port} )`);
         console.info(`##  pointing at ${BACKEND} (${server_url})`);
-        console.info(`#############################################`);
+        console.info(`#############################################\n\n`);
+        console.info("Join us at https://join.slack.com/t/online-go/shared_invite/zt-2jww58l2v-iwhhBiVsXNxcD9xm74bIKA if you'd like to chat...");
     });
 
     dev_server.use(express.static("dist"));
