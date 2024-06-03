@@ -111,7 +111,7 @@ class AutomatchManager extends TypedEventEmitter<Events> {
         this.remove(entry.uuid);
 
         if (entry.uuid === this.last_find_match_uuid) {
-            browserHistory.push(`/game/view/${entry.game_id}`);
+            browserHistory.push(`/game/${entry.game_id}`);
             //sfx.play("match_found");
         }
 
