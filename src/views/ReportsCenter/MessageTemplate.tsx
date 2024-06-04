@@ -286,20 +286,18 @@ Thank you for your understanding and cooperation.`,
     Harassment: {
         "Undo-harassment": {
             message: `
-                Please note that our undo policy is as follows:
+Please note that our undo policy is as follows:
 
-                You are allowed to request an undo at any time for any reason,
-                however **your opponent is not obligated to accept the undo
-                request regardless of reason**. This includes unintentional
-                misclicks, bugs, or any other reason.
+You are allowed to request an undo at any time and for any reason. However, please understand
+that your opponent is not obligated to accept the undo request, regardless of the reason, including
+unintentional misclicks, bugs, or any other circumstances.
 
-                Scolding your opponent for their decision is viewed as a form
-                of harassment, which is not allowed and can result in punitive
-                actions taken.
+If you were unaware, please note that scolding your opponent for their decision is considered a
+form of harassment. If this occurs, we will have no choice but to remove your chat privilege.
 
-                See our Terms of Service for more information.
+For more information, please refer to our Terms of Service.
 
-                https://online-go.com/docs/terms-of-service`,
+https://online-go.com/docs/terms-of-service`,
             show_warning_button: true,
         },
     },
