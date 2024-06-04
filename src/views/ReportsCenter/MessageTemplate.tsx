@@ -293,7 +293,8 @@ that your opponent is **not required** to accept the undo request, regardless of
 unintentional misclicks, bugs, or any other circumstances.
 
 If you were unaware, please note that scolding your opponent for their decision is considered a
-form of harassment. If this occurs, we will have no choice but to remove your chat privilege.
+form of harassment. If this continues, we will have no choice but to remove your chat privilege to
+to protect other users from that.
 
 For more information, please refer to our Terms of Service.
 
