@@ -289,7 +289,7 @@ Thank you for your understanding and cooperation.`,
 Please note that our undo policy is as follows:
 
 You are allowed to request an undo at any time and for any reason. However, please understand
-that your opponent is not obligated to accept the undo request, regardless of the reason, including
+that your opponent is **not required** to accept the undo request, regardless of the reason, including
 unintentional misclicks, bugs, or any other circumstances.
 
 If you were unaware, please note that scolding your opponent for their decision is considered a
