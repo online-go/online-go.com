@@ -324,7 +324,8 @@ export function GameDock({
         <Dock>
             {(tournament_id || null) && (
                 <Link className="plain" to={`/tournament/${tournament_id}`}>
-                    <i className="fa fa-trophy" title={_(`${tournament_name}`)} /> {_("Tournament")}
+                    <i className="fa fa-trophy" title={tournament_name ?? _("Tournament")} />{" "}
+                    {_("Tournament")}
                 </Link>
             )}
             {(ladder_id || null) && (
