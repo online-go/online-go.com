@@ -73,6 +73,7 @@ import { GobanContext } from "./goban_context";
 import { is_valid_url } from "url_validation";
 import { disableTouchAction, enableTouchAction } from "./touch_actions";
 import { BotDetectionResults } from "./BotDetectionResults";
+import { ActiveTournament } from "src/lib/types";
 
 export function Game(): JSX.Element | null {
     const params = useParams<"game_id" | "review_id" | "move_number">();
@@ -141,6 +142,7 @@ export function Game(): JSX.Element | null {
 
     const title = useTitle(goban.current);
     const cur_move = useCurrentMove(goban.current);
+    const [tournament, set_tournament] = React.useState<ActiveTournament>();
 
     const [mode, set_mode] = React.useState<GobanModes>("play");
     const [score_estimate_winner, set_score_estimate_winner] = React.useState<string>();
@@ -1447,6 +1449,18 @@ export function Game(): JSX.Element | null {
                     ladder_id.current = game.ladder;
                     tournament_id.current = game.tournament ?? undefined;
 
+                    if (game.tournament) {
+                        get(`tournaments/${game.tournament}`)
+                            .then((t: ActiveTournament) => {
+                                console.log(t);
+                                set_tournament(t);
+                            })
+                            .catch((e) => {
+                                console.warn(`Could not get tournament information`);
+                                console.warn(e.name, e);
+                            });
+                    }
+
                     set_annulled(game.annulled);
                     set_annulment_reason(game.annulment_reason);
                     set_historical_black(game.historical_ratings.black);
@@ -1685,6 +1699,7 @@ export function Game(): JSX.Element | null {
                                 annulled={annulled}
                                 selected_ai_review_uuid={selected_ai_review_uuid}
                                 tournament_id={tournament_id.current}
+                                tournament_name={tournament?.name}
                                 ladder_id={ladder_id.current}
                                 ai_review_enabled={ai_review_enabled}
                                 historical_black={historical_black}
@@ -1752,6 +1767,7 @@ export function Game(): JSX.Element | null {
                                 annulled={annulled}
                                 selected_ai_review_uuid={selected_ai_review_uuid}
                                 tournament_id={tournament_id.current}
+                                tournament_name={tournament?.name}
                                 ladder_id={ladder_id.current}
                                 ai_review_enabled={ai_review_enabled}
                                 historical_black={historical_black}
