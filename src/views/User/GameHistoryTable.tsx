@@ -69,6 +69,7 @@ interface GroomedGame {
     result: JSX.Element;
     flags?: { [flag_key: string]: number | string | boolean };
     rengo_vs_text?: `${number} vs. ${number}`;
+    handicap: number;
 }
 
 export function GameHistoryTable(props: GameHistoryProps) {
@@ -189,6 +190,8 @@ export function GameHistoryTable(props: GameHistoryProps) {
             item.speed_icon_class = getSpeedClass(speed);
 
             item.name = r.name;
+
+            item.handicap = r.handicap;
 
             if (item.name && item.name.trim() === "") {
                 item.name = item.href;
@@ -392,6 +395,12 @@ export function GameHistoryTable(props: GameHistoryProps) {
                                 className: (X) =>
                                     "board_size" + (X && X.annulled ? " annulled" : ""),
                                 render: (X) => `${X.width}x${X.height}`,
+                            },
+                            {
+                                header: _("Hd"),
+                                className: (X) =>
+                                    "handicap" + (X && X.annulled ? " annulled" : ""),
+                                render: (X) => X.handicap,
                             },
                             {
                                 header: _("Name"),
