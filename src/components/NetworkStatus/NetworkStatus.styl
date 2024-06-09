@@ -38,7 +38,18 @@
         }
     }
 
-    .icon {
+
+    .icon.close {
+        position: relative;
+        display: inline-flex;
+        width: 2rem;
+        height: 2rem;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+
+    .icon.no-wifi {
         position: relative;
         display: inline-flex;
         width: 2rem;
@@ -47,6 +58,7 @@
         justify-content: center;
         margin-right: 1rem;
     }
+
 
     @keyframes fadeInOut {
         0% { opacity: 1; }

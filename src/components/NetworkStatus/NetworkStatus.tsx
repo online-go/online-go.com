@@ -30,6 +30,7 @@ type NetworkStatusState = "connected" | "went-away" | "disconnected" | "timeout"
 
 export function NetworkStatus(): JSX.Element | null {
     const [state, setState] = React.useState<NetworkStatusState>("connected");
+    const [manually_closed, setManuallyClosed] = React.useState<boolean>(false);
     const [show_slow_internet_warning] = preferences.usePreference("show-slow-internet-warning");
 
     const stateRef = React.useRef(state);
@@ -39,6 +40,7 @@ export function NetworkStatus(): JSX.Element | null {
     // (note: we don't check if it's their turn because it might become their turn at any time, they
     //  could do with knowing their internet is bad anyhow.)
     const in_live_game = lookingAtOurLiveGame();
+    const show_banner = in_live_game && !manually_closed;
 
     React.useEffect(() => {
         stateRef.current = state; // needed so we can refer to the current value in the async timer below
@@ -83,6 +85,7 @@ export function NetworkStatus(): JSX.Element | null {
         state,
         show_slow_internet_warning ? ": warning toggle on," : ": warning toggle off,",
         in_live_game ? "in live game," : "not in live game,",
+        manually_closed ? "manually closed notification," : "didn't close notification",
         "time control:",
         (window as any)["global_goban"]?.engine?.time_control,
     );
@@ -97,14 +100,19 @@ export function NetworkStatus(): JSX.Element | null {
 
     return (
         // We don't show this if they're 'connected' (see above, return null)
-        <div className={"NetworkStatus" + (in_live_game ? "" : " non-game")}>
+        <div className={"NetworkStatus" + (show_banner ? "" : " non-game")}>
             {/* This funky little thing builds an icon that is intended to say "no wifi!",
                 by superimposing a large "ban" icon over a normal sized "wifi" icon. */}
-            <span className="icon">
+            {show_banner && (
+                <span className="icon close">
+                    <i className="fa fa-times-circle" onClick={() => setManuallyClosed(true)} />
+                </span>
+            )}
+            <span className="icon no-wifi">
                 <i className="fa fa-2x fa-ban" />
                 <i className="fa fa-wifi" />
             </span>
-            {in_live_game && (
+            {show_banner && (
                 <span>
                     {(state === "timeout" || null) && _("Slow internet")}
                     {(state === "disconnected" || null) && _("Disconnected")}
