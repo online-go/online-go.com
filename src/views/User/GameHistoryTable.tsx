@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { _ } from "translate";
+import { _, pgettext } from "translate";
 import { PlayerAutocomplete } from "PlayerAutocomplete";
 import { Card } from "material";
 import { PaginatedTable } from "PaginatedTable";
@@ -397,7 +397,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
                                 render: (X) => `${X.width}x${X.height}`,
                             },
                             {
-                                header: _("Hd"),
+                                header: pgettext("Handicap abbreviation", "HC"),
                                 className: (X) => "handicap" + (X && X.annulled ? " annulled" : ""),
                                 render: (X) => X.handicap,
                             },
