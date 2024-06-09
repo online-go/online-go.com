@@ -101,13 +101,13 @@ export function NetworkStatus(): JSX.Element | null {
     return (
         // We don't show this if they're 'connected' (see above, return null)
         <div className={"NetworkStatus" + (show_banner ? "" : " non-game")}>
-            {/* This funky little thing builds an icon that is intended to say "no wifi!",
-                by superimposing a large "ban" icon over a normal sized "wifi" icon. */}
             {show_banner && (
                 <span className="icon close">
                     <i className="fa fa-times-circle" onClick={() => setManuallyClosed(true)} />
                 </span>
             )}
+            {/* This funky little thing builds an icon that is intended to say "no wifi!",
+                by superimposing a large "ban" icon over a normal sized "wifi" icon. */}
             <span className="icon no-wifi">
                 <i className="fa fa-2x fa-ban" />
                 <i className="fa fa-wifi" />
