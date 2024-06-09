@@ -39,6 +39,7 @@ import {
     GoConditionalMove,
     AnalysisTool,
     JGOFNumericPlayerColor,
+    JGOFSealingIntersection,
 } from "goban";
 import { isLiveGame } from "TimeControl";
 import { setExtraActionCallback, PlayerDetails } from "Player";
@@ -1265,14 +1266,14 @@ export function Game(): JSX.Element | null {
             }
         };
 
-        const sync_needs_sealing = (positions: undefined | [number, number][]) => {
+        const sync_needs_sealing = (positions: undefined | JGOFSealingIntersection[]) => {
             console.log("sync_needs_sealing", positions);
             //const cur = goban.current as GobanRenderer;
             const engine = goban.current!.engine;
 
             const cur_move = engine.cur_move;
             for (const pos of positions || []) {
-                const [x, y] = pos;
+                const { x, y } = pos;
                 const marks = cur_move.getMarks(x, y);
                 marks.needs_sealing = true;
                 goban.current!.drawSquare(x, y);
@@ -1323,7 +1324,7 @@ export function Game(): JSX.Element | null {
         goban.current.on("outcome", sync_stone_removal);
         goban.current.on("stone-removal.accepted", sync_stone_removal);
         goban.current.on("stone-removal.updated", sync_stone_removal);
-        goban.current.on("needs-sealing", sync_needs_sealing);
+        goban.current.on("stone-removal.needs-sealing", sync_needs_sealing);
 
         /* END sync_state port */
 

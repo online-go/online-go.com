@@ -29,6 +29,8 @@ import {
     AnalysisTool,
     MoveTree,
     PlayerColor,
+    JGOFSealingIntersection,
+    GoEngine,
 } from "goban";
 import { game_control } from "./game_control";
 import { alert } from "swal_config";
@@ -60,6 +62,8 @@ import { useUser } from "hooks";
 import { AntiGrief } from "./AntiGrief";
 
 import * as moment from "moment";
+
+const MAX_SEALING_LOCATIONS_TO_LIST = 5;
 
 interface PlayControlsProps {
     // Cancel buttons are in props because the Cancel Button is placed below
@@ -133,6 +137,10 @@ export function PlayControls({
     const return_param = searchParams.get("return");
     const return_url = return_param && is_valid_url(return_param) ? return_param : null;
     const [stone_removal_accept_disabled, setStoneRemovalAcceptDisabled] = React.useState(false);
+    const [needs_sealing, setNeedsSealing] = React.useState<JGOFSealingIntersection[] | undefined>(
+        engine?.needs_sealing,
+    );
+    const need_to_seal = needs_sealing && needs_sealing.length > 0;
 
     const user_is_active_player = [engine.players.black.id, engine.players.white.id].includes(
         user.id,
@@ -162,6 +170,26 @@ export function PlayControls({
             ["phase", "mode", "outcome", "stone-removal.accepted", "stone-removal.updated"],
             syncStoneRemovalAcceptance,
         );
+    }, [goban]);
+    React.useEffect(() => {
+        const syncNeedsSealing = (locs?: JGOFSealingIntersection[]) => {
+            setNeedsSealing(locs);
+        };
+        const engineUpdated = (engine: GoEngine) => {
+            syncNeedsSealing(engine.needs_sealing);
+        };
+        if (goban?.engine) {
+            engineUpdated(goban.engine);
+        } else {
+            console.error("No engine in PlayControls");
+        }
+        goban.on("stone-removal.needs-sealing", syncNeedsSealing);
+        goban.on("engine.updated", engineUpdated);
+
+        return () => {
+            goban.off("engine.updated", engineUpdated);
+            goban.off("stone-removal.needs-sealing", syncNeedsSealing);
+        };
     }, [goban]);
     React.useEffect(() => {
         setStoneRemovalAcceptDisabled(true);
@@ -436,11 +464,42 @@ export function PlayControls({
             )}
             {(phase === "stone removal" || null) && (
                 <div className="stone-removal-controls">
+                    {need_to_seal && (
+                        <div className="needs-sealing">
+                            {_(
+                                "The highlighted locations need to be sealed before the game can be scored correctly",
+                            )}
+                            <div className="needs-sealing-coordinates">
+                                <span className="needs-sealing-box" />
+                                {needs_sealing
+                                    .slice(0, MAX_SEALING_LOCATIONS_TO_LIST)
+                                    .map((loc) => goban.engine.prettyCoords(loc.x, loc.y))
+                                    .join(", ")}
+                                {needs_sealing.length > MAX_SEALING_LOCATIONS_TO_LIST && (
+                                    <span>...</span>
+                                )}
+                            </div>
+
+                            <div style={{ textAlign: "center" }}>
+                                {(user_is_player || null) && (
+                                    <button
+                                        id="game-stone-removal-cancel"
+                                        onClick={onStoneRemovalCancel}
+                                        className={need_to_seal ? "primary" : ""}
+                                    >
+                                        {_("Cancel and resume game")}
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    )}
                     <div>
                         {(user_is_active_player || user.is_moderator || null) && ( // moderators see the button, with its timer, but can't press it
                             <button
                                 className={
-                                    user.is_moderator && !user_is_active_player ? "" : "primary"
+                                    (user.is_moderator && !user_is_active_player) || need_to_seal
+                                        ? ""
+                                        : "primary"
                                 }
                                 disabled={
                                     (user.is_moderator && !user_is_active_player) ||
@@ -500,13 +559,19 @@ export function PlayControls({
                             </button>
                         )}
                     </div>
-                    <div style={{ textAlign: "center" }}>
-                        {(user_is_player || null) && (
-                            <button id="game-stone-removal-cancel" onClick={onStoneRemovalCancel}>
-                                {_("Cancel and resume game")}
-                            </button>
-                        )}
-                    </div>
+                    {!need_to_seal && (
+                        <div style={{ textAlign: "center" }}>
+                            {(user_is_player || null) && (
+                                <button
+                                    id="game-stone-removal-cancel"
+                                    onClick={onStoneRemovalCancel}
+                                    className={need_to_seal ? "primary" : ""}
+                                >
+                                    {_("Cancel and resume game")}
+                                </button>
+                            )}
+                        </div>
+                    )}
 
                     <div className="explanation">
                         {_(
