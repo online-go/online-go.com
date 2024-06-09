@@ -398,8 +398,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
                             },
                             {
                                 header: _("Hd"),
-                                className: (X) =>
-                                    "handicap" + (X && X.annulled ? " annulled" : ""),
+                                className: (X) => "handicap" + (X && X.annulled ? " annulled" : ""),
                                 render: (X) => X.handicap,
                             },
                             {
