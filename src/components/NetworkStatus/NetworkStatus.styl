@@ -24,6 +24,7 @@
     font-weight: bold;
     padding-right: 1rem;
     border-radius: 0.3rem;
+    cursor: pointer;
 
     // if we're not on the game page, we make this more discreet...
     &.non-game {
@@ -38,7 +39,6 @@
         }
     }
 
-
     .icon {
         position: relative;
         display: inline-flex;
@@ -48,14 +48,9 @@
         justify-content: center;
     }
 
-    .icon.close {
-        cursor: pointer;
-    }
-
     .icon.no-wifi {
         margin-right: 1rem;
     }
-
 
     @keyframes fadeInOut {
         0% { opacity: 1; }
