@@ -808,6 +808,16 @@ export function AnalyzeButtonBar({
                     <img alt="alternate" src={data.get("config.cdn_release") + "/img/white.png"} />
                 </button>
 
+                <button
+                    onClick={() => setAnalyzeTool("removal", "")}
+                    title={_("Mark stones for removal")}
+                    className={
+                        "stone-removal-button " + (analyze_tool === "removal" ? "active" : "")
+                    }
+                >
+                    <i className="ogs-label-x removal"></i>
+                </button>
+
                 <button className="pass-button" onClick={analysis_pass}>
                     {_("Pass")}
                 </button>

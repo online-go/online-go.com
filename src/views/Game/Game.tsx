@@ -431,6 +431,9 @@ export function Game(): JSX.Element | null {
                     }
                     goban.current.setAnalyzeTool(tool, subtool);
                     break;
+                case "removal":
+                    goban.current.setAnalyzeTool(tool, subtool);
+                    break;
             }
         }
 
@@ -602,7 +605,15 @@ export function Game(): JSX.Element | null {
         for (let y = 0; y < goban.current.height; ++y) {
             for (let x = 0; x < goban.current.width; ++x) {
                 const pos = goban.current.getMarks(x, y);
-                const mark_types = ["letter", "triangle", "circle", "square", "cross", "score"];
+                const mark_types = [
+                    "letter",
+                    "triangle",
+                    "circle",
+                    "square",
+                    "cross",
+                    "score",
+                    "stone_removed",
+                ];
                 for (let i = 0; i < mark_types.length; ++i) {
                     if (mark_types[i] in pos && pos[mark_types[i]]) {
                         const mark_key =
