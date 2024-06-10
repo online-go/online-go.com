@@ -109,7 +109,8 @@ export function Game(): JSX.Element | null {
     const [view_mode, set_view_mode] = React.useState<ViewMode>(goban_view_mode());
     const [squashed, set_squashed] = React.useState<boolean>(goban_view_squashed());
     const [estimating_score, set_estimating_score] = React.useState<boolean>(false);
-    const [analyze_pencil_color, set_analyze_pencil_color] = React.useState<string>("#004cff");
+    const [analyze_pencil_color, _setAnalyzePencilColor] =
+        preferences.usePreference("analysis.pencil-color");
     const user_is_player = useUserIsParticipant(goban.current);
     const [zen_mode, set_zen_mode] = React.useState(preferences.get("start-in-zen-mode"));
     const [autoplaying, set_autoplaying] = React.useState<boolean>(false);
@@ -154,6 +155,11 @@ export function Game(): JSX.Element | null {
     /* Functions */
     const getLocation = (): string => {
         return location.pathname;
+    };
+
+    const setAnalyzePencilColor = (color: string) => {
+        preferences.set("analysis.pencil-color", color);
+        _setAnalyzePencilColor(color);
     };
 
     const auto_advance = () => {
@@ -419,6 +425,12 @@ export function Game(): JSX.Element | null {
                     }
                     goban.current.setAnalyzeTool(tool, subtool);
                     break;
+                case "score":
+                    if (subtool == null) {
+                        subtool = "black";
+                    }
+                    goban.current.setAnalyzeTool(tool, subtool);
+                    break;
             }
         }
 
@@ -590,10 +602,16 @@ export function Game(): JSX.Element | null {
         for (let y = 0; y < goban.current.height; ++y) {
             for (let x = 0; x < goban.current.width; ++x) {
                 const pos = goban.current.getMarks(x, y);
-                const mark_types = ["letter", "triangle", "circle", "square", "cross"];
+                const mark_types = ["letter", "triangle", "circle", "square", "cross", "score"];
                 for (let i = 0; i < mark_types.length; ++i) {
                     if (mark_types[i] in pos && pos[mark_types[i]]) {
-                        const mark_key = mark_types[i] === "letter" ? pos.letter : mark_types[i];
+                        const mark_key =
+                            mark_types[i] === "letter"
+                                ? pos.letter
+                                : mark_types[i] === "score"
+                                  ? `score-${pos.score}`
+                                  : mark_types[i];
+
                         if (mark_key) {
                             if (!(mark_key in marks)) {
                                 marks[mark_key] = "";
@@ -832,7 +850,7 @@ export function Game(): JSX.Element | null {
     const frag_analyze_button_bar = () => {
         return (
             <AnalyzeButtonBar
-                setAnalyzePencilColor={set_analyze_pencil_color}
+                setAnalyzePencilColor={setAnalyzePencilColor}
                 analyze_pencil_color={analyze_pencil_color}
                 setAnalyzeTool={setAnalyzeTool}
                 is_review={!!review_id}

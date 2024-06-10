@@ -151,6 +151,9 @@ export const defaults = {
 
     "sgf.sort-order": "date_added",
     "sgf.sort-descending": true,
+
+    "analysis.pencil-color": "#004cff",
+    "analysis.score-color": "#3ACC2B",
 };
 
 defaults["profanity-filter"][current_language] = true;

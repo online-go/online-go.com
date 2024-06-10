@@ -33,6 +33,7 @@ import { MoveTree } from "goban";
 import { game_control } from "./game_control";
 import { useUserIsParticipant } from "./GameHooks";
 import { useGoban } from "./goban_context";
+import { dup } from "misc";
 
 export type ChatMode = "main" | "malkovich" | "moderator" | "hidden" | "personal";
 interface GameChatProperties {
@@ -664,7 +665,7 @@ function MarkupChatLine({ line }: { line: ChatLine }): JSX.Element {
 
                         orig_move = goban.engine.cur_move;
                         if (orig_move) {
-                            orig_marks = (orig_move as any).marks;
+                            orig_marks = dup((orig_move as any).marks);
                             orig_move.clearMarks();
                         } else {
                             orig_marks = null;
@@ -674,8 +675,10 @@ function MarkupChatLine({ line }: { line: ChatLine }): JSX.Element {
                         }
 
                         if (body.marks) {
+                            goban.engine.cur_move.clearMarks();
                             goban.setMarks(body.marks);
                         }
+
                         stashed_pen_marks = goban.pen_marks;
                         if (body.pen_marks) {
                             goban.pen_marks = ([] as any[]).concat(body.pen_marks);
