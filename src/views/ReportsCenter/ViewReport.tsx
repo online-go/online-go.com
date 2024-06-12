@@ -509,6 +509,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                             enable={report.state === "pending" && !report.escalated}
                             // clear the selection for subsequent reports
                             key={report.id}
+                            report={report}
                         />
                     </div>
                 )}
