@@ -182,7 +182,15 @@ export function ModerationActionSelector({
                     onChange={(ev) => setModNote(ev.target.value)}
                 />
             )}
-            <span>
+            <span className="action-buttons">
+                {((reportedBySelf && enable) || null) && (
+                    <button className="reject" onClick={report.cancel}>
+                        {pgettext(
+                            "A button for closing a report created by yourself",
+                            "Close Report",
+                        )}
+                    </button>
+                )}
                 {((action_choices && enable) || null) && (
                     <button
                         className="success"
@@ -193,14 +201,6 @@ export function ModerationActionSelector({
                         }}
                     >
                         {pgettext("A label on a button for submitting a vote", "Vote")}
-                    </button>
-                )}
-                {((reportedBySelf && enable) || null) && (
-                    <button className="close" onClick={report.cancel}>
-                        {pgettext(
-                            "A button for closing a report created by yourself",
-                            "Close Report",
-                        )}
                     </button>
                 )}
             </span>
