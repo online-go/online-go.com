@@ -715,7 +715,7 @@ export function Game(): JSX.Element | null {
         }
         goban.current.setScoringMode(false);
         goban.current.hideScores();
-        goban.current.score_estimate = null;
+        goban.current.score_estimator = null;
     };
     const enterConditionalMovePlanner = () => {
         if (!goban.current) {
@@ -798,7 +798,7 @@ export function Game(): JSX.Element | null {
         }
         const ret = goban.current.setScoringMode(false);
         goban.current.hideScores();
-        goban.current.score_estimate = null;
+        goban.current.score_estimator = null;
         return ret;
     };
 

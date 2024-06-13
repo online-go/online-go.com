@@ -278,7 +278,7 @@ export function PlayControls({
         return false;
     };
     const onStoneRemovalAutoScore = () => {
-        goban.autoScore();
+        goban.performStoneRemovalAutoScoring();
         return false;
     };
 

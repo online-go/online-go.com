@@ -22,7 +22,7 @@ import * as React from "react";
 import { _ } from "translate";
 import { get_clock_drift, get_network_latency, socket } from "sockets";
 import { current_language } from "translate";
-import { GobanCore, GoEngine, GoThemes, setGobanRenderer } from "goban";
+import { GobanCore, GoEngine, GoThemes, setGobanRenderer, setCallbacks } from "goban";
 import { sfx } from "sfx";
 import { toast } from "toast";
 
@@ -46,7 +46,7 @@ export function configure_goban() {
         }
     });
 
-    GobanCore.setHooks({
+    setCallbacks({
         defaultConfig: () => {
             return {
                 server_socket: socket,
