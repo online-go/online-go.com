@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { User } from "goban/lib/protocol";
+import { User } from "goban";
 import { _, interpolate, pgettext } from "translate";
 
 export interface IRankInfo {
