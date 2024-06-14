@@ -745,12 +745,12 @@ export function AnalyzeButtonBar({
         goban.clearAnalysisDrawing();
     };
 
-    const doAnalysisAutoScore = () => {
-        console.log("Should be auto-scoring in analysis mode");
+    const doAnalysisScore = () => {
+        goban.markAnalysisScores();
     };
 
     const clearAnalysisScoring = () => {
-        console.log("Should be clearing scoring");
+        goban.clearAnalysisScores();
     };
     const setScoreColor = (ev: React.ChangeEvent<HTMLInputElement>) => {
         const color = ev.target.value;
@@ -975,12 +975,9 @@ export function AnalyzeButtonBar({
 
                 <button
                     onClick={() => {
-                        if (analyze_tool !== "score") {
-                            setAnalyzeTool("score", "black");
-                        }
-                        doAnalysisAutoScore();
+                        doAnalysisScore();
                     }}
-                    title={_("Auto-score")}
+                    title={_("Score")}
                     className={"score-button "}
                 >
                     <i className="fa fa-calculator"></i>
