@@ -522,6 +522,7 @@ export function PlayControls({
                         <button className="primary" onClick={acceptConditionalMoves}>
                             {_("Accept Conditional Moves")}
                         </button>
+                        <button onClick={() => goban.pass()}>{_("Pass")}</button>
                         <button onClick={goban_setMode_play}>{_("Cancel")}</button>
                     </div>
                     <div className="ctrl-conditional-tree">
