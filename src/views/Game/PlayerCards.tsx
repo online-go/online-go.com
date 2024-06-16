@@ -161,7 +161,7 @@ const useScore = generateGobanHook(
         const engine = goban.engine;
 
         // TODO: decouple this from stone_removal
-        // The issue is that GoEngine.computeScore() will not return accurate
+        // The issue is that GobanEngine.computeScore() will not return accurate
         // prisoners and total at the same time.  One must choose using the
         // boolean argument.
         if (
@@ -251,7 +251,7 @@ export function PlayerCard({
     // In other cases, we only have one if `historical` is set
     const player_bg: React.CSSProperties = {};
     if (engine.rengo && player && (player as any)["icon-url"]) {
-        // Does icon-url need to be added to GoEnginePlayerEntry? -BPJ
+        // Does icon-url need to be added to GobanEnginePlayerEntry? -BPJ
         const icon = icon_size_url((player as any)["icon-url"], 64);
         player_bg.backgroundImage = `url("${icon}")`;
     } else if (historical) {

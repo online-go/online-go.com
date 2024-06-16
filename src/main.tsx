@@ -21,7 +21,6 @@ apply_polyfills();
 
 import { configure_goban } from "configure-goban";
 import {
-    GoMath,
     init_wasm_ownership_estimator,
     init_remote_ownership_estimator,
     ScoreEstimateRequest,
@@ -344,7 +343,6 @@ react_root.render(
 (window as any)["data"] = data;
 (window as any)["preferences"] = preferences;
 (window as any)["player_cache"] = player_cache;
-(window as any)["GoMath"] = GoMath;
 
 import * as requests from "requests";
 (window as any)["requests"] = requests;

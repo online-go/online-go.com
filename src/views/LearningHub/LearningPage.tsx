@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { GoMath, PuzzleConfig } from "goban";
+import { decodeMoves, PuzzleConfig } from "goban";
 import { sfx } from "sfx";
 import { InstructionalGoban } from "./InstructionalGoban";
 import { browserHistory } from "ogsHistory";
@@ -153,10 +153,10 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
         const correct: Array<any> = [];
         const wrong: Array<any> = [];
         for (const s of _correct) {
-            correct.push(GoMath.decodeMoves(s, width, height));
+            correct.push(decodeMoves(s, width, height));
         }
         for (const s of _wrong) {
-            wrong.push(GoMath.decodeMoves(s, width, height));
+            wrong.push(decodeMoves(s, width, height));
         }
 
         const ret: any = {

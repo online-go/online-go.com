@@ -31,15 +31,15 @@ import {
     createGoban,
     GobanRenderer,
     GobanRendererConfig,
-    GoMath,
     MoveTree,
     AudioClockEvent,
-    GoEnginePhase,
+    GobanEnginePhase,
     GobanModes,
     ConditionalMoveTree,
     AnalysisTool,
     JGOFNumericPlayerColor,
     JGOFSealingIntersection,
+    encodeMove,
 } from "goban";
 import { isLiveGame } from "TimeControl";
 import { setExtraActionCallback, PlayerDetails } from "Player";
@@ -135,7 +135,7 @@ export function Game(): JSX.Element | null {
     const [ai_review_enabled, set_ai_review_enabled] = React.useState(
         preferences.get("ai-review-enabled"),
     );
-    const [phase, set_phase] = React.useState<GoEnginePhase>();
+    const [phase, set_phase] = React.useState<GobanEnginePhase>();
     const [selected_ai_review_uuid, set_selected_ai_review_uuid] = React.useState<string | null>(
         null,
     );
@@ -531,11 +531,7 @@ export function Game(): JSX.Element | null {
 
         const coord_array = stones_string.split(",").map((item) => item.trim());
         for (let j = 0; j < coord_array.length; j++) {
-            const move = GoMath.decodeMoves(
-                coord_array[j],
-                goban.current.config.width,
-                goban.current.config.height,
-            )[0];
+            const move = goban.current.decodeMoves(coord_array[j])[0];
             goban.current.setMark(move.x, move.y, "triangle", false);
         }
     };
@@ -627,7 +623,7 @@ export function Game(): JSX.Element | null {
                             if (!(mark_key in marks)) {
                                 marks[mark_key] = "";
                             }
-                            marks[mark_key] += GoMath.encodeMove(x, y);
+                            marks[mark_key] += encodeMove(x, y);
                         }
                         ++mark_ct;
                     }
@@ -1430,11 +1426,7 @@ export function Game(): JSX.Element | null {
 
                 if (stashed_move_string && stashed_review_id === goban.current.review_id) {
                     const prev_last_review_message = goban.current.getLastReviewMessage();
-                    const moves = GoMath.decodeMoves(
-                        stashed_move_string,
-                        goban.current.width,
-                        goban.current.height,
-                    );
+                    const moves = goban.current.decodeMoves(stashed_move_string);
 
                     goban.current.engine.jumpTo(goban.current.engine.move_tree);
                     for (const move of moves) {

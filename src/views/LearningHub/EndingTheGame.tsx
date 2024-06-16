@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { PuzzleConfig, GoEngineConfig } from "goban";
+import { PuzzleConfig, GobanEngineConfig } from "goban";
 import { LearningPage, LearningPageProperties } from "./LearningPage";
 import { _, pgettext } from "translate";
 import { LearningHubSection } from "./LearningHubSection";
@@ -97,7 +97,7 @@ class Page2 extends LearningPage {
             'After both players have passed, you enter a "Stone Removal Phase", where you can remove obviously dead stones from play. You could capture these in game as well, but most players opt not to because it\'s quicker. Remove the dead black stones by clicking them. ',
         );
     }
-    config(): PuzzleConfig | GoEngineConfig {
+    config(): PuzzleConfig | GobanEngineConfig {
         return {
             mode: "play",
             phase: "stone removal",

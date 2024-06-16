@@ -22,12 +22,12 @@ import * as React from "react";
 import { _ } from "translate";
 import { get_clock_drift, get_network_latency, socket } from "sockets";
 import { current_language } from "translate";
-import { Goban, GobanBase, GoEngine, setGobanRenderer } from "goban";
+import { Goban, GobanBase, GobanEngine, setGobanRenderer } from "goban";
 import { sfx } from "sfx";
 import { toast } from "toast";
 
 (window as any)["GobanThemes"] = Goban.THEMES;
-(window as any)["GoEngine"] = GoEngine;
+(window as any)["GobanEngine"] = GobanEngine;
 
 data.setDefault("custom.black", "#000000");
 data.setDefault("custom.white", "#FFFFFF");

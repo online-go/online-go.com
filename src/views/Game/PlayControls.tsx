@@ -26,12 +26,12 @@ import {
     Goban,
     ConditionalMoveTree,
     GobanModes,
-    GoEnginePhase,
+    GobanEnginePhase,
     AnalysisTool,
     MoveTree,
     PlayerColor,
     JGOFSealingIntersection,
-    GoEngine,
+    GobanEngine,
     color_blend,
 } from "goban";
 import { game_control } from "./game_control";
@@ -77,7 +77,7 @@ interface PlayControlsProps {
     stashed_conditional_moves?: ConditionalMoveTree;
 
     mode: GobanModes;
-    phase: GoEnginePhase;
+    phase: GobanEnginePhase;
 
     title: string;
     show_title: boolean;
@@ -177,7 +177,7 @@ export function PlayControls({
         const syncNeedsSealing = (locs?: JGOFSealingIntersection[]) => {
             setNeedsSealing(locs);
         };
-        const engineUpdated = (engine: GoEngine) => {
+        const engineUpdated = (engine: GobanEngine) => {
             syncNeedsSealing(engine.needs_sealing);
         };
         if (goban?.engine) {
@@ -475,7 +475,7 @@ export function PlayControls({
                                 <span className="needs-sealing-box" />
                                 {needs_sealing
                                     .slice(0, MAX_SEALING_LOCATIONS_TO_LIST)
-                                    .map((loc) => goban.engine.prettyCoords(loc.x, loc.y))
+                                    .map((loc) => goban.engine.prettyCoordinates(loc.x, loc.y))
                                     .join(", ")}
                                 {needs_sealing.length > MAX_SEALING_LOCATIONS_TO_LIST && (
                                     <span>...</span>

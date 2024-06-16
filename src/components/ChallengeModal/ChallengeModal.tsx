@@ -42,9 +42,9 @@ import { one_bot, bot_count, bots_list } from "bots";
 import { goban_view_mode } from "Game/util";
 import {
     GobanRenderer,
-    GoEngineConfig,
-    GoEngineInitialState,
-    GoEnginePlayerEntry,
+    GobanEngineConfig,
+    GobanEngineInitialState,
+    GobanEnginePlayerEntry,
     JGOFTimeControl,
     JGOFTimeControlSpeed,
     JGOFTimeControlSystem,
@@ -1890,8 +1890,8 @@ export function challengeComputer() {
 }
 export function challengeRematch(
     goban: GobanRenderer,
-    opponent: GoEnginePlayerEntry,
-    original_game_meta: GoEngineConfig & { pause_on_weekends?: boolean },
+    opponent: GobanEnginePlayerEntry,
+    original_game_meta: GobanEngineConfig & { pause_on_weekends?: boolean },
 ) {
     /* TODO: Fix up challengeRematch time control stuff */
     const conf = goban.engine;
@@ -2022,7 +2022,7 @@ interface ChallengeModalConfig {
             handicap: number;
             komi_auto: string;
             disable_analysis: boolean;
-            initial_state: GoEngineInitialState | null;
+            initial_state: GobanEngineInitialState | null;
             private: boolean;
             time_control?: JGOFTimeControl;
             width?: number;

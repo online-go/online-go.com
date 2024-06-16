@@ -41,7 +41,7 @@ import * as player_cache from "player_cache";
 import { Steps } from "Steps";
 import { TimeControlPicker } from "TimeControl";
 import { close_all_popovers } from "popover";
-import { computeAverageMoveTime, GoEngineRules } from "goban";
+import { computeAverageMoveTime, GobanEngineRules } from "goban";
 import { openMergeReportModal } from "MergeReportModal";
 import * as d3 from "d3";
 import Dropzone from "react-dropzone";
@@ -115,7 +115,7 @@ interface TournamentInterface {
     time_start: string;
 
     board_size: number;
-    rules: GoEngineRules;
+    rules: GobanEngineRules;
     description: string;
     handicap: string;
     time_control_parameters: TimeControl;
@@ -683,7 +683,7 @@ export function Tournament(): JSX.Element {
         });
     };
     const setRules = (ev: React.ChangeEvent<HTMLSelectElement>) => {
-        setTournament({ ...tournament, rules: ev.target.value as GoEngineRules });
+        setTournament({ ...tournament, rules: ev.target.value as GobanEngineRules });
     };
     const setHandicap = (ev: React.ChangeEvent<HTMLSelectElement>) => {
         setTournament({ ...tournament, handicap: ev.target.value });

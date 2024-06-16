@@ -113,7 +113,7 @@ function MoveEntry({ color, conditional_path }: MoveEntryProps) {
     return (
         <span className={`entry ${selected ? "selected" : ""}`} onClick={cb}>
             <span className={`stone ${color}`}></span>
-            <span>{goban.engine.prettyCoords(mv.x, mv.y)}</span>
+            <span>{goban.engine.prettyCoordinates(mv.x, mv.y)}</span>
         </span>
     );
 }
