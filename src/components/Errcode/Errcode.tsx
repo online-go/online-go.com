@@ -72,7 +72,7 @@ export function format_message(props: MessageProps): string {
             );
 
         case "stone_already_placed_here":
-        case "move_is_suicidal":
+        case "illegal_self_capture":
         case "illegal_ko_move":
         case "illegal_board_repetition":
             {
@@ -83,8 +83,8 @@ export function format_message(props: MessageProps): string {
                 switch (message_id) {
                     case "stone_already_placed_here":
                         return _("A stone has already been placed here") + suffix;
-                    case "move_is_suicidal":
-                        return _("Move is suicidal");
+                    case "illegal_self_capture":
+                        return _("Illegal self capture move");
                     case "illegal_ko_move":
                         return _("Illegal Ko Move") + suffix;
                     case "illegal_board_repetition":
