@@ -18,7 +18,7 @@
 import * as React from "react";
 import * as data from "data";
 import { DataSchema } from "./data_schema";
-import { GobanCore } from "goban";
+import { Goban } from "goban";
 
 /**
  * React Hook that gives the value for a given key.  This should be preferred
@@ -66,6 +66,6 @@ export function useRefresh(): () => void {
     return React.useCallback(() => refresh(() => Math.random()), [refresh]);
 }
 
-export function useMainGoban(): GobanCore | null {
+export function useMainGoban(): Goban | null {
     return (window as any)["global_goban"];
 }

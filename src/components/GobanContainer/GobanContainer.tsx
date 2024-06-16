@@ -34,7 +34,7 @@ interface GobanContainerProps {
 }
 
 /**
- * Takes a GobanCore and its div element, and handles resizes as necessary.
+ * Takes a Goban and its div element, and handles resizes as necessary.
  */
 export function GobanContainer({
     goban,

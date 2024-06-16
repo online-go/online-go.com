@@ -18,7 +18,7 @@
 import * as React from "react";
 import { get } from "requests";
 
-import { GobanRenderer, GobanCore, PlayerScore, JGOFPlayerSummary } from "goban";
+import { GobanRenderer, Goban, PlayerScore, JGOFPlayerSummary } from "goban";
 import { icon_size_url } from "PlayerIcon";
 import { CountDown } from "./CountDown";
 import { Flag } from "Flag";
@@ -157,7 +157,7 @@ function NumCapturesText({ color, score, zen_mode, hidden }: NumCapturesProps) {
 }
 
 const useScore = generateGobanHook(
-    (goban: GobanCore) => {
+    (goban: Goban) => {
         const engine = goban.engine;
 
         // TODO: decouple this from stone_removal
@@ -446,7 +446,7 @@ function stonesString(handicap_stones: number) {
     return "(" + handicap_stones + ")";
 }
 
-function useAutoResignExpiration(goban: GobanCore, color: "black" | "white") {
+function useAutoResignExpiration(goban: Goban, color: "black" | "white") {
     const [auto_resign_expiration, setAutoResignExpiration] = React.useState<Date | null>(null);
     React.useEffect(() => {
         const handleAutoResign = (data?: { player_id: number; expiration: number }) => {
@@ -485,7 +485,7 @@ function useAutoResignExpiration(goban: GobanCore, color: "black" | "white") {
 
 interface ScorePopupProps {
     show: boolean;
-    goban: GobanCore;
+    goban: Goban;
     color: "black" | "white";
 }
 

@@ -21,10 +21,10 @@ import * as DynamicHelp from "react-dynamic-help";
 import * as data from "data";
 import * as preferences from "preferences";
 import {
-    ConditionalMoveTree,
+    ConditionalMoveResponseTree,
     GobanRenderer,
-    GobanCore,
-    GoConditionalMove,
+    Goban,
+    ConditionalMoveTree,
     GobanModes,
     GoEnginePhase,
     AnalysisTool,
@@ -74,7 +74,7 @@ interface PlayControlsProps {
 
     readonly review_list: Array<{ owner: PlayerCacheEntry; id: number }>;
 
-    stashed_conditional_moves?: GoConditionalMove;
+    stashed_conditional_moves?: ConditionalMoveTree;
 
     mode: GobanModes;
     phase: GoEnginePhase;
@@ -598,7 +598,7 @@ export function PlayControls({
                         </span>
                         {(conditional_moves || null) && (
                             <ConditionalMoveTreeDisplay
-                                tree={conditional_moves as GoConditionalMove}
+                                tree={conditional_moves as ConditionalMoveTree}
                                 conditional_path=""
                             />
                         )}
@@ -1144,18 +1144,18 @@ interface ReviewControlsProps {
 }
 
 const useReviewOwnerId = generateGobanHook(
-    (goban: GobanCore) => goban.review_owner_id,
+    (goban: Goban) => goban.review_owner_id,
     ["review_owner_id"],
 );
 const useReviewControllerId = generateGobanHook(
-    (goban: GobanCore) => goban.review_controller_id,
+    (goban: Goban) => goban.review_controller_id,
     ["review_controller_id"],
 );
 
 let review_out_of_sync = false;
 
 const useReviewOutOfSync = generateGobanHook(
-    (goban: GobanCore) => {
+    (goban: Goban) => {
         if (game_control.in_pushed_analysis) {
             return review_out_of_sync;
         }
@@ -1398,7 +1398,7 @@ function ShareAnalysisButton(props: ShareAnalysisButtonProperties): JSX.Element 
     }
 }
 
-function stoneRemovalAccepted(goban: GobanCore, color: PlayerColor) {
+function stoneRemovalAccepted(goban: Goban, color: PlayerColor) {
     const engine = goban.engine;
 
     if (engine.phase !== "stone removal") {
@@ -1417,22 +1417,22 @@ const usePaused = generateGobanHook(
     ["paused"],
 );
 
-// Converts move diff string into a GoConditionalMove.
+// Converts move diff string into a ConditionalMoveTree.
 // Caller should check that the moves start from the last official move and
 // that the first move in the string is the opponent's.
-function diffToConditionalMove(moves: string): GoConditionalMove {
+function diffToConditionalMove(moves: string): ConditionalMoveTree {
     if (moves.length % 2 !== 0) {
         throw new Error("invalid move string");
     }
 
-    let tree = new GoConditionalMove(null);
+    let tree = new ConditionalMoveTree(null);
     const start = moves.length - 1 - ((moves.length - 1) % 4);
     for (let i = start; i >= 0; i -= 4) {
         const opponent = moves.slice(i, i + 2);
         const player = moves.slice(i + 2, i + 4) || null;
 
         tree.move = player;
-        const parent = new GoConditionalMove(null, tree);
+        const parent = new ConditionalMoveTree(null, tree);
         if (player != null) {
             parent.children[opponent] = tree;
         }
@@ -1466,7 +1466,7 @@ function automateBranch(goban: GobanRenderer): void {
     }
 
     const before = goban.conditional_tree.duplicate();
-    const tree = mergeGoConditionalMoves(before, diffToConditionalMove(diff.moves));
+    const tree = mergeConditionalMoves(before, diffToConditionalMove(diff.moves));
 
     goban.setConditionalTree(tree);
     goban.saveConditionalMoves();
@@ -1476,14 +1476,20 @@ function automateBranch(goban: GobanRenderer): void {
 
 // Merges two conditional trees into one. If there are conflicts, the branch in
 // `b` overwrites the one in `a`.
-function mergeGoConditionalMoves(a: GoConditionalMove, b: GoConditionalMove): GoConditionalMove {
+function mergeConditionalMoves(
+    a: ConditionalMoveTree,
+    b: ConditionalMoveTree,
+): ConditionalMoveTree {
     const treeA = a.encode()[1];
     const treeB = b.encode()[1];
     mergeConditionalTrees(treeA, treeB);
-    return GoConditionalMove.decode([null, treeA]);
+    return ConditionalMoveTree.decode([null, treeA]);
 }
 
-function mergeConditionalTrees(a: ConditionalMoveTree, b: ConditionalMoveTree): void {
+function mergeConditionalTrees(
+    a: ConditionalMoveResponseTree,
+    b: ConditionalMoveResponseTree,
+): void {
     if (a === b) {
         return;
     }

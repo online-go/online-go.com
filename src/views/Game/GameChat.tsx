@@ -24,7 +24,7 @@ import { Link } from "react-router-dom";
 import { _, pgettext, interpolate, current_language } from "translate";
 import { Player } from "Player";
 import { profanity_filter } from "profanity_filter";
-import { GobanRenderer, GobanCore, protocol } from "goban";
+import { GobanRenderer, Goban, protocol } from "goban";
 import { ChatUserList, ChatUserCount } from "ChatUserList";
 import { TabCompleteInput } from "TabCompleteInput";
 import { chat_markup } from "components/Chat";
@@ -543,7 +543,7 @@ export function GameChatLine(props: GameChatLineProperties): JSX.Element {
     );
 }
 
-function parsePosition(position: string, goban: GobanCore) {
+function parsePosition(position: string, goban: Goban) {
     if (!goban || !position) {
         return {
             i: -1,

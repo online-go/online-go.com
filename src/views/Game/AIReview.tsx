@@ -41,7 +41,7 @@ import {
     ColoredCircle,
     getWorstMoves,
     AIReviewWorstMoveEntry,
-    GobanCore,
+    Goban,
 } from "goban";
 import { game_control } from "./game_control";
 import { alert } from "swal_config";
@@ -208,7 +208,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             .catch(errorLogger);
     }
 
-    private static handicapOffset(goban: GobanCore): number {
+    private static handicapOffset(goban: Goban): number {
         if (
             goban &&
             goban.engine &&
@@ -863,7 +863,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         return false;
     }
 
-    private static getPlayerColorsMoveList(goban: GobanCore) {
+    private static getPlayerColorsMoveList(goban: Goban) {
         const init_move = goban.engine.move_tree;
         const move_list: any[] = [];
         let cur_move = init_move.trunk_next;

@@ -17,7 +17,7 @@
 
 /* cspell:disable */
 
-import { setGobanTranslations } from "goban";
+import { Goban } from "goban";
 
 const w = window as { [key: string]: any }; // Add index signature
 export let current_language: string = (w["ogs_current_language"] as string) || "en";
@@ -487,7 +487,7 @@ export function getCountryFlagClass(country_code: string) {
 export function setCurrentLanguage(language_code: string) {
     current_language = language_code;
 
-    setGobanTranslations({
+    Goban.setTranslations({
         "Your move": _("Your move"),
         White: _("White"),
         Black: _("Black"),

@@ -16,12 +16,12 @@
  */
 
 import * as React from "react";
-import { GoConditionalMove } from "goban";
+import { ConditionalMoveTree } from "goban";
 import { useGoban } from "./goban_context";
 import { generateGobanHook } from "./GameHooks";
 
 interface ConditionalMoveTreeDisplayProps {
-    tree: GoConditionalMove;
+    tree: ConditionalMoveTree;
     conditional_path: string;
 }
 

@@ -36,7 +36,7 @@ import {
     AudioClockEvent,
     GoEnginePhase,
     GobanModes,
-    GoConditionalMove,
+    ConditionalMoveTree,
     AnalysisTool,
     JGOFNumericPlayerColor,
     JGOFSealingIntersection,
@@ -96,7 +96,7 @@ export function Game(): JSX.Element | null {
     const last_analysis_sent = React.useRef<any>();
     const on_refocus_title = React.useRef<string>("OGS");
     const last_move_viewed = React.useRef<number>(0);
-    const stashed_conditional_moves = React.useRef<GoConditionalMove>();
+    const stashed_conditional_moves = React.useRef<ConditionalMoveTree>();
     const copied_node = React.useRef<MoveTree>();
     const white_username = React.useRef<string>("White");
     const black_username = React.useRef<string>("Black");
@@ -503,7 +503,7 @@ export function Game(): JSX.Element | null {
         }
         preferences.set("label-positioning", label_position);
 
-        goban.current.setCoordinates(label_position);
+        goban.current.setLabelPosition(label_position);
     };
 
     const toggleShowTiming = () => {
