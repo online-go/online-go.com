@@ -643,6 +643,7 @@ function MarkupChatLine({ line }: { line: ChatLine }): JSX.Element {
                         if (game_control.in_pushed_analysis) {
                             game_control.in_pushed_analysis = false;
                             delete game_control.onPushAnalysisLeft;
+                            goban.engine.cur_move.clearMarks();
                             goban.engine.jumpTo(orig_move);
                             (orig_move as any).marks = orig_marks;
                             goban.pen_marks = stashed_pen_marks as any;
