@@ -33,7 +33,6 @@ import { MoveTree } from "goban";
 import { game_control } from "./game_control";
 import { useUserIsParticipant } from "./GameHooks";
 import { useGoban } from "./goban_context";
-import { dup } from "misc";
 
 export type ChatMode = "main" | "malkovich" | "moderator" | "hidden" | "personal";
 interface GameChatProperties {
@@ -566,7 +565,7 @@ function parsePosition(position: string, goban: Goban) {
 
 let orig_move: MoveTree | null = null;
 let stashed_pen_marks: any = null; //goban.pen_marks;
-let orig_marks: unknown[] | null = null;
+//let orig_marks: unknown[] | null = null;
 
 function MarkupChatLine({ line }: { line: ChatLine }): JSX.Element {
     const body = line.body;
@@ -643,9 +642,11 @@ function MarkupChatLine({ line }: { line: ChatLine }): JSX.Element {
                         if (game_control.in_pushed_analysis) {
                             game_control.in_pushed_analysis = false;
                             delete game_control.onPushAnalysisLeft;
-                            goban.engine.cur_move.clearMarks();
+                            goban.engine.cur_move.popStashedMarks();
                             goban.engine.jumpTo(orig_move);
-                            (orig_move as any).marks = orig_marks;
+                            if (orig_move) {
+                                orig_move.popStashedMarks();
+                            }
                             goban.pen_marks = stashed_pen_marks as any;
                             if (goban.pen_marks.length === 0) {
                                 goban.disablePen();
@@ -666,17 +667,14 @@ function MarkupChatLine({ line }: { line: ChatLine }): JSX.Element {
 
                         orig_move = goban.engine.cur_move;
                         if (orig_move) {
-                            orig_marks = dup((orig_move as any).marks);
-                            orig_move.clearMarks();
-                        } else {
-                            orig_marks = null;
+                            orig_move.stashMarks();
                         }
                         if (moves || moves === "") {
                             goban.engine.followPath(parseInt(turn as any), moves);
                         }
 
                         if (body.marks) {
-                            goban.engine.cur_move.clearMarks();
+                            goban.engine.cur_move.stashMarks();
                             goban.setMarks(body.marks);
                         }
 
