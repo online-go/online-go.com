@@ -108,7 +108,8 @@ export function Game(): JSX.Element | null {
     /* State */
     const [view_mode, set_view_mode] = React.useState<ViewMode>(goban_view_mode());
     const [squashed, set_squashed] = React.useState<boolean>(goban_view_squashed());
-    const [estimating_score, set_estimating_score] = React.useState<boolean>(false);
+    const [estimating_score, _set_estimating_score] = React.useState<boolean>(false);
+    const estimating_score_ref = React.useRef(estimating_score);
     const [analyze_pencil_color, _setAnalyzePencilColor] =
         preferences.usePreference("analysis.pencil-color");
     const user_is_player = useUserIsParticipant(goban.current);
@@ -156,6 +157,11 @@ export function Game(): JSX.Element | null {
     const getLocation = (): string => {
         return location.pathname;
     };
+
+    function set_estimating_score(value: boolean) {
+        estimating_score_ref.current = value;
+        _set_estimating_score(value);
+    }
 
     const setAnalyzePencilColor = (color: string) => {
         preferences.set("analysis.pencil-color", color);
@@ -785,7 +791,7 @@ export function Game(): JSX.Element | null {
         return true;
     };
     const stopEstimatingScore = (): MoveTree | undefined => {
-        if (!estimating_score) {
+        if (!estimating_score_ref.current) {
             return;
         }
         set_estimating_score(false);

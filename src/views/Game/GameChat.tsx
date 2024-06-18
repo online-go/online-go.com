@@ -689,6 +689,7 @@ function MarkupChatLine({ line }: { line: ChatLine }): JSX.Element {
                     };
 
                     const onClick = () => {
+                        game_control.emit("stopEstimatingScore");
                         onLeave();
                         goban.setMode("analyze");
                         onEnter();
