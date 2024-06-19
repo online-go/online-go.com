@@ -20,7 +20,7 @@ import { UIPush } from "UIPush";
 import Select from "react-select";
 import { get } from "requests";
 import { EmbeddedChatCard } from "Chat";
-import { StreamCard } from "GoTV";
+import { StreamCard } from "./StreamCard";
 
 interface Stream {
     stream_id: string;
