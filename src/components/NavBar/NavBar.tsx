@@ -35,6 +35,7 @@ import { NotificationIndicator } from "NotificationIndicator";
 import { TournamentIndicator } from "Announcements";
 import { FriendIndicator } from "FriendList";
 import { ChatIndicator } from "Chat";
+import { GoTVIndicator } from "GoTV";
 
 import { logout } from "auth";
 import { useUser, useData } from "hooks";
@@ -394,6 +395,7 @@ export function NavBar(): JSX.Element {
                         <TournamentIndicator />
                         <FriendIndicator />
                         <NotificationIndicator onClick={toggleNotifications} />
+                        <GoTVIndicator />
                         <TurnIndicator />
 
                         <span className="icon-container mobile-only" onClick={toggleRightNav}>

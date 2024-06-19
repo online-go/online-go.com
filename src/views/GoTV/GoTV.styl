@@ -1,0 +1,176 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#gotv-container
+    display: flex
+    flex-direction: column
+    height: calc(100vh - var(--navbar-height))
+    width: 100vw
+    overflow: hidden
+
+    .gotv-layout
+        display: flex
+        height: 100%
+        width: 100%
+        position: relative
+        overflow: hidden
+
+        .streams-list
+            width: 320px
+            height: 100%
+            border-right: 1px solid var(--shade3)
+            overflow-y: auto
+            background-color: var(--card-background-color)
+            transition: width 0.3s ease-in-out
+            padding: 10px
+
+        .streams-list.collapsed
+            width: 0
+            padding: 0
+
+        .streams-list.expanded
+            width: 320px
+
+        .streams-header
+            display: flex
+            align-items: center
+            justify-content: space-between
+            padding: 10px
+            background-color: var(--card-background-color)
+            border-bottom: 1px solid var(--shade3)
+
+        .language-select
+            flex: 1
+            margin-left: 10px
+
+        .stream-pane
+            flex: 1
+            display: flex
+            justify-content: center
+            align-items: center
+            background-color: var(--bg)
+            overflow: hidden
+            position: relative
+            transition: flex 0.3s ease-in-out
+
+        .stream-pane.shrunk
+            flex: 1
+
+        .stream-pane.expanded
+            flex: 3
+
+        iframe
+            width: 100%
+            height: 100%
+            border: none
+
+        .list-pane-tab
+            position: absolute
+            top: 50%
+            left: 340px
+            transform: translateY(-50%)
+            display: flex
+            align-items: center
+            justify-content: center
+            z-index: 10
+            background: linear-gradient(135deg, #00c6ff, #0072ff)
+            color: #FFFFFF
+            border: none
+            height: 100px 
+            width: 20px 
+            cursor: pointer
+            transition: background 0.3s ease-in-out, left 0.3s ease-in-out, transform 0.3s ease-in-out
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2)
+            font-size: 1rem 
+            font-weight: normal
+            border-radius: 0 10px 10px 0
+
+            &::after
+                font-family: "FontAwesome"
+                content: "\f053" // FontAwesome left arrow
+                display: inline-block
+                transition: content 0.3s ease-in-out
+
+        .list-pane-tab.collapsed
+            left: 0
+            &::after
+                content: "\f0c9" // FontAwesome list icon
+
+            &:hover
+                &::after
+                    content: "\f054" // FontAwesome right arrow on hover
+
+        .chat-pane-tab
+            position: absolute
+            top: 50%
+            right: 320px
+            transform: translateY(-50%)
+            display: flex
+            align-items: center
+            justify-content: center
+            z-index: 10
+            background: linear-gradient(135deg, #00c6ff, #0072ff)
+            color: #FFFFFF
+            border: none
+            height: 100px 
+            width: 20px 
+            cursor: pointer
+            transition: background 0.3s ease-in-out, right 0.3s ease-in-out, transform 0.3s ease-in-out
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2)
+            font-size: 1rem 
+            font-weight: normal 
+            border-radius: 10px 0 0 10px
+
+            &::after
+                font-family: "FontAwesome"
+                content: "\f054" // FontAwesome right arrow
+                display: inline-block
+                transition: content 0.3s ease-in-out
+
+        .chat-pane-tab.collapsed
+            right: 0
+            &::after
+                content: "\f086" // FontAwesome chat icon
+
+            &:hover
+                &::after
+                    content: "\f053" // FontAwesome left arrow on hover
+
+        .chat-pane
+            flex: 0 0 320px
+            height: 100%
+            padding: 2px
+            border-left: 1px solid var(--shade3)
+            overflow-y: auto
+            background-color: var(--card-background-color)
+            position: relative
+            transition: flex 0.3s ease-in-out, transform 0.3s ease-in-out
+
+        .chat-pane.collapsed
+            flex: 0 0 0
+            transform: translateX(320px)
+
+        .chat-pane.expanded
+            flex: 0 0 320px
+            transform: translateX(0)
+
+        .EmbeddedChatCard
+            margin: 0px
+            display: flex
+            flex-direction: column
+            height: calc(100vh - (var(--navbar-height) + 1rem))
+            overflow: hidden
