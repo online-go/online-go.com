@@ -42,9 +42,10 @@ html, body
             left: 0
             width: 340px
             height: 100%
-            border-right: 1px solid var(--shade3)
+            border-right: 1px solid transparent
+            themed border-right-color shade4
             overflow-y: auto
-            background-color: var(--card-background-color)
+            themed background-color bg
             transition: transform 0.3s ease-in-out
             padding: 0 10px 0 10px
             box-sizing: border-box
@@ -61,8 +62,7 @@ html, body
             align-items: center
             justify-content: space-between
             padding: 10px
-            background-color: var(--card-background-color)
-            border-bottom: 1px solid var(--shade3)
+            themed background-color bg
 
         .language-select
             flex: 1
@@ -73,7 +73,7 @@ html, body
             display: flex
             justify-content: center
             align-items: center
-            background-color: var(--bg)
+            themed background-color bg
             overflow: hidden
             position: relative
             transition: margin-left 0.3s ease-in-out
@@ -98,7 +98,7 @@ html, body
             align-items: center
             justify-content: center
             z-index: 10
-            background: linear-gradient(135deg, #00c6ff, #0072ff)
+            background: linear-gradient(135deg, #2480FF, #005580)
             color: #FFFFFF
             border: none
             height: 100px 
@@ -134,7 +134,7 @@ html, body
             align-items: center
             justify-content: center
             z-index: 10
-            background: linear-gradient(135deg, #00c6ff, #0072ff)
+            background: linear-gradient(135deg, #2480FF, #005580)
             color: #FFFFFF
             border: none
             height: 100px 
@@ -165,9 +165,10 @@ html, body
             flex: 0 0 320px
             height: 100%
             padding: 0
-            border-left: 1px solid var(--shade3)
-            overflow-y: auto
-            background-color: var(--card-background-color)
+            border-left: 1px solid transparent
+            themed border-left-color shade4
+            overflow: hidden
+            themed background-color bg
             position: relative
             transition: flex 0.3s ease-in-out, transform 0.3s ease-in-out
 
@@ -190,8 +191,9 @@ html, body
             display: flex
             justify-content: center
             height: 45px
-            background-color: var(--card-background-color)
-            border-bottom: 1px solid var(--shade3)
+            themed background-color bg
+            border-bottom: 1px solid transparent
+            themed border-bottom-color shade4
 
         .chat-tab
             flex: 1
@@ -202,8 +204,14 @@ html, body
             transition: background-color 0.3s ease-in-out, border-bottom 0.3s ease-in-out
 
         .chat-tab.active
-            border-bottom: 2px solid var(--primary)
-            background-color: var(--shade2)
+            border-bottom: 2px solid transparent
+            themed border-bottom-color primary
+            themed background-color card-background-color
+
+        .chat-tab:not(.active):hover
+            themed background-color card-background-color
+            border-bottom: 2px solid transparent
+            themed border-bottom-color primary
 
         .chat-content
             position: relative
