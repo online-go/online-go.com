@@ -40,6 +40,7 @@ export const GoTV = () => {
     const [showChatPane, setShowChatPane] = useState(false);
     const [filterLanguage, setFilterLanguage] = useState("");
     const [activeChatTab, setActiveChatTab] = useState("OGS");
+    const [isLightTheme, setIsLightTheme] = useState(false);
 
     useEffect(() => {
         const url = "gotv/streams/";
@@ -55,6 +56,24 @@ export const GoTV = () => {
                 }
             })
             .catch((error) => console.error("Error fetching live streams:", error));
+
+        const bodyClassList = document.body.classList;
+        setIsLightTheme(bodyClassList.contains("light"));
+
+        // Setup a MutationObserver to detect theme changes so we can update twitch chat on theme change
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.attributeName === "class") {
+                    setIsLightTheme(document.body.classList.contains("light"));
+                }
+            });
+        });
+
+        observer.observe(document.body, { attributes: true });
+
+        return () => {
+            observer.disconnect();
+        };
     }, []);
 
     const handleStreamUpdate = (data: any) => {
@@ -179,7 +198,11 @@ export const GoTV = () => {
                                 }`}
                             >
                                 <iframe
-                                    src={`https://www.twitch.tv/embed/${selectedStream.channel}/chat?parent=${parentDomain}`}
+                                    src={`https://www.twitch.tv/embed/${
+                                        selectedStream.channel
+                                    }/chat?${
+                                        isLightTheme ? "" : "darkpopout"
+                                    }&parent=${parentDomain}`}
                                     height="100%"
                                     width="100%"
                                     aria-label={`Twitch chat for ${selectedStream.channel}`}

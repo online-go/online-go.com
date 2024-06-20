@@ -30,6 +30,7 @@
         "csrfmiddlewaretoken",
         "csrftoken",
         "cssnano",
+        "darkpopout",
         "DATETIME",
         "dedup",
         "deepl",
