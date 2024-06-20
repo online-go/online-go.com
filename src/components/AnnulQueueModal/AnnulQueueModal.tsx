@@ -18,7 +18,7 @@
 import * as React from "react";
 import { _ } from "translate";
 import { MiniGoban } from "MiniGoban";
-import { Goban } from "goban";
+import { GobanRenderer } from "goban";
 import { AIReview, GameTimings, ChatMode, GameChat, GobanContext } from "Game";
 import { Player } from "Player";
 import { Resizable } from "Resizable";
@@ -45,9 +45,9 @@ export function AnnulQueueModal({
 }: AnnulQueueModalProps) {
     // Declare state variables
     const [selectedGameIndex, setSelectedGameIndex] = React.useState(0);
-    const [goban, setGoban] = React.useState<Goban | null>(null);
+    const [goban, setGoban] = React.useState<GobanRenderer | null>(null);
     const [selectedChatLog, setSelectedChatLog] = React.useState<ChatMode>("main");
-    const onGobanCreated = React.useCallback((goban: Goban) => {
+    const onGobanCreated = React.useCallback((goban: GobanRenderer) => {
         setGoban(goban);
     }, []);
     const [, setAiReviewUuid] = React.useState<string | null>(null);

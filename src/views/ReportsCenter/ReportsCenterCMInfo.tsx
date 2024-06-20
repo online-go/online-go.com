@@ -275,7 +275,11 @@ export function ReportsCenterCMInfo(): JSX.Element {
             {["overall", "escaping", "stalling", "score_cheating"].map((report_type) => (
                 <div key={report_type}>
                     <h3>{report_type}</h3>
-                    <CMVoteActivityGraph vote_data={vote_data[report_type]} />
+                    {vote_data[report_type] ? (
+                        <CMVoteActivityGraph vote_data={vote_data[report_type]} />
+                    ) : (
+                        "no data"
+                    )}
                 </div>
             ))}
         </div>

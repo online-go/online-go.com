@@ -18,7 +18,7 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 import { interpolate } from "translate";
-import { Goban } from "goban";
+import { createGoban, GobanRenderer } from "goban";
 import * as data from "data";
 import { rankString } from "rank_utils";
 import { Player } from "Player";
@@ -41,7 +41,7 @@ interface GobanLineSummaryProps {
     black: UserType;
     white: UserType;
     player?: { id: number };
-    gobanRef?: (goban: Goban) => void;
+    gobanRef?: (goban: GobanRenderer) => void;
     width?: number;
     height?: number;
     rengo_teams?: {
@@ -62,7 +62,7 @@ export class GobanLineSummary extends React.Component<
     GobanLineSummaryProps,
     GobanLineSummaryState
 > {
-    goban!: Goban;
+    goban!: GobanRenderer;
 
     constructor(props: GobanLineSummaryProps) {
         super(props);
@@ -100,7 +100,7 @@ export class GobanLineSummary extends React.Component<
          */
 
         requestAnimationFrame(() => {
-            this.goban = new Goban({
+            this.goban = createGoban({
                 board_div: undefined,
                 draw_top_labels: false,
                 draw_bottom_labels: false,

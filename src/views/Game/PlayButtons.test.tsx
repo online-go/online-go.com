@@ -1,4 +1,4 @@
-import { AdHocPackedMove, Goban } from "goban";
+import { AdHocPackedMove, createGoban, GobanRenderer } from "goban";
 import { CancelButton, PlayButtons } from "./PlayButtons";
 import { act, cleanup, fireEvent, render, screen /* waitFor */ } from "@testing-library/react";
 import * as React from "react";
@@ -33,6 +33,7 @@ const LOGGED_IN_USER = {
     email: "",
     email_validated: false,
     is_announcer: false,
+    last_supporter_trial: "",
 } as const;
 
 const LESS_THAN_SIX_MOVES = {
@@ -65,7 +66,7 @@ afterEach(() => {
 
 describe("CancelButton", () => {
     test('says "Cancel game" in the first 6 moves.', () => {
-        const goban = new Goban(LESS_THAN_SIX_MOVES);
+        const goban = createGoban(LESS_THAN_SIX_MOVES);
 
         render(
             <GobanContext.Provider value={goban}>
@@ -78,7 +79,7 @@ describe("CancelButton", () => {
     });
 
     test('says "Resign" after 6 moves', () => {
-        const goban = new Goban(MORE_THAN_SIX_MOVES);
+        const goban = createGoban(MORE_THAN_SIX_MOVES);
 
         render(
             <GobanContext.Provider value={goban}>
@@ -91,7 +92,7 @@ describe("CancelButton", () => {
     });
 
     test('changes to "Resign" on the 6th move.', () => {
-        const goban = new Goban({
+        const goban = createGoban({
             // 5 moves
             moves: [
                 [16, 3, 9136.12],
@@ -128,7 +129,7 @@ describe("CancelButton", () => {
     uncomment this test after upgrading...
 
     test("allows user to cancel before 6 moves.", async () => {
-        const goban = new Goban(LESS_THAN_SIX_MOVES);
+        const goban = createGoban(LESS_THAN_SIX_MOVES);
         const cancel_spy = spyOn(goban, "cancelGame");
 
         render(
@@ -147,7 +148,7 @@ describe("CancelButton", () => {
     });
 
     test("allows user to resign after 6 moves.", async () => {
-        const goban = new Goban(MORE_THAN_SIX_MOVES);
+        const goban = createGoban(MORE_THAN_SIX_MOVES);
         const resign_spy = spyOn(goban, "resign");
 
         render(
@@ -166,7 +167,7 @@ describe("CancelButton", () => {
     });
 
     test("allows user to abandon in casual rengo.", async () => {
-        const goban = new Goban({
+        const goban = createGoban({
             ...MORE_THAN_SIX_MOVES,
             rengo: true,
             rengo_teams: {
@@ -196,7 +197,7 @@ describe("CancelButton", () => {
     });
 
     test("allows user to change their mind", async () => {
-        const goban = new Goban(MORE_THAN_SIX_MOVES);
+        const goban = createGoban(MORE_THAN_SIX_MOVES);
         const resign_spy = spyOn(goban, "resign");
 
         render(
@@ -217,7 +218,7 @@ describe("CancelButton", () => {
     */
 });
 
-function WrapTest(props: { goban: Goban; children: any }): JSX.Element {
+function WrapTest(props: { goban: GobanRenderer; children: any }): JSX.Element {
     return (
         <OgsHelpProvider>
             <GobanContext.Provider value={props.goban}>{props.children}</GobanContext.Provider>
@@ -227,7 +228,7 @@ function WrapTest(props: { goban: Goban; children: any }): JSX.Element {
 
 describe("PlayButtons", () => {
     test("normal game when it's my opponent's turn.", () => {
-        const goban = new Goban({
+        const goban = createGoban({
             moves: [
                 [16, 3, 9136.12], // B
                 [3, 2, 1897.853], // W
@@ -256,7 +257,7 @@ describe("PlayButtons", () => {
     });
 
     test("normal game when it's my turn.", () => {
-        const goban = new Goban({
+        const goban = createGoban({
             moves: [
                 [16, 3, 9136.12], // B
                 [3, 2, 1897.853], // W
@@ -286,7 +287,7 @@ describe("PlayButtons", () => {
     });
 
     test('shows "Accept Undo" when opponent requested an undo.', () => {
-        const goban = new Goban({
+        const goban = createGoban({
             moves: [
                 [16, 3, 9136.12], // B
                 [3, 2, 1897.853], // W
@@ -316,7 +317,7 @@ describe("PlayButtons", () => {
     });
 
     test('shows "Accept undo" if undo was requested after initial render', () => {
-        const goban = new Goban({
+        const goban = createGoban({
             moves: [
                 [16, 3, 9136.12], // B
                 [3, 2, 1897.853], // W
@@ -349,7 +350,7 @@ describe("PlayButtons", () => {
     });
 
     test('shows "Submit Move" when user staged a move.', () => {
-        const goban = new Goban({
+        const goban = createGoban({
             moves: [
                 [16, 3, 9136.12], // B
                 [3, 2, 1897.853], // W
@@ -386,7 +387,7 @@ describe("PlayButtons", () => {
     });
 
     test("Don't show undo for rengo", () => {
-        const goban = new Goban({
+        const goban = createGoban({
             moves: [
                 [16, 3, 9136.12], // B
                 [3, 2, 1897.853], // W
@@ -416,7 +417,7 @@ describe("PlayButtons", () => {
     });
 
     test("Don't show undo on the first move", () => {
-        const goban = new Goban({
+        const goban = createGoban({
             players: {
                 black: { id: LOGGED_IN_USER.id, username: LOGGED_IN_USER.username },
                 white: { id: 456, username: "test_user2" },
@@ -440,7 +441,7 @@ describe("PlayButtons", () => {
     });
 
     test("Don't show undo if analyzing the game", () => {
-        const goban = new Goban({
+        const goban = createGoban({
             moves: [
                 [16, 3, 9136.12], // B
                 [3, 2, 1897.853], // W
@@ -469,7 +470,7 @@ describe("PlayButtons", () => {
 
     test("Don't show accept undo if analyzing the game", () => {
         console.log("test started");
-        const goban = new Goban({
+        const goban = createGoban({
             moves: [
                 [16, 3, 9136.12], // B
                 [3, 2, 1897.853], // W
@@ -501,7 +502,7 @@ describe("PlayButtons", () => {
     });
 
     test("forked game where it's the first move, white to play, my move.", () => {
-        const goban = new Goban({
+        const goban = createGoban({
             initial_player: "white",
             players: {
                 black: { id: 456, username: "test_user2" },

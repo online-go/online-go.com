@@ -25,7 +25,7 @@ import { KBShortcut } from "KBShortcut";
 import { goban_view_mode, goban_view_squashed } from "Game";
 import { errorAlerter, errorLogger, ignore } from "misc";
 import { longRankString, rankList } from "rank_utils";
-import { Goban, GobanCanvas, GobanCanvasConfig, PuzzlePlacementSetting } from "goban";
+import { createGoban, GobanRenderer, GobanRendererConfig, PuzzlePlacementSetting } from "goban";
 import { Markdown } from "Markdown";
 import { Player } from "Player";
 import { StarRating } from "StarRating";
@@ -100,7 +100,7 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
     ref_hint_button: React.RefObject<HTMLButtonElement>;
     ref_toggle_coordinates_button?: React.RefObject<HTMLButtonElement>;
 
-    goban!: Goban;
+    goban!: GobanRenderer;
     goban_div: HTMLDivElement;
     goban_opts: any = {};
     solve_time_start: number = Date.now();
@@ -276,7 +276,7 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
     }
 
     reset(editing?: boolean) {
-        const opts: GobanCanvasConfig = this.editor.reset(
+        const opts: GobanRendererConfig = this.editor.reset(
             this.goban_div,
             !!editing,
             this.replacementSettingFunction.bind(this),
@@ -285,7 +285,7 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
         opts.move_tree_container = this.ref_move_tree_container;
         this.goban_opts = opts;
 
-        this.goban = new Goban(opts);
+        this.goban = createGoban(opts);
         this.goban.setMode("puzzle");
         (window as any)["global_goban"] = this.goban;
         this.goban.on("update", () => this.onUpdate());
@@ -647,7 +647,7 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
     setMoveTreeContainer = (resizable: Resizable): void => {
         this.ref_move_tree_container = resizable?.div ? resizable.div : undefined;
         if (this.goban && this.ref_move_tree_container) {
-            (this.goban as GobanCanvas).setMoveTreeContainer(this.ref_move_tree_container);
+            (this.goban as GobanRenderer).setMoveTreeContainer(this.ref_move_tree_container);
         }
     };
     toggleCoordinates = () => {

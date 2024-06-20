@@ -24,7 +24,7 @@ import { Link } from "react-router-dom";
 import { _, pgettext, interpolate, current_language } from "translate";
 import { Player } from "Player";
 import { profanity_filter } from "profanity_filter";
-import { Goban, GobanCore, protocol } from "goban";
+import { GobanRenderer, GobanCore, protocol } from "goban";
 import { ChatUserList, ChatUserCount } from "ChatUserList";
 import { TabCompleteInput } from "TabCompleteInput";
 import { chat_markup } from "components/Chat";
@@ -329,7 +329,7 @@ export function GameChat(props: GameChatProperties): JSX.Element {
 
 interface QuickChatProperties {
     selected_chat_log: ChatMode;
-    goban: Goban;
+    goban: GobanRenderer;
     onSend: () => void;
 }
 

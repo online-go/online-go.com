@@ -21,7 +21,7 @@ import * as DynamicHelp from "react-dynamic-help";
 import * as data from "data";
 import {
     ConditionalMoveTree,
-    Goban,
+    GobanRenderer,
     GobanCore,
     GoConditionalMove,
     GobanModes,
@@ -252,6 +252,8 @@ export function PlayControls({
         return false;
     };
 
+    const sse = engine.stalling_score_estimate;
+
     return (
         <div className="PlayControls">
             <div className="game-action-buttons">
@@ -293,24 +295,48 @@ export function PlayControls({
                 {(mode === "score estimation" || null) && renderEstimateScore()}
 
                 {((mode === "play" && phase === "finished") || null) && (
-                    <span style={{ textDecoration: annulled ? "line-through" : "none" }}>
-                        {winner
-                            ? interpolate(
-                                  pgettext("Game winner", "{{color}} wins by {{outcome}}"),
-                                  {
-                                      // When is winner an id?
-                                      color:
-                                          (winner as any) === engine.players.black.id ||
-                                          winner === "black"
-                                              ? _("Black")
-                                              : _("White"),
-                                      outcome: getOutcomeTranslation(engine.outcome),
-                                  },
-                              )
-                            : interpolate(pgettext("Game winner", "Tie by {{outcome}}"), {
-                                  outcome: pgettext("Game outcome", engine.outcome),
-                              })}
-                    </span>
+                    <>
+                        <span style={{ textDecoration: annulled ? "line-through" : "none" }}>
+                            {winner
+                                ? interpolate(
+                                      pgettext("Game winner", "{{color}} wins by {{outcome}}"),
+                                      {
+                                          // When is winner an id?
+                                          color:
+                                              (winner as any) === engine.players.black.id ||
+                                              winner === "black"
+                                                  ? _("Black")
+                                                  : _("White"),
+                                          outcome: getOutcomeTranslation(engine.outcome),
+                                      },
+                                  )
+                                : interpolate(pgettext("Game winner", "Tie by {{outcome}}"), {
+                                      outcome: pgettext("Game outcome", engine.outcome),
+                                  })}
+                        </span>
+                        {engine.stalling_score_estimate && sse && (
+                            <div className="stalling-score-estimate">
+                                <span>
+                                    {interpolate(
+                                        _(
+                                            "The AI has concluded {{color}} will win with {{certainty}}% certainty. This result has been accepted by one or more players",
+                                        ),
+                                        {
+                                            color:
+                                                sse.predicted_winner === "black"
+                                                    ? _("Black")
+                                                    : _("White"),
+                                            certainty: (
+                                                (sse.predicted_winner === "black"
+                                                    ? sse.win_rate
+                                                    : 1.0 - sse.win_rate) * 100.0
+                                            ).toFixed(2),
+                                        },
+                                    )}
+                                </span>
+                            </div>
+                        )}
+                    </>
                 )}
             </div>
             <div className="annulled-indicator">
@@ -496,6 +522,7 @@ export function PlayControls({
                         <button className="primary" onClick={acceptConditionalMoves}>
                             {_("Accept Conditional Moves")}
                         </button>
+                        <button onClick={() => goban.pass()}>{_("Pass")}</button>
                         <button onClick={goban_setMode_play}>{_("Cancel")}</button>
                     </div>
                     <div className="ctrl-conditional-tree">
@@ -826,7 +853,7 @@ export function AnalyzeButtonBar({
 }
 
 export function copyBranch(
-    goban: Goban,
+    goban: GobanRenderer,
     copied_node: React.MutableRefObject<MoveTree | undefined>,
     mode: GobanModes,
 ) {
@@ -847,7 +874,7 @@ export function copyBranch(
     toast(<div>{_("Branch copied")}</div>, 1000);
 }
 export function pasteBranch(
-    goban: Goban,
+    goban: GobanRenderer,
     copied_node: React.MutableRefObject<MoveTree | undefined>,
     mode: GobanModes,
 ) {
@@ -893,7 +920,7 @@ export function pasteBranch(
     }
 }
 
-export function deleteBranch(goban: Goban, mode: GobanModes) {
+export function deleteBranch(goban: GobanRenderer, mode: GobanModes) {
     if (mode !== "analyze") {
         return;
     }
@@ -1247,7 +1274,7 @@ function diffToConditionalMove(moves: string): GoConditionalMove {
 
 // Copies branch to conditional move planner (only copies up to the selected
 // move). Should only be called in analyze mode.
-function automateBranch(goban: Goban): void {
+function automateBranch(goban: GobanRenderer): void {
     if (goban.engine.phase === "finished") {
         return;
     }

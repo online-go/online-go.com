@@ -984,6 +984,7 @@ export function Tournament(): JSX.Element {
     const has_fixed_number_of_rounds =
         tournament.tournament_type === "mcmahon" ||
         tournament.tournament_type === "s_mcmahon" ||
+        (tournament.tournament_type === "swiss" && tournament.started) ||
         tournament.tournament_type === "opengotha" ||
         null;
 
@@ -3318,7 +3319,7 @@ export function EliminationNode({
                 onMouseOut={eliminationMouseOut}
             >
                 {(gameid || null) && (
-                    <a className="elimination-game" href={`/game/view/${gameid}`}>
+                    <a className="elimination-game" href={`/game/${gameid}`}>
                         <i className="ogs-goban"></i>
                     </a>
                 )}

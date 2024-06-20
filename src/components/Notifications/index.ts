@@ -17,3 +17,4 @@
 
 export * from "./Notifications";
 export * from "./NotificationManager";
+export * from "./hooks";

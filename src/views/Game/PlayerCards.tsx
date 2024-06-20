@@ -18,7 +18,7 @@
 import * as React from "react";
 import { get } from "requests";
 
-import { Goban, GobanCore, PlayerScore, JGOFPlayerSummary } from "goban";
+import { GobanRenderer, GobanCore, PlayerScore, JGOFPlayerSummary } from "goban";
 import { icon_size_url } from "PlayerIcon";
 import { CountDown } from "./CountDown";
 import { Flag } from "Flag";
@@ -36,6 +36,7 @@ import { usePreference } from "preferences";
 import { browserHistory } from "ogsHistory";
 import { player_is_ignored } from "BlockPlayer";
 import { doAnnul } from "moderation";
+import moment from "moment";
 
 type PlayerType = rest_api.games.Player;
 
@@ -181,7 +182,7 @@ const useScore = generateGobanHook(
 );
 interface PlayerCardProps {
     color: "black" | "white";
-    goban: Goban;
+    goban: GobanRenderer;
     historical: PlayerType | null;
     estimating_score: boolean;
     show_score_breakdown: boolean;
@@ -270,7 +271,8 @@ export function PlayerCard({
         goban.mode !== "analyze" &&
         engine.outcome !== "Timeout" &&
         engine.outcome !== "Resignation" &&
-        engine.outcome !== "Cancellation";
+        engine.outcome !== "Cancellation" &&
+        !engine.outcome.startsWith("Server Decision");
 
     return (
         <div className={`${color} ${highlight_their_turn} player-container`}>
@@ -361,7 +363,9 @@ export function PlayerCard({
                                 <i className="fa fa-flag" /> {flag}:{" "}
                                 {flag === "blur_rate"
                                     ? `${Math.round((flags[flag] as number) * 100.0)}%`
-                                    : flags[flag]}
+                                    : flag === "slow_moving"
+                                      ? moment.duration(flags[flag] as number).humanize()
+                                      : flags[flag]}
                             </div>
                         ))}
                     </div>

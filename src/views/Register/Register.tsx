@@ -200,7 +200,7 @@ export function Register(): JSX.Element {
                         }
                     </span>
 
-                    <SocialLoginButtons />
+                    <SocialLoginButtons next_url={"/wait-for-user"} />
                 </Card>
 
                 <div className="sign-in-option">

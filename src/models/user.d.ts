@@ -85,6 +85,7 @@ declare namespace rest_api {
         is_announcer: boolean;
         has_active_warning_flag?: boolean;
         reports_handled_today?: number;
+        last_supporter_trial: string; // Date
     }
 
     type AccountLinks = {

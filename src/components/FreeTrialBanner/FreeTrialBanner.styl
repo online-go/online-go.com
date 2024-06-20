@@ -1,0 +1,153 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+.FreeTrialBanner-container {
+    display: flex;
+    justify-content: center;
+    margin: 2rem 1rem;
+
+    @media screen and (max-width: 850px){
+        margin: 2rem 0;
+    }
+}
+
+.FreeTrialBanner {
+    border: 1px solid hsl(48, 100%, 40);
+    border-radius: 0.5rem;
+    display: flex;
+    flex-direction: row;
+    width: 60rem;
+    max-width: calc(min(100%, 100vw));
+    min-height: 12rem;
+    overflow: hidden;
+    
+    @media screen and (max-width: 850px){
+        flex-direction: column;
+        height: 30rem;
+        align-items: stretch;
+        align-content: stretch;
+        justify-content: stretch;
+        width: 100%;
+    }
+    
+
+    .free-trial-left {
+        flex: 1;
+        flex-grow: 1;
+        flex-basis: 15rem;
+        //width: 15rem;
+        
+        display: flex;
+        flex-direction: column;
+        justify-content: stretch;
+        align-content: stretch;
+        align-items: stretch;
+
+
+        .trial-board, .trial-graph {
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        .trial-board {
+            flex: 1.8;
+            border-top-left-radius: 0.5rem;
+            background-image: url('https://cdn.online-go.com/5.1/img/trial_board.png');
+            width: 15rem;
+            height: 65%;
+        }
+
+        .trial-graph {
+            flex: 1;
+            background-color: #333;
+            border-bottom-right-radius: 0.5rem;
+            background-image: url('https://cdn.online-go.com/5.1/img/trial_graph.png');
+            width: 15rem;
+            height: 35%;
+            transform: scaleX(-1);
+        }
+        
+        
+        @media screen and (max-width: 850px){
+            flex-basis: 18rem;
+            .trial-board, .trial-graph {
+                width: 100%;
+
+            }
+            .trial-board {
+                flex: 2.5;
+                min-height: 8rem;
+                border-bottom-right-radius: 0;
+            }
+            .trial-graph {
+                min-height: 4rem;
+                border-bottom-right-radius: 0;
+            }
+        }
+    }
+
+    .free-trial-right {
+        flex-grow: 1;
+        flex-basis: 50rem;
+        display: flex;
+        flex-direction: column;
+        width: 50rem;
+        max-width: calc(min(100%, 90vw));
+        padding-left: 1rem;
+        padding-right: 1rem;
+        justify-content: space-between;
+        //height: 100%;
+        align-content: space-between;
+
+        h3, h4 {
+            text-align: center;
+            //margin: 0.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        h3 {
+            margin-top: 0.5rem;
+        }
+        
+        h4 {
+            margin-top: 0;
+            flex-grow: 1;
+        }
+
+        .buttons {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-around;
+            margin: 0.5rem;
+        }
+
+        @media screen and (max-width: 850px){
+            width: 100%;
+            max-width: 100%;
+            padding-left: 0;
+            padding-right: 0;
+            
+            h3, h4 {
+                margin-bottom: 0;
+
+            }
+        
+        }
+    }
+}

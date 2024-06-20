@@ -1,4 +1,4 @@
-import { Goban, GoConditionalMove } from "goban";
+import { createGoban, GobanRenderer, GoConditionalMove } from "goban";
 import { PlayControls } from "./PlayControls";
 import { render, screen } from "@testing-library/react";
 import * as React from "react";
@@ -34,6 +34,7 @@ const TEST_USER = {
     email: "",
     email_validated: false,
     is_announcer: false,
+    last_supporter_trial: "",
 } as const;
 
 const PLAY_CONTROLS_DEFAULTS = {
@@ -76,7 +77,7 @@ const PLAY_CONTROLS_DEFAULTS = {
     },
 } as const;
 
-function WrapTest(props: { goban: Goban; children: any }): JSX.Element {
+function WrapTest(props: { goban: GobanRenderer; children: any }): JSX.Element {
     return (
         <OgsHelpProvider>
             <Router>
@@ -87,7 +88,7 @@ function WrapTest(props: { goban: Goban; children: any }): JSX.Element {
 }
 
 test("No moves have been played", () => {
-    const goban = new Goban({
+    const goban = createGoban({
         game_id: 1234,
         // TEST_USER must be a member of the game in order for cancel to show up.
         players: {
@@ -111,7 +112,7 @@ test("No moves have been played", () => {
 });
 
 test("Don't render play buttons if user is not a player", () => {
-    const goban = new Goban({ game_id: 1234 });
+    const goban = createGoban({ game_id: 1234 });
     data.set("user", TEST_USER);
 
     render(
@@ -128,7 +129,7 @@ test("Don't render play buttons if user is not a player", () => {
 });
 
 test("Renders undo if it is not the players turn", () => {
-    const goban = new Goban({
+    const goban = createGoban({
         game_id: 1234,
         // Need to play at least one move before Undo button shows up
         moves: [
@@ -156,7 +157,7 @@ test("Renders undo if it is not the players turn", () => {
 });
 
 test("Renders accept undo if undo requested", () => {
-    const goban = new Goban({
+    const goban = createGoban({
         game_id: 1234,
         // Need to play at least one move before Undo button shows up
         moves: [
@@ -186,7 +187,7 @@ test("Renders accept undo if undo requested", () => {
 });
 
 test("Renders Pass if it is the user's turn", () => {
-    const goban = new Goban({
+    const goban = createGoban({
         game_id: 1234,
         moves: [
             [15, 15, 5241],
@@ -232,7 +233,7 @@ function makeConditionalMoveTree() {
 }
 
 test("Renders conditional moves", () => {
-    const goban = new Goban({
+    const goban = createGoban({
         game_id: 1234,
         moves: [],
         players: {
@@ -255,10 +256,10 @@ test("Renders conditional moves", () => {
 });
 
 test("Unsubscribe from all events on unmount", () => {
-    const goban = new Goban({ game_id: 1234 });
+    const goban = createGoban({ game_id: 1234 });
     data.set("user", TEST_USER);
 
-    const getListenerCounts = (emitter: Goban) =>
+    const getListenerCounts = (emitter: GobanRenderer) =>
         Object.fromEntries(emitter.eventNames().map((key) => [key, emitter.listenerCount(key)]));
 
     // Goban may set up listeners on itself
@@ -275,7 +276,7 @@ test("Unsubscribe from all events on unmount", () => {
 });
 
 test("Pause buttons show up", () => {
-    const goban = new Goban({
+    const goban = createGoban({
         game_id: 1234,
         // TEST_USER must be a member of the game in order for cancel to show up.
         players: {

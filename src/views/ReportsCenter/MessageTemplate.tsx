@@ -66,15 +66,36 @@ export const WARNING_TEMPLATES: MessageTemplates = {
         },
         "Score cheating": {
             message: `
-                Our records show that you attempted to illegally change the score at the end of
-                game #XXXXXXXX. This is a form of cheating and is prohibited by the
-                OGS Terms of Service.
+            It appears that you delayed the end of game game #XXXXXXXX, by clicking
+            on the board to change the score incorrectly.   This can frustrate your
+            opponent and prevent them from moving on to the next game.
 
-                https://online-go.com/docs/terms-of-service
+            After passing, please promptly accept the correct score.
 
-                We ask that you end your games properly by accepting the correct score
-                immediately after passing. Further instances of score cheating will result
-                in suspension of your account.`,
+            If you are unable to end games properly, your account may be suspended.
+
+            If in doubt about this sort of situation. please ask for help in chat
+            or the forums.
+            `,
+            show_warning_button: true,
+        },
+        "Score cheating, beginner": {
+            message: `
+            It appears that you delayed the end of game game #XXXXXXXX, by clicking
+            on the board to change the score incorrectly.   This can frustrate your
+            opponent and prevent them from moving on to the next game.
+
+            Since you are a new player, no action will be taken against
+            your account. We simply ask that you learn when to end a game.
+
+            Until you develop the experience to judge better, if your
+            opponent passes and there are no open borders between your
+            stones then you should also pass.
+
+            After passing, promptly accept the correct score.
+
+            If in doubt about this sort of situation. please ask for help in chat
+            or the forums.`,
             show_warning_button: true,
         },
     },
@@ -82,21 +103,20 @@ export const WARNING_TEMPLATES: MessageTemplates = {
     "Chat Abuse": {
         "Objectionable chat": {
             message: `
-                Our team has observed that some of your recent comments have
-                been harmful, threatening, abusive, defamatory, offensive,
-                vulgar, obscene, libelous, hateful, or otherwise objectionable.
+We have noticed that some of your recent comments have not been in line with our community guidelines.
 
-                Such behavior is prohibited and violates our terms of service.
+While this may not have been your intention, it is your responsibility to ensure that your comments are \
+respectful and courteous to all users. Please review our terms of service and community guidelines:
 
-                    https://online-go.com/docs/terms-of-service
+https://online-go.com/docs/terms-of-service
 
-                We urge you to refrain from such actions in the future as they
-                will not be tolerated.
+We expect all users to maintain a positive and friendly environment. If you have any disagreements or concerns, \
+please contact a moderator for assistance.
 
-                Failure to comply with this warning will result in removal of your chat privileges.
+If you are unable to judge what is appropriate behavior, and this type of conduct continues, we will have no \
+choice but to remove your chat privileges.
 
-                Please maintain a respectful and courteous environment for all
-                users.`,
+Thank you for your understanding and cooperation.`,
             show_warning_button: true,
         },
     },
@@ -266,20 +286,19 @@ export const WARNING_TEMPLATES: MessageTemplates = {
     Harassment: {
         "Undo-harassment": {
             message: `
-                Please note that our undo policy is as follows:
+Please note that our undo policy is as follows:
 
-                You are allowed to request an undo at any time for any reason,
-                however **your opponent is not obligated to accept the undo
-                request regardless of reason**. This includes unintentional
-                misclicks, bugs, or any other reason.
+You are allowed to request an undo at any time and for any reason. However, please understand
+that your opponent is **not required** to accept the undo request, regardless of the reason, including
+unintentional misclicks, bugs, or any other circumstances.
 
-                Scolding your opponent for their decision is viewed as a form
-                of harassment, which is not allowed and can result in punitive
-                actions taken.
+If you were unaware, please note that scolding your opponent for their decision is considered a
+form of harassment. If this continues, we will have no choice but to remove your chat privilege to
+to protect other users from that.
 
-                See our Terms of Service for more information.
+For more information, please refer to our Terms of Service.
 
-                https://online-go.com/docs/terms-of-service`,
+https://online-go.com/docs/terms-of-service`,
             show_warning_button: true,
         },
     },

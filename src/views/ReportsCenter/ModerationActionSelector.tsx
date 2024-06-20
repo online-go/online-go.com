@@ -19,16 +19,20 @@ import * as React from "react";
 import { _, pgettext } from "translate";
 
 import * as DynamicHelp from "react-dynamic-help";
+import { useUser } from "hooks";
+import { Report } from "report_util";
 
 interface ModerationActionSelectorProps {
     available_actions: string[];
+    vote_counts: { [action: string]: number };
     enable: boolean;
+    report: Report;
     claim: () => void;
     submit: (action: string, note: string) => void;
 }
 
 // Translatable versions of the prompts for Community Moderators.
-// The set of keys (choices) here is determined by the server VotableActions class.
+// The set of keys (choices) here is determined by the server's VotableActions class.
 const ACTION_PROMPTS = {
     annul_score_cheat: pgettext(
         "Label for a moderator to select this option",
@@ -52,7 +56,7 @@ const ACTION_PROMPTS = {
     ),
     annul_escaped: pgettext(
         "Label for a moderator to select this option",
-        "Wrong result due to escape - annul and warn the escaper.",
+        "Wrong result due to escape - annul game, warn the escaper.",
     ),
     warn_escaper: pgettext(
         "Label for a moderator to select this option",
@@ -70,9 +74,13 @@ const ACTION_PROMPTS = {
         "Label for a moderator to select this option",
         "No escaping evident - inform the reporter.",
     ),
+    not_escaping_cancel: pgettext(
+        "Label for a moderator to select this option",
+        "Not escaping, they used 'cancel'.",
+    ),
     annul_stalled: pgettext(
         "Label for a moderator to select this option",
-        "Wrong result due to stalling - annul and warn the staller.",
+        "Wrong result due to stalling - annul game, warn the staller.",
     ),
     warn_staller: pgettext(
         "Label for a moderator to select this option",
@@ -99,10 +107,15 @@ const ACTION_PROMPTS = {
 
 export function ModerationActionSelector({
     available_actions,
+    vote_counts,
     enable,
+    report,
     claim,
     submit,
 }: ModerationActionSelectorProps): JSX.Element {
+    const user = useUser();
+    const reportedBySelf = user.id === report.reporting_user.id;
+
     const [selectedOption, setSelectedOption] = React.useState("");
     const [mod_note, setModNote] = React.useState("");
     const [voted, setVoted] = React.useState(false);
@@ -116,6 +129,7 @@ export function ModerationActionSelector({
     const { ref: voting_pane } = registerTargetItem("voting-pane");
     const { ref: escalate_option } = registerTargetItem("escalate-option");
 
+    // If for some reason we didn't get any actions to offer, we'll just offer "escalate"
     const action_choices = available_actions ? available_actions : ["escalate"];
 
     return (
@@ -151,7 +165,12 @@ export function ModerationActionSelector({
                             value={a}
                             onChange={updateSelectedAction}
                         />
-                        <label htmlFor={a}>{(ACTION_PROMPTS as any)[a]}</label>
+                        <label htmlFor={a}>
+                            {(ACTION_PROMPTS as any)[a]}
+                            <span className="vote-count">
+                                ({(!!a && !!vote_counts && vote_counts[a]) ?? 0})
+                            </span>
+                        </label>
                     </div>
                 ))}
             {selectedOption === "escalate" && (
@@ -163,18 +182,28 @@ export function ModerationActionSelector({
                     onChange={(ev) => setModNote(ev.target.value)}
                 />
             )}
-            {((action_choices && enable) || null) && (
-                <button
-                    className="success"
-                    disabled={voted || !selectedOption}
-                    onClick={() => {
-                        setVoted(true);
-                        submit(selectedOption, mod_note);
-                    }}
-                >
-                    {pgettext("A label on a button for submitting a vote", "Vote")}
-                </button>
-            )}
+            <span className="action-buttons">
+                {((reportedBySelf && enable) || null) && (
+                    <button className="reject" onClick={report.cancel}>
+                        {pgettext(
+                            "A button for cancelling a report created by yourself",
+                            "Cancel Report",
+                        )}
+                    </button>
+                )}
+                {((action_choices && enable) || null) && (
+                    <button
+                        className="success"
+                        disabled={voted || !selectedOption}
+                        onClick={() => {
+                            setVoted(true);
+                            submit(selectedOption, mod_note);
+                        }}
+                    >
+                        {pgettext("A label on a button for submitting a vote", "Vote")}
+                    </button>
+                )}
+            </span>
         </div>
     );
 }

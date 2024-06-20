@@ -18,13 +18,13 @@
 import * as React from "react";
 import { pgettext, _ } from "translate";
 import { openModal, Modal } from "Modal";
-import { Goban } from "goban";
+import { GobanRenderer } from "goban";
 import { Player } from "Player";
 
 interface Events {}
 
 interface GameLinkModalProperties {
-    goban: Goban;
+    goban: GobanRenderer;
 }
 
 export class GameLinkModal extends Modal<Events, GameLinkModalProperties, {}> {
@@ -97,7 +97,7 @@ export class GameLinkModal extends Modal<Events, GameLinkModalProperties, {}> {
     }
 }
 
-function AnimatedPngCreator({ goban }: { goban: Goban }): JSX.Element {
+function AnimatedPngCreator({ goban }: { goban: GobanRenderer }): JSX.Element {
     const engine = goban.engine;
     const MAX_MOVES = 30;
     const NUM_MOVES = engine?.last_official_move.move_number || 1;
@@ -198,7 +198,7 @@ function AnimatedPngCreator({ goban }: { goban: Goban }): JSX.Element {
     );
 }
 
-export function openGameLinkModal(goban: Goban): void {
+export function openGameLinkModal(goban: GobanRenderer): void {
     openModal(<GameLinkModal goban={goban} fastDismiss />);
 }
 

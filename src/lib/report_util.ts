@@ -36,8 +36,8 @@ export interface Report {
     retyped: boolean;
     source: string;
     report_type: ReportType;
-    reporting_user: any;
-    reported_user: any;
+    reporting_user: PlayerCacheEntry;
+    reported_user: PlayerCacheEntry;
     reported_game: number;
     reported_game_move?: number;
     reported_review: number;
@@ -62,6 +62,7 @@ export interface Report {
     automod_to_reported?: string;
 
     available_actions: Array<string>; // community moderator actions
+    vote_counts: { [action: string]: number };
     voters: Vote[]; // votes from community moderators on this report
     community_mod_note: string;
 

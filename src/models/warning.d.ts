@@ -34,6 +34,7 @@ declare namespace rest_api {
             | "ack_warned_escaper"
             | "ack_warned_escaper_and_annul"
             | "no_escaping_evident"
+            | "not_escaping_cancel"
             | "warn_beginner_staller"
             | "warn_staller"
             | "ack_educated_beginner_staller"
@@ -41,7 +42,8 @@ declare namespace rest_api {
             | "ack_warned_staller"
             | "ack_warned_staller_and_annul"
             | "no_stalling_evident"
-            | "report_type_changed";
+            | "report_type_changed"
+            | "bot_owner_notified";
 
         type Severity = "warning" | "acknowledgement" | "info";
 

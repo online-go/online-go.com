@@ -20,10 +20,10 @@ import * as data from "data";
 import * as Sentry from "@sentry/browser";
 import { get_clock_drift, get_network_latency, socket } from "sockets";
 import { current_language } from "translate";
-import { Goban, GobanCore, GoEngine, GoThemes } from "goban";
+import { GobanCore, GoEngine, GoThemes, setGobanRenderer } from "goban";
 import { sfx } from "sfx";
 
-(window as any)["Goban"] = Goban;
+//(window as any)["Goban"] = Goban;
 (window as any)["GoThemes"] = GoThemes;
 (window as any)["GoEngine"] = GoEngine;
 
@@ -34,7 +34,14 @@ data.setDefault("custom.line", "#000000");
 data.setDefault("custom.url", "");
 
 export function configure_goban() {
-    Goban.setHooks({
+    data.watch("experiments.svg", () => {
+        const v = data.get("experiments.svg");
+        if (v === "enabled") {
+            setGobanRenderer("svg");
+        }
+    });
+
+    GobanCore.setHooks({
         defaultConfig: () => {
             return {
                 server_socket: socket,

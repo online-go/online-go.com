@@ -18,7 +18,13 @@
 /* cspell: words groupadmin cotsen */
 
 import * as React from "react";
-import { unstable_HistoryRouter as Router, Route, Routes, Navigate } from "react-router-dom";
+import {
+    unstable_HistoryRouter as Router,
+    Route,
+    Routes,
+    Navigate,
+    useNavigate,
+} from "react-router-dom";
 
 import * as data from "data";
 import { _ } from "translate";
@@ -194,12 +200,28 @@ function SettingsRedirect(): JSX.Element {
     return <Navigate to={`/settings/${last_settings_page}`} replace />;
 }
 
+function WaitForUser(): JSX.Element | null {
+    const navigate = useNavigate();
+    data.watch("config.user", (user) => {
+        if (user.anonymous) {
+            return;
+        }
+        if (window.location.hash && window.location.hash[1] === "/") {
+            navigate(window.location.hash.substring(1), { replace: true });
+        } else {
+            navigate("/", { replace: true });
+        }
+    });
+    return null;
+}
+
 export const routes = (
     <Router history={browserHistory}>
         <Main>
             <Routes>
                 <Route path="/sign-in" element={<SignIn />} />
                 <Route path="/register" element={<Register />} />
+                <Route path="/wait-for-user" element={<WaitForUser />} />
                 <Route path="/welcome/*" element={<ChallengeLinkLanding />} />
                 <Route path="/appeal/:player_id" element={<Appeal />} />
                 <Route path="/appeal" element={<Appeal />} />
@@ -218,8 +240,10 @@ export const routes = (
                 <Route path="/game/:game_id/:move_number" element={<Game />} />
                 <Route path="/game/:game_id" element={<Game />} />
                 <Route path="/review/view/:review_id" element={<Game />} />
+                <Route path="/review/:review_id/:move_number" element={<Game />} />
                 <Route path="/review/:review_id" element={<Game />} />
                 <Route path="/demo/view/:review_id" element={<Game />} />
+                <Route path="/demo/:review_id/:move_number" element={<Game />} />
                 <Route path="/demo/:review_id" element={<Game />} />
                 <Route path="/game/:game_id/embed" element={<GameEmbed />} />
                 <Route path="/review/:review_id/embed" element={<GameEmbed />} />

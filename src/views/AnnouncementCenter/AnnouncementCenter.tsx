@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import * as data from "data";
-import { _, pgettext } from "translate";
+import { _, interpolate, pgettext } from "translate";
 import { post, get, del } from "requests";
 import { PaginatedTable } from "PaginatedTable";
 import { Card } from "material";
@@ -170,9 +170,14 @@ export function AnnouncementCenter(): JSX.Element {
                                 }}
                             />
                             <span className="text">
-                                {moment
-                                    .duration(duration_options[duration_idx], "seconds")
-                                    .humanize(false, { h: 24, m: 59, s: 59 })}
+                                {duration_options[duration_idx] > 3600 &&
+                                duration_options[duration_idx] % 3600 === 1800
+                                    ? interpolate(_("%s hours"), [
+                                          (duration_options[duration_idx] / 3600).toFixed(1),
+                                      ])
+                                    : moment
+                                          .duration(duration_options[duration_idx], "seconds")
+                                          .humanize(false, { h: 24, m: 59, s: 59 })}
                             </span>
                         </div>
                     </dd>

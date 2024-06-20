@@ -30,8 +30,15 @@ import { sfx } from "sfx";
 import { ogs_has_focus, getCurrentGameId, shouldOpenNewTab } from "misc";
 import { lookingAtOurLiveGame } from "TimeControl/util";
 import { PlayerCacheEntry } from "src/lib/player_cache";
+import { GameListEntry } from "goban/lib/protocol";
 
-declare let Notification: any;
+//declare let Notification: any;
+
+export interface Notification {
+    id: string;
+    type: string;
+    [k: string]: any;
+}
 
 export interface NotificationManagerEvents {
     "turn-count": number;
@@ -44,6 +51,7 @@ export interface NotificationManagerEvents {
 const boot_time = Date.now();
 let notification_timeout: ReturnType<typeof setTimeout> | null = null;
 const sent: { [k: string]: boolean } = {};
+const game_turn_notifications_sent: { [k: string]: boolean } = {};
 
 $(window).on("storage", (event) => {
     //console.log(event);
@@ -84,7 +92,7 @@ export function emitNotification(title: string, body: string, cb?: () => void) {
                                         .catch((err: any) => console.error(err));
                                 } catch (e) {
                                     /* deprecated usage, but only way supported on safari currently */
-                                    Notification.requestPermission(() => {
+                                    void Notification.requestPermission(() => {
                                         emitNotification(title, body, cb);
                                     });
                                 }
@@ -180,8 +188,8 @@ export function emitNotification(title: string, body: string, cb?: () => void) {
 export class NotificationManager {
     user?: PlayerCacheEntry;
 
-    notifications: { [k: string]: any };
-    ordered_notifications: any[];
+    notifications: { [k: string]: Notification };
+    ordered_notifications: Notification[];
     unread_notification_count: number = 0;
     boards_to_move_on: { [k: string]: any };
     active_boards: { [k: string]: any };
@@ -304,7 +312,7 @@ export class NotificationManager {
         }
     }
 
-    deleteNotification(notification: any, dont_rebuild?: boolean) {
+    deleteNotification(notification: Notification, dont_rebuild?: boolean) {
         socket.send("notification/delete", {
             notification_id: notification.id,
         });
@@ -323,6 +331,7 @@ export class NotificationManager {
                 case "groupInvitation":
                 case "tournamentInvitation":
                 case "moderationOffer":
+                case "supporterExpired":
                     /* these are actionable, so skip */
                     continue;
             }
@@ -334,7 +343,7 @@ export class NotificationManager {
         this.rebuildNotificationList();
     }
     connect() {
-        socket.on("active_game", (game) => {
+        socket.on("active_game", (game: GameListEntry) => {
             delete this.boards_to_move_on[game.id];
             if (game.phase === "finished") {
                 delete this.active_boards[game.id];
@@ -360,18 +369,34 @@ export class NotificationManager {
             if (this.boards_to_move_on[game.id]) {
                 const current_game_id = getCurrentGameId();
                 if (current_game_id !== game.id || !document.hasFocus()) {
-                    //if (game.avg_move_time > 3600) {
+                    // don't notify for realtime games ever
                     if (game.time_per_move > 3600) {
-                        // don't notify for realtime games ever
-                        emitNotification(
-                            _("Your Turn"),
-                            interpolate("It's your turn in game {{game_id}}", { game_id: game.id }),
-                            () => {
-                                if (window.location.pathname !== "/game/" + game.id) {
-                                    browserHistory.push("/game/" + game.id);
-                                }
-                            },
-                        );
+                        /* When we reconnect, which for some clients happens a
+                         * lot, we don't want to spam the user with
+                         * notifications for the same game if the move hasn't
+                         * changed */
+                        const game_notification_key = `${game.id}-${game.move_number}`;
+
+                        if (!game_turn_notifications_sent[game_notification_key]) {
+                            emitNotification(
+                                _("Your Turn"),
+                                interpolate(
+                                    "It's your turn to play against {{opponent_username}}",
+                                    {
+                                        opponent_username:
+                                            data.get("user").id === game.black.id
+                                                ? game.white.username
+                                                : game.black.username,
+                                    },
+                                ),
+                                () => {
+                                    if (window.location.pathname !== "/game/" + game.id) {
+                                        browserHistory.push("/game/" + game.id);
+                                    }
+                                },
+                            );
+                            game_turn_notifications_sent[game_notification_key] = true;
+                        }
                     }
                 }
             }
@@ -519,7 +544,12 @@ export class NotificationManager {
 
         this.unread_notification_count = 0;
         for (const k in this.notifications) {
-            this.unread_notification_count += !this.notifications[k].read ? 1 : 0;
+            let should_count = !this.notifications[k].read;
+            if (this.notifications[k].type === "supporterExpired") {
+                should_count = false;
+            }
+
+            this.unread_notification_count += should_count ? 1 : 0;
             this.ordered_notifications.push(this.notifications[k]);
         }
 

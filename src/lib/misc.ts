@@ -187,7 +187,7 @@ export function getOutcomeTranslation(outcome: string) {
     }
 
     if (outcome.indexOf("Server Decision") === 0) {
-        return pgettext("Game outcome", "Server Decision") + " " + outcome.substring(16);
+        return pgettext("Game outcome", "Server Decision");
     }
 
     if (/[0-9.]+/.test(outcome)) {

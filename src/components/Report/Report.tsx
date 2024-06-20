@@ -19,7 +19,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom/client";
 import * as player_cache from "player_cache";
 import { Card } from "material";
-import { _, pgettext } from "translate";
+import { _, pgettext, interpolate } from "translate";
 import { PlayerIcon } from "PlayerIcon";
 import { post } from "requests";
 import { alert } from "swal_config";
@@ -291,6 +291,9 @@ export function Report(props: ReportProperties): JSX.Element {
         ? report_categories
         : report_categories.filter((x) => !x.moderator_only);
 
+    const more_description_needed =
+        category?.min_description_length && note.length < category.min_description_length;
+
     return (
         <Card className="Report">
             <h2>{_("Request Moderator Assistance")}</h2>
@@ -362,6 +365,14 @@ export function Report(props: ReportProperties): JSX.Element {
             {(reported_conversation || null) && (
                 <div className="reported-conversation">
                     {reported_conversation?.content.map((line, idx) => <div key={idx}>{line}</div>)}
+                </div>
+            )}
+            {more_description_needed && category?.min_description_length && (
+                <div className="characters-remaining-prompt">
+                    {interpolate(
+                        pgettext("Context of message", "{{required}} more characters needed"),
+                        { required: category.min_description_length - note.length },
+                    )}
                 </div>
             )}
             <div className="buttons">

@@ -28,9 +28,9 @@ import { KBShortcut } from "KBShortcut";
 import { UIPush } from "UIPush";
 import { errorAlerter, ignore, rulesText } from "misc";
 import {
-    Goban,
-    GobanCanvas,
-    GobanCanvasConfig,
+    createGoban,
+    GobanRenderer,
+    GobanRendererConfig,
     GoMath,
     MoveTree,
     AudioClockEvent,
@@ -73,6 +73,7 @@ import { GobanContext } from "./goban_context";
 import { is_valid_url } from "url_validation";
 import { disableTouchAction, enableTouchAction } from "./touch_actions";
 import { BotDetectionResults } from "./BotDetectionResults";
+import { ActiveTournament } from "src/lib/types";
 
 export function Game(): JSX.Element | null {
     const params = useParams<"game_id" | "review_id" | "move_number">();
@@ -99,7 +100,7 @@ export function Game(): JSX.Element | null {
     const copied_node = React.useRef<MoveTree>();
     const white_username = React.useRef<string>("White");
     const black_username = React.useRef<string>("Black");
-    const goban = React.useRef<Goban | null>(null);
+    const goban = React.useRef<GobanRenderer | null>(null);
     const return_url_debounce = React.useRef<boolean>(false);
     const last_phase = React.useRef<string>("");
     const page_loaded_time = React.useRef<number>(Date.now()); // when we first created this view
@@ -141,6 +142,7 @@ export function Game(): JSX.Element | null {
 
     const title = useTitle(goban.current);
     const cur_move = useCurrentMove(goban.current);
+    const [tournament, set_tournament] = React.useState<ActiveTournament>();
 
     const [mode, set_mode] = React.useState<GobanModes>("play");
     const [score_estimate_winner, set_score_estimate_winner] = React.useState<string>();
@@ -1041,7 +1043,7 @@ export function Game(): JSX.Element | null {
     const setMoveTreeContainer = (resizable: Resizable): void => {
         ref_move_tree_container.current = resizable ? resizable.div ?? undefined : undefined;
         if (goban.current && ref_move_tree_container.current) {
-            (goban.current as GobanCanvas).setMoveTreeContainer(ref_move_tree_container.current);
+            (goban.current as GobanRenderer).setMoveTreeContainer(ref_move_tree_container.current);
         }
     };
 
@@ -1073,7 +1075,7 @@ export function Game(): JSX.Element | null {
         document.addEventListener("keypress", setLabelHandler);
 
         const label_position = preferences.get("label-positioning");
-        const opts: GobanCanvasConfig = {
+        const opts: GobanRendererConfig = {
             board_div: goban_div.current,
             move_tree_container: ref_move_tree_container.current,
             interactive: true,
@@ -1107,7 +1109,7 @@ export function Game(): JSX.Element | null {
                 goban.current?.review_controller_id === data.get("user").id;
         }
 
-        goban.current = new Goban(opts);
+        goban.current = createGoban(opts);
 
         onResize(true);
         (window as any)["global_goban"] = goban.current;
@@ -1251,8 +1253,17 @@ export function Game(): JSX.Element | null {
                 engine.outcome !== "Cancellation" &&
                 goban.current!.mode === "play"
             ) {
-                const s = engine.computeScore(false);
-                goban.current!.showScores(s);
+                if (
+                    engine.phase === "finished" &&
+                    engine.outcome.indexOf("Server Decision") === 0
+                ) {
+                    if (engine.stalling_score_estimate) {
+                        goban.current!.showStallingScoreEstimate(engine.stalling_score_estimate);
+                    }
+                } else {
+                    const s = engine.computeScore(false);
+                    goban.current!.showScores(s);
+                }
             }
         };
 
@@ -1344,7 +1355,7 @@ export function Game(): JSX.Element | null {
         });
 
         if (params.move_number) {
-            goban.current.once("gamedata", () => {
+            goban.current.once(review_id ? "review.load-end" : "gamedata", () => {
                 nav_goto_move(parseInt(params.move_number as string));
             });
         }
@@ -1437,6 +1448,18 @@ export function Game(): JSX.Element | null {
                     game_control.creator_id = game.creator;
                     ladder_id.current = game.ladder;
                     tournament_id.current = game.tournament ?? undefined;
+
+                    if (game.tournament) {
+                        get(`tournaments/${game.tournament}`)
+                            .then((t: ActiveTournament) => {
+                                console.log(t);
+                                set_tournament(t);
+                            })
+                            .catch((e) => {
+                                console.warn(`Could not get tournament information`);
+                                console.warn(e.name, e);
+                            });
+                    }
 
                     set_annulled(game.annulled);
                     set_annulment_reason(game.annulment_reason);
@@ -1676,6 +1699,7 @@ export function Game(): JSX.Element | null {
                                 annulled={annulled}
                                 selected_ai_review_uuid={selected_ai_review_uuid}
                                 tournament_id={tournament_id.current}
+                                tournament_name={tournament?.name}
                                 ladder_id={ladder_id.current}
                                 ai_review_enabled={ai_review_enabled}
                                 historical_black={historical_black}
@@ -1743,6 +1767,7 @@ export function Game(): JSX.Element | null {
                                 annulled={annulled}
                                 selected_ai_review_uuid={selected_ai_review_uuid}
                                 tournament_id={tournament_id.current}
+                                tournament_name={tournament?.name}
                                 ladder_id={ladder_id.current}
                                 ai_review_enabled={ai_review_enabled}
                                 historical_black={historical_black}
@@ -1772,7 +1797,7 @@ export function Game(): JSX.Element | null {
     );
 }
 
-function bindAudioEvents(goban: Goban): void {
+function bindAudioEvents(goban: GobanRenderer): void {
     // called by init
     const user = data.get("user");
 

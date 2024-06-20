@@ -23,12 +23,11 @@ import { Player } from "Player";
 import { openModal } from "Modal";
 import { NotesModal } from "NotesModal";
 import { _ } from "translate";
-import { Link } from "react-router-dom";
-import { chat_markup } from "Chat";
 import { errorAlerter } from "misc";
 import { put, get } from "requests";
 import { IPDetails } from "Moderator";
 import { usePreference } from "preferences";
+import { ModLog } from "./ModLog";
 
 interface ModToolsProps {
     user_id: number;
@@ -40,6 +39,7 @@ export function ModTools(props: ModToolsProps): JSX.Element | null {
     const [hide_moderator_controls] = usePreference("moderator.hide-profile-information");
     const [aliases, setAliases] = React.useState<any[]>([]);
     const moderator_note = React.useRef<HTMLTextAreaElement>(null);
+
     const addModeratorNote = async () => {
         const txt = moderator_note.current?.value.trim() ?? "";
 
@@ -86,7 +86,6 @@ export function ModTools(props: ModToolsProps): JSX.Element | null {
 
     return (
         <Card className="ModTools">
-            {" "}
             {props.collapse_same_users ? (
                 <div>
                     <b>Aliases: </b>
@@ -180,66 +179,7 @@ export function ModTools(props: ModToolsProps): JSX.Element | null {
                 <textarea ref={moderator_note} placeholder="Leave note" id="moderator-note" />
                 <button onClick={addModeratorNote}>Add note</button>
             </div>
-            <PaginatedTable
-                className="moderator-log"
-                name="moderator-log"
-                source={`moderation?player_id=${props.user_id}`}
-                pageSizeOptions={[1, 2, 3, 5, 7, 10, 20, 25, 50, 100]}
-                uiPushProps={{
-                    event: `modlog-${props.user_id}-updated`,
-                    channel: "moderators",
-                }}
-                columns={[
-                    {
-                        header: "",
-                        className: "date",
-                        render: (X) => moment(X.timestamp).format("YYYY-MM-DD HH:mm:ss"),
-                    },
-                    {
-                        header: "",
-                        className: "",
-                        render: (X) => {
-                            return X?.moderator?.id ? <Player user={X.moderator} /> : "-";
-                        },
-                    },
-                    {
-                        header: "",
-                        className: "",
-                        render: (X) => (
-                            <div>
-                                <div className="action">
-                                    {X.incident_report?.id ? (
-                                        <Link to={`/reports-center/all/${X.incident_report.id}`}>
-                                            R{X.incident_report.id.toString().substr(-3)}
-                                        </Link>
-                                    ) : null}
-                                    {X.game ? (
-                                        <Link to={`/game/${X.game.id}`}>{X.game.id}</Link>
-                                    ) : null}
-                                    {X.action}
-                                </div>
-                                {X.incident_report && (
-                                    <div>
-                                        {X.incident_report.cleared_by_user ? (
-                                            <div>
-                                                <b>Cleared by user</b>
-                                            </div>
-                                        ) : null}
-                                        <div>{X.incident_report.url}</div>
-                                        <div>{X.incident_report.system_note}</div>
-                                        <div>{X.incident_report.reporter_note}</div>
-                                        {X.incident_report.moderator ? (
-                                            <Player user={X.incident_report.moderator} />
-                                        ) : null}
-                                        <i> {X.incident_report.moderator_note}</i>
-                                    </div>
-                                )}
-                                <pre>{chat_markup(X.note, undefined, 1024 * 128)}</pre>
-                            </div>
-                        ),
-                    },
-                ]}
-            />
+            <ModLog user_id={props.user_id} />
         </Card>
     );
 }

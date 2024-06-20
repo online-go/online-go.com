@@ -2,7 +2,7 @@ import { render } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import * as React from "react";
 import { PlayerCard } from "./PlayerCards";
-import { Goban } from "goban";
+import { createGoban } from "goban";
 import { GobanContext } from "./goban_context";
 import { BrowserRouter as Router } from "react-router-dom";
 import * as data from "data";
@@ -34,6 +34,7 @@ const TEST_USER = {
     email: "",
     email_validated: false,
     is_announcer: false,
+    last_supporter_trial: "",
 } as const;
 
 const BASE_PROPS = {
@@ -52,7 +53,7 @@ test("make sure komi is displayed for white", () => {
     data.set("preferences.moderator.hide-flags", false);
     data.set("preferences.moderator.hide-player-card-mod-controls", false);
 
-    const goban = new Goban({ game_id: 123456, komi: 5 });
+    const goban = createGoban({ game_id: 123456, komi: 5 });
 
     const props = { goban: goban, ...BASE_PROPS };
 
@@ -73,7 +74,7 @@ test("make sure komi is not displayed for black", () => {
     data.set("preferences.moderator.hide-flags", false);
     data.set("preferences.moderator.hide-player-card-mod-controls", false);
 
-    const goban = new Goban({ game_id: 123456, komi: 5 });
+    const goban = createGoban({ game_id: 123456, komi: 5 });
 
     const props = { goban: goban, ...BASE_PROPS, color: "black" as const };
 

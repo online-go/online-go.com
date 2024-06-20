@@ -17,13 +17,14 @@
 
 import * as React from "react";
 import { _, pgettext } from "translate";
-import { GoThemesSorted, GoThemeBackgroundCSS } from "goban";
+import { GoTheme, GoThemesSorted, GoThemeBackgroundCSS } from "goban";
 import { getSelectedThemes } from "preferences";
 import * as preferences from "preferences";
 import { PersistentElement } from "PersistentElement";
 import * as data from "data";
 import { CustomGobanThemeSchema } from "data_schema";
 import { Toggle } from "Toggle";
+import { Experiment, Variant, Default } from "../Experiment";
 
 interface GobanThemePickerProperties {
     size?: number;
@@ -138,7 +139,13 @@ export class GobanThemePicker extends React.PureComponent<
             // Changing the line color should update the board theme
             key = "board";
         }
-        preferences.set(`goban-theme-${key}`, this.state[`${key}Custom`]);
+
+        // If it's a color code, set to Custom
+        if (this.state[`${key}Custom`][0] === "#") {
+            preferences.set(`goban-theme-${key}`, "Custom");
+        } else {
+            preferences.set(`goban-theme-${key}`, this.state[`${key}Custom`]);
+        }
     }
 
     render() {
@@ -202,45 +209,104 @@ export class GobanThemePicker extends React.PureComponent<
                         </div>
                     ))}
                 </div>
-                <div className="theme-set">
-                    {standard_themes.white.map((theme, idx) => (
-                        <div
-                            key={theme.theme_name}
-                            title={_(theme.theme_name)}
-                            className={
-                                "selector" +
-                                (this.state.white === theme.theme_name ? " active" : "")
-                            }
-                            style={{
-                                ...theme.styles,
-                                ...board_styles,
-                            }}
-                            onClick={this.selectTheme["white"][theme.theme_name]}
-                        >
-                            <PersistentElement elt={this.canvases.white[idx]} />
-                        </div>
-                    ))}
-                </div>
 
-                <div className="theme-set">
-                    {standard_themes.black.map((theme, idx) => (
-                        <div
-                            key={theme.theme_name}
-                            title={_(theme.theme_name)}
-                            className={
-                                "selector" +
-                                (this.state.black === theme.theme_name ? " active" : "")
-                            }
-                            style={{
-                                ...theme.styles,
-                                ...board_styles,
-                            }}
-                            onClick={this.selectTheme["black"][theme.theme_name]}
-                        >
-                            <PersistentElement elt={this.canvases.black[idx]} />
+                <Experiment name="svg">
+                    <Variant value="enabled">
+                        <div className="theme-set">
+                            {standard_themes.white.map((theme) => (
+                                <div
+                                    key={theme.theme_name}
+                                    title={_(theme.theme_name)}
+                                    className={
+                                        "selector" +
+                                        (this.state.white === theme.theme_name ? " active" : "")
+                                    }
+                                    style={{
+                                        ...theme.styles,
+                                        ...board_styles,
+                                    }}
+                                    onClick={this.selectTheme["white"][theme.theme_name]}
+                                >
+                                    <ThemeSample
+                                        theme={theme}
+                                        size={this.state.size}
+                                        color={"white"}
+                                    />
+                                </div>
+                            ))}
                         </div>
-                    ))}
-                </div>
+                    </Variant>
+                    <Default>
+                        <div className="theme-set">
+                            {standard_themes.white.map((theme, idx) => (
+                                <div
+                                    key={theme.theme_name}
+                                    title={_(theme.theme_name)}
+                                    className={
+                                        "selector" +
+                                        (this.state.white === theme.theme_name ? " active" : "")
+                                    }
+                                    style={{
+                                        ...theme.styles,
+                                        ...board_styles,
+                                    }}
+                                    onClick={this.selectTheme["white"][theme.theme_name]}
+                                >
+                                    <PersistentElement elt={this.canvases.white[idx]} />
+                                </div>
+                            ))}
+                        </div>
+                    </Default>
+                </Experiment>
+
+                <Experiment name="svg">
+                    <Variant value="enabled">
+                        <div className="theme-set">
+                            {standard_themes.black.map((theme) => (
+                                <div
+                                    key={theme.theme_name}
+                                    title={_(theme.theme_name)}
+                                    className={
+                                        "selector" +
+                                        (this.state.black === theme.theme_name ? " active" : "")
+                                    }
+                                    style={{
+                                        ...theme.styles,
+                                        ...board_styles,
+                                    }}
+                                    onClick={this.selectTheme["black"][theme.theme_name]}
+                                >
+                                    <ThemeSample
+                                        theme={theme}
+                                        size={this.state.size}
+                                        color={"black"}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    </Variant>
+                    <Default>
+                        <div className="theme-set">
+                            {standard_themes.black.map((theme, idx) => (
+                                <div
+                                    key={theme.theme_name}
+                                    title={_(theme.theme_name)}
+                                    className={
+                                        "selector" +
+                                        (this.state.black === theme.theme_name ? " active" : "")
+                                    }
+                                    style={{
+                                        ...theme.styles,
+                                        ...board_styles,
+                                    }}
+                                    onClick={this.selectTheme["black"][theme.theme_name]}
+                                >
+                                    <PersistentElement elt={this.canvases.black[idx]} />
+                                </div>
+                            ))}
+                        </div>
+                    </Default>
+                </Experiment>
 
                 <div className="show-customize-selector">
                     <span>{pgettext("Label for a button to show custom stones", "Customize")}</span>
@@ -506,4 +572,48 @@ function css2react(style: GoThemeBackgroundCSS): { [k: string]: string } {
     }
 
     return react_style;
+}
+
+function ThemeSample({
+    theme,
+    color,
+    size,
+}: {
+    theme: GoTheme;
+    color: "black" | "white";
+    size: number;
+}) {
+    const div = React.useRef(null);
+
+    React.useEffect(() => {
+        if (!div.current) {
+            return;
+        }
+
+        const cx = size / 2;
+        const cy = size / 2;
+        const radius = (size / 2) * 0.95;
+
+        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svg.setAttribute("width", size.toFixed(0));
+        svg.setAttribute("height", size.toFixed(0));
+        const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+        svg.appendChild(defs);
+
+        const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        svg.appendChild(g);
+
+        if (color === "black") {
+            const black_stones = theme.preRenderBlackSVG(defs, radius, 123, () => {});
+            theme.placeBlackStoneSVG(g, undefined, black_stones[0], cx, cy, radius);
+        }
+        if (color === "white") {
+            const white_stones = theme.preRenderWhiteSVG(defs, radius, 123, () => {});
+            theme.placeWhiteStoneSVG(g, undefined, white_stones[0], cx, cy, radius);
+        }
+
+        (div.current as any)?.appendChild(svg);
+    }, [div.current]);
+
+    return <div ref={div} />;
 }

@@ -30,7 +30,7 @@ import {
     AdHocPlayerClock,
     AdHocPauseControl,
     AdHocPackedMove,
-    Goban,
+    GobanRenderer,
 } from "goban";
 
 interface UserType {
@@ -43,7 +43,7 @@ interface GameType {
     name: string;
     black: UserType;
     white: UserType;
-    goban?: Goban;
+    goban?: GobanRenderer;
     json?: {
         clock: AdHocClock;
         moves: AdHocPackedMove[];
@@ -373,7 +373,7 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
                     currentSort={this.state.sort_order}
                     player={this.props.player}
                     lineSummaryMode={this.props.lineSummaryMode}
-                    onGobanCreated={(game: GameType, goban: Goban) =>
+                    onGobanCreated={(game: GameType, goban: GobanRenderer) =>
                         this.onGobanCreated(game, goban)
                     }
                 ></LineSummaryTable>
@@ -382,14 +382,14 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
             return MiniGobanList(
                 games,
                 !!this.props.namesByGobans,
-                (game: GameType, goban: Goban) => this.onGobanCreated(game, goban),
+                (game: GameType, goban: GobanRenderer) => this.onGobanCreated(game, goban),
                 this.props?.player,
                 this.props.miniGobanProps,
             );
         }
     }
 
-    onGobanCreated(game: GameType, goban: Goban) {
+    onGobanCreated(game: GameType, goban: GobanRenderer) {
         // Save a pointer into the goban to use when sorting.
         game.goban = goban;
 
@@ -419,7 +419,7 @@ interface LineSummaryTableProps extends GameListProps {
     disableSort: boolean;
     currentSort: SortOrder | DescendingSortOrder;
     onSort: (sortBy: SortOrder) => void;
-    onGobanCreated: (game: GameType, goban: Goban) => void;
+    onGobanCreated: (game: GameType, goban: GobanRenderer) => void;
 }
 
 function LineSummaryTable({
@@ -523,7 +523,7 @@ function LineSummaryTable({
 function MiniGobanList(
     games: GameType[],
     withNames: boolean,
-    onGobanCreated: (game: GameType, goban: Goban) => void,
+    onGobanCreated: (game: GameType, goban: GobanRenderer) => void,
     player?: { id: number },
     miniGobanProps?: MiniGobanProps,
 ): JSX.Element {

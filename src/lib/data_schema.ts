@@ -252,6 +252,8 @@ export interface DataSchema
     "email-banner-dismissed": boolean;
     "payment-problem-banner-dismissed-timestamp": number;
     "active-tournament": Announcement;
+    "free-trial-saved-for-later-timestamp": number;
+    "free-trial-survey-submitted-timestamp": number;
 
     "chat-manager.last-seen": { [channel: string]: number };
     "device.uuid": string;

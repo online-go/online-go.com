@@ -30,7 +30,7 @@ import { FabX, FabCheck } from "material";
 import { deepEqual } from "misc";
 import { isLiveGame, durationString } from "TimeControl";
 import { MODERATOR_POWERS, MOD_POWER_NAMES } from "moderation";
-import { notification_manager } from "./NotificationManager";
+import { notification_manager, Notification } from "./NotificationManager";
 import { ModerationOffer } from "ModerationOffer";
 
 export function NotificationList(): JSX.Element {
@@ -75,11 +75,6 @@ export function NotificationList(): JSX.Element {
     );
 }
 
-interface Notification {
-    type: string;
-    [key: string]: any;
-}
-
 interface NotificationEntryProps {
     notification: Notification;
 }
@@ -111,7 +106,7 @@ class NotificationEntry extends React.Component<NotificationEntryProps, any> {
 
     onError(err: any) {
         console.error(err);
-        if (err.status === 404) {
+        if (err.status === 404 || err.error === "Request not found") {
             notification_manager.deleteNotification(this.props.notification);
         } else {
             this.setState({ message: _("An error has occurred") });
@@ -163,6 +158,7 @@ class NotificationEntry extends React.Component<NotificationEntryProps, any> {
 
             case "aiReviewDone":
                 return `/game/${notification.game_id}`;
+
             case "prizeCodeExpiring":
                 return "/supporter";
         }

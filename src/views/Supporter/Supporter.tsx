@@ -20,6 +20,7 @@
 import * as React from "react";
 import * as data from "data";
 import * as moment from "moment";
+import { FreeTrialBanner } from "FreeTrialBanner";
 import { useParams, useSearchParams } from "react-router-dom";
 import { get, post, put } from "requests";
 import { _, pgettext, interpolate, sorted_locale_countries } from "translate";
@@ -493,6 +494,7 @@ export function Supporter(props: SupporterProperties): JSX.Element {
                         config={config}
                         overrides={overrides}
                         account_id={account_id}
+                        slug={price.slug}
                     />
                 ))}
             </div>
@@ -505,6 +507,8 @@ export function Supporter(props: SupporterProperties): JSX.Element {
                     onChange={(checked) => setAnnualBilling(checked)}
                 />
             </div>
+
+            <FreeTrialBanner show_even_if_saved_for_later={true} />
 
             {(!inline || null) && (
                 <>
@@ -626,6 +630,7 @@ interface PriceBoxProperties {
     config: Config;
     overrides: SupporterOverrides;
     interval: "month" | "year";
+    slug: "aji" | "hane" | "tenuki" | "meijin";
 }
 
 export function PriceBox({
@@ -635,6 +640,7 @@ export function PriceBox({
     config,
     account_id,
     overrides,
+    slug,
 }: PriceBoxProperties): JSX.Element | null {
     const user = data.get("user");
     const [mor_locations, setMorLocations] = React.useState<string[]>(
@@ -675,7 +681,7 @@ export function PriceBox({
             interval: interval,
             currency: currency,
             amount: amount,
-            review_level: "kyu",
+            review_level: slug,
             redirect_url: window.location.href,
             name: _("Supporter"),
             description: _("Supporter"),

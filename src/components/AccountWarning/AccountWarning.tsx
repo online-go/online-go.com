@@ -22,10 +22,9 @@
 import * as React from "react";
 import { _, pgettext } from "translate";
 import { get, patch } from "requests";
-import { useUser } from "hooks";
+import { useMainGoban, useUser } from "hooks";
 import { AutoTranslate } from "AutoTranslate";
 import { useLocation } from "react-router";
-
 import { CANNED_MESSAGES } from "./CannedMessages";
 
 const BUTTON_COUNTDOWN_TIME = 10000; // ms;
@@ -34,6 +33,14 @@ export function AccountWarning() {
     const user = useUser();
     const location = useLocation();
     const [warning, setWarning] = React.useState<rest_api.warnings.Warning | null>(null);
+    const [displayPending, setDisplayPending] = React.useState<boolean>(false);
+    const mainGoban = useMainGoban();
+
+    const liveGameInProgress =
+        mainGoban &&
+        mainGoban.engine.game_id &&
+        mainGoban.engine.phase !== "finished" &&
+        mainGoban.engine.time_control.speed !== "correspondence";
 
     React.useEffect(() => {
         if (user && !user.anonymous && user.has_active_warning_flag) {
@@ -53,6 +60,31 @@ export function AccountWarning() {
             setWarning(null);
         }
     }, [user, user?.has_active_warning_flag]);
+
+    // If a live game is in progress, we'll need to check back later to see if it has
+    // finished so we can display the warning...
+
+    React.useEffect(() => {
+        let pending: NodeJS.Timeout | undefined;
+        if (location.pathname.indexOf("game/") > 0) {
+            if (liveGameInProgress) {
+                setDisplayPending(true);
+                pending = setInterval(() => {
+                    if (mainGoban?.engine.phase !== "play") {
+                        setDisplayPending(false);
+                        clearInterval(pending);
+                    }
+                }, 1000);
+            }
+        }
+        return () => {
+            clearInterval(pending);
+        };
+    }, [mainGoban, location.pathname, displayPending, liveGameInProgress]);
+
+    if (location.pathname.indexOf("game/") > 0 && liveGameInProgress) {
+        return null;
+    }
 
     if (!user || user.anonymous || !user.has_active_warning_flag) {
         return null;
@@ -79,11 +111,7 @@ export function AccountWarning() {
 
     const MessageRenderer = Renderers[warning.severity];
 
-    return (
-        <>
-            <MessageRenderer warning={warning} accept={ok} />
-        </>
-    );
+    return <MessageRenderer warning={warning} accept={ok} />;
 }
 
 // Support warnings that carry messages either as a reference to a a canned message, or explicit text...
@@ -92,10 +120,11 @@ interface MessageTextRenderProps {
     warning: rest_api.warnings.Warning;
 }
 function MessageTextRender(props: MessageTextRenderProps): JSX.Element {
-    console.log("rendering", props);
     if (props.warning.message_id) {
         return (
-            <div>{CANNED_MESSAGES[props.warning.message_id](props.warning.interpolation_data)}</div>
+            <div className="canned-message">
+                {CANNED_MESSAGES[props.warning.message_id](props.warning.interpolation_data)}
+            </div>
         );
     } else {
         return (
@@ -137,15 +166,19 @@ function WarningModal(props: WarningModalProps): JSX.Element {
     const [boxChecked, setBoxChecked] = React.useState<boolean>(false);
 
     React.useEffect(() => {
+        let interval: NodeJS.Timeout | undefined;
         if (props.warning) {
             const now = Date.now();
-            const interval = setInterval(() => {
+            interval = setInterval(() => {
                 setAcceptTime(BUTTON_COUNTDOWN_TIME - (Date.now() - now));
-                if (Date.now() - now > BUTTON_COUNTDOWN_TIME) {
+                if (Date.now() - now > BUTTON_COUNTDOWN_TIME && interval) {
                     clearInterval(interval);
                 }
-            }, 100);
+            }, 1000);
         }
+        return () => {
+            clearInterval(interval);
+        };
     }, [props.warning]);
 
     return (
