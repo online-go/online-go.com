@@ -248,13 +248,13 @@ and that abandoned game annulled.`),
     no_stalling_evident: (reported) =>
         interpolate(
             _(`
-Thank you for bringing the possible instance of stalling play by {{reported}} to
+Thank you for bringing the possible instance of stalling play by {{reported}} to \
 our attention. We looked into the report and don't see evidence of stalling.
 
-Note that the correct way to signal the game has finished is to pass.  If you didn't pass,
+Note that the correct way to signal the game has finished is to pass.  If you didn't pass, \
 then your opponent is entitled to keep playing.
 
-It may be that you need to report a different type of problem, or provide more explanation -
+It may be that you need to report a different type of problem, or provide more explanation - \
 you are welcome to raise a new report if that is the case.
 
 Thank you for helping keep OGS enjoyable for everyone. We appreciate it.`),
@@ -267,10 +267,11 @@ Thanks for your recent report.   We've had to change the 'report type':
 
     {{change}}.
 
-It makes it easier and quicker to process reports if they are raised with the
+It makes it easier and quicker to process reports if they are raised with the \
 correct type - if you could help with that we'd appreciate it.
 
-If this change seems wrong, we'd welcome feedback about that - please contact a moderator to let them know.
+If this change seems wrong, we'd welcome feedback about that - please contact a \
+moderator to let them know.
 `),
             { change },
         ),
