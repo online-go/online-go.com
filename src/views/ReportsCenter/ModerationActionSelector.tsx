@@ -186,8 +186,8 @@ export function ModerationActionSelector({
                 {((reportedBySelf && enable) || null) && (
                     <button className="reject" onClick={report.cancel}>
                         {pgettext(
-                            "A button for closing a report created by yourself",
-                            "Close Report",
+                            "A button for cancelling a report created by yourself",
+                            "Cancel Report",
                         )}
                     </button>
                 )}
