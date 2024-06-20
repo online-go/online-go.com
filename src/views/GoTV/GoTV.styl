@@ -15,6 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+html, body
+    margin: 0
+    padding: 0
+    height: 100%
+    overflow: hidden
+
 #gotv-container
     display: flex
     flex-direction: column
@@ -30,20 +36,21 @@
         overflow: hidden
 
         .streams-list
-            width: 320px
+            width: 340px
             height: 100%
             border-right: 1px solid var(--shade3)
             overflow-y: auto
             background-color: var(--card-background-color)
             transition: width 0.3s ease-in-out
-            padding: 10px
+            padding: 0 10px 0 10px
+            box-sizing: border-box
 
         .streams-list.collapsed
             width: 0
             padding: 0
 
         .streams-list.expanded
-            width: 320px
+            width: 340px
 
         .streams-header
             display: flex
@@ -78,7 +85,7 @@
             height: 100%
             border: none
 
-        .list-pane-tab
+        .list-pane-control
             position: absolute
             top: 50%
             left: 340px
@@ -105,7 +112,7 @@
                 display: inline-block
                 transition: content 0.3s ease-in-out
 
-        .list-pane-tab.collapsed
+        .list-pane-control.collapsed
             left: 0
             &::after
                 content: "\f0c9" // FontAwesome list icon
@@ -114,7 +121,7 @@
                 &::after
                     content: "\f054" // FontAwesome right arrow on hover
 
-        .chat-pane-tab
+        .chat-pane-control
             position: absolute
             top: 50%
             right: 320px
@@ -141,7 +148,7 @@
                 display: inline-block
                 transition: content 0.3s ease-in-out
 
-        .chat-pane-tab.collapsed
+        .chat-pane-control.collapsed
             right: 0
             &::after
                 content: "\f086" // FontAwesome chat icon
@@ -153,7 +160,7 @@
         .chat-pane
             flex: 0 0 320px
             height: 100%
-            padding: 2px
+            padding: 0
             border-left: 1px solid var(--shade3)
             overflow-y: auto
             background-color: var(--card-background-color)
@@ -171,5 +178,44 @@
         .EmbeddedChatCard
             min-width: 100%
             margin: 0
-            height: calc(100vh - (var(--navbar-height) + 1.5rem))
+            height: 100%
             overflow: hidden
+            box-sizing: border-box
+
+        .chat-tabs
+            display: flex
+            justify-content: center
+            height: 45px
+            background-color: var(--card-background-color)
+            border-bottom: 1px solid var(--shade3)
+
+        .chat-tab
+            flex: 1
+            text-align: center
+            padding: 10px
+            cursor: pointer
+            border-bottom: 2px solid transparent
+            transition: background-color 0.3s ease-in-out, border-bottom 0.3s ease-in-out
+
+        .chat-tab.active
+            border-bottom: 2px solid var(--primary)
+            background-color: var(--shade2)
+
+        .chat-content
+            position: relative
+            height: calc(100% - 45px)
+
+        .chat-section
+            position: absolute
+            top: 0
+            left: 0
+            width: 100%
+            height: 100%
+            display: none
+
+        .chat-section.active
+            display: block
+
+        .chat-section.hidden
+            display: none
+

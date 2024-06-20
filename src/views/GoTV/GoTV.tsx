@@ -39,6 +39,7 @@ export const GoTV = () => {
     const [showStreamsPane, setShowStreamsPane] = useState(true);
     const [showChatPane, setShowChatPane] = useState(false);
     const [filterLanguage, setFilterLanguage] = useState("");
+    const [activeChatTab, setActiveChatTab] = useState("OGS");
 
     useEffect(() => {
         const url = "gotv/streams/";
@@ -83,6 +84,10 @@ export const GoTV = () => {
         setFilterLanguage(selectedOption ? selectedOption.value : "");
     };
 
+    const handleChatTabChange = (tab: string) => {
+        setActiveChatTab(tab);
+    };
+
     const filteredStreams = filterLanguage
         ? streams.filter((stream) => stream.language === filterLanguage)
         : streams;
@@ -121,7 +126,7 @@ export const GoTV = () => {
                     ))}
                 </div>
                 <div
-                    className={`list-pane-tab ${showStreamsPane ? "expanded" : "collapsed"}`}
+                    className={`list-pane-control ${showStreamsPane ? "expanded" : "collapsed"}`}
                     onClick={handleToggleStreamsPane}
                 />
                 <div
@@ -138,15 +143,49 @@ export const GoTV = () => {
                     )}
                 </div>
                 <div
-                    className={`chat-pane-tab ${showChatPane ? "expanded" : "collapsed"}`}
+                    className={`chat-pane-control ${showChatPane ? "expanded" : "collapsed"}`}
                     onClick={handleToggleChatPane}
                 />
                 <div className={`chat-pane ${showChatPane ? "expanded" : "collapsed"}`}>
+                    <div className="chat-tabs">
+                        <div
+                            className={`chat-tab ${activeChatTab === "OGS" ? "active" : ""}`}
+                            onClick={() => handleChatTabChange("OGS")}
+                        >
+                            OGS
+                        </div>
+                        <div
+                            className={`chat-tab ${activeChatTab === "Twitch" ? "active" : ""}`}
+                            onClick={() => handleChatTabChange("Twitch")}
+                        >
+                            Twitch
+                        </div>
+                    </div>
                     {selectedStream && (
-                        <EmbeddedChatCard
-                            channel={`GoTV-${selectedStream.username}`}
-                            updateTitle={false}
-                        />
+                        <div className="chat-content">
+                            <div
+                                className={`chat-section ${
+                                    activeChatTab === "OGS" ? "active" : "hidden"
+                                }`}
+                            >
+                                <EmbeddedChatCard
+                                    channel={`GoTV-${selectedStream.username}`}
+                                    updateTitle={false}
+                                />
+                            </div>
+                            <div
+                                className={`chat-section ${
+                                    activeChatTab === "Twitch" ? "active" : "hidden"
+                                }`}
+                            >
+                                <iframe
+                                    src={`https://www.twitch.tv/embed/${selectedStream.channel}/chat?parent=${parentDomain}`}
+                                    height="100%"
+                                    width="100%"
+                                    aria-label={`Twitch chat for ${selectedStream.channel}`}
+                                ></iframe>
+                            </div>
+                        </div>
                     )}
                 </div>
             </div>
