@@ -133,6 +133,7 @@ export const GoTV = () => {
                             isClearable
                             placeholder="All Languages"
                             className="language-select"
+                            classNamePrefix="ogs-react-select"
                         />
                     </div>
                     {filteredStreams.map((stream) => (
