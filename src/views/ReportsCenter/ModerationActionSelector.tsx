@@ -19,11 +19,14 @@ import * as React from "react";
 import { _, pgettext } from "translate";
 
 import * as DynamicHelp from "react-dynamic-help";
+import { useUser } from "hooks";
+import { Report } from "report_util";
 
 interface ModerationActionSelectorProps {
     available_actions: string[];
     vote_counts: { [action: string]: number };
     enable: boolean;
+    report: Report;
     claim: () => void;
     submit: (action: string, note: string) => void;
 }
@@ -106,9 +109,13 @@ export function ModerationActionSelector({
     available_actions,
     vote_counts,
     enable,
+    report,
     claim,
     submit,
 }: ModerationActionSelectorProps): JSX.Element {
+    const user = useUser();
+    const reportedBySelf = user.id === report.reporting_user.id;
+
     const [selectedOption, setSelectedOption] = React.useState("");
     const [mod_note, setModNote] = React.useState("");
     const [voted, setVoted] = React.useState(false);
@@ -175,18 +182,28 @@ export function ModerationActionSelector({
                     onChange={(ev) => setModNote(ev.target.value)}
                 />
             )}
-            {((action_choices && enable) || null) && (
-                <button
-                    className="success"
-                    disabled={voted || !selectedOption}
-                    onClick={() => {
-                        setVoted(true);
-                        submit(selectedOption, mod_note);
-                    }}
-                >
-                    {pgettext("A label on a button for submitting a vote", "Vote")}
-                </button>
-            )}
+            <span className="action-buttons">
+                {((reportedBySelf && enable) || null) && (
+                    <button className="reject" onClick={report.cancel}>
+                        {pgettext(
+                            "A button for cancelling a report created by yourself",
+                            "Cancel Report",
+                        )}
+                    </button>
+                )}
+                {((action_choices && enable) || null) && (
+                    <button
+                        className="success"
+                        disabled={voted || !selectedOption}
+                        onClick={() => {
+                            setVoted(true);
+                            submit(selectedOption, mod_note);
+                        }}
+                    >
+                        {pgettext("A label on a button for submitting a vote", "Vote")}
+                    </button>
+                )}
+            </span>
         </div>
     );
 }

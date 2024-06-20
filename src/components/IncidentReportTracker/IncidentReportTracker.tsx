@@ -245,7 +245,7 @@ export function IncidentReportTracker(): JSX.Element | null {
                                 )}
                             </div>
                         )}
-                        {filtered_reports.map((report, index) => (
+                        {filtered_reports.map((report: Report, index) => (
                             <div className="incident" key={report.id}>
                                 <div className="report-header">
                                     <div
