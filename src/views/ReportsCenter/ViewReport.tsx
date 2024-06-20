@@ -24,7 +24,7 @@ import { report_categories, ReportType } from "Report";
 import { report_manager } from "report_manager";
 import { Report } from "report_util";
 import { AutoTranslate } from "AutoTranslate";
-import { _, pgettext } from "translate";
+import { interpolate, _, pgettext } from "translate";
 import { Player } from "Player";
 import { Link } from "react-router-dom";
 import { post } from "requests";
@@ -38,6 +38,7 @@ import { MessageTemplate, WARNING_TEMPLATES, REPORTER_RESPONSE_TEMPLATES } from 
 import { ModerationActionSelector } from "./ModerationActionSelector";
 import { openAnnulQueueModal, AnnulQueueModal } from "AnnulQueueModal";
 import { ReportTypeSelector } from "./ReportTypeSelector";
+import { alert } from "swal_config";
 
 // Used for saving updates to the report
 let report_note_id = 0;
@@ -261,16 +262,35 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
     };
 
     const changeReportType = (new_type: ReportType) => {
-        setReport({ ...report, retyped: true }); // this disables the selector on this page for this report, while action happens...
-        post(`moderation/incident/${report.id}`, {
-            id: report.id,
-            action: "retype",
-            new_type: new_type,
-        })
-            .then((_res) => {
-                // We need to move on to the next report, because this one is getting updated in the
-                // back end, and we'll get it back via that route, not by directly manipulating it here.
-                next();
+        alert
+            .fire({
+                text: interpolate(
+                    pgettext(
+                        "Confirmation dialog",
+                        "Just checking: change the report type from {{report_type}} to {{new_type}}?",
+                    ),
+                    { report_type: report.report_type, new_type },
+                ),
+                confirmButtonText: _("Yes"),
+                cancelButtonText: _("No"),
+                showCancelButton: true,
+                focusCancel: true,
+            })
+            .then(({ value: yes }) => {
+                if (yes) {
+                    setReport({ ...report, retyped: true }); // this disables the selector on this page for this report, while action happens...
+                    post(`moderation/incident/${report.id}`, {
+                        id: report.id,
+                        action: "retype",
+                        new_type: new_type,
+                    })
+                        .then((_res) => {
+                            // We need to move on to the next report, because this one is getting updated in the
+                            // back end, and we'll get it back via that route, not by directly manipulating it here.
+                            next();
+                        })
+                        .catch(errorAlerter);
+                }
             })
             .catch(errorAlerter);
     };
