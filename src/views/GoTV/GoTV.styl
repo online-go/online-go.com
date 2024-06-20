@@ -35,22 +35,26 @@ html, body
         position: relative
         overflow: hidden
 
-        .streams-list
+        .list-pane
+            position: absolute
+            top: 0
+            bottom: 0
+            left: 0
             width: 340px
             height: 100%
             border-right: 1px solid var(--shade3)
             overflow-y: auto
             background-color: var(--card-background-color)
-            transition: width 0.3s ease-in-out
+            transition: transform 0.3s ease-in-out
             padding: 0 10px 0 10px
             box-sizing: border-box
+            z-index: 2
 
-        .streams-list.collapsed
-            width: 0
-            padding: 0
+        .list-pane.collapsed
+            transform: translateX(-340px)
 
-        .streams-list.expanded
-            width: 340px
+        .list-pane.expanded
+            transform: translateX(0)
 
         .streams-header
             display: flex
@@ -72,13 +76,13 @@ html, body
             background-color: var(--bg)
             overflow: hidden
             position: relative
-            transition: flex 0.3s ease-in-out
-
-        .stream-pane.shrunk
-            flex: 1
+            transition: margin-left 0.3s ease-in-out
 
         .stream-pane.expanded
-            flex: 3
+            margin-left: 0
+
+        .stream-pane.shrunk
+            margin-left: 340px
 
         iframe
             width: 100%
@@ -218,4 +222,3 @@ html, body
 
         .chat-section.hidden
             display: none
-

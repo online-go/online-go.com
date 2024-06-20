@@ -36,7 +36,7 @@ interface Stream {
 export const GoTV = () => {
     const [streams, setStreams] = useState<Stream[]>([]);
     const [selectedStream, setSelectedStream] = useState<Stream | null>(null);
-    const [showStreamsPane, setShowStreamsPane] = useState(true);
+    const [showListPane, setShowListPane] = useState(true);
     const [showChatPane, setShowChatPane] = useState(false);
     const [filterLanguage, setFilterLanguage] = useState("");
     const [activeChatTab, setActiveChatTab] = useState("OGS");
@@ -73,7 +73,7 @@ export const GoTV = () => {
     };
 
     const handleToggleStreamsPane = () => {
-        setShowStreamsPane(!showStreamsPane);
+        setShowListPane(!showListPane);
     };
 
     const handleToggleChatPane = () => {
@@ -105,7 +105,7 @@ export const GoTV = () => {
         <div id="gotv-container" className="gotv-container">
             <UIPush channel="gotv" event="update_streams" action={handleStreamUpdate} />
             <div className="gotv-layout">
-                <div className={`streams-list ${showStreamsPane ? "expanded" : "collapsed"}`}>
+                <div className={`list-pane ${showListPane ? "expanded" : "collapsed"}`}>
                     <div className="streams-header">
                         <h2>Live Streams</h2>
                         <Select
@@ -126,11 +126,11 @@ export const GoTV = () => {
                     ))}
                 </div>
                 <div
-                    className={`list-pane-control ${showStreamsPane ? "expanded" : "collapsed"}`}
+                    className={`list-pane-control ${showListPane ? "expanded" : "collapsed"}`}
                     onClick={handleToggleStreamsPane}
                 />
                 <div
-                    className={`stream-pane ${showStreamsPane ? "shrunk" : "expanded"} ${
+                    className={`stream-pane ${showListPane ? "shrunk" : "expanded"} ${
                         showChatPane ? "chat-open" : ""
                     }`}
                 >
