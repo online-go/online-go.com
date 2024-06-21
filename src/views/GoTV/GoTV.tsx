@@ -34,6 +34,7 @@ interface Stream {
 }
 
 export const GoTV = () => {
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
     const [streams, setStreams] = useState<Stream[]>([]);
     const [selectedStream, setSelectedStream] = useState<Stream | null>(null);
     const [showListPane, setShowListPane] = useState(true);
@@ -71,8 +72,11 @@ export const GoTV = () => {
 
         observer.observe(document.body, { attributes: true });
 
+        const handleResize = () => setIsMobile(window.innerWidth <= 768);
+        window.addEventListener("resize", handleResize);
         return () => {
             observer.disconnect();
+            window.removeEventListener("resize", handleResize);
         };
     }, []);
 
@@ -89,6 +93,9 @@ export const GoTV = () => {
 
     const handleStreamClick = (stream: Stream) => {
         setSelectedStream(stream);
+        if (isMobile) {
+            setShowListPane(false);
+        }
     };
 
     const handleToggleStreamsPane = () => {
@@ -135,6 +142,11 @@ export const GoTV = () => {
                             className="language-select"
                             classNamePrefix="ogs-react-select"
                         />
+                        {isMobile && (
+                            <button className="back-button" onClick={handleToggleStreamsPane}>
+                                <i className="fa fa-arrow-left"></i>
+                            </button>
+                        )}
                     </div>
                     {filteredStreams.map((stream) => (
                         <StreamCard
