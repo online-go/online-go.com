@@ -160,7 +160,9 @@ export const GoTV = () => {
                 <div
                     className={`list-pane-control ${showListPane ? "expanded" : "collapsed"}`}
                     onClick={handleToggleStreamsPane}
-                />
+                >
+                    {isMobile && <span>Streams</span>}
+                </div>
                 <div
                     className={`stream-pane ${showListPane ? "shrunk" : "expanded"} ${
                         showChatPane ? "chat-open" : ""

@@ -269,15 +269,24 @@
         display: flex
         align-items: center
         justify-content: center
-        background: #005580
         color: #FFFFFF
         cursor: pointer
         z-index: 110
+        background: transparent
         border-radius: 0
         transform: translateY(0)
         themed background-color card-background-color
         border: 1px solid transparent
         themed border-color shade4 
+        themed color fg
+        font-size: 1.5rem
+        font-weight: bold
+
+        &::after
+            font-family: "FontAwesome"
+            content: "\f0c9" // FontAwesome list icon
+            display: inline-block
+            margin-left: 10px
 
     #gotv-container .gotv-layout .chat-pane-control
         display: none
@@ -291,6 +300,8 @@
         margin-top: 50px
         flex: none
         height: calc(100vw * 9 / 16)
+        border-bottom: 1px solid transparent
+        themed border-bottom-color shade4
 
     #gotv-container .gotv-layout .chat-pane
         width: 100vw
@@ -299,6 +310,7 @@
         themed background-color bg
         transition: transform 0.3s ease-in-out
         transform: translateY(0)
+        border: none
 
         &.collapsed
             flex: 1 1 auto
