@@ -34,7 +34,7 @@ interface Stream {
 }
 
 export const GoTV = () => {
-    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
     const [streams, setStreams] = useState<Stream[]>([]);
     const [selectedStream, setSelectedStream] = useState<Stream | null>(null);
     const [showListPane, setShowListPane] = useState(true);
