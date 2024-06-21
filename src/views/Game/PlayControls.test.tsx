@@ -1,3 +1,8 @@
+/*
+ * Copyright (C)  Online-Go.com
+ * Copyright (C)  Benjamin P. Jones
+ */
+
 import { createGoban, GobanRenderer, ConditionalMoveTree } from "goban";
 import { PlayControls } from "./PlayControls";
 import { render, screen } from "@testing-library/react";

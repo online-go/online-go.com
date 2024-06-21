@@ -1,3 +1,7 @@
+/*
+ * Copyright (C)  Online-Go.com
+ * Copyright (C)  Benjamin P. Jones
+ */
 import { UserByName } from "./UserByName";
 import * as React from "react";
 import * as player_cache from "../../lib/player_cache";
