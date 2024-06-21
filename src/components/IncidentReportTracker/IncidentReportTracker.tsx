@@ -245,7 +245,7 @@ export function IncidentReportTracker(): JSX.Element | null {
                                 )}
                             </div>
                         )}
-                        {filtered_reports.map((report, index) => (
+                        {filtered_reports.map((report: Report, index) => (
                             <div className="incident" key={report.id}>
                                 <div className="report-header">
                                     <div
@@ -330,7 +330,7 @@ export function IncidentReportTracker(): JSX.Element | null {
                                     {(report.reported_game || null) && (
                                         <span>
                                             {_("Game")}:{" "}
-                                            <Link to={`/game/view/${report.reported_game}`}>
+                                            <Link to={`/game/${report.reported_game}`}>
                                                 #{report.reported_game}
                                             </Link>
                                         </span>

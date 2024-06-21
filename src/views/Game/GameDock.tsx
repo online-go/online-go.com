@@ -44,6 +44,7 @@ interface DockProps {
     annulled: boolean;
     selected_ai_review_uuid: string | null;
     tournament_id?: number;
+    tournament_name?: string;
     ladder_id?: number;
     ai_review_enabled: boolean;
     historical_black: rest_api.games.Player | null;
@@ -67,6 +68,7 @@ export function GameDock({
     annulled,
     selected_ai_review_uuid,
     tournament_id,
+    tournament_name,
     ladder_id,
     historical_black,
     historical_white,
@@ -322,7 +324,7 @@ export function GameDock({
         <Dock>
             {(tournament_id || null) && (
                 <Link className="plain" to={`/tournament/${tournament_id}`}>
-                    <i className="fa fa-trophy" title={_("This is a tournament game")} />{" "}
+                    <i className="fa fa-trophy" title={tournament_name ?? _("Tournament")} />{" "}
                     {_("Tournament")}
                 </Link>
             )}

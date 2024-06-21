@@ -157,12 +157,12 @@ and that abandoned game annulled.`),
     no_escaping_evident: (reported) =>
         interpolate(
             _(`
-Thank you for bringing the possible instance of {{reported}} abandoning the game to \
-our attention. 
+Thank you for bringing the possible instance of {{reported}} abandoning the game to
+our attention.
 
 We looked into the game and did not see them failing to finish the game properly.
 
-It may be that you need to report a different type of problem, or provide more explanation - \
+It may be that you need to report a different type of problem, or provide more explanation -
 you are welcome to raise a new report if that is the case.
 
 Thank you for helping keep OGS enjoyable for everyone. We appreciate it.`),
@@ -251,6 +251,9 @@ and that abandoned game annulled.`),
 Thank you for bringing the possible instance of stalling play by {{reported}} to \
 our attention. We looked into the report and don't see evidence of stalling.
 
+Note that the correct way to signal the game has finished is to pass.  If you didn't pass, \
+then your opponent is entitled to keep playing.
+
 It may be that you need to report a different type of problem, or provide more explanation - \
 you are welcome to raise a new report if that is the case.
 
@@ -259,18 +262,17 @@ Thank you for helping keep OGS enjoyable for everyone. We appreciate it.`),
         ),
     report_type_changed: (change) =>
         interpolate(
-            _(
-                `
+            _(`
 Thanks for your recent report.   We've had to change the 'report type':
 
     {{change}}.
 
-It makes it easier and quicker to process reports if they are raised with the
+It makes it easier and quicker to process reports if they are raised with the \
 correct type - if you could help with that we'd appreciate it.
 
-If this change seems wrong, we'd welcome feedback about that - please contact a moderator to let them know.
-        `,
-            ),
+If this change seems wrong, we'd welcome feedback about that - please contact a \
+moderator to let them know.
+`),
             { change },
         ),
     bot_owner_notified: (bot) =>

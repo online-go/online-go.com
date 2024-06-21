@@ -36,8 +36,8 @@ export interface Report {
     retyped: boolean;
     source: string;
     report_type: ReportType;
-    reporting_user: any;
-    reported_user: any;
+    reporting_user: PlayerCacheEntry;
+    reported_user: PlayerCacheEntry;
     reported_game: number;
     reported_game_move?: number;
     reported_review: number;
