@@ -31,14 +31,15 @@ import {
     createGoban,
     GobanRenderer,
     GobanRendererConfig,
-    GoMath,
     MoveTree,
     AudioClockEvent,
-    GoEnginePhase,
+    GobanEnginePhase,
     GobanModes,
-    GoConditionalMove,
+    ConditionalMoveTree,
     AnalysisTool,
     JGOFNumericPlayerColor,
+    JGOFSealingIntersection,
+    encodeMove,
 } from "goban";
 import { isLiveGame } from "TimeControl";
 import { setExtraActionCallback, PlayerDetails } from "Player";
@@ -96,7 +97,7 @@ export function Game(): JSX.Element | null {
     const last_analysis_sent = React.useRef<any>();
     const on_refocus_title = React.useRef<string>("OGS");
     const last_move_viewed = React.useRef<number>(0);
-    const stashed_conditional_moves = React.useRef<GoConditionalMove>();
+    const stashed_conditional_moves = React.useRef<ConditionalMoveTree>();
     const copied_node = React.useRef<MoveTree>();
     const white_username = React.useRef<string>("White");
     const black_username = React.useRef<string>("Black");
@@ -108,8 +109,10 @@ export function Game(): JSX.Element | null {
     /* State */
     const [view_mode, set_view_mode] = React.useState<ViewMode>(goban_view_mode());
     const [squashed, set_squashed] = React.useState<boolean>(goban_view_squashed());
-    const [estimating_score, set_estimating_score] = React.useState<boolean>(false);
-    const [analyze_pencil_color, set_analyze_pencil_color] = React.useState<string>("#004cff");
+    const [estimating_score, _set_estimating_score] = React.useState<boolean>(false);
+    const estimating_score_ref = React.useRef(estimating_score);
+    const [analyze_pencil_color, _setAnalyzePencilColor] =
+        preferences.usePreference("analysis.pencil-color");
     const user_is_player = useUserIsParticipant(goban.current);
     const [zen_mode, set_zen_mode] = React.useState(preferences.get("start-in-zen-mode"));
     const [autoplaying, set_autoplaying] = React.useState<boolean>(false);
@@ -134,7 +137,7 @@ export function Game(): JSX.Element | null {
     const [ai_review_enabled, set_ai_review_enabled] = React.useState(
         preferences.get("ai-review-enabled"),
     );
-    const [phase, set_phase] = React.useState<GoEnginePhase>();
+    const [phase, set_phase] = React.useState<GobanEnginePhase>();
     const [selected_ai_review_uuid, set_selected_ai_review_uuid] = React.useState<string | null>(
         null,
     );
@@ -155,6 +158,16 @@ export function Game(): JSX.Element | null {
     /* Functions */
     const getLocation = (): string => {
         return location.pathname;
+    };
+
+    function set_estimating_score(value: boolean) {
+        estimating_score_ref.current = value;
+        _set_estimating_score(value);
+    }
+
+    const setAnalyzePencilColor = (color: string) => {
+        preferences.set("analysis.pencil-color", color);
+        _setAnalyzePencilColor(color);
     };
 
     const auto_advance = () => {
@@ -420,6 +433,15 @@ export function Game(): JSX.Element | null {
                     }
                     goban.current.setAnalyzeTool(tool, subtool);
                     break;
+                case "score":
+                    if (subtool == null) {
+                        subtool = "black";
+                    }
+                    goban.current.setAnalyzeTool(tool, subtool);
+                    break;
+                case "removal":
+                    goban.current.setAnalyzeTool(tool, subtool);
+                    break;
             }
         }
 
@@ -489,7 +511,7 @@ export function Game(): JSX.Element | null {
         }
         preferences.set("label-positioning", label_position);
 
-        goban.current.setCoordinates(label_position);
+        goban.current.setLabelPosition(label_position);
     };
 
     const toggleShowTiming = () => {
@@ -517,11 +539,7 @@ export function Game(): JSX.Element | null {
 
         const coord_array = stones_string.split(",").map((item) => item.trim());
         for (let j = 0; j < coord_array.length; j++) {
-            const move = GoMath.decodeMoves(
-                coord_array[j],
-                goban.current.config.width,
-                goban.current.config.height,
-            )[0];
+            const move = goban.current.decodeMoves(coord_array[j])[0];
             goban.current.setMark(move.x, move.y, "triangle", false);
         }
     };
@@ -591,15 +609,29 @@ export function Game(): JSX.Element | null {
         for (let y = 0; y < goban.current.height; ++y) {
             for (let x = 0; x < goban.current.width; ++x) {
                 const pos = goban.current.getMarks(x, y);
-                const mark_types = ["letter", "triangle", "circle", "square", "cross"];
+                const mark_types = [
+                    "letter",
+                    "triangle",
+                    "circle",
+                    "square",
+                    "cross",
+                    "score",
+                    "stone_removed",
+                ];
                 for (let i = 0; i < mark_types.length; ++i) {
                     if (mark_types[i] in pos && pos[mark_types[i]]) {
-                        const mark_key = mark_types[i] === "letter" ? pos.letter : mark_types[i];
+                        const mark_key =
+                            mark_types[i] === "letter"
+                                ? pos.letter
+                                : mark_types[i] === "score"
+                                  ? `score-${pos.score}`
+                                  : mark_types[i];
+
                         if (mark_key) {
                             if (!(mark_key in marks)) {
                                 marks[mark_key] = "";
                             }
-                            marks[mark_key] += GoMath.encodeMove(x, y);
+                            marks[mark_key] += encodeMove(x, y);
                         }
                         ++mark_ct;
                     }
@@ -687,7 +719,7 @@ export function Game(): JSX.Element | null {
         }
         goban.current.setScoringMode(false);
         goban.current.hideScores();
-        goban.current.score_estimate = null;
+        goban.current.score_estimator = null;
     };
     const enterConditionalMovePlanner = () => {
         if (!goban.current) {
@@ -761,7 +793,7 @@ export function Game(): JSX.Element | null {
         return true;
     };
     const stopEstimatingScore = (): MoveTree | undefined => {
-        if (!estimating_score) {
+        if (!estimating_score_ref.current) {
             return;
         }
         set_estimating_score(false);
@@ -770,7 +802,7 @@ export function Game(): JSX.Element | null {
         }
         const ret = goban.current.setScoringMode(false);
         goban.current.hideScores();
-        goban.current.score_estimate = null;
+        goban.current.score_estimator = null;
         return ret;
     };
 
@@ -833,7 +865,7 @@ export function Game(): JSX.Element | null {
     const frag_analyze_button_bar = () => {
         return (
             <AnalyzeButtonBar
-                setAnalyzePencilColor={set_analyze_pencil_color}
+                setAnalyzePencilColor={setAnalyzePencilColor}
                 analyze_pencil_color={analyze_pencil_color}
                 setAnalyzeTool={setAnalyzeTool}
                 is_review={!!review_id}
@@ -1267,6 +1299,20 @@ export function Game(): JSX.Element | null {
             }
         };
 
+        const sync_needs_sealing = (positions: undefined | JGOFSealingIntersection[]) => {
+            console.log("sync_needs_sealing", positions);
+            //const cur = goban.current as GobanRenderer;
+            const engine = goban.current!.engine;
+
+            const cur_move = engine.cur_move;
+            for (const pos of positions || []) {
+                const { x, y } = pos;
+                const marks = cur_move.getMarks(x, y);
+                marks.needs_sealing = true;
+                goban.current!.drawSquare(x, y);
+            }
+        };
+
         const onLoad = () => {
             const engine = goban.current!.engine;
             set_mode(goban.current!.mode);
@@ -1311,6 +1357,7 @@ export function Game(): JSX.Element | null {
         goban.current.on("outcome", sync_stone_removal);
         goban.current.on("stone-removal.accepted", sync_stone_removal);
         goban.current.on("stone-removal.updated", sync_stone_removal);
+        goban.current.on("stone-removal.needs-sealing", sync_needs_sealing);
 
         /* END sync_state port */
 
@@ -1387,11 +1434,7 @@ export function Game(): JSX.Element | null {
 
                 if (stashed_move_string && stashed_review_id === goban.current.review_id) {
                     const prev_last_review_message = goban.current.getLastReviewMessage();
-                    const moves = GoMath.decodeMoves(
-                        stashed_move_string,
-                        goban.current.width,
-                        goban.current.height,
-                    );
+                    const moves = goban.current.decodeMoves(stashed_move_string);
 
                     goban.current.engine.jumpTo(goban.current.engine.move_tree);
                     for (const move of moves) {

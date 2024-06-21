@@ -19,16 +19,20 @@ import { useSearchParams } from "react-router-dom";
 import { _, interpolate, pgettext } from "translate";
 import * as DynamicHelp from "react-dynamic-help";
 import * as data from "data";
+import * as preferences from "preferences";
 import {
-    ConditionalMoveTree,
+    ConditionalMoveResponseTree,
     GobanRenderer,
-    GobanCore,
-    GoConditionalMove,
+    Goban,
+    ConditionalMoveTree,
     GobanModes,
-    GoEnginePhase,
+    GobanEnginePhase,
     AnalysisTool,
     MoveTree,
     PlayerColor,
+    JGOFSealingIntersection,
+    GobanEngine,
+    color_blend,
 } from "goban";
 import { game_control } from "./game_control";
 import { alert } from "swal_config";
@@ -61,6 +65,8 @@ import { AntiGrief } from "./AntiGrief";
 
 import * as moment from "moment";
 
+const MAX_SEALING_LOCATIONS_TO_LIST = 5;
+
 interface PlayControlsProps {
     // Cancel buttons are in props because the Cancel Button is placed below
     // chat on mobile.
@@ -68,10 +74,10 @@ interface PlayControlsProps {
 
     readonly review_list: Array<{ owner: PlayerCacheEntry; id: number }>;
 
-    stashed_conditional_moves?: GoConditionalMove;
+    stashed_conditional_moves?: ConditionalMoveTree;
 
     mode: GobanModes;
-    phase: GoEnginePhase;
+    phase: GobanEnginePhase;
 
     title: string;
     show_title: boolean;
@@ -133,6 +139,10 @@ export function PlayControls({
     const return_param = searchParams.get("return");
     const return_url = return_param && is_valid_url(return_param) ? return_param : null;
     const [stone_removal_accept_disabled, setStoneRemovalAcceptDisabled] = React.useState(false);
+    const [needs_sealing, setNeedsSealing] = React.useState<JGOFSealingIntersection[] | undefined>(
+        engine?.needs_sealing,
+    );
+    const need_to_seal = needs_sealing && needs_sealing.length > 0;
 
     const user_is_active_player = [engine.players.black.id, engine.players.white.id].includes(
         user.id,
@@ -162,6 +172,26 @@ export function PlayControls({
             ["phase", "mode", "outcome", "stone-removal.accepted", "stone-removal.updated"],
             syncStoneRemovalAcceptance,
         );
+    }, [goban]);
+    React.useEffect(() => {
+        const syncNeedsSealing = (locs?: JGOFSealingIntersection[]) => {
+            setNeedsSealing(locs);
+        };
+        const engineUpdated = (engine: GobanEngine) => {
+            syncNeedsSealing(engine.needs_sealing);
+        };
+        if (goban?.engine) {
+            engineUpdated(goban.engine);
+        } else {
+            console.error("No engine in PlayControls");
+        }
+        goban.on("stone-removal.needs-sealing", syncNeedsSealing);
+        goban.on("engine.updated", engineUpdated);
+
+        return () => {
+            goban.off("engine.updated", engineUpdated);
+            goban.off("stone-removal.needs-sealing", syncNeedsSealing);
+        };
     }, [goban]);
     React.useEffect(() => {
         setStoneRemovalAcceptDisabled(true);
@@ -248,7 +278,7 @@ export function PlayControls({
         return false;
     };
     const onStoneRemovalAutoScore = () => {
-        goban.autoScore();
+        goban.performStoneRemovalAutoScoring();
         return false;
     };
 
@@ -436,11 +466,42 @@ export function PlayControls({
             )}
             {(phase === "stone removal" || null) && (
                 <div className="stone-removal-controls">
+                    {need_to_seal && (
+                        <div className="needs-sealing">
+                            {_(
+                                "The highlighted locations need to be sealed before the game can be scored correctly",
+                            )}
+                            <div className="needs-sealing-coordinates">
+                                <span className="needs-sealing-box" />
+                                {needs_sealing
+                                    .slice(0, MAX_SEALING_LOCATIONS_TO_LIST)
+                                    .map((loc) => goban.engine.prettyCoordinates(loc.x, loc.y))
+                                    .join(", ")}
+                                {needs_sealing.length > MAX_SEALING_LOCATIONS_TO_LIST && (
+                                    <span>...</span>
+                                )}
+                            </div>
+
+                            <div style={{ textAlign: "center" }}>
+                                {(user_is_player || null) && (
+                                    <button
+                                        id="game-stone-removal-cancel"
+                                        onClick={onStoneRemovalCancel}
+                                        className={need_to_seal ? "primary" : ""}
+                                    >
+                                        {_("Cancel and resume game")}
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    )}
                     <div>
                         {(user_is_active_player || user.is_moderator || null) && ( // moderators see the button, with its timer, but can't press it
                             <button
                                 className={
-                                    user.is_moderator && !user_is_active_player ? "" : "primary"
+                                    (user.is_moderator && !user_is_active_player) || need_to_seal
+                                        ? ""
+                                        : "primary"
                                 }
                                 disabled={
                                     (user.is_moderator && !user_is_active_player) ||
@@ -500,13 +561,19 @@ export function PlayControls({
                             </button>
                         )}
                     </div>
-                    <div style={{ textAlign: "center" }}>
-                        {(user_is_player || null) && (
-                            <button id="game-stone-removal-cancel" onClick={onStoneRemovalCancel}>
-                                {_("Cancel and resume game")}
-                            </button>
-                        )}
-                    </div>
+                    {!need_to_seal && (
+                        <div style={{ textAlign: "center" }}>
+                            {(user_is_player || null) && (
+                                <button
+                                    id="game-stone-removal-cancel"
+                                    onClick={onStoneRemovalCancel}
+                                    className={need_to_seal ? "primary" : ""}
+                                >
+                                    {_("Cancel and resume game")}
+                                </button>
+                            )}
+                        </div>
+                    )}
 
                     <div className="explanation">
                         {_(
@@ -532,7 +599,7 @@ export function PlayControls({
                         </span>
                         {(conditional_moves || null) && (
                             <ConditionalMoveTreeDisplay
-                                tree={conditional_moves as GoConditionalMove}
+                                tree={conditional_moves as ConditionalMoveTree}
                                 conditional_path=""
                             />
                         )}
@@ -644,6 +711,8 @@ export function AnalyzeButtonBar({
 }: AnalyzeButtonBarProps) {
     const [analyze_tool, set_analyze_tool] = React.useState<AnalysisTool>();
     const [analyze_subtool, set_analyze_subtool] = React.useState<string>();
+    const [analyze_score_color, setAnalyzeScoreColor] =
+        preferences.usePreference("analysis.score-color");
 
     const goban = useGoban();
 
@@ -677,12 +746,28 @@ export function AnalyzeButtonBar({
         goban.clearAnalysisDrawing();
     };
 
+    const doAnalysisScore = () => {
+        goban.markAnalysisScores();
+    };
+
+    const clearAnalysisScoring = () => {
+        goban.clearAnalysisScores();
+    };
+    const setScoreColor = (ev: React.ChangeEvent<HTMLInputElement>) => {
+        const color = ev.target.value;
+        if (goban.analyze_tool === "score") {
+            goban.analyze_subtool = color;
+        }
+        setAnalyzeScoreColor(color);
+    };
+
     const user_id = data.get("user").id;
     const is_player =
         goban.engine.players.black.id === user_id || goban.engine.players.white.id === user_id;
 
     return (
         <div className="game-analyze-button-bar">
+            {/* Stone placement */}
             <div className="btn-group">
                 <button
                     onClick={() => setAnalyzeTool("stone", "alternate")}
@@ -723,8 +808,23 @@ export function AnalyzeButtonBar({
                 >
                     <img alt="alternate" src={data.get("config.cdn_release") + "/img/white.png"} />
                 </button>
+
+                <button
+                    onClick={() => setAnalyzeTool("removal", "")}
+                    title={_("Mark stones for removal")}
+                    className={
+                        "stone-removal-button " + (analyze_tool === "removal" ? "active" : "")
+                    }
+                >
+                    <i className="ogs-label-x removal"></i>
+                </button>
+
+                <button className="pass-button" onClick={analysis_pass}>
+                    {_("Pass")}
+                </button>
             </div>
 
+            {/* Drawing */}
             <div className="btn-group">
                 <button
                     onClick={() => setAnalyzeTool("draw", analyze_pencil_color)}
@@ -733,17 +833,18 @@ export function AnalyzeButtonBar({
                 >
                     <i className="fa fa-pencil"></i>
                 </button>
+                <input
+                    type="color"
+                    value={analyze_pencil_color}
+                    title={_("Select pen color")}
+                    onChange={setPencilColor}
+                />
                 <button onClick={clearAnalysisDrawing} title={_("Clear pen marks")}>
                     <i className="fa fa-eraser"></i>
                 </button>
             </div>
-            <input
-                type="color"
-                value={analyze_pencil_color}
-                title={_("Select pen color")}
-                onChange={setPencilColor}
-            />
 
+            {/* Copy/paste */}
             <div className="btn-group">
                 <button
                     onClick={() => copyBranch(goban, copied_node, mode)}
@@ -763,6 +864,7 @@ export function AnalyzeButtonBar({
                 </button>
             </div>
 
+            {/* Marks */}
             <div className="btn-group">
                 <button
                     onClick={() => setAnalyzeTool("label", "letters")}
@@ -819,6 +921,75 @@ export function AnalyzeButtonBar({
                     <i className="ogs-label-x"></i>
                 </button>
             </div>
+
+            {/* Scoring */}
+            <div className="btn-group">
+                <button
+                    onClick={() => setAnalyzeTool("score", "black")}
+                    title={_("Set scoring locations")}
+                    className={
+                        "score-button " +
+                        (analyze_tool === "score" && analyze_subtool === "black" ? "active" : "")
+                    }
+                >
+                    <span className="score-square black"></span>
+                </button>
+
+                <button
+                    onClick={() => setAnalyzeTool("score", "white")}
+                    title={_("Set scoring locations")}
+                    className={
+                        "score-button " +
+                        (analyze_tool === "score" && analyze_subtool === "white" ? "active" : "")
+                    }
+                >
+                    <span className="score-square white"></span>
+                </button>
+
+                <button
+                    onClick={() => setAnalyzeTool("score", analyze_score_color)}
+                    title={_("Set scoring locations")}
+                    className={
+                        "score-button " +
+                        (analyze_tool === "score" &&
+                        analyze_subtool !== "white" &&
+                        analyze_subtool !== "black"
+                            ? "active"
+                            : "")
+                    }
+                >
+                    <span
+                        className="score-square custom"
+                        style={{
+                            backgroundColor: analyze_score_color,
+                            borderColor: color_blend("#888888", analyze_score_color),
+                        }}
+                    ></span>
+                </button>
+
+                <input
+                    type="color"
+                    value={analyze_score_color}
+                    title={_("Select score")}
+                    onChange={setScoreColor}
+                />
+
+                <button
+                    onClick={() => {
+                        doAnalysisScore();
+                    }}
+                    title={_("Score")}
+                    className={"score-button "}
+                >
+                    <i className="fa fa-calculator"></i>
+                </button>
+
+                <button onClick={clearAnalysisScoring} title={_("Clear scores")}>
+                    <i className="fa fa-eraser"></i>
+                </button>
+            </div>
+
+            {/* Copy to conditional move planner */}
             {((!is_review &&
                 !goban.engine.rengo &&
                 is_player &&
@@ -834,6 +1005,8 @@ export function AnalyzeButtonBar({
                     </button>
                 </div>
             )}
+
+            {/* Back to game button */}
             <div className="analyze-mode-buttons">
                 {(mode === "analyze" || null) && (
                     <span>
@@ -842,9 +1015,6 @@ export function AnalyzeButtonBar({
                                 {_("Back to Game")}
                             </button>
                         )}
-                        <button className="sm primary bold pass-button" onClick={analysis_pass}>
-                            {_("Pass")}
-                        </button>
                     </span>
                 )}
             </div>
@@ -975,18 +1145,18 @@ interface ReviewControlsProps {
 }
 
 const useReviewOwnerId = generateGobanHook(
-    (goban: GobanCore) => goban.review_owner_id,
+    (goban: Goban) => goban.review_owner_id,
     ["review_owner_id"],
 );
 const useReviewControllerId = generateGobanHook(
-    (goban: GobanCore) => goban.review_controller_id,
+    (goban: Goban) => goban.review_controller_id,
     ["review_controller_id"],
 );
 
 let review_out_of_sync = false;
 
 const useReviewOutOfSync = generateGobanHook(
-    (goban: GobanCore) => {
+    (goban: Goban) => {
         if (game_control.in_pushed_analysis) {
             return review_out_of_sync;
         }
@@ -1229,7 +1399,7 @@ function ShareAnalysisButton(props: ShareAnalysisButtonProperties): JSX.Element 
     }
 }
 
-function stoneRemovalAccepted(goban: GobanCore, color: PlayerColor) {
+function stoneRemovalAccepted(goban: Goban, color: PlayerColor) {
     const engine = goban.engine;
 
     if (engine.phase !== "stone removal") {
@@ -1248,22 +1418,22 @@ const usePaused = generateGobanHook(
     ["paused"],
 );
 
-// Converts move diff string into a GoConditionalMove.
+// Converts move diff string into a ConditionalMoveTree.
 // Caller should check that the moves start from the last official move and
 // that the first move in the string is the opponent's.
-function diffToConditionalMove(moves: string): GoConditionalMove {
+function diffToConditionalMove(moves: string): ConditionalMoveTree {
     if (moves.length % 2 !== 0) {
         throw new Error("invalid move string");
     }
 
-    let tree = new GoConditionalMove(null);
+    let tree = new ConditionalMoveTree(null);
     const start = moves.length - 1 - ((moves.length - 1) % 4);
     for (let i = start; i >= 0; i -= 4) {
         const opponent = moves.slice(i, i + 2);
         const player = moves.slice(i + 2, i + 4) || null;
 
         tree.move = player;
-        const parent = new GoConditionalMove(null, tree);
+        const parent = new ConditionalMoveTree(null, tree);
         if (player != null) {
             parent.children[opponent] = tree;
         }
@@ -1297,7 +1467,7 @@ function automateBranch(goban: GobanRenderer): void {
     }
 
     const before = goban.conditional_tree.duplicate();
-    const tree = mergeGoConditionalMoves(before, diffToConditionalMove(diff.moves));
+    const tree = mergeConditionalMoves(before, diffToConditionalMove(diff.moves));
 
     goban.setConditionalTree(tree);
     goban.saveConditionalMoves();
@@ -1307,14 +1477,20 @@ function automateBranch(goban: GobanRenderer): void {
 
 // Merges two conditional trees into one. If there are conflicts, the branch in
 // `b` overwrites the one in `a`.
-function mergeGoConditionalMoves(a: GoConditionalMove, b: GoConditionalMove): GoConditionalMove {
+function mergeConditionalMoves(
+    a: ConditionalMoveTree,
+    b: ConditionalMoveTree,
+): ConditionalMoveTree {
     const treeA = a.encode()[1];
     const treeB = b.encode()[1];
     mergeConditionalTrees(treeA, treeB);
-    return GoConditionalMove.decode([null, treeA]);
+    return ConditionalMoveTree.decode([null, treeA]);
 }
 
-function mergeConditionalTrees(a: ConditionalMoveTree, b: ConditionalMoveTree): void {
+function mergeConditionalTrees(
+    a: ConditionalMoveResponseTree,
+    b: ConditionalMoveResponseTree,
+): void {
     if (a === b) {
         return;
     }

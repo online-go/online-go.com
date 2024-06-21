@@ -16,7 +16,7 @@
  */
 
 import * as data from "data";
-import { GobanSelectedThemes, GoThemes, LabelPosition } from "goban";
+import { GobanSelectedThemes, Goban, LabelPosition } from "goban";
 import * as React from "react";
 import { current_language } from "translate";
 import { DataSchema } from "./data_schema";
@@ -151,6 +151,9 @@ export const defaults = {
 
     "sgf.sort-order": "date_added",
     "sgf.sort-descending": true,
+
+    "analysis.pencil-color": "#004cff",
+    "analysis.score-color": "#3ACC2B",
 };
 
 defaults["profanity-filter"][current_language] = true;
@@ -228,14 +231,14 @@ export function getSelectedThemes(): { board: string; black: string; white: stri
     let white = get("goban-theme-white") || (default_plain ? "Plain" : "Shell");
     let black = get("goban-theme-black") || (default_plain ? "Plain" : "Slate");
 
-    if (!(board in GoThemes["board"])) {
+    if (!(board in Goban.THEMES["board"])) {
         board = default_plain ? "Plain" : "Kaya";
     }
-    if (!(white in GoThemes["white"])) {
+    if (!(white in Goban.THEMES["white"])) {
         //white = default_plain ? "Plain" : "Plain";
         white = default_plain ? "Plain" : "Shell";
     }
-    if (!(black in GoThemes["black"])) {
+    if (!(black in Goban.THEMES["black"])) {
         console.log("Theme ", black, "didn't exist, so resetting");
         //black = default_plain ? "Plain" : "Plain";
         black = default_plain ? "Plain" : "Slate";

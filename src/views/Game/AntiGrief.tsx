@@ -24,7 +24,7 @@ import { useUser } from "hooks";
 import { JGOFClockWithTransmitting, JGOFTimeControl } from "goban";
 import { browserHistory } from "../../ogsHistory";
 import { toast } from "toast";
-import { StallingScoreEstimate } from "goban/lib/protocol";
+import { StallingScoreEstimate } from "goban";
 
 const ANTI_ESCAPING_TIMEOUT = 60; // number of seconds to wait before allowing the "Claim victory" button to be appear and be clicked
 

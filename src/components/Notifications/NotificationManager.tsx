@@ -30,7 +30,7 @@ import { sfx } from "sfx";
 import { ogs_has_focus, getCurrentGameId, shouldOpenNewTab } from "misc";
 import { lookingAtOurLiveGame } from "TimeControl/util";
 import { PlayerCacheEntry } from "src/lib/player_cache";
-import { GameListEntry } from "goban/lib/protocol";
+import { GameListEntry } from "goban";
 
 //declare let Notification: any;
 

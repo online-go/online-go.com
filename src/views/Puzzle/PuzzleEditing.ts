@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { GobanRendererConfig, GoMath, PuzzleConfig, PuzzlePlacementSetting } from "goban";
+import { decodeMoves, GobanRendererConfig, PuzzleConfig, PuzzlePlacementSetting } from "goban";
 import { errorAlerter, dup } from "misc";
 import { PuzzleTransform } from "./PuzzleTransform";
 import { _Puzzle } from "./Puzzle";
@@ -306,8 +306,8 @@ export class PuzzleEditor {
             }
         };
 
-        process(GoMath.decodeMoves(puzzle.initial_state!.black, width, height), width, height);
-        process(GoMath.decodeMoves(puzzle.initial_state!.white, width, height), width, height);
+        process(decodeMoves(puzzle.initial_state!.black, width, height), width, height);
+        process(decodeMoves(puzzle.initial_state!.white, width, height), width, height);
         process(puzzle.move_tree, width, height);
 
         if (ret.top > ret.bottom) {

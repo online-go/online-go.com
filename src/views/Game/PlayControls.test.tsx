@@ -1,4 +1,4 @@
-import { createGoban, GobanRenderer, GoConditionalMove } from "goban";
+import { createGoban, GobanRenderer, ConditionalMoveTree } from "goban";
 import { PlayControls } from "./PlayControls";
 import { render, screen } from "@testing-library/react";
 import * as React from "react";
@@ -223,7 +223,7 @@ test("Renders Pass if it is the user's turn", () => {
  * ```
  */
 function makeConditionalMoveTree() {
-    return GoConditionalMove.decode([
+    return ConditionalMoveTree.decode([
         null,
         {
             aa: ["bb", { cc: [null, {}], dd: ["ee", { ff: ["gg", {}] }], hh: ["ii", {}] }],

@@ -30,7 +30,7 @@ import { ActiveTournamentList, GroupList } from "types";
 import { _, interpolate } from "translate";
 import { getBlocks } from "BlockPlayer";
 import { insert_into_sorted_list, string_splitter, n2s, Timeout } from "misc";
-import { User } from "goban/lib/protocol";
+import { User } from "goban";
 
 export interface ChatMessage {
     channel: string;

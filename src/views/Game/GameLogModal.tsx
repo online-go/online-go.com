@@ -21,7 +21,7 @@ import { _ } from "translate";
 import { openModal, Modal } from "Modal";
 import { Player } from "Player";
 import { socket } from "sockets";
-import { GoEngineConfig } from "goban";
+import { GobanEngineConfig } from "goban";
 import { ScoringEventThumbnail } from "../../views/ReportsCenter/ScoringEventThumbnail";
 
 interface Events {}
@@ -124,12 +124,12 @@ export function LogData({
     event,
     data,
 }: {
-    config: GoEngineConfig;
+    config: GobanEngineConfig;
     markCoords: (stones: string) => void;
     event: string;
     data: any;
 }): JSX.Element | null {
-    const [markedConfig, setMarkedConfig] = React.useState<GoEngineConfig | null>(null);
+    const [markedConfig, setMarkedConfig] = React.useState<GobanEngineConfig | null>(null);
     React.useEffect(() => {
         if (event === "game_created") {
             return;

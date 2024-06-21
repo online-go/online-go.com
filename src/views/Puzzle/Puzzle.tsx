@@ -663,7 +663,7 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
         }
         preferences.set("label-positioning-puzzles", label_position);
 
-        goban.setCoordinates(label_position);
+        goban.setLabelPosition(label_position);
         this.setState({ label_positioning: label_position });
     };
 

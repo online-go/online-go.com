@@ -17,7 +17,7 @@
 
 /* spell-checker: disable */
 
-import { GoMath } from "goban";
+import { decodeMoves, encodeMoves, prettyCoordinates } from "goban";
 
 export class TransformSettings {
     constructor(
@@ -102,9 +102,9 @@ export class PuzzleTransform {
         }
 
         txt = txt.replace(/\b([a-zA-Z][0-9]{1,2})\b/g, (_match, contents, _offset, _s) => {
-            const dec = GoMath.decodeMoves(contents, puzzle.width, puzzle.height);
+            const dec = decodeMoves(contents, puzzle.width, puzzle.height);
             this.transformCoordinate(puzzle, dec[0], puzzle.width, puzzle.height);
-            const ret = GoMath.prettyCoords(dec[0].x, dec[0].y, puzzle.height);
+            const ret = prettyCoordinates(dec[0].x, dec[0].y, puzzle.height);
             if (/[a-z]/.test(contents)) {
                 return ret.toLowerCase();
             } else {
@@ -168,10 +168,10 @@ export class PuzzleTransform {
             puzzle.initial_state.black &&
             puzzle.initial_state.black.length
         ) {
-            puzzle.initial_state.black = GoMath.encodeMoves(
+            puzzle.initial_state.black = encodeMoves(
                 this.transformCoordinates(
                     puzzle,
-                    GoMath.decodeMoves(puzzle.initial_state.black, width, height),
+                    decodeMoves(puzzle.initial_state.black, width, height),
                     width,
                     height,
                 ),
@@ -182,10 +182,10 @@ export class PuzzleTransform {
             puzzle.initial_state.white &&
             puzzle.initial_state.white.length
         ) {
-            puzzle.initial_state.white = GoMath.encodeMoves(
+            puzzle.initial_state.white = encodeMoves(
                 this.transformCoordinates(
                     puzzle,
-                    GoMath.decodeMoves(puzzle.initial_state.white, width, height),
+                    decodeMoves(puzzle.initial_state.white, width, height),
                     width,
                     height,
                 ),

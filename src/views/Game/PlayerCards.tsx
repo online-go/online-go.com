@@ -18,7 +18,7 @@
 import * as React from "react";
 import { get } from "requests";
 
-import { GobanRenderer, GobanCore, PlayerScore, JGOFPlayerSummary } from "goban";
+import { GobanRenderer, Goban, PlayerScore, JGOFPlayerSummary } from "goban";
 import { icon_size_url } from "PlayerIcon";
 import { CountDown } from "./CountDown";
 import { Flag } from "Flag";
@@ -157,11 +157,11 @@ function NumCapturesText({ color, score, zen_mode, hidden }: NumCapturesProps) {
 }
 
 const useScore = generateGobanHook(
-    (goban: GobanCore) => {
+    (goban: Goban) => {
         const engine = goban.engine;
 
         // TODO: decouple this from stone_removal
-        // The issue is that GoEngine.computeScore() will not return accurate
+        // The issue is that GobanEngine.computeScore() will not return accurate
         // prisoners and total at the same time.  One must choose using the
         // boolean argument.
         if (
@@ -251,7 +251,7 @@ export function PlayerCard({
     // In other cases, we only have one if `historical` is set
     const player_bg: React.CSSProperties = {};
     if (engine.rengo && player && (player as any)["icon-url"]) {
-        // Does icon-url need to be added to GoEnginePlayerEntry? -BPJ
+        // Does icon-url need to be added to GobanEnginePlayerEntry? -BPJ
         const icon = icon_size_url((player as any)["icon-url"], 64);
         player_bg.backgroundImage = `url("${icon}")`;
     } else if (historical) {
@@ -446,7 +446,7 @@ function stonesString(handicap_stones: number) {
     return "(" + handicap_stones + ")";
 }
 
-function useAutoResignExpiration(goban: GobanCore, color: "black" | "white") {
+function useAutoResignExpiration(goban: Goban, color: "black" | "white") {
     const [auto_resign_expiration, setAutoResignExpiration] = React.useState<Date | null>(null);
     React.useEffect(() => {
         const handleAutoResign = (data?: { player_id: number; expiration: number }) => {
@@ -485,7 +485,7 @@ function useAutoResignExpiration(goban: GobanCore, color: "black" | "white") {
 
 interface ScorePopupProps {
     show: boolean;
-    goban: GobanCore;
+    goban: Goban;
     color: "black" | "white";
 }
 

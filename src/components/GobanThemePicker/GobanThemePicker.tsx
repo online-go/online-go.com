@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import { _, pgettext } from "translate";
-import { GoTheme, GoThemesSorted, GoThemeBackgroundCSS } from "goban";
+import { Goban, GobanTheme, GobanThemeBackgroundCSS } from "goban";
 import { getSelectedThemes } from "preferences";
 import * as preferences from "preferences";
 import { PersistentElement } from "PersistentElement";
@@ -75,10 +75,10 @@ export class GobanThemePicker extends React.PureComponent<
                 selected.white === "Custom",
         };
 
-        for (const k in GoThemesSorted) {
+        for (const k in Goban.THEMES_SORTED) {
             this.canvases[k] = [];
             this.selectTheme[k] = {};
-            for (const theme of GoThemesSorted[k]) {
+            for (const theme of Goban.THEMES_SORTED[k]) {
                 this.canvases[k].push(
                     $("<canvas>").attr("width", this.state.size).attr("height", this.state.size),
                 );
@@ -161,16 +161,16 @@ export class GobanThemePicker extends React.PureComponent<
         } = this.state;
 
         const standard_themes = {
-            board: GoThemesSorted.board.filter((x) => x.theme_name !== "Custom"),
-            white: GoThemesSorted.white.filter((x) => x.theme_name !== "Custom"),
-            black: GoThemesSorted.black.filter((x) => x.theme_name !== "Custom"),
+            board: Goban.THEMES_SORTED.board.filter((x) => x.theme_name !== "Custom"),
+            white: Goban.THEMES_SORTED.white.filter((x) => x.theme_name !== "Custom"),
+            black: Goban.THEMES_SORTED.black.filter((x) => x.theme_name !== "Custom"),
         };
 
-        const custom_board = GoThemesSorted.board.filter((x) => x.theme_name === "Custom")[0];
-        const custom_black = GoThemesSorted.black.filter((x) => x.theme_name === "Custom")[0];
-        const custom_white = GoThemesSorted.white.filter((x) => x.theme_name === "Custom")[0];
+        const custom_board = Goban.THEMES_SORTED.board.filter((x) => x.theme_name === "Custom")[0];
+        const custom_black = Goban.THEMES_SORTED.black.filter((x) => x.theme_name === "Custom")[0];
+        const custom_white = Goban.THEMES_SORTED.white.filter((x) => x.theme_name === "Custom")[0];
 
-        const active_standard_board_theme = GoThemesSorted.board.filter(
+        const active_standard_board_theme = Goban.THEMES_SORTED.board.filter(
             (x) => x.theme_name === this.state.board,
         )[0];
 
@@ -487,8 +487,8 @@ export class GobanThemePicker extends React.PureComponent<
     renderPickers() {
         const square_size = this.state.size;
 
-        for (let i = 0; i < GoThemesSorted.board.length; ++i) {
-            const theme = GoThemesSorted.board[i];
+        for (let i = 0; i < Goban.THEMES_SORTED.board.length; ++i) {
+            const theme = Goban.THEMES_SORTED.board[i];
             const canvas = this.canvases.board[i];
             const ctx = (canvas[0] as HTMLCanvasElement).getContext("2d");
             if (!ctx) {
@@ -516,8 +516,8 @@ export class GobanThemePicker extends React.PureComponent<
             ctx.fillText("A", xx + 0.5, yy + 0.5);
         }
 
-        for (let i = 0; i < GoThemesSorted.white.length; ++i) {
-            const theme = GoThemesSorted.white[i];
+        for (let i = 0; i < Goban.THEMES_SORTED.white.length; ++i) {
+            const theme = Goban.THEMES_SORTED.white[i];
             const canvas = this.canvases.white[i];
             const ctx = (canvas[0] as HTMLCanvasElement).getContext("2d");
             if (!ctx) {
@@ -539,8 +539,8 @@ export class GobanThemePicker extends React.PureComponent<
             draw();
         }
 
-        for (let i = 0; i < GoThemesSorted.black.length; ++i) {
-            const theme = GoThemesSorted.black[i];
+        for (let i = 0; i < Goban.THEMES_SORTED.black.length; ++i) {
+            const theme = Goban.THEMES_SORTED.black[i];
             const canvas = this.canvases.black[i];
             const ctx = (canvas[0] as HTMLCanvasElement).getContext("2d");
             if (!ctx) {
@@ -564,11 +564,11 @@ export class GobanThemePicker extends React.PureComponent<
     }
 }
 
-function css2react(style: GoThemeBackgroundCSS): { [k: string]: string } {
+function css2react(style: GobanThemeBackgroundCSS): { [k: string]: string } {
     const react_style = {};
     for (const k in style) {
         const react_key = k.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
-        (react_style as any)[react_key] = style[k as keyof GoThemeBackgroundCSS];
+        (react_style as any)[react_key] = style[k as keyof GobanThemeBackgroundCSS];
     }
 
     return react_style;
@@ -579,7 +579,7 @@ function ThemeSample({
     color,
     size,
 }: {
-    theme: GoTheme;
+    theme: GobanTheme;
     color: "black" | "white";
     size: number;
 }) {

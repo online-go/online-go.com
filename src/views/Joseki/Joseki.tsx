@@ -29,7 +29,7 @@ import * as data from "data";
 import { _, interpolate, pgettext, npgettext } from "translate";
 import { get, put, post } from "requests";
 import { KBShortcut } from "KBShortcut";
-import { GobanRenderer, GoMath, GobanRendererConfig, JGOFMove, createGoban } from "goban";
+import { GobanRenderer, GobanRendererConfig, JGOFMove, createGoban } from "goban";
 import { AutoTranslate } from "AutoTranslate";
 import { Markdown } from "Markdown";
 import { chat_manager } from "chat_manager";
@@ -669,7 +669,9 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
             } else {
                 const label = option["variation_label"];
                 new_options[label] = {
-                    move: GoMath.encodePrettyCoord(option["placement"], this.goban.height),
+                    move: this.goban.encodeMove(
+                        this.goban.decodePrettyCoordinates(option["placement"]),
+                    ),
                     color: (ColorMap as any)[option["category"]],
                 };
             }
@@ -682,8 +684,10 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
         const new_marks: { [k: string]: string } = {};
         current_marks.forEach((mark: { [k: string]: string }) => {
             const label = mark["label"];
-            new_marks[label] = GoMath.encodePrettyCoord(mark["position"], this.goban.height);
-            this.goban.setMarks(new_marks);
+            (new_marks[label] = this.goban.encodeMove(
+                this.goban.decodePrettyCoordinates(mark["position"]),
+            )),
+                this.goban.setMarks(new_marks);
         });
         this.goban.redraw(true); // stop it optimizing away color changes when mark doesn't change.
     };
@@ -695,18 +699,14 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
 
     onBoardUpdate = () => {
         this.last_click = new Date().valueOf();
-        const mvs = GoMath.decodeMoves(
-            this.goban.engine.cur_move.getMoveStringToThisPoint(),
-            this.goban.width,
-            this.goban.height,
-        );
+        const mvs = this.goban.decodeMoves(this.goban.engine.cur_move.getMoveStringToThisPoint());
 
         let move_string;
         let the_move;
 
         if (mvs.length > 0) {
             const move_string_array = mvs.map((p) => {
-                let coord = GoMath.prettyCoords(p.x, p.y, this.goban.height);
+                let coord = this.goban.prettyCoordinates(p.x, p.y);
                 coord = coord === "" ? "pass" : coord; // if we put '--' here instead ... https://stackoverflow.com/questions/56822128/rtl-text-direction-displays-dashes-very-strangely-bug-or-misunderstanding#
                 return coord;
             });
@@ -737,7 +737,7 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
             ... otherwise stone placement will be left turned off.
             */
 
-        const placement = move ? GoMath.prettyCoords(move.x, move.y, this.goban.height) : "root";
+        const placement = move ? this.goban.prettyCoordinates(move.x, move.y) : "root";
 
         if (this.back_stepping) {
             const play = ".root." + move_string.replace(/,/g, ".");
@@ -906,7 +906,9 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
         if (this.last_placement !== "pass") {
             const new_options = {
                 X: {
-                    move: GoMath.encodePrettyCoord(this.last_placement, this.goban.height),
+                    move: this.goban.encodeMove(
+                        this.goban.decodePrettyCoordinates(this.last_placement),
+                    ),
                     color: ColorMap["MISTAKE"],
                 },
             };

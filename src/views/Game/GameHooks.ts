@@ -16,9 +16,9 @@
  */
 
 import * as React from "react";
-import { GobanCore } from "goban";
+import { Goban } from "goban";
 import { game_control } from "./game_control";
-import { Events as GobanEvents } from "goban";
+import { GobanEvents } from "goban";
 import * as data from "data";
 
 /**
@@ -29,7 +29,7 @@ import * as data from "data";
  * @param events a list of events that should trigger a recalculation of this value.
  * @returns a React Hook.
  */
-export function generateGobanHook<T, G extends GobanCore | null>(
+export function generateGobanHook<T, G extends Goban | null>(
     deriveProp: (goban: G) => T,
     events: Array<keyof Omit<GobanEvents, "load">> = [],
 ): (goban: G) => T {
@@ -58,7 +58,7 @@ export function generateGobanHook<T, G extends GobanCore | null>(
  * @returns a callback that will unsubscribe from all events that were just subscribed.
  */
 export function subscribeAllEvents(
-    goban: GobanCore,
+    goban: Goban,
     events: Array<keyof Omit<GobanEvents, "load">> = [],
     cb: () => void,
 ) {
@@ -74,7 +74,7 @@ export function subscribeAllEvents(
 }
 
 /** React hook that returns true if an undo was requested on the current move */
-export function useShowUndoRequested(goban: GobanCore): boolean {
+export function useShowUndoRequested(goban: Goban): boolean {
     const [show_undo_requested, setShowUndoRequested] = React.useState(
         !!goban &&
             goban.engine.undo_requested === goban.engine.last_official_move.move_number &&
@@ -116,7 +116,7 @@ export function useShowUndoRequested(goban: GobanCore): boolean {
 }
 
 /** React hook that returns true if user is a participant in this game */
-export const useUserIsParticipant = generateGobanHook((goban: GobanCore | null) => {
+export const useUserIsParticipant = generateGobanHook((goban: Goban | null) => {
     const user = data.get("user");
     if (!goban || !user) {
         return false;
@@ -126,19 +126,16 @@ export const useUserIsParticipant = generateGobanHook((goban: GobanCore | null) 
 
 /** React hook that returns the current move number from goban */
 export const useCurrentMoveNumber = generateGobanHook(
-    (goban: GobanCore | null) => goban?.engine.cur_move?.move_number || -1,
+    (goban: Goban | null) => goban?.engine.cur_move?.move_number || -1,
     ["cur_move"],
 );
 
 /** React hook that returns the phase */
-export const usePhase = generateGobanHook(
-    (goban: GobanCore | null) => goban?.engine.phase,
-    ["phase"],
-);
+export const usePhase = generateGobanHook((goban: Goban | null) => goban?.engine.phase, ["phase"]);
 
 /** React hook that returns the current move tree from goban */
 export const useCurrentMove = generateGobanHook(
-    (goban: GobanCore | null) => goban?.engine.cur_move,
+    (goban: Goban | null) => goban?.engine.cur_move,
     ["cur_move"],
 );
 
@@ -147,13 +144,13 @@ export const useCurrentMove = generateGobanHook(
  * @returns the player ID of the player whose turn it is.
  */
 export const usePlayerToMove = generateGobanHook(
-    (goban: GobanCore | null) => goban?.engine.playerToMove() ?? 0,
+    (goban: Goban | null) => goban?.engine.playerToMove() ?? 0,
     ["cur_move", "last_official_move"],
 );
 
 /** React hook that returns true if the title should be shown. */
 export const useShowTitle = generateGobanHook(
-    (goban: GobanCore | null) => {
+    (goban: Goban | null) => {
         if (!goban) {
             return false;
         }
@@ -163,4 +160,4 @@ export const useShowTitle = generateGobanHook(
 );
 
 /** React hook that returns the title text (e.g. "Black to move"). */
-export const useTitle = generateGobanHook((goban: GobanCore | null) => goban?.title, ["title"]);
+export const useTitle = generateGobanHook((goban: Goban | null) => goban?.title, ["title"]);
