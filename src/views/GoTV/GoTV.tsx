@@ -144,7 +144,7 @@ export const GoTV = () => {
                         />
                         {isMobile && (
                             <button className="back-button" onClick={handleToggleStreamsPane}>
-                                <i className="fa fa-arrow-left"></i>
+                                <i className="fa fa-arrow-up"></i>
                             </button>
                         )}
                     </div>
