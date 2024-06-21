@@ -81,7 +81,7 @@
         "supervisor": "^0.12.0",
         "ts-jest": "^29.1.1",
         "ts-loader": "^9.5.1",
-        "typescript": "=5.4.5",
+        "typescript": "=5.5.2",
         "webpack": "^5.91.0",
         "webpack-bundle-analyzer": "^4.10.2",
         "webpack-cli": "^5.1.4",
