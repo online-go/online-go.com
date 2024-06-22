@@ -191,11 +191,28 @@
 
         .chat-tab
             flex: 1
-            text-align: center
-            padding: 10px
             cursor: pointer
             border-bottom: 2px solid transparent
             transition: background-color 0.3s ease-in-out, border-bottom 0.3s ease-in-out
+            display: flex
+            justify-content: center
+            align-items: center
+
+            .ogs-chat-tab-logo
+                background-image: svg-load("../assets/ogslogo.svg")
+                background-size: contain
+                background-repeat: no-repeat
+                height: 30px
+                width: 30px
+                filter: drop-shadow(0 0 25px rgba(255, 255, 255, 0.3))
+
+            .twitch-chat-tab-logo
+                background-image: svg-load("../assets/glitch_flat_purple.svg")
+                background-size: contain
+                background-repeat: no-repeat
+                width: 30px
+                height: 30px
+                filter: drop-shadow(0 0 25px rgba(255, 255, 255, 0.3))
 
         .chat-tab.active
             border-bottom: 2px solid transparent

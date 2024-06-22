@@ -186,13 +186,13 @@ export const GoTV = () => {
                             className={`chat-tab ${activeChatTab === "OGS" ? "active" : ""}`}
                             onClick={() => handleChatTabChange("OGS")}
                         >
-                            OGS
+                            <span className="ogs-chat-tab-logo"></span>
                         </div>
                         <div
                             className={`chat-tab ${activeChatTab === "Twitch" ? "active" : ""}`}
                             onClick={() => handleChatTabChange("Twitch")}
                         >
-                            Twitch
+                            <span className="twitch-chat-tab-logo"></span>
                         </div>
                     </div>
                     {selectedStream && (
