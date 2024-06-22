@@ -224,6 +224,10 @@ export function NavBar(): JSX.Element {
                         <i className="fa fa-eye"></i>
                         {_("Games")}
                     </Link>
+                    <Link to="/gotv">
+                        <i className="fa fa-tv"></i>
+                        {_("GoTV")}
+                    </Link>
                 </Menu>
 
                 <Menu title={_("Community")} to="/chat">
