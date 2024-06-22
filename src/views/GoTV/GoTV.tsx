@@ -80,7 +80,7 @@ export const GoTV = () => {
             observer.disconnect();
             window.removeEventListener("resize", handleResize);
         };
-    }, [isMobile]);
+    }, []);
 
     const handleStreamUpdate = (data: any) => {
         const updatedStreams = JSON.parse(data).map((stream: Stream) => ({
