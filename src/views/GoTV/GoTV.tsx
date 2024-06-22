@@ -72,7 +72,7 @@ export const GoTV = () => {
 
         observer.observe(document.body, { attributes: true });
 
-        const handleResize = () => setIsMobile(window.innerWidth <= 768);
+        const handleResize = () => setIsMobile(window.innerWidth <= 900);
         window.addEventListener("resize", handleResize);
         return () => {
             observer.disconnect();
@@ -148,14 +148,20 @@ export const GoTV = () => {
                             </button>
                         )}
                     </div>
-                    {filteredStreams.map((stream) => (
-                        <StreamCard
-                            key={stream.stream_id}
-                            stream={stream}
-                            isSelected={selectedStream?.stream_id === stream.stream_id}
-                            onClick={() => handleStreamClick(stream)}
-                        />
-                    ))}
+                    {filteredStreams.length > 0 ? (
+                        filteredStreams.map((stream) => (
+                            <StreamCard
+                                key={stream.stream_id}
+                                stream={stream}
+                                isSelected={selectedStream?.stream_id === stream.stream_id}
+                                onClick={() => handleStreamClick(stream)}
+                            />
+                        ))
+                    ) : (
+                        <div className="no-streams-message">
+                            No streams are currently available.
+                        </div>
+                    )}
                 </div>
                 <div
                     className={`list-pane-control ${showListPane ? "expanded" : "collapsed"}`}
@@ -168,12 +174,30 @@ export const GoTV = () => {
                         showChatPane ? "chat-open" : ""
                     }`}
                 >
-                    {selectedStream && (
-                        <iframe
-                            src={`https://player.twitch.tv/?channel=${selectedStream.channel}&parent=${parentDomain}&autoplay=true&muted=false`}
-                            allowFullScreen={true}
-                            aria-label={`Live stream of ${selectedStream.title}`}
-                        ></iframe>
+                    {filteredStreams.length > 0 ? (
+                        selectedStream && (
+                            <iframe
+                                src={`https://player.twitch.tv/?channel=${selectedStream.channel}&parent=${parentDomain}&autoplay=true&muted=false`}
+                                allowFullScreen={true}
+                                aria-label={`Live stream of ${selectedStream.title}`}
+                            ></iframe>
+                        )
+                    ) : (
+                        <div className="no-streams-available-message">
+                            <h2>No Streams Available</h2>
+                            <p>
+                                Unfortunately, there are no live streams available at the moment.
+                                Please check back later for exciting Go content.
+                            </p>
+                            <p>
+                                <strong>Want to see your stream featured here?</strong>
+                                <br /> Stream in the <strong>Go</strong> category on Twitch or the{" "}
+                                <strong>Board Games</strong> category using the <em>go</em>,{" "}
+                                <em>weiqi</em>, or <em>baduk</em> tags. We welcome all Go
+                                enthusiasts to share their games and experiences. Your participation
+                                helps grow our community!
+                            </p>
+                        </div>
                     )}
                 </div>
                 <div

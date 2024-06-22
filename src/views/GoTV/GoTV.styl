@@ -243,6 +243,33 @@
         .chat-section.hidden
             display: none
 
+        .no-streams-message
+            text-align: center
+            margin: 20px 0
+            font-size: 1.2rem
+            themed color fg
+
+        .no-streams-available-message 
+            width: 50%
+            margin: 20px auto
+            font-size: 1.2rem
+            themed color fg 
+            padding: 20px
+            border: 1px solid transparent 
+            themed border-color shade4
+            border-radius: 10px
+            themed background-color card-background-color
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1)
+            text-align: left
+
+            h2 
+                text-align: center
+                margin-bottom: 10px
+                font-size: 1.5rem
+
+            p 
+                margin: 10px 0
+
 @media only screen and (max-width: 900px)
     #gotv-container .gotv-layout
         flex-direction: column
@@ -351,3 +378,19 @@
             flex: 1 1 auto
             transform: translateX(0)
 
+    #gotv-container .gotv-layout .no-streams-available-message 
+        width: 100%
+        max-width: 600px
+        themed background-color bg
+        border: none
+        margin: 0 auto
+        padding: 10px
+        box-shadow: none
+
+        h2 
+            margin: 0
+            font-size: 0.9rem
+
+        p 
+            font-size: 0.8rem
+            margin: 5px
