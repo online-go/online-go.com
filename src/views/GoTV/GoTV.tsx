@@ -54,6 +54,8 @@ export const GoTV = () => {
                 setStreams(streamsData);
                 if (streamsData.length > 0) {
                     setSelectedStream(streamsData[0]);
+                } else if (isMobile) {
+                    setShowListPane(false);
                 }
             })
             .catch((error) => console.error("Error fetching live streams:", error));
@@ -78,7 +80,7 @@ export const GoTV = () => {
             observer.disconnect();
             window.removeEventListener("resize", handleResize);
         };
-    }, []);
+    }, [isMobile]);
 
     const handleStreamUpdate = (data: any) => {
         const updatedStreams = JSON.parse(data).map((stream: Stream) => ({
