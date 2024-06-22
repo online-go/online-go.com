@@ -46,7 +46,9 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, isSelected, onCl
                 className="stream-thumbnail"
             />
             <div className="stream-username">{stream.username}</div>
-            <span className="viewer-count">{stream.viewer_count} viewers</span>
+            <span className="viewer-count">
+                {stream.viewer_count} {stream.viewer_count === 1 ? "viewer" : "viewers"}
+            </span>
             <div className="stream-info">
                 <h3>{stream.title}</h3>
                 <span className="language">{stream.language}</span>
