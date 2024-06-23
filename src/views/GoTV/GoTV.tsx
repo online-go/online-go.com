@@ -21,6 +21,7 @@ import Select from "react-select";
 import { get } from "requests";
 import { EmbeddedChatCard } from "Chat";
 import { StreamCard } from "./StreamCard";
+import { twitchLanguageCodes } from "./twitchLanguageCodes";
 
 interface Stream {
     stream_id: string;
@@ -32,6 +33,16 @@ interface Stream {
     thumbnail_url: string;
     source: string;
 }
+
+interface LanguageCodes {
+    [key: string]: string;
+}
+
+const languageMap: LanguageCodes = twitchLanguageCodes;
+
+const getNativeLanguageName = (code: string): string => {
+    return languageMap[code] || code;
+};
 
 export const GoTV = () => {
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
@@ -125,7 +136,7 @@ export const GoTV = () => {
     const languageOptions = Array.from(new Set(streams.map((stream) => stream.language))).map(
         (lang) => ({
             value: lang,
-            label: lang,
+            label: getNativeLanguageName(lang),
         }),
     );
 

@@ -1,4 +1,7 @@
 {
+    "ignorePaths": [
+        "src/views/GoTV/twitchLanguageCodes.ts"
+      ],
     "words": [
         "abcdefghjklmnopqrstuvwxyz",
         "AILR",
