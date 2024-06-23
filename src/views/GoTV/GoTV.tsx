@@ -22,6 +22,7 @@ import { get } from "requests";
 import { EmbeddedChatCard } from "Chat";
 import { StreamCard } from "./StreamCard";
 import { twitchLanguageCodes } from "./twitchLanguageCodes";
+import { _ } from "translate";
 
 interface Stream {
     stream_id: string;
@@ -146,12 +147,12 @@ export const GoTV = () => {
             <div className="gotv-layout">
                 <div className={`list-pane ${showListPane ? "expanded" : "collapsed"}`}>
                     <div className="streams-header">
-                        <h2>Live Streams</h2>
+                        <h2>{_("Live Streams")}</h2>
                         <Select
                             options={languageOptions}
                             onChange={handleFilterChange}
                             isClearable
-                            placeholder="All Languages"
+                            placeholder={_("All Languages")}
                             className="language-select"
                             classNamePrefix="ogs-react-select"
                         />
@@ -172,7 +173,7 @@ export const GoTV = () => {
                         ))
                     ) : (
                         <div className="no-streams-message">
-                            No streams are currently available.
+                            {_("No streams are currently available.")}
                         </div>
                     )}
                 </div>
@@ -180,7 +181,7 @@ export const GoTV = () => {
                     className={`list-pane-control ${showListPane ? "expanded" : "collapsed"}`}
                     onClick={handleToggleStreamsPane}
                 >
-                    {isMobile && <span>Streams</span>}
+                    {isMobile && <span>{_("Streams")}</span>}
                 </div>
                 <div
                     className={`stream-pane ${showListPane ? "shrunk" : "expanded"} ${
@@ -197,18 +198,18 @@ export const GoTV = () => {
                         )
                     ) : (
                         <div className="no-streams-available-message">
-                            <h2>No Streams Available</h2>
+                            <h2>{_("No Streams Available")}</h2>
                             <p>
-                                Unfortunately, there are no live streams available at the moment.
-                                Please check back later for exciting Go content.
+                                {_(
+                                    "Unfortunately, there are no live streams available at the moment. Please check back later for exciting Go content.",
+                                )}
                             </p>
                             <p>
-                                <strong>Want to see your stream featured here?</strong>
-                                <br /> Stream in the <strong>Go</strong> category on Twitch or the{" "}
-                                <strong>Board Games</strong> category using the <em>go</em>,{" "}
-                                <em>weiqi</em>, or <em>baduk</em> tags. We welcome all Go
-                                enthusiasts to share their games and experiences. Your participation
-                                helps grow our community!
+                                <strong>{_("Want to see your stream featured here?")}</strong>
+                                <br />{" "}
+                                {_(
+                                    "Stream in the Go category on Twitch or the Board Games category using the go, weiqi, or baduk tags. We welcome all Go enthusiasts to share their games and experiences. Your participation helps grow our community!",
+                                )}
                             </p>
                         </div>
                     )}
