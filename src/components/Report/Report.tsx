@@ -25,6 +25,7 @@ import { post } from "requests";
 import { alert } from "swal_config";
 import { setIgnore } from "BlockPlayer";
 import { useUser } from "hooks";
+import { get } from "requests";
 
 export type ReportType =
     | "all" // not a type, just useful for the enumeration
@@ -48,6 +49,7 @@ export interface ReportDescription {
     game_id_required?: boolean;
     min_description_length?: number;
     moderator_only?: boolean;
+    check_applicability?: (game_id?: number, reported_user_id?: number) => Promise<string | null>; // string to indicate why its not applicable, null if applicable
 }
 
 export interface ReportedConversation {
@@ -65,6 +67,30 @@ interface ReportProperties {
     onClose?: () => void;
 }
 
+// see node PUBLIC_GAMEDATA_FIELDS in the backend
+type Gamedata = {
+    outcome: string;
+    winner: number;
+};
+
+function checkEscapingForResignation(
+    game_id?: number,
+    reported_user_id?: number,
+): Promise<string | null> {
+    return get(`/termination-api/game/${game_id}`).then((gamedata: Gamedata) => {
+        if (gamedata?.outcome.includes("Resignation") && gamedata.winner !== reported_user_id) {
+            return pgettext(
+                "A message when trying to create a report that doesn't make sense",
+                `That player resigned, so 'stopped playing' is not applicable: resigning is normally an acceptable way to finish the game.
+
+Please choose a different type of report, if there is a different problem.`,
+            );
+        } else {
+            return null;
+        }
+    });
+}
+
 export const report_categories: ReportDescription[] = [
     {
         type: "escaping",
@@ -74,6 +100,7 @@ export const report_categories: ReportDescription[] = [
             "User left the game or stopped playing without concluding it properly.",
         ),
         game_id_required: true,
+        check_applicability: checkEscapingForResignation,
     },
     {
         type: "score_cheating",
@@ -176,6 +203,8 @@ export function Report(props: ReportProperties): JSX.Element {
     const [review_id, _set_review_id] = React.useState(reported_review_id);
     const [note, set_note] = React.useState("");
     const [submitting, set_submitting] = React.useState(false);
+    const [validating, set_validating] = React.useState(false);
+    const [inapplicable_reason, set_inapplicable_reason] = React.useState<string | null>(null);
 
     const user = useUser();
 
@@ -194,6 +223,23 @@ export function Report(props: ReportProperties): JSX.Element {
             .catch(() => 0);
     }, [reported_user_id]);
 
+    React.useEffect(() => {
+        if (game_id && category && category.check_applicability) {
+            set_validating(true);
+            category
+                .check_applicability(game_id, reported_user_id)
+                .then((inapplicable_reason) => {
+                    set_inapplicable_reason(inapplicable_reason);
+                    set_validating(false);
+                })
+                .catch(() => {
+                    set_validating(false);
+                });
+        } else {
+            set_inapplicable_reason(null);
+        }
+    }, [category, game_id]);
+
     function close() {
         if (onClose) {
             onClose();
@@ -205,6 +251,13 @@ export function Report(props: ReportProperties): JSX.Element {
             return false;
         }
 
+        if (submitting || validating) {
+            return false;
+        }
+
+        if (inapplicable_reason) {
+            return false;
+        }
         if (category.game_id_required && !game_id) {
             return false;
         }
@@ -214,10 +267,6 @@ export function Report(props: ReportProperties): JSX.Element {
         }
 
         if (!reported_user_id) {
-            return false;
-        }
-
-        if (submitting) {
             return false;
         }
 
@@ -351,9 +400,13 @@ export function Report(props: ReportProperties): JSX.Element {
                         }
                         value={note}
                         onChange={(ev) => set_note(ev.target.value)}
-                        placeholder={_(
-                            "Please provide any relevant details about the problem you are reporting.",
-                        )}
+                        placeholder={
+                            inapplicable_reason
+                                ? inapplicable_reason
+                                : _(
+                                      "Please provide any relevant details about the problem you are reporting.",
+                                  )
+                        }
                     />
                 )}
                 {show_game_id_required_text && (
