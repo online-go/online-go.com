@@ -33,14 +33,14 @@ export const GoTVIndicator: React.FC = () => {
             <UIPush channel="gotv" event="update_streams" action={handleStreamUpdate} />
 
             {showGoTVIndicator && (
-                <Link to="/gotv" className="GoTVIndicator" title="GoTV">
+                <>
                     {streamCount > 0 && (
-                        <>
+                        <Link to="/gotv" className="GoTVIndicator" title="GoTV">
                             <i className="fa fa-tv navbar-icon"></i>
                             <span className="count">{streamCount}</span>
-                        </>
+                        </Link>
                     )}
-                </Link>
+                </>
             )}
         </>
     );
