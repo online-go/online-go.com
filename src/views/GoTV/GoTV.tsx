@@ -51,9 +51,9 @@ export const GoTV = () => {
     const [streams, setStreams] = useState<Stream[]>([]);
     const [selectedStream, setSelectedStream] = useState<Stream | null>(null);
     const [showListPane, setShowListPane] = useState(true);
-    const [showChatPane, setShowChatPane] = useState(preferences.get("gotv.expand-chat-pane"));
+    const [showChatPane, setShowChatPane] = preferences.usePreference("gotv.expand-chat-pane");
     const [filterLanguage, setFilterLanguage] = useState("");
-    const [activeChatTab, setActiveChatTab] = useState(preferences.get("gotv.selected-chat"));
+    const [activeChatTab, setActiveChatTab] = preferences.usePreference("gotv.selected-chat");
     const [isLightTheme, setIsLightTheme] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -124,7 +124,6 @@ export const GoTV = () => {
 
     const handleToggleChatPane = () => {
         setShowChatPane(!showChatPane);
-        preferences.set("gotv.expand-chat-pane", !showChatPane);
     };
 
     const handleFilterChange = (selectedOption: any) => {
@@ -133,7 +132,6 @@ export const GoTV = () => {
 
     const handleChatTabChange = (tab: string) => {
         setActiveChatTab(tab);
-        preferences.set("gotv.selected-chat", tab);
     };
 
     const filteredStreams = filterLanguage
