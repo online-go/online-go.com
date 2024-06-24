@@ -54,6 +54,7 @@ export const GoTV = () => {
     const [filterLanguage, setFilterLanguage] = useState("");
     const [activeChatTab, setActiveChatTab] = useState("OGS");
     const [isLightTheme, setIsLightTheme] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         const url = "gotv/streams/";
@@ -69,8 +70,12 @@ export const GoTV = () => {
                 } else if (isMobile) {
                     setShowListPane(false);
                 }
+                setIsLoading(false);
             })
-            .catch((error) => console.error("Error fetching live streams:", error));
+            .catch((error) => {
+                console.error("Error fetching live streams:", error);
+                setIsLoading(false);
+            });
 
         const bodyClassList = document.body.classList;
         setIsLightTheme(bodyClassList.contains("light"));
@@ -162,7 +167,9 @@ export const GoTV = () => {
                             </button>
                         )}
                     </div>
-                    {filteredStreams.length > 0 ? (
+                    {isLoading ? (
+                        <div className="loading-message">{_("Loading streams...")}</div>
+                    ) : filteredStreams.length > 0 ? (
                         filteredStreams.map((stream) => (
                             <StreamCard
                                 key={stream.stream_id}
@@ -188,14 +195,14 @@ export const GoTV = () => {
                         showChatPane ? "chat-open" : ""
                     }`}
                 >
-                    {filteredStreams.length > 0 ? (
-                        selectedStream && (
-                            <iframe
-                                src={`https://player.twitch.tv/?channel=${selectedStream.channel}&parent=${parentDomain}&autoplay=true&muted=false`}
-                                allowFullScreen={true}
-                                aria-label={`Live stream of ${selectedStream.title}`}
-                            ></iframe>
-                        )
+                    {isLoading ? (
+                        <div className="loading-message">{_("Loading streams...")}</div>
+                    ) : filteredStreams.length > 0 && selectedStream ? (
+                        <iframe
+                            src={`https://player.twitch.tv/?channel=${selectedStream.channel}&parent=${parentDomain}&autoplay=true&muted=false`}
+                            allowFullScreen={true}
+                            aria-label={`Live stream of ${selectedStream.title}`}
+                        ></iframe>
                     ) : (
                         <div className="no-streams-available-message">
                             <h2>{_("No Streams Available")}</h2>
