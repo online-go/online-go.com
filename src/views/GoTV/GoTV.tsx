@@ -23,6 +23,7 @@ import { EmbeddedChatCard } from "Chat";
 import { StreamCard } from "./StreamCard";
 import { twitchLanguageCodes } from "./twitchLanguageCodes";
 import { _ } from "translate";
+import * as preferences from "preferences";
 
 interface Stream {
     stream_id: string;
@@ -52,7 +53,7 @@ export const GoTV = () => {
     const [showListPane, setShowListPane] = useState(true);
     const [showChatPane, setShowChatPane] = useState(false);
     const [filterLanguage, setFilterLanguage] = useState("");
-    const [activeChatTab, setActiveChatTab] = useState("OGS");
+    const [activeChatTab, setActiveChatTab] = useState(preferences.get("gotv.selected-chat"));
     const [isLightTheme, setIsLightTheme] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -131,6 +132,7 @@ export const GoTV = () => {
 
     const handleChatTabChange = (tab: string) => {
         setActiveChatTab(tab);
+        preferences.set("gotv.selected-chat", tab);
     };
 
     const filteredStreams = filterLanguage

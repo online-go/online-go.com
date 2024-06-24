@@ -151,6 +151,8 @@ export const defaults = {
 
     "sgf.sort-order": "date_added",
     "sgf.sort-descending": true,
+
+    "gotv.selected-chat": "Twitch",
 };
 
 defaults["profanity-filter"][current_language] = true;
