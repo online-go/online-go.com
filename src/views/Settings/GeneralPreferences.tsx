@@ -321,7 +321,7 @@ export function GeneralPreferences(props: SettingGroupPageProps): JSX.Element {
                 />
             </PreferenceLine>
 
-            <PreferenceLine title={"Enable SVG goban renderer"}>
+            <PreferenceLine title={_("Enable SVG goban renderer")}>
                 <Toggle
                     checked={enable_svg}
                     onChange={(tf) => {
