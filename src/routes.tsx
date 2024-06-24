@@ -79,6 +79,7 @@ import { RatingCalculator } from "RatingCalculator";
 import { AccountWarning } from "AccountWarning";
 import { NetworkStatus } from "NetworkStatus";
 import { PrizeBatchList, PrizeBatch, PrizeRedemption } from "Prizes";
+import { GoTV } from "GoTV";
 
 import * as docs from "docs";
 import { useData } from "./lib/hooks";
@@ -341,6 +342,7 @@ export const routes = (
                 <Route path="/docs/learn-to-play-go/:section/:page" element={<LearningHub />} />
                 <Route path="/docs/learn-to-play-go/:section" element={<LearningHub />} />
                 <Route path="/docs/learn-to-play-go" element={<LearningHub />} />
+                <Route path="/gotv" element={<GoTV />} />
                 {/* these aren't meant to be linked anywhere, just entered by hand
                 for developers looking to test and play with things */}
                 <Route path="/dev/styling" element={<Styling />} />

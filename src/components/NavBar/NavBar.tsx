@@ -35,6 +35,7 @@ import { NotificationIndicator } from "NotificationIndicator";
 import { TournamentIndicator } from "Announcements";
 import { FriendIndicator } from "FriendList";
 import { ChatIndicator } from "Chat";
+import { GoTVIndicator } from "GoTV";
 
 import { logout } from "auth";
 import { useUser, useData } from "hooks";
@@ -223,6 +224,10 @@ export function NavBar(): JSX.Element {
                         <i className="fa fa-eye"></i>
                         {_("Games")}
                     </Link>
+                    <Link to="/gotv">
+                        <i className="fa fa-tv"></i>
+                        {_("GoTV")}
+                    </Link>
                 </Menu>
 
                 <Menu title={_("Community")} to="/chat">
@@ -394,6 +399,7 @@ export function NavBar(): JSX.Element {
                         <TournamentIndicator />
                         <FriendIndicator />
                         <NotificationIndicator onClick={toggleNotifications} />
+                        <GoTVIndicator />
                         <TurnIndicator />
 
                         <span className="icon-container mobile-only" onClick={toggleRightNav}>

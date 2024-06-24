@@ -1,0 +1,51 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+.GoTVIndicator {
+    display: inline-flex;
+    flex-direction: column;
+    padding-right: 0.5rem;
+    padding-left: 0.5rem;
+    align-items: center;
+    font-size: 0.9rem;
+    cursor: pointer;
+    themed color shade2;
+    text-decoration: none;
+
+    .fa-tv {
+        background: linear-gradient(135deg, #00c6ff, #ffdd00);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        color: transparent;
+    }
+
+    .count {
+        font-size: font-size-smaller;
+        
+    }
+
+    &:hover {
+        .fa-tv {
+            background: linear-gradient(135deg, #00aaff, #ffaa00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+        }
+        text-decoration: none;
+        themed color shade2;
+
+    }
+}

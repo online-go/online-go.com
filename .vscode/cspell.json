@@ -1,4 +1,7 @@
 {
+    "ignorePaths": [
+        "src/views/GoTV/twitchLanguageCodes.ts"
+      ],
     "words": [
         "abcdefghjklmnopqrstuvwxyz",
         "AILR",
@@ -30,6 +33,7 @@
         "csrfmiddlewaretoken",
         "csrftoken",
         "cssnano",
+        "darkpopout",
         "DATETIME",
         "dedup",
         "deepl",
@@ -53,6 +57,7 @@
         "goban",
         "Gobans",
         "goquest",
+        "gotv",
         "groupify",
         "Gulpfile",
         "hane",
