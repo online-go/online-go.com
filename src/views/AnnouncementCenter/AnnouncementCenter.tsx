@@ -110,7 +110,13 @@ export function AnnouncementCenter(): JSX.Element {
         del(`announcements/${announcement.id}`).then(refresh).catch(errorAlerter);
     };
 
-    const can_create = !!text;
+    let can_create = true;
+
+    can_create &&= !!text;
+
+    if (link && link.toLowerCase().indexOf("twitch.tv") > 0) {
+        can_create = false;
+    }
 
     return (
         <div className="AnnouncementCenter container">
@@ -206,6 +212,19 @@ export function AnnouncementCenter(): JSX.Element {
                         </button>
                     </dd>
                 </dl>
+
+                {link && link.toLowerCase().indexOf("twitch.tv") >= 0 && (
+                    <div style={{ color: "orange" }}>
+                        {/* untranslated on purpose, we should be moving away
+                            from streamers needing to self announce in most
+                            cases */}
+                        Note: Announcing twitch.tv streams is no longer necessary as they'll
+                        automatically be picked up and displayed with the GoTV system. To use the
+                        GoTV system, simply start streaming on twitch.tv and set your category to
+                        Go, or Board Games and use the #go, #weiqi, or #baduk tags.
+                    </div>
+                )}
+
                 <div className="announcements">
                     {announcements.map((announcement, idx) => (
                         <div className="announcement" key={idx}>

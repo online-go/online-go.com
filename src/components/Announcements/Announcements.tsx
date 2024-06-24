@@ -175,6 +175,14 @@ export class Announcements extends React.PureComponent<{}, AnnouncementsState> {
                         return null;
                     }
 
+                    /* No longer show twitch announcements, they'll show up automatically on GoTV */
+                    if (
+                        announcement.link &&
+                        announcement.link.toLowerCase().indexOf("twitch.tv") > 0
+                    ) {
+                        return null;
+                    }
+
                     return (
                         <div className="announcement" key={idx}>
                             <i className="fa fa-times-circle" onClick={announcement.clear} />
