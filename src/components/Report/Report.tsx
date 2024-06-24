@@ -79,7 +79,12 @@ function checkEscapingForResignation(
 ): Promise<string | null> {
     return get(`/termination-api/game/${game_id}`).then((gamedata: Gamedata) => {
         if (gamedata?.outcome.includes("Resignation") && gamedata.winner !== reported_user_id) {
-            return "That player resigned, so 'stopped playing' doesn't make sense. Do you mean 'sandbagging'?";
+            return pgettext(
+                "A message when trying to create a report that doesn't make sense",
+                `That player resigned, so 'stopped playing' is not applicable: resigning is normally an acceptable way to finish the game.
+
+Please choose a different type of report, if there is a different problem.`,
+            );
         } else {
             return null;
         }
