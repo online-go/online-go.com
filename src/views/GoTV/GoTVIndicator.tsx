@@ -14,10 +14,11 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { UIPush } from "UIPush";
 import { Link } from "react-router-dom";
 import * as preferences from "preferences";
+import { get } from "requests";
 
 export const GoTVIndicator: React.FC = () => {
     const [streamCount, setStreamCount] = useState(0);
@@ -27,6 +28,18 @@ export const GoTVIndicator: React.FC = () => {
         const updatedStreams = JSON.parse(data);
         setStreamCount(updatedStreams.length);
     };
+
+    useEffect(() => {
+        if (showGoTVIndicator) {
+            get("gotv/streams")
+                .then((data) => {
+                    setStreamCount(data.length);
+                })
+                .catch((error) => {
+                    console.error("Error fetching streams:", error);
+                });
+        }
+    }, []);
 
     return (
         <>
