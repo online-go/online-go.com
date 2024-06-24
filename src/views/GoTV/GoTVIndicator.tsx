@@ -17,9 +17,11 @@
 import React, { useState } from "react";
 import { UIPush } from "UIPush";
 import { Link } from "react-router-dom";
+import * as preferences from "preferences";
 
 export const GoTVIndicator: React.FC = () => {
     const [streamCount, setStreamCount] = useState(0);
+    const [showGoTVIndicator] = preferences.usePreference("gotv.show-gotv-indicator");
 
     const handleStreamUpdate = (data: any) => {
         const updatedStreams = JSON.parse(data);
@@ -27,14 +29,19 @@ export const GoTVIndicator: React.FC = () => {
     };
 
     return (
-        <Link to="/gotv" className="GoTVIndicator" title="GoTV">
+        <>
             <UIPush channel="gotv" event="update_streams" action={handleStreamUpdate} />
-            {streamCount > 0 && (
-                <>
-                    <i className="fa fa-tv navbar-icon"></i>
-                    <span className="count">{streamCount}</span>
-                </>
+
+            {showGoTVIndicator && (
+                <Link to="/gotv" className="GoTVIndicator" title="GoTV">
+                    {streamCount > 0 && (
+                        <>
+                            <i className="fa fa-tv navbar-icon"></i>
+                            <span className="count">{streamCount}</span>
+                        </>
+                    )}
+                </Link>
             )}
-        </Link>
+        </>
     );
 };

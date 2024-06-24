@@ -50,6 +50,7 @@ import { AnnouncementPreferences } from "./AnnouncementPreferences";
 import { EmailPreferences } from "./EmailPreferences";
 import { HelpSettings } from "./HelpSettings";
 import { Supporter } from "Supporter";
+import { GoTVPreferences } from "./GoTVPreferences";
 
 export function Settings(): JSX.Element {
     const { category } = useParams();
@@ -106,6 +107,7 @@ export function Settings(): JSX.Element {
             { key: "sound", label: _("Sound Preferences") },
             { key: "game", label: _("Game Preferences") },
             { key: "chat", label: _("Chat Preferences") },
+            { key: "gotv", label: _("GoTV Preferences") },
             {
                 key: "supporter",
                 label: (
@@ -149,6 +151,9 @@ export function Settings(): JSX.Element {
             break;
         case "chat":
             SelectedPage = ChatPreferences;
+            break;
+        case "gotv":
+            SelectedPage = GoTVPreferences;
             break;
         case "supporter":
             SelectedPage = SupporterSettings;
