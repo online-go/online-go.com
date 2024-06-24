@@ -153,6 +153,7 @@ export const defaults = {
     "sgf.sort-descending": true,
 
     "gotv.selected-chat": "Twitch",
+    "gotv.expand-chat-pane": false,
 };
 
 defaults["profanity-filter"][current_language] = true;
