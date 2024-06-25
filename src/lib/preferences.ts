@@ -152,6 +152,9 @@ export const defaults = {
     "sgf.sort-order": "date_added",
     "sgf.sort-descending": true,
 
+    "analysis.pencil-color": "#004cff",
+    "analysis.score-color": "#3ACC2B",
+
     "gotv.selected-chat": "Twitch",
     "gotv.expand-chat-pane": false,
     "gotv.show-gotv-indicator": true,
