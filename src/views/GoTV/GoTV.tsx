@@ -122,7 +122,7 @@ export const GoTV = () => {
         }));
         updatedStreams = filterMatureStreams(updatedStreams);
         setStreams(updatedStreams);
-        if (!selectedStream && updatedStreams.length > 0) {
+        if (!selectedStream && updatedStreams.length > 0 && autoplay) {
             setSelectedStream(updatedStreams[0]);
         }
     };
