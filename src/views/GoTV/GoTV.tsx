@@ -25,7 +25,7 @@ import { twitchLanguageCodes } from "./twitchLanguageCodes";
 import { _ } from "translate";
 import * as preferences from "preferences";
 
-interface Stream {
+export interface Stream {
     stream_id: string;
     title: string;
     channel: string;
@@ -34,6 +34,7 @@ interface Stream {
     language: string;
     thumbnail_url: string;
     source: string;
+    is_mature: boolean;
 }
 
 interface LanguageCodes {
@@ -58,15 +59,17 @@ export const GoTV = () => {
     const [isLoading, setIsLoading] = useState(true);
 
     const autoplay = preferences.get("gotv.auto-select-top-stream");
+    const allowMatureStreams = preferences.get("gotv.allow-mature-streams");
 
     useEffect(() => {
         const url = "gotv/streams/";
         get(url)
             .then((data: Stream[]) => {
-                const streamsData = data.map((stream) => ({
+                let streamsData = data.map((stream) => ({
                     ...stream,
                     stream_id: String(stream.stream_id),
                 }));
+                streamsData = filterMatureStreams(streamsData);
                 setStreams(streamsData);
                 if (streamsData.length > 0) {
                     if (autoplay) {
@@ -104,11 +107,20 @@ export const GoTV = () => {
         };
     }, []);
 
+    const filterMatureStreams = (streamsData: Stream[]) => {
+        if (!allowMatureStreams) {
+            return streamsData.filter((stream: Stream) => !stream.is_mature);
+        } else {
+            return streamsData;
+        }
+    };
+
     const handleStreamUpdate = (data: any) => {
-        const updatedStreams = JSON.parse(data).map((stream: Stream) => ({
+        let updatedStreams = JSON.parse(data).map((stream: Stream) => ({
             ...stream,
             stream_id: String(stream.stream_id),
         }));
+        updatedStreams = filterMatureStreams(updatedStreams);
         setStreams(updatedStreams);
         if (!selectedStream && updatedStreams.length > 0) {
             setSelectedStream(updatedStreams[0]);

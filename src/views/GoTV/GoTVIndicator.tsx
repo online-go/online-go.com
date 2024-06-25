@@ -19,27 +19,36 @@ import { UIPush } from "UIPush";
 import { Link } from "react-router-dom";
 import * as preferences from "preferences";
 import { get } from "requests";
+import { Stream } from "GoTV";
 
 export const GoTVIndicator: React.FC = () => {
     const [streamCount, setStreamCount] = useState(0);
     const [showGoTVIndicator] = preferences.usePreference("gotv.show-gotv-indicator");
+    const [allowMatureStreams] = preferences.usePreference("gotv.allow-mature-streams");
 
     const handleStreamUpdate = (data: any) => {
         const updatedStreams = JSON.parse(data);
-        setStreamCount(updatedStreams.length);
+        setStreamCount(filterStreams(updatedStreams).length);
+    };
+
+    const filterStreams = (streams: Stream[]) => {
+        if (!allowMatureStreams) {
+            return streams.filter((stream: Stream) => !stream.is_mature);
+        }
+        return streams;
     };
 
     useEffect(() => {
         if (showGoTVIndicator) {
             get("gotv/streams")
-                .then((data) => {
-                    setStreamCount(data.length);
+                .then((streams: Stream[]) => {
+                    setStreamCount(filterStreams(streams).length);
                 })
                 .catch((error) => {
                     console.error("Error fetching streams:", error);
                 });
         }
-    }, []);
+    }, [allowMatureStreams]);
 
     return (
         <>

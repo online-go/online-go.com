@@ -24,6 +24,9 @@ import { PreferenceLine } from "SettingsCommon";
 export function GoTVPreferences(): JSX.Element {
     const [showGoTVIndicator, toggleGoTVIndicator] = usePreference("gotv.show-gotv-indicator");
     const [autoSelect, toggleAutoSelect] = usePreference("gotv.auto-select-top-stream");
+    const [allowMatureStreams, toggleAllowMatureStreams] = usePreference(
+        "gotv.allow-mature-streams",
+    );
 
     return (
         <div>
@@ -33,6 +36,10 @@ export function GoTVPreferences(): JSX.Element {
 
             <PreferenceLine title={_("Automatically play top stream on load")}>
                 <Toggle checked={autoSelect} onChange={toggleAutoSelect} />
+            </PreferenceLine>
+
+            <PreferenceLine title={_("Show mature streams")}>
+                <Toggle checked={allowMatureStreams} onChange={toggleAllowMatureStreams} />
             </PreferenceLine>
         </div>
     );
