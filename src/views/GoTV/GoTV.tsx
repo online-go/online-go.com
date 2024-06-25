@@ -216,6 +216,7 @@ export const GoTV = () => {
                         <div className="loading-message">{_("Loading streams...")}</div>
                     ) : filteredStreams.length > 0 && selectedStream ? (
                         <iframe
+                            key={selectedStream.stream_id}
                             src={`https://player.twitch.tv/?channel=${selectedStream.channel}&parent=${parentDomain}&autoplay=true&muted=false`}
                             allowFullScreen={true}
                             aria-label={`Live stream of ${selectedStream.title}`}

@@ -16,7 +16,7 @@
  */
 import React, { useEffect, useState } from "react";
 import { UIPush } from "UIPush";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import * as preferences from "preferences";
 import { get } from "requests";
 import { Stream } from "GoTV";
@@ -25,6 +25,9 @@ export const GoTVIndicator: React.FC = () => {
     const [streamCount, setStreamCount] = useState(0);
     const [showGoTVIndicator] = preferences.usePreference("gotv.show-gotv-indicator");
     const [allowMatureStreams] = preferences.usePreference("gotv.allow-mature-streams");
+    const [previousPath, setPreviousPath] = useState<string | null>(null);
+
+    const location = useLocation();
 
     const handleStreamUpdate = (data: any) => {
         const updatedStreams = JSON.parse(data);
@@ -50,6 +53,22 @@ export const GoTVIndicator: React.FC = () => {
         }
     }, [allowMatureStreams]);
 
+    useEffect(() => {
+        if (location.pathname !== "/gotv") {
+            setPreviousPath(location.pathname);
+        }
+    }, [location.pathname]);
+
+    const setLinkURL = () => {
+        const currentPath = location.pathname;
+
+        if (currentPath === "/gotv") {
+            return previousPath || "/";
+        } else {
+            return "/gotv";
+        }
+    };
+
     return (
         <>
             <UIPush channel="gotv" event="update_streams" action={handleStreamUpdate} />
@@ -57,7 +76,7 @@ export const GoTVIndicator: React.FC = () => {
             {showGoTVIndicator && (
                 <>
                     {streamCount > 0 && (
-                        <Link to="/gotv" className="GoTVIndicator" title="GoTV">
+                        <Link to={setLinkURL()} className="GoTVIndicator" title="GoTV">
                             <i className="fa fa-tv navbar-icon"></i>
                             <span className="count">{streamCount}</span>
                         </Link>
