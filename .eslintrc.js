@@ -8,13 +8,7 @@ module.exports = {
         project: "tsconfig.json",
         sourceType: "module",
     },
-    plugins: [
-        "eslint-plugin-jsdoc",
-        "@typescript-eslint",
-        "@typescript-eslint/tslint",
-        "prettier",
-        "react-hooks",
-    ],
+    plugins: ["eslint-plugin-jsdoc", "header", "prettier", "react-hooks", "@typescript-eslint"],
     extends: ["eslint:recommended", "plugin:@typescript-eslint/recommended", "prettier"],
     rules: {
         // Recommended rules with errors
@@ -110,21 +104,14 @@ module.exports = {
         "prefer-arrow-callback": ["error", { allowNamedFunctions: true }],
         "prettier/prettier": "error",
         "use-isnan": "error",
-        "@typescript-eslint/tslint/config": [
+        "header/header": [
             "error",
-            {
-                rules: {
-                    "file-header": [true, "[Cc]opyright ([(][Cc][)])?\\s*[Oo]nline-[gG]o.com"],
-                    "import-spacing": true,
-                    whitespace: [
-                        true,
-                        "check-branch",
-                        "check-decl",
-                        "check-operator",
-                        "check-separator",
-                    ],
+            "block",
+            [
+                {
+                    pattern: "[Cc]opyright ([(][Cc][)])?\\s*[Oo]nline-[gG]o.com", // cspell: disable-line
                 },
-            },
+            ],
         ],
         "react-hooks/rules-of-hooks": "error",
         "prefer-const": [
@@ -146,7 +133,6 @@ module.exports = {
                 // rules that depend on type information (and therefore
                 // parserOptions.project)
                 "@typescript-eslint/no-floating-promises": "off",
-                "@typescript-eslint/tslint/config": "off",
             },
         },
     ],

@@ -404,11 +404,6 @@ export const GoResources = () => {
                                 title="3-2-1 Go"
                                 href="http://321go.org/"
                             />,
-                            <BasicResource
-                                countries={[en]}
-                                title="Ghost Go"
-                                href="https://www.ghost-go.com/"
-                            />,
                         ).map((elt, idx) => (
                             <dd key={idx}>{elt}</dd>
                         ))}
@@ -426,11 +421,6 @@ export const GoResources = () => {
                                 countries={[en]}
                                 title="Go Commentary Videos"
                                 href="https://www.youtube.com/@GoCommentary/"
-                            />,
-                            <BasicResource
-                                countries={[en]}
-                                title="Baduk Movies"
-                                href="https://badukmovies.com/"
                             />,
                             <BasicResource
                                 countries={[eu]}
@@ -750,11 +740,7 @@ export const GoResources = () => {
                                 title="Top player rating list"
                                 href="https://www.goratings.org/en/"
                             />,
-                            <BasicResource
-                                countries={[eu]}
-                                title="EGF Academy"
-                                href="https://academy.eurogofed.org/"
-                            />,
+
                             <BasicResource
                                 countries={["jp"]}
                                 title="Hoenkikaku Co, Ltd."
@@ -791,11 +777,7 @@ export const GoResources = () => {
                                 title="Fuseki Database"
                                 href="http://www.fuseki.info"
                             />,
-                            <BasicResource
-                                countries={[en]}
-                                title="Daily Joseki"
-                                href="http://www.dailyjoseki.com/"
-                            />,
+
                             <BasicResource
                                 countries={[en]}
                                 title="Sensei's Library"
@@ -1142,6 +1124,11 @@ export const GoResources = () => {
                                 countries={[fr]}
                                 title="Fédération Française de Go"
                                 href="http://ffg.jeudego.org/"
+                            />,
+                            <BasicResource
+                                countries={[fr]}
+                                title="North American Go Federation"
+                                href="https://nagofed.org/"
                             />,
                             <BasicResource
                                 countries={["in"]}

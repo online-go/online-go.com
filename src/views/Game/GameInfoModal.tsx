@@ -28,14 +28,14 @@ import { errorAlerter, rulesText, yesno, getGameResultText } from "misc";
 import { rankString } from "rank_utils";
 import { browserHistory } from "ogsHistory";
 import { alert } from "swal_config";
-import { GobanConfig, GoEnginePlayerEntry, GoEngineRules } from "goban";
+import { GobanConfig, GobanEnginePlayerEntry, GobanEngineRules } from "goban";
 
 interface Events {}
 
 interface GameInfoModalProperties {
     config: GobanConfig;
-    black: GoEnginePlayerEntry;
-    white: GoEnginePlayerEntry;
+    black: GobanEnginePlayerEntry;
+    white: GobanEnginePlayerEntry;
     annulled: boolean;
     creatorId: number;
 }
@@ -172,7 +172,7 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, GameIn
         //this.forceUpdate();
     };
     updateRules = (ev: React.ChangeEvent<HTMLSelectElement>) => {
-        this.props.config.rules = ev.target.value as GoEngineRules;
+        this.props.config.rules = ev.target.value as GobanEngineRules;
         this.forceUpdate();
     };
     twoPlayerTeamList = () => (
@@ -414,8 +414,8 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, GameIn
 
 export function openGameInfoModal(
     config: GobanConfig,
-    black: GoEnginePlayerEntry,
-    white: GoEnginePlayerEntry,
+    black: GobanEnginePlayerEntry,
+    white: GobanEnginePlayerEntry,
     annulled: boolean,
     creator_id: number,
 ): void {

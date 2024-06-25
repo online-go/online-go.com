@@ -21,7 +21,7 @@ import { Modal, openModal } from "Modal";
 import { dup } from "misc";
 import * as data from "data";
 import { AutomatchPreferencesBase, AutomatchTimeControlSystem, Size, Speed } from "src/lib/types";
-import { AutomatchCondition, RuleSet } from "goban/lib/protocol";
+import { AutomatchCondition, RuleSet } from "goban";
 
 interface Events {}
 

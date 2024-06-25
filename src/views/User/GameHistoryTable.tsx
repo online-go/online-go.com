@@ -69,7 +69,7 @@ interface GroomedGame {
     result: JSX.Element;
     flags?: { [flag_key: string]: number | string | boolean };
     rengo_vs_text?: `${number} vs. ${number}`;
-    handicap: number;
+    handicap: string;
 }
 
 export function GameHistoryTable(props: GameHistoryProps) {
@@ -191,7 +191,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
 
             item.name = r.name;
 
-            item.handicap = r.handicap;
+            item.handicap = r.handicap === 0 ? "-" : r.handicap.toString();
 
             if (item.name && item.name.trim() === "") {
                 item.name = item.href;
@@ -398,7 +398,10 @@ export function GameHistoryTable(props: GameHistoryProps) {
                             },
                             {
                                 header: pgettext("Handicap abbreviation", "HC"),
-                                className: (X) => "handicap" + (X && X.annulled ? " annulled" : ""),
+                                className: (X) =>
+                                    "handicap" +
+                                    (X && X.handicap !== "-" ? "-present" : "") +
+                                    (X && X.annulled ? " annulled" : ""),
                                 render: (X) => X.handicap,
                             },
                             {
@@ -561,7 +564,6 @@ function getSpeedClass(speed: Speed) {
         case "blitz":
             return "speed-icon fa fa-bolt";
     }
-    console.log("unsupported speed setting: " + speed);
 }
 
 function playedBlack(game: rest_api.Game, user_id: number) {

@@ -1,3 +1,8 @@
+/*
+ * Copyright (C)  Online-Go.com
+ * Copyright (C)  Benjamin P. Jones
+ */
+
 import { Clock, prettyTime } from "./Clock";
 import * as React from "react";
 import { TestGoban } from "goban";

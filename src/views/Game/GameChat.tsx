@@ -24,7 +24,7 @@ import { Link } from "react-router-dom";
 import { _, pgettext, interpolate, current_language } from "translate";
 import { Player } from "Player";
 import { profanity_filter } from "profanity_filter";
-import { GobanRenderer, GobanCore, protocol } from "goban";
+import { GobanRenderer, Goban, protocol } from "goban";
 import { ChatUserList, ChatUserCount } from "ChatUserList";
 import { TabCompleteInput } from "TabCompleteInput";
 import { chat_markup } from "components/Chat";
@@ -542,7 +542,7 @@ export function GameChatLine(props: GameChatLineProperties): JSX.Element {
     );
 }
 
-function parsePosition(position: string, goban: GobanCore) {
+function parsePosition(position: string, goban: Goban) {
     if (!goban || !position) {
         return {
             i: -1,
@@ -565,7 +565,7 @@ function parsePosition(position: string, goban: GobanCore) {
 
 let orig_move: MoveTree | null = null;
 let stashed_pen_marks: any = null; //goban.pen_marks;
-let orig_marks: unknown[] | null = null;
+//let orig_marks: unknown[] | null = null;
 
 function MarkupChatLine({ line }: { line: ChatLine }): JSX.Element {
     const body = line.body;
@@ -642,8 +642,11 @@ function MarkupChatLine({ line }: { line: ChatLine }): JSX.Element {
                         if (game_control.in_pushed_analysis) {
                             game_control.in_pushed_analysis = false;
                             delete game_control.onPushAnalysisLeft;
+                            goban.engine.cur_move.popStashedMarks();
                             goban.engine.jumpTo(orig_move);
-                            (orig_move as any).marks = orig_marks;
+                            if (orig_move) {
+                                orig_move.popStashedMarks();
+                            }
                             goban.pen_marks = stashed_pen_marks as any;
                             if (goban.pen_marks.length === 0) {
                                 goban.disablePen();
@@ -664,18 +667,17 @@ function MarkupChatLine({ line }: { line: ChatLine }): JSX.Element {
 
                         orig_move = goban.engine.cur_move;
                         if (orig_move) {
-                            orig_marks = (orig_move as any).marks;
-                            orig_move.clearMarks();
-                        } else {
-                            orig_marks = null;
+                            orig_move.stashMarks();
                         }
                         if (moves || moves === "") {
                             goban.engine.followPath(parseInt(turn as any), moves);
                         }
 
                         if (body.marks) {
+                            goban.engine.cur_move.stashMarks();
                             goban.setMarks(body.marks);
                         }
+
                         stashed_pen_marks = goban.pen_marks;
                         if (body.pen_marks) {
                             goban.pen_marks = ([] as any[]).concat(body.pen_marks);
@@ -687,6 +689,7 @@ function MarkupChatLine({ line }: { line: ChatLine }): JSX.Element {
                     };
 
                     const onClick = () => {
+                        game_control.emit("stopEstimatingScore");
                         onLeave();
                         goban.setMode("analyze");
                         onEnter();

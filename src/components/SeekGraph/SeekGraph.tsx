@@ -38,11 +38,7 @@ import { SeekGraphColorPalette, SeekGraphPalettes } from "./SeekGraphPalettes";
 import * as SeekGraphSymbols from "./SeekGraphSymbols";
 
 import { Challenge, ChallengeFilter, shouldDisplayChallenge } from "challenge_utils";
-import {
-    SeekgraphDeleteMessage,
-    SeekgraphStartedMessage,
-    SeekgraphChallengeMessage,
-} from "goban/lib/protocol";
+import { SeekgraphDeleteMessage, SeekgraphStartedMessage, SeekgraphChallengeMessage } from "goban";
 
 interface ExtendedSeekgraphChallengeMessage extends SeekgraphChallengeMessage {
     user_challenge?: boolean;

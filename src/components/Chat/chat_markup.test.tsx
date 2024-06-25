@@ -1,3 +1,8 @@
+/*
+ * Copyright (C)  Online-Go.com
+ * Copyright (C)  Benjamin P. Jones
+ */
+
 import { chat_markup } from "./chat_markup";
 import * as React from "react";
 

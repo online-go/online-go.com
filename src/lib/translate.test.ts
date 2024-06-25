@@ -1,3 +1,8 @@
+/*
+ * Copyright (C)  Online-Go.com
+ * Copyright (C)  Benjamin P. Jones
+ */
+
 // Set the window variables before importing the module
 (window as any)["ogs_current_language"] = "test_language";
 (window as any)["ogs_locales"] = {

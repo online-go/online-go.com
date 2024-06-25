@@ -18,20 +18,24 @@
 import * as preferences from "preferences";
 import * as data from "data";
 import * as Sentry from "@sentry/browser";
+import * as React from "react";
+import { _ } from "translate";
 import { get_clock_drift, get_network_latency, socket } from "sockets";
 import { current_language } from "translate";
-import { GobanCore, GoEngine, GoThemes, setGobanRenderer } from "goban";
+import { Goban, GobanBase, GobanEngine, setGobanRenderer } from "goban";
 import { sfx } from "sfx";
+import { toast } from "toast";
 
-//(window as any)["Goban"] = Goban;
-(window as any)["GoThemes"] = GoThemes;
-(window as any)["GoEngine"] = GoEngine;
+(window as any)["GobanThemes"] = Goban.THEMES;
+(window as any)["GobanEngine"] = GobanEngine;
 
 data.setDefault("custom.black", "#000000");
 data.setDefault("custom.white", "#FFFFFF");
 data.setDefault("custom.board", "#DCB35C");
 data.setDefault("custom.line", "#000000");
 data.setDefault("custom.url", "");
+
+let previous_toast: any = null;
 
 export function configure_goban() {
     data.watch("experiments.svg", () => {
@@ -41,7 +45,7 @@ export function configure_goban() {
         }
     });
 
-    GobanCore.setHooks({
+    GobanBase.setCallbacks({
         defaultConfig: () => {
             return {
                 server_socket: socket,
@@ -71,7 +75,7 @@ export function configure_goban() {
         },
 
         isAnalysisDisabled: (
-            goban: GobanCore,
+            goban: GobanBase,
             perGameSettingAppliesToNonPlayers = false,
         ): boolean => {
             if (goban.engine.phase === "finished") {
@@ -168,6 +172,29 @@ export function configure_goban() {
                     "The team has been made aware of this issue. You can try " +
                     "reloading a page, or try a different browser or device.",
             );
+        },
+
+        toast: (message_id: string, duration: number) => {
+            let message: JSX.Element | null = null;
+            switch (message_id) {
+                case "refusing_to_remove_group_is_alive":
+                    message = (
+                        <div>
+                            {_(
+                                "This group appears alive. Long press or shift+click to forcibly removal it.",
+                            )}
+                        </div>
+                    );
+                    break;
+                default:
+                    message = <div>{message_id}</div>;
+            }
+            if (message) {
+                if (previous_toast) {
+                    previous_toast.close();
+                }
+                previous_toast = toast(message, duration);
+            }
         },
     });
 }

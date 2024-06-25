@@ -21,6 +21,7 @@ import { sprite_packs, SpritePack } from "./sfx_sprites";
 import { current_language } from "./translate";
 
 Howler.autoUnlock = true;
+let unlocked_message_logged = false;
 
 const GameVoiceSounds = [
     "period",
@@ -484,16 +485,15 @@ export class SFXManager {
 
         try {
             howl.on("unlock", () => {
-                console.info(
-                    "Audio group ",
-                    group_name,
-                    " unlocked successfully, sounds should now work",
-                );
+                if (!unlocked_message_logged) {
+                    console.debug("Audio has been unlocked, sounds should work now");
+                    unlocked_message_logged = true;
+                }
             });
             const silence = new SFXSprite(howl, group_name, "silence");
             silence.play();
             silence.then(() => {
-                console.debug("Successfully played silence from ", group_name);
+                //console.debug("Successfully played silence from ", group_name);
             });
         } catch (e) {
             console.warn(e);

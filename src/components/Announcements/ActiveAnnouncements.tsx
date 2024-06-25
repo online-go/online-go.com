@@ -76,11 +76,18 @@ export class ActiveAnnouncements extends React.PureComponent {
             const creator_blocked = getBlocks(announcement.creator.id).block_announcements;
             const type_muted = announcementTypeMuted(announcement);
 
+            /* No longer show twitch announcements, they'll show up automatically on GoTV */
+            let is_twitch = false;
+            if (announcement.link && announcement.link.toLowerCase().indexOf("twitch.tv") > 0) {
+                is_twitch = true;
+            }
+
             if (
                 announcement.type !== "tournament" &&
                 !is_hidden &&
                 !creator_blocked &&
-                !type_muted
+                !type_muted &&
+                !is_twitch
             ) {
                 lst.push(announcement);
             }

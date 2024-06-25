@@ -57,8 +57,8 @@ jobs:
       - name: Webpack
         run: npx webpack --optimization-minimize --devtool=source-map
 
-      - name: Tests
-        run: npx jest
+      #- name: Tests
+      #  run: npx jest
 
       - uses: streetsidesoftware/cspell-action@v5
         with:

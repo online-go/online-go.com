@@ -1,3 +1,8 @@
+/*
+ * Copyright (C)  Online-Go.com
+ * Copyright (C)  Benjamin P. Jones
+ */
+
 import { AdHocPackedMove, createGoban, GobanRenderer } from "goban";
 import { CancelButton, PlayButtons } from "./PlayButtons";
 import { act, cleanup, fireEvent, render, screen /* waitFor */ } from "@testing-library/react";

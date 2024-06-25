@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { GoMath, GobanRenderer, GobanRendererConfig, createGoban } from "goban";
+import { GobanRenderer, GobanRendererConfig, createGoban, decodeMoves } from "goban";
 import React from "react";
 import { PersistentElement } from "../../components/PersistentElement";
 
@@ -49,7 +49,7 @@ export function ScoringEventThumbnail({
             engine.jumpToOfficialMoveNumber(move_number);
         }
         if (removal_string != null) {
-            GoMath.decodeMoves(removal_string, config.width ?? 19, config.height ?? 19).forEach(
+            decodeMoves(removal_string, config.width ?? 19, config.height ?? 19).forEach(
                 ({ x, y }) => {
                     engine.setRemoved(x, y, true);
                 },

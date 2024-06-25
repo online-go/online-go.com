@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import { PlayerCacheEntry } from "player_cache";
-import { GoEngineRules, JGOFTimeControl } from "goban";
+import { GobanEngineRules, JGOFTimeControl } from "goban";
 
 export interface Player extends PlayerCacheEntry {
     professional: boolean;
@@ -69,7 +69,7 @@ export interface ActiveTournament {
     name: string;
     player_count: number;
     players_start: number;
-    rules: GoEngineRules;
+    rules: GobanEngineRules;
     schedule: any;
     start_waiting: string; // timestamp
     started: string | null; // timestamp;

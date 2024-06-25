@@ -1,3 +1,7 @@
+/*
+ * Copyright (C)  Online-Go.com
+ * Copyright (C)  Benjamin P. Jones
+ */
 import { render } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import * as React from "react";

@@ -32,7 +32,6 @@ import { Errcode } from "Errcode";
 import { AIReviewChart } from "./AIReviewChart";
 import { Toggle } from "Toggle";
 import {
-    GoMath,
     MoveTree,
     JGOFAIReview,
     JGOFAIReviewMove,
@@ -41,7 +40,9 @@ import {
     ColoredCircle,
     getWorstMoves,
     AIReviewWorstMoveEntry,
-    GobanCore,
+    Goban,
+    encodeMoves,
+    encodeMove,
 } from "goban";
 import { game_control } from "./game_control";
 import { alert } from "swal_config";
@@ -208,7 +209,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             .catch(errorLogger);
     }
 
-    private static handicapOffset(goban: GobanCore): number {
+    private static handicapOffset(goban: Goban): number {
         if (
             goban &&
             goban.engine &&
@@ -660,7 +661,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         }
 
         if (next_move) {
-            next_move_pretty_coords = goban.engine.prettyCoords(next_move.x, next_move.y);
+            next_move_pretty_coords = goban.engine.prettyCoordinates(next_move.x, next_move.y);
         }
 
         return [win_rate, score, next_move_delta_win_rate, next_move_pretty_coords];
@@ -828,7 +829,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             let next_moves: string | undefined;
 
             for (const branch of ai_review_move.branches) {
-                const move_str: string = trunk_move_string + GoMath.encodeMoves(branch.moves);
+                const move_str: string = trunk_move_string + encodeMoves(branch.moves);
                 if (move_str.startsWith(cur_move_string)) {
                     next_moves = move_str.slice(cur_move_string.length, Infinity);
                     break;
@@ -842,7 +843,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
                 for (let i = 0; i < decoded_moves.length; ++i) {
                     const mv = decoded_moves[i];
-                    const encoded_mv = GoMath.encodeMove(mv.x, mv.y);
+                    const encoded_mv = encodeMove(mv.x, mv.y);
                     marks[i + cur_move.getDistance(trunk_move) + 1] = encoded_mv;
                     if ((goban.engine.player - 1 + i) % 2 === 1) {
                         white += encoded_mv;
@@ -863,7 +864,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         return false;
     }
 
-    private static getPlayerColorsMoveList(goban: GobanCore) {
+    private static getPlayerColorsMoveList(goban: Goban) {
         const init_move = goban.engine.move_tree;
         const move_list: any[] = [];
         let cur_move = init_move.trunk_next;
@@ -1684,7 +1685,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             <div className="worst-move-list-container">
                 <div className="move-list">
                     {lst.slice(0, this.state.worst_moves_shown).map((de, idx) => {
-                        const pretty_coords = goban.engine.prettyCoords(de.move.x, de.move.y);
+                        const pretty_coords = goban.engine.prettyCoordinates(de.move.x, de.move.y);
                         return (
                             <span
                                 key={`${idx}-${de.move_number}`}

@@ -1,3 +1,7 @@
+/*
+ * Copyright (C)  Online-Go.com
+ * Copyright (C)  Benjamin P. Jones
+ */
 import { AccountSettings } from "./AccountSettings";
 import * as React from "react";
 import { act, render, screen } from "@testing-library/react";

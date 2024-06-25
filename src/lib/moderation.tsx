@@ -19,7 +19,7 @@ import * as React from "react";
 import { _ } from "translate";
 import { post } from "requests";
 import { alert } from "swal_config";
-import { GoEngineConfig } from "goban";
+import { GobanEngineConfig } from "goban";
 import { errorAlerter } from "misc";
 import { toast } from "toast";
 
@@ -50,7 +50,7 @@ export const MOD_POWER_NAMES: { [key in MODERATOR_POWERS]: string } = {
 };
 
 export function doAnnul(
-    engine: GoEngineConfig,
+    engine: GobanEngineConfig,
     tf: boolean,
     onGameAnnulled: ((tf: boolean) => void) | null = null,
     init_prompt: string = "",

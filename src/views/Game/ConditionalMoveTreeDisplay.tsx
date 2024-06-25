@@ -16,13 +16,13 @@
  */
 
 import * as React from "react";
-import { GoConditionalMove } from "goban";
+import { ConditionalMoveTree } from "goban";
 import { useGoban } from "./goban_context";
 import { generateGobanHook } from "./GameHooks";
 import { _ } from "translate";
 
 interface ConditionalMoveTreeDisplayProps {
-    tree: GoConditionalMove;
+    tree: ConditionalMoveTree;
     conditional_path: string;
 }
 
@@ -115,8 +115,8 @@ function MoveEntry({ color, conditional_path }: MoveEntryProps) {
         <span className={`entry ${selected ? "selected" : ""}`} onClick={cb}>
             <span className={`stone ${color}`}></span>
             <span>
-                {goban.engine.prettyCoords(mv.x, mv.y) !== "pass"
-                    ? goban.engine.prettyCoords(mv.x, mv.y)
+                {goban.engine.prettyCoordinates(mv.x, mv.y) !== "pass"
+                    ? goban.engine.prettyCoordinates(mv.x, mv.y)
                     : _("Pass")}
             </span>
         </span>

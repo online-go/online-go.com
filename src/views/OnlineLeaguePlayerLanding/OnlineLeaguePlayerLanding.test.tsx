@@ -1,3 +1,7 @@
+/*
+ * Copyright (C)  Online-Go.com
+ * Copyright (C)  Benjamin P. Jones
+ */
 import * as React from "react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 

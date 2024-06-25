@@ -2,6 +2,7 @@
 
 // Which backend server would you like to use today? ...
 let BACKEND = process.env.OGS_BACKEND || "BETA";
+BACKEND = BACKEND.toUpperCase();
 //BACKEND = 'PRODUCTION';
 //BACKEND = 'LOCAL';
 
@@ -201,7 +202,9 @@ function dev_server(done) {
         console.info(`##  ( http://localhost:${port} )`);
         console.info(`##  pointing at ${BACKEND} (${server_url})`);
         console.info(`#############################################\n\n`);
-        console.info("Join us at https://join.slack.com/t/online-go/shared_invite/zt-2jww58l2v-iwhhBiVsXNxcD9xm74bIKA if you'd like to chat...");
+        console.info(
+            "Join us at https://join.slack.com/t/online-go/shared_invite/zt-2jww58l2v-iwhhBiVsXNxcD9xm74bIKA if you'd like to chat...",
+        );
     });
 
     dev_server.use(express.static("dist"));
@@ -280,8 +283,8 @@ function dev_server(done) {
     });
 
     dev_server.get("/goban.js", (req, res) => {
-        console.info(`GET ${req.path} -> node_modules/goban/lib/goban.js`);
-        let js = fs.readFileSync("node_modules/goban/lib/goban.js", { encoding: "utf-8" });
+        console.info(`GET ${req.path} -> node_modules/goban/build/goban.js`);
+        let js = fs.readFileSync("node_modules/goban/build/goban.js", { encoding: "utf-8" });
         res.setHeader("Content-Type", "application/javascript; charset=utf-8");
         res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
         res.setHeader("Pragma", "no-cache");
@@ -291,8 +294,8 @@ function dev_server(done) {
     });
 
     dev_server.get("/goban.js.map", (req, res) => {
-        console.info(`GET ${req.path} -> node_modules/goban/lib/goban.js.map`);
-        let js = fs.readFileSync("node_modules/goban/lib/goban.js.map", { encoding: "utf-8" });
+        console.info(`GET ${req.path} -> node_modules/goban/build/goban.js.map`);
+        let js = fs.readFileSync("node_modules/goban/build/goban.js.map", { encoding: "utf-8" });
         res.setHeader("Content-Type", "application/javascript; charset=utf-8");
         res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
         res.setHeader("Pragma", "no-cache");
@@ -301,6 +304,7 @@ function dev_server(done) {
         res.status(200).send(js);
     });
 
+    /*
     dev_server.get("/index.js.map", (req, res) => {
         let js = fs.readFileSync("node_modules/goban/lib/index.js.map", { encoding: "utf-8" });
         res.setHeader("Content-Type", "application/javascript; charset=utf-8");
@@ -310,6 +314,7 @@ function dev_server(done) {
         res.setHeader("Content-Length", js.length);
         res.status(200).send(js);
     });
+    */
 
     dev_server.get("*", (req, res) => {
         console.info(`GET ${req.path}`);

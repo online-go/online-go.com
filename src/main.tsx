@@ -21,9 +21,8 @@ apply_polyfills();
 
 import { configure_goban } from "configure-goban";
 import {
-    GoMath,
-    init_score_estimator,
-    set_remote_scorer,
+    init_wasm_ownership_estimator,
+    init_remote_ownership_estimator,
     ScoreEstimateRequest,
     ScoreEstimateResponse,
 } from "goban";
@@ -290,15 +289,15 @@ sockets.socket.on("user/update", (user: any) => {
     }
 });
 
-/*** Setup remote score estimation */
-set_remote_scorer(remote_score_estimator);
-function remote_score_estimator(req: ScoreEstimateRequest): Promise<ScoreEstimateResponse> {
+/*** Setup remote ownership estimation for score estimation and autoscoring */
+init_remote_ownership_estimator(remote_ownership_estimator);
+function remote_ownership_estimator(req: ScoreEstimateRequest): Promise<ScoreEstimateResponse> {
     return new Promise<ScoreEstimateResponse>((resolve) => {
         req.jwt = data.get("config.user_jwt", "");
         resolve(post(`${ai_host}/api/score`, req));
     });
 }
-init_score_estimator()
+init_wasm_ownership_estimator()
     .then(() => {
         // console.log('SE Initialized');
     })
@@ -344,7 +343,6 @@ react_root.render(
 (window as any)["data"] = data;
 (window as any)["preferences"] = preferences;
 (window as any)["player_cache"] = player_cache;
-(window as any)["GoMath"] = GoMath;
 
 import * as requests from "requests";
 (window as any)["requests"] = requests;

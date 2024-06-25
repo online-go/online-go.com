@@ -1,3 +1,8 @@
+/*
+ * Copyright (C)  Online-Go.com
+ * Copyright (C)  Benjamin P. Jones
+ */
+
 import { render, screen } from "@testing-library/react";
 import * as React from "react";
 import { GameDock } from "./GameDock";

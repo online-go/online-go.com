@@ -17,7 +17,7 @@
 
 import { socket } from "sockets";
 import { getUserRating } from "rank_utils";
-import { User } from "goban/lib/protocol";
+import { User } from "goban";
 
 let active_bots: { [id: number]: User } = {};
 let _bots_list: User[] = [];
