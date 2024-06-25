@@ -404,7 +404,6 @@ export const GoResources = () => {
                                 title="3-2-1 Go"
                                 href="http://321go.org/"
                             />,
-
                         ).map((elt, idx) => (
                             <dd key={idx}>{elt}</dd>
                         ))}
@@ -422,7 +421,6 @@ export const GoResources = () => {
                                 countries={[en]}
                                 title="Go Commentary Videos"
                                 href="https://www.youtube.com/@GoCommentary/"
-
                             />,
                             <BasicResource
                                 countries={[eu]}
@@ -742,7 +740,7 @@ export const GoResources = () => {
                                 title="Top player rating list"
                                 href="https://www.goratings.org/en/"
                             />,
-                          
+
                             <BasicResource
                                 countries={["jp"]}
                                 title="Hoenkikaku Co, Ltd."
