@@ -154,6 +154,12 @@ export const defaults = {
 
     "analysis.pencil-color": "#004cff",
     "analysis.score-color": "#3ACC2B",
+
+    "gotv.selected-chat": "Twitch",
+    "gotv.expand-chat-pane": false,
+    "gotv.show-gotv-indicator": true,
+    "gotv.auto-select-top-stream": true,
+    "gotv.allow-mature-streams": false,
 };
 
 defaults["profanity-filter"][current_language] = true;

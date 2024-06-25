@@ -14,27 +14,75 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { UIPush } from "UIPush";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import * as preferences from "preferences";
+import { get } from "requests";
+import { Stream } from "GoTV";
 
 export const GoTVIndicator: React.FC = () => {
     const [streamCount, setStreamCount] = useState(0);
+    const [showGoTVIndicator] = preferences.usePreference("gotv.show-gotv-indicator");
+    const [allowMatureStreams] = preferences.usePreference("gotv.allow-mature-streams");
+    const [previousPath, setPreviousPath] = useState<string | null>(null);
+
+    const location = useLocation();
 
     const handleStreamUpdate = (data: any) => {
         const updatedStreams = JSON.parse(data);
-        setStreamCount(updatedStreams.length);
+        setStreamCount(filterStreams(updatedStreams).length);
+    };
+
+    const filterStreams = (streams: Stream[]) => {
+        if (!allowMatureStreams) {
+            return streams.filter((stream: Stream) => !stream.is_mature);
+        }
+        return streams;
+    };
+
+    useEffect(() => {
+        if (showGoTVIndicator) {
+            get("gotv/streams")
+                .then((streams: Stream[]) => {
+                    setStreamCount(filterStreams(streams).length);
+                })
+                .catch((error) => {
+                    console.error("Error fetching streams:", error);
+                });
+        }
+    }, [allowMatureStreams]);
+
+    useEffect(() => {
+        if (location.pathname !== "/gotv") {
+            setPreviousPath(location.pathname);
+        }
+    }, [location.pathname]);
+
+    const setLinkURL = () => {
+        const currentPath = location.pathname;
+
+        if (currentPath === "/gotv") {
+            return previousPath || "/";
+        } else {
+            return "/gotv";
+        }
     };
 
     return (
-        <Link to="/gotv" className="GoTVIndicator" title="GoTV">
+        <>
             <UIPush channel="gotv" event="update_streams" action={handleStreamUpdate} />
-            {streamCount > 0 && (
+
+            {showGoTVIndicator && (
                 <>
-                    <i className="fa fa-tv navbar-icon"></i>
-                    <span className="count">{streamCount}</span>
+                    {streamCount > 0 && (
+                        <Link to={setLinkURL()} className="GoTVIndicator" title="GoTV">
+                            <i className="fa fa-tv navbar-icon"></i>
+                            <span className="count">{streamCount}</span>
+                        </Link>
+                    )}
                 </>
             )}
-        </Link>
+        </>
     );
 };

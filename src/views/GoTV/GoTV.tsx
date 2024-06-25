@@ -23,8 +23,9 @@ import { EmbeddedChatCard } from "Chat";
 import { StreamCard } from "./StreamCard";
 import { twitchLanguageCodes } from "./twitchLanguageCodes";
 import { _ } from "translate";
+import * as preferences from "preferences";
 
-interface Stream {
+export interface Stream {
     stream_id: string;
     title: string;
     channel: string;
@@ -33,6 +34,7 @@ interface Stream {
     language: string;
     thumbnail_url: string;
     source: string;
+    is_mature: boolean;
 }
 
 interface LanguageCodes {
@@ -50,23 +52,29 @@ export const GoTV = () => {
     const [streams, setStreams] = useState<Stream[]>([]);
     const [selectedStream, setSelectedStream] = useState<Stream | null>(null);
     const [showListPane, setShowListPane] = useState(true);
-    const [showChatPane, setShowChatPane] = useState(false);
+    const [showChatPane, setShowChatPane] = preferences.usePreference("gotv.expand-chat-pane");
     const [filterLanguage, setFilterLanguage] = useState("");
-    const [activeChatTab, setActiveChatTab] = useState("OGS");
+    const [activeChatTab, setActiveChatTab] = preferences.usePreference("gotv.selected-chat");
     const [isLightTheme, setIsLightTheme] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+
+    const autoplay = preferences.get("gotv.auto-select-top-stream");
+    const allowMatureStreams = preferences.get("gotv.allow-mature-streams");
 
     useEffect(() => {
         const url = "gotv/streams/";
         get(url)
             .then((data: Stream[]) => {
-                const streamsData = data.map((stream) => ({
+                let streamsData = data.map((stream) => ({
                     ...stream,
                     stream_id: String(stream.stream_id),
                 }));
+                streamsData = filterMatureStreams(streamsData);
                 setStreams(streamsData);
                 if (streamsData.length > 0) {
-                    setSelectedStream(streamsData[0]);
+                    if (autoplay) {
+                        setSelectedStream(streamsData[0]);
+                    }
                 } else if (isMobile) {
                     setShowListPane(false);
                 }
@@ -99,11 +107,20 @@ export const GoTV = () => {
         };
     }, []);
 
+    const filterMatureStreams = (streamsData: Stream[]) => {
+        if (!allowMatureStreams) {
+            return streamsData.filter((stream: Stream) => !stream.is_mature);
+        } else {
+            return streamsData;
+        }
+    };
+
     const handleStreamUpdate = (data: any) => {
-        const updatedStreams = JSON.parse(data).map((stream: Stream) => ({
+        let updatedStreams = JSON.parse(data).map((stream: Stream) => ({
             ...stream,
             stream_id: String(stream.stream_id),
         }));
+        updatedStreams = filterMatureStreams(updatedStreams);
         setStreams(updatedStreams);
         if (!selectedStream && updatedStreams.length > 0) {
             setSelectedStream(updatedStreams[0]);
@@ -199,26 +216,37 @@ export const GoTV = () => {
                         <div className="loading-message">{_("Loading streams...")}</div>
                     ) : filteredStreams.length > 0 && selectedStream ? (
                         <iframe
+                            key={selectedStream.stream_id}
                             src={`https://player.twitch.tv/?channel=${selectedStream.channel}&parent=${parentDomain}&autoplay=true&muted=false`}
                             allowFullScreen={true}
                             aria-label={`Live stream of ${selectedStream.title}`}
                         ></iframe>
                     ) : (
-                        <div className="no-streams-available-message">
-                            <h2>{_("No Streams Available")}</h2>
-                            <p>
-                                {_(
-                                    "Unfortunately, there are no live streams available at the moment. Please check back later for exciting Go content.",
-                                )}
-                            </p>
-                            <p>
-                                <strong>{_("Want to see your stream featured here?")}</strong>
-                                <br />{" "}
-                                {_(
-                                    "Stream in the Go category on Twitch or the Board Games category using the go, weiqi, or baduk tags. We welcome all Go enthusiasts to share their games and experiences. Your participation helps grow our community!",
-                                )}
-                            </p>
-                        </div>
+                        <>
+                            {filteredStreams.length > 0 ? (
+                                <div className="select-stream-message">
+                                    <p>{_("Select a stream from the list to start watching")}</p>
+                                </div>
+                            ) : (
+                                <div className="no-streams-available-message">
+                                    <h2>{_("No Streams Available")}</h2>
+                                    <p>
+                                        {_(
+                                            "Unfortunately, there are no live streams available at the moment. Please check back later for exciting Go content.",
+                                        )}
+                                    </p>
+                                    <p>
+                                        <strong>
+                                            {_("Want to see your stream featured here?")}
+                                        </strong>
+                                        <br />{" "}
+                                        {_(
+                                            "Stream in the Go category on Twitch or the Board Games category using the go, weiqi, or baduk tags. We welcome all Go enthusiasts to share their games and experiences. Your participation helps grow our community!",
+                                        )}
+                                    </p>
+                                </div>
+                            )}
+                        </>
                     )}
                 </div>
                 <div
