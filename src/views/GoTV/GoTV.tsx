@@ -57,6 +57,8 @@ export const GoTV = () => {
     const [isLightTheme, setIsLightTheme] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
 
+    const autoplay = preferences.get("gotv.auto-select-top-stream");
+
     useEffect(() => {
         const url = "gotv/streams/";
         get(url)
@@ -67,7 +69,9 @@ export const GoTV = () => {
                 }));
                 setStreams(streamsData);
                 if (streamsData.length > 0) {
-                    setSelectedStream(streamsData[0]);
+                    if (autoplay) {
+                        setSelectedStream(streamsData[0]);
+                    }
                 } else if (isMobile) {
                     setShowListPane(false);
                 }
@@ -205,21 +209,31 @@ export const GoTV = () => {
                             aria-label={`Live stream of ${selectedStream.title}`}
                         ></iframe>
                     ) : (
-                        <div className="no-streams-available-message">
-                            <h2>{_("No Streams Available")}</h2>
-                            <p>
-                                {_(
-                                    "Unfortunately, there are no live streams available at the moment. Please check back later for exciting Go content.",
-                                )}
-                            </p>
-                            <p>
-                                <strong>{_("Want to see your stream featured here?")}</strong>
-                                <br />{" "}
-                                {_(
-                                    "Stream in the Go category on Twitch or the Board Games category using the go, weiqi, or baduk tags. We welcome all Go enthusiasts to share their games and experiences. Your participation helps grow our community!",
-                                )}
-                            </p>
-                        </div>
+                        <>
+                            {filteredStreams.length > 0 ? (
+                                <div className="select-stream-message">
+                                    <p>{_("Select a stream from the list to start watching")}</p>
+                                </div>
+                            ) : (
+                                <div className="no-streams-available-message">
+                                    <h2>{_("No Streams Available")}</h2>
+                                    <p>
+                                        {_(
+                                            "Unfortunately, there are no live streams available at the moment. Please check back later for exciting Go content.",
+                                        )}
+                                    </p>
+                                    <p>
+                                        <strong>
+                                            {_("Want to see your stream featured here?")}
+                                        </strong>
+                                        <br />{" "}
+                                        {_(
+                                            "Stream in the Go category on Twitch or the Board Games category using the go, weiqi, or baduk tags. We welcome all Go enthusiasts to share their games and experiences. Your participation helps grow our community!",
+                                        )}
+                                    </p>
+                                </div>
+                            )}
+                        </>
                     )}
                 </div>
                 <div

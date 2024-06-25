@@ -155,6 +155,7 @@ export const defaults = {
     "gotv.selected-chat": "Twitch",
     "gotv.expand-chat-pane": false,
     "gotv.show-gotv-indicator": true,
+    "gotv.auto-select-top-stream": true,
 };
 
 defaults["profanity-filter"][current_language] = true;

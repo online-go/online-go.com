@@ -23,11 +23,16 @@ import { PreferenceLine } from "SettingsCommon";
 
 export function GoTVPreferences(): JSX.Element {
     const [showGoTVIndicator, toggleGoTVIndicator] = usePreference("gotv.show-gotv-indicator");
+    const [autoSelect, toggleAutoSelect] = usePreference("gotv.auto-select-top-stream");
 
     return (
         <div>
             <PreferenceLine title={_("Show active streams indicator in navbar")}>
                 <Toggle checked={showGoTVIndicator} onChange={toggleGoTVIndicator} />
+            </PreferenceLine>
+
+            <PreferenceLine title={_("Automatically play top stream on load")}>
+                <Toggle checked={autoSelect} onChange={toggleAutoSelect} />
             </PreferenceLine>
         </div>
     );
