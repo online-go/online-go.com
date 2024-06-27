@@ -37,16 +37,6 @@ export interface Stream {
     is_mature: boolean;
 }
 
-interface LanguageCodes {
-    [key: string]: string;
-}
-
-const languageMap: LanguageCodes = twitchLanguageCodes;
-
-const getNativeLanguageName = (code: string): string => {
-    return languageMap[code] || code;
-};
-
 export const GoTV = () => {
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
     const [streams, setStreams] = useState<Stream[]>([]);
@@ -60,6 +50,8 @@ export const GoTV = () => {
 
     const autoplay = preferences.get("gotv.auto-select-top-stream");
     const allowMatureStreams = preferences.get("gotv.allow-mature-streams");
+
+    type LanguageCodes = typeof twitchLanguageCodes;
 
     useEffect(() => {
         const url = "gotv/streams/";
@@ -156,12 +148,10 @@ export const GoTV = () => {
 
     const parentDomain = getParentDomain();
 
-    const languageOptions = Array.from(new Set(streams.map((stream) => stream.language))).map(
-        (lang) => ({
-            value: lang,
-            label: getNativeLanguageName(lang),
-        }),
-    );
+    const languageOptions = Object.keys(twitchLanguageCodes).map((key) => ({
+        value: key,
+        label: twitchLanguageCodes[key as keyof LanguageCodes],
+    }));
 
     return (
         <div id="gotv-container" className="gotv-container">
