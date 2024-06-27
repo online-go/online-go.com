@@ -20,6 +20,10 @@ import { _ } from "translate";
 import { usePreference } from "preferences";
 import { Toggle } from "Toggle";
 import { PreferenceLine } from "SettingsCommon";
+import Select, { MultiValue } from "react-select";
+import { twitchLanguageCodes } from "GoTV";
+
+type LanguageCodes = typeof twitchLanguageCodes;
 
 export function GoTVPreferences(): JSX.Element {
     const [showGoTVIndicator, toggleGoTVIndicator] = usePreference("gotv.show-gotv-indicator");
@@ -27,9 +31,39 @@ export function GoTVPreferences(): JSX.Element {
     const [allowMatureStreams, toggleAllowMatureStreams] = usePreference(
         "gotv.allow-mature-streams",
     );
+    const [selectedLanguages, setSelectedLanguages] = usePreference("gotv.selected-languages");
+
+    const languageOptions = Object.keys(twitchLanguageCodes).map((key) => ({
+        value: key,
+        label: twitchLanguageCodes[key as keyof LanguageCodes],
+    }));
+
+    const handleLanguageChange = (
+        selectedOptions: MultiValue<{ value: string; label: string }>,
+    ) => {
+        setSelectedLanguages(
+            selectedOptions && selectedOptions.length > 0
+                ? selectedOptions.map((option) => option.value)
+                : [""],
+        );
+    };
 
     return (
         <div>
+            <PreferenceLine title={_("Select preferred languages (multiple allowed)")}>
+                <Select
+                    options={languageOptions}
+                    placeholder={_("All Languages")}
+                    isMulti
+                    value={languageOptions.filter((option) =>
+                        selectedLanguages.includes(option.value),
+                    )}
+                    onChange={handleLanguageChange}
+                    className="language-select"
+                    classNamePrefix="ogs-react-select"
+                />
+            </PreferenceLine>
+
             <PreferenceLine title={_("Show active streams indicator in navbar")}>
                 <Toggle checked={showGoTVIndicator} onChange={toggleGoTVIndicator} />
             </PreferenceLine>

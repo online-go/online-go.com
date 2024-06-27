@@ -17,11 +17,9 @@
 
 import React, { useState, useEffect } from "react";
 import { UIPush } from "UIPush";
-import Select from "react-select";
 import { get } from "requests";
 import { EmbeddedChatCard } from "Chat";
 import { StreamCard } from "./StreamCard";
-import { twitchLanguageCodes } from "./twitchLanguageCodes";
 import { _ } from "translate";
 import * as preferences from "preferences";
 
@@ -43,15 +41,13 @@ export const GoTV = () => {
     const [selectedStream, setSelectedStream] = useState<Stream | null>(null);
     const [showListPane, setShowListPane] = useState(true);
     const [showChatPane, setShowChatPane] = preferences.usePreference("gotv.expand-chat-pane");
-    const [filterLanguage, setFilterLanguage] = useState("");
+    const [selectedLanguages] = preferences.usePreference("gotv.selected-languages");
     const [activeChatTab, setActiveChatTab] = preferences.usePreference("gotv.selected-chat");
     const [isLightTheme, setIsLightTheme] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
 
     const autoplay = preferences.get("gotv.auto-select-top-stream");
     const allowMatureStreams = preferences.get("gotv.allow-mature-streams");
-
-    type LanguageCodes = typeof twitchLanguageCodes;
 
     useEffect(() => {
         const url = "gotv/streams/";
@@ -62,6 +58,7 @@ export const GoTV = () => {
                     stream_id: String(stream.stream_id),
                 }));
                 streamsData = filterMatureStreams(streamsData);
+                streamsData = filterStreamsByLanguage(streamsData);
                 setStreams(streamsData);
                 if (streamsData.length > 0) {
                     if (autoplay) {
@@ -97,7 +94,7 @@ export const GoTV = () => {
             observer.disconnect();
             window.removeEventListener("resize", handleResize);
         };
-    }, []);
+    }, [selectedLanguages]);
 
     const filterMatureStreams = (streamsData: Stream[]) => {
         if (!allowMatureStreams) {
@@ -107,12 +104,19 @@ export const GoTV = () => {
         }
     };
 
+    const filterStreamsByLanguage = (streamsData: Stream[]) => {
+        return selectedLanguages.length > 0 && selectedLanguages[0] !== ""
+            ? streamsData.filter((stream) => selectedLanguages.includes(stream.language))
+            : streamsData;
+    };
+
     const handleStreamUpdate = (data: any) => {
         let updatedStreams = JSON.parse(data).map((stream: Stream) => ({
             ...stream,
             stream_id: String(stream.stream_id),
         }));
         updatedStreams = filterMatureStreams(updatedStreams);
+        updatedStreams = filterStreamsByLanguage(updatedStreams);
         setStreams(updatedStreams);
         if (!selectedStream && updatedStreams.length > 0 && autoplay) {
             setSelectedStream(updatedStreams[0]);
@@ -134,24 +138,11 @@ export const GoTV = () => {
         setShowChatPane(!showChatPane);
     };
 
-    const handleFilterChange = (selectedOption: any) => {
-        setFilterLanguage(selectedOption ? selectedOption.value : "");
-    };
-
     const handleChatTabChange = (tab: string) => {
         setActiveChatTab(tab);
     };
 
-    const filteredStreams = filterLanguage
-        ? streams.filter((stream) => stream.language === filterLanguage)
-        : streams;
-
     const parentDomain = getParentDomain();
-
-    const languageOptions = Object.keys(twitchLanguageCodes).map((key) => ({
-        value: key,
-        label: twitchLanguageCodes[key as keyof LanguageCodes],
-    }));
 
     return (
         <div id="gotv-container" className="gotv-container">
@@ -160,14 +151,6 @@ export const GoTV = () => {
                 <div className={`list-pane ${showListPane ? "expanded" : "collapsed"}`}>
                     <div className="streams-header">
                         <h2>{_("Live Streams")}</h2>
-                        <Select
-                            options={languageOptions}
-                            onChange={handleFilterChange}
-                            isClearable
-                            placeholder={_("All Languages")}
-                            className="language-select"
-                            classNamePrefix="ogs-react-select"
-                        />
                         {isMobile && (
                             <button className="back-button" onClick={handleToggleStreamsPane}>
                                 <i className="fa fa-arrow-up"></i>
@@ -176,8 +159,8 @@ export const GoTV = () => {
                     </div>
                     {isLoading ? (
                         <div className="loading-message">{_("Loading streams...")}</div>
-                    ) : filteredStreams.length > 0 ? (
-                        filteredStreams.map((stream) => (
+                    ) : streams.length > 0 ? (
+                        streams.map((stream) => (
                             <StreamCard
                                 key={stream.stream_id}
                                 stream={stream}
@@ -204,7 +187,7 @@ export const GoTV = () => {
                 >
                     {isLoading ? (
                         <div className="loading-message">{_("Loading streams...")}</div>
-                    ) : filteredStreams.length > 0 && selectedStream ? (
+                    ) : streams.length > 0 && selectedStream ? (
                         <iframe
                             key={selectedStream.stream_id}
                             src={`https://player.twitch.tv/?channel=${selectedStream.channel}&parent=${parentDomain}&autoplay=true&muted=false`}
@@ -213,7 +196,7 @@ export const GoTV = () => {
                         ></iframe>
                     ) : (
                         <>
-                            {filteredStreams.length > 0 ? (
+                            {streams.length > 0 ? (
                                 <div className="select-stream-message">
                                     <p>{_("Select a stream from the list to start watching")}</p>
                                 </div>

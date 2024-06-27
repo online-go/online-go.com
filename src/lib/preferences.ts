@@ -160,6 +160,7 @@ export const defaults = {
     "gotv.show-gotv-indicator": true,
     "gotv.auto-select-top-stream": true,
     "gotv.allow-mature-streams": false,
+    "gotv.selected-languages": [""],
 };
 
 defaults["profanity-filter"][current_language] = true;

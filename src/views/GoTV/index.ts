@@ -18,3 +18,4 @@
 export * from "./GoTV";
 export * from "./StreamCard";
 export * from "./GoTVIndicator";
+export * from "./twitchLanguageCodes";
