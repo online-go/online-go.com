@@ -286,6 +286,7 @@ export const GoTV = () => {
                                 }`}
                             >
                                 <iframe
+                                    key={selectedStream.stream_id}
                                     src={`https://www.twitch.tv/embed/${
                                         selectedStream.channel
                                     }/chat?${
