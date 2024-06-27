@@ -25,6 +25,7 @@ export const GoTVIndicator: React.FC = () => {
     const [streamCount, setStreamCount] = useState(0);
     const [showGoTVIndicator] = preferences.usePreference("gotv.show-gotv-indicator");
     const [allowMatureStreams] = preferences.usePreference("gotv.allow-mature-streams");
+    const [selectedLanguages] = preferences.usePreference("gotv.selected-languages");
     const [previousPath, setPreviousPath] = useState<string | null>(null);
 
     const location = useLocation();
@@ -35,10 +36,16 @@ export const GoTVIndicator: React.FC = () => {
     };
 
     const filterStreams = (streams: Stream[]) => {
+        let filteredStreams = streams;
         if (!allowMatureStreams) {
-            return streams.filter((stream: Stream) => !stream.is_mature);
+            filteredStreams = filteredStreams.filter((stream: Stream) => !stream.is_mature);
         }
-        return streams;
+        if (selectedLanguages.length > 0 && selectedLanguages[0] !== "") {
+            filteredStreams = filteredStreams.filter((stream: Stream) =>
+                selectedLanguages.includes(stream.language),
+            );
+        }
+        return filteredStreams;
     };
 
     useEffect(() => {
@@ -51,7 +58,7 @@ export const GoTVIndicator: React.FC = () => {
                     console.error("Error fetching streams:", error);
                 });
         }
-    }, [allowMatureStreams]);
+    }, [showGoTVIndicator, allowMatureStreams, selectedLanguages]);
 
     useEffect(() => {
         if (location.pathname !== "/gotv") {
