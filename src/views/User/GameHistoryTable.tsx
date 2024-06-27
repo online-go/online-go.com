@@ -398,10 +398,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
                             },
                             {
                                 header: pgettext("Handicap abbreviation", "HC"),
-                                className: (X) =>
-                                    "handicap" +
-                                    (X && X.handicap !== "-" ? "-present" : "") +
-                                    (X && X.annulled ? " annulled" : ""),
+                                className: (X) => "handicap" + (X && X.annulled ? " annulled" : ""),
                                 render: (X) => X.handicap,
                             },
                             {
