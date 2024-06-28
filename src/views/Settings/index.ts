@@ -16,3 +16,4 @@
  */
 
 export * from "./Settings";
+export * from "./GoTVPreferences";

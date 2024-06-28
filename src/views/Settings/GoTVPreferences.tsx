@@ -49,7 +49,7 @@ export function GoTVPreferences(): JSX.Element {
     };
 
     return (
-        <div>
+        <div className="GoTVPreferences">
             <PreferenceLine title={_("Select preferred languages (multiple allowed)")}>
                 <Select
                     options={languageOptions}

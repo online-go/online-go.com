@@ -21,6 +21,7 @@ import { StreamCard } from "./StreamCard";
 import { _ } from "translate";
 import * as preferences from "preferences";
 import { streamManager } from "./StreamManager";
+import { GoTVPreferences } from "Settings";
 
 export interface Stream {
     stream_id: string;
@@ -43,6 +44,7 @@ export const GoTV = () => {
     const [activeChatTab, setActiveChatTab] = preferences.usePreference("gotv.selected-chat");
     const [isLightTheme, setIsLightTheme] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const [showPreferences, setShowPreferences] = useState(false);
 
     const autoplay = preferences.get("gotv.auto-select-top-stream");
     const initialMount = useRef(true);
@@ -113,6 +115,10 @@ export const GoTV = () => {
 
     const parentDomain = getParentDomain();
 
+    const togglePreferences = () => {
+        setShowPreferences(!showPreferences);
+    };
+
     return (
         <div id="gotv-container" className="gotv-container">
             <div className="gotv-layout">
@@ -124,8 +130,16 @@ export const GoTV = () => {
                                 <i className="fa fa-arrow-up"></i>
                             </button>
                         )}
+                        <i
+                            className={showPreferences ? "fa fa-times" : "fa fa-cog"}
+                            onClick={togglePreferences}
+                        ></i>
                     </div>
-                    {isLoading ? (
+                    {showPreferences ? (
+                        <div className="Settings">
+                            <GoTVPreferences />
+                        </div>
+                    ) : isLoading ? (
                         <div className="loading-message">{_("Loading streams...")}</div>
                     ) : streams.length > 0 ? (
                         streams.map((stream) => (
@@ -140,7 +154,7 @@ export const GoTV = () => {
                         <div className="no-streams-message">
                             {_("No streams are currently available.")}
                         </div>
-                    )}
+                    )}{" "}
                 </div>
                 <div
                     className={`list-pane-control ${showListPane ? "expanded" : "collapsed"}`}
