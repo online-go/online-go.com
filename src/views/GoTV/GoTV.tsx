@@ -50,7 +50,7 @@ export const GoTV = () => {
         const updateStreams = (streams: Stream[]) => {
             setStreams(streams);
             setIsLoading(false);
-            if (streams.length > 0 && autoplay) {
+            if (streams.length > 0 && !selectedStream && autoplay) {
                 setSelectedStream(streams[0]);
             }
         };
