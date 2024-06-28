@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { EmbeddedChatCard } from "Chat";
 import { StreamCard } from "./StreamCard";
 import { _ } from "translate";
@@ -45,14 +45,18 @@ export const GoTV = () => {
     const [isLoading, setIsLoading] = useState(true);
 
     const autoplay = preferences.get("gotv.auto-select-top-stream");
+    const initialMount = useRef(true);
 
     useEffect(() => {
         const updateStreams = (streams: Stream[]) => {
             setStreams(streams);
-            setIsLoading(false);
-            if (streams.length > 0 && !selectedStream && autoplay) {
-                setSelectedStream(streams[0]);
+            if (initialMount.current) {
+                if (autoplay && streams.length > 0) {
+                    setSelectedStream(streams[0]);
+                }
+                initialMount.current = false;
             }
+            setIsLoading(false);
         };
 
         streamManager.subscribe(updateStreams);
