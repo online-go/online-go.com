@@ -21,7 +21,7 @@ import { usePreference } from "preferences";
 import { Toggle } from "Toggle";
 import { PreferenceLine } from "SettingsCommon";
 import Select, { MultiValue } from "react-select";
-import { twitchLanguageCodes } from "GoTV";
+import { twitchLanguageCodes } from "../GoTV/twitchLanguageCodes";
 
 type LanguageCodes = typeof twitchLanguageCodes;
 
