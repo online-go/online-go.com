@@ -29,12 +29,12 @@ export const GoTVIndicator: React.FC = () => {
 
     useEffect(() => {
         const updateStreamCount = (streams: Stream[]) => setStreamCount(streams.length);
-        streamManager.subscribe(updateStreamCount);
+        streamManager.on("update", updateStreamCount);
 
         setStreamCount(streamManager.getStreams().length);
 
         return () => {
-            streamManager.unsubscribe(updateStreamCount);
+            streamManager.off("update", updateStreamCount);
         };
     }, []);
 

@@ -95,14 +95,6 @@ class StreamManager extends EventEmitter<StreamEvents> {
     public getStreams(): Stream[] {
         return this.streams;
     }
-
-    public subscribe(callback: (streams: Stream[]) => void) {
-        this.on("update", callback);
-    }
-
-    public unsubscribe(callback: (streams: Stream[]) => void) {
-        this.off("update", callback);
-    }
 }
 
 export const streamManager = StreamManager.getInstance();

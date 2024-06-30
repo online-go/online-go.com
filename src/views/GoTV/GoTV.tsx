@@ -61,7 +61,7 @@ export const GoTV = () => {
             setIsLoading(false);
         };
 
-        streamManager.subscribe(updateStreams);
+        streamManager.on("update", updateStreams);
 
         const initialStreams = streamManager.getStreams();
         if (initialStreams.length > 0) {
@@ -88,7 +88,7 @@ export const GoTV = () => {
         window.addEventListener("resize", handleResize);
 
         return () => {
-            streamManager.unsubscribe(updateStreams);
+            streamManager.off("update", updateStreams);
             observer.disconnect();
             window.removeEventListener("resize", handleResize);
         };
