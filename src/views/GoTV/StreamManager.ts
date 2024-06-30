@@ -87,11 +87,16 @@ class StreamManager extends EventEmitter<StreamEvents> {
             }
         });
 
-        socket.on("connect", () => {
+        const subscribeToChannel = () => {
             socket.send("ui-pushes/subscribe", { channel: "gotv" });
-        });
-    }
+        };
 
+        socket.on("connect", subscribeToChannel);
+
+        if (socket.connected) {
+            subscribeToChannel();
+        }
+    }
     public getStreams(): Stream[] {
         return this.streams;
     }
