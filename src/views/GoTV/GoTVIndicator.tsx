@@ -15,43 +15,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 import React, { useEffect, useState } from "react";
-import { UIPush } from "UIPush";
 import { Link, useLocation } from "react-router-dom";
 import * as preferences from "preferences";
-import { get } from "requests";
 import { Stream } from "GoTV";
+import { streamManager } from "./StreamManager";
 
 export const GoTVIndicator: React.FC = () => {
     const [streamCount, setStreamCount] = useState(0);
     const [showGoTVIndicator] = preferences.usePreference("gotv.show-gotv-indicator");
-    const [allowMatureStreams] = preferences.usePreference("gotv.allow-mature-streams");
     const [previousPath, setPreviousPath] = useState<string | null>(null);
 
     const location = useLocation();
 
-    const handleStreamUpdate = (data: any) => {
-        const updatedStreams = JSON.parse(data);
-        setStreamCount(filterStreams(updatedStreams).length);
-    };
-
-    const filterStreams = (streams: Stream[]) => {
-        if (!allowMatureStreams) {
-            return streams.filter((stream: Stream) => !stream.is_mature);
-        }
-        return streams;
-    };
-
     useEffect(() => {
-        if (showGoTVIndicator) {
-            get("gotv/streams")
-                .then((streams: Stream[]) => {
-                    setStreamCount(filterStreams(streams).length);
-                })
-                .catch((error) => {
-                    console.error("Error fetching streams:", error);
-                });
-        }
-    }, [allowMatureStreams]);
+        const updateStreamCount = (streams: Stream[]) => setStreamCount(streams.length);
+        streamManager.on("update", updateStreamCount);
+
+        setStreamCount(streamManager.getStreams().length);
+
+        return () => {
+            streamManager.off("update", updateStreamCount);
+        };
+    }, []);
 
     useEffect(() => {
         if (location.pathname !== "/gotv") {
@@ -71,8 +56,6 @@ export const GoTVIndicator: React.FC = () => {
 
     return (
         <>
-            <UIPush channel="gotv" event="update_streams" action={handleStreamUpdate} />
-
             {showGoTVIndicator && (
                 <>
                     {streamCount > 0 && (
