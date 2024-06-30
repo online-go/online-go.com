@@ -177,6 +177,13 @@ const greylist = [
 
 const greylist2 = [".xyz", ".life", ".website"];
 
+const setModeratorRender = (X: any) => {
+    if (!X.moderator) {
+        return "System";
+    }
+    return <Player user={X.moderator} />;
+};
+
 interface ModeratorState {
     newuserany_filter: string;
     playerusernameistartswith_filter: string;
@@ -382,7 +389,7 @@ export class Moderator extends React.PureComponent<{}, ModeratorState> {
                             {
                                 header: _("Moderator"),
                                 className: () => "moderator",
-                                render: (X) => <Player user={X.moderator} />,
+                                render: (X) => setModeratorRender(X),
                             },
 
                             {
