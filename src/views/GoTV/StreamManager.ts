@@ -18,10 +18,14 @@
 import { get } from "requests";
 import { Stream } from "GoTV";
 import * as preferences from "preferences";
-import { EventEmitter } from "events";
+import { EventEmitter } from "eventemitter3";
 import { socket } from "sockets";
 
-class StreamManager extends EventEmitter {
+interface StreamEvents {
+    update: (streams: Stream[]) => void;
+}
+
+class StreamManager extends EventEmitter<StreamEvents> {
     private static instance: StreamManager;
     private streams: Stream[] = [];
     private allowMatureStreams: boolean;
