@@ -64,11 +64,7 @@ export const GoTV = () => {
         streamManager.on("update", updateStreams);
 
         const initialStreams = streamManager.getStreams();
-        if (initialStreams.length > 0) {
-            updateStreams(initialStreams);
-        } else {
-            setIsLoading(true);
-        }
+        updateStreams(initialStreams);
 
         const bodyClassList = document.body.classList;
         setIsLightTheme(bodyClassList.contains("light"));
