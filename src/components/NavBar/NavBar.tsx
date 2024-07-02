@@ -226,7 +226,7 @@ export function NavBar(): JSX.Element {
                     </Link>
                     <Link to="/gotv">
                         <i className="fa fa-tv"></i>
-                        {_("GoTV")}
+                        GoTV
                     </Link>
                 </Menu>
 

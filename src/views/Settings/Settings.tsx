@@ -25,7 +25,7 @@ import * as DynamicHelp from "react-dynamic-help";
 import * as preferences from "preferences";
 import * as data from "data";
 
-import { _ } from "translate";
+import { _, interpolate } from "translate";
 import { get, abort_requests_in_flight } from "requests";
 
 import { errorAlerter, dup } from "misc";
@@ -107,7 +107,7 @@ export function Settings(): JSX.Element {
             { key: "sound", label: _("Sound Preferences") },
             { key: "game", label: _("Game Preferences") },
             { key: "chat", label: _("Chat Preferences") },
-            { key: "gotv", label: _("GoTV Preferences") },
+            { key: "gotv", label: interpolate(_("%s Preferences"), ["GoTV"]) },
             {
                 key: "supporter",
                 label: (
