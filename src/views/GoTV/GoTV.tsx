@@ -127,7 +127,11 @@ export const GoTV = () => {
                             </button>
                         )}
                         <i
-                            className={showPreferences ? "fa fa-times" : "fa fa-cog"}
+                            className={
+                                showPreferences
+                                    ? "fa fa-times preference-toggle"
+                                    : "fa fa-cog preference-toggle"
+                            }
                             onClick={togglePreferences}
                         ></i>
                     </div>
