@@ -55,7 +55,7 @@
         "express": "^4.19.2",
         "express-http-proxy": "^2.0.0",
         "fork-ts-checker-webpack-plugin": "^9.0.0",
-        "goban": "=8.3.12",
+        "goban": "=8.3.13",
         "gulp": "^5.0.0",
         "gulp-clean-css": "^4.3.0",
         "gulp-eslint-new": "^2.0.0",
