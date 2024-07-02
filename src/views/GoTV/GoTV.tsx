@@ -16,7 +16,6 @@
  */
 
 import React, { useState, useEffect, useRef } from "react";
-import { EmbeddedChatCard } from "Chat";
 import { StreamCard } from "./StreamCard";
 import { _ } from "translate";
 import * as preferences from "preferences";
@@ -41,7 +40,6 @@ export const GoTV = () => {
     const [selectedStream, setSelectedStream] = useState<Stream | null>(null);
     const [showListPane, setShowListPane] = useState(true);
     const [showChatPane, setShowChatPane] = preferences.usePreference("gotv.expand-chat-pane");
-    const [activeChatTab, setActiveChatTab] = preferences.usePreference("gotv.selected-chat");
     const [isLightTheme, setIsLightTheme] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [showPreferences, setShowPreferences] = useState(false);
@@ -103,10 +101,6 @@ export const GoTV = () => {
 
     const handleToggleChatPane = () => {
         setShowChatPane(!showChatPane);
-    };
-
-    const handleChatTabChange = (tab: string) => {
-        setActiveChatTab(tab);
     };
 
     const parentDomain = getParentDomain();
@@ -209,37 +203,9 @@ export const GoTV = () => {
                     onClick={handleToggleChatPane}
                 />
                 <div className={`chat-pane ${showChatPane ? "expanded" : "collapsed"}`}>
-                    <div className="chat-tabs">
-                        <div
-                            className={`chat-tab ${activeChatTab === "OGS" ? "active" : ""}`}
-                            onClick={() => handleChatTabChange("OGS")}
-                        >
-                            <span className="ogs-chat-tab-logo"></span>
-                        </div>
-                        <div
-                            className={`chat-tab ${activeChatTab === "Twitch" ? "active" : ""}`}
-                            onClick={() => handleChatTabChange("Twitch")}
-                        >
-                            <span className="twitch-chat-tab-logo"></span>
-                        </div>
-                    </div>
                     {selectedStream && (
                         <div className="chat-content">
-                            <div
-                                className={`chat-section ${
-                                    activeChatTab === "OGS" ? "active" : "hidden"
-                                }`}
-                            >
-                                <EmbeddedChatCard
-                                    channel={`GoTV-${selectedStream.username}`}
-                                    updateTitle={false}
-                                />
-                            </div>
-                            <div
-                                className={`chat-section ${
-                                    activeChatTab === "Twitch" ? "active" : "hidden"
-                                }`}
-                            >
+                            <div className="chat-section active">
                                 <iframe
                                     key={selectedStream.stream_id}
                                     src={`https://www.twitch.tv/embed/${
