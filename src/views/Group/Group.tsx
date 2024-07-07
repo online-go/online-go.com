@@ -110,6 +110,8 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
 
     news_ref = React.createRef<PaginatedTableRef>();
 
+    tournament_records_ref = React.createRef<PaginatedTableRef>();
+
     constructor(props: GroupProperties) {
         super(props);
         this.state = {
@@ -496,6 +498,116 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
             this.setState({ user_to_invite: user });
         }
     };
+
+    deleteTournamentRecord = (tournament_id: number) => {
+        del(`tournament_records/${tournament_id}`)
+            .then(() => {
+                this.tournament_records_ref.current?.refresh();
+            })
+            .catch(errorAlerter);
+    };
+
+    tournamentRecordDeleteClicked = (
+        click: React.MouseEvent<HTMLElement>,
+        tournament_id: number,
+    ) => {
+        if ((click.ctrlKey || click.metaKey) && click.shiftKey) {
+            // For easy deletion when there are many of these created by trolls...
+            // ...not exactly "discoverable", but _I_ know it's here :p
+            // (I'm not trying to hide it, it's more a "temporary workaround" for PaginatedTable not having multi-select)
+            this.deleteTournamentRecord(tournament_id);
+        } else {
+            void alert
+                .fire({
+                    text: _("Delete this tournament record?"),
+                    showCancelButton: true,
+                    focusCancel: true,
+                })
+                .then(({ value: accept }) => {
+                    if (accept) {
+                        this.deleteTournamentRecord(tournament_id);
+                    }
+                });
+        }
+    };
+
+    deleteGroup = () => {
+        void alert
+            .fire({
+                text: _("Are you SURE you want to delete this group? This action is irreversible."),
+                showCancelButton: true,
+                focusCancel: true,
+            })
+            .then(({ value: accept }) => {
+                if (accept) {
+                    del(`groups/${this.state.group_id}`)
+                        .then(() => {
+                            browserHistory.push("/groups/");
+                        })
+                        .catch(errorAlerter);
+                }
+            });
+    };
+
+    makeAdmin(player_id: number) {
+        void alert
+            .fire({
+                text: _("Are you sure you wish to make this user an administrator of the group?"),
+                showCancelButton: true,
+                focusCancel: true,
+            })
+            .then(({ value: accept }) => {
+                if (accept) {
+                    put(`groups/${this.state.group_id}/members`, {
+                        player_id: player_id,
+                        is_admin: true,
+                    })
+                        .then(() => this.resolve(this.state.group_id))
+                        .catch(errorAlerter);
+                }
+            });
+        close_all_popovers();
+    }
+    unAdmin(player_id: number) {
+        void alert
+            .fire({
+                text: _("Are you sure you wish to remove administrator privileges from this user?"),
+                showCancelButton: true,
+                focusCancel: true,
+            })
+            .then(({ value: accept }) => {
+                if (accept) {
+                    put(`groups/${this.state.group_id}/members`, {
+                        player_id: player_id,
+                        is_admin: false,
+                    })
+                        .then(() => this.resolve(this.state.group_id))
+                        .catch(errorAlerter);
+                }
+            });
+        close_all_popovers();
+    }
+    kick(player_id: number) {
+        void alert
+            .fire({
+                text: _("Are you sure you wish to remove this user from the group?"),
+                showCancelButton: true,
+                focusCancel: true,
+            })
+            .then(({ value: accept }) => {
+                if (accept) {
+                    post(`groups/${this.state.group_id}/members`, {
+                        delete: true,
+                        player_id: player_id,
+                    })
+                        .then(() => {
+                            this.resolve(this.state.group_id);
+                        })
+                        .catch(errorAlerter);
+                }
+            });
+        close_all_popovers();
+    }
 
     renderRules() {
         if (
@@ -1080,6 +1192,7 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
                                     <h3>{_("Tournament Records")}</h3>
 
                                     <PaginatedTable
+                                        ref={this.tournament_records_ref}
                                         className="TournamentRecord-table"
                                         name="tournament-record-table"
                                         source={`tournament_records/?group=${group.id}`}
@@ -1088,15 +1201,55 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
                                             {
                                                 header: _("Tournament"),
                                                 className: () => "name",
-                                                render: (tournament) => (
+                                                render: (record) => (
                                                     <div className="tournament-name">
                                                         <Link
                                                             to={`/tournament-record/${
-                                                                tournament.id
-                                                            }/${slugify(tournament.name)}`}
+                                                                record.id
+                                                            }/${slugify(record.name)}`}
                                                         >
-                                                            {tournament.name}
+                                                            {record.name}
                                                         </Link>
+                                                    </div>
+                                                ),
+                                            },
+
+                                            {
+                                                header: _("Creator"),
+                                                className: "creator",
+                                                render: (record) => (
+                                                    <Player icon user={record.creator} />
+                                                ),
+                                            },
+                                            {
+                                                header: _("Created"),
+                                                className: "created",
+                                                render: (record) => (
+                                                    <div>
+                                                        {moment(new Date(record.created)).format(
+                                                            "l",
+                                                        )}
+                                                    </div>
+                                                ),
+                                            },
+                                            {
+                                                header: "",
+                                                className: "delete",
+                                                render: (record) => (
+                                                    <div>
+                                                        {(user.is_moderator ||
+                                                            user.id === record.creator.id ||
+                                                            this.state.is_admin) && (
+                                                            <i
+                                                                className="fa fa-trash"
+                                                                onClick={(ev) =>
+                                                                    this.tournamentRecordDeleteClicked(
+                                                                        ev,
+                                                                        record.id,
+                                                                    )
+                                                                }
+                                                            />
+                                                        )}
                                                     </div>
                                                 ),
                                             },
@@ -1247,84 +1400,6 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
             );
         }
     };
-
-    deleteGroup = () => {
-        void alert
-            .fire({
-                text: _("Are you SURE you want to delete this group? This action is irreversible."),
-                showCancelButton: true,
-                focusCancel: true,
-            })
-            .then(({ value: accept }) => {
-                if (accept) {
-                    del(`groups/${this.state.group_id}`)
-                        .then(() => {
-                            browserHistory.push("/groups/");
-                        })
-                        .catch(errorAlerter);
-                }
-            });
-    };
-
-    makeAdmin(player_id: number) {
-        void alert
-            .fire({
-                text: _("Are you sure you wish to make this user an administrator of the group?"),
-                showCancelButton: true,
-                focusCancel: true,
-            })
-            .then(({ value: accept }) => {
-                if (accept) {
-                    put(`groups/${this.state.group_id}/members`, {
-                        player_id: player_id,
-                        is_admin: true,
-                    })
-                        .then(() => this.resolve(this.state.group_id))
-                        .catch(errorAlerter);
-                }
-            });
-        close_all_popovers();
-    }
-    unAdmin(player_id: number) {
-        void alert
-            .fire({
-                text: _("Are you sure you wish to remove administrator privileges from this user?"),
-                showCancelButton: true,
-                focusCancel: true,
-            })
-            .then(({ value: accept }) => {
-                if (accept) {
-                    put(`groups/${this.state.group_id}/members`, {
-                        player_id: player_id,
-                        is_admin: false,
-                    })
-                        .then(() => this.resolve(this.state.group_id))
-                        .catch(errorAlerter);
-                }
-            });
-        close_all_popovers();
-    }
-    kick(player_id: number) {
-        void alert
-            .fire({
-                text: _("Are you sure you wish to remove this user from the group?"),
-                showCancelButton: true,
-                focusCancel: true,
-            })
-            .then(({ value: accept }) => {
-                if (accept) {
-                    post(`groups/${this.state.group_id}/members`, {
-                        delete: true,
-                        player_id: player_id,
-                    })
-                        .then(() => {
-                            this.resolve(this.state.group_id);
-                        })
-                        .catch(errorAlerter);
-                }
-            });
-        close_all_popovers();
-    }
 }
 
 export const Group = rr6ClassShim(_Group);
