@@ -1046,36 +1046,6 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
                         )}
 
                         <Card>
-                            {(group.has_tournament_records || null) && (
-                                <div>
-                                    <h3>{_("Tournament Records")}</h3>
-
-                                    <PaginatedTable
-                                        className="TournamentRecord-table"
-                                        name="tournament-record-table"
-                                        source={`tournament_records/?group=${group.id}`}
-                                        orderBy={["-created"]}
-                                        columns={[
-                                            {
-                                                header: _("Tournament"),
-                                                className: () => "name",
-                                                render: (tournament) => (
-                                                    <div className="tournament-name">
-                                                        <Link
-                                                            to={`/tournament-record/${
-                                                                tournament.id
-                                                            }/${slugify(tournament.name)}`}
-                                                        >
-                                                            {tournament.name}
-                                                        </Link>
-                                                    </div>
-                                                ),
-                                            },
-                                        ]}
-                                    />
-                                </div>
-                            )}
-
                             {(group.has_open_tournaments || null) && (
                                 <div>
                                     <h3>{_("Open Tournaments")}</h3>
@@ -1102,6 +1072,35 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
                                     <TournamentList
                                         phase="finished"
                                         group={this.props.match.params.group_id}
+                                    />
+                                </div>
+                            )}
+                            {(group.has_tournament_records || null) && (
+                                <div>
+                                    <h3>{_("Tournament Records")}</h3>
+
+                                    <PaginatedTable
+                                        className="TournamentRecord-table"
+                                        name="tournament-record-table"
+                                        source={`tournament_records/?group=${group.id}`}
+                                        orderBy={["-created"]}
+                                        columns={[
+                                            {
+                                                header: _("Tournament"),
+                                                className: () => "name",
+                                                render: (tournament) => (
+                                                    <div className="tournament-name">
+                                                        <Link
+                                                            to={`/tournament-record/${
+                                                                tournament.id
+                                                            }/${slugify(tournament.name)}`}
+                                                        >
+                                                            {tournament.name}
+                                                        </Link>
+                                                    </div>
+                                                ),
+                                            },
+                                        ]}
                                     />
                                 </div>
                             )}
