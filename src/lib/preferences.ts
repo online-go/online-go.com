@@ -20,6 +20,7 @@ import { GobanSelectedThemes, Goban, LabelPosition } from "goban";
 import * as React from "react";
 import { current_language } from "translate";
 import { DataSchema } from "./data_schema";
+import { FollowedChannel } from "Settings";
 
 export const defaults = {
     "ai-review-enabled": true,
@@ -160,6 +161,9 @@ export const defaults = {
     "gotv.auto-select-top-stream": true,
     "gotv.allow-mature-streams": false,
     "gotv.selected-languages": [""],
+    "gotv.allow-notifications": false,
+    "gotv.user-access-token": "",
+    "gotv.followed-channels": [] as FollowedChannel[],
 };
 
 defaults["profanity-filter"][current_language] = true;
