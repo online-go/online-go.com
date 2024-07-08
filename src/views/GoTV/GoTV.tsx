@@ -52,15 +52,19 @@ export const GoTV = () => {
     const [isLightTheme, setIsLightTheme] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [showPreferences, setShowPreferences] = useState(false);
+    const [twitchLibraryLoaded, setTwitchLibraryLoaded] = useState(false);
 
     const autoplay = preferences.get("gotv.auto-select-top-stream");
     const initialMount = useRef(true);
 
     useEffect(() => {
-        load_twitch_library().catch((error) => {
-            console.error(error);
-        });
-
+        load_twitch_library()
+            .then(() => {
+                setTwitchLibraryLoaded(true);
+            })
+            .catch((error) => {
+                console.error(error);
+            });
         const updateStreams = (streams: Stream[]) => {
             setStreams(streams);
             if (initialMount.current) {
@@ -102,7 +106,7 @@ export const GoTV = () => {
     }, []);
 
     useEffect(() => {
-        if (selectedStream) {
+        if (twitchLibraryLoaded && selectedStream) {
             const embedContainer = document.getElementById("twitch-embed");
             if (embedContainer) {
                 embedContainer.innerHTML = "";
@@ -115,7 +119,7 @@ export const GoTV = () => {
                 });
             }
         }
-    }, [selectedStream, isLightTheme]);
+    }, [selectedStream, isLightTheme, twitchLibraryLoaded]);
 
     const handleStreamClick = (stream: Stream) => {
         setSelectedStream(stream);
