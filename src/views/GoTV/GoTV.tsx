@@ -115,23 +115,17 @@ export const GoTV = () => {
 
     useEffect(() => {
         if (selectedStream) {
-            load_twitch_library()
-                .then(() => {
-                    const embedContainer = document.getElementById("twitch-embed");
-                    if (embedContainer) {
-                        embedContainer.innerHTML = "";
-                        new Twitch.Embed("twitch-embed", {
-                            width: "100%",
-                            height: "100%",
-                            layout: "video",
-                            channel: selectedStream.channel,
-                            parent: getParentDomain(),
-                        });
-                    }
-                })
-                .catch((error) => {
-                    console.error(error);
+            const embedContainer = document.getElementById("twitch-embed");
+            if (embedContainer) {
+                embedContainer.innerHTML = "";
+                new Twitch.Embed("twitch-embed", {
+                    width: "100%",
+                    height: "100%",
+                    layout: "video",
+                    channel: selectedStream.channel,
+                    parent: getParentDomain(),
                 });
+            }
         }
     }, [selectedStream, isLightTheme]);
 
