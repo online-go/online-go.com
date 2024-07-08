@@ -16,7 +16,10 @@
  */
 
 import React, { useEffect } from "react";
+import { format, subDays, startOfWeek as startOfWeekDateFns } from "date-fns";
+
 import { get } from "requests";
+
 import * as data from "data";
 
 import { ResponsiveLine } from "@nivo/line";
@@ -188,7 +191,11 @@ const CMVoteActivityGraph = ({ vote_data }: VoteActivityGraphProps) => {
                     xFormat="time:%Y-%m-%d"
                     xScale={{
                         type: "time",
-                        min: "2023-12-31",
+                        min: format(
+                            startOfWeekDateFns(subDays(new Date(), 120), { weekStartsOn: 1 }),
+
+                            "yyyy-MM-dd",
+                        ),
                         format: "%Y-%m-%d",
                         useUTC: false,
                         precision: "day",
@@ -224,7 +231,11 @@ const CMVoteActivityGraph = ({ vote_data }: VoteActivityGraphProps) => {
                     xFormat="time:%Y-%m-%d"
                     xScale={{
                         type: "time",
-                        min: "2023-12-31",
+                        min: format(
+                            startOfWeekDateFns(subDays(new Date(), 120), { weekStartsOn: 1 }),
+
+                            "yyyy-MM-dd",
+                        ),
                         format: "%Y-%m-%d",
                         useUTC: false,
                         precision: "day",
