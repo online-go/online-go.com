@@ -260,6 +260,19 @@ you are welcome to raise a new report if that is the case.
 Thank you for helping keep OGS enjoyable for everyone. We appreciate it.`),
             { reported },
         ),
+    warn_duplicate_report: (reported) =>
+        interpolate(
+            _(`
+Thanks for your additional report about {{reported}}.
+
+Please don't file multiple reports for the same thing - that creates a lot of work for us tidying up, \
+which could be time spent better on other reports.
+
+We appreciate hearing about problems, but one report is enough for each incident - more than that will slow us down.
+
+Thanks!`),
+            { reported },
+        ),
     report_type_changed: (change) =>
         interpolate(
             _(`
