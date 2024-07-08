@@ -17,8 +17,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import * as preferences from "preferences";
-import { Stream } from "GoTV";
-import { streamManager } from "./StreamManager";
+import { Stream, streamManager } from "./StreamManager";
 
 export const GoTVIndicator: React.FC = () => {
     const [streamCount, setStreamCount] = useState(0);
