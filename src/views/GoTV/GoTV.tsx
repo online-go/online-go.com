@@ -19,20 +19,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { StreamCard } from "./StreamCard";
 import { _ } from "translate";
 import * as preferences from "preferences";
-import { streamManager } from "./StreamManager";
+import { Stream, streamManager } from "./StreamManager";
 import { GoTVPreferences } from "Settings";
-
-export interface Stream {
-    stream_id: string;
-    title: string;
-    channel: string;
-    username: string;
-    viewer_count: number;
-    language: string;
-    thumbnail_url: string;
-    source: string;
-    is_mature: boolean;
-}
 
 let twitch_js_promise: Promise<void> | null = null;
 declare let Twitch: any;

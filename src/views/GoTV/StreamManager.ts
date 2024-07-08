@@ -16,13 +16,24 @@
  */
 
 import { get } from "requests";
-import { Stream } from "GoTV";
 import * as preferences from "preferences";
 import { EventEmitter } from "eventemitter3";
 import { socket } from "sockets";
 
 interface StreamEvents {
     update: (streams: Stream[]) => void;
+}
+
+export interface Stream {
+    stream_id: string;
+    title: string;
+    channel: string;
+    username: string;
+    viewer_count: number;
+    language: string;
+    thumbnail_url: string;
+    source: string;
+    is_mature: boolean;
 }
 
 class StreamManager extends EventEmitter<StreamEvents> {
@@ -97,6 +108,7 @@ class StreamManager extends EventEmitter<StreamEvents> {
             subscribeToChannel();
         }
     }
+
     public getStreams(): Stream[] {
         return this.streams;
     }
