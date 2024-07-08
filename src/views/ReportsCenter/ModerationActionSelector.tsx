@@ -98,6 +98,10 @@ const ACTION_PROMPTS = {
         "Label for a moderator to select this option",
         "No stalling evident - inform the reporter.",
     ),
+    warn_duplicate_reporter: pgettext(
+        "Label for a moderator to select this option",
+        "Duplicate report - ask them not to do that.",
+    ),
     // Note: keep this last, so it's positioned above the "note to moderator" input field
     escalate: pgettext(
         "A label for a community moderator to select this option - send report to to full moderators",
