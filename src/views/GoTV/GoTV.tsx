@@ -34,6 +34,27 @@ export interface Stream {
     is_mature: boolean;
 }
 
+let twitch_js_promise: Promise<void> | null = null;
+declare let Twitch: any;
+
+const load_twitch_library = () => {
+    if (!twitch_js_promise) {
+        twitch_js_promise = new Promise<void>((resolve, reject) => {
+            const script = document.createElement("script");
+            script.src = "https://embed.twitch.tv/embed/v1.js";
+            script.async = true;
+            script.onload = () => {
+                resolve();
+            };
+            script.onerror = () => {
+                reject("Unable to load twitch");
+            };
+            document.head.appendChild(script);
+        });
+    }
+    return twitch_js_promise;
+};
+
 export const GoTV = () => {
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
     const [streams, setStreams] = useState<Stream[]>([]);
@@ -48,6 +69,10 @@ export const GoTV = () => {
     const initialMount = useRef(true);
 
     useEffect(() => {
+        load_twitch_library().catch((error) => {
+            console.error(error);
+        });
+
         const updateStreams = (streams: Stream[]) => {
             setStreams(streams);
             if (initialMount.current) {
@@ -87,6 +112,28 @@ export const GoTV = () => {
             window.removeEventListener("resize", handleResize);
         };
     }, []);
+
+    useEffect(() => {
+        if (selectedStream) {
+            load_twitch_library()
+                .then(() => {
+                    const embedContainer = document.getElementById("twitch-embed");
+                    if (embedContainer) {
+                        embedContainer.innerHTML = "";
+                        new Twitch.Embed("twitch-embed", {
+                            width: "100%",
+                            height: "100%",
+                            layout: "video",
+                            channel: selectedStream.channel,
+                            parent: getParentDomain(),
+                        });
+                    }
+                })
+                .catch((error) => {
+                    console.error(error);
+                });
+        }
+    }, [selectedStream, isLightTheme]);
 
     const handleStreamClick = (stream: Stream) => {
         setSelectedStream(stream);
@@ -164,12 +211,7 @@ export const GoTV = () => {
                     {isLoading ? (
                         <div className="loading-message">{_("Loading streams...")}</div>
                     ) : streams.length > 0 && selectedStream ? (
-                        <iframe
-                            key={selectedStream.stream_id}
-                            src={`https://player.twitch.tv/?channel=${selectedStream.channel}&parent=${parentDomain}&autoplay=true&muted=false`}
-                            allowFullScreen={true}
-                            aria-label={`Live stream of ${selectedStream.title}`}
-                        ></iframe>
+                        <div id="twitch-embed"></div>
                     ) : (
                         <>
                             {streams.length > 0 ? (
