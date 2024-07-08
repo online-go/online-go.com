@@ -157,7 +157,9 @@ export function IncidentReportTracker(): JSX.Element | null {
         }
 
         function updateUser() {
-            updateCt(report_manager.getEligibleReports().length);
+            updateCt(
+                report_manager.getEligibleReports().filter((r) => r.report_type !== "troll").length,
+            );
         }
 
         data.watch("user", updateUser);
