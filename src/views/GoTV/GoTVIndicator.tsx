@@ -18,22 +18,29 @@ import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import * as preferences from "preferences";
 import { Stream, streamManager } from "./StreamManager";
+import { GoTVNotifier } from "./GoTVNotifier";
 
 export const GoTVIndicator: React.FC = () => {
+    const [streams, setStreams] = useState<Stream[]>([]);
     const [streamCount, setStreamCount] = useState(0);
     const [showGoTVIndicator] = preferences.usePreference("gotv.show-gotv-indicator");
     const [previousPath, setPreviousPath] = useState<string | null>(null);
 
     const location = useLocation();
 
-    useEffect(() => {
-        const updateStreamCount = (streams: Stream[]) => setStreamCount(streams.length);
-        streamManager.on("update", updateStreamCount);
+    const updateStreams = (streams: Stream[]) => {
+        setStreams(streams);
+        setStreamCount(streams.length);
+    };
 
-        setStreamCount(streamManager.getStreams().length);
+    useEffect(() => {
+        streamManager.on("update", updateStreams);
+
+        const initialStreams = streamManager.getStreams();
+        updateStreams(initialStreams);
 
         return () => {
-            streamManager.off("update", updateStreamCount);
+            streamManager.off("update", updateStreams);
         };
     }, []);
 
@@ -65,6 +72,7 @@ export const GoTVIndicator: React.FC = () => {
                     )}
                 </>
             )}
+            <GoTVNotifier streams={streams} />
         </>
     );
 };
