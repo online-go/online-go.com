@@ -157,9 +157,8 @@ class AutomatchManager extends TypedEventEmitter<Events> {
 
         /* live game? track it, and pop up our searching toast */
         if (
-            preferences.size_speed_options.filter(
-                (opt) => opt.speed === "blitz" || opt.speed === "live",
-            ).length
+            preferences.size_speed_options.filter((opt) => opt.speed in ["blitz", "rapid", "live"])
+                .length
         ) {
             this.last_find_match_uuid = preferences.uuid;
             if (this.active_toast) {

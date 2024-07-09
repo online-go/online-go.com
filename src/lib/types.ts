@@ -83,7 +83,7 @@ export interface ActiveTournament {
 
 export type ActiveTournamentList = Array<ActiveTournament>;
 
-export type Speed = "blitz" | "live" | "correspondence";
+export type Speed = "blitz" | "rapid" | "live" | "correspondence";
 export type Size = "9x9" | "13x13" | "19x19";
 export type AutomatchCondition = "required" | "preferred" | "no-preference";
 export type RuleSet = "japanese" | "chinese" | "aga" | "korean" | "nz" | "ing";

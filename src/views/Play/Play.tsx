@@ -47,7 +47,7 @@ import { ChallengeLinkButton } from "ChallengeLinkButton";
 import { allocateCanvasOrError } from "goban";
 
 import { alert } from "swal_config";
-import { Size } from "src/lib/types";
+import { Size, Speed } from "src/lib/types";
 
 import { RengoManagementPane } from "RengoManagementPane";
 import { RengoTeamManagementPane } from "RengoTeamManagementPane";
@@ -67,6 +67,7 @@ interface PlayState {
     showLoadingSpinnerForCorrespondence: boolean;
     filter: ChallengeFilter;
     automatch_size_options: Size[];
+    automatch_speed_option: Speed;
     freeze_challenge_list: boolean; // Don't change the challenge list while they are trying to point the mouse at it
     pending_challenges: { [id: number]: Challenge }; // challenges received while frozen
     show_in_rengo_management_pane: number[]; // a challenge_ids for challenges to show with pane open in the rengo challenge list
@@ -117,6 +118,7 @@ export class Play extends React.Component<{}, PlayState> {
             showLoadingSpinnerForCorrespondence: false,
             filter: filter as ChallengeFilter,
             automatch_size_options: data.get("automatch.size_options", ["9x9", "13x13", "19x19"]),
+            automatch_speed_option: data.get("automatch.speed_option", "live"),
             freeze_challenge_list: false, // Don't change the challenge list while they are trying to point the mouse at it
             pending_challenges: [], // challenges received while frozen
             show_in_rengo_management_pane: [],
@@ -329,7 +331,10 @@ export class Play extends React.Component<{}, PlayState> {
         this.forceUpdate();
     };
 
-    findMatch = (speed: "blitz" | "live" | "correspondence") => {
+    findMatch = () => {
+        // REFACTOR THIS TO SEPARATE OUT CORRESPONDENCE FROM THE OTHER TWO
+        const speed = this.state.automatch_speed_option;
+
         if (data.get("user").anonymous) {
             void alert.fire(_("Please sign in first"));
             return;
@@ -340,8 +345,43 @@ export class Play extends React.Component<{}, PlayState> {
             uuid: uuid(),
             size_speed_options: this.state.automatch_size_options.map((size) => {
                 return {
-                    size: size,
-                    speed: speed,
+                    size,
+                    speed,
+                };
+            }),
+            lower_rank_diff: settings.lower_rank_diff,
+            upper_rank_diff: settings.upper_rank_diff,
+            rules: {
+                condition: settings.rules.condition,
+                value: settings.rules.value,
+            },
+            time_control: {
+                condition: settings.time_control.condition,
+                value: settings.time_control.value,
+            },
+            handicap: {
+                condition: settings.handicap.condition,
+                value: settings.handicap.value,
+            },
+        };
+        preferences.uuid = uuid();
+        automatch_manager.findMatch(preferences);
+        this.onAutomatchEntry();
+    };
+
+    findCorrespondenceMatch = () => {
+        if (data.get("user").anonymous) {
+            void alert.fire(_("Please sign in first"));
+            return;
+        }
+
+        const settings = getAutomatchSettings("correspondence");
+        const preferences: AutomatchPreferences = {
+            uuid: uuid(),
+            size_speed_options: this.state.automatch_size_options.map((size) => {
+                return {
+                    size,
+                    speed: "correspondence",
                 };
             }),
             lower_rank_diff: settings.lower_rank_diff,
@@ -363,9 +403,7 @@ export class Play extends React.Component<{}, PlayState> {
         automatch_manager.findMatch(preferences);
         this.onAutomatchEntry();
 
-        if (speed === "correspondence") {
-            this.setState({ showLoadingSpinnerForCorrespondence: true });
-        }
+        this.setState({ showLoadingSpinnerForCorrespondence: true });
     };
 
     dismissCorrespondenceSpinner = () => {
@@ -409,6 +447,11 @@ export class Play extends React.Component<{}, PlayState> {
         }
         data.set("automatch.size_options", size_options);
         this.setState({ automatch_size_options: size_options });
+    }
+
+    toggleSpeed(speed: Speed) {
+        data.set("automatch.speed_option", speed);
+        this.setState({ automatch_speed_option: speed });
     }
 
     toggleFilterHandler = (key: ChallengeFilterKey) => {
@@ -473,6 +516,20 @@ export class Play extends React.Component<{}, PlayState> {
             clearTimeout(this.list_freeze_timeout);
             this.list_freeze_timeout = undefined;
         }
+    };
+
+    getConcreteSpeed = (speed: Speed): String => {
+        // TODO: this can be made dynamic to account for user options
+
+        switch (speed) {
+            case "blitz":
+                return "1m + 3x20s";
+            case "rapid":
+                return "5m + 3x30s";
+            case "live":
+                return "20m + 3x60s";
+        }
+        return speed;
     };
 
     render() {
@@ -646,6 +703,10 @@ export class Play extends React.Component<{}, PlayState> {
             return this.state.automatch_size_options.indexOf(size) >= 0;
         };
 
+        const speed_enabled = (speed: Speed) => {
+            return this.state.automatch_speed_option.indexOf(speed) >= 0;
+        };
+
         const own_live_rengo_challenge = this.ownRengoChallengesPending().find((c) =>
             isLiveGame(c.time_control_parameters, c.width, c.height),
         );
@@ -764,109 +825,114 @@ export class Play extends React.Component<{}, PlayState> {
                 <div className="automatch-container">
                     <div className="automatch-header">
                         <div>{_("Automatch finder")}</div>
-                        <div className="btn-group">
-                            <button
-                                className={size_enabled("9x9") ? "primary sm" : "sm"}
-                                onClick={() => this.toggleSize("9x9")}
-                            >
-                                9x9
-                            </button>
-                            <button
-                                className={size_enabled("13x13") ? "primary sm" : "sm"}
-                                onClick={() => this.toggleSize("13x13")}
-                            >
-                                13x13
-                            </button>
-                            <button
-                                className={size_enabled("19x19") ? "primary sm" : "sm"}
-                                onClick={() => this.toggleSize("19x19")}
-                            >
-                                19x19
-                            </button>
-                        </div>
                         <div className="automatch-settings">
                             <span
                                 className="automatch-settings-link fake-link"
                                 onClick={openAutomatchSettings}
                             >
+                                {" "}
                                 <i className="fa fa-gear" />
-                                {_("Settings ")}
+                                {_("Settings")}
                             </span>
                         </div>
                     </div>
-                    <div className="automatch-row-container">
-                        <div className="automatch-row">
-                            <button
-                                className="primary"
-                                onClick={() => this.findMatch("blitz")}
-                                disabled={anon || warned}
-                            >
-                                <div className="play-button-text-root">
-                                    <i className="fa fa-bolt" /> {_("Blitz")}
-                                    <span className="time-per-move">
-                                        {pgettext(
-                                            "Automatch average time per move",
-                                            "~10s per move",
-                                        )}
-                                    </span>
-                                </div>
-                            </button>
-                            <button
-                                className="primary"
-                                onClick={() => this.findMatch("live")}
-                                disabled={anon || warned}
-                            >
-                                <div className="play-button-text-root">
-                                    <i className="fa fa-clock-o" /> {_("Normal")}
-                                    <span className="time-per-move">
-                                        {pgettext(
-                                            "Automatch average time per move",
-                                            "~30s per move",
-                                        )}
-                                    </span>
-                                </div>
+                    <div className="automatch-content-container">
+                        <div className="automatch-content">
+                            <div className="btn-group">
+                                <button
+                                    className={size_enabled("9x9") ? "primary sm" : "sm"}
+                                    onClick={() => this.toggleSize("9x9")}
+                                >
+                                    9x9
+                                </button>
+                                <button
+                                    className={size_enabled("13x13") ? "primary sm" : "sm"}
+                                    onClick={() => this.toggleSize("13x13")}
+                                >
+                                    13x13
+                                </button>
+                                <button
+                                    className={size_enabled("19x19") ? "primary sm" : "sm"}
+                                    onClick={() => this.toggleSize("19x19")}
+                                >
+                                    19x19
+                                </button>
+                            </div>
+                            <div className="btn-group">
+                                <button
+                                    className={speed_enabled("blitz") ? "primary sm" : "sm"}
+                                    onClick={() => this.toggleSpeed("blitz")}
+                                >
+                                    <div className="automatch-speed-name">{_("Blitz")}</div>
+                                    <div className="automatch-speed-concrete">
+                                        {this.getConcreteSpeed("blitz")}
+                                    </div>
+                                </button>
+                                <button
+                                    className={speed_enabled("rapid") ? "primary sm" : "sm"}
+                                    onClick={() => this.toggleSpeed("rapid")}
+                                >
+                                    <div className="automatch-speed-name">{_("Rapid")}</div>
+                                    <div className="automatch-speed-concrete">
+                                        {this.getConcreteSpeed("rapid")}
+                                    </div>
+                                </button>
+                                <button
+                                    className={speed_enabled("live") ? "primary sm" : "sm"}
+                                    onClick={() => this.toggleSpeed("live")}
+                                >
+                                    <div className="automatch-speed-name">{_("Live")}</div>
+                                    <div className="automatch-speed-concrete">
+                                        {this.getConcreteSpeed("live")}
+                                    </div>
+                                </button>
+                            </div>
+                            <button className="primary automatch-play" onClick={this.findMatch}>
+                                {_("Play")}
                             </button>
                         </div>
-                        <div className="automatch-row">
-                            <button
-                                className="primary"
-                                onClick={this.newComputerGame}
-                                disabled={anon || warned}
-                            >
-                                <div className="play-button-text-root">
-                                    <i className="fa fa-desktop" /> {_("Computer")}
-                                    <span className="time-per-move"></span>
-                                </div>
-                            </button>
-                            <button
-                                className="primary"
-                                onClick={() => this.findMatch("correspondence")}
-                                disabled={anon || warned}
-                            >
-                                <div className="play-button-text-root">
+                        <hr className="solid" />
+                        <div className="automatch-special-game">
+                            <div className="automatch-row">
+                                <button
+                                    className="primary"
+                                    disabled={anon || warned}
+                                    onClick={this.newCustomGame}
+                                >
                                     <span>
-                                        <i className="ogs-turtle" /> {_("Correspondence")}
+                                        <i className="fa fa-gear" />
+                                        {_("Create Custom")}
                                     </span>
-                                    <span className="time-per-move">
-                                        {pgettext(
-                                            "Automatch average time per move",
-                                            "~1 day per move",
-                                        )}
+                                </button>
+                                <button
+                                    className="primary"
+                                    disabled={anon || warned}
+                                    onClick={this.findCorrespondenceMatch}
+                                >
+                                    <span>
+                                        <i className="ogs-turtle" />
+                                        {_("Correspondence")}
                                     </span>
-                                </div>
-                            </button>
-                        </div>
-                        <div className="custom-game-header">
-                            <div>{_("Custom Game")}</div>
-                        </div>
-                        <div className="custom-game-row">
-                            <button
-                                className="primary"
-                                onClick={this.newCustomGame}
-                                disabled={anon || warned}
-                            >
-                                <i className="fa fa-cog" /> {_("Create")}
-                            </button>
+                                </button>
+                            </div>
+                            <div className="automatch-row">
+                                <button className="primary" disabled={true}>
+                                    <span>
+                                        <i className="fa fa-users" />
+                                        {_("Play a Friend")}
+                                    </span>
+                                </button>
+                                <button
+                                    className="primary"
+                                    disabled={anon || warned}
+                                    onClick={this.newComputerGame}
+                                >
+                                    <span>
+                                        <i className="fa fa-desktop" />
+                                        {_("Play a Computer")}
+                                    </span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

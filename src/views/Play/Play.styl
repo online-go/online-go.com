@@ -61,11 +61,45 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+    }
 
-        .btn-group {
+    .automatch-content {
+
+        .btn-group {            
+            width: 100%;
             display: flex;
+            flex-direction: row;
             flex-wrap: nowrap;
+            justify-content: space-between;
+            border-radius: 10px;
+
+            button {
+                font-weight: bold;
+
+                width: 100%;
+                height: 75%;
+                min-height: 2rem
+                padding: 0.5rem;
+            }
+
+            button::before {
+                content: none;
+            }
         }
+    }
+
+    .automatch-speed-name {
+        font-size: large;
+        margin-bottom: 0.3rem;
+    }
+
+    .automatch-play {
+        font-size: xx-large;
+        font-weight: bold;
+        width: 100%
+        margin-left: 0;
+        margin-right: 0;
+        border-radius: 5px;
     }
 
     .rengo-management-row {
@@ -161,10 +195,9 @@
             font-size: 1.1rem;
             font-weight: bold;
             flex-grow: 1;
-            flex-basis: 13rem;
-            max-width: 13rem;
+            flex-basis: 48%;
             height: 4rem;
-            margin: 0.5rem;
+            margin: 0.2rem;
             white-space: nowrap;
             display: flex;
             align-items: center;
@@ -227,38 +260,6 @@
         font-size: 1rem;
         padding: .5rem;
         padding-left: 3rem;
-    }
-
-    .custom-game-row {
-        display: flex;
-        justify-content: space-around;
-        align-content: stretch
-        width: 100%;
-
-        button {
-            font-size: 1.1rem;
-            font-weight: bold;
-            flex-grow: 1;
-            width: 100%;
-            max-width: 13rem;
-            margin: 0.5rem;
-            height: 4rem;
-
-            .fa {
-                margin: 0.2rem;
-            }
-        }
-    }
-
-    .custom-game-header {
-        display: flex;
-        justify-content: space-around;
-        align-content: stretch
-        width: 100%;
-        justify-content: space-between;
-        align-items: left;
-        font-size: 1.3rem;
-        margin-top: 1rem;
     }
 
     .showall-selector {

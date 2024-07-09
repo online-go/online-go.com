@@ -20,7 +20,7 @@
  * all the possible keys as well as the associated value types.
  */
 
-import { GroupList, ActiveTournamentList, Size, RuleSet } from "./types";
+import { GroupList, ActiveTournamentList, Size, Speed, RuleSet } from "./types";
 import { Announcement } from "src/components/Announcements";
 import { ValidSound, ValidSoundGroup } from "./sfx";
 import { defaults as defaultPreferences, ValidPreference } from "./preferences";
@@ -159,6 +159,7 @@ interface PMSchema {
 type AutomatchSchema = {
     "last-tab": TimeControlSpeed;
     size_options: Size[];
+    speed_option: Speed;
 } & {
     [speed_key in TimeControlSpeed]: AutomatchPreferences;
 };

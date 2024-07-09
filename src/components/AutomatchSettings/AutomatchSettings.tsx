@@ -32,6 +32,7 @@ export type AutomatchPreferences = AutomatchPreferencesBase & { size_options: Si
 interface AutomatchSettingsState {
     tab: Speed;
     blitz_settings: AutomatchPreferences;
+    rapid_settings: AutomatchPreferences;
     live_settings: AutomatchPreferences;
     correspondence_settings: AutomatchPreferences;
 }
@@ -53,6 +54,25 @@ const default_blitz: AutomatchPreferences = {
     handicap: {
         condition: "no-preference",
         value: "disabled",
+    },
+};
+const default_rapid: AutomatchPreferences = {
+    upper_rank_diff: 3,
+    lower_rank_diff: 3,
+    size_options: ["19x19"],
+    rules: {
+        condition: "no-preference",
+        value: "japanese",
+    },
+    time_control: {
+        condition: "no-preference",
+        value: {
+            system: "byoyomi",
+        },
+    },
+    handicap: {
+        condition: "no-preference",
+        value: "enabled",
     },
 };
 const default_live: AutomatchPreferences = {
@@ -104,10 +124,12 @@ const ConditionSelect = (props: { value: any; onChange: (x: any) => void }) => (
     </div>
 );
 
-export function getAutomatchSettings(speed: "blitz" | "live" | "correspondence") {
+export function getAutomatchSettings(speed: "blitz" | "live" | "rapid" | "correspondence") {
     switch (speed) {
         case "blitz":
             return dup(data.get("automatch.blitz", default_blitz));
+        case "rapid":
+            return dup(data.get("automatch.rapid", default_rapid));
         case "live":
             return dup(data.get("automatch.live", default_live));
         case "correspondence":
@@ -125,6 +147,7 @@ export class AutomatchSettings extends Modal<
         this.state = {
             tab: data.get("automatch.last-tab", "live") as Speed,
             blitz_settings: data.get("automatch.blitz", default_blitz),
+            rapid_settings: data.get("automatch.rapid", default_rapid),
             live_settings: data.get("automatch.live", default_live),
             correspondence_settings: data.get("automatch.correspondence", default_correspondence),
         };
