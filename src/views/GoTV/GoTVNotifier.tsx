@@ -76,13 +76,22 @@ export const GoTVNotifier: React.FC<GoTVNotifierProps> = ({ streams }) => {
         );
 
         if (newLiveStreams.length > 0) {
-            const newNotifications: Notification[] = newLiveStreams.map((stream) => ({
-                streamId: stream.stream_id,
-                username: stream.username,
-                title: stream.title,
-                profileImageUrl: stream.profile_image_url,
-            }));
-            setNotifications((prev) => [...prev, ...newNotifications]);
+            setNotifications((prevNotifications) => {
+                const newNotifications = newLiveStreams
+                    .filter(
+                        (stream) =>
+                            !prevNotifications.some(
+                                (notification) => notification.streamId === stream.stream_id,
+                            ),
+                    )
+                    .map((stream) => ({
+                        streamId: stream.stream_id,
+                        username: stream.username,
+                        title: stream.title,
+                        profileImageUrl: stream.profile_image_url,
+                    }));
+                return [...prevNotifications, ...newNotifications];
+            });
         }
     }, [streams, allowNotifications, followedChannels, notifiedStreams]);
 
