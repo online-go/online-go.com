@@ -10,16 +10,12 @@
         padding: 10px;
         border-radius: 5px;
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
         transform: translateX(300px);
         opacity: 0;
         display: flex;
         align-items: center;
         margin-bottom: 5px;
-
-    .gotv-notification.show
-        transform: translateX(0);
-        opacity: 1;
+        animation: slideIn 0.5s ease-in-out forwards;
 
     .profile-image
         width: 40px;
@@ -42,3 +38,11 @@
 
     .gotv-notification button
         margin-left: 10px;
+
+@keyframes slideIn
+    from
+        transform: translateX(300px)
+        opacity: 0
+    to
+        transform: translateX(0)
+        opacity: 1

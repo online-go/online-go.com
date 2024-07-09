@@ -22,6 +22,7 @@ interface GoTVNotificationProps {
     title: string;
     profileImageUrl: string;
     onClose: () => void;
+    animationDelay: string;
 }
 
 export const GoTVNotification: React.FC<GoTVNotificationProps> = ({
@@ -29,6 +30,7 @@ export const GoTVNotification: React.FC<GoTVNotificationProps> = ({
     title,
     profileImageUrl,
     onClose,
+    animationDelay,
 }) => {
     const [visible, setVisible] = useState(false);
 
@@ -42,7 +44,7 @@ export const GoTVNotification: React.FC<GoTVNotificationProps> = ({
     }, []);
 
     return (
-        <div className={`gotv-notification ${visible ? "show" : ""}`}>
+        <div className={`gotv-notification ${visible ? "show" : ""}`} style={{ animationDelay }}>
             <img src={profileImageUrl} alt={`${username}'s profile`} className="profile-image" />
             <div className="notification-content">
                 <div className="notification-header">

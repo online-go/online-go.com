@@ -131,6 +131,7 @@ export const GoTVNotifier: React.FC<GoTVNotifierProps> = ({ streams }) => {
                     title={notification.title}
                     profileImageUrl={notification.profileImageUrl}
                     onClose={() => dismissNotification(index)}
+                    animationDelay={`${index * 0.1}s`}
                 />
             ))}
         </div>
