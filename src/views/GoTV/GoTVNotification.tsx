@@ -51,7 +51,7 @@ export const GoTVNotification: React.FC<GoTVNotificationProps> = ({
                     <strong>{username} is live:</strong>
                 </div>
                 <div className="notification-body">
-                    <small>{title.length > 50 ? `${title.substring(0, 50)}...` : title}</small>
+                    <small>{title.length > 30 ? `${title.substring(0, 30)}...` : title}</small>
                 </div>
             </div>
             <button onClick={onClose}>Dismiss</button>
