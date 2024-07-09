@@ -162,6 +162,8 @@ export class AutomatchSettings extends Modal<
         switch (this.state.tab) {
             case "blitz":
                 return dup(this.state.blitz_settings);
+            case "rapid":
+                return dup(this.state.rapid_settings);
             case "live":
                 return dup(this.state.live_settings);
             case "correspondence":
@@ -175,6 +177,10 @@ export class AutomatchSettings extends Modal<
             case "blitz":
                 data.set("automatch.blitz", settings);
                 this.setState({ blitz_settings: settings });
+                break;
+            case "rapid":
+                data.set("automatch.rapid", settings);
+                this.setState({ rapid_settings: settings });
                 break;
             case "live":
                 data.set("automatch.live", settings);
@@ -260,6 +266,12 @@ export class AutomatchSettings extends Modal<
                             onClick={() => this.setTab("blitz")}
                         >
                             {_("Blitz")}
+                        </button>
+                        <button
+                            className={this.state.tab === "rapid" ? "primary active sm" : "sm"}
+                            onClick={() => this.setTab("rapid")}
+                        >
+                            {_("Rapid")}
                         </button>
                         <button
                             className={this.state.tab === "live" ? "primary active sm" : "sm"}
