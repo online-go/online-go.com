@@ -131,7 +131,7 @@ export const GoTVNotifier: React.FC<GoTVNotifierProps> = ({ streams }) => {
         <div className="gotv-notification-container">
             {notifications.map((notification, index) => (
                 <GoTVNotification
-                    key={index}
+                    key={notification.streamId}
                     username={notification.username}
                     title={notification.title}
                     profileImageUrl={notification.profileImageUrl}
