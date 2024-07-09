@@ -127,6 +127,29 @@ export const GoTVNotifier: React.FC<GoTVNotifierProps> = ({ streams }) => {
         setNotifiedStreams(updatedNotifiedStreams);
     };
 
+    const dismissAllNotifications = () => {
+        const now = Date.now();
+
+        // Pre-compute the updates for notifiedStreams based on the current notifications
+        const additionalNotifiedStreams = notifications.map((notification) => ({
+            streamId: notification.streamId,
+            timestamp: now,
+        }));
+
+        // Update notifiedStreams with all notifications marked as dismissed
+        const updatedNotifiedStreams = [
+            ...notifiedStreams.filter(
+                (notification) => now - notification.timestamp < NOTIFICATION_EXPIRATION_MS,
+            ),
+            ...additionalNotifiedStreams,
+        ];
+
+        setNotifiedStreams(updatedNotifiedStreams);
+
+        // Clear notifications after notifiedStreams has been updated
+        setNotifications([]);
+    };
+
     return (
         <div className="gotv-notification-container">
             {notifications.map((notification, index) => (
@@ -139,6 +162,11 @@ export const GoTVNotifier: React.FC<GoTVNotifierProps> = ({ streams }) => {
                     animationDelay={`${index * 0.1}s`}
                 />
             ))}
+            {notifications.length > 1 && (
+                <button id="dismiss-all" onClick={dismissAllNotifications}>
+                    Dismiss All
+                </button>
+            )}
         </div>
     );
 };
