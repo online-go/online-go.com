@@ -34,22 +34,26 @@ export const GoTVNotification: React.FC<GoTVNotificationProps> = ({
     animationDelay,
 }) => {
     const [visible, setVisible] = useState(false);
+    const [dismissed, setDismissed] = useState(false);
 
     useEffect(() => {
-        // Set a timer to change the visibility state after a short delay
         const timer = setTimeout(() => {
-            console.log("Profile image url:", profileImageUrl);
             setVisible(true);
         }, 100); // Small delay to ensure the initial render is off-screen
 
-        // Cleanup the timer when the component unmounts
         return () => clearTimeout(timer);
     }, []);
 
+    const handleDismiss = () => {
+        setDismissed(true);
+        setTimeout(() => onClose(), 300); // Delay the actual dismissal to allow animation to complete
+    };
+
     return (
-        // Apply the "show" class if the notification is visible and set animation delay
-        <div className={`gotv-notification ${visible ? "show" : ""}`} style={{ animationDelay }}>
-            {/* Display the profile image */}
+        <div
+            className={`gotv-notification ${visible ? "show" : ""} ${dismissed ? "slide-out" : ""}`}
+            style={{ animationDelay }}
+        >
             <img src={profileImageUrl} alt={`${username}'s profile`} className="profile-image" />
             <div className="notification-content">
                 <div className="notification-header">
@@ -61,7 +65,7 @@ export const GoTVNotification: React.FC<GoTVNotificationProps> = ({
                 </div>
             </div>
             {/* Button to dismiss the notification */}
-            <button onClick={onClose}>Dismiss</button>
+            <button onClick={handleDismiss}>Dismiss</button>
         </div>
     );
 };

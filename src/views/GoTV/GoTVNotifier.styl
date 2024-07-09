@@ -3,8 +3,10 @@
     top: calc(var(--navbar-height) + 15px);
     right: 20px;
     z-index: 1000;
+    width: 360px;
 
     .gotv-notification
+        height: 40px;
         themed background-color card-background-color
         border: 1px solid #ccc;
         padding: 10px;
@@ -39,10 +41,21 @@
     .gotv-notification button
         margin-left: 10px;
 
+    .gotv-notification.slide-out
+        animation: slideOut 0.3s ease-in-out forwards
+
 @keyframes slideIn
     from
-        transform: translateX(300px)
+        transform: translateX(360px)
         opacity: 0
     to
         transform: translateX(0)
         opacity: 1
+
+@keyframes slideOut
+    from
+        transform: translateX(0)
+        opacity: 1
+    to
+        transform: translateX(360px)
+        opacity: 0
