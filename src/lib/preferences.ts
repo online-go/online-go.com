@@ -161,7 +161,7 @@ export const defaults = {
     "gotv.auto-select-top-stream": true,
     "gotv.allow-mature-streams": false,
     "gotv.selected-languages": [""],
-    "gotv.allow-notifications": false,
+    "gotv.allow-notifications": true,
     "gotv.user-access-token": "",
     "gotv.followed-channels": [] as FollowedChannel[],
     "gotv.notified-streams": [] as { streamId: string; timestamp: number }[],
