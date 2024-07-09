@@ -36,8 +36,9 @@ export function useTwitchIntegration() {
     const [followedChannels, setFollowedChannels] = usePreference("gotv.followed-channels");
 
     // Determine if user is authenticated based on the presence of a user access token
-    const isAuthenticated = Boolean(userAccessToken);
+    const isAuthenticated = Boolean(userAccessToken && !isTokenExpired);
 
+    // Effect to handle token extraction from URL hash or fetching followed channels if token exists
     useEffect(() => {
         const hash = window.location.hash;
         if (hash) {
@@ -45,13 +46,6 @@ export function useTwitchIntegration() {
             const token = params.get("access_token");
             if (token) {
                 setUserAccessToken(token);
-                getUserID(token)
-                    .then((userID) => {
-                        if (userID) {
-                            fetchFollowedChannels(token, userID).catch(console.error);
-                        }
-                    })
-                    .catch(console.error);
                 window.location.hash = "";
             }
         } else if (userAccessToken) {
@@ -65,17 +59,27 @@ export function useTwitchIntegration() {
         }
     }, [userAccessToken]);
 
+    // Effect to handle token expiration
     useEffect(() => {
         if (isTokenExpired) {
             authenticateWithTwitch();
         }
     }, [isTokenExpired]);
 
+    // Function to initiate Twitch authentication
     const authenticateWithTwitch = () => {
         const authUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${TWITCH_CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=token&scope=user:read:follows`;
         window.location.href = authUrl;
     };
 
+    // Function to handle token error (e.g., expiration)
+    const handleTokenError = () => {
+        setIsTokenExpired(true);
+        setUserAccessToken(""); // Clear the expired token
+        setFollowedChannels([]); // Clear followed channels as they are no longer valid
+    };
+
+    // Function to get user ID from Twitch using the access token
     const getUserID = async (token: string): Promise<string | null> => {
         try {
             const headers = {
@@ -83,20 +87,23 @@ export function useTwitchIntegration() {
                 Authorization: `Bearer ${token}`,
             };
             const response = await fetch("https://api.twitch.tv/helix/users", { headers });
+            if (response.status === 401) {
+                handleTokenError();
+                return null;
+            }
             const data = await response.json();
             if (data.data && data.data.length > 0) {
                 return data.data[0].id;
             }
             return null;
         } catch (error) {
-            if (error.response?.status === 401) {
-                setIsTokenExpired(true);
-            }
             console.error("Error fetching user ID:", error);
+            handleTokenError();
             return null;
         }
     };
 
+    // Function to fetch followed channels from Twitch using the user ID
     const fetchFollowedChannels = async (token: string, userID: string) => {
         try {
             const headers = {
@@ -107,6 +114,10 @@ export function useTwitchIntegration() {
                 `https://api.twitch.tv/helix/channels/followed?user_id=${userID}`,
                 { headers },
             );
+            if (response.status === 401) {
+                handleTokenError();
+                return;
+            }
             const data = await response.json();
             const channels: FollowedChannel[] = data.data.map((channel: any) => ({
                 broadcaster_id: channel.broadcaster_id,
@@ -116,10 +127,8 @@ export function useTwitchIntegration() {
             }));
             setFollowedChannels(channels);
         } catch (error) {
-            if (error.response?.status === 401) {
-                setIsTokenExpired(true);
-            }
             console.error("Error fetching followed channels:", error);
+            handleTokenError();
         }
     };
 
@@ -127,6 +136,7 @@ export function useTwitchIntegration() {
         isAuthenticated,
         isTokenExpired,
         userAccessToken,
+        setUserAccessToken, // expose the setter for testing
         followedChannels,
         authenticateWithTwitch,
     };

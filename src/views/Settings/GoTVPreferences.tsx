@@ -28,8 +28,14 @@ import { useTwitchIntegration } from "../GoTV/useTwitchIntegration";
 type LanguageCodes = typeof twitchLanguageCodes;
 
 export function GoTVPreferences(): JSX.Element {
-    const { isAuthenticated, isTokenExpired, followedChannels, authenticateWithTwitch } =
-        useTwitchIntegration();
+    const {
+        isAuthenticated,
+        isTokenExpired,
+        userAccessToken,
+        setUserAccessToken,
+        followedChannels,
+        authenticateWithTwitch,
+    } = useTwitchIntegration();
 
     const [showGoTVIndicator, toggleGoTVIndicator] = usePreference("gotv.show-gotv-indicator");
     const [autoSelect, toggleAutoSelect] = usePreference("gotv.auto-select-top-stream");
@@ -145,6 +151,17 @@ export function GoTVPreferences(): JSX.Element {
                             </>
                         </ul>
                         <button onClick={clearNotifiedStreams}>Clear notified streams list</button>
+                    </div>
+
+                    {/* Expose the token for testing */}
+                    <div>
+                        <h3>Access Token</h3>
+                        <input
+                            type="text"
+                            value={userAccessToken || ""}
+                            onChange={(e) => setUserAccessToken(e.target.value)}
+                            style={{ width: "100%" }}
+                        />
                     </div>
                 </>
             )}
