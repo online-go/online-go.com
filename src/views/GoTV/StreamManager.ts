@@ -34,6 +34,7 @@ export interface Stream {
     thumbnail_url: string;
     source: string;
     is_mature: boolean;
+    profile_image_url: string;
 }
 
 class StreamManager extends EventEmitter<StreamEvents> {

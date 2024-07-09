@@ -49,6 +49,7 @@ export function GoTVPreferences(): JSX.Element {
     const [userAccessToken, setUserAccessToken] = usePreference("gotv.user-access-token");
     const [followedChannels, setFollowedChannels] = usePreference("gotv.followed-channels");
     const [showFollowedChannels, setShowFollowedChannels] = useState(false);
+    const [notifiedStreams, setNotifiedStreams] = usePreference("gotv.notified-streams");
 
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
     const [isTokenExpired, setIsTokenExpired] = useState<boolean>(false);
@@ -160,6 +161,10 @@ export function GoTVPreferences(): JSX.Element {
         setShowFollowedChannels(!showFollowedChannels);
     };
 
+    const clearNotifiedStreams = () => {
+        setNotifiedStreams([]);
+    };
+
     return (
         <div className="GoTVPreferences">
             <PreferenceLine title={_("Select preferred languages (multiple allowed)")}>
@@ -226,6 +231,20 @@ export function GoTVPreferences(): JSX.Element {
                             )}
                         </div>
                     )}
+
+                    <div>
+                        <h3>notified streams</h3>
+                        <ul>
+                            <>
+                                {notifiedStreams.map((note) => {
+                                    <li key={note.streamId}>
+                                        {note.streamId} - {note.timestamp}
+                                    </li>;
+                                })}
+                            </>
+                        </ul>
+                        <button onClick={clearNotifiedStreams}>Clear notified streams list</button>
+                    </div>
                 </>
             )}
         </div>

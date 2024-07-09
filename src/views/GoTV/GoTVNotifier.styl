@@ -13,12 +13,32 @@
         transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
         transform: translateX(300px);
         opacity: 0;
+        display: flex;
+        align-items: center;
+        margin-bottom: 5px;
 
     .gotv-notification.show
         transform: translateX(0);
         opacity: 1;
 
+    .profile-image
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        margin-right: 10px;
+
+    .notification-content
+        flex: 1;
+        margin-right: 10px;
+
+    .notification-header
+        font-weight: bold;
+
+    .notification-body
+        font-size: 0.85em;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
     .gotv-notification button
         margin-left: 10px;
-    
-    

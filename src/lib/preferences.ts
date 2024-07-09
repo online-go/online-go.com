@@ -164,6 +164,7 @@ export const defaults = {
     "gotv.allow-notifications": false,
     "gotv.user-access-token": "",
     "gotv.followed-channels": [] as FollowedChannel[],
+    "gotv.notified-streams": [] as { streamId: string; timestamp: number }[],
 };
 
 defaults["profanity-filter"][current_language] = true;

@@ -18,15 +18,23 @@
 import React, { useEffect, useState } from "react";
 
 interface GoTVNotificationProps {
-    message: string;
+    username: string;
+    title: string;
+    profileImageUrl: string;
     onClose: () => void;
 }
 
-export const GoTVNotification: React.FC<GoTVNotificationProps> = ({ message, onClose }) => {
+export const GoTVNotification: React.FC<GoTVNotificationProps> = ({
+    username,
+    title,
+    profileImageUrl,
+    onClose,
+}) => {
     const [visible, setVisible] = useState(false);
 
     useEffect(() => {
         const timer = setTimeout(() => {
+            console.log("Profile image url:", profileImageUrl);
             setVisible(true);
         }, 100); // Small delay to ensure the initial render is off-screen
 
@@ -35,7 +43,15 @@ export const GoTVNotification: React.FC<GoTVNotificationProps> = ({ message, onC
 
     return (
         <div className={`gotv-notification ${visible ? "show" : ""}`}>
-            <span>{message}</span>
+            <img src={profileImageUrl} alt={`${username}'s profile`} className="profile-image" />
+            <div className="notification-content">
+                <div className="notification-header">
+                    <strong>{username} is live:</strong>
+                </div>
+                <div className="notification-body">
+                    <small>{title.length > 50 ? `${title.substring(0, 50)}...` : title}</small>
+                </div>
+            </div>
             <button onClick={onClose}>Dismiss</button>
         </div>
     );
