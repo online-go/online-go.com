@@ -25,6 +25,7 @@ import { GoTVPreferences } from "Settings";
 let twitch_js_promise: Promise<void> | null = null;
 declare let Twitch: any;
 
+// Function to load the Twitch library
 const load_twitch_library = () => {
     if (!twitch_js_promise) {
         twitch_js_promise = new Promise<void>((resolve, reject) => {
@@ -43,6 +44,7 @@ const load_twitch_library = () => {
     return twitch_js_promise;
 };
 
+// GoTV component manages the live stream display and user interactions
 export const GoTV = () => {
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
     const [streams, setStreams] = useState<Stream[]>([]);
@@ -58,6 +60,7 @@ export const GoTV = () => {
     const initialMount = useRef(true);
 
     useEffect(() => {
+        // Load the Twitch library and set the state when loaded
         load_twitch_library()
             .then(() => {
                 setTwitchLibraryLoaded(true);
@@ -65,6 +68,8 @@ export const GoTV = () => {
             .catch((error) => {
                 console.error(error);
             });
+
+        // Function to update the streams state
         const updateStreams = (streams: Stream[]) => {
             setStreams(streams);
             if (initialMount.current) {
@@ -84,7 +89,7 @@ export const GoTV = () => {
         const bodyClassList = document.body.classList;
         setIsLightTheme(bodyClassList.contains("light"));
 
-        // Setup a MutationObserver to detect theme changes so we can update twitch chat on theme change
+        // Setup a MutationObserver to detect theme changes for updating Twitch chat theme
         const observer = new MutationObserver((mutations) => {
             mutations.forEach((mutation) => {
                 if (mutation.attributeName === "class") {
@@ -95,6 +100,7 @@ export const GoTV = () => {
 
         observer.observe(document.body, { attributes: true });
 
+        // Handle window resize events to update mobile state
         const handleResize = () => setIsMobile(window.innerWidth <= 900);
         window.addEventListener("resize", handleResize);
 
@@ -106,6 +112,7 @@ export const GoTV = () => {
     }, []);
 
     useEffect(() => {
+        // Embed the selected Twitch stream when Twitch library is loaded
         if (twitchLibraryLoaded && selectedStream) {
             const embedContainer = document.getElementById("twitch-embed");
             if (embedContainer) {

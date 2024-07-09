@@ -31,16 +31,18 @@ interface GoTVNotifierProps {
     streams: Stream[];
 }
 
+// Constants for notification expiration time
 const NOTIFICATION_EXPIRATION_HOURS = 12;
 const NOTIFICATION_EXPIRATION_MS = NOTIFICATION_EXPIRATION_HOURS * 60 * 60 * 1000;
 
+// GoTVNotifier component manages notifications for live streams
 export const GoTVNotifier: React.FC<GoTVNotifierProps> = ({ streams }) => {
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [allowNotifications] = usePreference("gotv.allow-notifications");
     const [followedChannels] = usePreference("gotv.followed-channels");
     const [notifiedStreams, setNotifiedStreams] = usePreference("gotv.notified-streams");
 
-    // Clean up old notifications effect
+    // Effect to clean up old notifications
     useEffect(() => {
         if (!allowNotifications) {
             return;
@@ -56,7 +58,7 @@ export const GoTVNotifier: React.FC<GoTVNotifierProps> = ({ streams }) => {
         }
     }, [allowNotifications, notifiedStreams]);
 
-    // Update notifications effect
+    // Effect to update notifications for new live streams
     useEffect(() => {
         if (!allowNotifications) {
             return;
@@ -67,6 +69,7 @@ export const GoTVNotifier: React.FC<GoTVNotifierProps> = ({ streams }) => {
             (notification) => now - notification.timestamp < NOTIFICATION_EXPIRATION_MS,
         );
 
+        // Filter new live streams that are followed and not already notified
         const newLiveStreams = streams.filter(
             (stream) =>
                 followedChannels.some((channel) => channel.broadcaster_login === stream.channel) &&
@@ -75,6 +78,7 @@ export const GoTVNotifier: React.FC<GoTVNotifierProps> = ({ streams }) => {
                 ),
         );
 
+        // Update the notifications state with new live streams
         if (newLiveStreams.length > 0) {
             setNotifications((prevNotifications) => {
                 const newNotifications = newLiveStreams
@@ -95,7 +99,7 @@ export const GoTVNotifier: React.FC<GoTVNotifierProps> = ({ streams }) => {
         }
     }, [streams, allowNotifications, followedChannels, notifiedStreams]);
 
-    // Remove notifications for streams that are no longer live
+    // Effect to remove notifications for streams that are no longer live
     useEffect(() => {
         if (!allowNotifications) {
             return;
@@ -107,6 +111,7 @@ export const GoTVNotifier: React.FC<GoTVNotifierProps> = ({ streams }) => {
         );
     }, [streams, allowNotifications]);
 
+    // Function to dismiss a notification and update the notified streams
     const dismissNotification = (index: number) => {
         const dismissedStreamId = notifications[index].streamId;
         setNotifications((prev) => prev.filter((_, i) => i !== index));

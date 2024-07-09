@@ -37,22 +37,29 @@ export interface Stream {
     profile_image_url: string;
 }
 
+// StreamManager is a singleton class that manages the fetching, filtering, and updating of live streams
 class StreamManager extends EventEmitter<StreamEvents> {
     private static instance: StreamManager;
     private streams: Stream[] = [];
     private allowMatureStreams: boolean;
     private selectedLanguages: string[];
 
+    // Private constructor to enforce singleton pattern
     private constructor() {
         super();
         this.allowMatureStreams = preferences.get("gotv.allow-mature-streams");
         this.selectedLanguages = preferences.get("gotv.selected-languages");
         this.fetchStreams();
+
+        // Watch for changes in user preferences
         preferences.watch("gotv.allow-mature-streams", this.updatePreferences.bind(this));
         preferences.watch("gotv.selected-languages", this.updatePreferences.bind(this));
+
+        // Set up WebSocket connection for real-time updates
         this.setupWebSocket();
     }
 
+    // Static method to get the singleton instance
     public static getInstance(): StreamManager {
         if (!StreamManager.instance) {
             StreamManager.instance = new StreamManager();
@@ -60,12 +67,14 @@ class StreamManager extends EventEmitter<StreamEvents> {
         return StreamManager.instance;
     }
 
+    // Update preferences and refetch streams
     private updatePreferences() {
         this.allowMatureStreams = preferences.get("gotv.allow-mature-streams");
         this.selectedLanguages = preferences.get("gotv.selected-languages");
         this.fetchStreams();
     }
 
+    // Filter streams based on user preferences
     private filterStreams(streams: Stream[]): Stream[] {
         let filteredStreams = streams;
         if (!this.allowMatureStreams) {
@@ -79,6 +88,7 @@ class StreamManager extends EventEmitter<StreamEvents> {
         return filteredStreams;
     }
 
+    // Fetch streams from the server
     public fetchStreams() {
         get("gotv/streams")
             .then((streams: Stream[]) => {
@@ -90,6 +100,7 @@ class StreamManager extends EventEmitter<StreamEvents> {
             });
     }
 
+    // Set up WebSocket connection to receive real-time updates
     private setupWebSocket() {
         socket.on("ui-push", (msg) => {
             if (msg.event === "update_streams") {
@@ -99,6 +110,7 @@ class StreamManager extends EventEmitter<StreamEvents> {
             }
         });
 
+        // Subscribe to the GoTV channel for updates
         const subscribeToChannel = () => {
             socket.send("ui-pushes/subscribe", { channel: "gotv" });
         };
@@ -110,9 +122,11 @@ class StreamManager extends EventEmitter<StreamEvents> {
         }
     }
 
+    // Get the current list of streams
     public getStreams(): Stream[] {
         return this.streams;
     }
 }
 
+// Export the singleton instance of StreamManager
 export const streamManager = StreamManager.getInstance();

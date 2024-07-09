@@ -25,6 +25,7 @@ interface GoTVNotificationProps {
     animationDelay: string;
 }
 
+// GoTVNotification component displays a notification for a live stream
 export const GoTVNotification: React.FC<GoTVNotificationProps> = ({
     username,
     title,
@@ -35,25 +36,31 @@ export const GoTVNotification: React.FC<GoTVNotificationProps> = ({
     const [visible, setVisible] = useState(false);
 
     useEffect(() => {
+        // Set a timer to change the visibility state after a short delay
         const timer = setTimeout(() => {
             console.log("Profile image url:", profileImageUrl);
             setVisible(true);
         }, 100); // Small delay to ensure the initial render is off-screen
 
+        // Cleanup the timer when the component unmounts
         return () => clearTimeout(timer);
     }, []);
 
     return (
+        // Apply the "show" class if the notification is visible and set animation delay
         <div className={`gotv-notification ${visible ? "show" : ""}`} style={{ animationDelay }}>
+            {/* Display the profile image */}
             <img src={profileImageUrl} alt={`${username}'s profile`} className="profile-image" />
             <div className="notification-content">
                 <div className="notification-header">
                     <strong>{username} is live:</strong>
                 </div>
                 <div className="notification-body">
+                    {/* Truncate the title if it's longer than 30 characters */}
                     <small>{title.length > 30 ? `${title.substring(0, 30)}...` : title}</small>
                 </div>
             </div>
+            {/* Button to dismiss the notification */}
             <button onClick={onClose}>Dismiss</button>
         </div>
     );
