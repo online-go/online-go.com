@@ -38,17 +38,15 @@ export const GoTVNotifier: React.FC<GoTVNotifierProps> = ({ streams }) => {
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [allowNotifications] = usePreference("gotv.allow-notifications");
     const [followedChannels] = usePreference("gotv.followed-channels");
-    const [liveStreams, setLiveStreams] = useState<Stream[]>([]);
     const [notifiedStreams, setNotifiedStreams] = usePreference("gotv.notified-streams");
 
+    // Clean up old notifications effect
     useEffect(() => {
         if (!allowNotifications) {
             return;
         }
 
         const now = Date.now();
-
-        // Clean up old notifications
         const updatedNotifiedStreams = notifiedStreams.filter(
             (notification) => now - notification.timestamp < NOTIFICATION_EXPIRATION_MS,
         );
@@ -56,18 +54,28 @@ export const GoTVNotifier: React.FC<GoTVNotifierProps> = ({ streams }) => {
         if (updatedNotifiedStreams.length !== notifiedStreams.length) {
             setNotifiedStreams(updatedNotifiedStreams);
         }
+    }, [allowNotifications, notifiedStreams]);
+
+    // Update notifications effect
+    useEffect(() => {
+        if (!allowNotifications) {
+            return;
+        }
+
+        const now = Date.now();
+        const updatedNotifiedStreams = notifiedStreams.filter(
+            (notification) => now - notification.timestamp < NOTIFICATION_EXPIRATION_MS,
+        );
 
         const newLiveStreams = streams.filter(
             (stream) =>
                 followedChannels.some((channel) => channel.broadcaster_login === stream.channel) &&
-                !liveStreams.some((liveStream) => liveStream.stream_id === stream.stream_id) &&
                 !updatedNotifiedStreams.some(
                     (notification) => notification.streamId === stream.stream_id,
                 ),
         );
 
         if (newLiveStreams.length > 0) {
-            setLiveStreams([...liveStreams, ...newLiveStreams]);
             const newNotifications: Notification[] = newLiveStreams.map((stream) => ({
                 streamId: stream.stream_id,
                 username: stream.username,
@@ -76,14 +84,19 @@ export const GoTVNotifier: React.FC<GoTVNotifierProps> = ({ streams }) => {
             }));
             setNotifications((prev) => [...prev, ...newNotifications]);
         }
-    }, [
-        streams,
-        allowNotifications,
-        followedChannels,
-        liveStreams,
-        notifiedStreams,
-        setNotifiedStreams,
-    ]);
+    }, [streams, allowNotifications, followedChannels, notifiedStreams]);
+
+    // Remove notifications for streams that are no longer live
+    useEffect(() => {
+        if (!allowNotifications) {
+            return;
+        }
+
+        const activeStreamIds = new Set(streams.map((stream) => stream.stream_id));
+        setNotifications((prev) =>
+            prev.filter((notification) => activeStreamIds.has(notification.streamId)),
+        );
+    }, [streams, allowNotifications]);
 
     const dismissNotification = (index: number) => {
         const dismissedStreamId = notifications[index].streamId;
@@ -91,8 +104,13 @@ export const GoTVNotifier: React.FC<GoTVNotifierProps> = ({ streams }) => {
 
         const now = Date.now();
 
-        const notified = [...notifiedStreams, { streamId: dismissedStreamId, timestamp: now }];
-        setNotifiedStreams(notified);
+        const updatedNotifiedStreams = [
+            ...notifiedStreams.filter(
+                (notification) => now - notification.timestamp < NOTIFICATION_EXPIRATION_MS,
+            ),
+            { streamId: dismissedStreamId, timestamp: now },
+        ];
+        setNotifiedStreams(updatedNotifiedStreams);
     };
 
     return (
