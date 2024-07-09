@@ -16,43 +16,30 @@
  */
 
 import * as React from "react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { _ } from "translate";
 import { usePreference } from "preferences";
 import { Toggle } from "Toggle";
 import { PreferenceLine } from "SettingsCommon";
 import Select, { MultiValue } from "react-select";
 import { twitchLanguageCodes } from "../GoTV/twitchLanguageCodes";
+import { useTwitchIntegration } from "../GoTV/useTwitchIntegration";
 
 type LanguageCodes = typeof twitchLanguageCodes;
 
-// Client ID will need to be the OGS client ID, probably from environment variable?
-const TWITCH_CLIENT_ID = "z00yx3qzdzkh10c6nxku6tqm1pxrgv"; // cspell:disable-line
-const REDIRECT_URI = "http://localhost:8080/settings/gotv";
-
-export interface FollowedChannel {
-    broadcaster_id: string;
-    broadcaster_login: string;
-    broadcaster_name: string;
-    followed_at: string;
-}
-
 export function GoTVPreferences(): JSX.Element {
+    const { isAuthenticated, isTokenExpired, followedChannels, authenticateWithTwitch } =
+        useTwitchIntegration();
+
     const [showGoTVIndicator, toggleGoTVIndicator] = usePreference("gotv.show-gotv-indicator");
     const [autoSelect, toggleAutoSelect] = usePreference("gotv.auto-select-top-stream");
     const [allowMatureStreams, toggleAllowMatureStreams] = usePreference(
         "gotv.allow-mature-streams",
     );
     const [selectedLanguages, setSelectedLanguages] = usePreference("gotv.selected-languages");
-
     const [allowNotifications, setAllowNotifications] = usePreference("gotv.allow-notifications");
-    const [userAccessToken, setUserAccessToken] = usePreference("gotv.user-access-token");
-    const [followedChannels, setFollowedChannels] = usePreference("gotv.followed-channels");
     const [showFollowedChannels, setShowFollowedChannels] = useState(false);
     const [notifiedStreams, setNotifiedStreams] = usePreference("gotv.notified-streams");
-
-    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-    const [isTokenExpired, setIsTokenExpired] = useState<boolean>(false);
 
     const languageOptions = Object.keys(twitchLanguageCodes).map((key) => ({
         value: key,
@@ -68,94 +55,6 @@ export function GoTVPreferences(): JSX.Element {
                 : [""],
         );
     };
-
-    const authenticateWithTwitch = () => {
-        const authUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${TWITCH_CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=token&scope=user:read:follows`;
-        window.location.href = authUrl;
-    };
-
-    const getUserID = async (token: string): Promise<string | null> => {
-        try {
-            const headers = {
-                "Client-ID": TWITCH_CLIENT_ID,
-                Authorization: `Bearer ${token}`,
-            };
-            const response = await fetch("https://api.twitch.tv/helix/users", { headers });
-            const data = await response.json();
-            if (data.data && data.data.length > 0) {
-                return data.data[0].id;
-            }
-            return null;
-        } catch (error) {
-            if (error.response?.status === 401) {
-                setIsTokenExpired(true);
-            }
-            console.error("Error fetching user ID:", error);
-            return null;
-        }
-    };
-
-    const fetchFollowedChannels = async (token: string, userID: string) => {
-        try {
-            const headers = {
-                "Client-ID": TWITCH_CLIENT_ID,
-                Authorization: `Bearer ${token}`,
-            };
-            const response = await fetch(
-                `https://api.twitch.tv/helix/channels/followed?user_id=${userID}`,
-                { headers },
-            );
-            const data = await response.json();
-            console.log("Fetched followed channels:", data); // Logging for debugging
-            const channels: FollowedChannel[] = data.data.map((channel: any) => ({
-                broadcaster_id: channel.broadcaster_id,
-                broadcaster_login: channel.broadcaster_login,
-                broadcaster_name: channel.broadcaster_name,
-                followed_at: channel.followed_at,
-            }));
-            setFollowedChannels(channels);
-        } catch (error) {
-            if (error.response?.status === 401) {
-                setIsTokenExpired(true);
-            }
-            console.error("Error fetching followed channels:", error);
-        }
-    };
-
-    useEffect(() => {
-        const hash = window.location.hash;
-        console.log("URL hash:", hash); // Logging for debugging
-        if (hash) {
-            const params = new URLSearchParams(hash.replace("#", ""));
-            const token = params.get("access_token");
-            console.log("Access token:", token); // Logging for debugging
-            if (token) {
-                setUserAccessToken(token);
-                getUserID(token)
-                    .then((userID) => {
-                        if (userID) {
-                            fetchFollowedChannels(token, userID).catch((error) =>
-                                console.error(error),
-                            );
-                            setIsAuthenticated(true);
-                        }
-                    })
-                    .catch((error) => console.error(error));
-                window.location.hash = "";
-            }
-        } else if (userAccessToken) {
-            getUserID(userAccessToken)
-                .then((userID) => {
-                    if (userID) {
-                        fetchFollowedChannels(userAccessToken, userID).catch((error) =>
-                            console.error(error),
-                        );
-                        setIsAuthenticated(true);
-                    }
-                })
-                .catch((error) => console.error(error));
-        }
-    }, [userAccessToken]);
 
     const handleShowFollowedChannels = () => {
         setShowFollowedChannels(!showFollowedChannels);
@@ -204,7 +103,7 @@ export function GoTVPreferences(): JSX.Element {
                         description="Link your Twitch account to get notifications when your favorite streamers are actively streaming Go"
                     >
                         {isAuthenticated ? (
-                            <button disabled>{_("Authenticated with Twitch")}</button>
+                            <button disabled>{_("Connected")}</button>
                         ) : (
                             <button onClick={authenticateWithTwitch}>
                                 {_("Authenticate with Twitch")}
@@ -238,11 +137,11 @@ export function GoTVPreferences(): JSX.Element {
                         <h3>notified streams</h3>
                         <ul>
                             <>
-                                {notifiedStreams.map((note) => {
+                                {notifiedStreams.map((note) => (
                                     <li key={note.streamId}>
                                         {note.streamId} - {note.timestamp}
-                                    </li>;
-                                })}
+                                    </li>
+                                ))}
                             </>
                         </ul>
                         <button onClick={clearNotifiedStreams}>Clear notified streams list</button>

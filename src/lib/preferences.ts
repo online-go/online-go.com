@@ -20,7 +20,7 @@ import { GobanSelectedThemes, Goban, LabelPosition } from "goban";
 import * as React from "react";
 import { current_language } from "translate";
 import { DataSchema } from "./data_schema";
-import { FollowedChannel } from "Settings";
+import { FollowedChannel } from "GoTV";
 
 export const defaults = {
     "ai-review-enabled": true,
