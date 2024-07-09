@@ -102,69 +102,64 @@ export function GoTVPreferences(): JSX.Element {
                 <Toggle checked={allowNotifications} onChange={setAllowNotifications} />
             </PreferenceLine>
 
-            {allowNotifications && (
-                <>
-                    <PreferenceLine
-                        title={_("Connect your Twitch account")}
-                        description="Link your Twitch account to get notifications when your favorite streamers are actively streaming Go"
-                    >
-                        {isAuthenticated ? (
-                            <button disabled>{_("Connected")}</button>
+            <PreferenceLine
+                title={_("Connect your Twitch account")}
+                description="Link your Twitch account to get notifications when your favorite streamers are actively streaming Go"
+            >
+                {isAuthenticated ? (
+                    <button disabled>{_("Connected")}</button>
+                ) : (
+                    <button onClick={authenticateWithTwitch}>
+                        {_("Authenticate with Twitch")}
+                    </button>
+                )}
+                {isTokenExpired && <p>{_("Token expired. Please re-authenticate.")}</p>}
+            </PreferenceLine>
+
+            {/* TODO: Remove before deployment */}
+            <div className="dev-tools">
+                <h2>Dev Options (need to be removed before deployment)</h2>
+                {followedChannels && followedChannels.length > 0 && (
+                    <div className="followed-channels">
+                        <h3>{_("Followed Twitch Channels")}</h3>
+                        {showFollowedChannels ? (
+                            <ul>
+                                {followedChannels.map((channel) => (
+                                    <li key={channel.broadcaster_id}>{channel.broadcaster_name}</li>
+                                ))}
+                            </ul>
                         ) : (
-                            <button onClick={authenticateWithTwitch}>
-                                {_("Authenticate with Twitch")}
+                            <button onClick={handleShowFollowedChannels}>
+                                {_("Show Followed Channels")}
                             </button>
                         )}
-                        {isTokenExpired && <p>{_("Token expired. Please re-authenticate.")}</p>}
-                    </PreferenceLine>
-
-                    {followedChannels && followedChannels.length > 0 && (
-                        <div className="followed-channels">
-                            <h3>{_("Followed Twitch Channels")}</h3>
-                            {showFollowedChannels ? (
-                                <ul>
-                                    {followedChannels.map((channel) => (
-                                        <li key={channel.broadcaster_id}>
-                                            {channel.broadcaster_name}
-                                        </li>
-                                    ))}
-                                </ul>
-                            ) : (
-                                <button onClick={handleShowFollowedChannels}>
-                                    {_("Show Followed Channels")}
-                                </button>
-                            )}
-                        </div>
-                    )}
-
-                    {/* TEMPORARY
-                    Useful for testing, but should be removed before deployment */}
-                    <div>
-                        <h3>notified streams</h3>
-                        <ul>
-                            <>
-                                {notifiedStreams.map((note) => (
-                                    <li key={note.streamId}>
-                                        {note.streamId} - {note.timestamp}
-                                    </li>
-                                ))}
-                            </>
-                        </ul>
-                        <button onClick={clearNotifiedStreams}>Clear notified streams list</button>
                     </div>
+                )}
 
-                    {/* Expose the token for testing */}
-                    <div>
-                        <h3>Access Token</h3>
-                        <input
-                            type="text"
-                            value={userAccessToken || ""}
-                            onChange={(e) => setUserAccessToken(e.target.value)}
-                            style={{ width: "100%" }}
-                        />
-                    </div>
-                </>
-            )}
+                <div>
+                    <h3>notified streams</h3>
+                    <ul>
+                        <>
+                            {notifiedStreams.map((note) => (
+                                <li key={note.streamId}>
+                                    {note.streamId} - {note.timestamp}
+                                </li>
+                            ))}
+                        </>
+                    </ul>
+                    <button onClick={clearNotifiedStreams}>Clear notified streams list</button>
+                </div>
+
+                <div>
+                    <h3>Access Token</h3>
+                    <input
+                        type="text"
+                        value={userAccessToken || ""}
+                        onChange={(e) => setUserAccessToken(e.target.value)}
+                        style={{ width: "100%" }}
+                    />
+                </div>
+            </div>
         </div>
     );
 }
