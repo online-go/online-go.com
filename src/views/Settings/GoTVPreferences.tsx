@@ -232,6 +232,8 @@ export function GoTVPreferences(): JSX.Element {
                         </div>
                     )}
 
+                    {/* TEMPORARY
+                    Useful for testing, but should be removed before deployment */}
                     <div>
                         <h3>notified streams</h3>
                         <ul>
