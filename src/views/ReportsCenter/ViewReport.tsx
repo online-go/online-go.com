@@ -39,6 +39,7 @@ import { ModerationActionSelector } from "./ModerationActionSelector";
 import { openAnnulQueueModal, AnnulQueueModal } from "AnnulQueueModal";
 import { ReportTypeSelector } from "./ReportTypeSelector";
 import { alert } from "swal_config";
+import { ErrorBoundary } from "ErrorBoundary";
 
 // Used for saving updates to the report
 let report_note_id = 0;
@@ -654,34 +655,40 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                 </>
             )}
             <UserHistory target_user={report.reported_user} />
-            <hr />
-            {(report.url || null) && (
-                <a href={report.url} target="_blank">
-                    {report.url}
-                </a>
-            )}
-            {report.reported_game && (
-                <ReportedGame
-                    game_id={report.reported_game}
-                    reported_at={report.reported_game_move}
-                />
-            )}
-            {report.report_type === "appeal" && <AppealView user_id={report.reported_user.id} />}
-            {report.reported_review && (
-                <span>
-                    {_("Review")}:{" "}
-                    <Link to={`/review/${report.reported_review}`}>##{report.reported_review}</Link>
-                </span>
-            )}
-            {report.reported_conversation && (
-                <div className="reported-conversation">
-                    {report.reported_conversation.content.map((line, index) => (
-                        <div className="chatline" key={index}>
-                            {line}
-                        </div>
-                    ))}
-                </div>
-            )}
+            <ErrorBoundary>
+                <hr />
+                {(report.url || null) && (
+                    <a href={report.url} target="_blank">
+                        {report.url}
+                    </a>
+                )}
+                {report.reported_game && (
+                    <ReportedGame
+                        game_id={report.reported_game}
+                        reported_at={report.reported_game_move}
+                    />
+                )}
+                {report.report_type === "appeal" && (
+                    <AppealView user_id={report.reported_user.id} />
+                )}
+                {report.reported_review && (
+                    <span>
+                        {_("Review")}:{" "}
+                        <Link to={`/review/${report.reported_review}`}>
+                            ##{report.reported_review}
+                        </Link>
+                    </span>
+                )}
+                {report.reported_conversation && (
+                    <div className="reported-conversation">
+                        {report.reported_conversation.content.map((line, index) => (
+                            <div className="chatline" key={index}>
+                                {line}
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </ErrorBoundary>
         </div>
     );
 }
