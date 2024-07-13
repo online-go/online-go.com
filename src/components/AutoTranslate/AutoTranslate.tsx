@@ -25,6 +25,7 @@ interface AutoTranslateProps {
     className?: string;
     markdown?: boolean;
     source_language?: string;
+    placeholder?: string;
 }
 
 interface Translation {
@@ -39,7 +40,15 @@ export function AutoTranslate({
     source_language,
     className,
     markdown,
+    placeholder,
 }: AutoTranslateProps): JSX.Element | null {
+    let showing_placeholder = false;
+
+    if (!source && placeholder) {
+        showing_placeholder = true;
+        source = placeholder;
+        markdown = false; // this is needed to ensure placeholder is formatted correctly
+    }
     const need_translation =
         source !== "" && (!source_language || source_language.toLowerCase() !== current_language);
 
@@ -76,14 +85,16 @@ export function AutoTranslate({
     // If we have a translation, then we show it in the primary formatting, followed by the original.
     // If we don't have a translation, then we show the original in primary formatting.
     return (
-        <div className={`AutoTranslate ${className || ""}`}>
+        <div className={`AutoTranslate ${className || ""} `}>
             {show_translation ? (
                 <>
-                    {markdown ? (
-                        <Markdown source={translation.target_text} />
-                    ) : (
-                        translation.target_text
-                    )}
+                    <div className={`primary ${showing_placeholder ? "placeholder" : ""}`}>
+                        {markdown ? (
+                            <Markdown source={translation.target_text} />
+                        ) : (
+                            translation.target_text
+                        )}
+                    </div>
                     <div className="language-map">
                         {pgettext(
                             "This label is placed on the original text of something that has been translated",
@@ -97,7 +108,9 @@ export function AutoTranslate({
             ) : markdown ? (
                 <Markdown source={source} />
             ) : (
-                source
+                <div className={`primary ${showing_placeholder ? "placeholder" : ""}`}>
+                    {source}
+                </div>
             )}
         </div>
     );
