@@ -34,7 +34,10 @@ import { IncidentReportCard } from "./IncidentReportCard";
 export function IncidentReportTracker(): JSX.Element | null {
     const user = useUser();
     const navigate = useNavigate();
-    const [show_incident_list, setShowIncidentList] = React.useState(false);
+    const [show_incident_list, setShowIncidentList] = React.useState(
+        data.get("ui-state.show_incident_list"),
+    );
+
     const [normal_ct, setNormalCt] = React.useState(0);
     const [prefer_hidden] = usePreference("hide-incident-reports");
     const [report_quota] = usePreference("moderator.report-quota");
@@ -53,7 +56,7 @@ export function IncidentReportTracker(): JSX.Element | null {
             signalUsed("incident-report-indicator");
             navigate("/reports-center/");
         } else {
-            setShowIncidentList(!show_incident_list);
+            data.set("ui-state.show_incident_list", !show_incident_list);
         }
     }
 
@@ -165,6 +168,8 @@ export function IncidentReportTracker(): JSX.Element | null {
         report_manager.on("incident-report", onReport);
         report_manager.on("active-count", updateCt);
         report_manager.on("update", refresh);
+
+        data.watch("ui-state.show_incident_list", setShowIncidentList);
 
         return () => {
             report_manager.off("incident-report", onReport);
