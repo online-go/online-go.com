@@ -467,8 +467,8 @@ export function openReport(report: ReportProperties): void {
     // Instead, open the incident report list to show them their current report, which they can edit.
     // (arguably we might let them report the "other" player as well as the already reported one,
     //  but that's a bit more complicated and not worth the effort for now.)
-    const already_reported = data.get("reported-games") as number[];
-    console.log("already_reported", already_reported, report.reported_game_id);
+    const already_reported = data.get("reported-games", []) as number[];
+
     if (report.reported_game_id && already_reported.includes(report.reported_game_id)) {
         data.set("ui-state.show_incident_list", true);
         return;
