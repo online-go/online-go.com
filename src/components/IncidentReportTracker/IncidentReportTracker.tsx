@@ -16,23 +16,20 @@
  */
 
 import * as React from "react";
-import * as moment from "moment";
 import * as preferences from "preferences";
 import * as data from "data";
 import { Link, useNavigate } from "react-router-dom";
 import { alert } from "swal_config";
-import { _, pgettext } from "translate";
+import { pgettext } from "translate";
 import { post } from "requests";
 import { usePreference } from "preferences";
-import { Player } from "Player";
+
 import { ignore, errorAlerter } from "misc";
-import { openReportedConversationModal } from "ReportedConversationModal";
-import { AutoTranslate } from "AutoTranslate";
-import { report_categories } from "Report";
 import { report_manager } from "report_manager";
 import { Report } from "report_util";
 import { useRefresh, useUser } from "hooks";
 import * as DynamicHelp from "react-dynamic-help";
+import { IncidentReportCard } from "./IncidentReportCard";
 
 export function IncidentReportTracker(): JSX.Element | null {
     const user = useUser();
@@ -192,16 +189,6 @@ export function IncidentReportTracker(): JSX.Element | null {
     const reports = report_manager.getEligibleReports();
     const hide_indicator = (reports.length === 0 && !user.is_moderator) || prefer_hidden;
 
-    function getReportType(report: Report): string {
-        if (report.report_type === "appeal") {
-            return "Ban Appeal";
-        }
-
-        const report_category = report_categories.filter((r) => r.type === report.report_type)[0];
-        const report_type_title = report_category?.title || "Other";
-        return report_type_title;
-    }
-
     const filtered_reports = reports.filter(
         (report) =>
             !preferences.get("hide-claimed-reports") ||
@@ -248,189 +235,13 @@ export function IncidentReportTracker(): JSX.Element | null {
                             </div>
                         )}
                         {filtered_reports.map((report: Report, index) => (
-                            <div className="incident" key={report.id}>
-                                <div className="report-header">
-                                    <div
-                                        className="report-id"
-                                        ref={index === 0 ? first_report_button : null}
-                                    >
-                                        <button
-                                            onClick={() => reportButtonClicked(report.id)}
-                                            className="small"
-                                        >
-                                            {"R" + report.id.toString().slice(-3)}
-                                        </button>
-                                    </div>
-                                    {getReportType(report)}
-                                    {((!report.moderator && user.is_moderator) || null) && (
-                                        <button className="primary xs" onClick={report.claim}>
-                                            {_("Claim")}
-                                        </button>
-                                    )}
-                                    {user.is_moderator && report.moderator && (
-                                        <Player user={report.moderator} icon />
-                                    )}
-                                </div>
-                                {(report.reporter_note || null) && (
-                                    <h4 className="notes">
-                                        {report.reporter_note_translation ? (
-                                            <>
-                                                {report.reporter_note_translation.source_text}
-                                                {(report.reporter_note_translation
-                                                    .target_language !==
-                                                    report.reporter_note_translation
-                                                        .source_language ||
-                                                    null) && (
-                                                    <>
-                                                        <div className="source-to-target-languages">
-                                                            {
-                                                                report.reporter_note_translation
-                                                                    .source_language
-                                                            }{" "}
-                                                            =&gt;{" "}
-                                                            {
-                                                                report.reporter_note_translation
-                                                                    .target_language
-                                                            }
-                                                        </div>
-                                                        <div className="translated">
-                                                            {
-                                                                report.reporter_note_translation
-                                                                    .target_text
-                                                            }
-                                                        </div>
-                                                    </>
-                                                )}
-                                            </>
-                                        ) : (
-                                            <AutoTranslate source={report.reporter_note} />
-                                        )}
-                                    </h4>
-                                )}
-
-                                {(report.system_note || null) && (
-                                    <h4 className="notes">{report.system_note}</h4>
-                                )}
-
-                                <div className="notes">
-                                    <i>{user.is_moderator ? report.moderator_note || "" : ""}</i>
-                                </div>
-
-                                <div className="spread">
-                                    {(report.url || null) && (
-                                        <a href={report.url} target="_blank">
-                                            {report.url}
-                                        </a>
-                                    )}
-
-                                    {(report.reported_user || null) && (
-                                        <span>
-                                            {_("Reported user")}:{" "}
-                                            <Player user={report.reported_user} icon />
-                                        </span>
-                                    )}
-                                    {(report.reported_game || null) && (
-                                        <span>
-                                            {_("Game")}:{" "}
-                                            <Link to={`/game/${report.reported_game}`}>
-                                                #{report.reported_game}
-                                            </Link>
-                                        </span>
-                                    )}
-                                    {(report.reported_review || null) && (
-                                        <span>
-                                            {_("Review")}:{" "}
-                                            <Link to={`/review/${report.reported_review}`}>
-                                                ##{report.reported_review}
-                                            </Link>
-                                        </span>
-                                    )}
-                                </div>
-
-                                {(report.report_type === "appeal" || null) && (
-                                    <h3>
-                                        <Link to={`/appeal/${report.reported_user.id}`}>
-                                            View Appeal
-                                        </Link>
-                                    </h3>
-                                )}
-
-                                {(report.reported_conversation || null) && (
-                                    <div
-                                        className="spread"
-                                        onClick={() => {
-                                            openReportedConversationModal(
-                                                report.reported_user?.id,
-                                                report.reported_conversation,
-                                            );
-                                        }}
-                                    >
-                                        <span id="conversation">
-                                            {_("View Reported Conversation")}
-                                        </span>
-                                    </div>
-                                )}
-
-                                <div className="spread">
-                                    {((report.moderator &&
-                                        user.is_moderator &&
-                                        user.id !== report.moderator.id) ||
-                                        null) && (
-                                        <button className="danger xs" onClick={report.steal}>
-                                            {_("Steal")}
-                                        </button>
-                                    )}
-                                    {((!report.moderator &&
-                                        report.reporting_user &&
-                                        user.id === report.reporting_user.id) ||
-                                        null) && (
-                                        <button className="reject xs" onClick={report.cancel}>
-                                            {_("Cancel")}
-                                        </button>
-                                    )}
-
-                                    {((report.moderator &&
-                                        user.is_moderator &&
-                                        user.id === report.moderator.id) ||
-                                        null) && (
-                                        <button className="success xs" onClick={report.good_report}>
-                                            {_("Good report")}
-                                        </button>
-                                    )}
-                                    {((report.moderator &&
-                                        user.is_moderator &&
-                                        user.id === report.moderator.id) ||
-                                        null) && (
-                                        <button className="info xs" onClick={report.set_note}>
-                                            {_("Note")}
-                                        </button>
-                                    )}
-                                    {((report.moderator &&
-                                        user.is_moderator &&
-                                        user.id === report.moderator.id) ||
-                                        null) && (
-                                        <button className="danger xs" onClick={report.unclaim}>
-                                            {_("Unclaim")}
-                                        </button>
-                                    )}
-                                    {((report.moderator &&
-                                        user.is_moderator &&
-                                        user.id === report.moderator.id) ||
-                                        null) && (
-                                        <button className="reject xs" onClick={report.bad_report}>
-                                            {_("Bad report")}
-                                        </button>
-                                    )}
-                                </div>
-                                <div className="spread">
-                                    {report.reporting_user ? (
-                                        <Player user={report.reporting_user} icon />
-                                    ) : (
-                                        <span>{_("System")}</span>
-                                    )}
-                                    <i>{moment(report.created).fromNow()}</i>
-                                </div>
-                            </div>
+                            <IncidentReportCard
+                                key={index}
+                                report={report}
+                                index={index}
+                                first_report_button={first_report_button}
+                                reportButtonClicked={reportButtonClicked}
+                            />
                         ))}
                     </div>
                 </div>

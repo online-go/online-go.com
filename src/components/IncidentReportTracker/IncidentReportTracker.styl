@@ -71,6 +71,18 @@
         padding-top: 0.7rem;
     }
 
+    // Attempt to make this line up with the player name to the right.
+    // Still doesn't work properly, not sure why
+    .reported-user {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .reported-user-label {
+        margin-right: 1rem;
+    }
+
     #conversation {
         font-weight: bold;
 
@@ -90,7 +102,12 @@
             margin: 0.5em 0 0 0;
         }
 
+        .note-container {
+            display: flex;
+            flex-direction: column;
+        }
         .notes {
+            flex-grow: 1;
             user-select: text;
 
             .source-to-target-languages {
@@ -101,6 +118,11 @@
             .translated {
                 font-style: italic;
             }
+        }
+
+        .edit-notes {
+            display: flex;
+            flex-direction: column;
         }
     }
 }
