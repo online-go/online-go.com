@@ -103,7 +103,11 @@ export function IncidentReportCard({
             </div>
             {isEditing ? (
                 <div className="edit-notes">
-                    <textarea value={reporterNote} onChange={handleNoteChange} />
+                    <textarea
+                        value={reporterNote}
+                        onChange={handleNoteChange}
+                        placeholder={_("Provide details here")}
+                    />
                     <div className="edit-buttons">
                         <button className="primary" onClick={handleNoteSubmit}>
                             {_("Update")}
@@ -112,33 +116,33 @@ export function IncidentReportCard({
                     </div>
                 </div>
             ) : (
-                report.reporter_note && (
-                    <div className="note-container">
-                        <h4 className="notes">
-                            {report.reporter_note_translation ? (
-                                <>
-                                    {report.reporter_note_translation.source_text}
-                                    {report.reporter_note_translation.target_language !==
-                                        report.reporter_note_translation.source_language && (
-                                        <>
-                                            <div className="source-to-target-languages">
-                                                {report.reporter_note_translation.source_language}{" "}
-                                                =&gt;
-                                                {report.reporter_note_translation.target_language}
-                                            </div>
-                                            <div className="translated">
-                                                {report.reporter_note_translation.target_text}
-                                            </div>
-                                        </>
-                                    )}
-                                </>
-                            ) : (
-                                <AutoTranslate source={report.reporter_note} />
-                            )}
-                        </h4>
-                        <i className="fa fa-pencil-square-o" onClick={() => setIsEditing(true)}></i>
-                    </div>
-                )
+                <div className="note-container">
+                    <h4 className="notes">
+                        {report.reporter_note_translation?.target_text ? (
+                            <>
+                                {report.reporter_note_translation.source_text}
+                                {report.reporter_note_translation.target_language !==
+                                    report.reporter_note_translation.source_language && (
+                                    <>
+                                        <div className="source-to-target-languages">
+                                            {report.reporter_note_translation.source_language} =&gt;
+                                            {report.reporter_note_translation.target_language}
+                                        </div>
+                                        <div className="translated">
+                                            {report.reporter_note_translation.target_text}
+                                        </div>
+                                    </>
+                                )}
+                            </>
+                        ) : (
+                            <AutoTranslate
+                                source={report.reporter_note}
+                                placeholder="Provide details here"
+                            />
+                        )}
+                    </h4>
+                    <i className="fa fa-pencil-square-o" onClick={() => setIsEditing(true)}></i>
+                </div>
             )}
 
             {report.system_note && <h4 className="notes">{report.system_note}</h4>}

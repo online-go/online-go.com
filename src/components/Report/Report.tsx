@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import * as data from "data";
 import * as ReactDOM from "react-dom/client";
 import * as player_cache from "player_cache";
 import { Card } from "material";
@@ -454,15 +455,23 @@ export function openReport(report: ReportProperties): void {
     const review_id = parseInt(
         document.location.pathname.match(/(review|demo\/view)\/([0-9]+)/)?.[2] || "0",
     );
-    container.className = "Report-container-container";
-    document.body.append(container);
-    const root = ReactDOM.createRoot(container);
 
     if (game_id && !("reported_game_id" in report)) {
         report["reported_game_id"] = game_id;
     }
     if (review_id && !("reported_review_id" in report)) {
         report["reported_review_id"] = review_id;
+    }
+
+    // Don't open the report creation dialog if they have already reported this game.
+    // Instead, open the incident report list to show them their current report, which they can edit.
+    // (arguably we might let them report the "other" player as well as the already reported one,
+    //  but that's a bit more complicated and not worth the effort for now.)
+    const already_reported = data.get("reported-games") as number[];
+    console.log("already_reported", already_reported, report.reported_game_id);
+    if (report.reported_game_id && already_reported.includes(report.reported_game_id)) {
+        data.set("ui-state.show_incident_list", true);
+        return;
     }
 
     function onClose() {
@@ -474,7 +483,9 @@ export function openReport(report: ReportProperties): void {
         }
     }
 
-    console.log("Preparing report: ", report);
+    container.className = "Report-container-container";
+    document.body.append(container);
+    const root = ReactDOM.createRoot(container);
 
     root.render(
         <React.StrictMode>

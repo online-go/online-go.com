@@ -51,6 +51,7 @@ let post_connect_notification_squelch = true;
 class ReportManager extends EventEmitter<Events> {
     active_incident_reports: { [id: string]: Report } = {};
     sorted_active_incident_reports: Report[] = [];
+    this_user_reported_games: number[] = [];
 
     constructor() {
         super();
@@ -114,10 +115,17 @@ class ReportManager extends EventEmitter<Events> {
             (user.moderator_powers && report.escalated)
         ) {
             delete this.active_incident_reports[report.id];
+            this.this_user_reported_games = this.this_user_reported_games.filter(
+                (game_id) => game_id !== report.reported_game,
+            );
         } else {
             this.active_incident_reports[report.id] = report;
+            if (report.reported_game && report.reporting_user?.id === user.id) {
+                this.this_user_reported_games.push(report.reported_game);
+            }
         }
-
+        data.set("reported-games", this.this_user_reported_games);
+        console.log("ReportManager: reported games", this.this_user_reported_games);
         this.emit("incident-report", report);
         this.update();
     }

@@ -268,6 +268,8 @@ export interface DataSchema
     "help-system-enabled": boolean;
     "rdh-system-state": string;
     "ignored-reports": { [report_id: number]: number /* id -> expiration */ };
+    "reported-games": number[];
+    "ui-state.show_incident_list": boolean;
 
     // A challenge that the user accepted, but we didn't tell the server yet, because
     // we are busy getting them logged in first.
