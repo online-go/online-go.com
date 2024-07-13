@@ -236,6 +236,7 @@ export function IncidentReportTracker(): JSX.Element | null {
                         )}
                         {filtered_reports.map((report: Report, index) => (
                             <IncidentReportCard
+                                key={index}
                                 report={report}
                                 index={index}
                                 first_report_button={first_report_button}

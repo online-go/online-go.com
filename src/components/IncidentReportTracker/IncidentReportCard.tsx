@@ -23,6 +23,7 @@
 import * as React from "react";
 
 import * as moment from "moment";
+import { post } from "requests";
 
 import { Link } from "react-router-dom";
 
@@ -30,6 +31,7 @@ import { _ } from "translate";
 
 import { Player } from "Player";
 
+import { errorAlerter } from "misc";
 import { AutoTranslate } from "AutoTranslate";
 import { Report } from "report_util";
 import { useUser } from "hooks";
@@ -60,6 +62,30 @@ export function IncidentReportCard({
     reportButtonClicked,
 }: IncidentReportCardProps): JSX.Element {
     const user = useUser();
+    const [reporterNote, setReporterNote] = React.useState(report.reporter_note || "");
+    const [isEditing, setIsEditing] = React.useState(false);
+
+    const handleNoteChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+        setReporterNote(event.target.value);
+    };
+
+    const handleNoteSubmit = async () => {
+        try {
+            post(`moderation/incident/${report.id}`, {
+                id: report.id,
+                action: "update_note",
+                reporter_note: reporterNote,
+            })
+                .then(() => {
+                    setIsEditing(false);
+                })
+                .catch(errorAlerter);
+        } catch (error) {
+            errorAlerter(error);
+        }
+    };
+
+    console.log(report.reporter_note_translation);
     return (
         <div className="incident" key={report.id}>
             <div className="report-header">
@@ -76,28 +102,44 @@ export function IncidentReportCard({
                 )}
                 {user.is_moderator && report.moderator && <Player user={report.moderator} icon />}
             </div>
-            {report.reporter_note && (
-                <h4 className="notes">
-                    {report.reporter_note_translation ? (
-                        <>
-                            {report.reporter_note_translation.source_text}
-                            {report.reporter_note_translation.target_language !==
-                                report.reporter_note_translation.source_language && (
+            {isEditing ? (
+                <div className="edit-notes">
+                    <textarea value={reporterNote} onChange={handleNoteChange} />
+                    <div className="edit-buttons">
+                        <button className="primary" onClick={handleNoteSubmit}>
+                            {_("Update")}
+                        </button>
+                        <button onClick={() => setIsEditing(false)}>{_("Cancel")}</button>
+                    </div>
+                </div>
+            ) : (
+                report.reporter_note && (
+                    <div className="note-container">
+                        <h4 className="notes">
+                            {report.reporter_note_translation ? (
                                 <>
-                                    <div className="source-to-target-languages">
-                                        {report.reporter_note_translation.source_language} =&gt;{" "}
-                                        {report.reporter_note_translation.target_language}
-                                    </div>
-                                    <div className="translated">
-                                        {report.reporter_note_translation.target_text}
-                                    </div>
+                                    {report.reporter_note_translation.source_text}
+                                    {report.reporter_note_translation.target_language !==
+                                        report.reporter_note_translation.source_language && (
+                                        <>
+                                            <div className="source-to-target-languages">
+                                                {report.reporter_note_translation.source_language}{" "}
+                                                =&gt;
+                                                {report.reporter_note_translation.target_language}
+                                            </div>
+                                            <div className="translated">
+                                                {report.reporter_note_translation.target_text}
+                                            </div>
+                                        </>
+                                    )}
                                 </>
+                            ) : (
+                                <AutoTranslate source={report.reporter_note} />
                             )}
-                        </>
-                    ) : (
-                        <AutoTranslate source={report.reporter_note} />
-                    )}
-                </h4>
+                        </h4>
+                        <i className="fa fa-pencil-square-o" onClick={() => setIsEditing(true)}></i>
+                    </div>
+                )
             )}
 
             {report.system_note && <h4 className="notes">{report.system_note}</h4>}
@@ -114,9 +156,10 @@ export function IncidentReportCard({
                 )}
 
                 {report.reported_user && (
-                    <span>
-                        {_("Reported user")}: <Player user={report.reported_user} icon />
-                    </span>
+                    <div className="reported-user">
+                        <span className="reported-user-label">{_("Reported user")}: </span>
+                        <Player user={report.reported_user} icon />
+                    </div>
                 )}
                 {report.reported_game && (
                     <span>
