@@ -85,7 +85,6 @@ export function IncidentReportCard({
         }
     };
 
-    console.log(report.reporter_note_translation);
     return (
         <div className="incident" key={report.id}>
             <div className="report-header">
