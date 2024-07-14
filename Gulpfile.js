@@ -98,7 +98,8 @@ function build_styl(done) {
                 }),
                 inline_svg(),
                 //cssnano(),
-            ]),            sourcemaps.write("."),
+            ]),
+            sourcemaps.write("."),
             gulp.dest("./dist"),
         ],
         (err) => {
