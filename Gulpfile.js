@@ -78,7 +78,7 @@ function watch_eslint(done) {
 function eslint() {
     return gulp
         .src(ts_sources)
-        .pipe(gulpEslint({ overrideConfigFile: ".eslintrc.js" }))
+        .pipe(gulpEslint({ overrideConfigFile: ".eslint.config.js" }))
         .pipe(gulpEslint.format())
         .pipe(gulpEslint.failAfterError());
 }
@@ -98,8 +98,7 @@ function build_styl(done) {
                 }),
                 inline_svg(),
                 //cssnano(),
-            ]),
-            sourcemaps.write("."),
+            ]),            sourcemaps.write("."),
             gulp.dest("./dist"),
         ],
         (err) => {
