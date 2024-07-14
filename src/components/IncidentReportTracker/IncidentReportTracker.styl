@@ -56,6 +56,11 @@
             display: flex;
             margin-top: auto;
             padding-right: 1 em;
+            // this is just for appearance, it no longer has a function
+            button {
+                cursor: default;
+                pointer-events: none;
+            }
         }
         .unclaimed {
             font-style: italic;
@@ -69,18 +74,6 @@
         display: flex;
         justify-content: space-between;
         padding-top: 0.7rem;
-    }
-
-    // Attempt to make this line up with the player name to the right.
-    // Still doesn't work properly, not sure why
-    .reported-user {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-    }
-
-    .reported-user-label {
-        margin-right: 1rem;
     }
 
     #conversation {
@@ -102,12 +95,7 @@
             margin: 0.5em 0 0 0;
         }
 
-        .note-container {
-            display: flex;
-            flex-direction: column;
-        }
         .notes {
-            flex-grow: 1;
             user-select: text;
 
             .source-to-target-languages {
@@ -118,11 +106,6 @@
             .translated {
                 font-style: italic;
             }
-        }
-
-        .edit-notes {
-            display: flex;
-            flex-direction: column;
         }
     }
 }

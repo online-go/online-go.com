@@ -50,17 +50,9 @@ function getReportType(report: Report): string {
 
 interface IncidentReportCardProps {
     report: Report;
-    index: number;
-    first_report_button: React.RefObject<HTMLDivElement>;
-    reportButtonClicked: (id: number) => void;
 }
 
-export function IncidentReportCard({
-    report,
-    index,
-    first_report_button,
-    reportButtonClicked,
-}: IncidentReportCardProps): JSX.Element {
+export function IncidentReportCard({ report }: IncidentReportCardProps): JSX.Element {
     const user = useUser();
     const [reporterNote, setReporterNote] = React.useState(report.reporter_note || "");
     const [isEditing, setIsEditing] = React.useState(false);
@@ -88,8 +80,8 @@ export function IncidentReportCard({
     return (
         <div className="incident" key={report.id}>
             <div className="report-header">
-                <div className="report-id" ref={index === 0 ? first_report_button : null}>
-                    <button onClick={() => reportButtonClicked(report.id)} className="small">
+                <div className="report-id">
+                    <button className="small inactive">
                         {"R" + report.id.toString().slice(-3)}
                     </button>
                 </div>

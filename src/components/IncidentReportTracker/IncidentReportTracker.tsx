@@ -48,8 +48,6 @@ export function IncidentReportTracker(): JSX.Element | null {
     const { ref: hidden_incident_report_indicator } = registerTargetItem(
         "hidden-incident-report-indicator",
     );
-    const { ref: first_report_button, used: reportButtonUsed } =
-        registerTargetItem("first-report-button");
 
     function toggleList() {
         if (user.is_moderator || user.moderator_powers) {
@@ -181,11 +179,6 @@ export function IncidentReportTracker(): JSX.Element | null {
         };
     }, []);
 
-    const reportButtonClicked = (report_id: number) => {
-        reportButtonUsed();
-        navigate(`/reports-center/all/${report_id}`);
-    };
-
     if (!user) {
         // Can happen when deleting your account, apparently.
         return null;
@@ -240,13 +233,7 @@ export function IncidentReportTracker(): JSX.Element | null {
                             </div>
                         )}
                         {filtered_reports.map((report: Report, index) => (
-                            <IncidentReportCard
-                                key={index}
-                                report={report}
-                                index={index}
-                                first_report_button={first_report_button}
-                                reportButtonClicked={reportButtonClicked}
-                            />
+                            <IncidentReportCard key={index} report={report} />
                         ))}
                     </div>
                 </div>
