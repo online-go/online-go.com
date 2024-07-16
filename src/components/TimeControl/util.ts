@@ -650,6 +650,27 @@ export const time_options: TimeOptionsMap = {
             total_time: gen(45, 300),
         },
     },
+    rapid: {
+        fischer: {
+            initial_time: gen(5, 300),
+            time_increment: gen(1, 10),
+            max_time: gen(5, 300),
+        },
+        simple: {
+            per_move: gen(3, 9),
+        },
+        canadian: {
+            main_time: [zero].concat(gen(0, 300)),
+            period_time: gen(5, 30),
+        },
+        byoyomi: {
+            main_time: [zero].concat(gen(0, 300)),
+            period_time: gen(3, 30),
+        },
+        absolute: {
+            total_time: gen(45, 300),
+        },
+    },
     live: {
         fischer: {
             initial_time: gen(30, 3600 * 4),
@@ -698,6 +719,41 @@ type TimeControlDefaults = { [K in TimeControlSystem]: Omit<Reify<K>, "speed" | 
 type DefaultTimeSettingsMap = { [K in TimeControlSpeed]: TimeControlDefaults };
 export const default_time_settings: DefaultTimeSettingsMap = {
     blitz: {
+        fischer: {
+            initial_time: 30,
+            time_increment: 10,
+            max_time: 60,
+            pause_on_weekends: false,
+        },
+        byoyomi: {
+            main_time: 30,
+            period_time: 5,
+            periods: 5,
+            periods_min: 1,
+            periods_max: 300,
+            pause_on_weekends: false,
+        },
+        canadian: {
+            main_time: 30,
+            period_time: 30,
+            stones_per_period: 5,
+            stones_per_period_min: 1,
+            stones_per_period_max: 50,
+            pause_on_weekends: false,
+        },
+        simple: {
+            per_move: 5,
+            pause_on_weekends: false,
+        },
+        absolute: {
+            total_time: 300,
+            pause_on_weekends: false,
+        },
+        none: {
+            pause_on_weekends: false,
+        },
+    },
+    rapid: {
         fischer: {
             initial_time: 30,
             time_increment: 10,

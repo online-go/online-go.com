@@ -887,9 +887,11 @@ export class Play extends React.Component<{}, PlayState> {
                                     </div>
                                 </button>
                             </div>
-                            <button className="primary automatch-play" onClick={this.findMatch}>
-                                {_("Play")}
-                            </button>
+                            <div className="btn-group">
+                                <button className="primary automatch-play" onClick={this.findMatch}>
+                                    {_("Play")}
+                                </button>
+                            </div>
                         </div>
                         <hr className="solid" />
                         <div className="automatch-special-game">
