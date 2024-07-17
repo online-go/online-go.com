@@ -1,11 +1,5 @@
 module.exports = {
-    ignorePatterns: [
-        'node_modules',
-        'dist',
-        'i18n',
-        'typings_manual',
-        '.github',
-      ],
+    ignorePatterns: ["node_modules", "dist", "i18n", "typings_manual", ".github"],
     env: {
         browser: true,
         es6: true,
