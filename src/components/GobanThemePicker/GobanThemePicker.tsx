@@ -613,7 +613,11 @@ function ThemeSample({
         }
 
         (div.current as any)?.appendChild(svg);
-    }, [div.current]);
+
+        return () => {
+            (div.current as any)?.removeChild(svg);
+        };
+    }, [div, div.current]);
 
     return <div ref={div} />;
 }
