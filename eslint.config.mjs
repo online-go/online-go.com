@@ -1,5 +1,5 @@
 import jsdoc from "eslint-plugin-jsdoc";
-import header from "eslint-plugin-header";
+import header from "@tony.ganchev/eslint-plugin-header";
 import prettier from "eslint-plugin-prettier";
 import reactHooks from "eslint-plugin-react-hooks";
 import typescriptEslint from "@typescript-eslint/eslint-plugin";

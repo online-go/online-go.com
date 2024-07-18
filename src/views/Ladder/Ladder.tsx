@@ -236,7 +236,7 @@ class _Ladder extends React.PureComponent<LadderProperties, LadderState> {
         );
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // @typescript-eslint/no-unused-vars
     renderRow = ({
         index,
         isScrolling,
