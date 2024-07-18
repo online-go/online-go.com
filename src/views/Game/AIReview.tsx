@@ -1296,11 +1296,11 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             show_full_ai_review_button = null;
         }
 
-        const [win_rate, score, next_move_delta_win_rate, next_move_pretty_coords] =
+        const [win_rate, score, _next_move_delta_win_rate, _next_move_pretty_coords] =
             this.updateHighlightsMarksAndHeatmaps();
 
         const win_rate_p = win_rate * 100.0;
-        const next_move_delta_p = (next_move_delta_win_rate ?? 0) * 100.0;
+        //const next_move_delta_p = (next_move_delta_win_rate ?? 0) * 100.0;
 
         const ai_review_chart_entries: Array<AIReviewEntry> =
             this.ai_review.win_rates?.map((x, idx) => {
@@ -1462,7 +1462,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                 <div className="ai-review-win-rate-container">{children}</div>
                             ),
                             MenuList: (props) => {
-                                const goban = this.context;
+                                //const goban = this.context;
 
                                 return (
                                     <components.MenuList {...props}>
@@ -1476,9 +1476,8 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                                 >
                                                     <i className="fa fa-plus" /> KataGo
                                                 </button>
-                                                {((goban?.width === 19 &&
-                                                    goban.height === 19 &&
-                                                    false) ||
+                                                {/*
+                                                ((goban?.width === 19 && goban.height === 19) ||
                                                     null) && (
                                                     <button
                                                         onClick={() =>
@@ -1490,7 +1489,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                                     >
                                                         <i className="fa fa-plus" /> Leela Zero
                                                     </button>
-                                                )}
+                                                )*/}
                                             </div>
                                         )}
                                     </components.MenuList>
@@ -1620,7 +1619,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                     </div>
                 )}
 
-                {null && next_move_pretty_coords && next_move_delta_win_rate !== null && (
+                {/*null && next_move_pretty_coords && next_move_delta_win_rate !== null && (
                     <div className="next-move-delta-container">
                         <span
                             className={
@@ -1653,7 +1652,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                             {Math.abs(next_move_delta_p).toFixed(1)}pp
                         </span>
                     </div>
-                )}
+                )*/}
                 {data.get("user").is_moderator && this.ai_review?.engine.includes("katago") && (
                     <div>
                         <AiSummaryTable
