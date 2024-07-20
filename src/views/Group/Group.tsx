@@ -95,7 +95,7 @@ interface GroupState {
     is_admin: boolean;
     invitation_request_pending: boolean;
     news: GroupNews[];
-    members: PlayerCacheEntry[];
+    members: Array<{ user: PlayerCacheEntry }>;
     group_id: number;
     editing: boolean;
     show_new_news_post: boolean;
