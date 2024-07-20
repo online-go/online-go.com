@@ -48,8 +48,8 @@ type GroupProperties = RouteComponentProps<{
 // API: group/%id%/
 interface GroupInfo {
     id: number;
-    admins: any[];
-    ladder_ids: any[];
+    admins: PlayerCacheEntry[];
+    ladder_ids: number[];
     name: string;
     has_banner: boolean;
     website: string;
@@ -58,7 +58,7 @@ interface GroupInfo {
     admin_only_tournaments: boolean;
     require_invitation: boolean;
     hide_details: boolean;
-    invitation_requests: any[];
+    invitation_requests: InvitationRequest[];
     banner?: string;
     icon?: string;
     is_member?: boolean;
@@ -84,13 +84,18 @@ interface GroupNews {
     content: string;
 }
 
+interface InvitationRequest {
+    id: number;
+    user: PlayerCacheEntry;
+}
+
 interface GroupState {
     group: GroupInfo;
     group_loaded: boolean;
     is_admin: boolean;
     invitation_request_pending: boolean;
-    news: any[];
-    members: any[];
+    news: GroupNews[];
+    members: Array<{ user: PlayerCacheEntry }>;
     group_id: number;
     editing: boolean;
     show_new_news_post: boolean;
@@ -1067,7 +1072,7 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
 
                         {(this.state.news.length > 0 || null) && (
                             <Card style={{ minHeight: "12rem" }}>
-                                <PaginatedTable
+                                <PaginatedTable<GroupNews>
                                     className="news"
                                     name="news"
                                     ref={this.news_ref}
@@ -1283,7 +1288,10 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
                                 </div>
                             )}
 
-                            <PaginatedTable
+                            <PaginatedTable<
+                                { user: PlayerCacheEntry },
+                                PlayerCacheEntry | undefined
+                            >
                                 className="members"
                                 name="members"
                                 uiPushProps={{
@@ -1296,7 +1304,7 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
                                     {
                                         header: _("Members"),
                                         className: "",
-                                        render: (X) => <Player icon user={X as any} online />,
+                                        render: (X) => <Player icon user={X} online />,
                                     },
                                 ]}
                             />
