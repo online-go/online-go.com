@@ -48,10 +48,11 @@ export class GameLogModal extends Modal<Events, GameLogModalProperties, { log: A
         this.state = {
             log: [],
         };
+    }
 
-        const config = this.props.config;
-        const game_id = config.game_id;
-        socket.send(`game/log`, { game_id }, (log) => this.setLog(log));
+    componentDidMount(): void {
+        super.componentDidMount();
+        socket.send(`game/log`, { game_id: this.props.config.game_id }, (log) => this.setLog(log));
     }
 
     setLog(log: Array<LogEntry>) {
@@ -82,22 +83,32 @@ export class GameLogModal extends Modal<Events, GameLogModalProperties, { log: A
                             </tr>
                         </thead>
                         <tbody>
-                            {this.state.log.map((entry, idx) => (
-                                <tr key={entry.timestamp + ":" + idx} className="entry">
-                                    <td className="timestamp">
-                                        {moment(entry.timestamp).format("L LTS")}
-                                    </td>
-                                    <td className="event">{entry.event}</td>
-                                    <td className="data">
-                                        <LogData
-                                            config={this.props.config}
-                                            markCoords={this.props.markCoords}
-                                            event={entry.event}
-                                            data={entry.data}
-                                        />
-                                    </td>
-                                </tr>
-                            ))}
+                            {this.state.log
+                                .filter(
+                                    // filter out weird stone_removal_stones_set events with no stones
+                                    (entry) =>
+                                        !(
+                                            entry.event === "stone_removal_stones_set" &&
+                                            entry.data.stones === ""
+                                        ),
+                                )
+                                .map((entry, idx) => (
+                                    <tr key={entry.timestamp + ":" + idx} className="entry">
+                                        <td className="timestamp">
+                                            {moment(entry.timestamp).format("L LTS")}
+                                        </td>
+                                        <td className="event">{entry.event}</td>
+                                        <td className="data">
+                                            <LogData
+                                                config={this.props.config}
+                                                markCoords={this.props.markCoords}
+                                                event={entry.event}
+                                                data={entry.data}
+                                                key={idx}
+                                            />
+                                        </td>
+                                    </tr>
+                                ))}
                         </tbody>
                     </table>
                 </div>
@@ -115,6 +126,8 @@ const HIDDEN_LOG_FIELDS = [
     // used with "stones"
     "current_removal_string",
     "move_number",
+    "needs_sealing",
+    "color", // AFAICT this is just the color of the player
     // isn't used
     "strict_seki_mode",
 ];
@@ -130,11 +143,15 @@ export function LogData({
     data: any;
 }): JSX.Element | null {
     const [markedConfig, setMarkedConfig] = React.useState<GobanEngineConfig | null>(null);
+
     React.useEffect(() => {
+        // Set up the marks config for the thumbnail
         if (event === "game_created") {
+            // don't set up a thumbnail for game created
             return;
         }
-        if (!data?.hasOwnProperty("stones")) {
+        if (!data?.hasOwnProperty("stones") || data.stones === "") {
+            // don't set up a thumbnail for events that don't have stones
             return;
         }
 
@@ -146,7 +163,7 @@ export function LogData({
                 marks = { triangle: data.stones };
             }
         } else {
-            marks = { cross: data.stones };
+            marks = { cross: data.stones }; // TBD: What is this case?
         }
 
         setMarkedConfig({
@@ -158,7 +175,10 @@ export function LogData({
 
     const ret: Array<JSX.Element> = [];
 
-    if (event === "game_created") {
+    if (event === "game_created" || (event === "stone_removal_stones_set" && data.stones === "")) {
+        // game_created has the whole board config, don't show log data for that
+        // also no point in showing the log of a stone_removal_stones_set event with no stones
+        // (goodness knows why we have those)
         return null;
     }
 
@@ -177,7 +197,7 @@ export function LogData({
                             Winner: <Player user={data[k]} />
                         </span>,
                     );
-                } else if (k === "stones") {
+                } else if (k === "stones" && data[k].stones !== "") {
                     // we'll re-render when it's set
                     if (markedConfig) {
                         ret.push(
@@ -189,6 +209,12 @@ export function LogData({
                             />,
                         );
                     }
+                } else if (k === "removed") {
+                    ret.push(
+                        <span key={k} className="field">
+                            {data[k] ? "stones marked dead" : "stones marked alive"}
+                        </span>,
+                    );
                 } else if (HIDDEN_LOG_FIELDS.includes(k)) {
                     // skip
                 } else {
