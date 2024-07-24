@@ -1,9 +1,10 @@
 {
     "ignorePaths": [
         "src/views/GoTV/twitchLanguageCodes.ts"
-      ],
+    ],
     "words": [
         "abcdefghjklmnopqrstuvwxyz",
+        "AFAICT",
         "AILR",
         "aireview",
         "annulable",
