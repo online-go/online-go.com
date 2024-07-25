@@ -944,7 +944,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 className="left-pane pane form-horizontal"
                 role="form"
             >
-                {(mode === "computer" || null) && (
+                {mode === "computer" && (
                     <div className="form-group">
                         <label className="control-label" htmlFor="engine">
                             {pgettext("Computer opponent", "AI Player")}
@@ -975,7 +975,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                         </div>
                     </div>
                 )}
-                {(mode !== "computer" || null) && (
+                {mode !== "computer" && (
                     <div className="form-group">
                         <label className="control-label" htmlFor="challenge_game_name">
                             {_("Game Name")}
@@ -1011,7 +1011,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                         </div>
                     </div>
                 </div>
-                {!(this.props.playerId || null) && (mode === "open" || null) && (
+                {!(this.props.playerId || null) && mode === "open" && (
                     <div className="form-group">
                         <label className="control-label" htmlFor="challenge-invite-only">
                             {pgettext(
@@ -1020,20 +1020,18 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                             )}
                         </label>
                         <div className="controls">
-                            {(mode !== "demo" || null) && (
-                                <div className="checkbox">
-                                    <input
-                                        type="checkbox"
-                                        id="challenge-invite-only"
-                                        checked={this.state.challenge.invite_only}
-                                        onChange={this.update_invite_only}
-                                    />
-                                </div>
-                            )}
+                            <div className="checkbox">
+                                <input
+                                    type="checkbox"
+                                    id="challenge-invite-only"
+                                    checked={this.state.challenge.invite_only}
+                                    onChange={this.update_invite_only}
+                                />
+                            </div>
                         </div>
                     </div>
                 )}
-                {(mode === "open" || null) && (
+                {mode === "open" && (
                     <div className="form-group">
                         <label className="control-label" htmlFor="rengo-option">
                             {_("Rengo")}
@@ -1055,7 +1053,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                         </div>
                     </div>
                 )}
-                {(mode === "open" || null) && (
+                {mode === "open" && (
                     <>
                         <div
                             className={
@@ -1085,7 +1083,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                         </div>
                     </>
                 )}
-                {(mode === "open" || null) && (
+                {mode === "open" && (
                     <>
                         <div
                             className={
@@ -1207,7 +1205,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                         </div>
                     </div>
                 </div>
-                {(game.komi_auto === "custom" || null) && (
+                {game.komi_auto === "custom" && (
                     <div className="form-group">
                         <label className="control-label"></label>
                         <div className="controls">
@@ -1239,9 +1237,9 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 role="form"
             >
                 {!this.state.forking_game && mode !== "demo" && this.rankedSettings()}
-                {(mode === "demo" || null) && this.rulesSettings()}
+                {mode === "demo" && this.rulesSettings()}
                 {!this.state.forking_game && this.boardSizeSettings()}
-                {(mode === "demo" || null) && this.komiSettings()}
+                {mode === "demo" && this.komiSettings()}
             </div>
         );
     };
@@ -1298,7 +1296,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                         </div>
                     </div>
                 </div>
-                {(conf.selected_board_size === "custom" || null) && (
+                {conf.selected_board_size === "custom" && (
                     <div className="form-group">
                         <label
                             className="control-label"
@@ -1398,7 +1396,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                             )}
                         </div>
                     </div>
-                    {(!this.props.playersList || null) && (
+                    {!this.props.playersList && (
                         <div className="form-group">
                             <label className="control-label" htmlFor="demo-black-name">
                                 {_("Rank")}
@@ -1450,7 +1448,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                             )}
                         </div>
                     </div>
-                    {(!this.props.playersList || null) && (
+                    {!this.props.playersList && (
                         <div className="form-group">
                             <label className="control-label" htmlFor="demo-white-name">
                                 {_("Rank")}
@@ -1492,7 +1490,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 style={{ marginTop: "1em" }}
             >
                 <div className="left-pane pane form-horizontal">
-                    {(mode !== "computer" || null) && this.rulesSettings()}
+                    {mode !== "computer" && this.rulesSettings()}
                     <TimeControlPicker
                         timeControl={this.state.time_control}
                         onChange={(tc) => {
@@ -1550,7 +1548,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                             </div>
                         </div>
 
-                        {(mode === "open" || null) && (
+                        {mode === "open" && (
                             <div>
                                 <div className="form-group" id="challenge-restrict-rank-group">
                                     <label
@@ -1570,7 +1568,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                                         </div>
                                     </div>
                                 </div>
-                                {(conf.restrict_rank || null) && (
+                                {conf.restrict_rank && (
                                     <div>
                                         <div className="form-group" id="challenge-min-rank-group">
                                             <label
@@ -1655,7 +1653,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                                 preferred_settings_count: this.state.preferred_settings.length,
                             })}
                         </strong>
-                        {(this.state.view_mode === "portrait" || null) && (
+                        {this.state.view_mode === "portrait" && (
                             <i className="fa fa-caret-down" style={{ marginLeft: "0.5em" }} />
                         )}
                     </span>
@@ -1664,8 +1662,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                     </button>
                 </div>
                 {(this.state.view_mode !== "portrait" ||
-                    !this.state.hide_preferred_settings_on_portrait ||
-                    null) && (
+                    !this.state.hide_preferred_settings_on_portrait) && (
                     <div style={{ padding: "0.5em", marginTop: "0.1em" }}>
                         {this.state.preferred_settings.map(
                             (setting: ChallengeDetails, index: number) => {
@@ -1719,27 +1716,27 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             <div className="Modal ChallengeModal">
                 <div className="header">
                     <h2>
-                        {(mode === "open" || null) && <span>{_("Custom Game")}</span>}
-                        {(mode === "demo" || null) && <span>{_("Demo Board")}</span>}
-                        {(mode === "player" || null) && (
+                        {mode === "open" && <span>{_("Custom Game")}</span>}
+                        {mode === "demo" && <span>{_("Demo Board")}</span>}
+                        {mode === "player" && (
                             <span className="header-with-icon">
                                 <PlayerIcon id={player_id} size={32} />
                                 &nbsp; {player_username}
                             </span>
                         )}
-                        {(mode === "computer" || null) && <span>{_("Computer")}</span>}
+                        {mode === "computer" && <span>{_("Computer")}</span>}
                     </h2>
                 </div>
                 <div className="body">
                     <div className="challenge  form-inline">
                         <div className="challenge-pane-container">
                             {this.basicSettings()}
-                            {(!this.state.initial_state || null) && this.additionalSettings()}
+                            {!this.state.initial_state && this.additionalSettings()}
                         </div>
 
                         <hr />
-                        {(mode !== "demo" || null) && this.advancedSettings()}
-                        {(mode === "demo" || null) && this.advancedDemoSettings()}
+                        {mode !== "demo" && this.advancedSettings()}
+                        {mode === "demo" && this.advancedDemoSettings()}
                     </div>
                 </div>
                 {/* {speed_warning && (
@@ -1752,22 +1749,22 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 )} */}
                 <div className="buttons">
                     <button onClick={this.close}>{_("Close")}</button>
-                    {(mode === "demo" || null) && (
+                    {mode === "demo" && (
                         <button onClick={this.createDemo} className="primary">
                             {_("Create Demo")}
                         </button>
                     )}
-                    {(mode === "computer" || null) && (
+                    {mode === "computer" && (
                         <button onClick={this.createChallenge} className="primary">
                             {_("Play")}
                         </button>
                     )}
-                    {(mode === "player" || null) && (
+                    {mode === "player" && (
                         <button onClick={this.createChallenge} className="primary">
                             {_("Send Challenge")}
                         </button>
                     )}
-                    {(mode === "open" || null) && (
+                    {mode === "open" && (
                         <button
                             onClick={this.createChallenge}
                             className="primary"
@@ -1777,7 +1774,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                         </button>
                     )}
                 </div>
-                {(mode !== "demo" || null) && this.preferredGameSettings()}
+                {mode !== "demo" && this.preferredGameSettings()}
             </div>
         );
     }
