@@ -24,9 +24,12 @@ import { chat_markup } from "Chat";
 
 interface ModLogProps {
     user_id: number;
+    warnings_only?: boolean;
 }
 
 export function ModLog(props: ModLogProps): JSX.Element {
+    const groomFunction = (data: any[]) => data.filter((X) => !X.action.includes("ack"));
+
     return (
         <PaginatedTable
             className="moderator-log"
@@ -37,6 +40,7 @@ export function ModLog(props: ModLogProps): JSX.Element {
                 event: `modlog-${props.user_id}-updated`,
                 channel: "moderators",
             }}
+            {...(props.warnings_only && { groom: groomFunction })}
             columns={[
                 {
                     header: "",

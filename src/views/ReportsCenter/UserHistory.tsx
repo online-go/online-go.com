@@ -41,7 +41,9 @@ export function UserHistory({
             {user.is_moderator && (
                 <ModTools user_id={target_user.id} show_mod_log={true} collapse_same_users={true} />
             )}
-            {!user.is_moderator && !!user.moderator_powers && <ModLog user_id={target_user.id} />}
+            {!user.is_moderator && !!user.moderator_powers && (
+                <ModLog user_id={target_user.id} warnings_only={true} />
+            )}
         </>
     );
 }
