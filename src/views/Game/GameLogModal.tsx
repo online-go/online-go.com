@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import * as moment from "moment";
-import { _ } from "translate";
+import { _, pgettext } from "translate";
 import { openModal, Modal } from "Modal";
 import { Player } from "Player";
 import { socket } from "sockets";
@@ -123,11 +123,9 @@ export class GameLogModal extends Modal<Events, GameLogModalProperties, { log: A
 // Fields that are only used to enhance the display of other fields,
 // or aren't used at all.
 const HIDDEN_LOG_FIELDS = [
-    // used with "stones"
-    "current_removal_string",
-    "move_number",
-    "needs_sealing",
-    "color", // AFAICT this is just the color of the player
+    "current_removal_string", // used with "stones"
+    "color", // used with "player_id"
+    "move_number", // irrelevant
     // isn't used
     "strict_seki_mode",
 ];
@@ -189,6 +187,7 @@ export function LogData({
                     ret.push(
                         <span key={k} className="field">
                             <Player user={data[k]} />
+                            {data.color ? (data.color === "black" ? " (black)" : " (white)") : ""}
                         </span>,
                     );
                 } else if (k === "winner") {
@@ -213,6 +212,16 @@ export function LogData({
                     ret.push(
                         <span key={k} className="field">
                             {data[k] ? "stones marked dead" : "stones marked alive"}
+                        </span>,
+                    );
+                } else if (k === "needs_sealing") {
+                    // this only comes with autoscore updates
+                    ret.push(
+                        <span key={k} className="field">
+                            {pgettext(
+                                "This is telling a moderator that they are looking at an update from the auto scorer",
+                                "auto-scorer update",
+                            )}
                         </span>,
                     );
                 } else if (HIDDEN_LOG_FIELDS.includes(k)) {
