@@ -44,6 +44,8 @@ export function GamePreferences(): React.ReactElement {
         getSubmitMode("correspondence"),
     );
     const [chat_mode, _setChatMode] = usePreference("chat-mode");
+    const [autofocus_submit_button, setAutoFocusSubmitButton] =
+        usePreference("autofocus-submit-button");
 
     const [auto_advance, setAutoAdvance] = usePreference("auto-advance-after-submit");
     const [always_disable_analysis, setAlwaysDisableAnalysis] =
@@ -172,6 +174,10 @@ export function GamePreferences(): React.ReactElement {
                     ]}
                     onChange={setCorrSubmitMode}
                 />
+            </PreferenceLine>
+
+            <PreferenceLine title={_("Autofocus submit button")}>
+                <Toggle checked={autofocus_submit_button} onChange={setAutoFocusSubmitButton} />
             </PreferenceLine>
 
             <PreferenceLine title={_("Auto-advance to next game after making a move")}>

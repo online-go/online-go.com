@@ -190,8 +190,14 @@ export function PlayButtons({ show_cancel = true }: PlayButtonsProps): React.Rea
                     )}
                 {show_submit && engine.undo_requested !== engine.getMoveNumber() && (
                     <button
-                        className="sm primary bold submit-button"
+                        className={
+                            "sm primary bold submit-button " +
+                            (preferences.get("autofocus-submit-button")
+                                ? "autofocus-submit-button"
+                                : "")
+                        }
                         id="game-submit-move"
+                        autoFocus={preferences.get("autofocus-submit-button")}
                         disabled={submitting_move || !goban.submit_move}
                         onClick={() => {
                             if (goban.submit_move) {
