@@ -67,6 +67,7 @@ interface Events {}
 
 interface ChallengeModalProperties {
     mode: ChallengeModes;
+    game_record_mode?: boolean /* when true, if mode === "demo", we will create a game instance instead of a review instance */;
     playerId?: number;
     initialState?: any;
     config?: ChallengeModalConfig;
@@ -74,6 +75,7 @@ interface ChallengeModalProperties {
     playersList?: Array<{ name: string; rank: number }>;
     tournamentRecordId?: number;
     tournamentRecordRoundId?: number;
+    libraryCollectionId?: number;
     created?: (c: CreatedChallengeInfo) => void;
 }
 
@@ -457,41 +459,54 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             demo: next.demo,
         });
 
-        const demo: any = {};
+        const settings: any = {};
         for (const k in next.demo) {
-            demo[k] = next.demo[k];
+            settings[k] = next.demo[k];
         }
 
         // Ignore komi value if komi is automatic.
-        if (demo.komi_auto !== "custom") {
-            delete demo.komi;
+        if (settings.komi_auto !== "custom") {
+            delete settings.komi;
         }
 
-        demo.black_pro = demo.black_ranking > 1000 ? 1 : 0;
-        if (demo.black_pro) {
-            demo.black_ranking -= 1000;
+        settings.black_pro = settings.black_ranking > 1000 ? 1 : 0;
+        if (settings.black_pro) {
+            settings.black_ranking -= 1000;
         }
-        demo.white_pro = demo.white_ranking > 1000 ? 1 : 0;
-        if (demo.white_pro) {
-            demo.white_ranking -= 1000;
-        }
-
-        demo.tournament_record_id = this.props.tournamentRecordId;
-        demo.tournament_record_round_id = this.props.tournamentRecordRoundId;
-
-        if (!demo.name) {
-            demo.name = _("Demo Board");
+        settings.white_pro = settings.white_ranking > 1000 ? 1 : 0;
+        if (settings.white_pro) {
+            settings.white_ranking -= 1000;
         }
 
-        console.log("Sending", demo);
+        settings.tournament_record_id = this.props.tournamentRecordId;
+        settings.tournament_record_round_id = this.props.tournamentRecordRoundId;
+
+        if (!settings.name) {
+            settings.name = this.props.game_record_mode ? _("Game Record") : _("Demo Board");
+        }
+
+        console.log("Sending", settings);
         this.saveSettings();
         this.close();
-        post("demos", demo)
-            .then((res) => {
-                console.log("Demo create response: ", res);
-                browserHistory.push(`/demo/${res.id}`);
-            })
-            .catch(errorAlerter);
+
+        if (this.props.game_record_mode) {
+            settings.library_collection_id = this.props.libraryCollectionId;
+
+            post("game_records/", settings)
+                .then((res) => {
+                    console.log("Game record create response: ", res);
+                    browserHistory.push(`/game/${res.id}`);
+                })
+                .catch(errorAlerter);
+        } else {
+            // Review board demo
+            post("demos", settings)
+                .then((res) => {
+                    console.log("Demo create response: ", res);
+                    browserHistory.push(`/demo/${res.id}`);
+                })
+                .catch(errorAlerter);
+        }
     };
     validateBoardSize() {
         const next = this.next();
@@ -1717,7 +1732,11 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 <div className="header">
                     <h2>
                         {mode === "open" && <span>{_("Custom Game")}</span>}
-                        {mode === "demo" && <span>{_("Demo Board")}</span>}
+                        {mode === "demo" && (
+                            <span>
+                                {this.props.game_record_mode ? _("Game Record") : _("Demo Board")}
+                            </span>
+                        )}
                         {mode === "player" && (
                             <span className="header-with-icon">
                                 <PlayerIcon id={player_id} size={32} />
@@ -1751,7 +1770,9 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                     <button onClick={this.close}>{_("Close")}</button>
                     {mode === "demo" && (
                         <button onClick={this.createDemo} className="primary">
-                            {_("Create Demo")}
+                            {this.props.game_record_mode
+                                ? _("Create Game Record")
+                                : _("Create Demo")}
                         </button>
                     )}
                     {mode === "computer" && (
@@ -1864,6 +1885,24 @@ export function challenge(
             config={config}
             mode={mode}
             created={created}
+        />,
+    );
+}
+export function createGameRecord(props: {
+    library_collection_id?: number;
+    players_list?: Array<{ name: string; rank: number }>;
+    tournament_record_id?: number;
+    tournament_record_round_id?: number;
+}) {
+    const mode: ChallengeModes = "demo";
+    return openModal(
+        <ChallengeModal
+            mode={mode}
+            game_record_mode={true}
+            libraryCollectionId={props.library_collection_id}
+            playersList={props.players_list}
+            tournamentRecordId={props.tournament_record_id}
+            tournamentRecordRoundId={props.tournament_record_round_id}
         />,
     );
 }
