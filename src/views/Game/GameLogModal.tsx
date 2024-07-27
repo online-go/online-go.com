@@ -142,14 +142,21 @@ export function LogData({
 }): JSX.Element | null {
     const [markedConfig, setMarkedConfig] = React.useState<GobanEngineConfig | null>(null);
 
+    // Obvious once you think about it: the "stones" field that we get here is talking about
+    // "stones that are dead, or have been marked alive"
+    //  It'd be better if this was called "marked stones", but that'd be a big change.
+
+    //  It's valid for a thumbnail to have _none_ of these: a board that has no dead stones on it!
+
     React.useEffect(() => {
         // Set up the marks config for the thumbnail
         if (event === "game_created") {
             // don't set up a thumbnail for game created
             return;
         }
-        if (!data?.hasOwnProperty("stones") || data.stones === "") {
-            // don't set up a thumbnail for events that don't have stones
+        if (!data?.hasOwnProperty("stones")) {
+            // don't set up a thumbnail for events that don't have the `stones` field...
+            // they aren't about marking stones, thumbnail is not relevant
             return;
         }
 
@@ -173,10 +180,8 @@ export function LogData({
 
     const ret: Array<JSX.Element> = [];
 
-    if (event === "game_created" || (event === "stone_removal_stones_set" && data.stones === "")) {
-        // game_created has the whole board config, don't show log data for that
-        // also no point in showing the log of a stone_removal_stones_set event with no stones
-        // (goodness knows why we have those)
+    if (event === "game_created") {
+        // game_created has the whole board config list of field, don't dump all those in the log.
         return null;
     }
 
@@ -196,7 +201,7 @@ export function LogData({
                             Winner: <Player user={data[k]} />
                         </span>,
                     );
-                } else if (k === "stones" && data[k].stones !== "") {
+                } else if (k === "stones") {
                     // we'll re-render when it's set
                     if (markedConfig) {
                         ret.push(
