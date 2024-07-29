@@ -278,12 +278,6 @@ export function NavBar(): JSX.Element {
                             {_("Demo Board")}
                         </span>
                     )}
-                    {/*user.anonymous ? null : (
-                        <span className="fakelink" onClick={newRecord}>
-                            <i className="fa fa-sticky-note"></i>
-                            {pgettext("Game record from real life game", "Game Record")}
-                        </span>
-                    )*/}
                     {user.anonymous ? null : (
                         <Link to={`/library/${user.id}`}>
                             <i className="fa fa-book"></i>

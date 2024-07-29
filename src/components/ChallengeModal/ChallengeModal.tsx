@@ -482,7 +482,9 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         settings.tournament_record_round_id = this.props.tournamentRecordRoundId;
 
         if (!settings.name) {
-            settings.name = this.props.game_record_mode ? _("Game Record") : _("Demo Board");
+            settings.name = this.props.game_record_mode
+                ? pgettext("Game record from real life game", "Game Record")
+                : _("Demo Board");
         }
 
         console.log("Sending", settings);
@@ -1734,7 +1736,10 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                         {mode === "open" && <span>{_("Custom Game")}</span>}
                         {mode === "demo" && (
                             <span>
-                                {this.props.game_record_mode ? _("Game Record") : _("Demo Board")}
+                                {this.props.game_record_mode
+                                    ? pgettext("Game record from real life game", "Game Record")
+                                    : _("Demo Board")}
+                                ?
                             </span>
                         )}
                         {mode === "player" && (
