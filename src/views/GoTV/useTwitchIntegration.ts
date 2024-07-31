@@ -106,26 +106,39 @@ export function useTwitchIntegration() {
     // Function to fetch followed channels from Twitch using the user ID
     const fetchFollowedChannels = async (token: string, userID: string) => {
         try {
+            let followedChannels: FollowedChannel[] = [];
             const headers = {
                 "Client-ID": TWITCH_CLIENT_ID,
                 Authorization: `Bearer ${token}`,
             };
-            const response = await fetch(
-                `https://api.twitch.tv/helix/channels/followed?user_id=${userID}`,
-                { headers },
-            );
-            if (response.status === 401) {
-                handleTokenError();
-                return;
+
+            let cursor = "";
+            let hasMore = true;
+
+            while (hasMore) {
+                const response = await fetch(
+                    `https://api.twitch.tv/helix/channels/followed?user_id=${userID}&after=${cursor}`,
+                    { headers },
+                );
+                if (response.status === 401) {
+                    handleTokenError();
+                    return;
+                }
+                const data = await response.json();
+                followedChannels = followedChannels.concat(
+                    data.data.map((channel: any) => ({
+                        broadcaster_id: channel.broadcaster_id,
+                        broadcaster_login: channel.broadcaster_login,
+                        broadcaster_name: channel.broadcaster_name,
+                        followed_at: channel.followed_at,
+                    })),
+                );
+
+                cursor = data.pagination.cursor || "";
+                hasMore = data.pagination && data.pagination.cursor;
             }
-            const data = await response.json();
-            const channels: FollowedChannel[] = data.data.map((channel: any) => ({
-                broadcaster_id: channel.broadcaster_id,
-                broadcaster_login: channel.broadcaster_login,
-                broadcaster_name: channel.broadcaster_name,
-                followed_at: channel.followed_at,
-            }));
-            setFollowedChannels(channels);
+
+            setFollowedChannels(followedChannels);
         } catch (error) {
             console.error("Error fetching followed channels:", error);
             handleTokenError();

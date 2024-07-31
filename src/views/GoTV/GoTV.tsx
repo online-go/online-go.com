@@ -21,6 +21,7 @@ import { _ } from "translate";
 import * as preferences from "preferences";
 import { Stream, streamManager } from "./StreamManager";
 import { GoTVPreferences } from "Settings";
+import { useLocation } from "react-router-dom";
 
 let twitch_js_promise: Promise<void> | null = null;
 declare let Twitch: any;
@@ -55,9 +56,11 @@ export const GoTV = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [showPreferences, setShowPreferences] = useState(false);
     const [twitchLibraryLoaded, setTwitchLibraryLoaded] = useState(false);
+    const [streamSetFromNotification, setStreamSetFromNotification] = useState(false);
 
     const autoplay = preferences.get("gotv.auto-select-top-stream");
     const initialMount = useRef(true);
+    const location = useLocation();
 
     useEffect(() => {
         // Load the Twitch library and set the state when loaded
@@ -127,6 +130,21 @@ export const GoTV = () => {
             }
         }
     }, [selectedStream, isLightTheme, twitchLibraryLoaded]);
+
+    useEffect(() => {
+        if (!streamSetFromNotification && location.state && (location.state as any).streamId) {
+            const state = location.state as { streamId: string };
+
+            const streamFromNotification = streams.find(
+                (stream) => stream.stream_id === state.streamId,
+            );
+
+            if (streamFromNotification) {
+                setSelectedStream(streamFromNotification);
+                setStreamSetFromNotification(true);
+            }
+        }
+    }, [streams, location.state]);
 
     const handleStreamClick = (stream: Stream) => {
         setSelectedStream(stream);

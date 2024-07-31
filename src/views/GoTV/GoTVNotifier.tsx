@@ -19,6 +19,7 @@ import React, { useEffect, useState } from "react";
 import { Stream } from "./StreamManager";
 import { usePreference } from "preferences";
 import { GoTVNotification } from "./GoTVNotification";
+import { useNavigate } from "react-router-dom";
 
 interface Notification {
     streamId: string;
@@ -41,6 +42,8 @@ export const GoTVNotifier: React.FC<GoTVNotifierProps> = ({ streams }) => {
     const [allowNotifications] = usePreference("gotv.allow-notifications");
     const [followedChannels] = usePreference("gotv.followed-channels");
     const [notifiedStreams, setNotifiedStreams] = usePreference("gotv.notified-streams");
+
+    const navigate = useNavigate();
 
     // Effect to clean up old notifications
     useEffect(() => {
@@ -150,15 +153,22 @@ export const GoTVNotifier: React.FC<GoTVNotifierProps> = ({ streams }) => {
         setNotifications([]);
     };
 
+    const handleNotificationClick = (streamId: string) => {
+        navigate("/gotv", { state: { streamId } });
+        dismissAllNotifications();
+    };
+
     return (
         <div className="gotv-notification-container">
             {notifications.map((notification, index) => (
                 <GoTVNotification
                     key={notification.streamId}
+                    streamId={notification.streamId}
                     username={notification.username}
                     title={notification.title}
                     profileImageUrl={notification.profileImageUrl}
                     onClose={() => dismissNotification(index)}
+                    handleClick={(streamId: string) => handleNotificationClick(streamId)}
                     animationDelay={`${index * 0.1}s`}
                 />
             ))}

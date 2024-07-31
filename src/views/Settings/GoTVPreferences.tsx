@@ -47,6 +47,8 @@ export function GoTVPreferences(): JSX.Element {
     const [showFollowedChannels, setShowFollowedChannels] = useState(false);
     const [notifiedStreams, setNotifiedStreams] = usePreference("gotv.notified-streams");
 
+    const [hidden, setHidden] = useState<boolean>(true);
+
     const languageOptions = Object.keys(twitchLanguageCodes).map((key) => ({
         value: key,
         label: twitchLanguageCodes[key as keyof LanguageCodes],
@@ -70,55 +72,68 @@ export function GoTVPreferences(): JSX.Element {
         setNotifiedStreams([]);
     };
 
+    //TEMP
+    const toggleHidePreferences = () => {
+        setHidden(!hidden);
+    };
+
     return (
         <div className="GoTVPreferences">
-            <PreferenceLine title={_("Select preferred languages (multiple allowed)")}>
-                <Select
-                    options={languageOptions}
-                    placeholder={_("All Languages")}
-                    isMulti
-                    value={languageOptions.filter((option) =>
-                        selectedLanguages.includes(option.value),
+            <div className={`normal-preferences ${hidden ? "hidden" : ""}`}>
+                {/*TEMP*/}
+                <PreferenceLine title={_("Select preferred languages (multiple allowed)")}>
+                    <Select
+                        options={languageOptions}
+                        placeholder={_("All Languages")}
+                        isMulti
+                        value={languageOptions.filter((option) =>
+                            selectedLanguages.includes(option.value),
+                        )}
+                        onChange={handleLanguageChange}
+                        className="language-select"
+                        classNamePrefix="ogs-react-select"
+                    />
+                </PreferenceLine>
+
+                <PreferenceLine title={_("Show active streams indicator in navbar")}>
+                    <Toggle checked={showGoTVIndicator} onChange={toggleGoTVIndicator} />
+                </PreferenceLine>
+
+                <PreferenceLine title={_("Automatically play top stream on load")}>
+                    <Toggle checked={autoSelect} onChange={toggleAutoSelect} />
+                </PreferenceLine>
+
+                <PreferenceLine title={_("Show mature streams")}>
+                    <Toggle checked={allowMatureStreams} onChange={toggleAllowMatureStreams} />
+                </PreferenceLine>
+
+                <PreferenceLine title={_("Allow Notifications")}>
+                    <Toggle checked={allowNotifications} onChange={setAllowNotifications} />
+                </PreferenceLine>
+
+                <PreferenceLine
+                    title={_("Connect your Twitch account")}
+                    description="Link your Twitch account to get notifications when your favorite streamers are actively streaming Go"
+                >
+                    {isAuthenticated ? (
+                        <button disabled>{_("Connected")}</button>
+                    ) : (
+                        <button onClick={authenticateWithTwitch}>
+                            {_("Authenticate with Twitch")}
+                        </button>
                     )}
-                    onChange={handleLanguageChange}
-                    className="language-select"
-                    classNamePrefix="ogs-react-select"
-                />
-            </PreferenceLine>
-
-            <PreferenceLine title={_("Show active streams indicator in navbar")}>
-                <Toggle checked={showGoTVIndicator} onChange={toggleGoTVIndicator} />
-            </PreferenceLine>
-
-            <PreferenceLine title={_("Automatically play top stream on load")}>
-                <Toggle checked={autoSelect} onChange={toggleAutoSelect} />
-            </PreferenceLine>
-
-            <PreferenceLine title={_("Show mature streams")}>
-                <Toggle checked={allowMatureStreams} onChange={toggleAllowMatureStreams} />
-            </PreferenceLine>
-
-            <PreferenceLine title={_("Allow Notifications")}>
-                <Toggle checked={allowNotifications} onChange={setAllowNotifications} />
-            </PreferenceLine>
-
-            <PreferenceLine
-                title={_("Connect your Twitch account")}
-                description="Link your Twitch account to get notifications when your favorite streamers are actively streaming Go"
-            >
-                {isAuthenticated ? (
-                    <button disabled>{_("Connected")}</button>
-                ) : (
-                    <button onClick={authenticateWithTwitch}>
-                        {_("Authenticate with Twitch")}
-                    </button>
-                )}
-                {isTokenExpired && <p>{_("Token expired. Please re-authenticate.")}</p>}
-            </PreferenceLine>
+                    {isTokenExpired && <p>{_("Token expired. Please re-authenticate.")}</p>}
+                </PreferenceLine>
+            </div>
 
             {/* TODO: Remove before deployment */}
             <div className="dev-tools">
                 <h2>Dev Options (need to be removed before deployment)</h2>
+                <button onClick={toggleHidePreferences}>
+                    {hidden ? "Show Preferences" : "Hide Normal Preferences"}
+                </button>
+                <button onClick={clearNotifiedStreams}>Clear dismissals</button>
+
                 {followedChannels && followedChannels.length > 0 && (
                     <div className="followed-channels">
                         <h3>{_("Followed Twitch Channels")}</h3>
@@ -137,7 +152,7 @@ export function GoTVPreferences(): JSX.Element {
                 )}
 
                 <div>
-                    <h3>notified streams</h3>
+                    <h3>Dismissed Notifications</h3>
                     <ul>
                         <>
                             {notifiedStreams.map((note) => (
@@ -147,7 +162,6 @@ export function GoTVPreferences(): JSX.Element {
                             ))}
                         </>
                     </ul>
-                    <button onClick={clearNotifiedStreams}>Clear notified streams list</button>
                 </div>
 
                 <div>

@@ -18,11 +18,13 @@
 import React, { useEffect, useState } from "react";
 
 interface GoTVNotificationProps {
+    streamId: string;
     username: string;
     title: string;
     profileImageUrl: string;
     onClose: () => void;
     animationDelay: string;
+    handleClick: (streamId: string) => void;
 }
 
 // GoTVNotification component displays a notification for a live stream
@@ -32,6 +34,8 @@ export const GoTVNotification: React.FC<GoTVNotificationProps> = ({
     profileImageUrl,
     onClose,
     animationDelay,
+    streamId,
+    handleClick,
 }) => {
     const [visible, setVisible] = useState(false);
     const [dismissed, setDismissed] = useState(false);
@@ -53,6 +57,7 @@ export const GoTVNotification: React.FC<GoTVNotificationProps> = ({
         <div
             className={`gotv-notification ${visible ? "show" : ""} ${dismissed ? "slide-out" : ""}`}
             style={{ animationDelay }}
+            onClick={() => handleClick(streamId)}
         >
             <img src={profileImageUrl} alt={`${username}'s profile`} className="profile-image" />
             <div className="notification-content">
