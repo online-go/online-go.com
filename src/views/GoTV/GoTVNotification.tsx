@@ -57,10 +57,9 @@ export const GoTVNotification: React.FC<GoTVNotificationProps> = ({
         <div
             className={`gotv-notification ${visible ? "show" : ""} ${dismissed ? "slide-out" : ""}`}
             style={{ animationDelay }}
-            onClick={() => handleClick(streamId)}
         >
             <img src={profileImageUrl} alt={`${username}'s profile`} className="profile-image" />
-            <div className="notification-content">
+            <div className="notification-content" onClick={() => handleClick(streamId)}>
                 <div className="notification-header">
                     <strong>{username} is live:</strong>
                 </div>
