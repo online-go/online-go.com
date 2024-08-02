@@ -21,7 +21,7 @@ import { usePreference } from "preferences";
 // Client ID will need to be the OGS client ID, probably from environment variable?
 // Redirect URI also needs to match the allowed redirect URIs in the console at dev.twitch.tv
 const TWITCH_CLIENT_ID = "z00yx3qzdzkh10c6nxku6tqm1pxrgv"; // cspell:disable-line
-const REDIRECT_URI = "http://localhost:8080/settings/gotv";
+const REDIRECT_URI = `${window.location.protocol}//${window.location.host}/settings/gotv`;
 
 export interface FollowedChannel {
     broadcaster_id: string;
