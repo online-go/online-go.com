@@ -142,6 +142,13 @@ export const GoResources = () => {
                             />,
                             <Book
                                 countries={[en]}
+                                title="Handbook of handicap Go: analysis of nine through three stone handicap game patterns"
+                                href="https://archive.org/details/handbookofhandic0000unse/page/n9/mode/2up"
+                                authors={["Fujisawa, Kazunari (1964)"]}
+                            />,
+
+                            <Book
+                                countries={[en]}
                                 title="River Mountain Go 1 (30k-20k)"
                                 href="http://tigersmouth.org/downloads/RiverMtnGo-30k-20k.pdf"
                                 authors={["Oliver Richman"]}
