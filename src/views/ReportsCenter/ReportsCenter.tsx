@@ -29,6 +29,7 @@ import { ViewReport } from "./ViewReport";
 import { ReportsCenterSettings } from "./ReportsCenterSettings";
 import { ReportsCenterHistory } from "./ReportsCenterHistory";
 import { ReportsCenterCMInfo } from "./ReportsCenterCMInfo";
+import { ReportsCenterCMHistory } from "./ReportsCenterCMHistory";
 
 interface OtherView {
     special: string;
@@ -53,7 +54,7 @@ const categories: (ReportDescription | OtherView)[] = [
     ])
     .concat([
         { special: "hr", title: "", show_cm: true },
-        { special: "history", title: "History", show_cm: false },
+        { special: "history", title: "History", show_cm: true },
         { special: "cm", title: "Community Moderation", show_cm: true },
         { special: "settings", title: "Settings", show_cm: false },
     ]);
@@ -302,7 +303,11 @@ export function ReportsCenter(): JSX.Element | null {
                 {category === "settings" ? (
                     <ReportsCenterSettings />
                 ) : category === "history" ? (
-                    <ReportsCenterHistory />
+                    user.moderator_powers ? (
+                        <ReportsCenterCMHistory />
+                    ) : (
+                        <ReportsCenterHistory />
+                    )
                 ) : category === "cm" ? (
                     <ReportsCenterCMInfo />
                 ) : category === "hr" ? null : (
