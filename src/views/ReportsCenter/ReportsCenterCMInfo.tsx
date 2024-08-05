@@ -23,6 +23,10 @@ import { get } from "requests";
 import * as data from "data";
 
 import { ResponsiveLine } from "@nivo/line";
+import { useUser } from "hooks";
+import { PaginatedTable } from "PaginatedTable";
+import { Player } from "Player";
+import { Tab, TabList, TabPanel, Tabs } from "react-tabs";
 
 interface ReportCount {
     date: string;
@@ -37,6 +41,7 @@ interface AggregatedReportsData {
 
 interface VoteActivityGraphProps {
     vote_data: ReportCount[];
+    period: number; // days to show leading up to today
 }
 /*
 function round_date(the_date: Date): Date {
@@ -51,7 +56,7 @@ function startOfWeek(the_date: Date): Date {
     return new Date(date.setDate(diff));
 }
 
-const CMVoteActivityGraph = ({ vote_data }: VoteActivityGraphProps) => {
+const CMVoteActivityGraph = ({ vote_data, period }: VoteActivityGraphProps) => {
     const aggregateDataByWeek = React.useMemo(() => {
         const aggregated: {
             [key: string]: {
@@ -192,8 +197,7 @@ const CMVoteActivityGraph = ({ vote_data }: VoteActivityGraphProps) => {
                     xScale={{
                         type: "time",
                         min: format(
-                            startOfWeekDateFns(subDays(new Date(), 120), { weekStartsOn: 1 }),
-
+                            startOfWeekDateFns(subDays(new Date(), period), { weekStartsOn: 1 }),
                             "yyyy-MM-dd",
                         ),
                         format: "%Y-%m-%d",
@@ -232,8 +236,7 @@ const CMVoteActivityGraph = ({ vote_data }: VoteActivityGraphProps) => {
                     xScale={{
                         type: "time",
                         min: format(
-                            startOfWeekDateFns(subDays(new Date(), 120), { weekStartsOn: 1 }),
-
+                            startOfWeekDateFns(subDays(new Date(), period), { weekStartsOn: 1 }),
                             "yyyy-MM-dd",
                         ),
                         format: "%Y-%m-%d",
@@ -241,6 +244,7 @@ const CMVoteActivityGraph = ({ vote_data }: VoteActivityGraphProps) => {
                         precision: "day",
                     }}
                     axisLeft={{
+                        format: (d) => `${Math.round(d * 100)}%`, // Format ticks as percentages
                         tickValues: 6,
                     }}
                     yFormat=" >-.0p"
@@ -263,6 +267,7 @@ const CMVoteActivityGraph = ({ vote_data }: VoteActivityGraphProps) => {
 
 export function ReportsCenterCMInfo(): JSX.Element {
     const [vote_data, setVoteData] = React.useState<AggregatedReportsData | null>(null);
+    const user = useUser();
 
     // Data fetch
     useEffect(() => {
@@ -282,17 +287,49 @@ export function ReportsCenterCMInfo(): JSX.Element {
     }
 
     return (
-        <div className="ReportsCenterCMInfo">
-            {["overall", "escaping", "stalling", "score_cheating"].map((report_type) => (
-                <div key={report_type}>
-                    <h3>{report_type}</h3>
-                    {vote_data[report_type] ? (
-                        <CMVoteActivityGraph vote_data={vote_data[report_type]} />
-                    ) : (
-                        "no data"
-                    )}
-                </div>
-            ))}
-        </div>
+        <Tabs className="ReportsCenterCMInfo">
+            <TabList>
+                <Tab>Group Outcomes</Tab>
+                {user.is_moderator && <Tab>Individual Outcomes</Tab>}
+            </TabList>
+            <TabPanel>
+                {["overall", "escaping", "stalling", "score_cheating"].map((report_type) => (
+                    <div key={report_type}>
+                        <h3>{report_type}</h3>
+                        {vote_data[report_type] ? (
+                            <CMVoteActivityGraph vote_data={vote_data[report_type]} period={120} />
+                        ) : (
+                            "no data"
+                        )}
+                    </div>
+                ))}
+            </TabPanel>
+            <TabPanel>
+                <PaginatedTable
+                    pageSize={4} /* Limit aggregation compute load */
+                    pageSizeOptions={[1, 4]}
+                    className="individual-overview"
+                    name="individual-overview"
+                    source={"moderation/cm_overview"}
+                    columns={[
+                        {
+                            header: "CM",
+                            className: () => "cm-name",
+                            render: (X) => <Player user={X.user_id} />,
+                        },
+                        {
+                            header: "summaries",
+                            className: () => "votes",
+                            render: (X) => (
+                                <CMVoteActivityGraph
+                                    vote_data={X.vote_data["overall"]}
+                                    period={30}
+                                />
+                            ),
+                        },
+                    ]}
+                />
+            </TabPanel>
+        </Tabs>
     );
 }
