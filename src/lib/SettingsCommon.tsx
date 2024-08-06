@@ -65,9 +65,10 @@ export function PreferenceLine(props: {
     title: string | JSX.Element;
     description?: string;
     children: React.ReactNode;
+    className?: string;
 }): JSX.Element {
     return (
-        <div className="PreferenceLine">
+        <div className={`PreferenceLine ${props.className || ""}`}>
             <span className="PreferenceLineTitle">
                 {props.title}
                 {props.description && (

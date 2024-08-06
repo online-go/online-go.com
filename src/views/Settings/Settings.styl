@@ -51,6 +51,14 @@
             font-weight: bold;
         }
 
+        &.title-on-top {
+            align-items: flex-start;
+
+            .PreferenceLineTitle {
+                padding-top: 0.5rem;
+            }
+        }
+
         .PreferenceLineDescription {
             display: inline-block;
             width: 20rem;
@@ -59,6 +67,7 @@
             font-weight: normal;
             font-style: italic;
         }
+
         .PreferenceLineBody {
             display: inline-flex;
             align-items: center;
@@ -66,11 +75,23 @@
             min-width: 10rem;
         }
 
+        &.body-as-column {
+            .PreferenceLineBody {
+                flex-direction: column;
+                align-content: flex-start;
+                align-items: flex-start;
+            }
+        }
+
+
         span {
             margin-right: 0.2rem;
             margin-left: 0.2rem;
         }
     }
+    
+
+    
 
     .PreferenceDropdown
     {

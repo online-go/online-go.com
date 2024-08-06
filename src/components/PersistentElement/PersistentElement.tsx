@@ -36,6 +36,8 @@ export function PersistentElement(props: PersistentElementProps): JSX.Element {
                 return () => {
                     cont.removeChild(elt);
                 };
+            } else {
+                console.warn("PersistentElement: element not found", props.elt);
             }
         }
     }, [container.current, props.elt]);
