@@ -266,10 +266,12 @@ const CMVoteActivityGraph = ({ vote_data, period }: VoteActivityGraphProps) => {
 };
 
 export function ReportsCenterCMInfo(): JSX.Element {
+    const [selectedTabIndex, setSelectedTabIndex] = React.useState(0);
     const [vote_data, setVoteData] = React.useState<AggregatedReportsData | null>(null);
+    const [users_data, setUsersData] = React.useState<AggregatedReportsData | null>(null);
     const user = useUser();
 
-    // Data fetch
+    // Group data fetch (for default tab)
     useEffect(() => {
         const fetchData = async () => {
             const response = await get(`moderation/cm_vote_summary`);
@@ -282,16 +284,38 @@ export function ReportsCenterCMInfo(): JSX.Element {
         });
     }, []);
 
+    const handleTabSelect = (index: number) => {
+        setSelectedTabIndex(index);
+        // Get the individual outcomes data when that tab gets selected
+        if (index === 2) {
+            const fetchData = async () => {
+                const response = await get(`me/cm_vote_summary`);
+                const fetchedData: AggregatedReportsData = await response;
+                setUsersData(fetchedData);
+            };
+
+            fetchData().catch((err) => {
+                console.error(err);
+            });
+        }
+    };
+
     if (!vote_data) {
         return <div>Loading...</div>;
     }
 
     return (
-        <Tabs className="ReportsCenterCMInfo">
+        <Tabs
+            className="ReportsCenterCMInfo"
+            selectedIndex={selectedTabIndex}
+            onSelect={handleTabSelect}
+        >
             <TabList>
                 <Tab>Group Outcomes</Tab>
-                {user.is_moderator && <Tab>Individual Outcomes</Tab>}
+                <Tab disabled={!user.is_moderator}>Individual Outcomes</Tab>
+                <Tab disabled={!user.moderator_powers}>My Outcomes</Tab>
             </TabList>
+
             <TabPanel>
                 {["overall", "escaping", "stalling", "score_cheating"].map((report_type) => (
                     <div key={report_type}>
@@ -304,6 +328,7 @@ export function ReportsCenterCMInfo(): JSX.Element {
                     </div>
                 ))}
             </TabPanel>
+
             <TabPanel>
                 <PaginatedTable
                     pageSize={4} /* Limit aggregation compute load */
@@ -329,6 +354,23 @@ export function ReportsCenterCMInfo(): JSX.Element {
                         },
                     ]}
                 />
+            </TabPanel>
+
+            <TabPanel>
+                {users_data &&
+                    ["overall", "escaping", "stalling", "score_cheating"].map((report_type) => (
+                        <div key={report_type}>
+                            <h3>{report_type}</h3>
+                            {vote_data[report_type] ? (
+                                <CMVoteActivityGraph
+                                    vote_data={users_data[report_type]}
+                                    period={30}
+                                />
+                            ) : (
+                                "no data"
+                            )}
+                        </div>
+                    ))}
             </TabPanel>
         </Tabs>
     );

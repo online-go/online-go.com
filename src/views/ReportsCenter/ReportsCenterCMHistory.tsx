@@ -27,7 +27,7 @@ export function ReportsCenterCMHistory(): JSX.Element {
             <PaginatedTable
                 className="history"
                 name="reports-appeals"
-                source={"moderation/cm_history"}
+                source={"me/cm_history"}
                 orderBy={["-updated"]}
                 columns={[
                     {
