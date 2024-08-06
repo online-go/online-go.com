@@ -40,7 +40,7 @@ interface AggregatedReportsData {
 }
 
 interface VoteActivityGraphProps {
-    vote_data: ReportCount[];
+    vote_data?: ReportCount[];
     period: number; // days to show leading up to today
 }
 /*
@@ -57,6 +57,10 @@ function startOfWeek(the_date: Date): Date {
 }
 
 const CMVoteActivityGraph = ({ vote_data, period }: VoteActivityGraphProps) => {
+    if (!vote_data) {
+        vote_data = [];
+    }
+
     const aggregateDataByWeek = React.useMemo(() => {
         const aggregated: {
             [key: string]: {
