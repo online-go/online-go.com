@@ -27,6 +27,7 @@ import { alert } from "swal_config";
 import { setIgnore } from "BlockPlayer";
 import { useUser } from "hooks";
 import { get } from "requests";
+import { toast } from "toast";
 
 export type ReportType =
     | "all" // not a type, just useful for the enumeration
@@ -448,6 +449,7 @@ export function Report(props: ReportProperties): JSX.Element {
 }
 
 export function openReport(report: ReportProperties): void {
+    const user = data.get("user");
     const container = document.createElement("DIV");
     const game_id = parseInt(
         document.location.pathname.match(/game\/(view\/)?([0-9]+)/)?.[2] || "0",
@@ -470,8 +472,13 @@ export function openReport(report: ReportProperties): void {
     const already_reported = data.get("reported-games", []) as number[];
 
     if (report.reported_game_id && already_reported.includes(report.reported_game_id)) {
-        data.set("ui-state.show_incident_list", true);
-        return;
+        if (!user.is_moderator && !user.moderator_powers) {
+            toast(<div>{_("You have already reported this game.")}</div>);
+            data.set("ui-state.show_incident_list", true);
+            return;
+        } else {
+            toast(<div>{_("Note: You have already reported this game!")}</div>);
+        }
     }
 
     function onClose() {

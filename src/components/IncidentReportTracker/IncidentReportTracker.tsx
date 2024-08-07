@@ -34,9 +34,7 @@ import { IncidentReportCard } from "./IncidentReportCard";
 export function IncidentReportTracker(): JSX.Element | null {
     const user = useUser();
     const navigate = useNavigate();
-    const [show_incident_list, setShowIncidentList] = React.useState(
-        data.get("ui-state.show_incident_list"),
-    );
+    const [show_incident_list, setShowIncidentList] = React.useState<boolean | undefined>(false);
 
     const [normal_ct, setNormalCt] = React.useState(0);
     const [prefer_hidden] = usePreference("hide-incident-reports");
@@ -176,6 +174,7 @@ export function IncidentReportTracker(): JSX.Element | null {
             data.unwatch("user", updateUser);
             data.unwatch("preferences.moderator.report-quota", updateUser);
             data.unwatch("preferences.show-cm-reports", updateUser);
+            data.unwatch("ui-state.show_incident_list", setShowIncidentList);
         };
     }, []);
 
@@ -212,7 +211,7 @@ export function IncidentReportTracker(): JSX.Element | null {
                     <span className={`count ${normal_ct > 0 ? "active" : ""}`}>{normal_ct}</span>
                 </div>
             )}
-            {show_incident_list && (
+            {!!show_incident_list && (
                 <div className="IncidentReportTracker">
                     <div className="IncidentReportList-backdrop" onClick={toggleList}></div>
                     <div className="IncidentReportList-results">
