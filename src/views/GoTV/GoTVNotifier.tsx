@@ -20,6 +20,7 @@ import { Stream } from "./StreamManager";
 import { usePreference } from "preferences";
 import { GoTVNotification } from "./GoTVNotification";
 import { useNavigate } from "react-router-dom";
+import { _ } from "translate";
 
 interface Notification {
     streamId: string;
@@ -174,7 +175,7 @@ export const GoTVNotifier: React.FC<GoTVNotifierProps> = ({ streams }) => {
             ))}
             {notifications.length > 1 && (
                 <button id="dismiss-all" onClick={dismissAllNotifications}>
-                    Dismiss All
+                    {_("Dismiss All")}
                 </button>
             )}
         </div>

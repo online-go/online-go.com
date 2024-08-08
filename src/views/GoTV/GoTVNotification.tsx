@@ -16,6 +16,7 @@
  */
 
 import React, { useEffect, useState } from "react";
+import { _, interpolate } from "translate";
 
 interface GoTVNotificationProps {
     streamId: string;
@@ -61,7 +62,7 @@ export const GoTVNotification: React.FC<GoTVNotificationProps> = ({
             <img src={profileImageUrl} alt={`${username}'s profile`} className="profile-image" />
             <div className="notification-content" onClick={() => handleClick(streamId)}>
                 <div className="notification-header">
-                    <strong>{username} is live:</strong>
+                    <strong>{interpolate(_("%s is live!"), [username])}</strong>
                 </div>
                 <div className="notification-body">
                     {/* Truncate the title if it's longer than 30 characters */}
@@ -69,7 +70,7 @@ export const GoTVNotification: React.FC<GoTVNotificationProps> = ({
                 </div>
             </div>
             {/* Button to dismiss the notification */}
-            <button onClick={handleDismiss}>Dismiss</button>
+            <button onClick={handleDismiss}>{_("Dismiss")}</button>
         </div>
     );
 };
