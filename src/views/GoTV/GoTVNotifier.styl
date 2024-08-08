@@ -1,0 +1,99 @@
+.gotv-notification-container
+    position: absolute
+    top: calc(var(--navbar-height) + 15px)
+    right: 20px
+    z-index: 1000
+    width: 360px
+    display: flex
+    flex-direction: column
+    align-items: center
+
+    .gotv-notification
+        height: 40px
+        width: 100%
+        themed background-color card-background-color
+        border: 1px solid transparent
+        themed border-color shade1
+        padding: 10px
+        border-radius: 5px
+        box-shadow: 0 0 20px 10px rgba(0, 0, 0, 0.2)
+        display: flex
+        align-items: center
+        margin-bottom: 5px
+        transition: transform 0.3s ease-in-out
+        transform: translateX(360px)
+        opacity: 0
+        visibility: hidden 
+        animation: slideIn 0.3s ease-in-out forwards
+
+    .profile-image
+        width: 40px
+        height: 40px
+        border-radius: 50%
+        margin-right: 10px
+
+    .notification-content
+        flex: 1
+        margin-right: 10px
+
+    .notification-header
+        font-weight: bold
+
+    .notification-body
+        font-size: 0.85em
+        white-space: nowrap
+        overflow: hidden
+        text-overflow: ellipsis
+
+    .gotv-notification button
+        margin-left: 10px
+
+    .gotv-notification.slide-out
+        animation: slideOut 0.3s ease-in-out forwards
+
+    #dismiss-all
+        width: 50%
+        padding: 10px 0
+        margin-top: 10px
+        background-color: #f05f57
+        themed color colored-background-fg
+        font-size: 1em
+        text-align: center
+        border: none
+        border-radius: 10px
+        cursor: pointer
+        transition: background-color 0.3s ease
+        opacity: 0
+        transform: translateX(100%)
+        animation: slideInButton 0.3s 0.3s ease forwards
+
+        &:hover
+            background-color: #f2827f
+
+@keyframes slideIn
+    0%
+        transform: translateX(360px)
+        opacity: 0
+        visibility: hidden
+    1%
+        visibility: visible
+    100%
+        transform: translateX(0)
+        opacity: 1
+        visibility: visible
+
+@keyframes slideOut
+    from
+        transform: translateX(0)
+        opacity: 1
+    to
+        transform: translateX(360px)
+        opacity: 0
+
+@keyframes slideInButton
+    from
+        transform: translateX(100%)
+        opacity: 0
+    to
+        transform: translateX(0)
+        opacity: 1

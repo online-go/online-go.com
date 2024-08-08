@@ -33,11 +33,13 @@ interface StreamCardProps {
     onClick: (stream: Stream) => void;
 }
 
+// StreamCard component displays information about a live stream
 export const StreamCard: React.FC<StreamCardProps> = ({ stream, isSelected, onClick }) => {
     return (
         <div
+            // Apply "selected-stream" class if this stream is selected
             className={`stream-item ${isSelected ? "selected-stream" : ""}`}
-            onClick={() => onClick(stream)}
+            onClick={() => onClick(stream)} // Handle stream selection on click
         >
             <div className="overlay"></div>
             <img

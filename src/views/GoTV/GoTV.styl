@@ -60,6 +60,11 @@
             padding: 10px
             themed background-color bg
 
+            .preference-toggle
+                position absolute
+                right 15px
+                top 15px
+
         .language-select
             flex: 1
             margin-left: 10px
@@ -73,6 +78,10 @@
             overflow: hidden
             position: relative
             transition: margin-left 0.3s ease-in-out
+
+            #twitch-embed
+                height: 100%
+                width: 100%
 
         .stream-pane.expanded
             margin-left: 0
@@ -227,7 +236,7 @@
 
         .chat-content
             position: relative
-            height: calc(100% - 45px)
+            height: 100%
 
         .chat-section
             position: absolute

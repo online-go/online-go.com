@@ -16,40 +16,63 @@
  */
 
 import React, { useState, useEffect, useRef } from "react";
-import { EmbeddedChatCard } from "Chat";
 import { StreamCard } from "./StreamCard";
 import { _ } from "translate";
 import * as preferences from "preferences";
-import { streamManager } from "./StreamManager";
+import { Stream, streamManager } from "./StreamManager";
 import { GoTVPreferences } from "Settings";
+import { useLocation } from "react-router-dom";
 
-export interface Stream {
-    stream_id: string;
-    title: string;
-    channel: string;
-    username: string;
-    viewer_count: number;
-    language: string;
-    thumbnail_url: string;
-    source: string;
-    is_mature: boolean;
-}
+let twitch_js_promise: Promise<void> | null = null;
+declare let Twitch: any;
 
+// Function to load the Twitch library
+const load_twitch_library = () => {
+    if (!twitch_js_promise) {
+        twitch_js_promise = new Promise<void>((resolve, reject) => {
+            const script = document.createElement("script");
+            script.src = "https://embed.twitch.tv/embed/v1.js";
+            script.async = true;
+            script.onload = () => {
+                resolve();
+            };
+            script.onerror = () => {
+                reject("Unable to load twitch");
+            };
+            document.head.appendChild(script);
+        });
+    }
+    return twitch_js_promise;
+};
+
+// GoTV component manages the live stream display and user interactions
 export const GoTV = () => {
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
     const [streams, setStreams] = useState<Stream[]>([]);
     const [selectedStream, setSelectedStream] = useState<Stream | null>(null);
     const [showListPane, setShowListPane] = useState(true);
     const [showChatPane, setShowChatPane] = preferences.usePreference("gotv.expand-chat-pane");
-    const [activeChatTab, setActiveChatTab] = preferences.usePreference("gotv.selected-chat");
     const [isLightTheme, setIsLightTheme] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [showPreferences, setShowPreferences] = useState(false);
+    const [twitchLibraryLoaded, setTwitchLibraryLoaded] = useState(false);
+    const [streamSetFromNotification, setStreamSetFromNotification] = useState(false);
 
     const autoplay = preferences.get("gotv.auto-select-top-stream");
     const initialMount = useRef(true);
+    const location = useLocation();
 
     useEffect(() => {
+        // Load the Twitch library and set the state when loaded
+        load_twitch_library()
+            .then(() => {
+                setTwitchLibraryLoaded(true);
+            })
+            .catch((error) => {
+                console.error(error);
+            });
+
+        // Function to update the streams state
         const updateStreams = (streams: Stream[]) => {
             setStreams(streams);
             if (initialMount.current) {
@@ -69,7 +92,7 @@ export const GoTV = () => {
         const bodyClassList = document.body.classList;
         setIsLightTheme(bodyClassList.contains("light"));
 
-        // Setup a MutationObserver to detect theme changes so we can update twitch chat on theme change
+        // Setup a MutationObserver to detect theme changes for updating Twitch chat theme
         const observer = new MutationObserver((mutations) => {
             mutations.forEach((mutation) => {
                 if (mutation.attributeName === "class") {
@@ -80,6 +103,7 @@ export const GoTV = () => {
 
         observer.observe(document.body, { attributes: true });
 
+        // Handle window resize events to update mobile state
         const handleResize = () => setIsMobile(window.innerWidth <= 900);
         window.addEventListener("resize", handleResize);
 
@@ -89,6 +113,38 @@ export const GoTV = () => {
             window.removeEventListener("resize", handleResize);
         };
     }, []);
+
+    useEffect(() => {
+        // Embed the selected Twitch stream when Twitch library is loaded
+        if (twitchLibraryLoaded && selectedStream) {
+            const embedContainer = document.getElementById("twitch-embed");
+            if (embedContainer) {
+                embedContainer.innerHTML = "";
+                new Twitch.Embed("twitch-embed", {
+                    width: "100%",
+                    height: "100%",
+                    layout: "video",
+                    channel: selectedStream.channel,
+                    parent: getParentDomain(),
+                });
+            }
+        }
+    }, [selectedStream, isLightTheme, twitchLibraryLoaded]);
+
+    useEffect(() => {
+        if (!streamSetFromNotification && location.state && (location.state as any).streamId) {
+            const state = location.state as { streamId: string };
+
+            const streamFromNotification = streams.find(
+                (stream) => stream.stream_id === state.streamId,
+            );
+
+            if (streamFromNotification) {
+                setSelectedStream(streamFromNotification);
+                setStreamSetFromNotification(true);
+            }
+        }
+    }, [streams, location.state]);
 
     const handleStreamClick = (stream: Stream) => {
         setSelectedStream(stream);
@@ -103,10 +159,6 @@ export const GoTV = () => {
 
     const handleToggleChatPane = () => {
         setShowChatPane(!showChatPane);
-    };
-
-    const handleChatTabChange = (tab: string) => {
-        setActiveChatTab(tab);
     };
 
     const parentDomain = getParentDomain();
@@ -127,7 +179,11 @@ export const GoTV = () => {
                             </button>
                         )}
                         <i
-                            className={showPreferences ? "fa fa-times" : "fa fa-cog"}
+                            className={
+                                showPreferences
+                                    ? "fa fa-times preference-toggle"
+                                    : "fa fa-cog preference-toggle"
+                            }
                             onClick={togglePreferences}
                         ></i>
                     </div>
@@ -166,12 +222,7 @@ export const GoTV = () => {
                     {isLoading ? (
                         <div className="loading-message">{_("Loading streams...")}</div>
                     ) : streams.length > 0 && selectedStream ? (
-                        <iframe
-                            key={selectedStream.stream_id}
-                            src={`https://player.twitch.tv/?channel=${selectedStream.channel}&parent=${parentDomain}&autoplay=true&muted=false`}
-                            allowFullScreen={true}
-                            aria-label={`Live stream of ${selectedStream.title}`}
-                        ></iframe>
+                        <div id="twitch-embed"></div>
                     ) : (
                         <>
                             {streams.length > 0 ? (
@@ -205,37 +256,9 @@ export const GoTV = () => {
                     onClick={handleToggleChatPane}
                 />
                 <div className={`chat-pane ${showChatPane ? "expanded" : "collapsed"}`}>
-                    <div className="chat-tabs">
-                        <div
-                            className={`chat-tab ${activeChatTab === "OGS" ? "active" : ""}`}
-                            onClick={() => handleChatTabChange("OGS")}
-                        >
-                            <span className="ogs-chat-tab-logo"></span>
-                        </div>
-                        <div
-                            className={`chat-tab ${activeChatTab === "Twitch" ? "active" : ""}`}
-                            onClick={() => handleChatTabChange("Twitch")}
-                        >
-                            <span className="twitch-chat-tab-logo"></span>
-                        </div>
-                    </div>
                     {selectedStream && (
                         <div className="chat-content">
-                            <div
-                                className={`chat-section ${
-                                    activeChatTab === "OGS" ? "active" : "hidden"
-                                }`}
-                            >
-                                <EmbeddedChatCard
-                                    channel={`GoTV-${selectedStream.username}`}
-                                    updateTitle={false}
-                                />
-                            </div>
-                            <div
-                                className={`chat-section ${
-                                    activeChatTab === "Twitch" ? "active" : "hidden"
-                                }`}
-                            >
+                            <div className="chat-section active">
                                 <iframe
                                     key={selectedStream.stream_id}
                                     src={`https://www.twitch.tv/embed/${
