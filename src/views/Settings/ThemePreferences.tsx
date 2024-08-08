@@ -43,14 +43,13 @@ const sample_board_data: GobanEngineConfig = {
     initial_state: {
         black:
             "abbbbaga" + // cspell: disable-line
-            "gbgchcic" + // cspell: disable-line
-            "de",
+            "gbgchcic", // cspell: disable-line
         white:
             "hahbib" + // cspell: disable-line
             "acbccccbca", // cspell: disable-line
     },
-    initial_player: "white",
-    moves: [{ x: 5, y: 4 }],
+    initial_player: "black",
+    moves: [{ x: 4, y: 4 }],
     removed:
         "aaia" + // cspell: disable-line
         "abbbba" + // cspell: disable-line
@@ -125,6 +124,16 @@ export function ThemePreferences(): JSX.Element | null {
 
     const [svg_enabled, setSvgEnabled] = useData("experiments.svg", "enabled");
     const enable_svg = svg_enabled === "enabled";
+
+    const sample_goban_key =
+        (enable_svg ? "svg" : "canvas") +
+        board_labeling +
+        label_positioning +
+        //stone_removal_graphic +
+        //removal_scale +
+        visual_undo_request_indicator +
+        last_move_opacity +
+        variation_stone_opacity;
 
     return (
         <div className="ThemePreferences">
@@ -290,7 +299,7 @@ export function ThemePreferences(): JSX.Element | null {
             >
                 {[{}].map(() => (
                     <MiniGoban
-                        key={(enable_svg ? "svg" : "canvas") + board_labeling + label_positioning}
+                        key={sample_goban_key}
                         json={sample_board_data}
                         noLink={true}
                         width={9}
