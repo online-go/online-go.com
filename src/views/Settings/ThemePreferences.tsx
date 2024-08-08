@@ -122,7 +122,7 @@ export function ThemePreferences(): JSX.Element | null {
         }
     }
 
-    const [svg_enabled, setSvgEnabled] = useData("experiments.svg", "enabled");
+    const [svg_enabled, setSvgEnabled] = useData("experiments.svg");
     const enable_svg = svg_enabled === "enabled";
 
     const sample_goban_key =
