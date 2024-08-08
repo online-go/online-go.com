@@ -36,6 +36,8 @@ export function configure_goban() {
         const v = data.get("experiments.svg");
         if (v === "enabled") {
             setGobanRenderer("svg");
+        } else {
+            setGobanRenderer("canvas");
         }
     });
 

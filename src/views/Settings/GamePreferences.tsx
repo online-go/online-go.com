@@ -44,7 +44,6 @@ export function GamePreferences(): JSX.Element {
         getSubmitMode("correspondence"),
     );
     const [chat_mode, _setChatMode] = usePreference("chat-mode");
-    const [board_labeling, setBoardLabeling] = usePreference("board-labeling");
 
     const [auto_advance, setAutoAdvance] = usePreference("auto-advance-after-submit");
     const [always_disable_analysis, setAlwaysDisableAnalysis] =
@@ -54,13 +53,7 @@ export function GamePreferences(): JSX.Element {
     const [autoplay_delay, _setAutoplayDelay]: [number, (x: number) => void] = React.useState(
         preferences.get("autoplay-delay") / 1000,
     );
-    const [last_move_opacity, _setLastMoveOpacity] = usePreference("last-move-opacity");
-    const [variation_stone_opacity, _setVariationStoneOpacity] =
-        usePreference("variation-stone-opacity");
     const [variation_move_count, _setVariationMoveCount] = usePreference("variation-move-count");
-    const [visual_undo_request_indicator, setVisualUndoRequestIndicator] = usePreference(
-        "visual-undo-request-indicator",
-    );
     const [zen_mode_by_default, _setZenModeByDefault] = usePreference("start-in-zen-mode");
 
     function setDockDelay(ev: React.ChangeEvent<HTMLInputElement>) {
@@ -116,20 +109,6 @@ export function GamePreferences(): JSX.Element {
     function setCorrSubmitMode(value: string) {
         setSubmitMode("correspondence", value);
     }
-    function setLastMoveOpacity(ev: React.ChangeEvent<HTMLInputElement>) {
-        const value = parseFloat(ev.target.value);
-
-        if (value >= 0.0 && value <= 1.0) {
-            _setLastMoveOpacity(value);
-        }
-    }
-    function setVariationStoneOpacity(ev: React.ChangeEvent<HTMLInputElement>) {
-        const value = parseFloat(ev.target.value);
-
-        if (value >= 0.0 && value <= 1.0) {
-            _setVariationStoneOpacity(value);
-        }
-    }
     function setVariationMoveCount(ev: React.ChangeEvent<HTMLInputElement>) {
         const value = parseInt(ev.target.value);
 
@@ -168,18 +147,6 @@ export function GamePreferences(): JSX.Element {
                             : interpolate(_("{{number_of}} seconds"), { number_of: dock_delay }) // translators: Indicates the number of seconds to delay the slide out of the panel of game buttons on the right side of the game page
                     }
                 </span>
-            </PreferenceLine>
-
-            <PreferenceLine title={_("Board labeling")}>
-                <PreferenceDropdown
-                    value={board_labeling}
-                    options={[
-                        { value: "automatic", label: _("Automatic") },
-                        { value: "A1", label: "A1" },
-                        { value: "1-1", label: "1-1" },
-                    ]}
-                    onChange={setBoardLabeling}
-                />
             </PreferenceLine>
 
             <PreferenceLine title={_("Live game submit mode")}>
@@ -246,18 +213,6 @@ export function GamePreferences(): JSX.Element {
             </PreferenceLine>
 
             <PreferenceLine
-                title={_("Visual undo request indicator")}
-                description={_(
-                    "This will cause an undo request to be indicated by a mark on your opponent's last move.",
-                )}
-            >
-                <Toggle
-                    checked={visual_undo_request_indicator}
-                    onChange={setVisualUndoRequestIndicator}
-                />
-            </PreferenceLine>
-
-            <PreferenceLine
                 title={_("Dynamic title")}
                 description={_(
                     "Choose whether to show in the web page title whose turn it is (dynamic) or who the users are (not dynamic)",
@@ -303,46 +258,6 @@ export function GamePreferences(): JSX.Element {
                 )}
             >
                 <Toggle checked={zen_mode_by_default} onChange={toggleZenMode} />
-            </PreferenceLine>
-
-            <PreferenceLine
-                title={_("Last move opacity")}
-                description={_(
-                    "Choose the level of opacity for the 'last move' mark on stones. 0.0 is transparent and 1.0 is opaque.",
-                )}
-            >
-                <input
-                    type="range"
-                    step="0.1"
-                    min="0.0"
-                    max="1.0"
-                    onChange={setLastMoveOpacity}
-                    value={last_move_opacity}
-                />
-                <span>
-                    &nbsp;
-                    {last_move_opacity}
-                </span>
-            </PreferenceLine>
-
-            <PreferenceLine
-                title={_("Variation stone opacity")}
-                description={_(
-                    "Choose the level of opacity for stones shown in variations. 0.0 is transparent and 1.0 is opaque.",
-                )}
-            >
-                <input
-                    type="range"
-                    step="0.1"
-                    min="0.0"
-                    max="1.0"
-                    onChange={setVariationStoneOpacity}
-                    value={variation_stone_opacity}
-                />
-                <span>
-                    &nbsp;
-                    {variation_stone_opacity}
-                </span>
             </PreferenceLine>
 
             <PreferenceLine

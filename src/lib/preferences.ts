@@ -346,52 +346,28 @@ export function usePreference<KeyT extends ValidPreference>(
 }
 
 function migrate() {
+    function migrate_key(from: string, to: keyof PreferencesType) {
+        try {
+            if (data.get(from as keyof DataSchema, null) !== null) {
+                set(to, data.get(from as any) || "");
+                data.remove(from as any);
+            }
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
     // Migrate old goban theme preferences to a consistent place
     // Introduced 2024-08-06, safe for removal 2025-03-01
-    if (data.get("custom.black" as any)) {
-        set("goban-theme-custom-black-stone-color", data.get("custom.black" as any) || "");
-        data.remove("custom.black" as any);
-    }
-
-    if (data.get("custom.white" as any)) {
-        set("goban-theme-custom-white-stone-color", data.get("custom.white" as any) || "");
-        data.remove("custom.white" as any);
-    }
-
-    if (data.get("custom.board" as any)) {
-        set("goban-theme-custom-board-background", data.get("custom.board" as any) || "");
-        data.remove("custom.board" as any);
-    }
-
-    if (data.get("custom.line" as any)) {
-        set("goban-theme-custom-board-line", data.get("custom.line" as any) || "");
-        data.remove("custom.line" as any);
-    }
-
-    if (data.get("custom.url" as any)) {
-        set("goban-theme-custom-board-url", data.get("custom.url" as any) || "");
-        data.remove("custom.url" as any);
-    }
-
-    if (data.get("custom.black_stone_url" as any)) {
-        set("goban-theme-custom-black-url", data.get("custom.black_stone_url" as any) || "");
-        data.remove("custom.black_stone_url" as any);
-    }
-
-    if (data.get("custom.white_stone_url" as any)) {
-        set("goban-theme-custom-white-url", data.get("custom.white_stone_url" as any) || "");
-        data.remove("custom.white_stone_url" as any);
-    }
-
-    if (get("goban-theme-black_stone_url" as any)) {
-        set("goban-theme-custom-black-url", get("goban-theme-black_stone_url" as any));
-        data.remove("preferences.goban-theme-black_stone_url" as any);
-    }
-
-    if (get("goban-theme-white_stone_url" as any)) {
-        set("goban-theme-custom-white-url", get("goban-theme-white_stone_url" as any));
-        data.remove("preferences.goban-theme-white_stone_url" as any);
-    }
+    migrate_key("custom.black", "goban-theme-custom-black-stone-color");
+    migrate_key("custom.white", "goban-theme-custom-white-stone-color");
+    migrate_key("custom.board", "goban-theme-custom-board-background");
+    migrate_key("custom.line", "goban-theme-custom-board-line");
+    migrate_key("custom.url", "goban-theme-custom-board-url");
+    migrate_key("custom.black_stone_url", "goban-theme-custom-black-url");
+    migrate_key("custom.white_stone_url", "goban-theme-custom-white-url");
+    migrate_key("preferences.goban-theme-black_stone_url", "goban-theme-custom-black-url");
+    migrate_key("preferences.goban-theme-white_stone_url", "goban-theme-custom-white-url");
 }
 
 try {

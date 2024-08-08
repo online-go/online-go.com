@@ -53,6 +53,7 @@ export interface MiniGobanProps {
     title?: boolean;
     onGobanCreated?: (goban: GobanRenderer) => void;
     chat?: boolean;
+    labels_positioning?: "none" | "all" | "top-left" | "top-right" | "bottom-left" | "bottom-right";
 }
 
 export function MiniGoban(props: MiniGobanProps): JSX.Element {
@@ -82,14 +83,31 @@ export function MiniGoban(props: MiniGobanProps): JSX.Element {
     const [game_name, setGameName] = React.useState("");
     const [last_move_opacity] = usePreference("last-move-opacity");
 
+    const draw_top_labels =
+        props.labels_positioning === "all" ||
+        props.labels_positioning === "top-left" ||
+        props.labels_positioning === "top-right";
+    const draw_bottom_labels =
+        props.labels_positioning === "all" ||
+        props.labels_positioning === "bottom-left" ||
+        props.labels_positioning === "bottom-right";
+    const draw_left_labels =
+        props.labels_positioning === "all" ||
+        props.labels_positioning === "top-left" ||
+        props.labels_positioning === "bottom-left";
+    const draw_right_labels =
+        props.labels_positioning === "all" ||
+        props.labels_positioning === "top-right" ||
+        props.labels_positioning === "bottom-right";
+
     React.useEffect(() => {
         goban.current = createGoban(
             {
                 board_div: goban_div.current,
-                draw_top_labels: false,
-                draw_bottom_labels: false,
-                draw_left_labels: false,
-                draw_right_labels: false,
+                draw_top_labels,
+                draw_bottom_labels,
+                draw_left_labels,
+                draw_right_labels,
                 connect_to_chat: !!props.chat,
                 game_id: props.game_id,
                 review_id: props.review_id,

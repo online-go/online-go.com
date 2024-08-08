@@ -107,7 +107,7 @@ export function Settings(): JSX.Element {
             { key: "general", label: _("General Preferences") },
             { key: "sound", label: _("Sound Preferences") },
             { key: "game", label: _("Game Preferences") },
-            { key: "theme", label: _("Theme Preferences") },
+            { key: "theme", label: _("Themes & Visuals") },
             { key: "chat", label: _("Chat Preferences") },
             { key: "gotv", label: interpolate(_("%s Preferences"), ["GoTV"]) },
             {
