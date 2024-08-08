@@ -24,6 +24,7 @@ import { PreferenceLine } from "SettingsCommon";
 import Select, { MultiValue } from "react-select";
 import { twitchLanguageCodes } from "../GoTV/twitchLanguageCodes";
 import { useTwitchIntegration } from "../GoTV/useTwitchIntegration";
+import { useUser } from "hooks";
 
 type LanguageCodes = typeof twitchLanguageCodes;
 
@@ -49,6 +50,8 @@ export function GoTVPreferences(): JSX.Element {
 
     const [hidden, setHidden] = useState<boolean>(true);
 
+    const user = useUser();
+
     const languageOptions = Object.keys(twitchLanguageCodes).map((key) => ({
         value: key,
         label: twitchLanguageCodes[key as keyof LanguageCodes],
@@ -72,15 +75,13 @@ export function GoTVPreferences(): JSX.Element {
         setNotifiedStreams([]);
     };
 
-    //TEMP
-    const toggleHidePreferences = () => {
+    const toggleHideDevMenu = () => {
         setHidden(!hidden);
     };
 
     return (
         <div className="GoTVPreferences">
-            <div className={`normal-preferences ${hidden ? "hidden" : ""}`}>
-                {/*TEMP*/}
+            <div className={`normal-preferences`}>
                 <PreferenceLine title={_("Select preferred languages (multiple allowed)")}>
                     <Select
                         options={languageOptions}
@@ -124,56 +125,64 @@ export function GoTVPreferences(): JSX.Element {
                     )}
                     {isTokenExpired && <p>{_("Token expired. Please re-authenticate.")}</p>}
                 </PreferenceLine>
-            </div>
 
-            {/* TODO: Remove before deployment */}
-            <div className="dev-tools">
-                <h2>Dev Options (need to be removed before deployment)</h2>
-                <button onClick={toggleHidePreferences}>
-                    {hidden ? "Show Preferences" : "Hide Normal Preferences"}
-                </button>
-                <button onClick={clearNotifiedStreams}>Clear dismissals</button>
-
-                {followedChannels && followedChannels.length > 0 && (
-                    <div className="followed-channels">
-                        <h3>{_("Followed Twitch Channels")}</h3>
-                        {showFollowedChannels ? (
-                            <ul>
-                                {followedChannels.map((channel) => (
-                                    <li key={channel.broadcaster_id}>{channel.broadcaster_name}</li>
-                                ))}
-                            </ul>
-                        ) : (
-                            <button onClick={handleShowFollowedChannels}>
-                                {_("Show Followed Channels")}
-                            </button>
-                        )}
-                    </div>
+                {user.is_moderator && (
+                    <button onClick={toggleHideDevMenu}>
+                        {hidden ? "Show Dev Menu" : "Hide Dev Menu"}
+                    </button>
                 )}
-
-                <div>
-                    <h3>Dismissed Notifications</h3>
-                    <ul>
-                        <>
-                            {notifiedStreams.map((note) => (
-                                <li key={note.streamId}>
-                                    {note.streamId} - {note.timestamp}
-                                </li>
-                            ))}
-                        </>
-                    </ul>
-                </div>
-
-                <div>
-                    <h3>Access Token</h3>
-                    <input
-                        type="text"
-                        value={userAccessToken || ""}
-                        onChange={(e) => setUserAccessToken(e.target.value)}
-                        style={{ width: "100%" }}
-                    />
-                </div>
             </div>
+
+            {/* Dev Menu */}
+            {user.is_moderator && !hidden && (
+                <div className={`dev-tools ${hidden ? "hidden" : ""}`}>
+                    <h2>Dev Options</h2>
+
+                    <button onClick={clearNotifiedStreams}>Clear dismissals</button>
+
+                    {followedChannels && followedChannels.length > 0 && (
+                        <div className="followed-channels">
+                            <h3>{_("Followed Twitch Channels")}</h3>
+                            {showFollowedChannels ? (
+                                <ul>
+                                    {followedChannels.map((channel) => (
+                                        <li key={channel.broadcaster_id}>
+                                            {channel.broadcaster_name}
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <button onClick={handleShowFollowedChannels}>
+                                    {_("Show Followed Channels")}
+                                </button>
+                            )}
+                        </div>
+                    )}
+
+                    <div>
+                        <h3>Dismissed Notifications</h3>
+                        <ul>
+                            <>
+                                {notifiedStreams.map((note) => (
+                                    <li key={note.streamId}>
+                                        {note.streamId} - {note.timestamp}
+                                    </li>
+                                ))}
+                            </>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h3>Access Token</h3>
+                        <input
+                            type="text"
+                            value={userAccessToken || ""}
+                            onChange={(e) => setUserAccessToken(e.target.value)}
+                            style={{ width: "100%" }}
+                        />
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

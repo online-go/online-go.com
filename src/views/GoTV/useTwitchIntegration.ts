@@ -149,7 +149,7 @@ export function useTwitchIntegration() {
         isAuthenticated,
         isTokenExpired,
         userAccessToken,
-        setUserAccessToken, // expose the setter for testing
+        setUserAccessToken,
         followedChannels,
         authenticateWithTwitch,
     };
