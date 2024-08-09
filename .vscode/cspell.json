@@ -111,6 +111,7 @@
         "postback",
         "rengo",
         "replot",
+        "rollups",
         "roundrobin",
         "rrule",
         "seekgraph",
