@@ -56,6 +56,14 @@ function startOfWeek(the_date: Date): Date {
     return new Date(date.setDate(diff));
 }
 
+// using this as vertical axis of all "report count" graphs helps convey
+// the relative number of types of reports.
+// TBD: it might be nice if this was dynamically provided by the server, but
+// we are already possibly hitting it hard for these rollups
+
+const EXPECTED_MAX_WEEKLY_CM_REPORTS = 160;
+const Y_STEP_SIZE = 40; // must divide evenly into EXPECTED_MAX_WEEKLY_CM_REPORTS
+
 const CMVoteActivityGraph = ({ vote_data, period }: VoteActivityGraphProps) => {
     if (!vote_data) {
         vote_data = [];
@@ -209,7 +217,16 @@ const CMVoteActivityGraph = ({ vote_data, period }: VoteActivityGraphProps) => {
                         precision: "day",
                     }}
                     axisLeft={{
-                        tickValues: 6,
+                        tickValues: Array.from(
+                            { length: EXPECTED_MAX_WEEKLY_CM_REPORTS / Y_STEP_SIZE + 1 },
+                            (_, i) => i * Y_STEP_SIZE,
+                        ),
+                    }}
+                    yScale={{
+                        stacked: false,
+                        type: "linear",
+                        min: 0,
+                        max: EXPECTED_MAX_WEEKLY_CM_REPORTS,
                     }}
                     margin={{
                         bottom: 40,
@@ -352,7 +369,7 @@ export function ReportsCenterCMInfo(): JSX.Element {
                             render: (X) => (
                                 <CMVoteActivityGraph
                                     vote_data={X.vote_data["overall"]}
-                                    period={30}
+                                    period={120}
                                 />
                             ),
                         },
@@ -368,7 +385,7 @@ export function ReportsCenterCMInfo(): JSX.Element {
                             {vote_data[report_type] ? (
                                 <CMVoteActivityGraph
                                     vote_data={users_data[report_type]}
-                                    period={30}
+                                    period={120}
                                 />
                             ) : (
                                 "no data"
