@@ -40,6 +40,7 @@ import { openAnnulQueueModal, AnnulQueueModal } from "AnnulQueueModal";
 import { ReportTypeSelector } from "./ReportTypeSelector";
 import { alert } from "swal_config";
 import { ErrorBoundary } from "ErrorBoundary";
+import * as DynamicHelp from "react-dynamic-help";
 
 // Used for saving updates to the report
 let report_note_id = 0;
@@ -72,6 +73,9 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
     const [voteCounts, setVoteCounts] = React.useState<{ [action: string]: number }>({});
 
     const related = report_manager.getRelatedReports(report_id);
+
+    const { registerTargetItem } = React.useContext(DynamicHelp.Api);
+    const { ref: ignore_button } = registerTargetItem("ignore-button");
 
     React.useEffect(() => {
         if (report_id) {
@@ -428,8 +432,9 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                     {!claimed_by_me && (
                         <button
                             className="default"
+                            ref={ignore_button}
                             onClick={() => {
-                                void report_manager.ignore(report.id);
+                                report_manager.ignore(report.id);
                                 next();
                             }}
                         >

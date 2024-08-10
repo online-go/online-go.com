@@ -78,7 +78,15 @@ export function CommunityModeratorIntro(): JSX.Element {
                     <div>
                         {pgettext(
                             "A help message describing a community moderator voting option",
-                            "Use this option if you think a full moderator needs to take a look - if the outcome is not clear to you.   This will go straight to the moderator queue.",
+                            "Use this option if you think a full moderator needs to take a look - serious or repeat offenders.   This will go straight to the moderator queue.",
+                        )}
+                    </div>
+                </HelpItem>
+                <HelpItem target="ignore-button" position={"bottom-centre"}>
+                    <div>
+                        {pgettext(
+                            "A help message describing the community moderator 'ignore' button",
+                            "If you are unsure about a report, you can ignore it!  It will stay in the queue for others to look at.",
                         )}
                     </div>
                 </HelpItem>
