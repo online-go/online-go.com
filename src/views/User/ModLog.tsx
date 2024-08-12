@@ -58,7 +58,12 @@ export function ModLog(props: ModLogProps): JSX.Element {
                     header: "",
                     className: "",
                     render: (X) => (
-                        <div>
+                        <div
+                            className={
+                                // "acknowledgements" are not warnings, so need de-emphasis
+                                X.action.includes("acknowledgement") ? "acknowledgement-event" : ""
+                            }
+                        >
                             <div className="action">
                                 {X.incident_report?.id ? (
                                     <Link to={`/reports-center/all/${X.incident_report.id}`}>
