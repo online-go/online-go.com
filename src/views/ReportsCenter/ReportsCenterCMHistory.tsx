@@ -84,7 +84,7 @@ export function ReportsCenterCMHistory(): JSX.Element {
                     {
                         header: "Your outcome",
                         className: () => "your-outcome",
-                        render: (X) => `${X.users_vote_category}`,
+                        render: (X) => `${X.users_vote_category ?? ""}`,
                     },
                 ]}
             />
