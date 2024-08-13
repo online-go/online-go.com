@@ -20,7 +20,7 @@ import { Link } from "react-router-dom";
 import { npgettext, interpolate } from "translate";
 import * as moment from "moment";
 import * as preferences from "preferences";
-import { GobanRenderer, createGoban } from "goban";
+import { GobanRenderer, JGOFMove, createGoban } from "goban";
 import * as data from "data";
 import { PersistentElement } from "PersistentElement";
 import { getUserRating, PROVISIONAL_RATING_CUTOFF } from "rank_utils";
@@ -36,6 +36,7 @@ export interface MiniGobanProps {
     width?: number;
     height?: number;
     displayWidth?: number;
+    className?: string;
 
     // If these are not provided, we look in the game itself (via the id prop)...
     // Also note that if you pass in a string, you won't get the rank of the player displayed...
@@ -54,6 +55,10 @@ export interface MiniGobanProps {
     onGobanCreated?: (goban: GobanRenderer) => void;
     chat?: boolean;
     labels_positioning?: "none" | "all" | "top-left" | "top-right" | "bottom-left" | "bottom-right";
+    sampleOptions?: {
+        undo?: boolean;
+        variation?: JGOFMove[];
+    };
 }
 
 export function MiniGoban(props: MiniGobanProps): JSX.Element {
@@ -117,12 +122,26 @@ export function MiniGoban(props: MiniGobanProps): JSX.Element {
                 width: props.width || (props.json ? props.json.width : 19),
                 height: props.height || (props.json ? props.json.height : 19),
                 last_move_opacity: last_move_opacity,
+                variation_stone_opacity: preferences.get("variation-stone-opacity"),
             },
             props.json,
         );
 
         if (props.onGobanCreated) {
             props.onGobanCreated(goban.current);
+        }
+
+        if (props.sampleOptions?.undo) {
+            (window as any)["mini_goban"] = goban.current;
+            //goban.current.visual_undo_request_indicator = true;
+            goban.current.engine.undo_requested = goban.current.engine.cur_move.move_number;
+        }
+
+        if (props.sampleOptions?.variation) {
+            goban.current.setMode("analyze");
+            for (const move of props.sampleOptions.variation) {
+                goban.current.engine.place(move.x, move.y);
+            }
         }
 
         goban.current.on("update", () => {
@@ -351,13 +370,13 @@ export function MiniGoban(props: MiniGobanProps): JSX.Element {
     }
 
     if (props.noLink || (!props.game_id && !props.review_id)) {
-        return <div className="MiniGoban nolink">{inner}</div>;
+        return <div className={"MiniGoban nolink " + (props.className ?? "")}>{inner}</div>;
     } else {
         if (props.game_id) {
             return (
                 <Link
                     to={`/game/${props.game_id}`}
-                    className="MiniGoban link"
+                    className={"MiniGoban link " + (props.className ?? "")}
                     {...new_tab_attributes}
                 >
                     {inner}
@@ -367,7 +386,7 @@ export function MiniGoban(props: MiniGobanProps): JSX.Element {
             return (
                 <Link
                     to={`/review/${props.review_id}`}
-                    className="MiniGoban link"
+                    className={"MiniGoban link " + (props.className ?? "")}
                     {...new_tab_attributes}
                 >
                     {inner}

@@ -37,25 +37,18 @@ import { GobanEngineConfig } from "goban";
 import { Toggle } from "Toggle";
 
 const sample_board_data: GobanEngineConfig = {
-    width: 9,
-    height: 9,
+    width: 3,
+    height: 3,
 
     initial_state: {
-        black:
-            "abbbbaga" + // cspell: disable-line
-            "gbgchcic", // cspell: disable-line
-        white:
-            "hahbib" + // cspell: disable-line
-            "acbccccbca", // cspell: disable-line
+        black: "abbbbaga", // cspell: disable-line
+        white: "acbccccbca", // cspell: disable-line
     },
-    initial_player: "black",
-    moves: [{ x: 4, y: 4 }],
     removed:
-        "aaia" + // cspell: disable-line
+        "aa" + // cspell: disable-line
         "abbbba" + // cspell: disable-line
-        "aahahbib", // cspell: disable-line
+        "aa", // cspell: disable-line
     marks: {
-        "score-black": "haiahbib", // cspell: disable-line
         "score-white": "aaabbabb", // cspell: disable-line
     },
 };
@@ -87,8 +80,15 @@ export function ThemePreferences(): JSX.Element | null {
         "visual-undo-request-indicator",
     );
     const [last_move_opacity, _setLastMoveOpacity] = usePreference("last-move-opacity");
+    /*
     const [variation_stone_opacity, _setVariationStoneOpacity] =
         usePreference("variation-stone-opacity");
+        */
+
+    //const [show_move_numbers, _setShowMoveNumbers] = usePreference("show-move-numbers");
+    const [show_variation_move_numbers, _setShowVariationMoveNumbers] = usePreference(
+        "show-variation-move-numbers",
+    );
 
     const toggleRemovalScale = React.useCallback((tf: boolean) => {
         if (tf) {
@@ -106,6 +106,16 @@ export function ThemePreferences(): JSX.Element | null {
         }
     }, []);
 
+    /*
+    const toggleShowMoveNumbers = React.useCallback((tf: boolean) => {
+        _setShowMoveNumbers(tf);
+    }, []);
+    */
+
+    const toggleShowVariationMoveNumbers = React.useCallback((tf: boolean) => {
+        _setShowVariationMoveNumbers(tf);
+    }, []);
+
     function setLastMoveOpacity(ev: React.ChangeEvent<HTMLInputElement>) {
         const value = parseFloat(ev.target.value);
 
@@ -114,6 +124,7 @@ export function ThemePreferences(): JSX.Element | null {
         }
     }
 
+    /*
     function setVariationStoneOpacity(ev: React.ChangeEvent<HTMLInputElement>) {
         const value = parseFloat(ev.target.value);
 
@@ -121,6 +132,7 @@ export function ThemePreferences(): JSX.Element | null {
             _setVariationStoneOpacity(value);
         }
     }
+    */
 
     const [svg_enabled, setSvgEnabled] = useData("experiments.svg");
     const enable_svg = svg_enabled === "enabled";
@@ -132,8 +144,7 @@ export function ThemePreferences(): JSX.Element | null {
         //stone_removal_graphic +
         //removal_scale +
         visual_undo_request_indicator +
-        last_move_opacity +
-        variation_stone_opacity;
+        last_move_opacity;
 
     return (
         <div className="ThemePreferences">
@@ -183,7 +194,10 @@ export function ThemePreferences(): JSX.Element | null {
                     options={[
                         { value: "none", label: _("None") },
                         { value: "all", label: _("All") },
-                        { value: "top-left", label: pgettext("Board label position", "Top left") },
+                        {
+                            value: "top-left",
+                            label: pgettext("Board label position", "Top left"),
+                        },
                         {
                             value: "top-right",
                             label: pgettext("Board label position", "Top right"),
@@ -201,67 +215,30 @@ export function ThemePreferences(): JSX.Element | null {
                 />
             </PreferenceLine>
             <PreferenceLine title={_("Board label lettering")}>
-                <PreferenceDropdown
-                    value={board_labeling}
-                    options={[
-                        { value: "automatic", label: _("Automatic") },
-                        { value: "A1", label: "A1" },
-                        { value: "1-1", label: "1-1" },
-                    ]}
-                    onChange={setBoardLabeling}
-                />
-            </PreferenceLine>
+                <div className="with-sample-goban">
+                    <div className="left">
+                        <PreferenceDropdown
+                            value={board_labeling}
+                            options={[
+                                { value: "automatic", label: _("Automatic") },
+                                { value: "A1", label: "A1" },
+                                { value: "1-1", label: "1-1" },
+                            ]}
+                            onChange={setBoardLabeling}
+                        />
+                    </div>
 
-            <PreferenceLine
-                title={_("Last move opacity")}
-                description={_(
-                    "Choose the level of opacity for the 'last move' mark on stones. 0.0 is transparent and 1.0 is opaque.",
-                )}
-            >
-                <input
-                    type="range"
-                    step="0.1"
-                    min="0.0"
-                    max="1.0"
-                    onChange={setLastMoveOpacity}
-                    value={last_move_opacity}
-                />
-                <span>
-                    &nbsp;
-                    {last_move_opacity}
-                </span>
-            </PreferenceLine>
-
-            <PreferenceLine
-                title={_("Variation stone opacity")}
-                description={_(
-                    "Choose the level of opacity for stones shown in variations. 0.0 is transparent and 1.0 is opaque.",
-                )}
-            >
-                <input
-                    type="range"
-                    step="0.1"
-                    min="0.0"
-                    max="1.0"
-                    onChange={setVariationStoneOpacity}
-                    value={variation_stone_opacity}
-                />
-                <span>
-                    &nbsp;
-                    {variation_stone_opacity}
-                </span>
-            </PreferenceLine>
-
-            <PreferenceLine
-                title={_("Visual undo request indicator")}
-                description={_(
-                    "This will cause an undo request to be indicated by a mark on your opponent's last move.",
-                )}
-            >
-                <Toggle
-                    checked={visual_undo_request_indicator}
-                    onChange={setVisualUndoRequestIndicator}
-                />
+                    <MiniGoban
+                        className="inline"
+                        key={sample_goban_key}
+                        json={sample_board_data}
+                        noLink={true}
+                        width={2}
+                        height={2}
+                        displayWidth={140}
+                        labels_positioning={label_positioning}
+                    />
+                </div>
             </PreferenceLine>
 
             <PreferenceLine title={_("Removed stones graphic")}>
@@ -291,22 +268,157 @@ export function ThemePreferences(): JSX.Element | null {
             </PreferenceLine>
 
             <PreferenceLine
-                className="title-on-top body-as-column"
-                title={pgettext(
-                    "Shows an example Goban to visualize theme settings",
-                    "Sample board",
+                title={_("Last move opacity")}
+                description={_(
+                    "Choose the level of opacity for the 'last move' mark on stones. 0.0 is transparent and 1.0 is opaque.",
                 )}
             >
-                {[{}].map(() => (
+                <div className="with-sample-goban">
+                    <div className="left">
+                        <input
+                            type="range"
+                            step="0.1"
+                            min="0.0"
+                            max="1.0"
+                            onChange={setLastMoveOpacity}
+                            value={last_move_opacity}
+                        />
+                        <span>
+                            &nbsp;
+                            {last_move_opacity}
+                        </span>
+                    </div>
+
                     <MiniGoban
-                        key={sample_goban_key}
-                        json={sample_board_data}
+                        className="inline"
+                        key={last_move_opacity}
+                        json={{
+                            moves: [{ x: 1, y: 0 }],
+                            width: 3,
+                            height: 1,
+                        }}
                         noLink={true}
-                        width={9}
-                        height={9}
-                        labels_positioning={label_positioning}
+                        width={2}
+                        height={1}
+                        displayWidth={80}
+                        labels_positioning={"none"}
                     />
-                ))}
+                </div>
+            </PreferenceLine>
+
+            {/*
+            <PreferenceLine title={_("Show analysis numbers")}>
+                <div className="with-sample-goban">
+                    <div className="left">
+                        <Toggle checked={show_move_numbers} onChange={toggleShowMoveNumbers} />
+                    </div>
+
+                    <MiniGoban
+                        className="inline"
+                        key={show_move_numbers + ""}
+                        json={{
+                            moves: [
+                                { x: 0, y: 0 },
+                                { x: 2, y: 0 },
+                            ],
+                            width: 3,
+                            height: 1,
+                        }}
+                        noLink={true}
+                        width={2}
+                        height={1}
+                        displayWidth={80}
+                        labels_positioning={"none"}
+                        sampleOptions={{}}
+                    />
+                </div>
+            </PreferenceLine>
+            */}
+
+            <PreferenceLine title={_("Show variation move numbers")}>
+                <div className="with-sample-goban">
+                    <div className="left">
+                        <Toggle
+                            checked={show_variation_move_numbers}
+                            onChange={toggleShowVariationMoveNumbers}
+                        />
+                    </div>
+
+                    <MiniGoban
+                        className="inline"
+                        key={show_variation_move_numbers + ""}
+                        json={{
+                            width: 3,
+                            height: 1,
+                        }}
+                        noLink={true}
+                        width={2}
+                        height={1}
+                        displayWidth={80}
+                        labels_positioning={"none"}
+                        sampleOptions={{
+                            variation: [
+                                { x: 0, y: 0 },
+                                { x: 2, y: 0 },
+                            ],
+                        }}
+                    />
+                </div>
+            </PreferenceLine>
+
+            {/*
+            <PreferenceLine
+                title={_("Variation stone opacity")}
+                description={_(
+                    "Choose the level of opacity for stones shown in variations. 0.0 is transparent and 1.0 is opaque.",
+                )}
+
+            >
+                <input
+                    type="range"
+                    step="0.1"
+                    min="0.0"
+                    max="1.0"
+                    onChange={setVariationStoneOpacity}
+                    value={variation_stone_opacity}
+                />
+                <span>
+                    &nbsp;
+                    {variation_stone_opacity}
+                </span>
+            </PreferenceLine>
+            */}
+
+            <PreferenceLine
+                title={_("Visual undo request indicator")}
+                description={_(
+                    "This will cause an undo request to be indicated by a mark on your opponent's last move.",
+                )}
+            >
+                <div className="with-sample-goban">
+                    <div className="left">
+                        <Toggle
+                            checked={visual_undo_request_indicator}
+                            onChange={setVisualUndoRequestIndicator}
+                        />
+                    </div>
+
+                    <MiniGoban
+                        className="inline"
+                        key={visual_undo_request_indicator + ""}
+                        json={{
+                            moves: [{ x: 1, y: 0 }],
+                            width: 3,
+                            height: 1,
+                        }}
+                        noLink={true}
+                        width={2}
+                        height={1}
+                        displayWidth={80}
+                        labels_positioning={"none"}
+                        sampleOptions={{ undo: true }}
+                    />
+                </div>
             </PreferenceLine>
 
             <PreferenceLine title={"Enable SVG goban renderer"}>

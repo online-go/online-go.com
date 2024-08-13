@@ -101,7 +101,7 @@ export function configure_goban() {
         getClockDrift: (): number => get_clock_drift(),
         getNetworkLatency: (): number => get_network_latency(),
         getLocation: (): string => window.location.pathname,
-        getShowMoveNumbers: (): boolean => !!preferences.get("show-move-numbers"),
+        //getShowMoveNumbers: (): boolean => !!preferences.get("show-move-numbers"),
         getShowVariationMoveNumbers: (): boolean => preferences.get("show-variation-move-numbers"),
         getMoveTreeNumbering: (): "none" | "move-number" | "move-coordinates" =>
             preferences.get("move-tree-numbering"),
@@ -111,6 +111,9 @@ export function configure_goban() {
 
         watchSelectedThemes: (cb) => preferences.watchSelectedThemes(cb),
         getSelectedThemes: () => preferences.getSelectedThemes(),
+
+        getShowUndoRequestIndicator: (): boolean =>
+            preferences.get("visual-undo-request-indicator"),
 
         customBlackStoneColor: (): string =>
             preferences.get("goban-theme-custom-black-stone-color"),
