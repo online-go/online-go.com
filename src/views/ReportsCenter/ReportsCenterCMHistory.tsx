@@ -44,7 +44,7 @@ export function ReportsCenterCMHistory(): JSX.Element {
                     },
                     {
                         header: "Type",
-                        className: () => "report_type",
+                        className: () => "report-type",
                         render: (X) => X.report_type,
                     },
                     {
@@ -58,27 +58,33 @@ export function ReportsCenterCMHistory(): JSX.Element {
                         render: (X) => X.state,
                     },
                     {
-                        header: "Votes",
-                        className: () => "vote_counts",
-                        render: (X) => (
-                            <ul>
-                                {Object.entries(X.vote_counts).map(([action, count]) => (
-                                    <li key={action}>
-                                        "{action}": {count?.toString()}
-                                    </li>
-                                ))}
-                            </ul>
-                        ),
-                    },
-                    {
                         header: "Escalated?",
                         className: () => "escalated",
                         render: (X) => (X.escalated ? "Yes" : ""),
                     },
                     {
+                        header: "Votes",
+                        className: () => "vote-counts",
+                        render: (X) => (
+                            <>
+                                {Object.entries(X.vote_counts).map(([action, count]) => (
+                                    <div key={action} className="action-votes">
+                                        <div className="action">{action}</div>
+                                        <div className="vote-count">{count?.toString()}</div>
+                                    </div>
+                                ))}
+                            </>
+                        ),
+                    },
+                    {
                         header: "Your vote",
-                        className: () => "your_vote",
+                        className: () => "your-vote",
                         render: (X) => `"${X.users_vote}"`,
+                    },
+                    {
+                        header: "Your outcome",
+                        className: () => "your-outcome",
+                        render: (X) => `${X.users_vote_category}`,
                     },
                 ]}
             />

@@ -28,4 +28,35 @@
     .resolved {
         themed color shade2
     }
+
+    .vote-counts {
+        display: grid;
+        grid-template-columns: 1fr auto; /* Action column takes up the remaining space, count column is as narrow as needed */
+
+        .action-votes {
+            display: contents; /* Makes item content align with the grid */
+
+            .action {
+                padding: 0.5em;
+                align-self: start; /* Align text to the top of the grid cell */
+                white-space: nowrap; /* Prevents text from wrapping */
+            }
+            .vote-count {
+                padding: 0.5em;
+                align-self: start; /* Align text to the top of the grid cell */
+                white-space: nowrap; /* Prevents text from wrapping */
+            }
+        }
+
+    }
+
+    .your-vote {
+        text-align: center;
+        padding-left: 0.5rem;
+    }
+
+    .escalated {
+        text-align: center;
+    }
+
 }
