@@ -35,19 +35,15 @@ interface ReportCount {
     non_consensus: number;
 }
 
-interface AggregatedReportsData {
+interface CMVotingOutcomeData {
     [reportType: string]: ReportCount[];
 }
 
-interface VoteActivityGraphProps {
-    vote_data?: ReportCount[];
-    period: number; // days to show leading up to today
+interface IndividualCMVotingOutcomeData {
+    user_id: number;
+    vote_data: CMVotingOutcomeData;
 }
-/*
-function round_date(the_date: Date): Date {
-    return new Date(the_date.setHours(0, 0, 0, 0));
-}
-*/
+
 function startOfWeek(the_date: Date): Date {
     const date = new Date(the_date);
     const day = date.getDay(); // Get current day of week (0 is Sunday)
@@ -56,15 +52,20 @@ function startOfWeek(the_date: Date): Date {
     return new Date(date.setDate(diff));
 }
 
-// using this as vertical axis of all "report count" graphs helps convey
+// Hardcoding the vertical axis of all "report count" graphs as the total number helps convey
 // the relative number of types of reports.
-// TBD: it might be nice if this was dynamically provided by the server, but
+
+// TBD: it might be nice if this number was dynamically provided by the server, but
 // we are already possibly hitting it hard for these rollups
 
 const EXPECTED_MAX_WEEKLY_CM_REPORTS = 160;
 const Y_STEP_SIZE = 40; // must divide evenly into EXPECTED_MAX_WEEKLY_CM_REPORTS
 
-const CMVoteActivityGraph = ({ vote_data, period }: VoteActivityGraphProps) => {
+interface CMVotingOutcomeGraphProps {
+    vote_data: ReportCount[];
+    period: number;
+}
+const CMVotingOutcomeGraph = ({ vote_data, period }: CMVotingOutcomeGraphProps) => {
     if (!vote_data) {
         vote_data = [];
     }
@@ -288,15 +289,15 @@ const CMVoteActivityGraph = ({ vote_data, period }: VoteActivityGraphProps) => {
 
 export function ReportsCenterCMInfo(): JSX.Element {
     const [selectedTabIndex, setSelectedTabIndex] = React.useState(0);
-    const [vote_data, setVoteData] = React.useState<AggregatedReportsData | null>(null);
-    const [users_data, setUsersData] = React.useState<AggregatedReportsData | null>(null);
+    const [vote_data, setVoteData] = React.useState<CMVotingOutcomeData | null>(null);
+    const [users_data, setUsersData] = React.useState<CMVotingOutcomeData | null>(null);
     const user = useUser();
 
     // Group data fetch (for default tab)
     useEffect(() => {
         const fetchData = async () => {
-            const response = await get(`moderation/cm_vote_summary`);
-            const fetchedData: AggregatedReportsData = await response;
+            const response = await get(`moderation/cm_voting_outcomes`);
+            const fetchedData: CMVotingOutcomeData = await response;
             setVoteData(fetchedData);
         };
 
@@ -310,9 +311,9 @@ export function ReportsCenterCMInfo(): JSX.Element {
         // Get the individual outcomes data when that tab gets selected
         if (index === 2) {
             const fetchData = async () => {
-                const response = await get(`me/cm_vote_summary`);
-                const fetchedData: AggregatedReportsData = await response;
-                setUsersData(fetchedData);
+                const response = await get(`me/cm_vote_outcomes`);
+                const fetchedData: IndividualCMVotingOutcomeData = await response;
+                setUsersData(fetchedData["vote_data"]);
             };
 
             fetchData().catch((err) => {
@@ -342,7 +343,7 @@ export function ReportsCenterCMInfo(): JSX.Element {
                     <div key={report_type}>
                         <h3>{report_type}</h3>
                         {vote_data[report_type] ? (
-                            <CMVoteActivityGraph vote_data={vote_data[report_type]} period={120} />
+                            <CMVotingOutcomeGraph vote_data={vote_data[report_type]} period={120} />
                         ) : (
                             "no data"
                         )}
@@ -367,7 +368,7 @@ export function ReportsCenterCMInfo(): JSX.Element {
                             header: "summaries",
                             className: () => "votes",
                             render: (X) => (
-                                <CMVoteActivityGraph
+                                <CMVotingOutcomeGraph
                                     vote_data={X.vote_data["overall"]}
                                     period={120}
                                 />
@@ -383,7 +384,7 @@ export function ReportsCenterCMInfo(): JSX.Element {
                         <div key={report_type}>
                             <h3>{report_type}</h3>
                             {vote_data[report_type] ? (
-                                <CMVoteActivityGraph
+                                <CMVotingOutcomeGraph
                                     vote_data={users_data[report_type]}
                                     period={120}
                                 />
