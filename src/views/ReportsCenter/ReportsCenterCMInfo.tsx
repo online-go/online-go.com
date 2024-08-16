@@ -357,7 +357,7 @@ export function ReportsCenterCMInfo(): JSX.Element {
                     pageSizeOptions={[1, 4]}
                     className="individual-overview"
                     name="individual-overview"
-                    source={"moderation/cm_overview"}
+                    source={"moderation/cm_individual_outcomes"}
                     columns={[
                         {
                             header: "CM",
