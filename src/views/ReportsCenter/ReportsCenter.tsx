@@ -28,7 +28,7 @@ import { community_mod_has_power } from "report_util";
 import { ViewReport } from "./ViewReport";
 import { ReportsCenterSettings } from "./ReportsCenterSettings";
 import { ReportsCenterHistory } from "./ReportsCenterHistory";
-import { ReportsCenterCMInfo } from "./ReportsCenterCMInfo";
+import { ReportsCenterCMDashboard } from "./ReportsCenterCMInfo";
 import { ReportsCenterCMHistory } from "./ReportsCenterCMHistory";
 
 interface OtherView {
@@ -309,7 +309,7 @@ export function ReportsCenter(): JSX.Element | null {
                         <ReportsCenterHistory />
                     )
                 ) : category === "cm" ? (
-                    <ReportsCenterCMInfo />
+                    <ReportsCenterCMDashboard />
                 ) : category === "hr" ? null : (
                     <ViewReport
                         reports={
