@@ -469,7 +469,7 @@ export function PlayControls({
                     {need_to_seal && (
                         <div className="needs-sealing">
                             {_(
-                                "The highlighted locations need to be sealed before the game can be scored correctly",
+                                "The highlighted locations may need to be sealed before the game can be scored correctly",
                             )}
                             <div className="needs-sealing-coordinates">
                                 <span className="needs-sealing-box" />
