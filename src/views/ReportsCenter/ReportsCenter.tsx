@@ -28,7 +28,7 @@ import { community_mod_has_power } from "report_util";
 import { ViewReport } from "./ViewReport";
 import { ReportsCenterSettings } from "./ReportsCenterSettings";
 import { ReportsCenterHistory } from "./ReportsCenterHistory";
-import { ReportsCenterCMDashboard } from "./ReportsCenterCMInfo";
+import { ReportsCenterCMDashboard } from "./ReportsCenterCMDashboard";
 import { ReportsCenterCMHistory } from "./ReportsCenterCMHistory";
 
 interface OtherView {
