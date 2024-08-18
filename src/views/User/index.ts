@@ -20,3 +20,4 @@ export * from "./UserByName";
 export * from "./ModTools";
 export * from "./ModLog";
 export * from "./VoteActivityGraph";
+export * from "./UserVoteActionSummary";

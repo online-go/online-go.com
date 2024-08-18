@@ -127,7 +127,7 @@ interface UserVoteActivityGraphProps {
     user_id: number;
 }
 
-const UserVoteActivityGraph = ({ user_id }: UserVoteActivityGraphProps) => {
+export const UserVoteActivityGraph = ({ user_id }: UserVoteActivityGraphProps) => {
     const [vote_data, setVoteData] = useState<ModeratorVoteCountData | null>(null);
 
     // Data fetch
@@ -148,5 +148,3 @@ const UserVoteActivityGraph = ({ user_id }: UserVoteActivityGraphProps) => {
     }
     return <VoteActivityGraph vote_data={vote_data} />;
 };
-
-export default UserVoteActivityGraph;

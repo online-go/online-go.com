@@ -27,6 +27,11 @@ import { useUser } from "hooks";
 import { PaginatedTable } from "PaginatedTable";
 import { Player } from "Player";
 import { Tab, TabList, TabPanel, Tabs } from "react-tabs";
+import { interpolate, pgettext } from "translate";
+import { community_mod_has_power, COMMUNITY_MODERATION_REPORT_TYPES } from "report_util";
+import { ReportType } from "Report";
+import { UserVoteActionSummary } from "User";
+import { UserVoteActivityGraph } from "User";
 
 interface ReportCount {
     date: string;
@@ -65,7 +70,7 @@ interface CMVotingOutcomeGraphProps {
     vote_data: ReportCount[];
     period: number;
 }
-const CMVotingOutcomeGraph = ({ vote_data, period }: CMVotingOutcomeGraphProps) => {
+const CMVotingOutcomeGraph = ({ vote_data, period }: CMVotingOutcomeGraphProps): JSX.Element => {
     if (!vote_data) {
         vote_data = [];
     }
@@ -287,44 +292,49 @@ const CMVotingOutcomeGraph = ({ vote_data, period }: CMVotingOutcomeGraphProps) 
     );
 };
 
-export function ReportsCenterCMInfo(): JSX.Element {
-    const [selectedTabIndex, setSelectedTabIndex] = React.useState(0);
+export function ReportsCenterCMDashboard(): JSX.Element {
+    const user = useUser();
+    const [selectedTabIndex, setSelectedTabIndex] = React.useState(user.moderator_powers ? 0 : 1);
     const [vote_data, setVoteData] = React.useState<CMVotingOutcomeData | null>(null);
     const [users_data, setUsersData] = React.useState<CMVotingOutcomeData | null>(null);
-    const user = useUser();
 
-    // Group data fetch (for default tab)
+    // `Tabs` isn't expecting the possibility that the initial tab is not zero.
     useEffect(() => {
-        const fetchData = async () => {
-            const response = await get(`moderation/cm_voting_outcomes`);
-            const fetchedData: CMVotingOutcomeData = await response;
-            setVoteData(fetchedData);
-        };
-
-        fetchData().catch((err) => {
-            console.error(err);
-        });
+        handleTabSelect(selectedTabIndex);
     }, []);
 
+    // Use tab selection to fetch data for tabs that need this done for them
     const handleTabSelect = (index: number) => {
         setSelectedTabIndex(index);
-        // Get the individual outcomes data when that tab gets selected
-        if (index === 2) {
-            const fetchData = async () => {
-                const response = await get(`me/cm_vote_outcomes`);
-                const fetchedData: IndividualCMVotingOutcomeData = await response;
-                setUsersData(fetchedData["vote_data"]);
-            };
 
-            fetchData().catch((err) => {
-                console.error(err);
-            });
+        if (index === 1 && !vote_data) {
+            fetchVoteData();
+        } else if (index === 3 && !users_data) {
+            fetchUsersData();
         }
     };
 
-    if (!vote_data) {
-        return <div>Loading...</div>;
-    }
+    const fetchVoteData = () => {
+        get(`moderation/cm_voting_outcomes`)
+            .then((response) => {
+                const fetchedData: CMVotingOutcomeData = response;
+                setVoteData(fetchedData);
+            })
+            .catch((err) => {
+                console.error(err);
+            });
+    };
+
+    const fetchUsersData = () => {
+        get(`me/cm_vote_outcomes`)
+            .then((response) => {
+                const fetchedData: IndividualCMVotingOutcomeData = response;
+                setUsersData(fetchedData["vote_data"]);
+            })
+            .catch((err) => {
+                console.error(err);
+            });
+    };
 
     return (
         <Tabs
@@ -333,24 +343,73 @@ export function ReportsCenterCMInfo(): JSX.Element {
             onSelect={handleTabSelect}
         >
             <TabList>
+                <Tab disabled={!user.moderator_powers}>My Summary</Tab>
                 <Tab>Group Outcomes</Tab>
                 <Tab disabled={!user.is_moderator}>Individual Outcomes</Tab>
                 <Tab disabled={!user.moderator_powers}>My Outcomes</Tab>
             </TabList>
 
+            {/* A CM's Summary Pie Charts */}
             <TabPanel>
-                {["overall", "escaping", "stalling", "score_cheating"].map((report_type) => (
-                    <div key={report_type}>
-                        <h3>{report_type}</h3>
-                        {vote_data[report_type] ? (
-                            <CMVotingOutcomeGraph vote_data={vote_data[report_type]} period={120} />
-                        ) : (
-                            "no data"
-                        )}
-                    </div>
-                ))}
+                <div className="mod-graph-header">
+                    {pgettext(
+                        "header for a graph showing how often the moderator voted with the others",
+                        "consensus votes (by week)",
+                    )}
+                </div>
+                <div>
+                    <UserVoteActivityGraph user_id={user.id} />
+                </div>
+                <div className="mod-graph-header">
+                    {pgettext(
+                        "header for a graph showing breakdown of moderator's vote outcomes",
+                        "vote outcome: summary",
+                    )}
+                </div>
+                <UserVoteActionSummary user_id={user.id} />
+                {Object.entries(COMMUNITY_MODERATION_REPORT_TYPES)
+                    .filter(([report_type, _name]) =>
+                        community_mod_has_power(user.moderator_powers, report_type as ReportType),
+                    )
+                    .map(([report_type, _flag]) => (
+                        <div key={report_type}>
+                            <div className="mod-graph-header" key={report_type}>
+                                {interpolate(
+                                    pgettext(
+                                        "header for a graph showing breakdown of moderator's vote outcomes",
+                                        "vote outcomes: {{report_type}}",
+                                    ),
+                                    { report_type },
+                                )}
+                            </div>
+                            <UserVoteActionSummary
+                                user_id={user.id}
+                                report_type={report_type as ReportType}
+                            />
+                        </div>
+                    ))}
             </TabPanel>
 
+            {/* The overall CM voting outcomes */}
+            <TabPanel>
+                {vote_data
+                    ? ["overall", "escaping", "stalling", "score_cheating"].map((report_type) => (
+                          <div key={report_type}>
+                              <h3>{report_type}</h3>
+                              {vote_data[report_type] ? (
+                                  <CMVotingOutcomeGraph
+                                      vote_data={vote_data[report_type]}
+                                      period={120}
+                                  />
+                              ) : (
+                                  "no data"
+                              )}
+                          </div>
+                      ))
+                    : "loading..."}
+            </TabPanel>
+
+            {/* Moderator view of each CM's voting outcomes */}
             <TabPanel>
                 <PaginatedTable
                     pageSize={4} /* Limit aggregation compute load */
@@ -378,21 +437,23 @@ export function ReportsCenterCMInfo(): JSX.Element {
                 />
             </TabPanel>
 
+            {/* A CM's individual voting outcomes */}
             <TabPanel>
-                {users_data &&
-                    ["overall", "escaping", "stalling", "score_cheating"].map((report_type) => (
-                        <div key={report_type}>
-                            <h3>{report_type}</h3>
-                            {vote_data[report_type] ? (
-                                <CMVotingOutcomeGraph
-                                    vote_data={users_data[report_type]}
-                                    period={120}
-                                />
-                            ) : (
-                                "no data"
-                            )}
-                        </div>
-                    ))}
+                {users_data
+                    ? ["overall", "escaping", "stalling", "score_cheating"].map((report_type) => (
+                          <div key={report_type}>
+                              <h3>{report_type}</h3>
+                              {users_data[report_type] ? (
+                                  <CMVotingOutcomeGraph
+                                      vote_data={users_data[report_type]}
+                                      period={120}
+                                  />
+                              ) : (
+                                  "no data"
+                              )}
+                          </div>
+                      ))
+                    : "loading..."}
             </TabPanel>
         </Tabs>
     );

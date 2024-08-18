@@ -15,15 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 import * as React from "react";
-import { _, pgettext, interpolate } from "translate";
+import { _, pgettext } from "translate";
 import { Link } from "react-router-dom";
 import { daysOnlyDurationString } from "TimeControl";
 import { Card } from "material";
-import * as data from "data";
-import UserVoteActionSummary from "./UserVoteActionSummary";
-import UserVoteActivityGraph from "./VoteActivityGraph";
-import { ReportType } from "Report";
-import { COMMUNITY_MODERATION_REPORT_TYPES, community_mod_has_power } from "report_util";
+import { UserVoteActivityGraph } from "./VoteActivityGraph";
 
 /** Activity card doesn't care about that many user traits */
 interface ActivityCardUser {
@@ -66,7 +62,6 @@ export function ActivityCard({
     tournaments,
     online_leagues,
 }: ActivityCardProps) {
-    const viewer = data.get("user");
     return (
         <Card className="activity-card">
             <h4>
@@ -160,42 +155,6 @@ export function ActivityCard({
                         )}
                     </div>
                     <UserVoteActivityGraph user_id={user.id} />
-
-                    {(viewer.id === user.id || viewer.is_moderator) && (
-                        <>
-                            <div className="mod-graph-header">
-                                {pgettext(
-                                    "header for a graph showing breakdown of moderator's vote outcomes",
-                                    "vote outcome summary",
-                                )}
-                            </div>
-                            <UserVoteActionSummary user_id={user.id} />
-                            {Object.entries(COMMUNITY_MODERATION_REPORT_TYPES)
-                                .filter(([report_type, _name]) =>
-                                    community_mod_has_power(
-                                        user.moderator_powers,
-                                        report_type as ReportType,
-                                    ),
-                                )
-                                .map(([report_type, _flag]) => (
-                                    <div key={report_type}>
-                                        <div className="mod-graph-header" key={report_type}>
-                                            {interpolate(
-                                                pgettext(
-                                                    "header for a graph showing breakdown of moderator's vote outcomes",
-                                                    "vote outcomes: {{report_type}}",
-                                                ),
-                                                { report_type },
-                                            )}
-                                        </div>
-                                        <UserVoteActionSummary
-                                            user_id={user.id}
-                                            report_type={report_type as ReportType}
-                                        />
-                                    </div>
-                                ))}
-                        </>
-                    )}
                 </>
             )}
         </Card>
