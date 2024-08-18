@@ -125,7 +125,6 @@ class ReportManager extends EventEmitter<Events> {
             }
         }
         data.set("reported-games", this.this_user_reported_games);
-        console.log("ReportManager: reported games", this.this_user_reported_games);
         this.emit("incident-report", report);
         this.update();
     }
