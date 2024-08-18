@@ -19,7 +19,7 @@ import { _, pgettext } from "translate";
 import { Link } from "react-router-dom";
 import { daysOnlyDurationString } from "TimeControl";
 import { Card } from "material";
-import UserVoteActivityGraph from "./VoteActivityGraph";
+import { UserVoteActivityGraph } from "./VoteActivityGraph";
 
 /** Activity card doesn't care about that many user traits */
 interface ActivityCardUser {

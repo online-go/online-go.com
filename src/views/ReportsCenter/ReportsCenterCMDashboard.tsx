@@ -30,8 +30,8 @@ import { Tab, TabList, TabPanel, Tabs } from "react-tabs";
 import { interpolate, pgettext } from "translate";
 import { community_mod_has_power, COMMUNITY_MODERATION_REPORT_TYPES } from "report_util";
 import { ReportType } from "Report";
-import UserVoteActionSummary from "User/UserVoteActionSummary";
-import UserVoteActivityGraph from "User/VoteActivityGraph";
+import { UserVoteActionSummary } from "User";
+import { UserVoteActivityGraph } from "User";
 
 interface ReportCount {
     date: string;

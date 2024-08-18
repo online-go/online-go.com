@@ -33,7 +33,7 @@ interface VoteSummaryPieProps {
     summary_data: VoteSummaryData;
 }
 
-const VoteSummaryPie = ({ summary_data }: VoteSummaryPieProps) => {
+export const VoteSummaryPie = ({ summary_data }: VoteSummaryPieProps) => {
     const chart_data = React.useMemo(
         () => [
             { id: "consensus", value: summary_data["total_consensus"] },
@@ -80,7 +80,7 @@ interface UserVoteActionSummaryProps {
     report_type?: ReportType;
 }
 
-const UserVoteActionSummary = ({ user_id, report_type }: UserVoteActionSummaryProps) => {
+export const UserVoteActionSummary = ({ user_id, report_type }: UserVoteActionSummaryProps) => {
     const [summary_data, setSummaryData] = useState<VoteSummaryData | null>(null);
 
     // Data fetch
@@ -106,5 +106,3 @@ const UserVoteActionSummary = ({ user_id, report_type }: UserVoteActionSummaryPr
     }
     return <VoteSummaryPie summary_data={summary_data} />;
 };
-
-export default UserVoteActionSummary;
