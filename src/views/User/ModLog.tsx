@@ -64,7 +64,15 @@ export function ModLog(props: ModLogProps): JSX.Element {
                                 X.action.includes("acknowledgement") ? "acknowledgement-event" : ""
                             }
                         >
-                            <div className="action">
+                            <div
+                                className={
+                                    "action" +
+                                    (!X.action.includes("acknowledgement") && // needed for modlog backward compatibility
+                                    X.action.includes("warning")
+                                        ? " warning-event"
+                                        : "")
+                                }
+                            >
                                 {X.incident_report?.id ? (
                                     <Link to={`/reports-center/all/${X.incident_report.id}`}>
                                         R{X.incident_report.id.toString().substr(-3)}
