@@ -23,7 +23,7 @@ import { Link } from "react-router-dom";
 import { MiniGoban } from "MiniGoban";
 import { alert } from "swal_config";
 import { post, get } from "requests";
-import { errorAlerter } from "misc";
+import { errorAlerter, showSecondsResolution } from "misc";
 import { doAnnul } from "moderation";
 
 import {
@@ -63,6 +63,7 @@ export function ReportedGame({
     const [game, setGame] = React.useState<rest_api.GameDetails | null>(null);
     const [, /* aiReviewUuid */ setAiReviewUuid] = React.useState<string | null>(null);
     const [annulled, setAnnulled] = React.useState<boolean>(false);
+    const [finalActionTime, setFinalActionTime] = React.useState<moment.Duration | null>(null);
 
     const user = useUser();
 
@@ -179,13 +180,22 @@ export function ReportedGame({
                             <div>White: {game && <Player user={game.white} />}</div>
                             <div>Game Phase: {goban.engine.phase}</div>
                             {(goban.engine.phase === "finished" || null) && (
-                                <div>
-                                    {_("Game Outcome:") + ` ${winner} (`}
-                                    <Player user={goban!.engine.winner as number} />
-                                    {` ) ${pgettext("use like: they won 'by' this much", "by")} `}
-                                    {goban.engine.outcome}
-                                    {annulled ? " annulled" : ""}
-                                </div>
+                                <>
+                                    <div>
+                                        {_("Game Outcome:") + ` ${winner} (`}
+                                        <Player user={goban!.engine.winner as number} />
+                                        {` ) ${pgettext(
+                                            "use like: they won 'by' this much",
+                                            "by",
+                                        )} `}
+                                        {goban.engine.outcome}
+                                        {annulled ? _(" annulled") : ""}
+                                    </div>
+                                    <div>
+                                        {_("The last event took: ") +
+                                            showSecondsResolution(finalActionTime)}
+                                    </div>
+                                </>
                             )}
 
                             {user.is_moderator && (
@@ -259,6 +269,7 @@ export function ReportedGame({
                                 handicap={goban.engine.config.handicap as any}
                                 black_id={goban.engine.config.black_player_id as any}
                                 white_id={goban.engine.config.white_player_id as any}
+                                onFinalActionCalculated={setFinalActionTime}
                             />
 
                             <GameLog goban={goban} />
