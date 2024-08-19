@@ -28,12 +28,24 @@ import { ScoringEventThumbnail } from "./ScoringEventThumbnail";
 
 const TRUNCATED_GAME_LOG_LENGTH = 25;
 
-export function GameLog({ goban_config }: { goban_config: GobanEngineConfig }): JSX.Element {
+interface GameLogProps {
+    goban_config: GobanEngineConfig;
+    onContainsTimeout?: (player_id: number) => void;
+}
+
+export function GameLog({ goban_config, onContainsTimeout }: GameLogProps): JSX.Element {
     const [log, setLog] = React.useState<LogEntry[]>([]);
     const game_id = goban_config.game_id as number;
 
     React.useEffect(() => {
-        socket.send(`game/log`, { game_id }, (log) => setLog(log));
+        socket.send(`game/log`, { game_id }, (log) => {
+            setLog(log);
+
+            const timeout_entry = log.find((entry) => entry.event === "timed_out");
+            if (timeout_entry && onContainsTimeout) {
+                onContainsTimeout(timeout_entry.data.player_id);
+            }
+        });
     }, [game_id]);
 
     const markCoords = React.useCallback(

@@ -45,9 +45,11 @@ import { GameLog } from "../Game/GameLog";
 export function ReportedGame({
     game_id,
     reported_at,
+    reported_by,
 }: {
     game_id: number;
     reported_at: number | undefined;
+    reported_by: number;
 }): JSX.Element | null {
     const [goban, setGoban] = React.useState<GobanRenderer | null>(null);
     const [selectedChatLog, setSelectedChatLog] = React.useState<ChatMode>("main");
@@ -57,8 +59,9 @@ export function ReportedGame({
     }, []);
     const cur_move = useCurrentMove(goban);
     const [game, setGame] = React.useState<rest_api.GameDetails | null>(null);
-    const [, /* aiReviewUuid */ setAiReviewUuid] = React.useState<string | null>(null);
+    const [_aiReviewUuid, setAiReviewUuid] = React.useState<string | null>(null);
     const [annulled, setAnnulled] = React.useState<boolean>(false);
+    const [timedOutPlayer, setTimedOutPlayer] = React.useState<number | null>(null);
 
     const user = useUser();
 
@@ -180,7 +183,22 @@ export function ReportedGame({
                                     <Player user={goban!.engine.winner as number} />
                                     {` ) ${pgettext("use like: they won 'by' this much", "by")} `}
                                     {goban.engine.outcome}
-                                    {annulled ? " annulled" : ""}
+                                    {annulled ? _(" annulled") : ""}
+                                </div>
+                            )}
+                            {timedOutPlayer && (
+                                <div>
+                                    {_("Player timed out:")}
+                                    <Player user={timedOutPlayer} />
+                                    {timedOutPlayer === reported_by
+                                        ? pgettext(
+                                              "A note of surprise telling a moderator that the person who timed out is the reporter",
+                                              " (reporter!)",
+                                          )
+                                        : pgettext(
+                                              "A label next to a player name telling a moderator that a they are the one who was reported",
+                                              " (reported)",
+                                          )}
                                 </div>
                             )}
 
@@ -257,7 +275,10 @@ export function ReportedGame({
                                 white_id={goban.engine.config.white_player_id as any}
                             />
 
-                            <GameLog goban_config={goban.config} />
+                            <GameLog
+                                goban_config={goban.config}
+                                onContainsTimeout={setTimedOutPlayer}
+                            />
                         </div>
 
                         <div className="col">
