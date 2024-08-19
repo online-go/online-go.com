@@ -126,16 +126,15 @@ export function PlayButtons({ show_cancel = true }: PlayButtonsProps): JSX.Eleme
             <span>
                 {cur_move_number === goban.engine.last_official_move.move_number && (
                     <>
-                        {((cur_move_number >= 1 &&
+                        {cur_move_number >= 1 &&
                             !engine.rengo &&
-                            player_to_move !== data.get("user").id &&
+                            (player_to_move !== data.get("user").id || engine.is_game_record) &&
                             !((engine.undo_requested ?? -1) >= engine.getMoveNumber()) &&
-                            goban.submit_move == null) ||
-                            null) && (
-                            <button className="bold undo-button xs" onClick={onUndo}>
-                                {_("Undo")}
-                            </button>
-                        )}
+                            goban.submit_move == null && (
+                                <button className="bold undo-button xs" onClick={onUndo}>
+                                    {_("Undo")}
+                                </button>
+                            )}
                         {show_undo_requested && (
                             <span>
                                 {show_accept_undo && (
@@ -153,12 +152,12 @@ export function PlayButtons({ show_cancel = true }: PlayButtonsProps): JSX.Eleme
                 )}
             </span>
             <span>
-                {((!show_submit && is_my_move && engine.handicapMovesLeft() === 0) || null) && (
+                {!show_submit && is_my_move && engine.handicapMovesLeft() === 0 && (
                     <button className="sm primary bold pass-button" onClick={pass}>
                         {_("Pass")}
                     </button>
                 )}
-                {((show_submit && engine.undo_requested !== engine.getMoveNumber()) || null) && (
+                {show_submit && engine.undo_requested !== engine.getMoveNumber() && (
                     <button
                         className="sm primary bold submit-button"
                         id="game-submit-move"

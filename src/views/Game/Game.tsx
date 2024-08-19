@@ -827,7 +827,7 @@ export function Game(): JSX.Element | null {
         }
         return (
             <div className="rengo-header-block">
-                {((!goban.current?.review_id && show_title) || null) && (
+                {!goban.current?.review_id && show_title && (
                     <div className="game-state">{title}</div>
                 )}
             </div>
@@ -1017,7 +1017,7 @@ export function Game(): JSX.Element | null {
                     </button>
                 </span>
 
-                {(view_mode !== "portrait" || null) && (
+                {view_mode !== "portrait" && (
                     <span className="move-number">
                         {interpolate(_("Move {{move_number}}"), {
                             move_number: goban.current?.engine.getMoveNumber(),
@@ -1031,7 +1031,7 @@ export function Game(): JSX.Element | null {
     const frag_kb_shortcuts = () => {
         return (
             <div>
-                {(game_id > 0 || null) && (
+                {game_id > 0 && (
                     <UIPush event="review-added" channel={`game-${game_id}`} action={reviewAdded} />
                 )}
                 <KBShortcut shortcut="up" action={nav_up} />
@@ -1057,7 +1057,7 @@ export function Game(): JSX.Element | null {
                     shortcut="f9"
                     action={() => setAnalyzeTool("draw", analyze_pencil_color)}
                 />
-                {(goban.current?.mode === "analyze" || null) && (
+                {goban.current?.mode === "analyze" && (
                     <KBShortcut shortcut="f10" action={clear_and_sync} />
                 )}
                 <KBShortcut shortcut="del" action={delete_branch} />
@@ -1124,7 +1124,6 @@ export function Game(): JSX.Element | null {
             draw_left_labels: label_position === "all" || label_position.indexOf("left") >= 0,
             draw_right_labels: label_position === "all" || label_position.indexOf("right") >= 0,
             draw_bottom_labels: label_position === "all" || label_position.indexOf("bottom") >= 0,
-            visual_undo_request_indicator: preferences.get("visual-undo-request-indicator"),
             variation_stone_opacity: preferences.get("variation-stone-opacity"),
             onScoreEstimationUpdated: () => {
                 goban.current?.redraw(true);
@@ -1381,9 +1380,11 @@ export function Game(): JSX.Element | null {
                         "double-click-submit-correspondence",
                     );
                 }
+                /*
                 goban.current.visual_undo_request_indicator = preferences.get(
                     "visual-undo-request-indicator",
                 );
+                */
             } catch (e) {
                 console.error(e.stack);
             }
@@ -1698,7 +1699,7 @@ export function Game(): JSX.Element | null {
                     <div className="left-col"></div>
 
                     <div className="center-col">
-                        {(view_mode === "portrait" || null) && (
+                        {view_mode === "portrait" && (
                             <div>
                                 <PlayerCards
                                     historical_black={historical_black}
@@ -1722,22 +1723,21 @@ export function Game(): JSX.Element | null {
 
                         {frag_below_board_controls()}
 
-                        {((view_mode === "square" && !squashed) || null) && CHAT}
+                        {view_mode === "square" && !squashed && CHAT}
 
-                        {((view_mode === "portrait" && !zen_mode) || null) && frag_ai_review()}
+                        {view_mode === "portrait" && !zen_mode && frag_ai_review()}
 
-                        {(view_mode === "portrait" || null) &&
+                        {view_mode === "portrait" &&
                             (review ? frag_review_controls() : frag_play_controls(false))}
 
-                        {((view_mode === "portrait" && !zen_mode) || null) && CHAT}
+                        {view_mode === "portrait" && !zen_mode && CHAT}
 
-                        {((view_mode === "portrait" &&
+                        {view_mode === "portrait" &&
                             !zen_mode &&
                             user_is_player &&
-                            phase !== "finished") ||
-                            null) && <CancelButton className="bold reject" />}
+                            phase !== "finished" && <CancelButton className="bold reject" />}
 
-                        {((view_mode === "portrait" && !zen_mode) || null) && (
+                        {view_mode === "portrait" && !zen_mode && (
                             <GameDock
                                 annulled={annulled}
                                 selected_ai_review_uuid={selected_ai_review_uuid}
@@ -1764,10 +1764,10 @@ export function Game(): JSX.Element | null {
                         )}
                     </div>
 
-                    {(view_mode !== "portrait" || null) && (
+                    {view_mode !== "portrait" && (
                         <div className={"right-col" + (experimental ? " experimental" : "")}>
-                            {(zen_mode || null) && <div className="align-col-start"></div>}
-                            {(view_mode === "square" || view_mode === "wide" || null) && (
+                            {zen_mode && <div className="align-col-start"></div>}
+                            {(view_mode === "square" || view_mode === "wide") && (
                                 <div>
                                     <PlayerCards
                                         historical_black={historical_black}
@@ -1788,23 +1788,23 @@ export function Game(): JSX.Element | null {
                                 </div>
                             )}
 
-                            {(view_mode === "square" || view_mode === "wide" || null) &&
+                            {(view_mode === "square" || view_mode === "wide") &&
                                 !zen_mode &&
                                 frag_ai_review()}
 
-                            {(view_mode === "square" || view_mode === "wide" || null) &&
+                            {(view_mode === "square" || view_mode === "wide") &&
                                 show_game_timing &&
                                 frag_timings()}
 
-                            {(view_mode === "square" || view_mode === "wide" || null) &&
+                            {(view_mode === "square" || view_mode === "wide") &&
                                 show_bot_detection_results &&
                                 frag_bot_detection_results()}
 
                             {review ? frag_review_controls() : frag_play_controls(true)}
 
-                            {(view_mode === "wide" || null) && CHAT}
-                            {((view_mode === "square" && squashed) || null) && CHAT}
-                            {((view_mode === "square" && squashed) || null) && CHAT}
+                            {view_mode === "wide" && CHAT}
+                            {view_mode === "square" && squashed && CHAT}
+                            {view_mode === "square" && squashed && CHAT}
 
                             <GameDock
                                 annulled={annulled}
@@ -1829,7 +1829,7 @@ export function Game(): JSX.Element | null {
                                 onDetectionResultsClicked={toggleShowBotDetectionResults}
                                 ai_suspected={bot_detection_results?.ai_suspected.length > 0}
                             />
-                            {(zen_mode || null) && <div className="align-col-end"></div>}
+                            {zen_mode && <div className="align-col-end"></div>}
                         </div>
                     )}
 

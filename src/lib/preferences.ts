@@ -51,8 +51,17 @@ export const defaults = {
     "goban-theme-black": null as null | string,
     "goban-theme-board": null as null | string,
     "goban-theme-white": null as null | string,
-    "goban-theme-black_stone_url": null as null | string,
-    "goban-theme-white_stone_url": null as null | string,
+    //"goban-theme-black_stone_url": null as null | string,
+    //"goban-theme-white_stone_url": null as null | string,
+    "goban-theme-removal-graphic": "square" as "square" | "x",
+    "goban-theme-removal-scale": 0.9,
+    "goban-theme-custom-board-background": "#DCB35C",
+    "goban-theme-custom-board-url": "",
+    "goban-theme-custom-board-line": "#000000",
+    "goban-theme-custom-black-stone-color": "#000000",
+    "goban-theme-custom-black-url": "",
+    "goban-theme-custom-white-stone-color": "#ffffff",
+    "goban-theme-custom-white-url": "",
     "hide-ranks": false,
     "label-positioning": "all" as LabelPosition,
     "label-positioning-puzzles": "all" as LabelPosition,
@@ -232,7 +241,7 @@ export function dump(): void {
     data.dump("preferences.", true);
 }
 
-export function getSelectedThemes(): { board: string; black: string; white: string } {
+export function getSelectedThemes(): GobanSelectedThemes {
     //let default_plain = $.browser.mobile || ($(window).width() * (window.devicePixelRatio || 1)) <= 768;
     const default_plain = $(window).width() * (window.devicePixelRatio || 1) <= 768;
 
@@ -241,6 +250,8 @@ export function getSelectedThemes(): { board: string; black: string; white: stri
     //let black = get("goban-theme-black") || (default_plain ? "Plain" : "Plain");
     let white = get("goban-theme-white") || (default_plain ? "Plain" : "Shell");
     let black = get("goban-theme-black") || (default_plain ? "Plain" : "Slate");
+    const removal_graphic = get("goban-theme-removal-graphic");
+    const removal_scale = get("goban-theme-removal-scale");
 
     if (!(board in Goban.THEMES["board"])) {
         board = default_plain ? "Plain" : "Kaya";
@@ -259,6 +270,8 @@ export function getSelectedThemes(): { board: string; black: string; white: stri
         board: board,
         white: white,
         black: black,
+        "removal-graphic": removal_graphic as any,
+        "removal-scale": removal_scale,
     };
 }
 
@@ -271,15 +284,31 @@ export function watchSelectedThemes(cb: (themes: GobanSelectedThemes) => void) {
         cb(getSelectedThemes());
     };
 
-    watch("goban-theme-board", call_cb);
-    watch("goban-theme-black", call_cb);
     dont_call_right_away = false;
-    watch("goban-theme-white", call_cb);
+    const keys: (keyof PreferencesType)[] = [
+        "goban-theme-board",
+        "goban-theme-black",
+        "goban-theme-white",
+        "goban-theme-removal-graphic",
+        "goban-theme-removal-scale",
+        "goban-theme-custom-board-background",
+        "goban-theme-custom-board-url",
+        "goban-theme-custom-board-line",
+        "goban-theme-custom-black-stone-color",
+        "goban-theme-custom-black-url",
+        "goban-theme-custom-white-stone-color",
+        "goban-theme-custom-white-url",
+    ];
+
+    for (const key of keys) {
+        watch(key, call_cb);
+    }
+
     return {
         remove: () => {
-            unwatch("goban-theme-board", call_cb);
-            unwatch("goban-theme-black", call_cb);
-            unwatch("goban-theme-white", call_cb);
+            for (const key of keys) {
+                unwatch(key, call_cb);
+            }
         },
     };
 }
@@ -311,4 +340,35 @@ export function usePreference<KeyT extends ValidPreference>(
     }, [key]);
 
     return [value, setStateAndPreference];
+}
+
+function migrate() {
+    function migrate_key(from: string, to: keyof PreferencesType) {
+        try {
+            if (data.get(from as keyof DataSchema, null) !== null) {
+                set(to, data.get(from as any) || "");
+                data.remove(from as any);
+            }
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
+    // Migrate old goban theme preferences to a consistent place
+    // Introduced 2024-08-06, safe for removal 2025-03-01
+    migrate_key("custom.black", "goban-theme-custom-black-stone-color");
+    migrate_key("custom.white", "goban-theme-custom-white-stone-color");
+    migrate_key("custom.board", "goban-theme-custom-board-background");
+    migrate_key("custom.line", "goban-theme-custom-board-line");
+    migrate_key("custom.url", "goban-theme-custom-board-url");
+    migrate_key("custom.black_stone_url", "goban-theme-custom-black-url");
+    migrate_key("custom.white_stone_url", "goban-theme-custom-white-url");
+    migrate_key("preferences.goban-theme-black_stone_url", "goban-theme-custom-black-url");
+    migrate_key("preferences.goban-theme-white_stone_url", "goban-theme-custom-white-url");
+}
+
+try {
+    migrate();
+} catch (e) {
+    console.error(e);
 }

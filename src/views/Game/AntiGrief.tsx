@@ -65,7 +65,8 @@ function checkForLeavingLiveGame(pathname: string) {
             was_player &&
             !on_game_page &&
             was_live_game &&
-            live_game_phase === "play"
+            live_game_phase === "play" &&
+            !goban?.paused_since
         ) {
             const t = toast(
                 <div>

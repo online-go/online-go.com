@@ -2999,9 +2999,9 @@ available-typed-arrays@^1.0.7:
     possible-typed-array-names "^1.0.0"
 
 axios@^1.6.4:
-  version "1.6.8"
-  resolved "https://registry.yarnpkg.com/axios/-/axios-1.6.8.tgz#66d294951f5d988a00e87a0ffb955316a619ea66"
-  integrity sha512-v/ZHtJDU39mDpyBoFVkETcd/uNdxrWRrg3bKpOKzXFA6Bvqopts6ALSMU3y6ijYxbw2B+wPrIv46egTzJXCLGQ==
+  version "1.7.4"
+  resolved "https://registry.yarnpkg.com/axios/-/axios-1.7.4.tgz#4c8ded1b43683c8dd362973c393f3ede24052aa2"
+  integrity sha512-DukmaFRnY6AzAALSH4J2M3k6PkaC+MfaAGdEERRWcC9q3/TWQwLpHR8ZRLKTdQ3aBDL64EdluRDjJqKw+BPZEw==
   dependencies:
     follow-redirects "^1.15.6"
     form-data "^4.0.0"
@@ -5995,10 +5995,10 @@ glogg@^2.2.0:
   dependencies:
     sparkles "^2.1.0"
 
-goban@=8.3.18:
-  version "8.3.18"
-  resolved "https://registry.yarnpkg.com/goban/-/goban-8.3.18.tgz#dcc33743d5dc12abd4cfbfdc8570659ce3ccb267"
-  integrity sha512-Q5WMKK8YXZ4ydU9VItf0wz0aKqziL4GBEA4Y0dGvYErIgdOcP3aU+lVNXZqHW752aXWbFcVWUnoJNn1ubaWhCw==
+goban@=8.3.22:
+  version "8.3.22"
+  resolved "https://registry.yarnpkg.com/goban/-/goban-8.3.22.tgz#296e321cc263153c8be6ba160e21407b1b5f6f82"
+  integrity sha512-UtjWP4toxcwC59Xp/25jUhbHO9x026UXyJb4rNVbpVIXTtbKPo5ALel4g+hwHnXJHfA7gz4WTstZ+SziTt5Llw==
   dependencies:
     eventemitter3 "^5.0.0"
 

@@ -34,24 +34,23 @@ import {
     GobanContext,
     useCurrentMove,
     game_control,
-    LogEntry,
-    LogData,
+    GameLog,
 } from "Game";
 import { GobanRenderer } from "goban";
 import { Resizable } from "Resizable";
-import { socket } from "sockets";
+
 import { Player } from "Player";
 import { useUser } from "hooks";
 import { shortTimeControl } from "TimeControl";
 
-const TRUNCATED_GAME_LOG_LENGTH = 25;
-
 export function ReportedGame({
     game_id,
     reported_at,
+    reported_by,
 }: {
     game_id: number;
     reported_at: number | undefined;
+    reported_by: number;
 }): JSX.Element | null {
     const [goban, setGoban] = React.useState<GobanRenderer | null>(null);
     const [selectedChatLog, setSelectedChatLog] = React.useState<ChatMode>("main");
@@ -61,9 +60,10 @@ export function ReportedGame({
     }, []);
     const cur_move = useCurrentMove(goban);
     const [game, setGame] = React.useState<rest_api.GameDetails | null>(null);
-    const [, /* aiReviewUuid */ setAiReviewUuid] = React.useState<string | null>(null);
+    const [_aiReviewUuid, setAiReviewUuid] = React.useState<string | null>(null);
     const [annulled, setAnnulled] = React.useState<boolean>(false);
     const [finalActionTime, setFinalActionTime] = React.useState<moment.Duration | null>(null);
+    const [timedOutPlayer, setTimedOutPlayer] = React.useState<number | null>(null);
 
     const user = useUser();
 
@@ -195,9 +195,24 @@ export function ReportedGame({
                                         {_("The last event took: ") +
                                             showSecondsResolution(finalActionTime)}
                                     </div>
+
+                                    {timedOutPlayer && (
+                                        <div>
+                                            {_("Player timed out:")}
+                                            <Player user={timedOutPlayer} />
+                                            {timedOutPlayer === reported_by
+                                                ? pgettext(
+                                                      "A note of surprise telling a moderator that the person who timed out is the reporter",
+                                                      " (reporter!)",
+                                                  )
+                                                : pgettext(
+                                                      "A label next to a player name telling a moderator that a they are the one who was reported",
+                                                      " (the reported player)",
+                                                  )}
+                                        </div>
+                                    )}
                                 </>
                             )}
-
                             {user.is_moderator && (
                                 <>
                                     {goban.engine.phase === "finished" ? (
@@ -245,7 +260,6 @@ export function ReportedGame({
                                         hidden={false}
                                     />
                                 )}
-
                             <Resizable
                                 id="move-tree-container"
                                 className="vertically-resizable"
@@ -272,7 +286,10 @@ export function ReportedGame({
                                 onFinalActionCalculated={setFinalActionTime}
                             />
 
-                            <GameLog goban={goban} />
+                            <GameLog
+                                goban_config={goban.config}
+                                onContainsTimeout={setTimedOutPlayer}
+                            />
                         </div>
 
                         <div className="col">
@@ -287,82 +304,5 @@ export function ReportedGame({
                 )}
             </div>
         </div>
-    );
-}
-
-function GameLog({ goban }: { goban: GobanRenderer }): JSX.Element {
-    const [log, setLog] = React.useState<LogEntry[]>([]);
-    const game_id = goban.engine.game_id;
-
-    React.useEffect(() => {
-        socket.send(`game/log`, { game_id }, (log) => setLog(log));
-    }, [game_id]);
-
-    const markCoords = React.useCallback(
-        (coords: string) => {
-            console.log("Should be marking coords ", coords);
-        },
-        [goban],
-    );
-
-    const [shouldDisplayFullLog, setShouldDisplayFullLog] = React.useState(false);
-
-    return (
-        <>
-            <h3>{_("Game Log")}</h3>
-            {log.length > 0 ? (
-                <>
-                    <table className="game-log">
-                        <thead>
-                            <tr>
-                                <th>
-                                    {pgettext(
-                                        "A heading: the time when something happened",
-                                        "Time",
-                                    )}
-                                </th>
-                                <th>{pgettext("A heading: something that happened", "Event")}</th>
-                                <th>
-                                    {pgettext(
-                                        "A heading: a column with game parameters in it",
-                                        "Parameters",
-                                    )}
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {log
-                                .filter(
-                                    (_, idx) =>
-                                        shouldDisplayFullLog || idx < TRUNCATED_GAME_LOG_LENGTH,
-                                )
-                                .map((entry, idx) => (
-                                    <tr key={entry.timestamp + ":" + idx} className="entry">
-                                        <td className="timestamp">
-                                            {moment(entry.timestamp).format("L LTS")}
-                                        </td>
-                                        <td className="event">{entry.event.replace(/_/g, " ")}</td>
-                                        <td className="data">
-                                            <LogData
-                                                config={goban.engine.config}
-                                                markCoords={markCoords}
-                                                event={entry.event}
-                                                data={entry.data}
-                                            />
-                                        </td>
-                                    </tr>
-                                ))}
-                        </tbody>
-                    </table>
-                    {!shouldDisplayFullLog && log.length > TRUNCATED_GAME_LOG_LENGTH && (
-                        <button onClick={() => setShouldDisplayFullLog(true)}>
-                            {`${_("Show all")} (${log.length})`}
-                        </button>
-                    )}
-                </>
-            ) : (
-                <div>{_("No game log entries")}</div>
-            )}
-        </>
     );
 }

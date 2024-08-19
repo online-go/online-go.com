@@ -16,13 +16,12 @@
  */
 
 import * as React from "react";
-import * as moment from "moment";
-import { _, pgettext } from "translate";
+
+import { _ } from "translate";
 import { openModal, Modal } from "Modal";
 import { Player } from "Player";
 import { socket } from "sockets";
-import { GobanEngineConfig } from "goban";
-import { ScoringEventThumbnail } from "../../views/ReportsCenter/ScoringEventThumbnail";
+import { GameLog } from "./GameLog";
 
 interface Events {}
 
@@ -74,43 +73,7 @@ export class GameLogModal extends Modal<Events, GameLogModalProperties, { log: A
                     </div>
                 </div>
                 <div className="body">
-                    <table className="log">
-                        <thead>
-                            <tr>
-                                <th>Time</th>
-                                <th>Event</th>
-                                <th>Parameters</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {this.state.log
-                                .filter(
-                                    // filter out weird stone_removal_stones_set events with no stones
-                                    (entry) =>
-                                        !(
-                                            entry.event === "stone_removal_stones_set" &&
-                                            entry.data.stones === ""
-                                        ),
-                                )
-                                .map((entry, idx) => (
-                                    <tr key={entry.timestamp + ":" + idx} className="entry">
-                                        <td className="timestamp">
-                                            {moment(entry.timestamp).format("L LTS")}
-                                        </td>
-                                        <td className="event">{entry.event}</td>
-                                        <td className="data">
-                                            <LogData
-                                                config={this.props.config}
-                                                markCoords={this.props.markCoords}
-                                                event={entry.event}
-                                                data={entry.data}
-                                                key={idx}
-                                            />
-                                        </td>
-                                    </tr>
-                                ))}
-                        </tbody>
-                    </table>
+                    <GameLog goban_config={this.props.config} />
                 </div>
                 <div className="buttons">
                     <button onClick={this.close}>{_("Close")}</button>
@@ -118,134 +81,6 @@ export class GameLogModal extends Modal<Events, GameLogModalProperties, { log: A
             </div>
         );
     }
-}
-
-// Fields that are only used to enhance the display of other fields,
-// or aren't used at all.
-const HIDDEN_LOG_FIELDS = [
-    "current_removal_string", // used with "stones"
-    "color", // used with "player_id"
-    "move_number", // irrelevant
-    // isn't used
-    "strict_seki_mode",
-];
-
-export function LogData({
-    config,
-    event,
-    data,
-}: {
-    config: GobanEngineConfig;
-    markCoords: (stones: string) => void;
-    event: string;
-    data: any;
-}): JSX.Element | null {
-    const [markedConfig, setMarkedConfig] = React.useState<GobanEngineConfig | null>(null);
-
-    // Obvious once you think about it: the "stones" field that we get here is talking about
-    // "stones that are dead, or have been marked alive"
-    //  It'd be better if this was called "marked stones", but that'd be a big change.
-
-    //  It's valid for a thumbnail to have _none_ of these: a board that has no dead stones on it!
-
-    React.useEffect(() => {
-        // Set up the marks config for the thumbnail
-        if (event === "game_created") {
-            // don't set up a thumbnail for game created
-            return;
-        }
-        if (!data?.hasOwnProperty("stones")) {
-            // don't set up a thumbnail for events that don't have the `stones` field...
-            // they aren't about marking stones, thumbnail is not relevant
-            return;
-        }
-
-        let marks: { [mark: string]: string };
-        if (event === "stone_removal_stones_set") {
-            if (data.removed) {
-                marks = { cross: data.stones };
-            } else {
-                marks = { triangle: data.stones };
-            }
-        } else {
-            marks = { cross: data.stones }; // TBD: What is this case?
-        }
-
-        setMarkedConfig({
-            ...config,
-            marks,
-            removed: "",
-        });
-    }, [config, event, data?.removed, data?.stones]);
-
-    const ret: Array<JSX.Element> = [];
-
-    if (event === "game_created") {
-        // game_created has the whole board config list of field, don't dump all those in the log.
-        return null;
-    }
-
-    if (data) {
-        try {
-            for (const k in data) {
-                if (k === "player_id") {
-                    ret.push(
-                        <span key={k} className="field">
-                            <Player user={data[k]} />
-                            {data.color ? (data.color === "black" ? " (black)" : " (white)") : ""}
-                        </span>,
-                    );
-                } else if (k === "winner") {
-                    ret.push(
-                        <span key={k} className="field">
-                            Winner: <Player user={data[k]} />
-                        </span>,
-                    );
-                } else if (k === "stones") {
-                    // we'll re-render when it's set
-                    if (markedConfig) {
-                        ret.push(
-                            <ScoringEventThumbnail
-                                key={k}
-                                config={markedConfig}
-                                move_number={data.move_number}
-                                removal_string={data.current_removal_string}
-                            />,
-                        );
-                    }
-                } else if (k === "removed") {
-                    ret.push(
-                        <span key={k} className="field">
-                            {data[k] ? "stones marked dead" : "stones marked alive"}
-                        </span>,
-                    );
-                } else if (k === "needs_sealing") {
-                    // this only comes with autoscore updates
-                    ret.push(
-                        <span key={k} className="field">
-                            {pgettext(
-                                "This is telling a moderator that they are looking at an update from the auto scorer",
-                                "auto-scorer update",
-                            )}
-                        </span>,
-                    );
-                } else if (HIDDEN_LOG_FIELDS.includes(k)) {
-                    // skip
-                } else {
-                    ret.push(
-                        <span key={k} className="field">
-                            {k}: {JSON.stringify(data[k])}
-                        </span>,
-                    );
-                }
-            }
-        } catch (e) {
-            // ignore
-            console.warn(e);
-        }
-    }
-
-    return <div>{ret}</div>;
 }
 
 interface DCBProperties {

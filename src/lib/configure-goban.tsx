@@ -29,18 +29,14 @@ import { toast } from "toast";
 (window as any)["GobanThemes"] = Goban.THEMES;
 (window as any)["GobanEngine"] = GobanEngine;
 
-data.setDefault("custom.black", "#000000");
-data.setDefault("custom.white", "#FFFFFF");
-data.setDefault("custom.board", "#DCB35C");
-data.setDefault("custom.line", "#000000");
-data.setDefault("custom.url", "");
-
 let previous_toast: any = null;
 
 export function configure_goban() {
-    data.watch("experiments.svg", () => {
-        const v = data.get("experiments.svg");
+    data.watch("experiments.canvas", () => {
+        const v = data.get("experiments.canvas");
         if (v === "enabled") {
+            setGobanRenderer("canvas");
+        } else {
             setGobanRenderer("svg");
         }
     });
@@ -105,7 +101,7 @@ export function configure_goban() {
         getClockDrift: (): number => get_clock_drift(),
         getNetworkLatency: (): number => get_network_latency(),
         getLocation: (): string => window.location.pathname,
-        getShowMoveNumbers: (): boolean => !!preferences.get("show-move-numbers"),
+        //getShowMoveNumbers: (): boolean => !!preferences.get("show-move-numbers"),
         getShowVariationMoveNumbers: (): boolean => preferences.get("show-variation-move-numbers"),
         getMoveTreeNumbering: (): "none" | "move-number" | "move-coordinates" =>
             preferences.get("move-tree-numbering"),
@@ -116,15 +112,20 @@ export function configure_goban() {
         watchSelectedThemes: (cb) => preferences.watchSelectedThemes(cb),
         getSelectedThemes: () => preferences.getSelectedThemes(),
 
-        customBlackStoneColor: (): string => data.get("custom.black", ""),
-        customBlackTextColor: (): string => data.get("custom.white", ""),
-        customWhiteStoneColor: (): string => data.get("custom.white", ""),
-        customWhiteTextColor: (): string => data.get("custom.black", ""),
-        customBoardColor: (): string => data.get("custom.board", ""),
-        customBoardLineColor: (): string => data.get("custom.line", ""),
-        customBoardUrl: (): string => data.get("custom.url", ""),
-        customBlackStoneUrl: (): string => data.get("custom.black_stone_url", ""),
-        customWhiteStoneUrl: (): string => data.get("custom.white_stone_url", ""),
+        getShowUndoRequestIndicator: (): boolean =>
+            preferences.get("visual-undo-request-indicator"),
+
+        customBlackStoneColor: (): string =>
+            preferences.get("goban-theme-custom-black-stone-color"),
+        customBlackTextColor: (): string => preferences.get("goban-theme-custom-white-stone-color"),
+        customWhiteStoneColor: (): string =>
+            preferences.get("goban-theme-custom-white-stone-color"),
+        customWhiteTextColor: (): string => preferences.get("goban-theme-custom-black-stone-color"),
+        customBoardColor: (): string => preferences.get("goban-theme-custom-board-background"),
+        customBoardLineColor: (): string => preferences.get("goban-theme-custom-board-line"),
+        customBoardUrl: (): string => preferences.get("goban-theme-custom-board-url"),
+        customBlackStoneUrl: (): string => preferences.get("goban-theme-custom-black-url"),
+        customWhiteStoneUrl: (): string => preferences.get("goban-theme-custom-white-url"),
         addCoordinatesToChatInput: (coordinates: string): void => {
             const chat_input = $(".chat-input");
 

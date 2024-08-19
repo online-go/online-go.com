@@ -140,12 +140,12 @@ function NumCapturesText({ color, score, zen_mode, hidden }: NumCapturesProps) {
         <div className={"captures" + (hidden ? " hidden" : "")}>
             <span className="num-captures-container">
                 <span className="num-captures-count">{num_prisoners}</span>
-                {(!zen_mode || null) && (
+                {!zen_mode && (
                     <span className="num-captures-units">
                         {` ${ngettext("capture", "captures", num_prisoners)}`}
                     </span>
                 )}
-                {(zen_mode || null) && (
+                {zen_mode && (
                     <span className="num-captures-stone">
                         {" "}
                         <img className="stone-image" src={prisoner_img_src} />
@@ -204,7 +204,7 @@ export function PlayerCard({
     ai_suspected,
 }: PlayerCardProps) {
     const engine = goban.engine;
-    const player = engine.players[color];
+    const player = { ...engine.players[color] };
     const player_to_move = usePlayerToMove(goban);
     const [hide_flags] = usePreference("moderator.hide-flags");
 
@@ -218,8 +218,13 @@ export function PlayerCard({
 
     const user = useUser();
 
+    if (goban.is_game_record) {
+        player.id = 0;
+        historical = null;
+    }
+
     const show_player_card_mod_controls =
-        user.is_moderator && game_id && !hide_player_card_mod_controls;
+        user.is_moderator && game_id && !hide_player_card_mod_controls && !!player.id;
 
     const jumpToPrevGame = () => {
         get(`games/${game_id}/prev/${player.id}`)
@@ -277,9 +282,9 @@ export function PlayerCard({
     return (
         <div className={`${color} ${highlight_their_turn} player-container`}>
             <div className="player-icon-clock-row">
-                {((player && player.id) || null) && (
+                {player && !!player.id && (
                     <div className="player-icon-container" style={player_bg}>
-                        {auto_resign_expiration && (
+                        {!!auto_resign_expiration && (
                             <div className={`auto-resign-overlay`}>
                                 <i className="fa fa-bolt" />
                                 <CountDown to={auto_resign_expiration} />
@@ -292,28 +297,28 @@ export function PlayerCard({
                     </div>
                 )}
 
-                {((engine.phase !== "finished" && !goban.review_id) || null) && (
+                {engine.phase !== "finished" && !goban.review_id && (
                     <Clock goban={goban} color={color} className="in-game-clock" />
                 )}
             </div>
 
-            {((player && player.rank !== -1) || null) && (
+            {player && player.rank !== -1 && (
                 <div className={`${color} player-name-container`}>
                     <Player user={player.id} historical={(!engine.rengo && historical) || player} />
                 </div>
             )}
 
-            {(!player || null) && (
+            {!player && (
                 <span className="player-name-plain">
                     {color === "black" ? _("Black") : _("White")}
                 </span>
             )}
 
-            {(show_player_card_mod_controls || null) && (
+            {show_player_card_mod_controls && (
                 <div className="player-card-mod-controls">
                     <i className="fa fa-2x fa-angle-left" onClick={jumpToPrevGame} />
                     <div className="middle-mod-controls">
-                        {(engine.phase === "finished" || null) && (
+                        {engine.phase === "finished" && (
                             <i className="fa fa-gavel" onClick={annulWithBlame} />
                         )}
                     </div>

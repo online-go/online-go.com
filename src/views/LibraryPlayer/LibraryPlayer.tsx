@@ -32,6 +32,7 @@ import { IdType } from "src/lib/types";
 import { openSGFPasteModal } from "SGFPasteModal";
 import * as preferences from "preferences";
 import { PlayerCacheEntry } from "src/lib/player_cache";
+import { createGameRecord } from "ChallengeModal";
 
 type LibraryPlayerProperties = RouteComponentProps<{
     player_id: string;
@@ -209,7 +210,13 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                         black_lost: g[17],
                         white_lost: g[18],
                         outcome: g[19],
+                        source: g[20],
                     };
+
+                    if (game.source === "record") {
+                        delete game.black.id;
+                        delete game.white.id;
+                    }
 
                     game.collection.games.push(game);
                 }
@@ -467,7 +474,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                     </div>
                     {owner && (
                         <div className="new-collection flex center-vertically">
-                            {(Object.keys(this.state.games_checked).length === 0 || null) && (
+                            {Object.keys(this.state.games_checked).length === 0 && (
                                 <div className="name-checkbox">
                                     <input
                                         type="text"
@@ -489,7 +496,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                                     </div>
                                 </div>
                             )}
-                            {(Object.keys(this.state.games_checked).length === 0 || null) && (
+                            {Object.keys(this.state.games_checked).length === 0 && (
                                 <button
                                     className="primary"
                                     disabled={this.state.new_collection_name.trim() === ""}
@@ -498,7 +505,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                                     {_("Create collection")}
                                 </button>
                             )}
-                            {(Object.keys(this.state.games_checked).length > 0 || null) && (
+                            {Object.keys(this.state.games_checked).length > 0 && (
                                 <button className="reject" onClick={this.deleteGames}>
                                     {_("Delete selected SGFs")}
                                 </button>
@@ -521,6 +528,18 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                                 <Card>
                                     {owner && (
                                         <div className="upload-button">
+                                            <button
+                                                className="primary"
+                                                onClick={() => {
+                                                    createGameRecord({
+                                                        library_collection_id: parseInt(
+                                                            this.state.collection_id,
+                                                        ),
+                                                    });
+                                                }}
+                                            >
+                                                {_("Record Game")}
+                                            </button>
                                             <button
                                                 className="primary"
                                                 onClick={() =>
