@@ -108,6 +108,7 @@ interface ChatSchema {
     "split-sizes": number[];
 }
 
+/*
 export interface CustomGobanThemeSchema {
     black: string;
     white: string;
@@ -117,6 +118,7 @@ export interface CustomGobanThemeSchema {
     black_stone_url: string;
     white_stone_url: string;
 }
+*/
 
 type SoundSchema = {
     "enabled.disconnected": boolean;
@@ -223,7 +225,7 @@ export interface DataSchema
         Prefixed<ChatSchema, "chat">,
         Prefixed<SoundSchema, "sound">,
         Prefixed<PreferencesSchema, "preferences">,
-        Prefixed<CustomGobanThemeSchema, "custom">,
+        //Prefixed<CustomGobanThemeSchema, "custom">,
         Prefixed<ChatIndicatorSchema, "chat-indicator">,
         Prefixed<TimeControlSchema, "time_control">,
         Prefixed<PMSchema, "pm">,
