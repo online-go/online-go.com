@@ -123,6 +123,12 @@ export function NavBar(): JSX.Element {
         closeNavbar();
         createDemoBoard();
     };
+    /*
+    const newRecord = () => {
+        closeNavbar();
+        createGameRecord();
+    };
+    */
 
     React.useEffect(() => {
         setForceNavClose(true);
@@ -370,7 +376,7 @@ export function NavBar(): JSX.Element {
                         placeholder={_("Search")}
                     />
                 </div>
-                {(search_focus || omniMouseOver || null) && (
+                {(search_focus || omniMouseOver) && (
                     <OmniSearch
                         search={search}
                         onMouseOver={() => setOmniMouseOver(true)}
@@ -385,7 +391,7 @@ export function NavBar(): JSX.Element {
                         <span className="spacer" />
                         <i className="fa fa-adjust" onClick={toggleTheme} />
                         <LanguagePicker />
-                        {(show_sign_in || null) && (
+                        {show_sign_in && (
                             <Link className="sign-in" to={"/sign-in#" + location.pathname}>
                                 {_("Sign In")}
                             </Link>
