@@ -134,8 +134,8 @@ export function ThemePreferences(): JSX.Element | null {
     }
     */
 
-    const [svg_enabled, setSvgEnabled] = useData("experiments.svg");
-    const enable_svg = svg_enabled === "enabled";
+    const [canvas_enabled, setCanvasEnabled] = useData("experiments.canvas");
+    const enable_svg = canvas_enabled !== "enabled";
 
     const sample_goban_key =
         (enable_svg ? "svg" : "canvas") +
@@ -420,12 +420,12 @@ export function ThemePreferences(): JSX.Element | null {
                 </div>
             </PreferenceLine>
 
-            <PreferenceLine title={"Enable SVG goban renderer"}>
+            <PreferenceLine title={"Use old canvas goban renderer"}>
                 <Toggle
-                    checked={enable_svg}
+                    checked={canvas_enabled === "enabled"}
                     onChange={(tf) => {
                         //data.set("experiments.svg", tf ? "enabled" : undefined);
-                        setSvgEnabled(tf ? "enabled" : undefined);
+                        setCanvasEnabled(tf ? "enabled" : undefined);
                     }}
                 />
             </PreferenceLine>

@@ -32,12 +32,12 @@ import { toast } from "toast";
 let previous_toast: any = null;
 
 export function configure_goban() {
-    data.watch("experiments.svg", () => {
-        const v = data.get("experiments.svg");
+    data.watch("experiments.canvas", () => {
+        const v = data.get("experiments.canvas");
         if (v === "enabled") {
-            setGobanRenderer("svg");
-        } else {
             setGobanRenderer("canvas");
+        } else {
+            setGobanRenderer("svg");
         }
     });
 
