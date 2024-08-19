@@ -16,7 +16,6 @@
  */
 
 import * as React from "react";
-import * as moment from "moment";
 import { useRefresh } from "hooks";
 import { _, pgettext } from "translate";
 import { Link } from "react-router-dom";
@@ -34,17 +33,14 @@ import {
     GobanContext,
     useCurrentMove,
     game_control,
-    LogEntry,
-    LogData,
 } from "Game";
 import { GobanRenderer } from "goban";
 import { Resizable } from "Resizable";
-import { socket } from "sockets";
+
 import { Player } from "Player";
 import { useUser } from "hooks";
 import { shortTimeControl } from "TimeControl";
-
-const TRUNCATED_GAME_LOG_LENGTH = 25;
+import { GameLog } from "../Game/GameLog";
 
 export function ReportedGame({
     game_id,
@@ -261,7 +257,7 @@ export function ReportedGame({
                                 white_id={goban.engine.config.white_player_id as any}
                             />
 
-                            <GameLog goban={goban} />
+                            <GameLog goban_config={goban.config} />
                         </div>
 
                         <div className="col">
@@ -276,82 +272,5 @@ export function ReportedGame({
                 )}
             </div>
         </div>
-    );
-}
-
-function GameLog({ goban }: { goban: GobanRenderer }): JSX.Element {
-    const [log, setLog] = React.useState<LogEntry[]>([]);
-    const game_id = goban.engine.game_id;
-
-    React.useEffect(() => {
-        socket.send(`game/log`, { game_id }, (log) => setLog(log));
-    }, [game_id]);
-
-    const markCoords = React.useCallback(
-        (coords: string) => {
-            console.log("Should be marking coords ", coords);
-        },
-        [goban],
-    );
-
-    const [shouldDisplayFullLog, setShouldDisplayFullLog] = React.useState(false);
-
-    return (
-        <>
-            <h3>{_("Game Log")}</h3>
-            {log.length > 0 ? (
-                <>
-                    <table className="game-log">
-                        <thead>
-                            <tr>
-                                <th>
-                                    {pgettext(
-                                        "A heading: the time when something happened",
-                                        "Time",
-                                    )}
-                                </th>
-                                <th>{pgettext("A heading: something that happened", "Event")}</th>
-                                <th>
-                                    {pgettext(
-                                        "A heading: a column with game parameters in it",
-                                        "Parameters",
-                                    )}
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {log
-                                .filter(
-                                    (_, idx) =>
-                                        shouldDisplayFullLog || idx < TRUNCATED_GAME_LOG_LENGTH,
-                                )
-                                .map((entry, idx) => (
-                                    <tr key={entry.timestamp + ":" + idx} className="entry">
-                                        <td className="timestamp">
-                                            {moment(entry.timestamp).format("L LTS")}
-                                        </td>
-                                        <td className="event">{entry.event.replace(/_/g, " ")}</td>
-                                        <td className="data">
-                                            <LogData
-                                                config={goban.engine.config}
-                                                markCoords={markCoords}
-                                                event={entry.event}
-                                                data={entry.data}
-                                            />
-                                        </td>
-                                    </tr>
-                                ))}
-                        </tbody>
-                    </table>
-                    {!shouldDisplayFullLog && log.length > TRUNCATED_GAME_LOG_LENGTH && (
-                        <button onClick={() => setShouldDisplayFullLog(true)}>
-                            {`${_("Show all")} (${log.length})`}
-                        </button>
-                    )}
-                </>
-            ) : (
-                <div>{_("No game log entries")}</div>
-            )}
-        </>
     );
 }
