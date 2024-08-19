@@ -671,6 +671,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                     <ReportedGame
                         game_id={report.reported_game}
                         reported_at={report.reported_game_move}
+                        reported_by={report.reporting_user.id}
                     />
                 )}
                 {report.report_type === "appeal" && (

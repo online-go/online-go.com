@@ -26,3 +26,4 @@ export * from "./game_control";
 export * from "./goban_context";
 export * from "./util";
 export * from "./GameLogModal";
+export * from "./GameLog";
