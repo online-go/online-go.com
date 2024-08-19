@@ -53,7 +53,7 @@ export const defaults = {
     "goban-theme-white": null as null | string,
     //"goban-theme-black_stone_url": null as null | string,
     //"goban-theme-white_stone_url": null as null | string,
-    "goban-theme-removal-graphic": "default",
+    "goban-theme-removal-graphic": "square" as "square" | "x",
     "goban-theme-removal-scale": 0.9,
     "goban-theme-custom-board-background": "#DCB35C",
     "goban-theme-custom-board-url": "",
@@ -250,10 +250,7 @@ export function getSelectedThemes(): GobanSelectedThemes {
     //let black = get("goban-theme-black") || (default_plain ? "Plain" : "Plain");
     let white = get("goban-theme-white") || (default_plain ? "Plain" : "Shell");
     let black = get("goban-theme-black") || (default_plain ? "Plain" : "Slate");
-    let removal_graphic = get("goban-theme-removal-graphic");
-    if (removal_graphic === "default") {
-        removal_graphic = "square";
-    }
+    const removal_graphic = get("goban-theme-removal-graphic");
     const removal_scale = get("goban-theme-removal-scale");
 
     if (!(board in Goban.THEMES["board"])) {

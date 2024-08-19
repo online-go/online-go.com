@@ -66,7 +66,7 @@ export function ThemePreferences(): JSX.Element | null {
     const setThemeLight = React.useCallback(setTheme.bind(null, "light"), [setTheme]);
     const setThemeDark = React.useCallback(setTheme.bind(null, "dark"), [setTheme]);
     const setThemeAccessible = React.useCallback(setTheme.bind(null, "accessible"), [setTheme]);
-    const setStoneRemovalGraphic = React.useCallback((graphic: string) => {
+    const setStoneRemovalGraphic = React.useCallback((graphic: "square" | "x") => {
         console.log("Setting with remote replication");
         preferences.set(
             "goban-theme-removal-graphic",
@@ -372,7 +372,6 @@ export function ThemePreferences(): JSX.Element | null {
                 description={_(
                     "Choose the level of opacity for stones shown in variations. 0.0 is transparent and 1.0 is opaque.",
                 )}
-
             >
                 <input
                     type="range"
