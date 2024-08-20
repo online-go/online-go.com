@@ -35,6 +35,8 @@ interface GameLogProps {
 
 export function GameLog({ goban_config, onContainsTimeout }: GameLogProps): JSX.Element {
     const [log, setLog] = React.useState<LogEntry[]>([]);
+    const [shouldDisplayFullLog, setShouldDisplayFullLog] = React.useState(false);
+
     const game_id = goban_config.game_id as number;
 
     React.useEffect(() => {
@@ -54,8 +56,6 @@ export function GameLog({ goban_config, onContainsTimeout }: GameLogProps): JSX.
         },
         [goban_config],
     );
-
-    const [shouldDisplayFullLog, setShouldDisplayFullLog] = React.useState(false);
 
     return (
         <>
@@ -87,7 +87,15 @@ export function GameLog({ goban_config, onContainsTimeout }: GameLogProps): JSX.
                                         shouldDisplayFullLog || idx < TRUNCATED_GAME_LOG_LENGTH,
                                 )
                                 .map((entry, idx) => (
-                                    <tr key={entry.timestamp + ":" + idx} className="entry">
+                                    <tr
+                                        key={entry.timestamp + ":" + idx}
+                                        className={
+                                            "entry" +
+                                            (entry.data && "needs_sealing" in entry.data
+                                                ? " auto-score"
+                                                : "")
+                                        }
+                                    >
                                         <td className="timestamp">
                                             {moment(entry.timestamp).format("L LTS")}
                                         </td>
