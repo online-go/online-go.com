@@ -267,9 +267,7 @@ export function ReportedGame({
                             <GameLog
                                 goban_config={goban.config}
                                 onContainsTimeout={setTimedOutPlayer}
-                                onContainsAbandonment={() => {
-                                    setScoringAbandoned(true);
-                                }}
+                                onContainsAbandonment={setScoringAbandoned}
                             />
                         </div>
 

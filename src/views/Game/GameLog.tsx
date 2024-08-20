@@ -30,8 +30,8 @@ const TRUNCATED_GAME_LOG_LENGTH = 25;
 
 interface GameLogProps {
     goban_config: GobanEngineConfig;
-    onContainsTimeout?: (player_id: number) => void;
-    onContainsAbandonment?: () => void;
+    onContainsTimeout?: (player_id: number | null) => void;
+    onContainsAbandonment?: (contains_abandonment: boolean) => void;
 }
 
 export function GameLog({
@@ -47,6 +47,8 @@ export function GameLog({
     React.useEffect(() => {
         socket.send(`game/log`, { game_id }, (log) => {
             setLog(log);
+            onContainsTimeout && onContainsTimeout(null);
+            onContainsAbandonment && onContainsAbandonment(false);
             const timeout_entry = log.find((entry) => entry.event === "timed_out");
             if (timeout_entry && onContainsTimeout) {
                 onContainsTimeout(timeout_entry.data.player_id);
@@ -56,7 +58,7 @@ export function GameLog({
             );
             if (abandoned_entry && onContainsAbandonment) {
                 console.log("GameLog: Found an abandonment event");
-                onContainsAbandonment();
+                onContainsAbandonment(true);
             }
         });
     }, [game_id]);
