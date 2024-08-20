@@ -1,0 +1,53 @@
+
+.reported-game-container {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: stretch;
+    align-content: stretch;
+    flex-wrap: wrap;
+    max-width: reports_center_content_width;
+
+    .reported-game-info {
+        order: -1; // put this first so mobile layout is nice
+        .reported-turn {
+            padding: 0.25rem;
+        }
+    }
+
+    .reported-game-mini-goban {
+        .MiniGoban  {
+            justify-content: flex-start;
+        }
+    }
+
+    .col {
+        flex: 1;
+        flex-basis: 45%;
+        display: inline-flex;
+        min-width: 20rem;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: stretch;
+        align-content: stretch;
+        padding: 0.5rem;
+
+        .event {
+            padding-right: 0.3rem;
+        }
+    }
+
+    // We have horizontal less room than `GameLog` expects
+    .GameLog {
+        tr {
+            vertical-align: top;
+        }
+        td>div {
+            margin-bottom: 2em
+            span {
+                display: inline-block;
+            }
+        }
+    }
+}
