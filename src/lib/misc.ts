@@ -656,6 +656,16 @@ export function getCurrentGameId() {
     return null;
 }
 
+// x is a  date, y is data for that date
+export function dropCurrentPeriod(data: { x: string; y: number | null }[]) {
+    const newData = [...data];
+    if (newData.length > 0) {
+        const lastIndex = newData.length - 1;
+        newData[lastIndex] = { ...newData[lastIndex], y: null };
+    }
+    return newData;
+}
+
 // needed because Game end_time and start_time are only to the nearest second
 export function showSecondsResolution(duration: moment.Duration | null): string {
     if (!duration) {
