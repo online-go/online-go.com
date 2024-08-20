@@ -55,7 +55,6 @@ export class GameLogModal extends Modal<Events, GameLogModalProperties, { log: A
     }
 
     setLog(log: Array<LogEntry>) {
-        console.log(log);
         this.setState({ log });
     }
 

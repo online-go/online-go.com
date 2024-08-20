@@ -62,7 +62,7 @@ export function GameLog({ goban_config, onContainsTimeout }: GameLogProps): JSX.
             <h3>{_("Game Log")}</h3>
             {log.length > 0 ? (
                 <>
-                    <table className="game-log">
+                    <table className="GameLog">
                         <thead>
                             <tr>
                                 <th>

@@ -22,6 +22,7 @@ import * as React from "react";
 
 import { AdHocPackedMove, GobanMovesArray } from "goban";
 import { useUser } from "hooks";
+import { showSecondsResolution } from "misc";
 
 interface GameTimingProperties {
     moves: GobanMovesArray;
@@ -31,6 +32,7 @@ interface GameTimingProperties {
     handicap: number;
     black_id: number;
     white_id: number;
+    onFinalActionCalculated?: (final_action_timing: moment.Duration) => void;
 }
 
 export function GameTimings(props: GameTimingProperties): JSX.Element {
@@ -47,21 +49,21 @@ export function GameTimings(props: GameTimingProperties): JSX.Element {
             <span className="timing-slow">{moment.duration(duration).format()}</span>
         );
 
-    // needed because end_time and start_time are only to the nearest second
-    const show_seconds_resolution = (duration: moment.Duration): string => {
-        if (duration < moment.duration(1000)) {
-            return `${moment.duration(duration).asSeconds().toFixed(2)}s`;
-        } else if (duration < moment.duration(60000)) {
-            return `${moment.duration(duration).asSeconds().toFixed(1)}s`;
-        } else {
-            return moment.duration(duration).format("d:h:m:s");
-        }
-    };
-
     const game_elapsed: ReturnType<typeof moment.duration> = moment.duration(0); // running total
     const black_elapsed: ReturnType<typeof moment.duration> = moment.duration(0);
     const white_elapsed: ReturnType<typeof moment.duration> = moment.duration(0);
     const move_elapsed: Array<ReturnType<typeof moment.duration>> = []; // the time elapsed up to each move
+
+    // Publish final action timing after game_elapsed is calculated (during render!)
+    React.useEffect(() => {
+        if (props.end_time && props.onFinalActionCalculated) {
+            props.onFinalActionCalculated(
+                moment
+                    .duration(props.end_time - props.start_time, "seconds")
+                    .subtract(game_elapsed),
+            );
+        }
+    }, [props.start_time, props.end_time, props.onFinalActionCalculated]);
 
     let non_handicap_moves = [...props.moves];
     let handicap_moves: any[] = [];
@@ -244,7 +246,7 @@ export function GameTimings(props: GameTimingProperties): JSX.Element {
             <div className="span-3 final-action-row">Final action:</div>
             <div className="final-action-row">
                 {props.end_time &&
-                    show_seconds_resolution(
+                    showSecondsResolution(
                         moment
                             .duration(props.end_time - props.start_time, "seconds")
                             .subtract(game_elapsed),
