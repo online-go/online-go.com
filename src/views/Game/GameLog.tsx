@@ -35,6 +35,8 @@ interface GameLogProps {
 
 export function GameLog({ goban_config, onContainsTimeout }: GameLogProps): JSX.Element {
     const [log, setLog] = React.useState<LogEntry[]>([]);
+    const [shouldDisplayFullLog, setShouldDisplayFullLog] = React.useState(false);
+
     const game_id = goban_config.game_id as number;
 
     React.useEffect(() => {
@@ -54,8 +56,6 @@ export function GameLog({ goban_config, onContainsTimeout }: GameLogProps): JSX.
         },
         [goban_config],
     );
-
-    const [shouldDisplayFullLog, setShouldDisplayFullLog] = React.useState(false);
 
     return (
         <>
@@ -87,7 +87,15 @@ export function GameLog({ goban_config, onContainsTimeout }: GameLogProps): JSX.
                                         shouldDisplayFullLog || idx < TRUNCATED_GAME_LOG_LENGTH,
                                 )
                                 .map((entry, idx) => (
-                                    <tr key={entry.timestamp + ":" + idx} className="entry">
+                                    <tr
+                                        key={entry.timestamp + ":" + idx}
+                                        className={
+                                            "entry" +
+                                            (entry.data && "needs_sealing" in entry.data
+                                                ? " auto-score"
+                                                : "")
+                                        }
+                                    >
                                         <td className="timestamp">
                                             {moment(entry.timestamp).format("L LTS")}
                                         </td>
@@ -187,12 +195,27 @@ export function LogData({
         try {
             for (const k in data) {
                 if (k === "player_id") {
-                    ret.push(
-                        <span key={k} className="field">
-                            <Player user={data[k]} />
-                            {data.color ? (data.color === "black" ? " (black)" : " (white)") : ""}
-                        </span>,
-                    );
+                    if ("needs_sealing" in data) {
+                        // this is an auto-score update, make that clear.
+                        ret.push(
+                            <span key={k} className="field game-log-player">
+                                {"(from "}
+                                <Player user={data[k]} rank={false} />
+                                {")"}
+                            </span>,
+                        );
+                    } else {
+                        ret.push(
+                            <span key={k} className="field game-log-player">
+                                <Player user={data[k]} />
+                                {data.color
+                                    ? data.color === "black"
+                                        ? " (black)"
+                                        : " (white)"
+                                    : ""}
+                            </span>,
+                        );
+                    }
                 } else if (k === "winner") {
                     ret.push(
                         <span key={k} className="field">
@@ -212,14 +235,16 @@ export function LogData({
                         );
                     }
                 } else if (k === "removed") {
-                    ret.push(
+                    // put this near the top
+                    ret.unshift(
                         <span key={k} className="field">
                             {data[k] ? "stones marked dead" : "stones marked alive"}
                         </span>,
                     );
                 } else if (k === "needs_sealing") {
                     // this only comes with autoscore updates
-                    ret.push(
+                    // put it near the top
+                    ret.unshift(
                         <span key={k} className="field">
                             {pgettext(
                                 "This is telling a moderator that they are looking at an update from the auto scorer",
