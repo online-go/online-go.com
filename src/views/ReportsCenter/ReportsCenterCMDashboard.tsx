@@ -32,6 +32,7 @@ import { community_mod_has_power, COMMUNITY_MODERATION_REPORT_TYPES } from "repo
 import { ReportType } from "Report";
 import { UserVoteActionSummary } from "User";
 import { UserVoteActivityGraph } from "User";
+import { dropCurrentPeriod } from "misc";
 
 interface ReportCount {
     date: string;
@@ -104,18 +105,10 @@ const CMVotingOutcomeGraph = ({ vote_data, period }: CMVotingOutcomeGraphProps):
     }, [vote_data]);
 
     const totals_data = React.useMemo(() => {
-        const dropCurrentWeek = (data: { x: string; y: number | null }[]) => {
-            const newData = [...data];
-            if (newData.length > 0) {
-                const lastIndex = newData.length - 1;
-                newData[lastIndex] = { ...newData[lastIndex], y: null };
-            }
-            return newData;
-        };
         return [
             {
                 id: "consensus",
-                data: dropCurrentWeek(
+                data: dropCurrentPeriod(
                     aggregateDataByWeek.map((week) => ({
                         x: week.date,
                         y: week.consensus,
@@ -124,7 +117,7 @@ const CMVotingOutcomeGraph = ({ vote_data, period }: CMVotingOutcomeGraphProps):
             },
             {
                 id: "escalated",
-                data: dropCurrentWeek(
+                data: dropCurrentPeriod(
                     aggregateDataByWeek.map((week) => ({
                         x: week.date,
                         y: week.escalated,
@@ -133,7 +126,7 @@ const CMVotingOutcomeGraph = ({ vote_data, period }: CMVotingOutcomeGraphProps):
             },
             {
                 id: "non-consensus",
-                data: dropCurrentWeek(
+                data: dropCurrentPeriod(
                     aggregateDataByWeek.map((week) => ({
                         x: week.date,
                         y: week.non_consensus,
