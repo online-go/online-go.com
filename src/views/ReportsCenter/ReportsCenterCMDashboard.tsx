@@ -67,11 +67,11 @@ function startOfWeek(the_date: Date): Date {
 const EXPECTED_MAX_WEEKLY_CM_REPORTS = 160;
 const Y_STEP_SIZE = 40; // must divide evenly into EXPECTED_MAX_WEEKLY_CM_REPORTS
 
-interface CMVotingOutcomeGraphProps {
+interface CMVoteCountGraphProps {
     vote_data: ReportCount[];
     period: number;
 }
-const CMVotingOutcomeGraph = ({ vote_data, period }: CMVotingOutcomeGraphProps): JSX.Element => {
+const CMVoteCountGraph = ({ vote_data, period }: CMVoteCountGraphProps): JSX.Element => {
     if (!vote_data) {
         vote_data = [];
     }
@@ -338,8 +338,8 @@ export function ReportsCenterCMDashboard(): JSX.Element {
             <TabList>
                 <Tab disabled={!user.moderator_powers}>My Summary</Tab>
                 <Tab>Group Outcomes</Tab>
-                <Tab disabled={!user.is_moderator}>Individual Outcomes</Tab>
-                <Tab disabled={!user.moderator_powers}>My Outcomes</Tab>
+                <Tab disabled={!user.is_moderator}>Individual Votes</Tab>
+                <Tab disabled={!user.moderator_powers}>My Votes</Tab>
             </TabList>
 
             {/* A CM's Summary Pie Charts */}
@@ -390,7 +390,7 @@ export function ReportsCenterCMDashboard(): JSX.Element {
                           <div key={report_type}>
                               <h3>{report_type}</h3>
                               {vote_data[report_type] ? (
-                                  <CMVotingOutcomeGraph
+                                  <CMVoteCountGraph
                                       vote_data={vote_data[report_type]}
                                       period={120}
                                   />
@@ -402,7 +402,7 @@ export function ReportsCenterCMDashboard(): JSX.Element {
                     : "loading..."}
             </TabPanel>
 
-            {/* Moderator view of each CM's voting outcomes */}
+            {/* Moderator view of each CM's vote categories */}
             <TabPanel>
                 <PaginatedTable
                     pageSize={4} /* Limit aggregation compute load */
@@ -420,24 +420,21 @@ export function ReportsCenterCMDashboard(): JSX.Element {
                             header: "summaries",
                             className: () => "votes",
                             render: (X) => (
-                                <CMVotingOutcomeGraph
-                                    vote_data={X.vote_data["overall"]}
-                                    period={120}
-                                />
+                                <CMVoteCountGraph vote_data={X.vote_data["overall"]} period={120} />
                             ),
                         },
                     ]}
                 />
             </TabPanel>
 
-            {/* A CM's individual voting outcomes */}
+            {/* A CM's individual vote categories (My Votes) */}
             <TabPanel>
                 {users_data
                     ? ["overall", "escaping", "stalling", "score_cheating"].map((report_type) => (
                           <div key={report_type}>
                               <h3>{report_type}</h3>
                               {users_data[report_type] ? (
-                                  <CMVotingOutcomeGraph
+                                  <CMVoteCountGraph
                                       vote_data={users_data[report_type]}
                                       period={120}
                                   />
