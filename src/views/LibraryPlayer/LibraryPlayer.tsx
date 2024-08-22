@@ -32,7 +32,7 @@ import { IdType } from "src/lib/types";
 import { openSGFPasteModal } from "SGFPasteModal";
 import * as preferences from "preferences";
 import { PlayerCacheEntry } from "src/lib/player_cache";
-import { createGameRecord } from "ChallengeModal";
+// import { createGameRecord } from "ChallengeModal";
 
 type LibraryPlayerProperties = RouteComponentProps<{
     player_id: string;
@@ -528,6 +528,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                                 <Card>
                                     {owner && (
                                         <div className="upload-button">
+                                            {/*
                                             <button
                                                 className="primary"
                                                 onClick={() => {
@@ -540,6 +541,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                                             >
                                                 {_("Record Game")}
                                             </button>
+                                            */}
                                             <button
                                                 className="primary"
                                                 onClick={() =>
