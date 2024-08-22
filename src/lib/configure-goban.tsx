@@ -33,8 +33,6 @@ let previous_toast: any = null;
 
 export function configure_goban() {
     function syncGobanRenderer(v?: string) {
-        //console.log(x);
-        //const v = data.get("experiments.canvas");
         if (v === "enabled") {
             setGobanRenderer("canvas");
         } else {

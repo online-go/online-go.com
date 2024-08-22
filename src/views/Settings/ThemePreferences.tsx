@@ -89,6 +89,7 @@ export function ThemePreferences(): JSX.Element | null {
     const [show_variation_move_numbers, _setShowVariationMoveNumbers] = usePreference(
         "show-variation-move-numbers",
     );
+    const [, refresh] = React.useState(0);
 
     const toggleRemovalScale = React.useCallback((tf: boolean) => {
         if (tf) {
@@ -426,6 +427,7 @@ export function ThemePreferences(): JSX.Element | null {
                     onChange={(tf) => {
                         //data.set("experiments.svg", tf ? "enabled" : undefined);
                         setCanvasEnabled(tf ? "enabled" : undefined);
+                        refresh((x) => x + 1);
                     }}
                 />
             </PreferenceLine>
