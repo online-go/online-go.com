@@ -32,14 +32,17 @@ import { toast } from "toast";
 let previous_toast: any = null;
 
 export function configure_goban() {
-    data.watch("experiments.canvas", () => {
+    function syncGobanRenderer() {
         const v = data.get("experiments.canvas");
         if (v === "enabled") {
             setGobanRenderer("canvas");
         } else {
             setGobanRenderer("svg");
         }
-    });
+    }
+
+    syncGobanRenderer();
+    data.watch("experiments.canvas", syncGobanRenderer);
 
     GobanBase.setCallbacks({
         defaultConfig: () => {
