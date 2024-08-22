@@ -32,8 +32,9 @@ import { toast } from "toast";
 let previous_toast: any = null;
 
 export function configure_goban() {
-    function syncGobanRenderer() {
-        const v = data.get("experiments.canvas");
+    function syncGobanRenderer(v?: string) {
+        //console.log(x);
+        //const v = data.get("experiments.canvas");
         if (v === "enabled") {
             setGobanRenderer("canvas");
         } else {
@@ -41,7 +42,7 @@ export function configure_goban() {
         }
     }
 
-    syncGobanRenderer();
+    syncGobanRenderer(data.get("experiments.canvas"));
     data.watch("experiments.canvas", syncGobanRenderer);
 
     GobanBase.setCallbacks({
