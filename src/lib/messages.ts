@@ -23,6 +23,7 @@ export type MessageIdAPI =
     | "user_is_banned"
     | "username_invalid"
     | "username_offensive"
+    | "username_unavailable"
     | "gamename_offensive"
     | "groupname_offensive"
     | "tournamentname_offensive"

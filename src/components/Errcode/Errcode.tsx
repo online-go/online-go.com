@@ -58,7 +58,9 @@ export function format_message(props: MessageProps): string {
             );
 
         case "username_reserved":
-            return _("Sorry that name has been reserved, please pick a different one");
+        case "username_unavailable":
+            return _("Sorry that name is not available, please pick a different one");
+        //return _("Sorry that name has been reserved, please pick a different one");
 
         case "ai_review_must_be_site_supporter":
             return _("To begin an AI review, you must be a site supporter.");
