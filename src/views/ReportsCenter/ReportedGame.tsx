@@ -238,6 +238,7 @@ export function ReportedGame({
                                         hidden={false}
                                     />
                                 )}
+
                             <Resizable
                                 id="move-tree-container"
                                 className="vertically-resizable"
