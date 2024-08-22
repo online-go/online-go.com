@@ -427,7 +427,7 @@ export function ThemePreferences(): JSX.Element | null {
                     onChange={(tf) => {
                         //data.set("experiments.svg", tf ? "enabled" : undefined);
                         setCanvasEnabled(tf ? "enabled" : undefined);
-                        refresh((x) => x + 1);
+                        requestAnimationFrame(() => refresh((x) => x + 1));
                     }}
                 />
             </PreferenceLine>
