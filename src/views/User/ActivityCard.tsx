@@ -20,7 +20,7 @@ import { Link } from "react-router-dom";
 import { daysOnlyDurationString } from "TimeControl";
 import { Card } from "material";
 import { UserVoteActivityGraph } from "./VoteActivityGraph";
-import { CMPieCharts } from "ReportsCenter";
+import { CMPieCharts } from "./CMPieCharts";
 import { useUser } from "hooks";
 
 /** Activity card doesn't care about that many user traits */

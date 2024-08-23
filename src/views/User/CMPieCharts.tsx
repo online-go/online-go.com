@@ -16,7 +16,7 @@
  */
 
 import React from "react";
-import { UserVoteActionSummary } from "User";
+import { UserVoteActionSummary } from "./UserVoteActionSummary";
 import { community_mod_has_power, COMMUNITY_MODERATION_REPORT_TYPES } from "report_util";
 import { ReportType } from "Report";
 import { interpolate, pgettext } from "translate";

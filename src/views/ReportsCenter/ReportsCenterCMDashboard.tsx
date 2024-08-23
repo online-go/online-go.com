@@ -30,7 +30,7 @@ import { Tab, TabList, TabPanel, Tabs } from "react-tabs";
 import { pgettext } from "translate";
 import { UserVoteActivityGraph } from "User";
 import { dropCurrentPeriod } from "misc";
-import { CMPieCharts } from "./CMPieCharts";
+import { CMPieCharts } from "User";
 
 interface ReportCount {
     date: string;
