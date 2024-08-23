@@ -625,10 +625,6 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
             {user.is_moderator && (
                 <>
                     <hr />
-                    <div className="automod-analysis">
-                        <b>Automod Analysis:</b>{" "}
-                        <span className="analysis">{report.automod_to_moderator}</span>
-                    </div>
                     <div className="message-templates">
                         <MessageTemplate
                             title="Accused"
