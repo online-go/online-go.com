@@ -284,6 +284,7 @@ export function watchSelectedThemes(cb: (themes: GobanSelectedThemes) => void) {
         if (dont_call_right_away) {
             return;
         }
+
         cb(getSelectedThemes());
     };
 
