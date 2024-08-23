@@ -20,6 +20,8 @@ import { Link } from "react-router-dom";
 import { daysOnlyDurationString } from "TimeControl";
 import { Card } from "material";
 import { UserVoteActivityGraph } from "./VoteActivityGraph";
+import { CMPieCharts } from "ReportsCenter";
+import { useUser } from "hooks";
 
 /** Activity card doesn't care about that many user traits */
 interface ActivityCardUser {
@@ -62,6 +64,7 @@ export function ActivityCard({
     tournaments,
     online_leagues,
 }: ActivityCardProps) {
+    const person_looking = useUser();
     return (
         <Card className="activity-card">
             <h4>
@@ -156,6 +159,9 @@ export function ActivityCard({
                     </div>
                     <UserVoteActivityGraph user_id={user.id} />
                 </>
+            )}
+            {person_looking?.is_moderator && (
+                <CMPieCharts user_id={user.id} user_moderator_powers={user.moderator_powers} />
             )}
         </Card>
     );

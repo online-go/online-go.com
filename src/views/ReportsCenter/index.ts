@@ -17,3 +17,4 @@
 
 export * from "./ReportsCenter";
 export * from "./ReportsCenterSettings";
+export * from "./CMPieCharts";
