@@ -27,12 +27,10 @@ import { useUser } from "hooks";
 import { PaginatedTable } from "PaginatedTable";
 import { Player } from "Player";
 import { Tab, TabList, TabPanel, Tabs } from "react-tabs";
-import { interpolate, pgettext } from "translate";
-import { community_mod_has_power, COMMUNITY_MODERATION_REPORT_TYPES } from "report_util";
-import { ReportType } from "Report";
-import { UserVoteActionSummary } from "User";
+import { pgettext } from "translate";
 import { UserVoteActivityGraph } from "User";
 import { dropCurrentPeriod } from "misc";
+import { CMPieCharts } from "User";
 
 interface ReportCount {
     date: string;
@@ -353,34 +351,7 @@ export function ReportsCenterCMDashboard(): JSX.Element {
                 <div>
                     <UserVoteActivityGraph user_id={user.id} />
                 </div>
-                <div className="mod-graph-header">
-                    {pgettext(
-                        "header for a graph showing breakdown of moderator's vote outcomes",
-                        "vote outcome: summary",
-                    )}
-                </div>
-                <UserVoteActionSummary user_id={user.id} />
-                {Object.entries(COMMUNITY_MODERATION_REPORT_TYPES)
-                    .filter(([report_type, _name]) =>
-                        community_mod_has_power(user.moderator_powers, report_type as ReportType),
-                    )
-                    .map(([report_type, _flag]) => (
-                        <div key={report_type}>
-                            <div className="mod-graph-header" key={report_type}>
-                                {interpolate(
-                                    pgettext(
-                                        "header for a graph showing breakdown of moderator's vote outcomes",
-                                        "vote outcomes: {{report_type}}",
-                                    ),
-                                    { report_type },
-                                )}
-                            </div>
-                            <UserVoteActionSummary
-                                user_id={user.id}
-                                report_type={report_type as ReportType}
-                            />
-                        </div>
-                    ))}
+                <CMPieCharts user_id={user.id} user_moderator_powers={user.moderator_powers} />
             </TabPanel>
 
             {/* The overall CM voting outcomes */}
