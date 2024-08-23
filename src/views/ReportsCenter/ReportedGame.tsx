@@ -274,7 +274,7 @@ function ModeratorReportedGameActions({
         },
         [game_id, goban],
     );
-    console.log("rendering ModeratorReportedGameActions");
+
     return (
         <div className="moderator-reported-game-actions">
             {user.is_moderator && (
