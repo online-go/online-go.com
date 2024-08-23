@@ -243,7 +243,10 @@ export function dump(): void {
 
 export function getSelectedThemes(): GobanSelectedThemes {
     //let default_plain = $.browser.mobile || ($(window).width() * (window.devicePixelRatio || 1)) <= 768;
-    const default_plain = $(window).width() * (window.devicePixelRatio || 1) <= 768;
+    let default_plain = $(window).width() * (window.devicePixelRatio || 1) <= 768;
+    if (data.get("user").anonymous || data.get("user").id > 1618000) {
+        default_plain = true;
+    }
 
     let board = get("goban-theme-board") || (default_plain ? "Plain" : "Kaya");
     //let white = get("goban-theme-white") || (default_plain ? "Plain" : "Plain");
