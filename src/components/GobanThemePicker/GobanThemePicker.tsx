@@ -310,7 +310,7 @@ export function GobanWhiteThemePicker(props: GobanThemePickerProperties): JSX.El
     return (
         <div className="GobanThemePicker">
             <Experiment name="svg">
-                <Variant value="enabled">
+                <Default>
                     <div className="theme-set">
                         {standard_themes.map((theme) => (
                             <div
@@ -329,8 +329,8 @@ export function GobanWhiteThemePicker(props: GobanThemePickerProperties): JSX.El
                             </div>
                         ))}
                     </div>
-                </Variant>
-                <Default>
+                </Default>
+                <Variant value="enabled">
                     <div className="theme-set">
                         {standard_themes.map((theme, idx) => (
                             <div
@@ -349,7 +349,7 @@ export function GobanWhiteThemePicker(props: GobanThemePickerProperties): JSX.El
                             </div>
                         ))}
                     </div>
-                </Default>
+                </Variant>
             </Experiment>
         </div>
     );
@@ -502,8 +502,8 @@ export function GobanBlackThemePicker(props: GobanThemePickerProperties): JSX.El
 
     return (
         <div className="GobanThemePicker">
-            <Experiment name="svg">
-                <Variant value="enabled">
+            <Experiment name="canvas">
+                <Default>
                     <div className="theme-set">
                         {standard_themes.map((theme) => (
                             <div
@@ -522,8 +522,8 @@ export function GobanBlackThemePicker(props: GobanThemePickerProperties): JSX.El
                             </div>
                         ))}
                     </div>
-                </Variant>
-                <Default>
+                </Default>
+                <Variant value="enabled">
                     <div className="theme-set">
                         {standard_themes.map((theme, idx) => (
                             <div
@@ -542,7 +542,7 @@ export function GobanBlackThemePicker(props: GobanThemePickerProperties): JSX.El
                             </div>
                         ))}
                     </div>
-                </Default>
+                </Variant>
             </Experiment>
         </div>
     );

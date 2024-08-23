@@ -33,7 +33,7 @@ import {
 } from "GobanThemePicker";
 import { useData } from "hooks";
 import { MiniGoban } from "MiniGoban";
-import { GobanEngineConfig } from "goban";
+import { GobanEngineConfig, setGobanRenderer } from "goban";
 import { Toggle } from "Toggle";
 
 const sample_board_data: GobanEngineConfig = {
@@ -89,6 +89,7 @@ export function ThemePreferences(): JSX.Element | null {
     const [show_variation_move_numbers, _setShowVariationMoveNumbers] = usePreference(
         "show-variation-move-numbers",
     );
+    const [_refresh, refresh] = React.useState(0);
 
     const toggleRemovalScale = React.useCallback((tf: boolean) => {
         if (tf) {
@@ -135,6 +136,7 @@ export function ThemePreferences(): JSX.Element | null {
     */
 
     const [canvas_enabled, setCanvasEnabled] = useData("experiments.canvas");
+    //const canvas_enabled = data.get("experiments.canvas");
     const enable_svg = canvas_enabled !== "enabled";
 
     const sample_goban_key =
@@ -144,7 +146,8 @@ export function ThemePreferences(): JSX.Element | null {
         //stone_removal_graphic +
         //removal_scale +
         visual_undo_request_indicator +
-        last_move_opacity;
+        last_move_opacity +
+        _refresh;
 
     return (
         <div className="ThemePreferences">
@@ -291,7 +294,7 @@ export function ThemePreferences(): JSX.Element | null {
 
                     <MiniGoban
                         className="inline"
-                        key={last_move_opacity}
+                        key={last_move_opacity + "" + _refresh}
                         json={{
                             moves: [{ x: 1, y: 0 }],
                             width: 3,
@@ -346,7 +349,7 @@ export function ThemePreferences(): JSX.Element | null {
 
                     <MiniGoban
                         className="inline"
-                        key={show_variation_move_numbers + ""}
+                        key={show_variation_move_numbers + "" + _refresh}
                         json={{
                             width: 3,
                             height: 1,
@@ -404,7 +407,7 @@ export function ThemePreferences(): JSX.Element | null {
 
                     <MiniGoban
                         className="inline"
-                        key={visual_undo_request_indicator + ""}
+                        key={visual_undo_request_indicator + "" + _refresh}
                         json={{
                             moves: [{ x: 1, y: 0 }],
                             width: 3,
@@ -424,8 +427,14 @@ export function ThemePreferences(): JSX.Element | null {
                 <Toggle
                     checked={canvas_enabled === "enabled"}
                     onChange={(tf) => {
-                        //data.set("experiments.svg", tf ? "enabled" : undefined);
+                        if (tf) {
+                            setGobanRenderer("canvas");
+                        } else {
+                            setGobanRenderer("svg");
+                        }
+
                         setCanvasEnabled(tf ? "enabled" : undefined);
+                        setTimeout(() => refresh((x) => x + 1), 50);
                     }}
                 />
             </PreferenceLine>
