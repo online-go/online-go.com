@@ -12,24 +12,12 @@
         margin-bottom: 0;
     }
 
-    .reported-game-info {
-        order: -1; // put this first so mobile layout is nice
-        .reported-turn {
-            padding: 0.25rem;
-        }
-    }
-
-    .reported-game-mini-goban {
-        .MiniGoban  {
-            justify-content: flex-start;
-        }
-    }
-
-    .col {
+    .reported-game-element {
         flex: 1;
-        flex-basis: 45%;
+        flex-basis: 40%;
         display: inline-flex;
         min-width: 20rem;
+        max-width: 30rem;
         flex-direction: column;
         align-items: stretch;
         justify-content: stretch;
@@ -39,6 +27,37 @@
         .event {
             padding-right: 0.3rem;
         }
+    }
+
+    .reported-game-mini-goban {
+        max-width: 20rem;
+        max-height: 20rem;
+        padding: 2rem;
+    }
+
+    #move-tree-container {
+        height: 2rem;
+    }
+
+    .reported-game-info {
+        order: -1; // put this first so mobile layout is nice
+        .reported-turn {
+            padding: 0.25rem;
+        }
+    }
+
+    .moderator-reported-game-actions {
+        padding: 0.5rem;
+        text-align: center;
+    }
+
+    .reported-game-chat {
+        max-width: 5rem;
+        max-height: 15rem;
+    }
+
+    .reported-game-timing {
+        text-align: center;
     }
 
     // We have horizontal less room than `GameLog` expects

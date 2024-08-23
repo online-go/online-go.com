@@ -67,47 +67,6 @@ export function ReportedGame({
     const [timedOutPlayer, setTimedOutPlayer] = React.useState<number | null>(null);
     const [scoringAbandoned, setScoringAbandoned] = React.useState<boolean>(false);
 
-    const user = useUser();
-
-    const decide = React.useCallback(
-        (winner: string) => {
-            if (!game_id) {
-                void alert.fire(_("Game ID missing"));
-                return;
-            }
-
-            let moderation_note: string | null = null;
-            do {
-                moderation_note = prompt(
-                    "Deciding for " + winner.toUpperCase() + " - Moderator note:",
-                );
-                if (moderation_note == null) {
-                    return;
-                }
-                moderation_note = moderation_note.trim();
-            } while (moderation_note === "");
-
-            post(`games/${game_id}/moderate`, {
-                decide: winner,
-                moderation_note: moderation_note,
-            }).catch(errorAlerter);
-        },
-        [game_id, goban],
-    );
-
-    const do_annul = React.useCallback(
-        (tf: boolean): void => {
-            if (!game_id) {
-                void alert.fire(_("Game ID missing"));
-                return;
-            }
-
-            const engine = goban!.engine;
-            doAnnul(engine.config, tf);
-        },
-        [game_id, goban],
-    );
-
     React.useEffect(() => {
         if (goban) {
             goban.on("update", refresh);
@@ -157,17 +116,37 @@ export function ReportedGame({
     return (
         <div className="reported-game">
             <div className="reported-game-container">
-                <div className="col reported-game-mini-goban">
+                <div className="reported-game-element">
+                    {/*  This element is providing the goban used by the goban provider wrapped around the rest of them */}
                     <MiniGoban
+                        className="reported-game-mini-goban"
                         game_id={game_id}
                         noLink={true}
                         onGobanCreated={onGobanCreated}
                         chat={true}
                     />
+                    {goban && goban.engine && (
+                        <GobanContext.Provider value={goban}>
+                            <Resizable
+                                id="move-tree-container"
+                                className="vertically-resizable"
+                                ref={(ref) => ref?.div && goban.setMoveTreeContainer(ref.div)}
+                            />
+
+                            <div className="reported-game-timing">
+                                {`Time control: ${shortTimeControl(goban.engine.time_control)}`}
+                            </div>
+                            <ModeratorReportedGameActions
+                                game_id={game_id}
+                                goban={goban}
+                                annulled={annulled}
+                            />
+                        </GobanContext.Provider>
+                    )}
                 </div>
                 {goban && goban.engine && (
                     <GobanContext.Provider value={goban}>
-                        <div className="col reported-game-info">
+                        <div className="reported-game-element reported-game-info">
                             <h3>
                                 Game: <Link to={`/game/${game_id}`}>#{game_id}</Link>
                                 <span className="created-note">
@@ -182,7 +161,7 @@ export function ReportedGame({
                             <div>White: {game && <Player user={game.white} />}</div>
                             <div>Game Phase: {goban.engine.phase}</div>
                             {(goban.engine.phase === "finished" || null) && (
-                                <GameSummary
+                                <GameOutcomeSummary
                                     winner={winner}
                                     finalActionTime={finalActionTime}
                                     timedOutPlayer={timedOutPlayer}
@@ -191,39 +170,7 @@ export function ReportedGame({
                                     scoringAbandoned={scoringAbandoned}
                                 />
                             )}
-                            {user.is_moderator && (
-                                <>
-                                    {goban.engine.phase === "finished" ? (
-                                        <div className="decide-buttons">
-                                            {goban.engine.config.ranked && !annulled && (
-                                                <button onClick={() => do_annul(true)}>
-                                                    {_("Annul")}
-                                                </button>
-                                            )}
-                                            {goban.engine.config.ranked && annulled && (
-                                                <button onClick={() => do_annul(false)}>
-                                                    {_("Remove annulment")}
-                                                </button>
-                                            )}
-                                        </div>
-                                    ) : (
-                                        <div className="decide-buttons">
-                                            <button
-                                                className="decide-button"
-                                                onClick={() => decide("black")}
-                                            >
-                                                Black ({goban.engine.players?.black?.username}) Wins
-                                            </button>
-                                            <button
-                                                className="decide-button"
-                                                onClick={() => decide("white")}
-                                            >
-                                                White ({goban.engine.players?.white?.username}) Wins
-                                            </button>
-                                        </div>
-                                    )}
-                                </>
-                            )}
+
                             {cur_move &&
                                 ((goban.engine.phase === "finished" &&
                                     goban.engine.game_id === game_id &&
@@ -238,20 +185,9 @@ export function ReportedGame({
                                         hidden={false}
                                     />
                                 )}
-
-                            <Resizable
-                                id="move-tree-container"
-                                className="vertically-resizable"
-                                ref={(ref) => ref?.div && goban.setMoveTreeContainer(ref.div)}
-                            />
-                            {!!goban?.engine && (
-                                <div className="reported-game-timing">
-                                    {`Time control: ${shortTimeControl(goban.engine.time_control)}`}
-                                </div>
-                            )}
                         </div>
 
-                        <div className="col">
+                        <div className="reported-game-element">
                             <GameTimings
                                 moves={goban.engine.config.moves as any}
                                 start_time={goban.engine.config.start_time as any}
@@ -272,7 +208,7 @@ export function ReportedGame({
                             />
                         </div>
 
-                        <div className="col">
+                        <div className="reported-game-element reported-game-chat">
                             <GameChat
                                 selected_chat_log={selectedChatLog}
                                 onSelectedChatModeChange={setSelectedChatLog}
@@ -287,7 +223,90 @@ export function ReportedGame({
     );
 }
 
-interface GameSummaryProps {
+interface ModeratorReportedGameActionsProps {
+    game_id: number;
+    goban: GobanRenderer;
+    annulled: boolean;
+}
+
+function ModeratorReportedGameActions({
+    game_id,
+    goban,
+    annulled,
+}: ModeratorReportedGameActionsProps): JSX.Element {
+    const user = useUser();
+
+    const decide = React.useCallback(
+        (winner: string) => {
+            if (!game_id) {
+                void alert.fire(_("Game ID missing"));
+                return;
+            }
+
+            let moderation_note: string | null = null;
+            do {
+                moderation_note = prompt(
+                    "Deciding for " + winner.toUpperCase() + " - Moderator note:",
+                );
+                if (moderation_note == null) {
+                    return;
+                }
+                moderation_note = moderation_note.trim();
+            } while (moderation_note === "");
+
+            post(`games/${game_id}/moderate`, {
+                decide: winner,
+                moderation_note: moderation_note,
+            }).catch(errorAlerter);
+        },
+        [game_id, goban],
+    );
+
+    const do_annul = React.useCallback(
+        (tf: boolean): void => {
+            if (!game_id) {
+                void alert.fire(_("Game ID missing"));
+                return;
+            }
+
+            const engine = goban!.engine;
+            doAnnul(engine.config, tf);
+        },
+        [game_id, goban],
+    );
+    console.log("rendering ModeratorReportedGameActions");
+    return (
+        <div className="moderator-reported-game-actions">
+            {user.is_moderator && (
+                <>
+                    {goban.engine.phase === "finished" ? (
+                        <div className="decide-buttons">
+                            {goban.engine.config.ranked && !annulled && (
+                                <button onClick={() => do_annul(true)}>{_("Annul")}</button>
+                            )}
+                            {goban.engine.config.ranked && annulled && (
+                                <button onClick={() => do_annul(false)}>
+                                    {_("Remove annulment")}
+                                </button>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="decide-buttons">
+                            <button className="decide-button" onClick={() => decide("black")}>
+                                Black ({goban.engine.players?.black?.username}) Wins
+                            </button>
+                            <button className="decide-button" onClick={() => decide("white")}>
+                                White ({goban.engine.players?.white?.username}) Wins
+                            </button>
+                        </div>
+                    )}
+                </>
+            )}
+        </div>
+    );
+}
+
+interface GameOutcomeSummaryProps {
     winner: string;
     finalActionTime: moment.Duration | null;
     timedOutPlayer: number | null;
@@ -296,14 +315,14 @@ interface GameSummaryProps {
     scoringAbandoned: boolean;
 }
 
-function GameSummary({
+function GameOutcomeSummary({
     winner,
     finalActionTime,
     timedOutPlayer,
     reported_by,
     annulled,
     scoringAbandoned,
-}: GameSummaryProps): JSX.Element {
+}: GameOutcomeSummaryProps): JSX.Element {
     const goban = useGoban();
     return (
         <div className="GameSummary">
