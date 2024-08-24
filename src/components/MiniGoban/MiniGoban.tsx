@@ -142,6 +142,9 @@ export function MiniGoban(props: MiniGobanProps): JSX.Element {
             for (const move of props.sampleOptions.variation) {
                 goban.current.engine.place(move.x, move.y);
             }
+            if (props.json.marks) {
+                goban.current.setMarks(props.json.marks);
+            }
         }
 
         goban.current.on("update", () => {
