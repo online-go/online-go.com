@@ -339,15 +339,8 @@ function GameOutcomeSummary({
                 <div>
                     {_("Player timed out:")}
                     <Player user={timedOutPlayer} />
-                    {timedOutPlayer === reported_by
-                        ? pgettext(
-                              "A note of surprise telling a moderator that the person who timed out is the reporter",
-                              " (reporter!)",
-                          )
-                        : pgettext(
-                              "A label next to a player name telling a moderator that a they are the one who was reported",
-                              " (the reported player)",
-                          )}
+                    {timedOutPlayer === reported_by && "!!"}
+                    {/* we are surprised if the reporter timed out */}
                 </div>
             )}
             {scoringAbandoned && <div>{_("Scoring abandoned by both players")}</div>}
