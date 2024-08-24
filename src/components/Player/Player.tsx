@@ -73,6 +73,13 @@ export interface PlayerProperties {
     forceShowRank?: boolean;
 }
 
+type ViewReportContextType = {
+    reporter: player_cache.PlayerCacheEntry;
+    reported: player_cache.PlayerCacheEntry;
+};
+
+export const ViewReportContext = React.createContext<ViewReportContextType | null>(null);
+
 export function Player(props: PlayerProperties): JSX.Element {
     const user = data.get("user");
     const player_id: number =
@@ -98,6 +105,8 @@ export function Player(props: PlayerProperties): JSX.Element {
 
     const base = player || historical;
     const combined = base ? Object.assign({}, base, historical ? historical : {}) : null;
+
+    const viewReportContext = React.useContext(ViewReportContext);
 
     React.useEffect(() => {
         if (!props.disableCacheUpdate) {
@@ -281,6 +290,14 @@ export function Player(props: PlayerProperties): JSX.Element {
 
     if (combined.ui_class) {
         main_attrs.className += " " + combined.ui_class;
+    }
+
+    if (viewReportContext && viewReportContext.reported.id === player_id) {
+        main_attrs.className += " reported";
+    }
+
+    if (viewReportContext && viewReportContext.reporter.id === player_id) {
+        main_attrs.className += " reporter";
     }
 
     if (player_id < 0) {
