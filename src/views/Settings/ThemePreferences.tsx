@@ -353,6 +353,12 @@ export function ThemePreferences(): JSX.Element | null {
                         json={{
                             width: 3,
                             height: 1,
+                            marks: show_variation_move_numbers
+                                ? {
+                                      "1": "aa",
+                                      "2": "ca",
+                                  }
+                                : {},
                         }}
                         noLink={true}
                         width={2}
