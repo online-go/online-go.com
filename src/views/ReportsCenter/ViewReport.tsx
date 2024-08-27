@@ -25,7 +25,7 @@ import { report_manager } from "report_manager";
 import { Report } from "report_util";
 import { AutoTranslate } from "AutoTranslate";
 import { interpolate, _, pgettext } from "translate";
-import { Player, ViewReportContext } from "Player";
+import { Player, ShowPlayersInReportContext } from "Player";
 import { Link } from "react-router-dom";
 import { post } from "requests";
 import { PlayerCacheEntry } from "player_cache";
@@ -301,10 +301,10 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
     };
 
     return (
-        <ViewReportContext.Provider
+        <ShowPlayersInReportContext.Provider
             value={{ reporter: report.reporting_user, reported: report.reported_user }}
         >
-            <div id="ViewReport">
+            <div id="ViewReport" className="show-players-in-report">
                 {isAnnulQueueModalOpen && (
                     <AnnulQueueModal
                         annulQueue={annulQueue ?? []}
@@ -712,7 +712,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                     )}
                 </ErrorBoundary>
             </div>
-        </ViewReportContext.Provider>
+        </ShowPlayersInReportContext.Provider>
     );
 }
 
