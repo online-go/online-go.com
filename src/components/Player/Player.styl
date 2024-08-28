@@ -40,6 +40,26 @@
         margin-left: 0.1rem;
     }
 
+    // Styling to support the "ShowPlayersInReportContext" context that we provide
+    .show-players-in-report & {
+        align-items: center;
+        &::after {
+            padding-left: 0.25rem;
+            width: 0.8rem;
+            font-family: 'FontAwesome';
+            font-size: 0.7rem;
+            content: "";
+        }
+        &.reported::after {
+            content: fa-exclamation-triangle-content;
+            themed color danger
+        }
+        &.reporter::after {
+            content: fa-bullhorn-content;
+            themed color supporter
+        }
+    }
+
     &.with-flare {
         align-items: baseline;  // if we have flare, then we don't have presence indicator, and it's better to line up the baselines (looks better in chat)
     }
