@@ -432,8 +432,8 @@ export function GobanCustomBlackPicker(props: GobanThemePickerProperties): JSX.E
                     type="text"
                     value={url}
                     placeholder={pgettext(
-                        "A URL pointing to a custom white stone image",
-                        "Custom white stone URL",
+                        "A URL pointing to a custom black stone image",
+                        "Custom black stone URL",
                     )}
                     onFocus={(e) => e.target.select()}
                     onChange={setUrl}
@@ -604,8 +604,8 @@ export function GobanCustomWhitePicker(props: GobanThemePickerProperties): JSX.E
                     type="text"
                     value={url}
                     placeholder={pgettext(
-                        "A URL pointing to a custom black stone image",
-                        "Custom black stone URL",
+                        "A URL pointing to a custom white stone image",
+                        "Custom white stone URL",
                     )}
                     onFocus={(e) => e.target.select()}
                     onChange={setUrl}
