@@ -104,31 +104,39 @@ export const PrizeBatch: React.FC = () => {
                         <div class="voucher">
                             <div class="header">
                                 <img src="https://cdn.online-go.com/assets/ogs_bw.svg" alt="OGS Logo" class="logo" />
-                                <h2>${_("Prize Voucher")}</h2>
+                                <span class="right">
+                                    <h2>${_("Prize Voucher")}</h2>
+                                </span>
                             </div>
                             <div class="content">
                                 <p class="congratulations">${_("Congratulations!")}</p>
-                                <p class="message">${_(
-                                    "You've won a special prize voucher from Online-Go.com for your outstanding performance at this tournament.",
-                                )}</p>
-                                <div class="code-info">
-                                    <p><strong>${_("Code:")}</strong> ${code.code}</p>
-                                    <p><strong>${_("Level:")}</strong> ${code.supporter_level}</p>
-                                    <p><strong>${_("Duration:")}</strong> ${code.duration} days</p>
-                                    <p><strong>${_("Expiration Date:")}</strong> ${formatDate(
-                                        batch?.expiration_date,
-                                    )}</p>
-                                </div>
-                                <p class="redemption-instructions">${interpolate(
-                                    _(
-                                        "To redeem this voucher, visit {{url}} and enter the code above. This voucher entitles you to {{supporter_level}} level VIP service or an equivalent upgrade to your current subscription on Online-Go.com for {{duration}} days.",
-                                    ),
+                                <p class="message">
+                                    This voucher entitles you to <span class='emphasis'>${
+                                        code.duration
+                                    } days</span> of <span class='emphasis'>${
+                                        code.supporter_level
+                                    }</span> level AI reviews at <span class='emphasis'>Online-Go.com</span>. If you are already a supporter, your current supporter level will be upgraded to the next level or ${
+                                        code.supporter_level
+                                    }, whichever is higher.<sup>*</sup>
+                                </p>
+                                <p class="message">${interpolate(
+                                    "To redeem, visit {{url}} and enter the code",
                                     {
                                         url: redemptionLink,
-                                        supporter_level: code.supporter_level,
-                                        duration: code.duration,
                                     },
-                                )}</p>
+                                )}
+                                </p>
+                                <div class="code-info">
+                                    <div class='code'>${code.code}</div>
+                                </div>
+                            </div>
+                            <div class="footer">
+                                <span class="left">
+                                    <sup>*</sup>Up to the maximum plan of Meijin.
+                                </span>
+                                <span class="right">
+                                    Expires ${formatDate(batch?.expiration_date)}
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -174,7 +182,6 @@ export const PrizeBatch: React.FC = () => {
                                 padding: 20px;
                                 max-width: 600px;
                                 box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-                                background-color: #ffffff;
                                 border-radius: 10px;
                                 overflow: hidden;
                                 page-break-inside: avoid;
@@ -185,10 +192,25 @@ export const PrizeBatch: React.FC = () => {
                                 display: flex;
                                 justify-content: center;
                                 align-items: center;
+                                align-content: center;
                                 color: black;
                                 margin-bottom: 20px;
                                 padding: 10px;
                                 border-radius: 5px;
+                            }
+
+                            .emphasis {
+                                color: #2ecc71;
+                                font-weight: bold;
+
+                            }
+                            .code {
+                                font-size: 30px;
+                                font-weight: bold;
+                                letter-spacing: 0.3rem;
+                                text-align: center;
+                                margin-top: 2rem;
+                                margin-bottom: 2rem;
                             }
                         
                             .logo {
@@ -205,7 +227,6 @@ export const PrizeBatch: React.FC = () => {
                             .congratulations {
                                 font-size: 28px;
                                 font-weight: bold;
-                                color: #2ecc71;
                                 margin-bottom: 10px;
                             }
                         
@@ -213,19 +234,23 @@ export const PrizeBatch: React.FC = () => {
                                 font-size: 20px;
                                 color: #34495e;
                                 margin-bottom: 30px;
+                                text-align: justify;
                             }
                         
                             .code-info {
-                                margin-bottom: 30px;
+                                margin-top: 5rem;
+                                margin-bottom: 5rem;
                                 text-align: left;
-                                padding: 20px;
-                                background-color: #f5f5f5;
                                 border-radius: 5px;
                                 border: 1px solid #ddd;
                             }
-                        
-                            .code-info p {
-                                margin: 10px 0;
+                            
+                            .header, .footer {
+                                display: flex;
+                                justify-content: space-between;
+                                align-items: center;
+                                align-content: center;
+                                color: black;
                             }
                         }
                     </style>
