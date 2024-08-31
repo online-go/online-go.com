@@ -226,6 +226,7 @@ export function ThemePreferences(): JSX.Element | null {
                                 { value: "automatic", label: _("Automatic") },
                                 { value: "A1", label: "A1" },
                                 { value: "1-1", label: "1-1" },
+                                { value: "none", label: "None" },
                             ]}
                             onChange={setBoardLabeling}
                         />

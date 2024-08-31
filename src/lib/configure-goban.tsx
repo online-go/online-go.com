@@ -51,12 +51,14 @@ export function configure_goban() {
             };
         },
 
-        getCoordinateDisplaySystem: (): "A1" | "1-1" => {
+        getCoordinateDisplaySystem: (): "A1" | "1-1" | "none" => {
             switch (preferences.get("board-labeling")) {
                 case "A1":
                     return "A1";
                 case "1-1":
                     return "1-1";
+                case "none":
+                    return "none";
                 default:
                     // auto
                     switch (current_language) {
