@@ -1203,3 +1203,27 @@ export function dev_site(): boolean {
 export function capitalize<T extends string>(s: T): Capitalize<T> {
     return (s.charAt(0).toUpperCase() + s.slice(1)) as Capitalize<T>;
 }
+
+let em10_width: number | undefined;
+let document_body_width = window.innerWidth || document.body.clientWidth;
+// on resize, we need to recompute the display width
+window.addEventListener("resize", () => {
+    //document_body_width = document.body.clientWidth;
+    document_body_width = window.innerWidth || document.body.clientWidth;
+    em10_width = undefined;
+    if (!em10_width) {
+        em10_width = parseInt(getComputedStyle(document.documentElement).fontSize, 10) * 10;
+    }
+});
+
+export function getWindowWidth(): number {
+    return document_body_width;
+    //return $(window).width() || document_body_width;
+}
+
+export function getEm10Width(): number {
+    if (!em10_width) {
+        em10_width = parseInt(getComputedStyle(document.documentElement).fontSize, 10) * 10;
+    }
+    return em10_width;
+}

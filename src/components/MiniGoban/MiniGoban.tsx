@@ -26,7 +26,7 @@ import { PersistentElement } from "PersistentElement";
 import { getUserRating, PROVISIONAL_RATING_CUTOFF } from "rank_utils";
 import { Clock } from "Clock";
 import { fetch } from "player_cache";
-import { getGameResultText } from "misc";
+import { getEm10Width, getGameResultText, getWindowWidth } from "misc";
 import { PlayerCacheEntry } from "player_cache";
 import { usePreference } from "preferences";
 
@@ -59,6 +59,13 @@ export interface MiniGobanProps {
         undo?: boolean;
         variation?: JGOFMove[];
     };
+}
+
+function computedDisplayWidth(): number {
+    //const body_width = document.body.clientWidth;
+
+    //return Math.min($("body").width() - 50, em10_width * 2);
+    return Math.min(getWindowWidth(), getEm10Width() * 2);
 }
 
 export function MiniGoban(props: MiniGobanProps): JSX.Element {
@@ -116,8 +123,7 @@ export function MiniGoban(props: MiniGobanProps): JSX.Element {
                 connect_to_chat: !!props.chat,
                 game_id: props.game_id,
                 review_id: props.review_id,
-                display_width:
-                    props.displayWidth || Math.min($("body").width() - 50, $("#em10").width() * 2),
+                display_width: props.displayWidth || computedDisplayWidth(),
                 square_size: "auto",
                 width: props.width || (props.json ? props.json.width : 19),
                 height: props.height || (props.json ? props.json.height : 19),
