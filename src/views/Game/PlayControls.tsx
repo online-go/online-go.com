@@ -143,6 +143,8 @@ export function PlayControls({
         engine?.needs_sealing,
     );
     const need_to_seal = needs_sealing && needs_sealing.length > 0;
+    const [autoscoring_in_progress, setAutoScoringInProgress] = React.useState(false);
+    const [autoscoring_taking_too_long, setAutoscoringTakingTooLong] = React.useState(false);
 
     const user_is_active_player = [engine.players.black.id, engine.players.white.id].includes(
         user.id,
@@ -180,6 +182,28 @@ export function PlayControls({
         const engineUpdated = (engine: GobanEngine) => {
             syncNeedsSealing(engine.needs_sealing);
         };
+
+        let autoscoring_timeout: any;
+        const onAutoScoringStarted = () => {
+            console.log("Auto-scoring started");
+            setAutoScoringInProgress(true);
+            if (autoscoring_timeout) {
+                clearTimeout(autoscoring_timeout);
+            }
+            autoscoring_timeout = setTimeout(() => {
+                setAutoscoringTakingTooLong(true);
+                autoscoring_timeout = null;
+            }, 2000);
+        };
+        const onAutoScoringComplete = () => {
+            console.log("Auto-scoring complete");
+            setAutoScoringInProgress(false);
+            if (autoscoring_timeout) {
+                clearTimeout(autoscoring_timeout);
+                autoscoring_timeout = null;
+            }
+        };
+
         if (goban?.engine) {
             engineUpdated(goban.engine);
         } else {
@@ -187,10 +211,14 @@ export function PlayControls({
         }
         goban.on("stone-removal.needs-sealing", syncNeedsSealing);
         goban.on("engine.updated", engineUpdated);
+        goban.on("stone-removal.auto-scoring-started", onAutoScoringStarted);
+        goban.on("stone-removal.auto-scoring-complete", onAutoScoringComplete);
 
         return () => {
             goban.off("engine.updated", engineUpdated);
             goban.off("stone-removal.needs-sealing", syncNeedsSealing);
+            goban.off("stone-removal.auto-scoring-started", onAutoScoringStarted);
+            goban.off("stone-removal.auto-scoring-complete", onAutoScoringComplete);
         };
     }, [goban]);
     React.useEffect(() => {
@@ -499,19 +527,28 @@ export function PlayControls({
                         {(user_is_active_player || user.is_moderator || null) && ( // moderators see the button, with its timer, but can't press it
                             <button
                                 className={
-                                    (user.is_moderator && !user_is_active_player) || need_to_seal
+                                    (user.is_moderator && !user_is_active_player) ||
+                                    need_to_seal ||
+                                    autoscoring_in_progress
                                         ? ""
                                         : "primary"
                                 }
                                 disabled={
                                     (user.is_moderator && !user_is_active_player) ||
-                                    stone_removal_accept_disabled
+                                    stone_removal_accept_disabled ||
+                                    (autoscoring_in_progress && !autoscoring_taking_too_long)
                                 }
                                 onClick={onStoneRemovalAccept}
                             >
                                 {_("Accept removed stones")}
                                 <Clock goban={goban} color="stone-removal" />
                             </button>
+                        )}
+
+                        {autoscoring_in_progress && (
+                            <div className="autoscoring-in-progress">
+                                <i className="fa fa-circle-o-notch rotating" /> {_("Scoring game")}
+                            </div>
                         )}
                     </div>
                     <br />
