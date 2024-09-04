@@ -26,7 +26,8 @@ import { PersistentElement } from "PersistentElement";
 import { getUserRating, PROVISIONAL_RATING_CUTOFF } from "rank_utils";
 import { Clock } from "Clock";
 import { fetch } from "player_cache";
-import { getEm10Width, getGameResultText, getWindowWidth } from "misc";
+import { getGameResultText } from "misc";
+import { getEm10Width, getWindowWidth } from "lib/device";
 import { PlayerCacheEntry } from "player_cache";
 import { usePreference } from "preferences";
 

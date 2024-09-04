@@ -21,7 +21,7 @@ import * as React from "react";
 import { current_language } from "translate";
 import { DataSchema } from "./data_schema";
 import { FollowedChannel } from "GoTV";
-import { getWindowWidth } from "./misc";
+import { getWindowWidth } from "./device";
 
 export const defaults = {
     "ai-review-enabled": true,
