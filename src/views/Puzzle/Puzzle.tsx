@@ -285,6 +285,9 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
         opts.move_tree_container = this.ref_move_tree_container;
         this.goban_opts = opts;
 
+        if (this.goban) {
+            this.goban.destroy();
+        }
         this.goban = createGoban(opts);
         this.goban.setMode("puzzle");
         (window as any)["global_goban"] = this.goban;
