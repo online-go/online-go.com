@@ -1,5 +1,7 @@
 "use strict";
 
+// cspell: words autotranslations conv "Türkçe" "hwat" "עִבְרִית" autotranslated autotranslation autotranslate
+
 const deepl = require("deepl-node");
 const fs = require("fs");
 const PO = require("pofile");
@@ -197,7 +199,9 @@ async function main() {
                                 // code point stuff to reconstruct the string
                                 // since indexing doesn't work as you'd hope
                                 // here.
-                                let k = String.fromCodePoint(emoji.codePointAt(2 * num_placeholders));
+                                let k = String.fromCodePoint(
+                                    emoji.codePointAt(2 * num_placeholders),
+                                );
                                 //console.log(k);
                                 placeholder_a_to_n[replacement] = k;
                                 placeholder_n_to_a[k] = replacement;

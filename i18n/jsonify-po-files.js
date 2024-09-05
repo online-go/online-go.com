@@ -1,5 +1,7 @@
 "use strict";
 
+// cspell: words autotranslations conv
+
 const fs = require("fs");
 const PO = require("pofile");
 
