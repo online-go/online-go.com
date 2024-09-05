@@ -69,3 +69,19 @@ export function useRefresh(): () => void {
 export function useMainGoban(): Goban | null {
     return (window as any)["global_goban"];
 }
+
+export const useIsDesktop = () => {
+    const [isDesktop, setIsDesktop] = React.useState(true);
+
+    React.useEffect(() => {
+        const mediaQuery = window.matchMedia("(min-width: 850px)");
+        const handleResize = () => setIsDesktop(mediaQuery.matches);
+
+        handleResize(); // Check on mount
+        mediaQuery.addEventListener("change", handleResize); // Listen for changes
+
+        return () => mediaQuery.removeEventListener("change", handleResize);
+    }, []);
+
+    return isDesktop;
+};
