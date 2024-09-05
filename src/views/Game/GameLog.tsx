@@ -18,6 +18,7 @@ import * as React from "react";
 import * as moment from "moment";
 
 import { _, pgettext } from "translate";
+import * as DynamicHelp from "react-dynamic-help";
 
 import { LogEntry } from "Game";
 import { GobanEngineConfig } from "goban";
@@ -42,7 +43,12 @@ export function GameLog({
     const [log, setLog] = React.useState<LogEntry[]>([]);
     const [shouldDisplayFullLog, setShouldDisplayFullLog] = React.useState(false);
 
+    const { registerTargetItem } = React.useContext(DynamicHelp.Api);
+    const { ref: autoscoreRef } = registerTargetItem("autoscore-game-log-entry");
+
     const game_id = goban_config.game_id as number;
+
+    let firstAutoscoringEntryRendered = false;
 
     React.useEffect(() => {
         socket.send(`game/log`, { game_id }, (log) => {
@@ -69,6 +75,14 @@ export function GameLog({
         },
         [goban_config],
     );
+
+    function firstAutoScoreEntry(): boolean {
+        if (firstAutoscoringEntryRendered) {
+            return false;
+        }
+        firstAutoscoringEntryRendered = true;
+        return true;
+    }
 
     return (
         <>
@@ -101,6 +115,13 @@ export function GameLog({
                                 )
                                 .map((entry, idx) => (
                                     <tr
+                                        ref={
+                                            entry.data &&
+                                            "needs_sealing" in entry.data &&
+                                            firstAutoScoreEntry()
+                                                ? autoscoreRef
+                                                : null
+                                        }
                                         key={entry.timestamp + ":" + idx}
                                         className={
                                             "entry" +
