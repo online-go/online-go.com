@@ -42,7 +42,8 @@ export function IncidentReportTracker(): JSX.Element | null {
     const refresh = useRefresh();
 
     const { registerTargetItem, triggerFlow, signalUsed } = React.useContext(DynamicHelp.Api);
-    const { ref: incident_report_indicator } = registerTargetItem("incident-report-indicator");
+    const { ref: incident_report_indicator, active: incidentReportIndicatorActive } =
+        registerTargetItem("incident-report-indicator");
     const { ref: hidden_incident_report_indicator } = registerTargetItem(
         "hidden-incident-report-indicator",
     );
@@ -57,7 +58,7 @@ export function IncidentReportTracker(): JSX.Element | null {
     }
 
     React.useEffect(() => {
-        if (incident_report_indicator && user.moderator_powers) {
+        if (incidentReportIndicatorActive() && user.moderator_powers) {
             if (normal_ct > 0) {
                 triggerFlow("community-moderator-with-reports-intro");
             } else {
