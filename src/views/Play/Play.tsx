@@ -225,7 +225,7 @@ export class Play extends React.Component<{}, PlayState> {
                 C.handicap_text = C.handicap;
             }
 
-            console.log(C);
+            //console.log(C);
 
             if (C.komi === null) {
                 C.komi_text = _("Auto");
