@@ -102,32 +102,35 @@ export function Settings(): JSX.Element {
     const selected = category;
     data.set("settings.page-selected", selected);
 
-    const groups: Array<{ key: string; label: string | JSX.Element; ref?: React.RefObject<any> }> =
-        [
-            { key: "general", label: _("General Preferences") },
-            { key: "sound", label: _("Sound Preferences") },
-            { key: "game", label: _("Game Preferences") },
-            { key: "theme", label: _("Themes & Visuals") },
-            { key: "chat", label: _("Chat Preferences") },
-            { key: "gotv", label: interpolate(_("%s Preferences"), ["GoTV"]) },
-            {
-                key: "supporter",
-                label: (
-                    <span>
-                        {_("Supporter Settings")}
-                        <i className="fa fa-star" />
-                    </span>
-                ),
-            },
-            { key: "moderator", label: _("Moderator Preferences") },
-            { key: "vacation", label: _("Vacation") },
-            { key: "email", label: _("Email Notifications") },
-            { key: "announcement", label: _("Announcements Preferences") },
-            { key: "blocked_players", label: _("Blocked Players") },
-            { key: "account", label: _("Account Settings"), ref: accountSettingsButton },
-            { key: "link", label: _("Account Linking") },
-            { key: "help", label: _("Help Settings") },
-            /*
+    const groups: Array<{
+        key: string;
+        label: string | JSX.Element;
+        ref?: React.RefObject<any> | React.RefCallback<HTMLElement>;
+    }> = [
+        { key: "general", label: _("General Preferences") },
+        { key: "sound", label: _("Sound Preferences") },
+        { key: "game", label: _("Game Preferences") },
+        { key: "theme", label: _("Themes & Visuals") },
+        { key: "chat", label: _("Chat Preferences") },
+        { key: "gotv", label: interpolate(_("%s Preferences"), ["GoTV"]) },
+        {
+            key: "supporter",
+            label: (
+                <span>
+                    {_("Supporter Settings")}
+                    <i className="fa fa-star" />
+                </span>
+            ),
+        },
+        { key: "moderator", label: _("Moderator Preferences") },
+        { key: "vacation", label: _("Vacation") },
+        { key: "email", label: _("Email Notifications") },
+        { key: "announcement", label: _("Announcements Preferences") },
+        { key: "blocked_players", label: _("Blocked Players") },
+        { key: "account", label: _("Account Settings"), ref: accountSettingsButton },
+        { key: "link", label: _("Account Linking") },
+        { key: "help", label: _("Help Settings") },
+        /*
         {
             key: "experiments",
             label: pgettext(
@@ -136,8 +139,8 @@ export function Settings(): JSX.Element {
             ),
         },
         */
-            { key: "logout", label: _("Logout") },
-        ];
+        { key: "logout", label: _("Logout") },
+    ];
 
     let SelectedPage: (props: SettingGroupPageProps) => JSX.Element | null = () => <div>Error</div>;
 

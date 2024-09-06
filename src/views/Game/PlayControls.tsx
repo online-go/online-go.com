@@ -134,7 +134,8 @@ export function PlayControls({
     const goban = useGoban();
     const engine = goban.engine;
     const { registerTargetItem, triggerFlow, signalUsed } = React.useContext(DynamicHelp.Api);
-    const { ref: game_state_pane } = registerTargetItem("undo-requested-message");
+    const { ref: game_state_pane, active: gameStatePaneActive } =
+        registerTargetItem("undo-requested-message");
     const [searchParams] = useSearchParams();
     const return_param = searchParams.get("return");
     const return_url = return_param && is_valid_url(return_param) ? return_param : null;
@@ -245,7 +246,7 @@ export function PlayControls({
             signalUsed("accept-undo-button");
         }
 
-        if (show_undo_requested && game_state_pane) {
+        if (show_undo_requested && gameStatePaneActive()) {
             if (this_users_turn) {
                 triggerFlow("undo-request-received-intro");
             } else {
