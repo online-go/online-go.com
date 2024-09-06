@@ -18,7 +18,7 @@
 import * as React from "react";
 import { _, pgettext } from "translate";
 import { Goban, GobanTheme /*, GobanThemeBackgroundCSS */ } from "goban";
-import { usePreference } from "preferences";
+import { getSelectedThemes, usePreference } from "preferences";
 import { PersistentElement } from "PersistentElement";
 import { Experiment, Variant, Default } from "../Experiment";
 import { LineText } from "../misc-ui";
@@ -72,7 +72,9 @@ export function GobanBoardThemePicker(props: GobanThemePickerProperties): JSX.El
     const canvases = React.useRef<HTMLCanvasElement[]>([]);
     const selectTheme = React.useRef<{ [k: string]: () => void }>({});
     const [, setCanvasesRenderedCt] = React.useState(0);
-    const [board, setBoard] = usePreference("goban-theme-board");
+    const [, setBoard] = usePreference("goban-theme-board");
+
+    const selected = getSelectedThemes();
 
     React.useEffect(() => {
         canvases.current.length = 0;
@@ -99,7 +101,9 @@ export function GobanBoardThemePicker(props: GobanThemePickerProperties): JSX.El
                     <div
                         key={theme.theme_name}
                         title={_(theme.theme_name)}
-                        className={"selector" + (board === theme.theme_name ? " active" : "")}
+                        className={
+                            "selector" + (selected.board === theme.theme_name ? " active" : "")
+                        }
                         style={theme.styles}
                         onClick={selectTheme.current[theme.theme_name]}
                     >
@@ -122,7 +126,8 @@ export function GobanCustomBoardPicker(props: GobanThemePickerProperties): JSX.E
     const sample_canvas = React.useRef<HTMLCanvasElement>();
     const [, refresh] = React.useState(0);
     const theme = Goban.THEMES_SORTED.board.filter((x) => x.theme_name === "Custom")[0];
-    const [board, setBoard] = usePreference("goban-theme-board");
+    const [, setBoard] = usePreference("goban-theme-board");
+    const selected = getSelectedThemes();
 
     const inputStyle = { height: `${size}px`, width: `${size * 1.5}px` };
 
@@ -164,7 +169,7 @@ export function GobanCustomBoardPicker(props: GobanThemePickerProperties): JSX.E
                         <div
                             key={theme.theme_name}
                             title={_(theme.theme_name)}
-                            className={"selector" + (board === "Custom" ? " active" : "")}
+                            className={"selector" + (selected.board === "Custom" ? " active" : "")}
                             style={theme.styles}
                             onClick={() => setBoard("Custom")}
                         >
@@ -260,8 +265,9 @@ export function GobanWhiteThemePicker(props: GobanThemePickerProperties): JSX.El
     const canvases = React.useRef<HTMLCanvasElement[]>([]);
     const selectTheme = React.useRef<{ [k: string]: () => void }>({});
     const [, setCanvasesRenderedCt] = React.useState(0);
-    const [white, setWhite] = usePreference("goban-theme-white");
-    const [board] = usePreference("goban-theme-board");
+    const [, setWhite] = usePreference("goban-theme-white");
+    usePreference("goban-theme-board"); // trigger refresh when board changes
+    const selected = getSelectedThemes();
     const [background_color, _setBackgroundColor] = usePreference(
         "goban-theme-custom-board-background",
     );
@@ -289,7 +295,7 @@ export function GobanWhiteThemePicker(props: GobanThemePickerProperties): JSX.El
     const custom_board = Goban.THEMES_SORTED.board.filter((x) => x.theme_name === "Custom")[0];
 
     const active_standard_board_theme = Goban.THEMES_SORTED.board.filter(
-        (x) => x.theme_name === board,
+        (x) => x.theme_name === selected.board,
     )[0];
 
     if (!active_standard_board_theme) {
@@ -297,7 +303,7 @@ export function GobanWhiteThemePicker(props: GobanThemePickerProperties): JSX.El
     }
 
     const board_styles =
-        board === custom_board.theme_name
+        selected.board === custom_board.theme_name
             ? {
                   backgroundColor: background_color,
                   backgroundImage: `url(${background_image})`,
@@ -317,7 +323,8 @@ export function GobanWhiteThemePicker(props: GobanThemePickerProperties): JSX.El
                                 key={theme.theme_name}
                                 title={_(theme.theme_name)}
                                 className={
-                                    "selector" + (white === theme.theme_name ? " active" : "")
+                                    "selector" +
+                                    (selected.white === theme.theme_name ? " active" : "")
                                 }
                                 style={{
                                     ...theme.styles,
@@ -337,7 +344,8 @@ export function GobanWhiteThemePicker(props: GobanThemePickerProperties): JSX.El
                                 key={theme.theme_name}
                                 title={_(theme.theme_name)}
                                 className={
-                                    "selector" + (white === theme.theme_name ? " active" : "")
+                                    "selector" +
+                                    (selected.white === theme.theme_name ? " active" : "")
                                 }
                                 style={{
                                     ...theme.styles,
@@ -362,8 +370,9 @@ export function GobanCustomBlackPicker(props: GobanThemePickerProperties): JSX.E
     const [color, _setColor] = usePreference("goban-theme-custom-black-stone-color");
     const [, refresh] = React.useState(0);
     const theme = Goban.THEMES_SORTED.black.filter((x) => x.theme_name === "Custom")[0];
-    const [black, setBlack] = usePreference("goban-theme-black");
-    const [board] = usePreference("goban-theme-board");
+    const [, setBlack] = usePreference("goban-theme-black");
+    usePreference("goban-theme-board"); // trigger refresh when board changes
+    const selected = getSelectedThemes();
     const [background_color, _setBackgroundColor] = usePreference(
         "goban-theme-custom-board-background",
     );
@@ -386,10 +395,10 @@ export function GobanCustomBlackPicker(props: GobanThemePickerProperties): JSX.E
     const custom_board = Goban.THEMES_SORTED.board.filter((x) => x.theme_name === "Custom")[0];
 
     const active_standard_board_theme = Goban.THEMES_SORTED.board.filter(
-        (x) => x.theme_name === board,
+        (x) => x.theme_name === selected.board,
     )[0];
     const board_styles =
-        board === custom_board.theme_name
+        selected.board === custom_board.theme_name
             ? {
                   backgroundColor: background_color,
                   backgroundImage: `url(${background_image})`,
@@ -411,7 +420,7 @@ export function GobanCustomBlackPicker(props: GobanThemePickerProperties): JSX.E
                         <div
                             key={theme.theme_name}
                             title={_(theme.theme_name)}
-                            className={"selector" + (black === "Custom" ? " active" : "")}
+                            className={"selector" + (selected.black === "Custom" ? " active" : "")}
                             style={{ ...theme.styles, ...board_styles }}
                             onClick={() => setBlack("Custom")}
                         >
@@ -453,8 +462,9 @@ export function GobanBlackThemePicker(props: GobanThemePickerProperties): JSX.El
     const canvases = React.useRef<HTMLCanvasElement[]>([]);
     const selectTheme = React.useRef<{ [k: string]: () => void }>({});
     const [, setCanvasesRenderedCt] = React.useState(0);
-    const [black, setBlack] = usePreference("goban-theme-black");
-    const [board] = usePreference("goban-theme-board");
+    const [, setBlack] = usePreference("goban-theme-black");
+    usePreference("goban-theme-board"); // trigger refresh when board changes
+    const selected = getSelectedThemes();
     const [background_color, _setBackgroundColor] = usePreference(
         "goban-theme-custom-board-background",
     );
@@ -482,7 +492,7 @@ export function GobanBlackThemePicker(props: GobanThemePickerProperties): JSX.El
     const custom_board = Goban.THEMES_SORTED.board.filter((x) => x.theme_name === "Custom")[0];
 
     const active_standard_board_theme = Goban.THEMES_SORTED.board.filter(
-        (x) => x.theme_name === board,
+        (x) => x.theme_name === selected.board,
     )[0];
 
     if (!active_standard_board_theme) {
@@ -490,7 +500,7 @@ export function GobanBlackThemePicker(props: GobanThemePickerProperties): JSX.El
     }
 
     const board_styles =
-        board === custom_board.theme_name
+        selected.board === custom_board.theme_name
             ? {
                   backgroundColor: background_color,
                   backgroundImage: `url(${background_image})`,
@@ -510,7 +520,8 @@ export function GobanBlackThemePicker(props: GobanThemePickerProperties): JSX.El
                                 key={theme.theme_name}
                                 title={_(theme.theme_name)}
                                 className={
-                                    "selector" + (black === theme.theme_name ? " active" : "")
+                                    "selector" +
+                                    (selected.black === theme.theme_name ? " active" : "")
                                 }
                                 style={{
                                     ...theme.styles,
@@ -530,7 +541,8 @@ export function GobanBlackThemePicker(props: GobanThemePickerProperties): JSX.El
                                 key={theme.theme_name}
                                 title={_(theme.theme_name)}
                                 className={
-                                    "selector" + (black === theme.theme_name ? " active" : "")
+                                    "selector" +
+                                    (selected.black === theme.theme_name ? " active" : "")
                                 }
                                 style={{
                                     ...theme.styles,
@@ -555,7 +567,8 @@ export function GobanCustomWhitePicker(props: GobanThemePickerProperties): JSX.E
     const [color, _setColor] = usePreference("goban-theme-custom-white-stone-color");
     const [, refresh] = React.useState(0);
     const theme = Goban.THEMES_SORTED.white.filter((x) => x.theme_name === "Custom")[0];
-    const [white, setWhite] = usePreference("goban-theme-white");
+    const [, setWhite] = usePreference("goban-theme-white");
+    const selected = getSelectedThemes();
 
     const inputStyle = { height: `${size}px`, width: `${size * 1.5}px` };
 
@@ -583,7 +596,7 @@ export function GobanCustomWhitePicker(props: GobanThemePickerProperties): JSX.E
                         <div
                             key={theme.theme_name}
                             title={_(theme.theme_name)}
-                            className={"selector" + (white === "Custom" ? " active" : "")}
+                            className={"selector" + (selected.white === "Custom" ? " active" : "")}
                             style={theme.styles}
                             onClick={() => setWhite("Custom")}
                         >
