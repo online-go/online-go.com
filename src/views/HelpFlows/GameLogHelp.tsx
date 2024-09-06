@@ -19,7 +19,7 @@ import React from "react";
 
 import { HelpFlow, HelpItem } from "react-dynamic-help";
 
-import { _, pgettext } from "translate";
+import { llm_pgettext } from "translate";
 
 /**
  * A help flow intended for moderators and CMs wondering about mysterious auto score entries
@@ -31,11 +31,12 @@ export function GameLogHelp(): JSX.Element {
             id="game-log-help"
             showInitially={true}
             debug={true}
-            description={pgettext("Name of a dynamic help flow", "Game Log Help")}
+            description={llm_pgettext("Name of a dynamic help flow", "Game Log Help")}
         >
             <HelpItem target="autoscore-game-log-entry" position={"bottom-center"}>
                 <div>
-                    {_(
+                    {llm_pgettext(
+                        "",
                         "These come from the user's browser during autoscoring.   Two of these from each user, at the beginning of the scoring phase, and if the users presses 'auto-score'",
                     )}
                 </div>

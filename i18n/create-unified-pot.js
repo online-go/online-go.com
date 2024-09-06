@@ -1,9 +1,28 @@
+/* 
+This script is executed in two places.
+
+The first is on our translation server in a cron job to recompute translation
+strings and insert them into the pootle server for translation.
+
+The second is during the deployment process prior to audit-translations, which
+performs the automatic translation of strings.
+*/
+
 "use strict";
 
 const fs = require("fs");
 const XGettext = require("xgettext-js");
 const SourceMapConsumer = require("source-map").SourceMapConsumer;
 const PO = require("pofile");
+
+const MODE = process.argv[2] || "full";
+
+if (MODE !== "full" && MODE !== "llm-translation-extraction") {
+    console.error('Invalid mode, expecting "full" or "llm-translation-extraction"');
+    process.exit(1);
+}
+
+console.log("Running in mode:", MODE);
 
 main();
 
@@ -46,6 +65,7 @@ function main() {
 
             function prep(match) {
                 let ret = {
+                    llm: false,
                     line: match.line,
                     column: match.column,
                     source: sourcemap.originalPositionFor({
@@ -78,6 +98,17 @@ function main() {
                 return ret;
             }
 
+            function llm_ctxt(match) {
+                let ret = prep(match);
+                ret.llm = true;
+                ret.msgctxt = match.arguments[0].value;
+                ret.msgid = match.arguments[1].value;
+                if (match.arguments.length > 2) {
+                    ret.msgid_plural = match.arguments[2].value;
+                }
+                return ret;
+            }
+
             let source = data;
             let parser = new XGettext({
                 keywords: {
@@ -97,6 +128,7 @@ function main() {
                 }
                 let po_items = {};
                 let ui_only_keys = {};
+                let llm_keys = {};
                 for (let item of po.items) {
                     let key = item.msgctxt ? item.msgctxt + "\x04" : "";
                     key += item.msgid;
@@ -109,6 +141,7 @@ function main() {
 
                 for (let m of parser.getMatches(source)) {
                     if (m.msgid == "") {
+                        console.log("Skipping blank translation");
                         console.log(m);
                         continue;
                     }
@@ -124,6 +157,14 @@ function main() {
                     }
 
                     ui_only_keys[key] = 1;
+                    if (m.llm) {
+                        llm_keys[key] = {
+                            msgctxt: m.msgctxt,
+                            msgid: m.msgid,
+                            msgid_plural: m.msgid_plural,
+                        };
+                        continue;
+                    }
 
                     if (!(key in po_items)) {
                         po_items[key] = new PO.Item();
@@ -145,9 +186,14 @@ function main() {
                     }
                 }
 
-                fs.writeFile("build/llm-keys.json", JSON.stringify(llm_keys), () =>
-                    console.log("build/llm-keys-ui-keys.json written"),
-                );
+                fs.writeFileSync("build/llm-keys.json", JSON.stringify(llm_keys, undefined, 4));
+                console.log("build/llm-keys-ui-keys.json written");
+
+                if (MODE === "llm-translation-extraction") {
+                    console.log("llm-translation-extraction mode complete, exiting");
+                    process.exit(0);
+                }
+
                 fs.writeFile("build/ogs-ui-keys.json", JSON.stringify(ui_only_keys), () =>
                     console.log("build/ogs-ui-keys.json written"),
                 );
