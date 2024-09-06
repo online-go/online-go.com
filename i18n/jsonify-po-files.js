@@ -1,5 +1,7 @@
 "use strict";
 
+// cspell: words autotranslations conv
+
 const fs = require("fs");
 const PO = require("pofile");
 
@@ -12,6 +14,12 @@ async function main() {
         : {};
     const autotranslations = fs.existsSync("./autotranslations.json")
         ? JSON.parse(await fs.promises.readFile("./autotranslations.json", "utf-8"))
+        : {};
+    const llm_cache = fs.existsSync("./llm-keys-cache.json")
+        ? JSON.parse(await fs.promises.readFile("./llm-keys-cache.json", "utf-8"))
+        : {};
+    const llm_needed = fs.existsSync("./build/llm-keys.json")
+        ? JSON.parse(await fs.promises.readFile("./build/llm-keys.json", "utf-8"))
         : {};
 
     for (let lang in languages) {
@@ -52,6 +60,16 @@ async function main() {
 
             if (!missing) {
                 result[key] = item.msgstr;
+            }
+        }
+
+        if (lang in llm_cache) {
+            for (let key in llm_needed) {
+                if (key in llm_cache[lang]) {
+                    result[key] = [llm_cache[lang][key]];
+                } else {
+                    console.error(`Missing LLM translation for ${key}`);
+                }
             }
         }
 

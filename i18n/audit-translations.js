@@ -1,9 +1,12 @@
 "use strict";
 
+// cspell: words autotranslations conv "Türkçe" "hwat" "עִבְרִית" autotranslated autotranslation autotranslate
+
 const deepl = require("deepl-node");
 const fs = require("fs");
 const PO = require("pofile");
 const GoogleTranslate = require("@google-cloud/translate").v3.TranslationServiceClient;
+const OpenAI = require("openai");
 
 let keys = fs.existsSync("./keys.json") ? JSON.parse(fs.readFileSync("./keys.json")) : null;
 
@@ -14,6 +17,9 @@ const googleTranslate = keys
           credentials: keys.google_credentials,
       })
     : null;
+
+const openai = keys ? new OpenAI({ apiKey: keys.openai_api_key }) : null;
+const OPENAI_MODEL = "gpt-4o";
 
 let limit = 1;
 
@@ -164,7 +170,16 @@ async function main() {
         JSON.stringify(translations_missing, null, 4),
     );
 
-    if (deepl_translator && googleTranslate) {
+    // LLM translations
+    let llm_translations_needed = JSON.parse(fs.readFileSync("./build/llm-keys.json", "utf-8"));
+    for (let key in llm_translations_needed) {
+        for (let lang in languages) {
+            llm_translate(key, llm_translations_needed[key], lang, languages[lang]);
+        }
+    }
+
+    // Auto translate missing strs with deepl or google depending on language support
+    if (deepl_translator && googleTranslate && openai) {
         if (Object.keys(vandalized_languages).length > 0) {
             console.error(
                 `Critical error: ${
@@ -197,7 +212,9 @@ async function main() {
                                 // code point stuff to reconstruct the string
                                 // since indexing doesn't work as you'd hope
                                 // here.
-                                let k = String.fromCodePoint(emoji.codePointAt(2 * num_placeholders));
+                                let k = String.fromCodePoint(
+                                    emoji.codePointAt(2 * num_placeholders),
+                                );
                                 //console.log(k);
                                 placeholder_a_to_n[replacement] = k;
                                 placeholder_n_to_a[k] = replacement;
@@ -381,6 +398,58 @@ function detect_profanity(lang, msg) {
     }
 
     return false;
+}
+
+//function llm_translate(entry: {msgctxt: string, msgid: string}) {
+let LLM_CACHE = undefined;
+async function llm_translate(key, entry, lang, language) {
+    if (language === "Debug") {
+        return "[" + entry.msgid + "]";
+    }
+
+    if (!LLM_CACHE) {
+        if (fs.existsSync("./llm-keys-cache.json")) {
+            LLM_CACHE = JSON.parse(fs.readFileSync("./llm-keys-cache.json", "utf-8"));
+        } else {
+            LLM_CACHE = {};
+        }
+    }
+
+    if (!(lang in LLM_CACHE)) {
+        LLM_CACHE[lang] = {};
+    }
+
+    if (key in LLM_CACHE[lang]) {
+        return LLM_CACHE[lang][key];
+    }
+
+    let completion = await openai.chat.completions.create({
+        messages: [
+            {
+                role: "system",
+                content:
+                    "You are translating user interface strings from English to " +
+                    language +
+                    ". Only include the translation in your response.",
+            },
+            {
+                role: "system",
+                content: "The context provided for the string is: " + entry.msgctxt ?? "",
+            },
+            {
+                role: "system",
+                content: "Translate the provided string from English to " + language,
+            },
+            { role: "user", content: entry.msgid },
+        ],
+        model: OPENAI_MODEL,
+    });
+
+    let translation = completion.choices[0].message.content;
+    LLM_CACHE[lang][key] = translation;
+    fs.writeFileSync("./llm-keys-cache.json", JSON.stringify(LLM_CACHE, null, 4));
+    console.log("LLM translation", entry.msgid, " -> ", translation);
+    return translation;
 }
 
 main()

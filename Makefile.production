@@ -44,7 +44,7 @@ dev-put:
 dev-del:
 	curl -X DELETE $(BETA_INDEX_HEADERS)  http://localhost:1080/_index
 
-beta-put: sync-translations audit-translations jsonify-po-files push-cdn upload-sentry-source-maps
+beta-put: sync-translations create-unified-pot audit-translations jsonify-po-files push-cdn upload-sentry-source-maps
 	OGS_VERSION_HASH=$(OGS_VERSION_HASH) VENDOR_HASH=$(VENDOR_HASH) npm run minify-index --silent | curl -X PUT $(BETA_INDEX_HEADERS) -d @- https://beta.online-go.com/_index
 	make beta-notify-slack
 
@@ -81,6 +81,11 @@ push-cdn: prepare-cdn-files
 sync-translations:
 	cd i18n/build/; ssh pootle@pootle "bash -c 'cd online-go.com/i18n/build; tar jcf - *'" | tar jxf -
 	cd i18n/locale/; ssh pootle@pootle "bash -c 'cd online-go.com/i18n/locale; tar jcf - *'" | tar jxf -
+
+create-unified-pot:
+	# This is run on the pootle server and here, the pootle server does most of the work,
+	# this invocation extracts strings that need to be translated by LLMs
+	cd i18n; node create-unified-pot.js llm-translation-extraction
 
 audit-translations:
 	cd i18n; node audit-translations.js

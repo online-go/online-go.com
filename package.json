@@ -75,6 +75,7 @@
         "jest-chain": "^1.1.6",
         "jest-environment-jsdom": "^29.7.0",
         "lint-staged": "^15.2.2",
+        "openai": "^4.57.3",
         "pofile": "^1.1.0",
         "postcss": "^8.4.16",
         "postcss-inline-svg": "^5.0.0",
