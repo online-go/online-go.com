@@ -34,7 +34,6 @@ import { TimeControl } from "src/components/TimeControl";
 import { Speed } from "src/lib/types";
 import { usePreference } from "preferences";
 import { openAnnulQueueModal, AnnulQueueModal } from "AnnulQueueModal";
-import { useUser } from "hooks";
 import { GameNameForList } from "GobanLineSummary";
 
 interface GameHistoryProps {
@@ -85,8 +84,6 @@ export function GameHistoryTable(props: GameHistoryProps) {
     const [annulQueue, setAnnulQueue] = React.useState<any[]>([]);
     const [isAnnulQueueModalOpen, setIsAnnulQueueModalOpen] = React.useState(false);
 
-    const user = useUser();
-
     function getBoardSize(size_filter: string): number | undefined {
         switch (size_filter) {
             case "9x9":
@@ -102,9 +99,25 @@ export function GameHistoryTable(props: GameHistoryProps) {
     function handleRowClick(
         row: GroomedGame,
         ev: React.MouseEvent | React.TouchEvent | React.PointerEvent,
+        rows: GroomedGame[],
     ) {
         if (selectModeActive) {
-            toggleQueued(row);
+            if (ev.shiftKey) {
+                if (annulQueue.at(-1)) {
+                    window.getSelection()?.removeAllRanges();
+                    const indexes = [
+                        rows.findIndex(r => r.id === annulQueue.at(-1).id),
+                        rows.findIndex(r => r.id === row.id),
+                    ]
+                    const minIndex = Math.min(...indexes);
+                    const maxIndex = Math.max(...indexes);
+                    setAnnulQueue(
+                        rows.slice(minIndex, maxIndex +1).filter(r => !r.annulled)
+                    );
+                }
+            } else {
+                toggleQueued(row);
+            }
         } else {
             openUrlIfALinkWasNotClicked(ev, row.href);
         }
@@ -233,7 +246,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
                             />
                         </div>
                         <div>
-                            {user.is_moderator ? (
+                            {true ? (
                                 <div className="btn-group">
                                     {annulQueue.length > 0 ? (
                                         <button
@@ -336,7 +349,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
                         groom={game_history_groomer}
                         pageSizeOptions={[10, 15, 25, 50]}
                         onRowClick={handleRowClick}
-                        annulQueue={annulQueue}
+                        highlightedRows={annulQueue}
                         columns={[
                             {
                                 header: _("User"),
