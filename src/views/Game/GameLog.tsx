@@ -44,7 +44,13 @@ export function GameLog({
     const [shouldDisplayFullLog, setShouldDisplayFullLog] = React.useState(false);
 
     const { registerTargetItem } = React.useContext(DynamicHelp.Api);
-    const { ref: autoscoreRef } = registerTargetItem("autoscore-game-log-entry");
+    const { ref: autoscoreRef } = {
+        // this chicanery defends against registerTargetItem being null due to this component _not_ being
+        // wrapped in OGSHelpProvider, which happens when it is in a Modal.
+        // TBD: make Modals be inside OGSHelpProvider, so they can have help.
+        ref: null,
+        ...registerTargetItem?.("autoscore-game-log-entry"),
+    };
 
     const game_id = goban_config.game_id as number;
 
