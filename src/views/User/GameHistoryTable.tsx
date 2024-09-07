@@ -34,6 +34,7 @@ import { TimeControl } from "src/components/TimeControl";
 import { Speed } from "src/lib/types";
 import { usePreference } from "preferences";
 import { openAnnulQueueModal, AnnulQueueModal } from "AnnulQueueModal";
+import { useUser } from "src/lib/hooks";
 import { GameNameForList } from "GobanLineSummary";
 
 interface GameHistoryProps {
@@ -83,6 +84,8 @@ export function GameHistoryTable(props: GameHistoryProps) {
     const [selectModeActive, setSelectModeActive] = React.useState<boolean>(false);
     const [annulQueue, setAnnulQueue] = React.useState<any[]>([]);
     const [isAnnulQueueModalOpen, setIsAnnulQueueModalOpen] = React.useState(false);
+
+    const user = useUser();
 
     function getBoardSize(size_filter: string): number | undefined {
         switch (size_filter) {
@@ -246,7 +249,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
                             />
                         </div>
                         <div>
-                            {true ? (
+                            {user.is_moderator ? (
                                 <div className="btn-group">
                                     {annulQueue.length > 0 ? (
                                         <button
