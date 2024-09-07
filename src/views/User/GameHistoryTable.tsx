@@ -34,7 +34,7 @@ import { TimeControl } from "src/components/TimeControl";
 import { Speed } from "src/lib/types";
 import { usePreference } from "preferences";
 import { openAnnulQueueModal, AnnulQueueModal } from "AnnulQueueModal";
-import { useUser } from "src/lib/hooks";
+import { useUser } from "hooks";
 import { GameNameForList } from "GobanLineSummary";
 
 interface GameHistoryProps {
