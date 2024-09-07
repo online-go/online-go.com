@@ -104,6 +104,10 @@ export function GameHistoryTable(props: GameHistoryProps) {
         ev: React.MouseEvent | React.TouchEvent | React.PointerEvent,
         rows: GroomedGame[],
     ) {
+        if (row.annulled) {
+            return;
+        }
+
         if (selectModeActive) {
             if (ev.shiftKey) {
                 if (annulQueue.at(-1)) {
