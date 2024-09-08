@@ -55,6 +55,7 @@ interface PaginatedTableProperties<RawEntryT, GroomedEntryT = RawEntryT> {
     onRowClick?: (
         row: GroomedEntryT,
         ev: React.MouseEvent | React.TouchEvent | React.PointerEvent,
+        rows: GroomedEntryT[],
     ) => any;
     debug?: boolean;
     pageSizeOptions?: Array<number>;
@@ -63,7 +64,7 @@ interface PaginatedTableProperties<RawEntryT, GroomedEntryT = RawEntryT> {
     hidePageControls?: boolean;
     /** If provided, the table will listen for this push event and refresh its data accordingly */
     uiPushProps?: { event: string; channel: string };
-    annulQueue?: any[];
+    highlightedRows?: any[];
 }
 
 export interface PaginatedTableRef {
@@ -355,40 +356,21 @@ function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(
                                     {column_render(column, row)}
                                 </td>
                             ));
-                            if (props.annulQueue) {
-                                if (props.onRowClick) {
-                                    return (
-                                        <tr
-                                            key={row.id}
-                                            className={
-                                                props.annulQueue.includes(row) ? "queued" : ""
-                                            }
-                                            onMouseUp={(ev) =>
-                                                props.onRowClick && props.onRowClick(row, ev)
-                                            }
-                                        >
-                                            {cols}
-                                        </tr>
-                                    );
-                                } else {
-                                    return <tr key={row.id}>{cols}</tr>;
-                                }
-                            } else {
-                                if (props.onRowClick) {
-                                    return (
-                                        <tr
-                                            key={row.id}
-                                            onMouseUp={(ev) =>
-                                                props.onRowClick && props.onRowClick(row, ev)
-                                            }
-                                        >
-                                            {cols}
-                                        </tr>
-                                    );
-                                } else {
-                                    return <tr key={row.id}>{cols}</tr>;
-                                }
-                            }
+                            return (
+                                <tr
+                                    key={row.id}
+                                    className={
+                                        props.highlightedRows && props.highlightedRows.includes(row)
+                                            ? "queued"
+                                            : ""
+                                    }
+                                    onMouseUp={(ev) =>
+                                        props.onRowClick && props.onRowClick(row, ev, rows)
+                                    }
+                                >
+                                    {cols}
+                                </tr>
+                            );
                         })}
                         {blank_rows}
                     </tbody>

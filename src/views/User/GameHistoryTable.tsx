@@ -102,9 +102,27 @@ export function GameHistoryTable(props: GameHistoryProps) {
     function handleRowClick(
         row: GroomedGame,
         ev: React.MouseEvent | React.TouchEvent | React.PointerEvent,
+        rows: GroomedGame[],
     ) {
+        if (row.annulled) {
+            return;
+        }
+
         if (selectModeActive) {
-            toggleQueued(row);
+            if (ev.shiftKey) {
+                if (annulQueue.at(-1)) {
+                    window.getSelection()?.removeAllRanges();
+                    const indexes = [
+                        rows.findIndex((r) => r.id === annulQueue.at(-1).id),
+                        rows.findIndex((r) => r.id === row.id),
+                    ];
+                    const minIndex = Math.min(...indexes);
+                    const maxIndex = Math.max(...indexes);
+                    setAnnulQueue(rows.slice(minIndex, maxIndex + 1).filter((r) => !r.annulled));
+                }
+            } else {
+                toggleQueued(row);
+            }
         } else {
             openUrlIfALinkWasNotClicked(ev, row.href);
         }
@@ -336,7 +354,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
                         groom={game_history_groomer}
                         pageSizeOptions={[10, 15, 25, 50]}
                         onRowClick={handleRowClick}
-                        annulQueue={annulQueue}
+                        highlightedRows={annulQueue}
                         columns={[
                             {
                                 header: _("User"),
