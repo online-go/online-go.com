@@ -141,7 +141,7 @@
         "react-router-dom": "=6.3.0",
         "react-select": "^5.0.1",
         "react-split": "^2.0.9",
-        "react-switch": "^5.0.1",
+        "react-switch": "7.0.0",
         "react-table": "^6.10.0",
         "react-tabs": "^6.0.2",
         "react-virtualized": "^9.22.3",
