@@ -113,14 +113,12 @@ export function GameHistoryTable(props: GameHistoryProps) {
                 if (annulQueue.at(-1)) {
                     window.getSelection()?.removeAllRanges();
                     const indexes = [
-                        rows.findIndex(r => r.id === annulQueue.at(-1).id),
-                        rows.findIndex(r => r.id === row.id),
-                    ]
+                        rows.findIndex((r) => r.id === annulQueue.at(-1).id),
+                        rows.findIndex((r) => r.id === row.id),
+                    ];
                     const minIndex = Math.min(...indexes);
                     const maxIndex = Math.max(...indexes);
-                    setAnnulQueue(
-                        rows.slice(minIndex, maxIndex +1).filter(r => !r.annulled)
-                    );
+                    setAnnulQueue(rows.slice(minIndex, maxIndex + 1).filter((r) => !r.annulled));
                 }
             } else {
                 toggleQueued(row);

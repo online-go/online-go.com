@@ -360,7 +360,9 @@ function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(
                                 <tr
                                     key={row.id}
                                     className={
-                                        props.highlightedRows && props.highlightedRows.includes(row) ? "queued" : ""
+                                        props.highlightedRows && props.highlightedRows.includes(row)
+                                            ? "queued"
+                                            : ""
                                     }
                                     onMouseUp={(ev) =>
                                         props.onRowClick && props.onRowClick(row, ev, rows)
