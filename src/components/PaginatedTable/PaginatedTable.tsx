@@ -89,7 +89,7 @@ function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(
     const [page_input_text, _setPageInputText]: [string, (s: string) => void] = React.useState(
         (props.startingPage || 1).toString(),
     );
-    const [num_pages, setNumPages]: [number, (x: number) => void] = React.useState(0);
+    const [num_pages, setNumPages]: [number, (x: number) => void] = React.useState(1);
     const [page_size, _setPageSize]: [number, (x: number) => void] = React.useState(
         data.get(`paginated-table.${table_name}.page_size`, props.pageSize || 10),
     );
@@ -164,7 +164,7 @@ function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(
                     setLoadAgainRefresh(load_again_refresh + 1);
                 }
                 setRows(new_rows);
-                setNumPages(Math.ceil(res.count / page_size));
+                setNumPages(Math.ceil(res.count / page_size) || 1);
                 if (page > Math.ceil(res.count / page_size)) {
                     const new_page = Math.max(1, Math.ceil(res.count / page_size));
                     _setPage(new_page);
