@@ -107,7 +107,7 @@ export function GobanBoardThemePicker(props: GobanThemePickerProperties): JSX.El
                         style={theme.styles}
                         onClick={selectTheme.current[theme.theme_name]}
                     >
-                        <PersistentElement elt={canvases.current[idx]} />
+                        {canvases.current[idx] && <PersistentElement elt={canvases.current[idx]} />}
                     </div>
                 ))}
             </div>
@@ -173,7 +173,7 @@ export function GobanCustomBoardPicker(props: GobanThemePickerProperties): JSX.E
                             style={theme.styles}
                             onClick={() => setBoard("Custom")}
                         >
-                            <PersistentElement elt={sample_canvas.current} />
+                            {sample_canvas && <PersistentElement elt={sample_canvas.current} />}
                         </div>
                     </div>
 
@@ -353,7 +353,9 @@ export function GobanWhiteThemePicker(props: GobanThemePickerProperties): JSX.El
                                 }}
                                 onClick={selectTheme.current[theme.theme_name]}
                             >
-                                <PersistentElement elt={canvases.current[idx]} />
+                                {canvases.current[idx] && (
+                                    <PersistentElement elt={canvases.current[idx]} />
+                                )}
                             </div>
                         ))}
                     </div>
@@ -550,7 +552,9 @@ export function GobanBlackThemePicker(props: GobanThemePickerProperties): JSX.El
                                 }}
                                 onClick={selectTheme.current[theme.theme_name]}
                             >
-                                <PersistentElement elt={canvases.current[idx]} />
+                                {canvases.current[idx] && (
+                                    <PersistentElement elt={canvases.current[idx]} />
+                                )}
                             </div>
                         ))}
                     </div>
