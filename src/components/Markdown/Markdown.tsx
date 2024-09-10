@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import markdownit from "markdown-it";
+import markdownit from "markdown-it"; // cspell:disable-line
 import sanitizeHtml from "sanitize-html";
 //import moment from "moment";
 import { profanity_filter } from "@/lib/profanity_filter";
@@ -29,6 +29,7 @@ interface MarkdownProps {
 
 interface MarkdownState {}
 
+// cspell:disable-next-line
 const md = markdownit({
     html: true,
     linkify: true,
