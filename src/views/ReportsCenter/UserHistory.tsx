@@ -16,11 +16,11 @@
  */
 
 import * as React from "react";
-import { useUser } from "hooks";
+import { useUser } from "@/lib/hooks";
 
-import { Player } from "Player";
-import { ModTools } from "User";
-import { ModLog } from "User";
+import { Player } from "@/components/Player";
+import { ModTools } from "@/views/User";
+import { ModLog } from "@/views/User";
 
 export function UserHistory({
     target_user: target_user,

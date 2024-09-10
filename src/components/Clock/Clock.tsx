@@ -16,10 +16,10 @@
  */
 
 import * as React from "react";
-import * as data from "data";
+import * as data from "@/lib/data";
 import { useEffect, useState } from "react";
 import { Goban, JGOFClockWithTransmitting, JGOFPlayerClock, JGOFTimeControl } from "goban";
-import { _, pgettext, interpolate, ngettext } from "translate";
+import { _, pgettext, interpolate, ngettext } from "@/lib/translate";
 
 type clock_color = "black" | "white" | "stone-removal";
 

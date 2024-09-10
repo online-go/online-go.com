@@ -17,13 +17,13 @@
 
 import * as React from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useUser, useRefresh } from "hooks";
-import { report_categories, ReportDescription } from "Report";
-import { report_manager } from "report_manager";
+import { useUser, useRefresh } from "@/lib/hooks";
+import { report_categories, ReportDescription } from "@/components/Report";
+import { report_manager } from "@/lib/report_manager";
 import Select from "react-select";
-import { _ } from "translate";
-import { usePreference } from "preferences";
-import { community_mod_has_power } from "report_util";
+import { _ } from "@/lib/translate";
+import { usePreference } from "@/lib/preferences";
+import { community_mod_has_power } from "@/lib/report_util";
 
 import { ViewReport } from "./ViewReport";
 import { ReportsCenterSettings } from "./ReportsCenterSettings";

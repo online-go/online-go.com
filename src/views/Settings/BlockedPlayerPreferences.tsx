@@ -16,11 +16,11 @@
  */
 
 import * as React from "react";
-import { _ } from "translate";
+import { _ } from "@/lib/translate";
 
-import { errorAlerter } from "misc";
+import { errorAlerter } from "@/lib/misc";
 
-import { BlockPlayerModal, getAllBlocksWithUsernames } from "BlockPlayer";
+import { BlockPlayerModal, getAllBlocksWithUsernames } from "@/components/BlockPlayer";
 
 export function BlockedPlayerPreferences(): JSX.Element {
     const [blocked_players, setBlockedPlayers]: [

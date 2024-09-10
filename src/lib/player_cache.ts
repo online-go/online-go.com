@@ -15,11 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { get } from "requests";
-import { Batcher } from "batcher";
-import { Publisher, Subscriber as RealSubscriber } from "pubsub";
+import { get } from "@/lib/requests";
+import { Batcher } from "@/lib/batcher";
+import { Publisher, Subscriber as RealSubscriber } from "@/lib/pubsub";
 
-import Debug from "debug";
+import Debug from "@/lib/debug";
 const debug = new Debug("player_cache");
 
 // The player cache's Subscriber is just like a vanilla Subscriber, but can

@@ -22,21 +22,21 @@
 
 import * as React from "react";
 
-import * as moment from "moment";
-import { post } from "requests";
+import moment from "moment";
+import { post } from "@/lib/requests";
 
 import { Link } from "react-router-dom";
 
-import { _ } from "translate";
+import { _ } from "@/lib/translate";
 
-import { Player } from "Player";
+import { Player } from "@/components/Player";
 
-import { errorAlerter } from "misc";
-import { AutoTranslate } from "AutoTranslate";
-import { Report } from "report_util";
-import { useUser } from "hooks";
-import { report_categories } from "Report";
-import { openReportedConversationModal } from "ReportedConversationModal";
+import { errorAlerter } from "@/lib/misc";
+import { AutoTranslate } from "@/components/AutoTranslate";
+import { Report } from "@/lib/report_util";
+import { useUser } from "@/lib/hooks";
+import { report_categories } from "@/components/Report";
+import { openReportedConversationModal } from "@/components/ReportedConversationModal";
 
 function getReportType(report: Report): string {
     if (report.report_type === "appeal") {

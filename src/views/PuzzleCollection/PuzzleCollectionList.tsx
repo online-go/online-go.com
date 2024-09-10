@@ -16,16 +16,16 @@
  */
 
 import * as React from "react";
-import * as moment from "moment";
-import { _ } from "translate";
-import { post } from "requests";
-import { errorAlerter, navigateTo, unitify } from "misc";
-import { PaginatedTable } from "PaginatedTable";
-import { longRankString, rankString } from "rank_utils";
-import { StarRating } from "StarRating";
-import { Player } from "Player";
-import { MiniGoban } from "MiniGoban";
-import { alert } from "swal_config";
+import moment from "moment";
+import { _ } from "@/lib/translate";
+import { post } from "@/lib/requests";
+import { errorAlerter, navigateTo, unitify } from "@/lib/misc";
+import { PaginatedTable } from "@/components/PaginatedTable";
+import { longRankString, rankString } from "@/lib/rank_utils";
+import { StarRating } from "@/components/StarRating";
+import { Player } from "@/components/Player";
+import { MiniGoban } from "@/components/MiniGoban";
+import { alert } from "@/lib/swal_config";
 import { useParams } from "react-router";
 
 export function PuzzleCollectionList(): JSX.Element {

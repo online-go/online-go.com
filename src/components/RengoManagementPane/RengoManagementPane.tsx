@@ -17,9 +17,9 @@
 
 import * as React from "react";
 import * as DynamicHelp from "react-dynamic-help";
-import { Challenge } from "challenge_utils";
-import { useUser } from "hooks";
-import { _, pgettext, interpolate } from "translate";
+import { Challenge } from "@/lib/challenge_utils";
+import { useUser } from "@/lib/hooks";
+import { _, pgettext, interpolate } from "@/lib/translate";
 
 interface RengoManagementPaneProperties {
     user: rest_api.UserConfig;

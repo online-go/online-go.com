@@ -17,23 +17,23 @@
 
 import * as React from "react";
 
-import * as player_cache from "player_cache";
-import { del, put } from "requests";
+import * as player_cache from "@/lib/player_cache";
+import { del, put } from "@/lib/requests";
 
-import { alert } from "swal_config";
+import { alert } from "@/lib/swal_config";
 
-import * as data from "data";
+import * as data from "@/lib/data";
 
-import { Flag } from "Flag";
-import { image_resizer } from "image_resizer";
-import { errorAlerter, ignore } from "misc";
-import { Player } from "Player";
-import { PlayerIcon } from "PlayerIcon";
+import { Flag } from "@/components/Flag";
+import { image_resizer } from "@/lib/image_resizer";
+import { errorAlerter, ignore } from "@/lib/misc";
+import { Player } from "@/components/Player";
+import { PlayerIcon } from "@/components/PlayerIcon";
 import Dropzone from "react-dropzone";
-import { durationString } from "TimeControl";
-import { cc_to_country_name, pgettext, sorted_locale_countries, _ } from "translate";
-import { is_valid_url } from "url_validation";
-import { usePreference } from "preferences";
+import { durationString } from "@/components/TimeControl";
+import { cc_to_country_name, pgettext, sorted_locale_countries, _ } from "@/lib/translate";
+import { is_valid_url } from "@/lib/url_validation";
+import { usePreference } from "@/lib/preferences";
 
 const inlineBlock = { display: "inline-flex", alignItems: "center" };
 

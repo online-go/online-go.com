@@ -17,21 +17,21 @@
 
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
-import { alert } from "swal_config";
+import { alert } from "@/lib/swal_config";
 
-import * as data from "data";
-import { useUser } from "hooks";
-import { _, pgettext, interpolate } from "translate";
-import { get, put, post } from "requests";
-import { errorAlerter } from "misc";
-import { browserHistory } from "ogsHistory";
-import { get_ebi } from "SignIn";
-import cached from "cached";
+import * as data from "@/lib/data";
+import { useUser } from "@/lib/hooks";
+import { _, pgettext, interpolate } from "@/lib/translate";
+import { get, put, post } from "@/lib/requests";
+import { errorAlerter } from "@/lib/misc";
+import { browserHistory } from "@/lib/ogsHistory";
+import { get_ebi } from "@/views/SignIn";
+import cached from "@/lib/cached";
 
-import { Card } from "material";
-import { LoadingPage } from "Loading";
-import { Player } from "Player";
-import { ChallengeDetailsReviewPane } from "ChallengeDetailsReviewPane";
+import { Card } from "@/components/material";
+import { LoadingPage } from "@/components/Loading";
+import { Player } from "@/components/Player";
+import { ChallengeDetailsReviewPane } from "@/components/ChallengeDetailsReviewPane";
 
 type Challenge = socket_api.seekgraph_global.Challenge;
 

@@ -16,10 +16,10 @@
  */
 
 import * as React from "react";
-import { _ } from "translate";
-import { put, post } from "requests";
-import { errorAlerter } from "misc";
-import { alert } from "swal_config";
+import { _ } from "@/lib/translate";
+import { put, post } from "@/lib/requests";
+import { errorAlerter } from "@/lib/misc";
+import { alert } from "@/lib/swal_config";
 
 interface BotControlsProperties {
     bot_id: number;

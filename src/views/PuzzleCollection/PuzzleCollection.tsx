@@ -16,13 +16,13 @@
  */
 
 import * as React from "react";
-import * as data from "data";
-import { _, pgettext } from "translate";
-import { errorAlerter, navigateTo } from "misc";
-import { get, del, put, abort_requests_in_flight } from "requests";
+import * as data from "@/lib/data";
+import { _, pgettext } from "@/lib/translate";
+import { errorAlerter, navigateTo } from "@/lib/misc";
+import { get, del, put, abort_requests_in_flight } from "@/lib/requests";
 import { SortablePuzzleList } from "./SortablePuzzleList";
-import { openACLModal } from "ACLModal";
-import { alert } from "swal_config";
+import { openACLModal } from "@/components/ACLModal";
+import { alert } from "@/lib/swal_config";
 import { useParams } from "react-router-dom";
 
 export function PuzzleCollection(): JSX.Element | null {

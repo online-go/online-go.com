@@ -16,7 +16,7 @@
  */
 
 import { useState, useEffect } from "react";
-import { usePreference } from "preferences";
+import { usePreference } from "@/lib/preferences";
 
 // Client ID will need to be the OGS client ID, probably from environment variable?
 // Redirect URI also needs to match the allowed redirect URIs in the console at dev.twitch.tv

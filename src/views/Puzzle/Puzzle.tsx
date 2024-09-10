@@ -17,26 +17,26 @@
 
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { RouteComponentProps, rr6ClassShim } from "ogs-rr6-shims";
-import { browserHistory } from "ogsHistory";
-import { _, pgettext, interpolate } from "translate";
-import { post, put, del } from "requests";
-import { KBShortcut } from "KBShortcut";
-import { goban_view_mode, goban_view_squashed } from "Game";
-import { errorAlerter, errorLogger, ignore } from "misc";
-import { longRankString, rankList } from "rank_utils";
+import { RouteComponentProps, rr6ClassShim } from "@/lib/ogs-rr6-shims";
+import { browserHistory } from "@/lib/ogsHistory";
+import { _, pgettext, interpolate } from "@/lib/translate";
+import { post, put, del } from "@/lib/requests";
+import { KBShortcut } from "@/components/KBShortcut";
+import { goban_view_mode, goban_view_squashed } from "@/views/Game";
+import { errorAlerter, errorLogger, ignore } from "@/lib/misc";
+import { longRankString, rankList } from "@/lib/rank_utils";
 import { createGoban, GobanRenderer, GobanRendererConfig, PuzzlePlacementSetting } from "goban";
-import { Markdown } from "Markdown";
-import { Player } from "Player";
-import { StarRating } from "StarRating";
-import { Resizable } from "Resizable";
-import * as preferences from "preferences";
-import * as data from "data";
+import { Markdown } from "@/components/Markdown";
+import { Player } from "@/components/Player";
+import { StarRating } from "@/components/StarRating";
+import { Resizable } from "@/components/Resizable";
+import * as preferences from "@/lib/preferences";
+import * as data from "@/lib/data";
 import { TransformSettings, PuzzleTransform } from "./PuzzleTransform";
 import { PuzzleNavigation } from "./PuzzleNavigation";
 import { PuzzleEditor, getAllPuzzleCollections } from "./PuzzleEditing";
-import { GobanContainer } from "GobanContainer";
-import { alert } from "swal_config";
+import { GobanContainer } from "@/components/GobanContainer";
+import { alert } from "@/lib/swal_config";
 
 type PuzzleProperties = RouteComponentProps<{ puzzle_id: string }>;
 type TransformationOptions = "x" | "h" | "v" | "color" | "zoom";
@@ -1372,7 +1372,7 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
 
 export const Puzzle = rr6ClassShim(_Puzzle);
 
-import { PopOver, popover } from "popover";
+import { PopOver, popover } from "@/lib/popover";
 import { PuzzleSettingsModal } from "./PuzzleSettingsModal";
 
 export function openPuzzleSettingsControls(ev: React.MouseEvent): PopOver {

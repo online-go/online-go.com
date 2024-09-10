@@ -17,10 +17,10 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { StreamCard } from "./StreamCard";
-import { _ } from "translate";
-import * as preferences from "preferences";
+import { _ } from "@/lib/translate";
+import * as preferences from "@/lib/preferences";
 import { Stream, streamManager } from "./StreamManager";
-import { GoTVPreferences } from "Settings";
+import { GoTVPreferences } from "@/views/Settings";
 import { useLocation } from "react-router-dom";
 
 let twitch_js_promise: Promise<void> | null = null;

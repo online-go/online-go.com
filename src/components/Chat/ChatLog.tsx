@@ -16,16 +16,16 @@
  */
 
 import * as React from "react";
-import * as data from "data";
-import * as moment from "moment";
+import * as data from "@/lib/data";
+import moment from "moment";
 import Linkify from "react-linkify";
 import Split from "react-split";
-import { Card } from "material";
-import { socket } from "sockets";
-import { _, pgettext, interpolate } from "translate";
-import { localize_time_strings } from "localize-time";
+import { Card } from "@/components/material";
+import { socket } from "@/lib/sockets";
+import { _, pgettext, interpolate } from "@/lib/translate";
+import { localize_time_strings } from "@/lib/localize-time";
 import { useEffect, useState, useRef, useCallback } from "react";
-import { Timeout, errorLogger } from "misc";
+import { Timeout, errorLogger } from "@/lib/misc";
 //import { ChatChannelProxy, global_channels, group_channels, tournament_channels } from 'chat_manager';
 import {
     chat_manager,
@@ -36,16 +36,16 @@ import {
     ChannelInformation,
     resolveChannelInformation,
     cachedChannelInformation,
-} from "chat_manager";
+} from "@/lib/chat_manager";
 import { ChatLine } from "./ChatLine";
 import { ChatDetails } from "./ChatDetails";
-import { TabCompleteInput } from "TabCompleteInput";
-import { browserHistory } from "ogsHistory";
-import { ObserveGamesComponent } from "ObserveGamesComponent";
-import { profanity_filter } from "profanity_filter";
-import { popover } from "popover";
-import { alert } from "swal_config";
-import { useUser } from "hooks";
+import { TabCompleteInput } from "@/components/TabCompleteInput";
+import { browserHistory } from "@/lib/ogsHistory";
+import { ObserveGamesComponent } from "@/components/ObserveGamesComponent";
+import { profanity_filter } from "@/lib/profanity_filter";
+import { popover } from "@/lib/popover";
+import { alert } from "@/lib/swal_config";
+import { useUser } from "@/lib/hooks";
 
 interface ChatLogProperties {
     channel: string;

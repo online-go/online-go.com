@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { Appeal } from "Appeal";
+import { Appeal } from "@/views/Appeal";
 
 export function AppealView({ user_id }: { user_id: number }): JSX.Element | null {
     if (!user_id) {

@@ -16,10 +16,10 @@
  */
 
 import * as React from "react";
-import * as preferences from "preferences";
-import { _ } from "translate";
-import { socket } from "sockets";
-import { lookingAtOurLiveGame } from "TimeControl/util";
+import * as preferences from "@/lib/preferences";
+import { _ } from "@/lib/translate";
+import { socket } from "@/lib/sockets";
+import { lookingAtOurLiveGame } from "@/components/TimeControl/util";
 
 //interface NetworkStatusProps {}
 

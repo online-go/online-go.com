@@ -17,7 +17,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import * as preferences from "preferences";
+import * as preferences from "@/lib/preferences";
 import { Stream, streamManager } from "./StreamManager";
 import { GoTVNotifier } from "./GoTVNotifier";
 

@@ -16,8 +16,8 @@
  */
 
 import * as React from "react";
-import * as data from "data";
-import { _ } from "translate";
+import * as data from "@/lib/data";
+import { _ } from "@/lib/translate";
 import * as Sentry from "@sentry/browser";
 
 interface ErrorBoundaryProps {

@@ -15,16 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as preferences from "preferences";
-import * as data from "data";
+import * as preferences from "@/lib/preferences";
+import * as data from "@/lib/data";
 import * as Sentry from "@sentry/browser";
 import * as React from "react";
-import { _ } from "translate";
-import { get_clock_drift, get_network_latency, socket } from "sockets";
-import { current_language } from "translate";
+import { _ } from "@/lib/translate";
+import { get_clock_drift, get_network_latency, socket } from "@/lib/sockets";
+import { current_language } from "@/lib/translate";
 import { Goban, GobanBase, GobanEngine, setGobanRenderer } from "goban";
-import { sfx } from "sfx";
-import { toast } from "toast";
+import { sfx } from "@/lib/sfx";
+import { toast } from "@/lib/toast";
 
 (window as any)["GobanThemes"] = Goban.THEMES;
 (window as any)["GobanEngine"] = GobanEngine;

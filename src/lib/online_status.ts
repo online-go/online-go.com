@@ -15,9 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { socket } from "sockets";
-import { TypedEventEmitter } from "TypedEventEmitter";
-import { Batcher } from "batcher";
+import { socket } from "@/lib/sockets";
+import { TypedEventEmitter } from "@/lib/TypedEventEmitter";
+import { Batcher } from "@/lib/batcher";
 
 interface Events {
     "users-online-updated": never;

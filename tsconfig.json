@@ -4,24 +4,17 @@
     "compilerOptions": {
         "outDir": "./dist/",
         "target": "es2015",
-        "moduleResolution": "node",
+        "moduleResolution": "bundler",
+        "isolatedModules": true,
+        "esModuleInterop": true,
         "removeComments": false,
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
         "lib": ["es2015", "dom"],
+        "skipLibCheck": true,
         "baseUrl": ".",
         "paths": {
-            "*": [
-                "*",
-                "src/lib/*",
-                "src/components/*",
-                "src/views/*",
-                "src/models/*",
-                "src/*"
-            ],
-            "requests": [
-                "src/lib/requests"
-            ]
+            "@/*": ["src/*"],
         },
 
         "forceConsistentCasingInFileNames": true,

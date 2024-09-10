@@ -19,7 +19,7 @@ import * as React from "react";
 import { Goban } from "goban";
 import { game_control } from "./game_control";
 import { GobanEvents } from "goban";
-import * as data from "data";
+import * as data from "@/lib/data";
 
 /**
  * Generates a custom react hook that can return a prop that is derived from a

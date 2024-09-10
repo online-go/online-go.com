@@ -16,12 +16,12 @@
  */
 
 import * as React from "react";
-import * as player_cache from "player_cache";
-import { get, abort_requests_in_flight } from "requests";
-import { _ } from "translate";
+import * as player_cache from "@/lib/player_cache";
+import { get, abort_requests_in_flight } from "@/lib/requests";
+import { _ } from "@/lib/translate";
 import { Link } from "react-router-dom";
-import { Player } from "Player";
-import { ignore } from "misc";
+import { Player } from "@/components/Player";
+import { ignore } from "@/lib/misc";
 
 interface OmniSearchProperties {
     search: string;

@@ -16,26 +16,26 @@
  */
 
 import * as React from "react";
-import { _, pgettext } from "translate";
-import { PlayerAutocomplete } from "PlayerAutocomplete";
-import { Card } from "material";
-import { PaginatedTable } from "PaginatedTable";
-import { effective_outcome } from "rank_utils";
-import { capitalize, getGameResultText } from "misc";
+import { _, pgettext } from "@/lib/translate";
+import { PlayerAutocomplete } from "@/components/PlayerAutocomplete";
+import { Card } from "@/components/material";
+import { PaginatedTable } from "@/components/PaginatedTable";
+import { effective_outcome } from "@/lib/rank_utils";
+import { capitalize, getGameResultText } from "@/lib/misc";
 import { openUrlIfALinkWasNotClicked, maskedRank } from "./common";
-import * as moment from "moment";
-import { rankString } from "rank_utils";
-import { Player } from "Player";
+import moment from "moment";
+import { rankString } from "@/lib/rank_utils";
+import { Player } from "@/components/Player";
 import { Link } from "react-router-dom";
-import { interpolate } from "translate";
-import * as preferences from "preferences";
-import { PlayerCacheEntry } from "src/lib/player_cache";
-import { TimeControl } from "src/components/TimeControl";
-import { Speed } from "src/lib/types";
-import { usePreference } from "preferences";
-import { openAnnulQueueModal, AnnulQueueModal } from "AnnulQueueModal";
-import { useUser } from "hooks";
-import { GameNameForList } from "GobanLineSummary";
+import { interpolate } from "@/lib/translate";
+import * as preferences from "@/lib/preferences";
+import { PlayerCacheEntry } from "@/lib/player_cache";
+import { TimeControl } from "@/components/TimeControl";
+import { Speed } from "@/lib/types";
+import { usePreference } from "@/lib/preferences";
+import { openAnnulQueueModal, AnnulQueueModal } from "@/components/AnnulQueueModal";
+import { useUser } from "@/lib/hooks";
+import { GameNameForList } from "@/components/GobanLineSummary";
 
 interface GameHistoryProps {
     user_id: number;
@@ -102,27 +102,9 @@ export function GameHistoryTable(props: GameHistoryProps) {
     function handleRowClick(
         row: GroomedGame,
         ev: React.MouseEvent | React.TouchEvent | React.PointerEvent,
-        rows: GroomedGame[],
     ) {
-        if (row.annulled) {
-            return;
-        }
-
         if (selectModeActive) {
-            if (ev.shiftKey) {
-                if (annulQueue.at(-1)) {
-                    window.getSelection()?.removeAllRanges();
-                    const indexes = [
-                        rows.findIndex((r) => r.id === annulQueue.at(-1).id),
-                        rows.findIndex((r) => r.id === row.id),
-                    ];
-                    const minIndex = Math.min(...indexes);
-                    const maxIndex = Math.max(...indexes);
-                    setAnnulQueue(rows.slice(minIndex, maxIndex + 1).filter((r) => !r.annulled));
-                }
-            } else {
-                toggleQueued(row);
-            }
+            toggleQueued(row);
         } else {
             openUrlIfALinkWasNotClicked(ev, row.href);
         }
@@ -354,7 +336,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
                         groom={game_history_groomer}
                         pageSizeOptions={[10, 15, 25, 50]}
                         onRowClick={handleRowClick}
-                        highlightedRows={annulQueue}
+                        annulQueue={annulQueue}
                         columns={[
                             {
                                 header: _("User"),

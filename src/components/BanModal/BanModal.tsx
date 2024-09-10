@@ -17,11 +17,11 @@
 
 import * as React from "react";
 import Datetime from "react-datetime";
-import { put } from "requests";
-import { _ } from "translate";
-import { errorAlerter } from "misc";
-import { Modal } from "Modal";
-import * as player_cache from "player_cache";
+import { put } from "@/lib/requests";
+import { _ } from "@/lib/translate";
+import { errorAlerter } from "@/lib/misc";
+import { Modal } from "@/components/Modal";
+import * as player_cache from "@/lib/player_cache";
 
 interface Events {}
 

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { deepCompare } from "misc";
+import { deepCompare } from "@/lib/misc";
 
 /**
  * If a non-absolute path is provided, appends "/api/v1/" to the input.

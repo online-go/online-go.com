@@ -17,19 +17,19 @@
 
 /* spell-checker: disable */
 
-import cached from "cached";
-import * as data from "data";
-import * as preferences from "preferences";
-import * as player_cache from "player_cache";
-import { socket } from "sockets";
-import { get } from "requests";
-import { TypedEventEmitter } from "TypedEventEmitter";
-import { emitNotification } from "Notifications";
-import { bounded_rank } from "rank_utils";
-import { ActiveTournamentList, GroupList } from "types";
-import { _, interpolate } from "translate";
-import { getBlocks } from "BlockPlayer";
-import { insert_into_sorted_list, string_splitter, n2s, Timeout } from "misc";
+import cached from "@/lib/cached";
+import * as data from "@/lib/data";
+import * as preferences from "@/lib/preferences";
+import * as player_cache from "@/lib/player_cache";
+import { socket } from "@/lib/sockets";
+import { get } from "@/lib/requests";
+import { TypedEventEmitter } from "@/lib/TypedEventEmitter";
+import { emitNotification } from "@/components/Notifications";
+import { bounded_rank } from "@/lib/rank_utils";
+import { ActiveTournamentList, GroupList } from "@/lib/types";
+import { _, interpolate } from "@/lib/translate";
+import { getBlocks } from "@/components/BlockPlayer";
+import { insert_into_sorted_list, string_splitter, n2s, Timeout } from "@/lib/misc";
 import { User } from "goban";
 
 export interface ChatMessage {

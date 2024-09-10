@@ -16,23 +16,23 @@
  */
 
 import * as React from "react";
-import * as data from "data";
-import { _, interpolate } from "translate";
+import * as data from "@/lib/data";
+import { _, interpolate } from "@/lib/translate";
 import { Link } from "react-router-dom";
-import { RouteComponentProps, rr6ClassShim } from "ogs-rr6-shims";
-import { browserHistory } from "ogsHistory";
-import { abort_requests_in_flight, post, get } from "requests";
-import { errorAlerter, ignore, getOutcomeTranslation } from "misc";
-import { Player } from "Player";
-import { Card } from "material";
+import { RouteComponentProps, rr6ClassShim } from "@/lib/ogs-rr6-shims";
+import { browserHistory } from "@/lib/ogsHistory";
+import { abort_requests_in_flight, post, get } from "@/lib/requests";
+import { errorAlerter, ignore, getOutcomeTranslation } from "@/lib/misc";
+import { Player } from "@/components/Player";
+import { Card } from "@/components/material";
 import Dropzone from "react-dropzone";
 import { DropzoneRef } from "react-dropzone";
-import * as moment from "moment";
-import { IdType } from "src/lib/types";
-import { openSGFPasteModal } from "SGFPasteModal";
-import * as preferences from "preferences";
-import { PlayerCacheEntry } from "src/lib/player_cache";
-// import { createGameRecord } from "ChallengeModal";
+import moment from "moment";
+import { IdType } from "@/lib/types";
+import { openSGFPasteModal } from "@/components/SGFPasteModal";
+import * as preferences from "@/lib/preferences";
+import { PlayerCacheEntry } from "@/lib/player_cache";
+// import { createGameRecord } from "@/components/ChallengeModal";
 
 type LibraryPlayerProperties = RouteComponentProps<{
     player_id: string;

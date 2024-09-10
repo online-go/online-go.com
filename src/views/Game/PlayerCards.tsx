@@ -16,26 +16,26 @@
  */
 
 import * as React from "react";
-import { get } from "requests";
+import { get } from "@/lib/requests";
 
 import { GobanRenderer, Goban, PlayerScore, JGOFPlayerSummary } from "goban";
-import { icon_size_url } from "PlayerIcon";
+import { icon_size_url } from "@/components/PlayerIcon";
 import { CountDown } from "./CountDown";
-import { Flag } from "Flag";
-import { ChatPresenceIndicator } from "ChatPresenceIndicator";
-import { Clock } from "Clock";
-import { useUser } from "hooks";
-import { Player } from "Player";
-import { lookup, fetch } from "player_cache";
-import { _, interpolate, ngettext } from "translate";
-import * as data from "data";
+import { Flag } from "@/components/Flag";
+import { ChatPresenceIndicator } from "@/components/ChatPresenceIndicator";
+import { Clock } from "@/components/Clock";
+import { useUser } from "@/lib/hooks";
+import { Player } from "@/components/Player";
+import { lookup, fetch } from "@/lib/player_cache";
+import { _, interpolate, ngettext } from "@/lib/translate";
+import * as data from "@/lib/data";
 import { generateGobanHook, usePlayerToMove } from "./GameHooks";
-import { get_network_latency, get_clock_drift } from "sockets";
+import { get_network_latency, get_clock_drift } from "@/lib/sockets";
 import { useGoban } from "./goban_context";
-import { usePreference } from "preferences";
-import { browserHistory } from "ogsHistory";
-import { player_is_ignored } from "BlockPlayer";
-import { doAnnul } from "moderation";
+import { usePreference } from "@/lib/preferences";
+import { browserHistory } from "@/lib/ogsHistory";
+import { player_is_ignored } from "@/components/BlockPlayer";
+import { doAnnul } from "@/lib/moderation";
 import moment from "moment";
 
 type PlayerType = rest_api.games.Player;

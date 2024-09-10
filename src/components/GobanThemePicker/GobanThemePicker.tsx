@@ -16,10 +16,10 @@
  */
 
 import * as React from "react";
-import { _, pgettext } from "translate";
+import { _, pgettext } from "@/lib/translate";
 import { Goban, GobanTheme /*, GobanThemeBackgroundCSS */ } from "goban";
-import { getSelectedThemes, usePreference } from "preferences";
-import { PersistentElement } from "PersistentElement";
+import { getSelectedThemes, usePreference } from "@/lib/preferences";
+import { PersistentElement } from "@/components/PersistentElement";
 import { Experiment, Variant, Default } from "../Experiment";
 import { LineText } from "../misc-ui";
 import { Link } from "react-router-dom";

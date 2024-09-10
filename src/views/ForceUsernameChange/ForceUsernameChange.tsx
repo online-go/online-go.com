@@ -16,12 +16,12 @@
  */
 
 import * as React from "react";
-import * as data from "data";
-import { _ } from "translate";
-import { Card } from "material";
-import { errorAlerter } from "misc";
-import { put } from "requests";
-import { cached } from "cached";
+import * as data from "@/lib/data";
+import { _ } from "@/lib/translate";
+import { Card } from "@/components/material";
+import { errorAlerter } from "@/lib/misc";
+import { put } from "@/lib/requests";
+import { cached } from "@/lib/cached";
 
 export function ForceUsernameChange(): JSX.Element {
     const user = data.get("config.user");

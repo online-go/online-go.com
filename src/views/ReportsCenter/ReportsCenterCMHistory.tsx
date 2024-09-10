@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
-import { PaginatedTable } from "PaginatedTable";
+import { PaginatedTable } from "@/components/PaginatedTable";
 
 export function ReportsCenterCMHistory(): JSX.Element {
     const navigateTo = useNavigate();

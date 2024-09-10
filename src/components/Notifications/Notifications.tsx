@@ -18,20 +18,20 @@
 /* cspell:disable */
 
 import * as React from "react";
-import * as data from "data";
+import * as data from "@/lib/data";
 
-import { _, interpolate, pgettext } from "translate";
+import { _, interpolate, pgettext } from "@/lib/translate";
 
-import { post, del } from "requests";
-import { browserHistory } from "ogsHistory";
-import { challenge_text_description, ChallengeDetails } from "ChallengeModal";
-import { Player } from "Player";
-import { FabX, FabCheck } from "material";
-import { deepEqual } from "misc";
-import { isLiveGame, durationString } from "TimeControl";
-import { MODERATOR_POWERS, MOD_POWER_NAMES } from "moderation";
+import { post, del } from "@/lib/requests";
+import { browserHistory } from "@/lib/ogsHistory";
+import { challenge_text_description, ChallengeDetails } from "@/components/ChallengeModal";
+import { Player } from "@/components/Player";
+import { FabX, FabCheck } from "@/components/material";
+import { deepEqual } from "@/lib/misc";
+import { isLiveGame, durationString } from "@/components/TimeControl";
+import { MODERATOR_POWERS, MOD_POWER_NAMES } from "@/lib/moderation";
 import { notification_manager, Notification } from "./NotificationManager";
-import { ModerationOffer } from "ModerationOffer";
+import { ModerationOffer } from "@/components/ModerationOffer";
 
 export function NotificationList(): JSX.Element {
     const [, setCount] = React.useState<number | undefined>(

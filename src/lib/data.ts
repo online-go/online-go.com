@@ -97,8 +97,8 @@
  *
  */
 
-import { TypedEventEmitter } from "TypedEventEmitter";
-import { DataSchema } from "data_schema";
+import { TypedEventEmitter } from "@/lib/TypedEventEmitter";
+import { DataSchema } from "@/lib/data_schema";
 import { protocol } from "goban";
 
 interface DataEvents {
@@ -378,8 +378,8 @@ try {
  * only updated data will be downloaded.
  */
 
-import ITC from "ITC";
-import { socket } from "sockets";
+import ITC from "@/lib/ITC";
+import { socket } from "@/lib/sockets";
 
 type RemoteStorableValue =
     | number

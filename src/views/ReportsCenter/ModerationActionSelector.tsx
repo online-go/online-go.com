@@ -16,11 +16,11 @@
  */
 
 import * as React from "react";
-import { _, pgettext } from "translate";
+import { _, pgettext } from "@/lib/translate";
 
 import * as DynamicHelp from "react-dynamic-help";
-import { useUser } from "hooks";
-import { Report } from "report_util";
+import { useUser } from "@/lib/hooks";
+import { Report } from "@/lib/report_util";
 
 interface ModerationActionSelectorProps {
     available_actions: string[];

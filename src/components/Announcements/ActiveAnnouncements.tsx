@@ -17,8 +17,8 @@
 
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { interpolate, _ } from "translate";
-import { Card, PopupMenu, PopupMenuItem } from "material";
+import { interpolate, _ } from "@/lib/translate";
+import { Card, PopupMenu, PopupMenuItem } from "@/components/material";
 
 import {
     active_announcements,
@@ -28,10 +28,10 @@ import {
 } from "./Announcements";
 import { getBlocks, setAnnouncementBlock } from "../BlockPlayer";
 
-import * as data from "data";
-import * as preferences from "preferences";
+import * as data from "@/lib/data";
+import * as preferences from "@/lib/preferences";
 
-import { alert } from "swal_config";
+import { alert } from "@/lib/swal_config";
 
 // Holds the expirations dates of cleared announcements
 const hard_cleared_announcements: { [id: number]: number } = data.get(

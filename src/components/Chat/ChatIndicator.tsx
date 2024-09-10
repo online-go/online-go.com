@@ -22,11 +22,11 @@ import {
     global_channels,
     group_channels,
     tournament_channels,
-} from "chat_manager";
-import * as data from "data";
+} from "@/lib/chat_manager";
+import * as data from "@/lib/data";
 import { KBShortcut } from "../KBShortcut";
 import { ChatList } from "./ChatList";
-import * as preferences from "preferences";
+import * as preferences from "@/lib/preferences";
 import {
     chat_subscriptions,
     getUnreadChatPreference,

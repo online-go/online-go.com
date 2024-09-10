@@ -1,16 +1,18 @@
 "use strict";
 
-var path = require("path");
-let fs = require("fs");
-var webpack = require("webpack");
-const pkg = require("./package.json");
-const TerserPlugin = require("terser-webpack-plugin");
-const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin");
-const CircularDependencyPlugin = require("circular-dependency-plugin");
+import fs from "fs";
+import path from "path";
+import webpack from "webpack"
+import { fileURLToPath } from 'url';
+import pkg from "./package.json" with { type: "json" };
+import TerserPlugin from "terser-webpack-plugin";
+import ForkTsCheckerWebpackPlugin from "fork-ts-checker-webpack-plugin";
+import CircularDependencyPlugin from "circular-dependency-plugin";
 
-const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin;
+import { BundleAnalyzerPlugin } from "webpack-bundle-analyzer";
 
 let plugins = [];
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 plugins.push(
     new ForkTsCheckerWebpackPlugin({
@@ -45,9 +47,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     ),
 );
 
-module.exports = (env, argv) => {
+export default (env, argv) => {
     const production = argv.mode === "production";
-    let alias = {};
+    let alias = {
+        "@": path.resolve(__dirname, '/src'),
+    };
 
     if (production) {
         console.log("Production build, enabling react profiling");

@@ -16,12 +16,12 @@
  */
 
 import { decodeMoves, GobanRendererConfig, PuzzleConfig, PuzzlePlacementSetting } from "goban";
-import { errorAlerter, dup } from "misc";
+import { errorAlerter, dup } from "@/lib/misc";
 import { PuzzleTransform } from "./PuzzleTransform";
 import { _Puzzle } from "./Puzzle";
-import * as data from "data";
-import { abort_requests_in_flight, post, get } from "requests";
-import * as preferences from "preferences";
+import * as data from "@/lib/data";
+import { abort_requests_in_flight, post, get } from "@/lib/requests";
+import * as preferences from "@/lib/preferences";
 
 export class PuzzleEditor {
     orig_puzzle_config?: PuzzleConfig;

@@ -16,11 +16,11 @@
  */
 
 import * as React from "react";
-import * as markdown_it from "markdown-it";
-import * as sanitizeHtml from "sanitize-html";
-//import * as moment from "moment";
-import { profanity_filter } from "profanity_filter";
-import { localize_time_strings } from "localize-time";
+import markdownit from "markdown-it";
+import sanitizeHtml from "sanitize-html";
+//import moment from "moment";
+import { profanity_filter } from "@/lib/profanity_filter";
+import { localize_time_strings } from "@/lib/localize-time";
 
 interface MarkdownProps {
     source?: string;
@@ -29,7 +29,7 @@ interface MarkdownProps {
 
 interface MarkdownState {}
 
-const md = markdown_it({
+const md = markdownit({
     html: true,
     linkify: true,
     typographer: true,

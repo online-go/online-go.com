@@ -18,13 +18,13 @@ Copyright (c)  Online-Go.com.
 */
 
 import * as React from "react";
-import { pgettext } from "translate";
+import { pgettext } from "@/lib/translate";
 
-import * as data from "data";
+import * as data from "@/lib/data";
 
 import { HelpProvider, HelpPopupDictionary } from "react-dynamic-help";
 import * as DynamicHelp from "react-dynamic-help";
-import { useIsDesktop, useUser } from "hooks";
+import { useIsDesktop, useUser } from "@/lib/hooks";
 
 const helpPopupDictionary: HelpPopupDictionary = {
     "Skip this topic": pgettext("A button to dismiss a help popup topic", "Skip this topic"),

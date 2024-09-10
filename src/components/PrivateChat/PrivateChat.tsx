@@ -15,21 +15,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { socket } from "sockets";
-import { challenge } from "ChallengeModal";
-import { createModeratorNote } from "ModNoteModal";
-import { _, pgettext, interpolate } from "translate";
-import * as data from "data";
-import ITC from "ITC";
-import { splitOnBytes, unicodeFilter } from "misc";
-import { profanity_filter } from "profanity_filter";
-import { player_is_ignored } from "BlockPlayer";
-import { emitNotification } from "Notifications/NotificationManager";
-import { PlayerCacheEntry } from "player_cache";
-import * as player_cache from "player_cache";
-import online_status from "online_status";
-import { openReport } from "Report";
-import { alert } from "swal_config";
+import { socket } from "@/lib/sockets";
+import { challenge } from "@/components/ChallengeModal";
+import { createModeratorNote } from "@/components/ModNoteModal";
+import { _, pgettext, interpolate } from "@/lib/translate";
+import * as data from "@/lib/data";
+import ITC from "@/lib/ITC";
+import { splitOnBytes, unicodeFilter } from "@/lib/misc";
+import { profanity_filter } from "@/lib/profanity_filter";
+import { player_is_ignored } from "@/components/BlockPlayer";
+import { emitNotification } from "@/components/Notifications/NotificationManager";
+import { PlayerCacheEntry } from "@/lib/player_cache";
+import * as player_cache from "@/lib/player_cache";
+import online_status from "@/lib/online_status";
+import { openReport } from "@/components/Report";
+import { alert } from "@/lib/swal_config";
 
 let last_id = 0;
 

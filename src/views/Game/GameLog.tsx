@@ -15,16 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 import * as React from "react";
-import * as moment from "moment";
+import moment from "moment";
 
-import { _, pgettext } from "translate";
+import { _, pgettext } from "@/lib/translate";
 import * as DynamicHelp from "react-dynamic-help";
 
-import { LogEntry } from "Game";
+import { LogEntry } from "@/views/Game";
 import { GobanEngineConfig } from "goban";
 
-import { socket } from "sockets";
-import { Player } from "Player";
+import { socket } from "@/lib/sockets";
+import { Player } from "@/components/Player";
 import { ScoringEventThumbnail } from "./ScoringEventThumbnail";
 
 const TRUNCATED_GAME_LOG_LENGTH = 25;
@@ -44,10 +44,8 @@ export function GameLog({
     const [shouldDisplayFullLog, setShouldDisplayFullLog] = React.useState(false);
 
     const { registerTargetItem } = React.useContext(DynamicHelp.Api);
+    const { ref: autoscoreRef } = registerTargetItem("autoscore-game-log-entry");
 
-    // Defend against the case where we aren't wrapped in a help provider: in a Modal
-    // TBD: made Modals be able to use the help provider
-    const autoscoreRef = registerTargetItem?.("autoscore-game-log-entry")?.ref || null;
     const game_id = goban_config.game_id as number;
 
     let firstAutoscoringEntryRendered = false;

@@ -16,13 +16,13 @@
  */
 
 import * as React from "react";
-import * as data from "data";
-import { _ } from "translate";
-import { usePreference } from "preferences";
-import { Toggle } from "Toggle";
-import { SettingGroupPageProps, PreferenceLine } from "SettingsCommon";
-import { ReportsCenterSettings } from "ReportsCenter";
-import * as preferences from "preferences";
+import * as data from "@/lib/data";
+import { _ } from "@/lib/translate";
+import { usePreference } from "@/lib/preferences";
+import { Toggle } from "@/components/Toggle";
+import { SettingGroupPageProps, PreferenceLine } from "@/lib/SettingsCommon";
+import { ReportsCenterSettings } from "@/views/ReportsCenter";
+import * as preferences from "@/lib/preferences";
 
 export function ModeratorPreferences(_props: SettingGroupPageProps): JSX.Element | null {
     const [incident_report_notifications, setIncidentReportNotifications] = usePreference(

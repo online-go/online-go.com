@@ -17,10 +17,10 @@
 
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
-import { _ } from "translate";
-import { Card } from "material";
-import { useUser, useData } from "hooks";
-import { PaymentProblem } from "data_schema";
+import { _ } from "@/lib/translate";
+import { Card } from "@/components/material";
+import { useUser, useData } from "@/lib/hooks";
+import { PaymentProblem } from "@/lib/data_schema";
 
 export function PaymentProblemBanner(): JSX.Element | null {
     const user = useUser();

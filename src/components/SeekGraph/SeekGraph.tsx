@@ -17,27 +17,31 @@
 
 import * as React from "react";
 import * as ReactDOM from "react-dom/client";
-import { browserHistory } from "ogsHistory";
-import { _, pgettext, interpolate } from "translate";
-import { del } from "requests";
-import { socket } from "sockets";
-import { TypedEventEmitter } from "TypedEventEmitter";
-import * as data from "data";
-import { openGameAcceptModal } from "GameAcceptModal";
-import { shortDurationString, shortShortTimeControl, timeControlSystemText } from "TimeControl";
-import { getRelativeEventPosition, errorAlerter } from "misc";
-import { rankString, bounded_rank, MaxRank } from "rank_utils";
-import { kb_bind, kb_unbind, Binding } from "KBShortcut";
-import { Player } from "Player";
+import { browserHistory } from "@/lib/ogsHistory";
+import { _, pgettext, interpolate } from "@/lib/translate";
+import { del } from "@/lib/requests";
+import { socket } from "@/lib/sockets";
+import { TypedEventEmitter } from "@/lib/TypedEventEmitter";
+import * as data from "@/lib/data";
+import { openGameAcceptModal } from "@/components/GameAcceptModal";
+import {
+    shortDurationString,
+    shortShortTimeControl,
+    timeControlSystemText,
+} from "@/components/TimeControl";
+import { getRelativeEventPosition, errorAlerter } from "@/lib/misc";
+import { rankString, bounded_rank, MaxRank } from "@/lib/rank_utils";
+import { kb_bind, kb_unbind, Binding } from "@/components/KBShortcut";
+import { Player } from "@/components/Player";
 import { computeAverageMoveTime, validateCanvas } from "goban";
-import * as player_cache from "player_cache";
+import * as player_cache from "@/lib/player_cache";
 
-import { nominateForRengoChallenge } from "rengo_utils";
-import { alert } from "swal_config";
+import { nominateForRengoChallenge } from "@/lib/rengo_utils";
+import { alert } from "@/lib/swal_config";
 import { SeekGraphColorPalette, SeekGraphPalettes } from "./SeekGraphPalettes";
 import * as SeekGraphSymbols from "./SeekGraphSymbols";
 
-import { Challenge, ChallengeFilter, shouldDisplayChallenge } from "challenge_utils";
+import { Challenge, ChallengeFilter, shouldDisplayChallenge } from "@/lib/challenge_utils";
 import { SeekgraphDeleteMessage, SeekgraphStartedMessage, SeekgraphChallengeMessage } from "goban";
 
 interface ExtendedSeekgraphChallengeMessage extends SeekgraphChallengeMessage {

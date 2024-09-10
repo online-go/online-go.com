@@ -15,20 +15,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as data from "data";
-import * as preferences from "preferences";
+import * as data from "@/lib/data";
+import * as preferences from "@/lib/preferences";
 import * as React from "react";
-import * as moment from "moment";
-import { LineText } from "misc-ui";
+import moment from "moment";
+import { LineText } from "@/components/misc-ui";
 import { Link } from "react-router-dom";
-import { _, pgettext, interpolate, current_language } from "translate";
-import { Player } from "Player";
-import { profanity_filter } from "profanity_filter";
+import { _, pgettext, interpolate, current_language } from "@/lib/translate";
+import { Player } from "@/components/Player";
+import { profanity_filter } from "@/lib/profanity_filter";
 import { GobanRenderer, Goban, protocol } from "goban";
-import { ChatUserList, ChatUserCount } from "ChatUserList";
-import { TabCompleteInput } from "TabCompleteInput";
-import { chat_markup } from "components/Chat";
-import { inGameModChannel } from "chat_manager";
+import { ChatUserList, ChatUserCount } from "@/components/ChatUserList";
+import { TabCompleteInput } from "@/components/TabCompleteInput";
+import { chat_markup } from "@/components/Chat";
+import { inGameModChannel } from "@/lib/chat_manager";
 import { MoveTree } from "goban";
 import { game_control } from "./game_control";
 import { useUserIsParticipant } from "./GameHooks";

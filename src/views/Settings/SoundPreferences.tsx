@@ -19,22 +19,22 @@ import * as React from "react";
 import * as ReactSelect from "react-select";
 import Select from "react-select";
 
-import { current_language, pgettext } from "translate";
+import { current_language, pgettext } from "@/lib/translate";
 
-import { usePreference } from "preferences";
+import { usePreference } from "@/lib/preferences";
 
-import { sfx, SpriteGroups, sprite_packs, ValidSound, ValidSoundGroup } from "sfx";
-import { SpritePack } from "sfx_sprites";
+import { sfx, SpriteGroups, sprite_packs, ValidSound, ValidSoundGroup } from "@/lib/sfx";
+import { SpritePack } from "@/lib/sfx_sprites";
 
 import { EventEmitter } from "eventemitter3";
-import { LineText } from "misc-ui";
-import { Timeout } from "misc";
+import { LineText } from "@/components/misc-ui";
+import { Timeout } from "@/lib/misc";
 
-import { Card } from "material";
-import { Toggle } from "Toggle";
-import { Flag } from "Flag";
+import { Card } from "@/components/material";
+import { Toggle } from "@/components/Toggle";
+import { Flag } from "@/components/Flag";
 
-import { PreferenceToggle } from "SettingsCommon";
+import { PreferenceToggle } from "@/lib/SettingsCommon";
 
 export function SoundPreferences(): JSX.Element {
     const [tick_tock_start, __setTickTockStart] = usePreference("sound.countdown.tick-tock.start");

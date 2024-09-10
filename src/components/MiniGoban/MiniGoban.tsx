@@ -17,19 +17,19 @@
 
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { npgettext, interpolate } from "translate";
-import * as moment from "moment";
-import * as preferences from "preferences";
+import { npgettext, interpolate } from "@/lib/translate";
+import moment from "moment";
+import * as preferences from "@/lib/preferences";
 import { GobanRenderer, JGOFMove, createGoban } from "goban";
-import * as data from "data";
-import { PersistentElement } from "PersistentElement";
-import { getUserRating, PROVISIONAL_RATING_CUTOFF } from "rank_utils";
-import { Clock } from "Clock";
-import { fetch } from "player_cache";
-import { getGameResultText } from "misc";
-import { getEm10Width, getWindowWidth } from "lib/device";
-import { PlayerCacheEntry } from "player_cache";
-import { usePreference } from "preferences";
+import * as data from "@/lib/data";
+import { PersistentElement } from "@/components/PersistentElement";
+import { getUserRating, PROVISIONAL_RATING_CUTOFF } from "@/lib/rank_utils";
+import { Clock } from "@/components/Clock";
+import { fetch } from "@/lib/player_cache";
+import { getGameResultText } from "@/lib/misc";
+import { getEm10Width, getWindowWidth } from "@/lib/device";
+import { PlayerCacheEntry } from "@/lib/player_cache";
+import { usePreference } from "@/lib/preferences";
 
 export interface MiniGobanProps {
     game_id?: number;

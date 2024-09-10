@@ -17,8 +17,8 @@
 
 import * as React from "react";
 import { createGoban, GobanRenderer } from "goban";
-import { sfx } from "sfx";
-import { PersistentElement } from "PersistentElement";
+import { sfx } from "@/lib/sfx";
+import { PersistentElement } from "@/components/PersistentElement";
 
 interface InstructionalGobanProps {
     width?: number;

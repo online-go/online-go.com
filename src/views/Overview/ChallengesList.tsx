@@ -16,18 +16,18 @@
  */
 
 import * as React from "react";
-import { _ } from "translate";
-import { Card } from "material";
-import { del, post } from "requests";
-import { browserHistory } from "ogsHistory";
-import * as data from "data";
-import { Player } from "Player";
-import { PlayerIcon } from "PlayerIcon";
-import { profanity_filter } from "profanity_filter";
-import { challenge_text_description } from "ChallengeModal";
-import { FabX, FabCheck } from "material";
-import { ignore } from "misc";
-import cached from "cached";
+import { _ } from "@/lib/translate";
+import { Card } from "@/components/material";
+import { del, post } from "@/lib/requests";
+import { browserHistory } from "@/lib/ogsHistory";
+import * as data from "@/lib/data";
+import { Player } from "@/components/Player";
+import { PlayerIcon } from "@/components/PlayerIcon";
+import { profanity_filter } from "@/lib/profanity_filter";
+import { challenge_text_description } from "@/components/ChallengeModal";
+import { FabX, FabCheck } from "@/components/material";
+import { ignore } from "@/lib/misc";
+import cached from "@/lib/cached";
 
 interface ChallengeListProps {
     onAccept: () => void;

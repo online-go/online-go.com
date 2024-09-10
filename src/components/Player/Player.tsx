@@ -16,20 +16,20 @@
  */
 
 import * as React from "react";
-import { browserHistory } from "ogsHistory";
+import { browserHistory } from "@/lib/ogsHistory";
 //import { useNavigate } from "react-router-dom";
-import * as data from "data";
-import { shouldOpenNewTab, errorLogger, unicodeFilter } from "misc";
-import { rankString, getUserRating, PROVISIONAL_RATING_CUTOFF } from "rank_utils";
-import { close_all_popovers, popover } from "popover";
-import { close_friend_list } from "FriendList/close_friend_list";
+import * as data from "@/lib/data";
+import { shouldOpenNewTab, errorLogger, unicodeFilter } from "@/lib/misc";
+import { rankString, getUserRating, PROVISIONAL_RATING_CUTOFF } from "@/lib/rank_utils";
+import { close_all_popovers, popover } from "@/lib/popover";
+import { close_friend_list } from "@/components/FriendList/close_friend_list";
 import { PlayerDetails } from "./PlayerDetails";
-import { openPlayerNotesModal } from "PlayerNotesModal";
-import { Flag } from "Flag";
-import { PlayerIcon } from "PlayerIcon";
-import * as player_cache from "player_cache";
-import * as preferences from "preferences";
-import online_status from "online_status";
+import { openPlayerNotesModal } from "@/components/PlayerNotesModal";
+import { Flag } from "@/components/Flag";
+import { PlayerIcon } from "@/components/PlayerIcon";
+import * as player_cache from "@/lib/player_cache";
+import * as preferences from "@/lib/preferences";
+import online_status from "@/lib/online_status";
 
 /* There are cases where what we are handed is some odd looking dirty data. We
  * should probably start warning about remaining uses of these fields and then

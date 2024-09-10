@@ -22,20 +22,20 @@ import { useParams } from "react-router-dom";
 
 import * as DynamicHelp from "react-dynamic-help";
 
-import * as preferences from "preferences";
-import * as data from "data";
+import * as preferences from "@/lib/preferences";
+import * as data from "@/lib/data";
 
-import { _, interpolate } from "translate";
-import { get, abort_requests_in_flight } from "requests";
+import { _, interpolate } from "@/lib/translate";
+import { get, abort_requests_in_flight } from "@/lib/requests";
 
-import { errorAlerter, dup } from "misc";
-import { durationString } from "TimeControl";
+import { errorAlerter, dup } from "@/lib/misc";
+import { durationString } from "@/components/TimeControl";
 
-import { logout, logoutOtherDevices, logoutAndClearLocalData } from "auth";
-import { LoadingPage } from "Loading";
-import { browserHistory } from "ogsHistory";
+import { logout, logoutOtherDevices, logoutAndClearLocalData } from "@/lib/auth";
+import { LoadingPage } from "@/components/Loading";
+import { browserHistory } from "@/lib/ogsHistory";
 
-import { SettingGroupPageProps, SettingsState } from "SettingsCommon";
+import { SettingGroupPageProps, SettingsState } from "@/lib/SettingsCommon";
 
 import { SoundPreferences } from "./SoundPreferences";
 import { GeneralPreferences } from "./GeneralPreferences";
@@ -49,7 +49,7 @@ import { LinkPreferences } from "./LinkPreferences";
 import { AnnouncementPreferences } from "./AnnouncementPreferences";
 import { EmailPreferences } from "./EmailPreferences";
 import { HelpSettings } from "./HelpSettings";
-import { Supporter } from "Supporter";
+import { Supporter } from "@/views/Supporter";
 import { GoTVPreferences } from "./GoTVPreferences";
 import { ThemePreferences } from "./ThemePreferences";
 
@@ -101,7 +101,6 @@ export function Settings(): JSX.Element {
 
     const selected = category;
     data.set("settings.page-selected", selected);
-
     const groups: Array<{
         key: string;
         label: string | JSX.Element;
@@ -130,6 +129,7 @@ export function Settings(): JSX.Element {
         { key: "account", label: _("Account Settings"), ref: accountSettingsButton },
         { key: "link", label: _("Account Linking") },
         { key: "help", label: _("Help Settings") },
+
         /*
         {
             key: "experiments",
