@@ -308,7 +308,7 @@ export function MiniGoban(props: MiniGobanProps): JSX.Element {
             goban.current?.destroy();
             goban_div.current.childNodes.forEach((node) => node.remove());
         };
-    }, [props.game_id, props.review_id]);
+    }, [props.game_id, props.review_id, props.width, props.height]);
 
     // Update displayWidth dynamically
     React.useEffect(() => {
