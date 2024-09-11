@@ -2,7 +2,7 @@
     "compileOnSave": false,
     "buildOnSave": false,
     "compilerOptions": {
-        "outDir": "./dist/",
+        "outDir": "dist",
         "target": "es2015",
         "moduleResolution": "bundler",
         "isolatedModules": true,

@@ -1,8 +1,8 @@
 <!doctype html>
-<html lang="{{PAGE_LANGUAGE}}">
+<html lang="en">
   <head>
       <meta charset="utf-8">
-      <title>{{PAGE_TITLE}}</title>
+      <title>Play Go at online-go.com!</title>
 
       <meta http-equiv="Cache-control" content="no-cache">
       <meta http-equiv="Expires" content="-1">
@@ -10,10 +10,9 @@
       <meta name="apple-mobile-web-app-capable" content="yes">
       <meta name="format-detection" content="telephone=no">
       <meta name="application-name" content="Online-Go.com"/>
-      <meta name="keywords" content="{{PAGE_KEYWORDS}}"/>
-      <meta name="Description" content="{{PAGE_DESCRIPTION}}">
+      <meta name="keywords" content=""/>
+      <meta name="Description" content="">
 
-      <link rel="manifest" href="/manifest.json">
       <link rel="shortcut icon" href="https://cdn.online-go.com/icons/favicon.ico" type="image/x-icon" />
       <link rel="apple-touch-icon" sizes="57x57" href="https://cdn.online-go.com/icons/apple-touch-icon-57x57.png">
       <link rel="apple-touch-icon" sizes="60x60" href="https://cdn.online-go.com/icons/apple-touch-icon-60x60.png">
@@ -38,11 +37,10 @@
 
       <meta property="og:site_name" content="online-go.com" />
       <meta property="og:type" content="website" />
-      <meta property="og:title" content="{{OG_TITLE}}" />
-      <meta property="og:url" content="{{OG_URL}}" />
-      <meta property="og:image" content="{{OG_IMAGE}}" />
-      <meta property="og:description" content="{{OG_DESCRIPTION}}" />
-
+      <meta property="og:title" content="" />
+      <meta property="og:url" content="" />
+      <meta property="og:image" content="" />
+      <meta property="og:description" content="" />
       <style>
           @font-face {
               font-family: 'Nunito';
@@ -149,7 +147,7 @@
               background-color: #1A1A1A;
           }
       </style>
-      {{EXTRA_CONFIG}}
+      <script>window['websocket_host'] = "https://beta.online-go.com";</script>
   </head>
   <body>
       <script>
@@ -167,7 +165,7 @@
 
         /* When browsers use Google Translate it breaks React apps like ours because they
          * replace text nodes with <font> tags, changing the dom structure and causing
-         * React to throw errors. 
+         * React to throw errors.
          *
          * This code is the workaround described by the react team here:
          *   https://github.com/facebook/react/issues/11538#issuecomment-417504600
@@ -254,12 +252,6 @@
       </div></div>
       <div id="main-content"></div>
       <div id="toast-container"></div>
-
-
-      <noscript id="deferred-styles">
-          <link rel="stylesheet" type="text/css" href="{{CDN_SERVICE}}/{{RELEASE}}/ogs.{{VERSION_DOTCSS}}">
-      </noscript>
-
       <script>
         try {
             var script = document.createElement('script');
@@ -267,53 +259,26 @@
             try {
                 new WebAssembly.Memory({ initial: 0 });
                 console.log("WASM support detected, score estimator will be fast");
-                script.src = "/OGSScoreEstimator/OGSScoreEstimator-0.7.0.js";
+                script.src = "//localhost:8080/OGSScoreEstimator/OGSScoreEstimator-0.7.0.js";
             } catch (error) {
                 console.warn(error);
                 console.log("No WASM support detected, score estimator falling back to ASM.js mode");
-                script.src = "/OGSScoreEstimator/OGSScoreEstimator-0.7.0.asm.js";
+                script.src = "//localhost:8080/OGSScoreEstimator/OGSScoreEstimator-0.7.0.asm.js";
             }
             document.head.appendChild(script);
         } catch (e) {
             console.error(e);
         }
       </script>
+      <script defer src="https://cdn.online-go.com/lib/jquery/3.1.1/jquery.js"></script>
+      <script defer src="https://cdn.online-go.com/goban/8.3.50/goban.js"></script>
 
-      <script>
-          var loadDeferredStyles = function() {
-            var addStylesNode = document.getElementById("deferred-styles");
-            var replacement = document.createElement("div");
-            var inner = addStylesNode.textContent
-            try {
-                /* Allow the ability to override the css file we load for development / testing purposes */
-                if (localStorage.getItem('ogs-css')) {
-                    inner = inner.replace("{{CDN_SERVICE}}/{{RELEASE}}/ogs.{{VERSION_DOTCSS}}", "{{CDN_SERVICE}}/" + localStorage.getItem('ogs-css'));
-                }
-            } catch (e) {
-                console.error(e);
-            }
-            replacement.innerHTML = inner;
-            document.body.appendChild(replacement)
-            addStylesNode.parentElement.removeChild(addStylesNode);
-          };
-          var raf = requestAnimationFrame || mozRequestAnimationFrame ||
-              webkitRequestAnimationFrame || msRequestAnimationFrame;
-          if (raf) raf(function() { window.setTimeout(loadDeferredStyles, 0); });
-          else window.addEventListener('load', loadDeferredStyles);
-      </script>
-
-      <script defer src="https://cdn.online-go.com/lib/es6-shim/0.35.3/es6-shim{{MIN}}.js"></script>
-      <script defer src="https://cdn.online-go.com/lib/jquery/3.1.1/jquery{{MIN}}.js"></script>
-      <script defer src="{{GOBAN_JS}}"></script>
-      <script defer src="{{CDN_SERVICE}}/{{RELEASE}}/vendor.{{VENDOR_HASH_DOTJS}}"></script>
-
-
-      <script type="text/javascript">var supported_languages = {{SUPPORTED_LANGUAGES}};</script>
+      <script type="text/javascript">var supported_languages = {"be":"Беларуская","ca":"Català","cs":"Čeština","da":"Dansk","de":"Deutsch","en":"English","eo":"Esperanto","es":"Español","eu":"Euskara","et":"Eesti keel","el":"ελληνικά","fi":"Suomi","fr":"Français","he":"עִבְרִית","hu":"Magyar","hr":"Hrvatski","it":"Italiano","ja":"日本語","ko":"한국어","nl":"Nederlands","pl":"Polski","pt":"Português","ro":"Română","ru":"Русский","sr":"Српски","sv":"Svenska","tr":"Türkçe","uk":"Українська","th":"ภาษาไทย","vi":"Tiếng Việt","zh-cn":"简体中文","zh-tw":"繁體中文","debug":"Debug"};</script>
       <script type="text/javascript">
-        var ogs_version='{{VERSION}}';
-        var ogs_release='{{RELEASE}}';
-        var ogs_language_version='{{LANGUAGE_VERSION}}';
-        var cdn_service = '{{CDN_SERVICE}}';
+        var ogs_version='';
+        var ogs_release='';
+        var ogs_language_version='';
+        var cdn_service = '//localhost:8080/';
 
         /* Detect preferred language  */
 
@@ -403,22 +368,22 @@
         window['ogs_current_language'] = ogs_current_language || 'en';
 
         /* Load our translations */
-        var language_path = "{{CDN_SERVICE}}/{{RELEASE}}/locale/" + ogs_current_language + ".{{LANGUAGE_VERSION_DOTJS}}";
+        var language_path = "//localhost:8080///locale/" + ogs_current_language + ".js";
         language_path = language_path.replace('///', '/'); /* in dev mode, we don't use the cdn or release vars */
         document.write('<script defer src="' + language_path + '"><' + '/script>');
 
         /* Load OGS. We can override what script is loaded by setting the
          * 'ogs-script' entry in localStorage (useful for testing versions before they're
          * released to everyone) */
-        var ogs_script_path = "{{CDN_SERVICE}}/{{RELEASE}}/ogs.{{OGS_VERSION_HASH_DOTJS}}";
+        var ogs_script_path = "//localhost:8080///ogs.js";
         try {
             if (localStorage.getItem('ogs-script')) {
-                ogs_script_path = "{{CDN_SERVICE}}/" + localStorage.getItem('ogs-script');
+                ogs_script_path = "//localhost:8080//" + localStorage.getItem('ogs-script');
             }
         } catch (e) {
             console.error(e);
         }
-        document.write('<script defer src="' + ogs_script_path + '"><'+'/script>');
+        //document.write('<script defer src="' + ogs_script_path + '"><'+'/script>');
 
       </script>
 
@@ -469,8 +434,7 @@
               localStorage.removeItem('ogs-script');
           }
       </script>
-
-    {{LIVE_RELOAD}}
+      <script type="module" src="src/main.tsx"></script>
 </body>
 
 </html>
