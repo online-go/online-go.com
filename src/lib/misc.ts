@@ -656,7 +656,8 @@ export function getCurrentGameId() {
     return null;
 }
 
-// x is a  date, y is data for that date
+// x is a date, y is data for that date
+// sets y for the last date in the data array to null
 export function dropCurrentPeriod(data: { x: string; y: number | null }[]) {
     const newData = [...data];
     if (newData.length > 0) {

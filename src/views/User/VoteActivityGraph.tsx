@@ -19,7 +19,7 @@ import React, { useEffect, useState } from "react";
 
 import { get } from "@/lib/requests";
 import * as data from "@/lib/data";
-import { ResponsiveLine } from "@nivo/line";
+import { ResponsiveLine, Serie } from "@nivo/line";
 import { dropCurrentPeriod } from "@/lib/misc";
 
 interface VoteCountPerDay {
@@ -49,6 +49,7 @@ const VoteActivityGraph = ({ vote_data }: VoteActivityGraphProps) => {
             [key: string]: number;
         } = {};
 
+        // Note: The vote_data.counts array is sorted by date in the backend
         vote_data.counts.forEach((day) => {
             const weekStart = startOfWeek(new Date(day.date)).toISOString().slice(0, 10); // Format as YYYY-MM-DD
             if (!aggregatedByWeek[weekStart]) {
@@ -65,10 +66,17 @@ const VoteActivityGraph = ({ vote_data }: VoteActivityGraphProps) => {
                 y: count, // y-axis will use the aggregated count
             }));
 
+        const completed_weeks = dropCurrentPeriod(data);
+        const current_week = data.pop();
+
         return [
             {
-                id: "votes",
-                data: dropCurrentPeriod(data),
+                id: "weekly_votes",
+                data: completed_weeks,
+            },
+            {
+                id: "current_week",
+                data: [current_week],
             },
         ];
     }, [vote_data]);
@@ -88,13 +96,19 @@ const VoteActivityGraph = ({ vote_data }: VoteActivityGraphProps) => {
         return <div>No activity yet</div>;
     }
 
+    const line_colors = {
+        weekly_votes: "rgba(230,183,151, 1)", // matches default in pie charts
+        current_week: "rgba(55, 200, 67, 1)", // visually matches nearby green on the page
+    };
+
     return (
         <div className="vote-activity-graph">
             <ResponsiveLine
-                data={chart_data}
+                data={chart_data as Serie[]}
                 animate
                 curve="monotoneX"
-                enablePoints={false}
+                enablePoints={true}
+                colors={({ id }) => line_colors[id as keyof typeof line_colors]}
                 enableSlices="x"
                 axisBottom={{
                     format: "%d %b %g",
