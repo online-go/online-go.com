@@ -16,10 +16,10 @@
  */
 
 import * as React from "react";
-import { BanModal } from "BanModal";
-import { openModal } from "Modal";
-import { post, put } from "requests";
-import { alert } from "swal_config";
+import { BanModal } from "@/components/BanModal";
+import { openModal } from "@/components/Modal";
+import { post, put } from "@/lib/requests";
+import { alert } from "@/lib/swal_config";
 
 function moderate(player_id: number, prompt: string, obj: any) {
     return new Promise((resolve, reject) => {

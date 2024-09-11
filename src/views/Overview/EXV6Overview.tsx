@@ -19,29 +19,29 @@ import * as React from "react";
 import { Link } from "react-router-dom";
 import * as DynamicHelp from "react-dynamic-help";
 
-import { _ } from "translate";
+import { _ } from "@/lib/translate";
 
-import * as data from "data";
-import * as preferences from "preferences";
-import cached from "cached";
+import * as data from "@/lib/data";
+import * as preferences from "@/lib/preferences";
+import cached from "@/lib/cached";
 
-import { post, get, abort_requests_in_flight } from "requests";
+import { post, get, abort_requests_in_flight } from "@/lib/requests";
 
-import { errorAlerter, ignore } from "misc";
-import { DismissableNotification } from "DismissableNotification";
+import { errorAlerter, ignore } from "@/lib/misc";
+import { DismissableNotification } from "@/components/DismissableNotification";
 import { ChallengesList } from "./ChallengesList";
 import { InviteList } from "./InviteList";
-import { notification_manager } from "Notifications";
-import { ActiveAnnouncements } from "Announcements";
-import { ActiveTournamentList, Group } from "src/lib/types";
-import { DismissableMessages } from "DismissableMessages";
-import { EmailBanner } from "EmailBanner";
-import { ActiveDroppedGameList } from "ActiveDroppedGameList";
-import { ModerationOffer } from "ModerationOffer";
-import { NewUserRankChooser } from "NewUserRankChooser";
-import { FreeTrialBanner } from "FreeTrialBanner";
-import { SupporterProblems } from "SupporterProblems";
-import { FreeTrialSurvey } from "FreeTrialSurvey";
+import { notification_manager } from "@/components/Notifications";
+import { ActiveAnnouncements } from "@/components/Announcements";
+import { ActiveTournamentList, Group } from "@/lib/types";
+import { DismissableMessages } from "@/components/DismissableMessages";
+import { EmailBanner } from "@/components/EmailBanner";
+import { ActiveDroppedGameList } from "@/components/ActiveDroppedGameList";
+import { ModerationOffer } from "@/components/ModerationOffer";
+import { NewUserRankChooser } from "@/components/NewUserRankChooser";
+import { FreeTrialBanner } from "@/components/FreeTrialBanner";
+import { SupporterProblems } from "@/components/SupporterProblems";
+import { FreeTrialSurvey } from "@/components/FreeTrialSurvey";
 
 declare let ogs_missing_translation_count: number;
 

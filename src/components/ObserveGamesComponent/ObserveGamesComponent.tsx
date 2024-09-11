@@ -16,13 +16,13 @@
  */
 
 import * as React from "react";
-import * as data from "data";
-import * as preferences from "preferences";
-import { _, pgettext, interpolate } from "translate";
-import { dup } from "misc";
-import { GameList } from "GameList";
-import { ActiveAnnouncements } from "Announcements";
-import { socket } from "sockets";
+import * as data from "@/lib/data";
+import * as preferences from "@/lib/preferences";
+import { _, pgettext, interpolate } from "@/lib/translate";
+import { dup } from "@/lib/misc";
+import { GameList } from "@/components/GameList";
+import { ActiveAnnouncements } from "@/components/Announcements";
+import { socket } from "@/lib/sockets";
 
 interface ObserveGamesComponentProperties {
     announcements: boolean;

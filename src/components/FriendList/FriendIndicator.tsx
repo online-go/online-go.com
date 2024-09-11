@@ -16,11 +16,11 @@
  */
 
 import * as React from "react";
-import online_status from "online_status";
-import * as data from "data";
+import online_status from "@/lib/online_status";
+import * as data from "@/lib/data";
 import { FriendList } from "./FriendList";
-import { KBShortcut } from "KBShortcut";
-import cached from "cached";
+import { KBShortcut } from "@/components/KBShortcut";
+import cached from "@/lib/cached";
 import { setSetShowFriendList } from "./close_friend_list";
 
 const online_subscriptions = {};

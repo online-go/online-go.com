@@ -16,9 +16,9 @@
  */
 
 import * as React from "react";
-import { ai_socket } from "sockets";
+import { ai_socket } from "@/lib/sockets";
 import { MoveTree, GobanSocketEvents } from "goban";
-import { IdType } from "src/lib/types";
+import { IdType } from "@/lib/types";
 
 const analysis_requests_made: { [id: string]: boolean } = {};
 

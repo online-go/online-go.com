@@ -17,10 +17,10 @@
 
 import React, { useEffect, useState } from "react";
 
-import { get } from "requests";
-import * as data from "data";
+import { get } from "@/lib/requests";
+import * as data from "@/lib/data";
 import { ResponsivePie } from "@nivo/pie";
-import { ReportType } from "Report";
+import { ReportType } from "@/components/Report";
 
 interface VoteSummaryData {
     report_type: string;

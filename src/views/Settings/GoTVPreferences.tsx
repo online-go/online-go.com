@@ -17,14 +17,14 @@
 
 import * as React from "react";
 import { useState } from "react";
-import { _ } from "translate";
-import { usePreference } from "preferences";
-import { Toggle } from "Toggle";
-import { PreferenceLine } from "SettingsCommon";
+import { _ } from "@/lib/translate";
+import { usePreference } from "@/lib/preferences";
+import { Toggle } from "@/components/Toggle";
+import { PreferenceLine } from "@/lib/SettingsCommon";
 import Select, { MultiValue } from "react-select";
 import { twitchLanguageCodes } from "../GoTV/twitchLanguageCodes";
 import { useTwitchIntegration } from "../GoTV/useTwitchIntegration";
-import { useUser } from "hooks";
+import { useUser } from "@/lib/hooks";
 
 type LanguageCodes = typeof twitchLanguageCodes;
 

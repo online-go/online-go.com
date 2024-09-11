@@ -16,15 +16,16 @@
  */
 
 import * as React from "react";
-import * as moment from "moment";
-import { useRefresh } from "hooks";
-import { _, pgettext } from "translate";
+import moment from "moment";
+import { useRefresh } from "@/lib/hooks";
+import { shortTimeControl } from "@/components/TimeControl";
+import { _, pgettext } from "@/lib/translate";
 import { Link } from "react-router-dom";
-import { MiniGoban } from "MiniGoban";
-import { alert } from "swal_config";
-import { post, get } from "requests";
-import { errorAlerter, showSecondsResolution } from "misc";
-import { doAnnul } from "moderation";
+import { MiniGoban } from "@/components/MiniGoban";
+import { alert } from "@/lib/swal_config";
+import { post, get } from "@/lib/requests";
+import { errorAlerter, showSecondsResolution } from "@/lib/misc";
+import { doAnnul } from "@/lib/moderation";
 
 import {
     AIReview,
@@ -36,14 +37,12 @@ import {
     game_control,
     GameLog,
     useGoban,
-} from "Game";
+} from "@/views/Game";
 import { GobanRenderer } from "goban";
-import { Resizable } from "Resizable";
+import { Resizable } from "@/components/Resizable";
 
-import { Player } from "Player";
-import { useUser } from "hooks";
-import { shortTimeControl } from "TimeControl";
-
+import { Player } from "@/components/Player";
+import { useUser } from "@/lib/hooks";
 export function ReportedGame({
     game_id,
     reported_at,

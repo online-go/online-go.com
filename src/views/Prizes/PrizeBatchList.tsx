@@ -17,9 +17,9 @@
 
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { get, post } from "requests";
-import { useUser } from "hooks";
-import { Player } from "Player";
+import { get, post } from "@/lib/requests";
+import { useUser } from "@/lib/hooks";
+import { Player } from "@/components/Player";
 
 interface PrizeBatch {
     id: string;

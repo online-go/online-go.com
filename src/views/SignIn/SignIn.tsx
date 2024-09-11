@@ -17,21 +17,21 @@
 
 import * as React from "react";
 import { Link } from "react-router-dom";
-import * as data from "data";
+import * as data from "@/lib/data";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { _ } from "translate";
-import { Card } from "material";
-import { errorAlerter, uuid } from "misc";
-import { post } from "requests";
-import cached from "cached";
+import { _ } from "@/lib/translate";
+import { Card } from "@/components/material";
+import { errorAlerter, uuid } from "@/lib/misc";
+import { post } from "@/lib/requests";
+import cached from "@/lib/cached";
 import { Md5 } from "ts-md5/dist/esm/md5";
-import { useUser } from "hooks";
+import { useUser } from "@/lib/hooks";
 
-import { SocialLoginButtons } from "SocialLoginButtons";
+import { SocialLoginButtons } from "@/components/SocialLoginButtons";
 
 (window as any)["Md5"] = Md5;
-import { alert } from "swal_config";
-import { LoadingButton } from "LoadingButton";
+import { alert } from "@/lib/swal_config";
+import { LoadingButton } from "@/components/LoadingButton";
 
 /***
  * Setup a device UUID so we can logout other *devices* and not all other

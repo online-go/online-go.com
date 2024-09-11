@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { _, interpolate } from "translate";
+import { _, interpolate } from "@/lib/translate";
 
 // These are the "canned messages" that Community Moderators can vote for.
 

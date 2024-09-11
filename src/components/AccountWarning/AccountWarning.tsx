@@ -20,10 +20,10 @@
 // So the word "warning" kind of means "message" now.
 
 import * as React from "react";
-import { _, pgettext } from "translate";
-import { get, patch } from "requests";
-import { useMainGoban, useUser } from "hooks";
-import { AutoTranslate } from "AutoTranslate";
+import { _, pgettext } from "@/lib/translate";
+import { get, patch } from "@/lib/requests";
+import { useMainGoban, useUser } from "@/lib/hooks";
+import { AutoTranslate } from "@/components/AutoTranslate";
 import { useLocation } from "react-router";
 import { CANNED_MESSAGES } from "./CannedMessages";
 

@@ -16,13 +16,13 @@
  */
 
 import * as React from "react";
-import * as preferences from "preferences";
-import { Player } from "Player";
-import { _, interpolate } from "translate";
-import { socket } from "sockets";
+import * as preferences from "@/lib/preferences";
+import { Player } from "@/components/Player";
+import { _, interpolate } from "@/lib/translate";
+import { socket } from "@/lib/sockets";
 import { useEffect, useState, useCallback } from "react";
-import { Timeout } from "misc";
-import { chat_manager, users_by_rank, ChatChannelProxy } from "chat_manager";
+import { Timeout } from "@/lib/misc";
+import { chat_manager, users_by_rank, ChatChannelProxy } from "@/lib/chat_manager";
 
 interface ChatUsersListProperties {
     channel: string;

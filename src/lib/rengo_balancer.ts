@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as player_cache from "player_cache";
-import { put } from "requests";
+import * as player_cache from "@/lib/player_cache";
+import { put } from "@/lib/requests";
 
 type Participant = {
     user_id: number;

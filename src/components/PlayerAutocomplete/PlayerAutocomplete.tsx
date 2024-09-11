@@ -16,11 +16,11 @@
  */
 
 import * as React from "react";
-import { _ } from "translate";
-import { get, abort_requests_in_flight } from "requests";
-import * as player_cache from "player_cache";
-import * as Autosuggest from "react-autosuggest";
-import { IdType } from "src/lib/types";
+import { _ } from "@/lib/translate";
+import { get, abort_requests_in_flight } from "@/lib/requests";
+import * as player_cache from "@/lib/player_cache";
+import Autosuggest from "react-autosuggest";
+import { IdType } from "@/lib/types";
 
 interface PlayerAutocompleteProperties {
     onComplete: (user: player_cache.PlayerCacheEntry | null) => void;

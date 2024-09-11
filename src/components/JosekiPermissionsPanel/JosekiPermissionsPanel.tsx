@@ -17,10 +17,10 @@
 
 import * as React from "react";
 
-import * as data from "data";
-import { get, put } from "requests";
+import * as data from "@/lib/data";
+import { get, put } from "@/lib/requests";
 
-import { Player } from "Player";
+import { Player } from "@/components/Player";
 
 interface JosekiAdminProps {
     server_url: string;

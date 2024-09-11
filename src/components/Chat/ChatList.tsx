@@ -16,19 +16,19 @@
  */
 
 import * as React from "react";
-import { _ } from "translate";
+import { _ } from "@/lib/translate";
 import {
     group_channels,
     tournament_channels,
     global_channels,
     ChatChannelProxy,
     chat_manager,
-} from "chat_manager";
-import * as data from "data";
-import { Flag } from "Flag";
-import { shouldOpenNewTab } from "misc";
-import { browserHistory } from "ogsHistory";
-import { popover } from "popover";
+} from "@/lib/chat_manager";
+import * as data from "@/lib/data";
+import { Flag } from "@/components/Flag";
+import { shouldOpenNewTab } from "@/lib/misc";
+import { browserHistory } from "@/lib/ogsHistory";
+import { popover } from "@/lib/popover";
 import {
     getUnreadChatPreference,
     getMentionedChatPreference,
@@ -36,7 +36,7 @@ import {
     unwatchChatSubscriptionChanged,
 } from "./state";
 import { ChatDetails } from "./ChatDetails";
-import { DataSchema } from "data_schema";
+import { DataSchema } from "@/lib/data_schema";
 
 interface ChatListProperties {
     show_unjoined?: boolean;

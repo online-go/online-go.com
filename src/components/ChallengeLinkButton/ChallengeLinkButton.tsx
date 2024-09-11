@@ -17,9 +17,9 @@
 
 import * as React from "react";
 
-import { pgettext } from "translate";
+import { pgettext } from "@/lib/translate";
 
-import { popover } from "popover";
+import { popover } from "@/lib/popover";
 
 type ChallengeLinkButtonProps = {
     uuid: string;

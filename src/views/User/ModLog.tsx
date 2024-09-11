@@ -16,11 +16,11 @@
  */
 
 import * as React from "react";
-import { PaginatedTable } from "PaginatedTable";
-import * as moment from "moment";
-import { Player } from "Player";
+import { PaginatedTable } from "@/components/PaginatedTable";
+import moment from "moment";
+import { Player } from "@/components/Player";
 import { Link } from "react-router-dom";
-import { chat_markup } from "Chat";
+import { chat_markup } from "@/components/Chat";
 
 interface ModLogProps {
     user_id: number;

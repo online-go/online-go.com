@@ -17,21 +17,21 @@
 
 import * as React from "react";
 import * as DynamicHelp from "react-dynamic-help";
-import { cached } from "cached";
-import * as player_cache from "player_cache";
+import { cached } from "@/lib/cached";
+import * as player_cache from "@/lib/player_cache";
 import Dropzone from "react-dropzone";
-import { alert } from "swal_config";
-import { PlayerIcon } from "PlayerIcon";
-import { post, get, put, del, getCookie } from "requests";
-import { errorAlerter, errorLogger, ignore } from "misc";
-import { SocialLoginButtons } from "SocialLoginButtons";
-import { SettingGroupPageProps } from "SettingsCommon";
-import { useUser } from "hooks";
-import { image_resizer } from "image_resizer";
-import { Flag } from "Flag";
-import { toast } from "toast";
-import { InfoBall } from "InfoBall";
-import { pgettext, sorted_locale_countries, _ } from "translate";
+import { alert } from "@/lib/swal_config";
+import { PlayerIcon } from "@/components/PlayerIcon";
+import { post, get, put, del, getCookie } from "@/lib/requests";
+import { errorAlerter, errorLogger, ignore } from "@/lib/misc";
+import { SocialLoginButtons } from "@/components/SocialLoginButtons";
+import { SettingGroupPageProps } from "@/lib/SettingsCommon";
+import { useUser } from "@/lib/hooks";
+import { image_resizer } from "@/lib/image_resizer";
+import { Flag } from "@/components/Flag";
+import { toast } from "@/lib/toast";
+import { InfoBall } from "@/components/InfoBall";
+import { pgettext, sorted_locale_countries, _ } from "@/lib/translate";
 
 export function AccountSettings(props: SettingGroupPageProps): JSX.Element {
     const user = useUser();

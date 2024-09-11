@@ -16,8 +16,8 @@
  */
 
 import * as React from "react";
-import { _ } from "translate";
-import { PopOver, popover } from "popover";
+import { _ } from "@/lib/translate";
+import { PopOver, popover } from "@/lib/popover";
 import {
     BlockState,
     getBlocks,

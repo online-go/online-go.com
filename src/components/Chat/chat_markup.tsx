@@ -16,10 +16,10 @@
  */
 
 import * as React from "react";
-import { _ } from "translate";
+import { _ } from "@/lib/translate";
 import { Link } from "react-router-dom";
-import { Player } from "Player";
-import { profanity_filter } from "profanity_filter";
+import { Player } from "@/components/Player";
+import { profanity_filter } from "@/lib/profanity_filter";
 
 export interface TextReplacement {
     split: RegExp;

@@ -16,19 +16,19 @@
  */
 
 import * as React from "react";
-import { _ } from "translate";
+import { _ } from "@/lib/translate";
 import { useParams } from "react-router-dom";
-import { abort_requests_in_flight, del, put, post, get } from "requests";
-import { Markdown } from "Markdown";
-import { PaginatedTable, PaginatedTableRef } from "PaginatedTable";
-import { Player } from "Player";
-import { ignore, errorAlerter, dup } from "misc";
-import { rankString, allRanks } from "rank_utils";
-import { createDemoBoard } from "ChallengeModal";
+import { abort_requests_in_flight, del, put, post, get } from "@/lib/requests";
+import { Markdown } from "@/components/Markdown";
+import { PaginatedTable, PaginatedTableRef } from "@/components/PaginatedTable";
+import { Player } from "@/components/Player";
+import { ignore, errorAlerter, dup } from "@/lib/misc";
+import { rankString, allRanks } from "@/lib/rank_utils";
+import { createDemoBoard } from "@/components/ChallengeModal";
 
 (window as any)["dup"] = dup;
 
-import { alert } from "swal_config";
+import { alert } from "@/lib/swal_config";
 const ranks = allRanks();
 
 interface Round {

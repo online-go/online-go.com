@@ -16,14 +16,14 @@
  */
 
 import * as React from "react";
-import * as data from "data";
-import { _, pgettext } from "translate";
-import { put, get, del } from "requests";
-import { errorAlerter } from "misc";
-import { proRankList } from "rank_utils";
-import { Modal, openModal } from "Modal";
-import { PlayerCacheEntry, lookup } from "player_cache";
-import { MODERATOR_POWERS } from "moderation";
+import * as data from "@/lib/data";
+import { _, pgettext } from "@/lib/translate";
+import { put, get, del } from "@/lib/requests";
+import { errorAlerter } from "@/lib/misc";
+import { proRankList } from "@/lib/rank_utils";
+import { Modal, openModal } from "@/components/Modal";
+import { PlayerCacheEntry, lookup } from "@/lib/player_cache";
+import { MODERATOR_POWERS } from "@/lib/moderation";
 
 interface Events {}
 
@@ -31,8 +31,8 @@ interface ModerateUserProperties {
     playerId?: number;
 }
 
-import { alert } from "swal_config";
-import { ModerationOfferControl } from "ModerationOfferControl";
+import { alert } from "@/lib/swal_config";
+import { ModerationOfferControl } from "@/components/ModerationOfferControl";
 
 const pro_ranks = proRankList(false);
 

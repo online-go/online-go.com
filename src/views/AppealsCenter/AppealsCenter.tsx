@@ -17,12 +17,12 @@
 
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { Player } from "Player";
-import { _ } from "translate";
-import * as moment from "moment";
-import { PaginatedTable } from "PaginatedTable";
-import * as data from "data";
-//import { alert } from "swal_config";
+import { Player } from "@/components/Player";
+import { _ } from "@/lib/translate";
+import moment from "moment";
+import { PaginatedTable } from "@/components/PaginatedTable";
+import * as data from "@/lib/data";
+//import { alert } from "@/lib/swal_config";
 
 export function AppealsCenter(): JSX.Element | null {
     const user = data.get("user");

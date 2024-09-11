@@ -18,7 +18,7 @@
  * Dual licenses under MIT or GPL
  */
 
-import * as player_cache from "player_cache";
+import * as player_cache from "@/lib/player_cache";
 
 declare let $: any;
 

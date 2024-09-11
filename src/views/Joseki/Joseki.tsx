@@ -22,29 +22,29 @@
 import * as React from "react";
 import * as ReactSelect from "react-select";
 import { Link } from "react-router-dom";
-import { RouteComponentProps, rr6ClassShim } from "ogs-rr6-shims";
+import { RouteComponentProps, rr6ClassShim } from "@/lib/ogs-rr6-shims";
 import * as queryString from "query-string";
 
-import * as data from "data";
-import { _, interpolate, pgettext, npgettext } from "translate";
-import { get, put, post } from "requests";
-import { KBShortcut } from "KBShortcut";
+import * as data from "@/lib/data";
+import { _, interpolate, pgettext, npgettext } from "@/lib/translate";
+import { get, put, post } from "@/lib/requests";
+import { KBShortcut } from "@/components/KBShortcut";
 import { GobanRenderer, GobanRendererConfig, JGOFMove, createGoban } from "goban";
-import { AutoTranslate } from "AutoTranslate";
-import { Markdown } from "Markdown";
-import { chat_manager } from "chat_manager";
+import { AutoTranslate } from "@/components/AutoTranslate";
+import { Markdown } from "@/components/Markdown";
+import { chat_manager } from "@/lib/chat_manager";
 
-import { Player } from "Player";
+import { Player } from "@/components/Player";
 
-import { JosekiAdmin } from "JosekiAdmin";
+import { JosekiAdmin } from "@/components/JosekiAdmin";
 
-import { openModal } from "Modal";
-import { JosekiSourceModal } from "JosekiSourceModal";
-import { JosekiVariationFilter, JosekiFilter } from "JosekiVariationFilter";
-import { JosekiTagSelector, JosekiTag } from "JosekiTagSelector";
-import { Throbber } from "Throbber";
-import { IdType } from "src/lib/types";
-import { GobanContainer } from "GobanContainer";
+import { openModal } from "@/components/Modal";
+import { JosekiSourceModal } from "@/components/JosekiSourceModal";
+import { JosekiVariationFilter, JosekiFilter } from "@/components/JosekiVariationFilter";
+import { JosekiTagSelector, JosekiTag } from "@/components/JosekiTagSelector";
+import { Throbber } from "@/components/Throbber";
+import { IdType } from "@/lib/types";
+import { GobanContainer } from "@/components/GobanContainer";
 
 const server_url = data.get("oje-url", "/oje/");
 

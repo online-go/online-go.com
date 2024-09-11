@@ -18,11 +18,11 @@
 import * as d3 from "d3";
 import * as React from "react";
 import * as JSNoise from "js-noise";
-import * as data from "data";
-import { OgsResizeDetector } from "OgsResizeDetector";
+import * as data from "@/lib/data";
+import { OgsResizeDetector } from "@/components/OgsResizeDetector";
 import { AIReviewEntry } from "./AIReview";
-import { PersistentElement } from "PersistentElement";
-import { deepCompare } from "misc";
+import { PersistentElement } from "@/components/PersistentElement";
+import { deepCompare } from "@/lib/misc";
 import { JGOFAIReview } from "goban";
 
 window["d3"] = d3;

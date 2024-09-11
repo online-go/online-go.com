@@ -16,20 +16,20 @@
  */
 
 import * as React from "react";
-import { socket, time_since_connect } from "sockets";
-import * as data from "data";
-import * as preferences from "preferences";
-import { _, interpolate } from "translate";
-import { browserHistory } from "ogsHistory";
+import { socket, time_since_connect } from "@/lib/sockets";
+import * as data from "@/lib/data";
+import * as preferences from "@/lib/preferences";
+import { _, interpolate } from "@/lib/translate";
+import { browserHistory } from "@/lib/ogsHistory";
 
-import { FabX, FabCheck } from "material";
-import { TypedEventEmitter } from "TypedEventEmitter";
-import { toast } from "toast";
-import { sfx } from "sfx";
+import { FabX, FabCheck } from "@/components/material";
+import { TypedEventEmitter } from "@/lib/TypedEventEmitter";
+import { toast } from "@/lib/toast";
+import { sfx } from "@/lib/sfx";
 
-import { ogs_has_focus, getCurrentGameId, shouldOpenNewTab } from "misc";
-import { lookingAtOurLiveGame } from "TimeControl/util";
-import { PlayerCacheEntry } from "src/lib/player_cache";
+import { ogs_has_focus, getCurrentGameId, shouldOpenNewTab } from "@/lib/misc";
+import { lookingAtOurLiveGame } from "@/components/TimeControl/util";
+import { PlayerCacheEntry } from "@/lib/player_cache";
 import { GameListEntry } from "goban";
 
 //declare let Notification: any;

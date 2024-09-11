@@ -16,14 +16,14 @@
  */
 
 import * as React from "react";
-import { _ } from "translate";
-import { post, get, del } from "requests";
-import { openModal, Modal } from "Modal";
-import { Player } from "Player";
-import { PlayerAutocomplete, PlayerAutocompleteRef } from "PlayerAutocomplete";
-import { GroupAutocomplete } from "GroupAutocomplete";
-import { errorAlerter } from "misc";
-import { PlayerCacheEntry } from "src/lib/player_cache";
+import { _ } from "@/lib/translate";
+import { post, get, del } from "@/lib/requests";
+import { openModal, Modal } from "@/components/Modal";
+import { Player } from "@/components/Player";
+import { PlayerAutocomplete, PlayerAutocompleteRef } from "@/components/PlayerAutocomplete";
+import { GroupAutocomplete } from "@/components/GroupAutocomplete";
+import { errorAlerter } from "@/lib/misc";
+import { PlayerCacheEntry } from "@/lib/player_cache";
 
 interface Events {}
 

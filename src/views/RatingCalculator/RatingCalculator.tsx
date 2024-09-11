@@ -15,13 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { _ } from "translate";
+import { _ } from "@/lib/translate";
 import * as React from "react";
 import { Glicko2Entry, glicko2_update } from "./glicko2";
-import { get_handicap_adjustment, getUserRating, Rating } from "rank_utils";
-import { PlayerAutocomplete } from "PlayerAutocomplete";
-import { PlayerCacheEntry, lookup } from "player_cache";
-import { get } from "data";
+import { get_handicap_adjustment, getUserRating, Rating } from "@/lib/rank_utils";
+import { PlayerAutocomplete } from "@/components/PlayerAutocomplete";
+import { PlayerCacheEntry, lookup } from "@/lib/player_cache";
+import { get } from "@/lib/data";
 
 interface RatingCalcState {}
 

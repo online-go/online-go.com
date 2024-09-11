@@ -18,15 +18,15 @@
 import * as React from "react";
 import { useParams, useLocation, useSearchParams } from "react-router-dom";
 
-import * as data from "data";
-import * as preferences from "preferences";
-import { browserHistory } from "ogsHistory";
-import { _, interpolate, current_language } from "translate";
-import { popover } from "popover";
-import { post, get, abort_requests_in_flight } from "requests";
-import { KBShortcut } from "KBShortcut";
-import { UIPush } from "UIPush";
-import { errorAlerter, ignore, rulesText } from "misc";
+import * as data from "@/lib/data";
+import * as preferences from "@/lib/preferences";
+import { browserHistory } from "@/lib/ogsHistory";
+import { _, interpolate, current_language } from "@/lib/translate";
+import { popover } from "@/lib/popover";
+import { post, get, abort_requests_in_flight } from "@/lib/requests";
+import { KBShortcut } from "@/components/KBShortcut";
+import { UIPush } from "@/components/UIPush";
+import { errorAlerter, ignore, rulesText } from "@/lib/misc";
 import {
     createGoban,
     GobanRenderer,
@@ -41,13 +41,13 @@ import {
     JGOFSealingIntersection,
     encodeMove,
 } from "goban";
-import { isLiveGame } from "TimeControl";
-import { setExtraActionCallback, PlayerDetails } from "Player";
-import * as player_cache from "player_cache";
-import { notification_manager } from "Notifications";
-import { Resizable } from "Resizable";
-import { chat_manager, ChatChannelProxy, inGameModChannel } from "chat_manager";
-import { sfx, SFXSprite, ValidSound } from "sfx";
+import { isLiveGame } from "@/components/TimeControl";
+import { setExtraActionCallback, PlayerDetails } from "@/components/Player";
+import * as player_cache from "@/lib/player_cache";
+import { notification_manager } from "@/components/Notifications";
+import { Resizable } from "@/components/Resizable";
+import { chat_manager, ChatChannelProxy, inGameModChannel } from "@/lib/chat_manager";
+import { sfx, SFXSprite, ValidSound } from "@/lib/sfx";
 import { AIReview } from "./AIReview";
 import { AIDemoReview } from "./AIDemoReview";
 import { GameChat, ChatMode } from "./GameChat";
@@ -67,14 +67,14 @@ import {
 } from "./PlayControls";
 import { CancelButton } from "./PlayButtons";
 import { GameDock } from "./GameDock";
-import { alert } from "swal_config";
+import { alert } from "@/lib/swal_config";
 import { useCurrentMove, useShowTitle, useTitle, useUserIsParticipant } from "./GameHooks";
-import { GobanContainer } from "GobanContainer";
+import { GobanContainer } from "@/components/GobanContainer";
 import { GobanContext } from "./goban_context";
-import { is_valid_url } from "url_validation";
+import { is_valid_url } from "@/lib/url_validation";
 import { disableTouchAction, enableTouchAction } from "./touch_actions";
 import { BotDetectionResults } from "./BotDetectionResults";
-import { ActiveTournament } from "src/lib/types";
+import { ActiveTournament } from "@/lib/types";
 
 export function Game(): JSX.Element | null {
     const params = useParams<"game_id" | "review_id" | "move_number">();

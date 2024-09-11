@@ -16,7 +16,7 @@
  */
 
 import React, { useEffect, useState } from "react";
-import { _, interpolate } from "translate";
+import { _, interpolate } from "@/lib/translate";
 
 interface GoTVNotificationProps {
     streamId: string;

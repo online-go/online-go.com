@@ -16,10 +16,10 @@
  */
 
 import * as React from "react";
-import { pgettext } from "translate";
-import { close_all_popovers } from "popover";
-import { close_friend_list } from "FriendList/close_friend_list";
-import * as data from "data";
+import { pgettext } from "@/lib/translate";
+import { close_all_popovers } from "@/lib/popover";
+import { close_friend_list } from "@/components/FriendList/close_friend_list";
+import * as data from "@/lib/data";
 import {
     getUnreadChatPreference,
     getMentionedChatPreference,

@@ -9,7 +9,7 @@ import { PlayerCard } from "./PlayerCards";
 import { createGoban } from "goban";
 import { GobanContext } from "./goban_context";
 import { BrowserRouter as Router } from "react-router-dom";
-import * as data from "data";
+import * as data from "@/lib/data";
 
 const TEST_USER = {
     anonymous: false,

@@ -17,10 +17,10 @@
 
 import React, { useEffect, useState } from "react";
 
-import { get } from "requests";
-import * as data from "data";
+import { get } from "@/lib/requests";
+import * as data from "@/lib/data";
 import { ResponsiveLine } from "@nivo/line";
-import { dropCurrentPeriod } from "misc";
+import { dropCurrentPeriod } from "@/lib/misc";
 
 interface VoteCountPerDay {
     date: string; // assuming the date is returned as a string, e.g., "2024-03-17"
