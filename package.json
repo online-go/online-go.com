@@ -43,7 +43,7 @@
         "@typescript-eslint/eslint-plugin": "^7.16.1",
         "@typescript-eslint/parser": "^7.16.1",
         "autoprefixer": "^10.4.19",
-        "body-parser": "^1.20.2",
+        "body-parser": "^1.20.3",
         "circular-dependency-plugin": "^5.2.2",
         "cspell": "^8.3.2",
         "css-what": "^6.1.0",
