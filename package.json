@@ -10,6 +10,7 @@
     },
     "scripts": {
         "dev": "npx tsx server.ts",
+        "build": "vite build",
         "prettier": "prettier --write \"src/**/*.{ts,tsx}\"",
         "prettier:check": "prettier --check \"src/**/*.{ts,tsx}\"",
         "lint": "eslint src/",

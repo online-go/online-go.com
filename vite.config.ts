@@ -7,7 +7,6 @@ export default defineConfig({
     root: ".",
     build: {
         outDir: "dist",
-        manifest: "src/manifest.json",
     },
     plugins: [react()],
     resolve: {
