@@ -35,7 +35,8 @@ export function GameLogHelp(): JSX.Element {
         >
             <HelpItem target="autoscore-game-log-entry" position={"bottom-center"}>
                 <div>
-                    {_(
+                    {llm_pgettext(
+                        "",
                         "These come from the user's browser during autoscoring.   Two of these from each user, at the beginning of the scoring phase, and if the users presses 'auto-score'",
                     )}
                 </div>
