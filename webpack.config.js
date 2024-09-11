@@ -2,8 +2,8 @@
 
 import fs from "fs";
 import path from "path";
-import webpack from "webpack"
-import { fileURLToPath } from 'url';
+import webpack from "webpack";
+import { fileURLToPath } from "url";
 import pkg from "./package.json" with { type: "json" };
 import TerserPlugin from "terser-webpack-plugin";
 import ForkTsCheckerWebpackPlugin from "fork-ts-checker-webpack-plugin";
@@ -50,12 +50,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 export default (env, argv) => {
     const production = argv.mode === "production";
     let alias = {
-        "@": path.resolve(__dirname, '/src'),
+        "@": path.resolve(__dirname, "/src"),
     };
 
     if (production) {
         console.log("Production build, enabling react profiling");
         alias = {
+            "@": path.resolve(__dirname, "/src"),
             "react-dom$": "react-dom/profiling",
             "scheduler/tracing": "scheduler/tracing-profiling",
         };
@@ -71,7 +72,9 @@ export default (env, argv) => {
             allowAsyncCycles: false,
             cwd: process.cwd(),
             onDetected({ module: webpackModuleRecord, paths, compilation }) {
-                compilation.errors.push(new Error("Circular dependency found:\n    " + paths.join("\n -> ")));
+                compilation.errors.push(
+                    new Error("Circular dependency found:\n    " + paths.join("\n -> ")),
+                );
             },
         }),
     );
