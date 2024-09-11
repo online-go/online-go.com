@@ -16,7 +16,7 @@
  */
 
 import { User } from "goban";
-import { _, interpolate, pgettext } from "translate";
+import { _, interpolate, pgettext } from "@/lib/translate";
 
 export interface IRankInfo {
     rank: number;

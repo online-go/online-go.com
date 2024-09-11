@@ -15,12 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { put } from "requests";
-import * as data from "data";
-import { errorAlerter, errorLogger } from "misc";
-import ITC from "ITC";
-import cached from "cached";
-import * as player_cache from "player_cache";
+import { put } from "@/lib/requests";
+import * as data from "@/lib/data";
+import { errorAlerter, errorLogger } from "@/lib/misc";
+import ITC from "@/lib/ITC";
+import cached from "@/lib/cached";
+import * as player_cache from "@/lib/player_cache";
 
 export class BlockState {
     blocked: number; // player id

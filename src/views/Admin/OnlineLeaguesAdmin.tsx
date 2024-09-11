@@ -18,8 +18,8 @@
 // A super-utilitarian page to see what COOL leagues there are, their auth_key, and add more.
 
 import * as React from "react";
-import { get, post, del } from "requests";
-import { useUser } from "hooks";
+import { get, post, del } from "@/lib/requests";
+import { useUser } from "@/lib/hooks";
 
 export function OnlineLeaguesAdmin(): JSX.Element {
     const [leagues, set_leagues] = React.useState<any[]>([]);

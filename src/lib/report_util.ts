@@ -15,10 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ReportedConversation } from "Report";
-import { PlayerCacheEntry } from "player_cache";
-import { MODERATOR_POWERS } from "moderation";
-import { ReportType } from "Report";
+import { ReportedConversation } from "@/components/Report";
+import { PlayerCacheEntry } from "@/lib/player_cache";
+import { MODERATOR_POWERS } from "@/lib/moderation";
+import { ReportType } from "@/components/Report";
 
 interface Vote {
     voter_id: number;

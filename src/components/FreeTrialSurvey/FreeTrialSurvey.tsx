@@ -16,25 +16,25 @@
  */
 
 import * as React from "react";
-import * as data from "data";
-import { _, current_language } from "translate";
-import { AutoTranslate, auto_translate } from "AutoTranslate";
-import { useUser, useData } from "hooks";
-import { post } from "requests";
-import { LoadingButton } from "LoadingButton";
-import { errorAlerter } from "misc";
-import { toast } from "toast";
+import * as data from "@/lib/data";
+import { _, current_language } from "@/lib/translate";
+import { AutoTranslate, auto_translate } from "@/components/AutoTranslate";
+import { useUser, useData } from "@/lib/hooks";
+import { post } from "@/lib/requests";
+import { LoadingButton } from "@/components/LoadingButton";
+import { errorAlerter } from "@/lib/misc";
+import { toast } from "@/lib/toast";
 
 const letter = `
 #### Thank you for trying out the AI reviews and site supporter features!
 
-I hope you enjoyed your trial. As you may or may not know, 
-Online-Go.com is a very very small company, but we'd love to 
-grow so we can continue making the site better for go players 
-all around the world. As such, I, Akita Noek (anoek), lead 
-developer, president of Online-Go.com, Inc., and general 
-doer of things that need doing would love to hear how we can 
-make things better, in particular as it relates to AI reviews 
+I hope you enjoyed your trial. As you may or may not know,
+Online-Go.com is a very very small company, but we'd love to
+grow so we can continue making the site better for go players
+all around the world. As such, I, Akita Noek (anoek), lead
+developer, president of Online-Go.com, Inc., and general
+doer of things that need doing would love to hear how we can
+make things better, in particular as it relates to AI reviews
 and site supporter features that might entice you to
 sign up for a supporter membership.
 

@@ -16,18 +16,18 @@
  */
 
 import * as React from "react";
-import * as data from "data";
+import * as data from "@/lib/data";
 import * as ReactDOM from "react-dom/client";
-import * as player_cache from "player_cache";
-import { Card } from "material";
-import { _, pgettext, interpolate } from "translate";
-import { PlayerIcon } from "PlayerIcon";
-import { post } from "requests";
-import { alert } from "swal_config";
-import { setIgnore } from "BlockPlayer";
-import { useUser } from "hooks";
-import { get } from "requests";
-import { toast } from "toast";
+import * as player_cache from "@/lib/player_cache";
+import { Card } from "@/components/material";
+import { _, pgettext, interpolate } from "@/lib/translate";
+import { PlayerIcon } from "@/components/PlayerIcon";
+import { post } from "@/lib/requests";
+import { alert } from "@/lib/swal_config";
+import { setIgnore } from "@/components/BlockPlayer";
+import { useUser } from "@/lib/hooks";
+import { get } from "@/lib/requests";
+import { toast } from "@/lib/toast";
 
 export type ReportType =
     | "all" // not a type, just useful for the enumeration

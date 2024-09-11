@@ -16,7 +16,7 @@
  */
 
 /* Inter tab communications library */
-import { socket } from "sockets";
+import { socket } from "@/lib/sockets";
 
 const registrations: { [event: string]: Array<(data: any) => void> } = {};
 

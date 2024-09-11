@@ -18,19 +18,19 @@
 import React, { useEffect } from "react";
 import { format, subDays, startOfWeek as startOfWeekDateFns } from "date-fns";
 
-import { get } from "requests";
+import { get } from "@/lib/requests";
 
-import * as data from "data";
+import * as data from "@/lib/data";
 
 import { ResponsiveLine } from "@nivo/line";
-import { useUser } from "hooks";
-import { PaginatedTable } from "PaginatedTable";
-import { Player } from "Player";
+import { useUser } from "@/lib/hooks";
+import { PaginatedTable } from "@/components/PaginatedTable";
+import { Player } from "@/components/Player";
 import { Tab, TabList, TabPanel, Tabs } from "react-tabs";
-import { pgettext } from "translate";
-import { UserVoteActivityGraph } from "User";
-import { dropCurrentPeriod } from "misc";
-import { CMPieCharts } from "User";
+import { pgettext } from "@/lib/translate";
+import { UserVoteActivityGraph } from "@/views/User";
+import { dropCurrentPeriod } from "@/lib/misc";
+import { CMPieCharts } from "@/views/User";
 
 interface ReportCount {
     date: string;

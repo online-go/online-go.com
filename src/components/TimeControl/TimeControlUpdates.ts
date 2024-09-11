@@ -17,8 +17,8 @@
 
 import { TimeControl, TimeControlTypes } from "./TimeControl";
 import { classifyGameSpeed, getDefaultTimeControl, getInputRange, getTimeOptions } from "./util";
-import * as data from "data";
-import { interpolate, pgettext } from "translate";
+import * as data from "@/lib/data";
+import { interpolate, pgettext } from "@/lib/translate";
 import { computeAverageMoveTime } from "goban";
 
 type TimeControlSystem = TimeControlTypes.TimeControlSystem;

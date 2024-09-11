@@ -15,9 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { alert } from "swal_config";
-import { put, post, del } from "requests";
-import { _ } from "translate";
+import { alert } from "@/lib/swal_config";
+import { put, post, del } from "@/lib/requests";
+import { _ } from "@/lib/translate";
 
 type Challenge = socket_api.seekgraph_global.Challenge;
 type RengoParticipantsDTO = rest_api.RengoParticipantsDTO;

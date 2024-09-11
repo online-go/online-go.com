@@ -15,9 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Debug from "debug";
+import Debug from "@/lib/debug";
 import { GobanSocket, protocol, GobanRenderer, JGOFTimeControl } from "goban";
-import { lookingAtOurLiveGame } from "TimeControl/util";
+import { lookingAtOurLiveGame } from "@/components/TimeControl/util";
 
 const debug = new Debug("sockets");
 
@@ -33,7 +33,9 @@ const MIN_TIMEOUT_DELAY = 1000;
 const MAX_PING_INTERVAL = 15000;
 const MAX_TIMEOUT_DELAY = 14000;
 
-export let ai_host = "http://localhost:13284";
+// TODO: localhost option removed for ai_host. Refactor.
+
+export let ai_host = "https://beta-ai.online-go.com";
 if (
     window.location.hostname.indexOf("dev.beta") >= 0 &&
     (window as any)["websocket_host"] === "https://online-go.com"
@@ -43,7 +45,7 @@ if (
     console.log("AI Host set to: ", ai_host);
 } else if (typeof process !== "undefined" && process.env.OGS_BACKEND === "LOCAL") {
     // if we're a developer using a local server, then use it for ai
-    ai_host = "http://localhost:13284";
+    ai_host = `http://localhost:13284`;
 } else if (
     // The CI doesn't work with beta.  Note that jest in the CI has NODE_ENV==="test".
     // the .org exception is for anoek's development environment

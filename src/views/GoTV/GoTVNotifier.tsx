@@ -17,10 +17,10 @@
 
 import React, { useEffect, useState } from "react";
 import { Stream } from "./StreamManager";
-import { usePreference } from "preferences";
+import { usePreference } from "@/lib/preferences";
 import { GoTVNotification } from "./GoTVNotification";
 import { useNavigate } from "react-router-dom";
-import { _ } from "translate";
+import { _ } from "@/lib/translate";
 
 interface Notification {
     streamId: string;

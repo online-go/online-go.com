@@ -16,8 +16,8 @@
  */
 
 import * as React from "react";
-import { Player } from "Player";
-import { put } from "requests";
+import { Player } from "@/components/Player";
+import { put } from "@/lib/requests";
 
 interface PlayerData {
     color: string;

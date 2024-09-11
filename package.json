@@ -4,6 +4,7 @@
     "url": "https://github.com/online-go/online-go.com/issues",
     "license": "AGPL-3.0",
     "private": true,
+    "type": "module",
     "engine": {
         "npm": ">=8.5.0"
     },

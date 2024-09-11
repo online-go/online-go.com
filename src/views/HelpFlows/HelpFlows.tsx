@@ -18,7 +18,7 @@
 import React from "react";
 import * as DynamicHelp from "react-dynamic-help";
 
-import * as data from "data";
+import * as data from "@/lib/data";
 
 import { GuestUserIntro } from "./GuestUserIntro";
 import { GuestUserIntroRengo } from "./GuestUserIntroRengo";

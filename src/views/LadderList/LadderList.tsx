@@ -16,13 +16,13 @@
  */
 
 import * as React from "react";
-import { _, interpolate } from "translate";
+import { _, interpolate } from "@/lib/translate";
 import { Link } from "react-router-dom";
-import { post, get } from "requests";
-import { LadderComponent } from "LadderComponent";
-import { Card } from "material";
-import { errorAlerter } from "misc";
-import { useUser } from "hooks";
+import { post, get } from "@/lib/requests";
+import { LadderComponent } from "@/components/LadderComponent";
+import { Card } from "@/components/material";
+import { errorAlerter } from "@/lib/misc";
+import { useUser } from "@/lib/hooks";
 
 /* Ensure these get picked up in our translations */
 _("Site 19x19 Ladder");

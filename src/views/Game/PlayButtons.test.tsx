@@ -7,9 +7,9 @@ import { AdHocPackedMove, createGoban, GobanRenderer } from "goban";
 import { CancelButton, PlayButtons } from "./PlayButtons";
 import { act, cleanup, fireEvent, render, screen /* waitFor */ } from "@testing-library/react";
 import * as React from "react";
-import * as data from "data";
+import * as data from "@/lib/data";
 import { GobanContext } from "./goban_context";
-import { OgsHelpProvider } from "OgsHelpProvider";
+import { OgsHelpProvider } from "@/components/OgsHelpProvider";
 
 const LOGGED_IN_USER = {
     anonymous: false,

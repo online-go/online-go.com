@@ -16,47 +16,47 @@
  */
 
 import * as React from "react";
-import * as data from "data";
+import * as data from "@/lib/data";
 import * as DynamicHelp from "react-dynamic-help";
-import { del } from "requests";
+import { del } from "@/lib/requests";
 
-import * as preferences from "preferences";
-import * as player_cache from "player_cache";
-import * as rengo_utils from "rengo_utils";
-import { OgsResizeDetector } from "OgsResizeDetector";
-import { browserHistory } from "ogsHistory";
-import { _, pgettext } from "translate";
-import { Card } from "material";
-import { SeekGraph, SeekGraphLegend } from "SeekGraph";
-import { PersistentElement } from "PersistentElement";
+import * as preferences from "@/lib/preferences";
+import * as player_cache from "@/lib/player_cache";
+import * as rengo_utils from "@/lib/rengo_utils";
+import { OgsResizeDetector } from "@/components/OgsResizeDetector";
+import { browserHistory } from "@/lib/ogsHistory";
+import { _, pgettext } from "@/lib/translate";
+import { Card } from "@/components/material";
+import { SeekGraph, SeekGraphLegend } from "@/components/SeekGraph";
+import { PersistentElement } from "@/components/PersistentElement";
 import {
     isLiveGame,
     shortShortTimeControl,
     timeControlSystemText,
     usedForCheating,
-} from "TimeControl";
-import { challenge, challengeComputer } from "ChallengeModal";
-import { openGameAcceptModal } from "GameAcceptModal";
-import { errorAlerter, rulesText, dup, uuid, ignore } from "misc";
-import { Player } from "Player";
-import { openAutomatchSettings, getAutomatchSettings } from "AutomatchSettings";
-import { automatch_manager, AutomatchPreferences } from "automatch_manager";
-import { bot_count } from "bots";
-import { CreatedChallengeInfo } from "types";
-import { ChallengeLinkButton } from "ChallengeLinkButton";
+} from "@/components/TimeControl";
+import { challenge, challengeComputer } from "@/components/ChallengeModal";
+import { openGameAcceptModal } from "@/components/GameAcceptModal";
+import { errorAlerter, rulesText, dup, uuid, ignore } from "@/lib/misc";
+import { Player } from "@/components/Player";
+import { openAutomatchSettings, getAutomatchSettings } from "@/components/AutomatchSettings";
+import { automatch_manager, AutomatchPreferences } from "@/lib/automatch_manager";
+import { bot_count } from "@/lib/bots";
+import { CreatedChallengeInfo } from "@/lib/types";
+import { ChallengeLinkButton } from "@/components/ChallengeLinkButton";
 import { allocateCanvasOrError } from "goban";
 
-import { alert } from "swal_config";
-import { Size } from "src/lib/types";
+import { alert } from "@/lib/swal_config";
+import { Size } from "@/lib/types";
 
-import { RengoManagementPane } from "RengoManagementPane";
-import { RengoTeamManagementPane } from "RengoTeamManagementPane";
+import { RengoManagementPane } from "@/components/RengoManagementPane";
+import { RengoTeamManagementPane } from "@/components/RengoTeamManagementPane";
 import {
     Challenge,
     ChallengeFilter,
     ChallengeFilterKey,
     shouldDisplayChallenge,
-} from "challenge_utils";
+} from "@/lib/challenge_utils";
 
 const CHALLENGE_LIST_FREEZE_PERIOD = 1000; // Freeze challenge list for this period while they move their mouse on it
 
@@ -225,7 +225,7 @@ export class Play extends React.Component<{}, PlayState> {
                 C.handicap_text = C.handicap;
             }
 
-            //console.log(C);
+            console.log(C);
 
             if (C.komi === null) {
                 C.komi_text = _("Auto");
@@ -763,7 +763,7 @@ export class Play extends React.Component<{}, PlayState> {
             return (
                 <div className="automatch-container">
                     <div className="automatch-header">
-                        <div>{_("Automatch finder")}</div>
+                        <div>{_("Automatch Finder")}</div>
                         <div className="btn-group">
                             <button
                                 className={size_enabled("9x9") ? "primary sm" : "sm"}

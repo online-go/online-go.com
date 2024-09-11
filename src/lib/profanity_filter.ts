@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as preferences from "preferences";
+import * as preferences from "@/lib/preferences";
 
 let filters: { [key: string]: boolean } = {};
 export const profanity_regex: { [key: string]: RegExp } = {};

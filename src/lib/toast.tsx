@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import * as ReactDOM from "react-dom/client";
-import { TypedEventEmitter } from "TypedEventEmitter";
+import { TypedEventEmitter } from "@/lib/TypedEventEmitter";
 
 interface Events {
     close: never;

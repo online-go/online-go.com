@@ -15,22 +15,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as moment from "moment";
+import moment from "moment";
 import * as React from "react";
-import * as data from "data";
-import * as preferences from "preferences";
+import * as data from "@/lib/data";
+import * as preferences from "@/lib/preferences";
 import Select, { components } from "react-select";
-import { UIPush } from "UIPush";
-import { AIReviewStream, ai_request_variation_analysis } from "AIReviewStream";
-import { openBecomeASiteSupporterModal } from "Supporter";
-import { errorAlerter, errorLogger, Timeout } from "misc";
-import { toast } from "toast";
-import { get, post } from "requests";
-import { _, pgettext, interpolate } from "translate";
-import { close_all_popovers } from "popover";
-import { Errcode } from "Errcode";
+import { UIPush } from "@/components/UIPush";
+import { AIReviewStream, ai_request_variation_analysis } from "@/components/AIReviewStream";
+import { openBecomeASiteSupporterModal } from "@/views/Supporter";
+import { errorAlerter, errorLogger, Timeout } from "@/lib/misc";
+import { toast } from "@/lib/toast";
+import { get, post } from "@/lib/requests";
+import { _, pgettext, interpolate } from "@/lib/translate";
+import { close_all_popovers } from "@/lib/popover";
+import { Errcode } from "@/components/Errcode";
 import { AIReviewChart } from "./AIReviewChart";
-import { Toggle } from "Toggle";
+import { Toggle } from "@/components/Toggle";
 import {
     MoveTree,
     JGOFAIReview,
@@ -45,7 +45,7 @@ import {
     encodeMove,
 } from "goban";
 import { game_control } from "./game_control";
-import { alert } from "swal_config";
+import { alert } from "@/lib/swal_config";
 import { GobanContext } from "./goban_context";
 export interface AIReviewEntry {
     move_number: number;

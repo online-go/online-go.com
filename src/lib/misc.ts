@@ -15,11 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { _, interpolate, pgettext } from "translate";
-import { errcodeAlerter } from "ErrcodeModal";
-import { browserHistory } from "ogsHistory";
-import * as preferences from "preferences";
-import { alert } from "swal_config";
+import { _, interpolate, pgettext } from "@/lib/translate";
+import { errcodeAlerter } from "@/components/ErrcodeModal";
+import { browserHistory } from "@/lib/ogsHistory";
+import * as preferences from "@/lib/preferences";
+import { alert } from "@/lib/swal_config";
 import React from "react";
 import moment from "moment";
 

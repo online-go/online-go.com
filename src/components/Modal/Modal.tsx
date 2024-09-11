@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import * as ReactDOM from "react-dom/client";
-import { TypedEventEmitterPureComponent } from "TypedEventEmitterPureComponent";
+import { TypedEventEmitterPureComponent } from "@/components/TypedEventEmitterPureComponent";
 
 let current_modal: any = null;
 

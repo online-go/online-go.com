@@ -16,10 +16,10 @@
  */
 
 import * as React from "react";
-import { _, interpolate } from "translate";
-import { chat_manager, ChatChannelProxy } from "chat_manager";
-import * as preferences from "preferences";
-import { Player } from "Player";
+import { _, interpolate } from "@/lib/translate";
+import { chat_manager, ChatChannelProxy } from "@/lib/chat_manager";
+import * as preferences from "@/lib/preferences";
+import { Player } from "@/components/Player";
 
 interface ChatUserListProperties {
     channel: string;

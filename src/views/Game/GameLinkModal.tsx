@@ -16,10 +16,10 @@
  */
 
 import * as React from "react";
-import { pgettext, _ } from "translate";
-import { openModal, Modal } from "Modal";
+import { pgettext, _ } from "@/lib/translate";
+import { openModal, Modal } from "@/components/Modal";
 import { GobanRenderer } from "goban";
-import { Player } from "Player";
+import { Player } from "@/components/Player";
 
 interface Events {}
 

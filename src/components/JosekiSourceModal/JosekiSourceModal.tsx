@@ -18,8 +18,8 @@
 import * as React from "react";
 import * as ValidUrl from "valid-url";
 
-import { _ } from "translate";
-import { Modal } from "Modal";
+import { _ } from "@/lib/translate";
+import { Modal } from "@/components/Modal";
 
 interface Events {}
 

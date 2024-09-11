@@ -15,12 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as data from "data";
+import * as data from "@/lib/data";
 import { GobanSelectedThemes, Goban, LabelPosition } from "goban";
 import * as React from "react";
-import { current_language } from "translate";
+import { current_language } from "@/lib/translate";
 import { DataSchema } from "./data_schema";
-import { FollowedChannel } from "GoTV";
+import { FollowedChannel } from "@/views/GoTV";
 import { getWindowWidth } from "./device";
 
 export const defaults = {

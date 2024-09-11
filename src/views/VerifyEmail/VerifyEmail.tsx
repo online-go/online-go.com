@@ -15,12 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as data from "data";
+import * as data from "@/lib/data";
 import { parse } from "query-string";
 import * as React from "react";
 import { useLocation } from "react-router-dom";
-import { post } from "requests";
-import { _ } from "translate";
+import { post } from "@/lib/requests";
+import { _ } from "@/lib/translate";
 
 export function VerifyEmail() {
     const location = useLocation();

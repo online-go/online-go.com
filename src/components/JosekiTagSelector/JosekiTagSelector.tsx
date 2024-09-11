@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { pgettext } from "translate";
+import { pgettext } from "@/lib/translate";
 
 import Select, { MultiValue } from "react-select";
 

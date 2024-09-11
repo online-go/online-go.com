@@ -21,15 +21,15 @@
  */
 
 import { GroupList, ActiveTournamentList, Size, RuleSet } from "./types";
-import { Announcement } from "src/components/Announcements";
+import { Announcement } from "@/components/Announcements";
 import { ValidSound, ValidSoundGroup } from "./sfx";
 import { defaults as defaultPreferences, ValidPreference } from "./preferences";
-import { TimeControl, TimeControlTypes } from "src/components/TimeControl";
+import { TimeControl, TimeControlTypes } from "@/components/TimeControl";
 import TimeControlSpeed = TimeControlTypes.TimeControlSpeed;
 import TimeControlSystem = TimeControlTypes.TimeControlSystem;
-import { AutomatchPreferences } from "src/components/AutomatchSettings";
-import { JosekiFilter } from "src/components/JosekiVariationFilter";
-import { Challenge } from "challenge_utils";
+import { AutomatchPreferences } from "@/components/AutomatchSettings";
+import { JosekiFilter } from "@/components/JosekiVariationFilter";
+import { Challenge } from "@/lib/challenge_utils";
 
 interface CachedSchema {
     groups: GroupList;

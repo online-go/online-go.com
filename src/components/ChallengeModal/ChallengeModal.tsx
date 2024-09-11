@@ -16,30 +16,33 @@
  */
 import * as React from "react";
 
-import * as data from "data";
-import * as player_cache from "player_cache";
+import * as data from "@/lib/data";
+import * as player_cache from "@/lib/player_cache";
 
-import { OgsResizeDetector } from "OgsResizeDetector";
-import { browserHistory } from "ogsHistory";
-import { _, pgettext, interpolate } from "translate";
-import { post, del } from "requests";
-import { Modal, openModal } from "Modal";
-import { socket } from "sockets";
-import { rankString, getUserRating, amateurRanks, allRanks } from "rank_utils";
-import { CreatedChallengeInfo, RuleSet } from "types";
-import { errorLogger, errorAlerter, rulesText, dup } from "misc";
-import { PlayerIcon } from "PlayerIcon";
+import { OgsResizeDetector } from "@/components/OgsResizeDetector";
+import { browserHistory } from "@/lib/ogsHistory";
+import { _, pgettext, interpolate } from "@/lib/translate";
+import { post, del } from "@/lib/requests";
+import { Modal, openModal } from "@/components/Modal";
+import { socket } from "@/lib/sockets";
+import { rankString, getUserRating, amateurRanks, allRanks } from "@/lib/rank_utils";
+import { CreatedChallengeInfo, RuleSet } from "@/lib/types";
+import { errorLogger, errorAlerter, rulesText, dup } from "@/lib/misc";
+import { PlayerIcon } from "@/components/PlayerIcon";
 import {
     shortShortTimeControl,
     isLiveGame,
     TimeControlPicker,
     timeControlSystemText,
     TimeControl,
-} from "TimeControl";
-import { sfx } from "sfx";
-import { notification_manager, NotificationManagerEvents } from "Notifications/NotificationManager";
-import { one_bot, bot_count, bots_list } from "bots";
-import { goban_view_mode } from "Game/util";
+} from "@/components/TimeControl";
+import { sfx } from "@/lib/sfx";
+import {
+    notification_manager,
+    NotificationManagerEvents,
+} from "@/components/Notifications/NotificationManager";
+import { one_bot, bot_count, bots_list } from "@/lib/bots";
+import { goban_view_mode } from "@/views/Game/util";
 import {
     GobanRenderer,
     GobanEngineConfig,
@@ -50,14 +53,14 @@ import {
     JGOFTimeControlSystem,
 } from "goban";
 
-import { copyChallengeLinkURL } from "ChallengeLinkButton";
+import { copyChallengeLinkURL } from "@/components/ChallengeLinkButton";
 
-import { alert } from "swal_config";
+import { alert } from "@/lib/swal_config";
 import {
     recallTimeControlSettings,
     saveTimeControlSettings,
     updateSystem,
-} from "TimeControl/TimeControlUpdates";
+} from "@/components/TimeControl/TimeControlUpdates";
 
 export type ChallengeDetails = rest_api.ChallengeDetails;
 

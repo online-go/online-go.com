@@ -17,9 +17,9 @@
 
 import React from "react";
 import { UserVoteActionSummary } from "./UserVoteActionSummary";
-import { community_mod_has_power, COMMUNITY_MODERATION_REPORT_TYPES } from "report_util";
-import { ReportType } from "Report";
-import { interpolate, pgettext } from "translate";
+import { community_mod_has_power, COMMUNITY_MODERATION_REPORT_TYPES } from "@/lib/report_util";
+import { ReportType } from "@/components/Report";
+import { interpolate, pgettext } from "@/lib/translate";
 
 interface CMPieChartsProps {
     user_id: number;

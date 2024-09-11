@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { cc_to_country_name, getCountryFlagClass, getLanguageFlag } from "translate";
+import { cc_to_country_name, getCountryFlagClass, getLanguageFlag } from "@/lib/translate";
 
 interface FlagProperties {
     country: string;

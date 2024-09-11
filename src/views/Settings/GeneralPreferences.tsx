@@ -19,22 +19,22 @@ import * as React from "react";
 import * as ReactSelect from "react-select";
 import Select from "react-select";
 
-import * as data from "data";
+import * as data from "@/lib/data";
 
-import { _ } from "translate";
-import { put } from "requests";
-import { errorAlerter, ignore, dev_site } from "misc";
+import { _ } from "@/lib/translate";
+import { put } from "@/lib/requests";
+import { errorAlerter, ignore, dev_site } from "@/lib/misc";
 
-import { current_language, setCurrentLanguage, languages } from "translate";
-import { toast } from "toast";
-import { profanity_regex } from "profanity_filter";
+import { current_language, setCurrentLanguage, languages } from "@/lib/translate";
+import { toast } from "@/lib/toast";
+import { profanity_regex } from "@/lib/profanity_filter";
 
-import * as preferences from "preferences";
-import { usePreference } from "preferences";
+import * as preferences from "@/lib/preferences";
+import { usePreference } from "@/lib/preferences";
 
-import { Toggle } from "Toggle";
+import { Toggle } from "@/components/Toggle";
 
-import { SettingGroupPageProps, PreferenceLine, PreferenceDropdown } from "SettingsCommon";
+import { SettingGroupPageProps, PreferenceLine, PreferenceDropdown } from "@/lib/SettingsCommon";
 
 export function GeneralPreferences(props: SettingGroupPageProps): JSX.Element {
     const [profanity_filter, _setProfanityFilter]: [Array<string>, (x: Array<string>) => void] =

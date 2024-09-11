@@ -15,11 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { push_manager } from "UIPush";
-import * as data from "data";
-import { get } from "requests";
-import ITC from "ITC";
-import * as player_cache from "player_cache";
+import { push_manager } from "@/components/UIPush";
+import * as data from "@/lib/data";
+import { get } from "@/lib/requests";
+import ITC from "@/lib/ITC";
+import * as player_cache from "@/lib/player_cache";
 
 /**
  * This is a set of keys to be used for data.get(..) and data.watch(..) calls.

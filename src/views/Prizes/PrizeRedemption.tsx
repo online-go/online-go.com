@@ -16,10 +16,10 @@
  */
 
 import React, { useState, useRef } from "react";
-import { get, post } from "requests";
+import { get, post } from "@/lib/requests";
 import { useNavigate } from "react-router-dom";
-import { useUser } from "hooks";
-import { _, interpolate } from "translate";
+import { useUser } from "@/lib/hooks";
+import { _, interpolate } from "@/lib/translate";
 
 interface Prize {
     batch: string;

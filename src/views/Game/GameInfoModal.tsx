@@ -16,18 +16,18 @@
  */
 
 import * as React from "react";
-import * as moment from "moment";
-import * as data from "data";
-import { _ } from "translate";
-import { post, patch, del } from "requests";
-import { openModal, Modal, ModalConstructorInput } from "Modal";
-import { timeControlDescription } from "TimeControl";
-import { Player } from "Player";
-import { handicapText } from "GameAcceptModal";
-import { errorAlerter, rulesText, yesno, getGameResultText } from "misc";
-import { rankString } from "rank_utils";
-import { browserHistory } from "ogsHistory";
-import { alert } from "swal_config";
+import moment from "moment";
+import * as data from "@/lib/data";
+import { _ } from "@/lib/translate";
+import { post, patch, del } from "@/lib/requests";
+import { openModal, Modal, ModalConstructorInput } from "@/components/Modal";
+import { timeControlDescription } from "@/components/TimeControl";
+import { Player } from "@/components/Player";
+import { handicapText } from "@/components/GameAcceptModal";
+import { errorAlerter, rulesText, yesno, getGameResultText } from "@/lib/misc";
+import { rankString } from "@/lib/rank_utils";
+import { browserHistory } from "@/lib/ogsHistory";
+import { alert } from "@/lib/swal_config";
 import { GobanConfig, GobanEnginePlayerEntry, GobanEngineRules } from "goban";
 
 interface Events {}

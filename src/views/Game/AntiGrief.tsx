@@ -16,14 +16,14 @@
  */
 
 import * as React from "react";
-import * as data from "data";
-import { Card } from "material";
-import { pgettext, _ } from "translate";
+import * as data from "@/lib/data";
+import { Card } from "@/components/material";
+import { pgettext, _ } from "@/lib/translate";
 import { useGoban } from "./goban_context";
-import { useUser } from "hooks";
+import { useUser } from "@/lib/hooks";
 import { JGOFClockWithTransmitting, JGOFTimeControl } from "goban";
-import { browserHistory } from "../../ogsHistory";
-import { toast } from "toast";
+import { browserHistory } from "@/lib/ogsHistory";
+import { toast } from "@/lib/toast";
 import { StallingScoreEstimate } from "goban";
 
 const ANTI_ESCAPING_TIMEOUT = 60; // number of seconds to wait before allowing the "Claim victory" button to be appear and be clicked

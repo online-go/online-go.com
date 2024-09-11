@@ -214,20 +214,6 @@ export function pgettext(context: string, msgid: string) {
 }
 
 /**
- * Like pgettext(), but these strings will be automatically translated instead of passed along to our volunteers.
- *
- * The context is fed into the LLM system as general instructions and context.
- * The msgid is the message that needs to be translated.
- */
-export function llm_pgettext(context: string, msgid: string) {
-    const key = context + "" + msgid;
-    if (key in catalog) {
-        return catalog[key][0];
-    }
-    return debug_wrap(msgid);
-}
-
-/**
  * Like pgettext() but for plural forms.
  */
 export function npgettext(context: string, singular: string, plural: string, count: number) {

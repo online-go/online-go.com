@@ -16,10 +16,10 @@
  */
 import * as React from "react";
 import { useSearchParams } from "react-router-dom";
-import { _, interpolate, pgettext } from "translate";
+import { _, interpolate, pgettext } from "@/lib/translate";
 import * as DynamicHelp from "react-dynamic-help";
-import * as data from "data";
-import * as preferences from "preferences";
+import * as data from "@/lib/data";
+import * as preferences from "@/lib/preferences";
 import {
     ConditionalMoveResponseTree,
     GobanRenderer,
@@ -35,18 +35,18 @@ import {
     color_blend,
 } from "goban";
 import { game_control } from "./game_control";
-import { alert } from "swal_config";
-import { challengeRematch } from "ChallengeModal";
-import { Clock } from "Clock";
-import { getOutcomeTranslation } from "misc";
-import { PlayerCacheEntry } from "player_cache";
+import { alert } from "@/lib/swal_config";
+import { challengeRematch } from "@/components/ChallengeModal";
+import { Clock } from "@/components/Clock";
+import { getOutcomeTranslation } from "@/lib/misc";
+import { PlayerCacheEntry } from "@/lib/player_cache";
 import { Link } from "react-router-dom";
-import { Resizable } from "Resizable";
+import { Resizable } from "@/components/Resizable";
 import { ChatMode } from "./GameChat";
-import { toast } from "toast";
-import { errorAlerter } from "misc";
-import { close_all_popovers } from "popover";
-import { setExtraActionCallback, Player } from "Player";
+import { toast } from "@/lib/toast";
+import { errorAlerter } from "@/lib/misc";
+import { close_all_popovers } from "@/lib/popover";
+import { setExtraActionCallback, Player } from "@/components/Player";
 import { PlayButtons } from "./PlayButtons";
 import {
     generateGobanHook,
@@ -57,13 +57,13 @@ import {
     usePlayerToMove,
 } from "./GameHooks";
 import { useGoban } from "./goban_context";
-import { is_valid_url } from "url_validation";
+import { is_valid_url } from "@/lib/url_validation";
 import { enableTouchAction } from "./touch_actions";
 import { ConditionalMoveTreeDisplay } from "./ConditionalMoveTreeDisplay";
-import { useUser } from "hooks";
+import { useUser } from "@/lib/hooks";
 import { AntiGrief } from "./AntiGrief";
 
-import * as moment from "moment";
+import moment from "moment";
 
 const MAX_SEALING_LOCATIONS_TO_LIST = 5;
 

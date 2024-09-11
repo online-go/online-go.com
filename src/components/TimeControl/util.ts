@@ -16,7 +16,7 @@
  */
 
 import { computeAverageMoveTime, GobanRenderer, JGOFTimeControl } from "goban";
-import { _, pgettext, ngettext, interpolate } from "translate";
+import { _, pgettext, ngettext, interpolate } from "@/lib/translate";
 import { TimeControl, TimeControlTypes } from "./TimeControl";
 
 type TimeControlSystem = TimeControlTypes.TimeControlSystem;

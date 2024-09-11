@@ -18,11 +18,11 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 import { decodeMoves, PuzzleConfig } from "goban";
-import { sfx } from "sfx";
+import { sfx } from "@/lib/sfx";
 import { InstructionalGoban } from "./InstructionalGoban";
-import { browserHistory } from "ogsHistory";
+import { browserHistory } from "@/lib/ogsHistory";
 import { setSectionPageCompleted, getSectionPageCompleted } from "./util";
-import { _ } from "translate";
+import { _ } from "@/lib/translate";
 
 export interface LearningPageProperties {
     title: string;

@@ -16,13 +16,13 @@
  */
 
 import * as React from "react";
-import * as data from "data";
-import { _, pgettext } from "translate";
-import { usePreference } from "preferences";
-import * as preferences from "preferences";
-import { PreferenceDropdown, PreferenceLine } from "SettingsCommon";
-//import { ReportsCenterSettings } from "ReportsCenter";
-//import * as preferences from "preferences";
+import * as data from "@/lib/data";
+import { _, pgettext } from "@/lib/translate";
+import { usePreference } from "@/lib/preferences";
+import * as preferences from "@/lib/preferences";
+import { PreferenceDropdown, PreferenceLine } from "@/lib/SettingsCommon";
+//import { ReportsCenterSettings } from "@/views/ReportsCenter";
+//import * as preferences from "@/lib/preferences";
 import {
     GobanBlackThemePicker,
     GobanWhiteThemePicker,
@@ -30,11 +30,11 @@ import {
     GobanCustomBoardPicker,
     GobanCustomWhitePicker,
     GobanCustomBlackPicker,
-} from "GobanThemePicker";
-import { useData } from "hooks";
-import { MiniGoban } from "MiniGoban";
+} from "@/components/GobanThemePicker";
+import { useData } from "@/lib/hooks";
+import { MiniGoban } from "@/components/MiniGoban";
 import { GobanEngineConfig, setGobanRenderer } from "goban";
-import { Toggle } from "Toggle";
+import { Toggle } from "@/components/Toggle";
 
 const sample_board_data: GobanEngineConfig = {
     width: 3,

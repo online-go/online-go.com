@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { TypedEventEmitter } from "TypedEventEmitter";
+import { TypedEventEmitter } from "@/lib/TypedEventEmitter";
 
 interface Events {
     stopEstimatingScore: void; // emitted when we want to stop estimating the score

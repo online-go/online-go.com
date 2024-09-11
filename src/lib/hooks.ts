@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import * as data from "data";
+import * as data from "@/lib/data";
 import { DataSchema } from "./data_schema";
 import { Goban } from "goban";
 

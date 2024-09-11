@@ -16,10 +16,10 @@
  */
 
 import * as React from "react";
-import { _ } from "translate";
-import { Player } from "Player";
-import { PaginatedTable } from "PaginatedTable";
-import { useResizeDetector } from "OgsResizeDetector";
+import { _ } from "@/lib/translate";
+import { Player } from "@/components/Player";
+import { PaginatedTable } from "@/components/PaginatedTable";
+import { useResizeDetector } from "@/components/OgsResizeDetector";
 
 interface LadderComponentProperties {
     ladderId: number;

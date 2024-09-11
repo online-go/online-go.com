@@ -16,9 +16,9 @@
  */
 
 import * as React from "react";
-import * as player_cache from "player_cache";
-import { errorLogger } from "misc";
-import { player_is_ignored } from "BlockPlayer";
+import * as player_cache from "@/lib/player_cache";
+import { errorLogger } from "@/lib/misc";
+import { player_is_ignored } from "@/components/BlockPlayer";
 
 interface PlayerIconProps {
     id?: number;

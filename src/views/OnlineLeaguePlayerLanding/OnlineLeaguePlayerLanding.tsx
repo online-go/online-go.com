@@ -17,20 +17,20 @@
 
 import * as React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { alert } from "swal_config";
+import { alert } from "@/lib/swal_config";
 
 import * as DynamicHelp from "react-dynamic-help";
 
-import * as data from "data";
-import { useUser } from "hooks";
-import { _, pgettext } from "translate";
-import { get, put } from "requests";
-import { errorAlerter } from "misc";
-import { browserHistory } from "ogsHistory";
+import * as data from "@/lib/data";
+import { useUser } from "@/lib/hooks";
+import { _, pgettext } from "@/lib/translate";
+import { get, put } from "@/lib/requests";
+import { errorAlerter } from "@/lib/misc";
+import { browserHistory } from "@/lib/ogsHistory";
 
-import { LoadingPage } from "Loading";
-import { UIPush } from "UIPush";
-import { EmbeddedChatCard } from "Chat";
+import { LoadingPage } from "@/components/Loading";
+import { UIPush } from "@/components/UIPush";
+import { EmbeddedChatCard } from "@/components/Chat";
 
 // Users are intended to arrive here via an online-league player invite URL
 // They need to have a valid key in that URL.  The assumption is that only the

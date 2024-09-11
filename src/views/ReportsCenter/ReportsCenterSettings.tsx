@@ -15,10 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 import * as React from "react";
-import * as preferences from "preferences";
-import { usePreference } from "preferences";
-import { report_categories } from "Report";
-import { Toggle } from "Toggle";
+import * as preferences from "@/lib/preferences";
+import { usePreference } from "@/lib/preferences";
+import { report_categories } from "@/components/Report";
+import { Toggle } from "@/components/Toggle";
 
 const categories = ([] as any[]).concat(report_categories).concat([
     {

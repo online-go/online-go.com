@@ -16,12 +16,12 @@
  */
 
 import * as React from "react";
-import { _ } from "translate";
-import { useUser } from "hooks";
+import { _ } from "@/lib/translate";
+import { useUser } from "@/lib/hooks";
 import { useNotifications } from "../Notifications";
-import { notification_manager } from "Notifications/NotificationManager";
+import { notification_manager } from "@/components/Notifications/NotificationManager";
 import { Link } from "react-router-dom";
-//import * as data from "data";
+//import * as data from "@/lib/data";
 
 export function SupporterProblems(): JSX.Element | null {
     const user = useUser();

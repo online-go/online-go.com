@@ -17,13 +17,13 @@
 
 import * as React from "react";
 import * as ReactSelect from "react-select";
-import { _ } from "translate";
+import { _ } from "@/lib/translate";
 import * as DynamicHelp from "react-dynamic-help";
 
-import * as player_cache from "player_cache";
+import * as player_cache from "@/lib/player_cache";
 import { JosekiTagSelector, JosekiTag } from "../JosekiTagSelector";
-import { PlayerCacheEntry } from "player_cache";
-import { get } from "requests";
+import { PlayerCacheEntry } from "@/lib/player_cache";
+import { get } from "@/lib/requests";
 
 export type JosekiFilter = { contributor?: number; tags: JosekiTag[]; source?: number };
 

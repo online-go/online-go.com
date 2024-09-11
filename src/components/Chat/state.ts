@@ -15,9 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as data from "data";
-import * as preferences from "preferences";
-import { TypedEventEmitter } from "TypedEventEmitter";
+import * as data from "@/lib/data";
+import * as preferences from "@/lib/preferences";
+import { TypedEventEmitter } from "@/lib/TypedEventEmitter";
 
 interface Events {
     subscription_changed: void;

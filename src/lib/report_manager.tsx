@@ -21,17 +21,17 @@
  */
 
 import * as React from "react";
-import * as data from "data";
-import * as preferences from "preferences";
-import { toast } from "toast";
-import { alert } from "swal_config";
-import { socket } from "sockets";
-import { pgettext } from "translate";
-import { Report, community_mod_can_handle } from "report_util";
+import * as data from "@/lib/data";
+import * as preferences from "@/lib/preferences";
+import { toast } from "@/lib/toast";
+import { alert } from "@/lib/swal_config";
+import { socket } from "@/lib/sockets";
+import { pgettext } from "@/lib/translate";
+import { Report, community_mod_can_handle } from "@/lib/report_util";
 import { EventEmitter } from "eventemitter3";
-import { emitNotification } from "Notifications";
-import { browserHistory } from "ogsHistory";
-import { get, post } from "requests";
+import { emitNotification } from "@/components/Notifications";
+import { browserHistory } from "@/lib/ogsHistory";
+import { get, post } from "@/lib/requests";
 
 export interface ReportRelation {
     relationship: string;

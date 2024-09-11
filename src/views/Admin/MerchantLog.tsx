@@ -16,8 +16,8 @@
  */
 
 import * as React from "react";
-import { PaginatedTable } from "PaginatedTable";
-import * as moment from "moment";
+import { PaginatedTable } from "@/components/PaginatedTable";
+import moment from "moment";
 
 export class MerchantLog extends React.PureComponent<{}, any> {
     constructor(props: {}) {

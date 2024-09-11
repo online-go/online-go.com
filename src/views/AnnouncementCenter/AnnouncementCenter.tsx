@@ -16,18 +16,18 @@
  */
 
 import * as React from "react";
-import * as data from "data";
-import { _, interpolate, pgettext } from "translate";
-import { post, get, del } from "requests";
-import { PaginatedTable } from "PaginatedTable";
-import { Card } from "material";
-import { UIPush } from "UIPush";
-import { errorAlerter } from "misc";
-import { Player } from "Player";
-import * as moment from "moment";
-//import { Announcement } from "src/components/Announcements";
-import { useUser } from "hooks";
-import { Announcement } from "src/components/Announcements";
+import * as data from "@/lib/data";
+import { _, interpolate, pgettext } from "@/lib/translate";
+import { post, get, del } from "@/lib/requests";
+import { PaginatedTable } from "@/components/PaginatedTable";
+import { Card } from "@/components/material";
+import { UIPush } from "@/components/UIPush";
+import { errorAlerter } from "@/lib/misc";
+import { Player } from "@/components/Player";
+import moment from "moment";
+//import { Announcement } from "@/components/Announcements";
+import { useUser } from "@/lib/hooks";
+import { Announcement } from "@/components/Announcements";
 
 moment.relativeTimeThreshold("m", 59);
 

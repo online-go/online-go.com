@@ -19,7 +19,7 @@ import React from "react";
 
 import { HelpFlow, HelpItem } from "react-dynamic-help";
 
-import { pgettext } from "translate";
+import { pgettext } from "@/lib/translate";
 
 /**
  * A help flow intended for spectators who arrived on an OOL Game Link

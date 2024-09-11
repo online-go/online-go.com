@@ -16,18 +16,18 @@
  */
 
 import * as React from "react";
-import { alert } from "swal_config";
+import { alert } from "@/lib/swal_config";
 
 import { rectSortingStrategy } from "@dnd-kit/sortable";
-import { MultipleContainers } from "Sortable/MultipleContainers/MultipleContainers";
+import { MultipleContainers } from "@/components/Sortable/MultipleContainers/MultipleContainers";
 
-import * as rengo_utils from "rengo_utils";
-import * as rengo_balancer from "rengo_balancer";
-import { _, pgettext } from "translate";
-import { errorAlerter } from "misc";
+import * as rengo_utils from "@/lib/rengo_utils";
+import * as rengo_balancer from "@/lib/rengo_balancer";
+import { _, pgettext } from "@/lib/translate";
+import { errorAlerter } from "@/lib/misc";
 
-import { Player } from "Player";
-import { EmbeddedChatCard } from "Chat";
+import { Player } from "@/components/Player";
+import { EmbeddedChatCard } from "@/components/Chat";
 
 type Challenge = socket_api.seekgraph_global.Challenge;
 type RengoParticipantsDTO = rest_api.RengoParticipantsDTO;

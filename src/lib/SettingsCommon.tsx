@@ -18,10 +18,10 @@
 import * as React from "react";
 import Select from "react-select";
 
-import { usePreference } from "preferences";
-import { ValidPreference } from "preferences";
+import { usePreference } from "@/lib/preferences";
+import { ValidPreference } from "@/lib/preferences";
 
-import { Toggle } from "Toggle";
+import { Toggle } from "@/components/Toggle";
 
 export const MAX_DOCK_DELAY = 3.0;
 export const MAX_AI_VAR_MOVES = 10;

@@ -16,12 +16,12 @@
  */
 
 import * as React from "react";
-import * as data from "data";
-import { _, pgettext } from "translate";
+import * as data from "@/lib/data";
+import { _, pgettext } from "@/lib/translate";
 import { useEffect, useState, useCallback } from "react";
-import { Flag } from "Flag";
-import { browserHistory } from "ogsHistory";
-import { errorLogger, slugify } from "misc";
+import { Flag } from "@/components/Flag";
+import { browserHistory } from "@/lib/ogsHistory";
+import { errorLogger, slugify } from "@/lib/misc";
 import {
     chat_manager,
     ChatChannelProxy,
@@ -31,7 +31,7 @@ import {
     ChannelInformation,
     resolveChannelInformation,
     cachedChannelInformation,
-} from "chat_manager";
+} from "@/lib/chat_manager";
 
 data.setDefault("chat.joined", { "global-english": true });
 

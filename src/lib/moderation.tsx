@@ -16,14 +16,14 @@
  */
 
 import * as React from "react";
-import { _ } from "translate";
-import { post } from "requests";
-import { alert } from "swal_config";
+import { _ } from "@/lib/translate";
+import { post } from "@/lib/requests";
+import { alert } from "@/lib/swal_config";
 import { GobanEngineConfig } from "goban";
-import { errorAlerter } from "misc";
-import { toast } from "toast";
+import { errorAlerter } from "@/lib/misc";
+import { toast } from "@/lib/toast";
 
-import { pgettext } from "translate";
+import { pgettext } from "@/lib/translate";
 
 // Must match back-end MODERATOR_POWER definition
 export enum MODERATOR_POWERS {

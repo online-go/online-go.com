@@ -15,10 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { get } from "requests";
-import * as preferences from "preferences";
+import { get } from "@/lib/requests";
+import * as preferences from "@/lib/preferences";
 import { EventEmitter } from "eventemitter3";
-import { socket } from "sockets";
+import { socket } from "@/lib/sockets";
 
 interface StreamEvents {
     update: (streams: Stream[]) => void;

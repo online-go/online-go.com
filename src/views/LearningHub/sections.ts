@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { pgettext } from "translate";
+import { pgettext } from "@/lib/translate";
 import { LearningHubSection } from "./LearningHubSection";
 import { Capture } from "./Capture";
 import { Defend } from "./Defend";
