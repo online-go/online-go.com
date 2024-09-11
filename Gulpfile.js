@@ -20,7 +20,7 @@ import postcss from "gulp-postcss";
 import cssnano from "cssnano";
 import inline_svg from "postcss-inline-svg";
 import gulpEslint from "gulp-eslint-new";
-import html_minifier from "html-minifier";
+import { minify as html_minifier } from "html-minifier";
 
 import express from "express";
 import body_parser from "body-parser";
@@ -196,7 +196,7 @@ function dev_server(done) {
     dev_server.use(body_parser.json());
     dev_server.use(body_parser.text());
 
-    http.createServer(dev_server).listen(port, null, function() {
+    http.createServer(dev_server).listen(port, null, function () {
         console.info(`\n\n#############################################`);
         console.info(`## Development server started on port ${port}`);
         console.info(`##  ( http://localhost:${port} )`);
@@ -226,13 +226,13 @@ function dev_server(done) {
     let backend_proxy = (prefix) =>
         proxy_wrapper(server_url, {
             https: use_https,
-            proxyReqPathResolver: function(req) {
+            proxyReqPathResolver: function (req) {
                 let path = prefix + url.parse(req.url).path;
                 console.log("-->", path);
                 return path;
             },
-            proxyReqOptDecorator: function(proxyReqOpts, srcReq) {
-                return new Promise(function(resolve, reject) {
+            proxyReqOptDecorator: function (proxyReqOpts, srcReq) {
+                return new Promise(function (resolve, reject) {
                     if (!("Content-Type" in srcReq.headers)) {
                         proxyReqOpts.headers["Content-Type"] = "application/json";
                     }
@@ -487,7 +487,7 @@ function getPreferredLanguage(req, supported_languages) {
                 return lang;
             }
         }
-    } catch (e) { }
+    } catch (e) {}
 
     return "en";
 }
