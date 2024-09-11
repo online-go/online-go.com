@@ -44,7 +44,9 @@ export function GameLog({
     const [shouldDisplayFullLog, setShouldDisplayFullLog] = React.useState(false);
 
     const { registerTargetItem } = React.useContext(DynamicHelp.Api);
-    const { ref: autoscoreRef } = registerTargetItem("autoscore-game-log-entry");
+    // Defend against the case where we aren't wrapped in a help provider: in a Modal
+    // TBD: made Modals be able to use the help provider
+    const autoscoreRef = registerTargetItem?.("autoscore-game-log-entry")?.ref || null;
 
     const game_id = goban_config.game_id as number;
 
