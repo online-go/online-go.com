@@ -2,11 +2,13 @@
 
 // cspell: words autotranslations conv "Türkçe" "hwat" "עִבְרִית" autotranslated autotranslation autotranslate
 
-const deepl = require("deepl-node");
-const fs = require("fs");
-const PO = require("pofile");
-const GoogleTranslate = require("@google-cloud/translate").v3.TranslationServiceClient;
-const OpenAI = require("openai");
+import fs from "fs";
+import PO from "pofile";
+import deepl from "deepl-node";
+import GoogleTranslateModule from "@google-cloud/translate";
+import OpenAI from "openai";
+
+const GoogleTranslate = GoogleTranslateModule.v3.TranslationServiceClient;
 
 let keys = fs.existsSync("./keys.json") ? JSON.parse(fs.readFileSync("./keys.json")) : null;
 

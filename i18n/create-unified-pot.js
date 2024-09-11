@@ -10,10 +10,10 @@ performs the automatic translation of strings.
 
 "use strict";
 
-const fs = require("fs");
-const XGettext = require("xgettext-js");
-const SourceMapConsumer = require("source-map").SourceMapConsumer;
-const PO = require("pofile");
+import fs from "fs";
+import XGettext from "xgettext-js";
+import { SourceMapConsumer } from "source-map";
+import PO from "pofile";
 
 const MODE = process.argv[2] || "full";
 

@@ -225,7 +225,7 @@ export class Play extends React.Component<{}, PlayState> {
                 C.handicap_text = C.handicap;
             }
 
-            console.log(C);
+            // console.log(C);
 
             if (C.komi === null) {
                 C.komi_text = _("Auto");
@@ -763,7 +763,7 @@ export class Play extends React.Component<{}, PlayState> {
             return (
                 <div className="automatch-container">
                     <div className="automatch-header">
-                        <div>{_("Automatch Finder")}</div>
+                        <div>{_("Automatch finder")}</div>
                         <div className="btn-group">
                             <button
                                 className={size_enabled("9x9") ? "primary sm" : "sm"}
