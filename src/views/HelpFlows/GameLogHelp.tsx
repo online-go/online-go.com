@@ -30,7 +30,7 @@ export function GameLogHelp(): JSX.Element {
         <HelpFlow
             id="game-log-help"
             showInitially={true}
-            debug={true}
+            debug={false}
             description={pgettext("Name of a dynamic help flow", "Game Log Help")}
         >
             <HelpItem target="autoscore-game-log-entry" position={"bottom-center"}>

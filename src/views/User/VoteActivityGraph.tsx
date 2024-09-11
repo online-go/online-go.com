@@ -19,7 +19,7 @@ import React, { useEffect, useState } from "react";
 
 import { get } from "@/lib/requests";
 import * as data from "@/lib/data";
-import { ResponsiveLine, Serie } from "@nivo/line";
+import { ResponsiveLine, Serie } from "@nivo/line"; // cspell: ignore Serie
 import { dropCurrentPeriod } from "@/lib/misc";
 
 interface VoteCountPerDay {
