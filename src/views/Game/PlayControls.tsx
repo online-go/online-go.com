@@ -157,13 +157,12 @@ export function PlayControls({
     const [white_accepted, set_white_accepted] = React.useState(
         stoneRemovalAccepted(goban, "white"),
     );
-    const [stone_removal_string, set_stone_removal_string] = React.useState(
-        goban.engine.getStoneRemovalString(),
-    );
+
+    // Setup: when there's a new goban in play, we need to make sure we have the current
+    // state of acceptance captured
     React.useEffect(() => {
         const syncStoneRemovalAcceptance = () => {
             if (goban.engine.phase === "stone removal") {
-                set_stone_removal_string(goban.engine.getStoneRemovalString());
                 set_black_accepted(stoneRemovalAccepted(goban, "black"));
                 set_white_accepted(stoneRemovalAccepted(goban, "white"));
             }
@@ -176,6 +175,7 @@ export function PlayControls({
             syncStoneRemovalAcceptance,
         );
     }, [goban]);
+
     React.useEffect(() => {
         const syncNeedsSealing = (locs?: JGOFSealingIntersection[]) => {
             setNeedsSealing(locs);
@@ -222,12 +222,25 @@ export function PlayControls({
             goban.off("stone-removal.auto-scoring-complete", onAutoScoringComplete);
         };
     }, [goban]);
+
+    /*
     React.useEffect(() => {
         setStoneRemovalAcceptDisabled(true);
-        const timeout = setTimeout(() => setStoneRemovalAcceptDisabled(false), 1500);
+        const timeout = setTimeout(() => {
+            console.log("setting false");
+            setStoneRemovalAcceptDisabled(false);
+        }, 1500);
 
         return () => clearTimeout(timeout);
     }, [stone_removal_string]);
+    */
+
+    React.useEffect(() => {
+        const player_accepted =
+            goban.engine?.playerColor(user.id) === "black" ? black_accepted : white_accepted;
+
+        setStoneRemovalAcceptDisabled(player_accepted ?? false);
+    }, [black_accepted, white_accepted]);
 
     const paused = usePaused(goban);
     const show_undo_requested = useShowUndoRequested(goban);
@@ -302,13 +315,11 @@ export function PlayControls({
             });
         return false;
     };
-    const onStoneRemovalAccept = () => {
+    const onStoneRemovalAccept = (): void => {
         goban.acceptRemovedStones();
-        return false;
     };
-    const onStoneRemovalAutoScore = () => {
+    const onStoneRemovalAutoScore = (): void => {
         goban.performStoneRemovalAutoScoring();
-        return false;
     };
 
     const sse = engine.stalling_score_estimate;
