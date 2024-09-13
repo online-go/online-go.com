@@ -26,14 +26,12 @@
     font-size: 1.0rem;
     box-shadow: 0 0.2rem 0.5rem 0.2rem rgba(0,0,0,0.2);
 
-    // Don't try to position RDH popups near the target on a phone
-    // Instead, put them at the bottom of the screen.
+    // On the phone, make sure the items will be visible even if it means
+    // that they appear over their target (they will be dismissed anyhow).
     @media only screen and (max-width 800px) {
-        bottom: 0 !important;
         left: 0 !important;
         right: auto !important;
-        top: auto !important;
-    }
+        }
 }
 
 .rdh-help-item>.rdh-popup-dismissers {
