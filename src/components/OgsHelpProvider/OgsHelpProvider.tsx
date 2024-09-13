@@ -24,7 +24,7 @@ import * as data from "@/lib/data";
 
 import { HelpProvider, HelpPopupDictionary } from "react-dynamic-help";
 import * as DynamicHelp from "react-dynamic-help";
-import { useIsDesktop, useUser } from "@/lib/hooks";
+import { useUser } from "@/lib/hooks";
 
 const helpPopupDictionary: HelpPopupDictionary = {
     "Skip this topic": pgettext("A button to dismiss a help popup topic", "Skip this topic"),
@@ -40,9 +40,6 @@ type OgsHelpProviderProps = {
  */
 
 export function OgsHelpProvider(props: OgsHelpProviderProps): JSX.Element {
-    // RDH needs work to support mobile layouts
-    const isDesktop = useIsDesktop();
-
     const [storageLoaded, setStorageLoaded] = React.useState(false);
 
     const debugDynamicHelp = data.get("debug-dynamic-help", false);
@@ -86,7 +83,7 @@ export function OgsHelpProvider(props: OgsHelpProviderProps): JSX.Element {
         <HelpProvider
             dictionary={helpPopupDictionary}
             storageApi={dynamicHelpStorage}
-            storageReady={storageLoaded && isDesktop} // hack to turn it off for mobile
+            storageReady={storageLoaded}
             debug={debugDynamicHelp}
         >
             {props.children}
