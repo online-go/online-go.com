@@ -287,7 +287,7 @@ export function ThemePreferences(): JSX.Element | null {
                     <div className="left">
                         <input
                             type="range"
-                            step="0.1"
+                            step="0.05"
                             min="0.3"
                             max="1.3"
                             onChange={setStoneFontScale}
