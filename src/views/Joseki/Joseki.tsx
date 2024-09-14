@@ -26,6 +26,7 @@ import { RouteComponentProps, rr6ClassShim } from "@/lib/ogs-rr6-shims";
 import * as queryString from "query-string";
 
 import * as data from "@/lib/data";
+import * as preferences from "@/lib/preferences";
 import { _, interpolate, pgettext, npgettext } from "@/lib/translate";
 import { get, put, post } from "@/lib/requests";
 import { KBShortcut } from "@/components/KBShortcut";
@@ -329,6 +330,7 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
             player_id: 0,
             server_socket: undefined,
             square_size: 20,
+            stone_font_scale: preferences.get("stone-font-scale"),
         };
 
         if (initial_position) {

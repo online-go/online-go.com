@@ -130,6 +130,7 @@ export function MiniGoban(props: MiniGobanProps): JSX.Element {
                 height: props.height || (props.json ? props.json.height : 19),
                 last_move_opacity: last_move_opacity,
                 variation_stone_opacity: preferences.get("variation-stone-opacity"),
+                stone_font_scale: preferences.get("stone-font-scale"),
             },
             props.json,
         );
