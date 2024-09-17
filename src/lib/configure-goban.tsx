@@ -107,6 +107,7 @@ export function configure_goban() {
         getShowVariationMoveNumbers: (): boolean => preferences.get("show-variation-move-numbers"),
         getMoveTreeNumbering: (): "none" | "move-number" | "move-coordinates" =>
             preferences.get("move-tree-numbering"),
+        getStoneFontScale: (): number => preferences.get("stone-font-scale"),
         getCDNReleaseBase: (): string => data.get("config.cdn_release", ""),
         getSoundEnabled: (): boolean => sfx.getVolume("master") > 0,
         getSoundVolume: (): number => sfx.getVolume("master"),

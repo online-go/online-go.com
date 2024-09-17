@@ -1125,6 +1125,7 @@ export function Game(): JSX.Element | null {
             draw_right_labels: label_position === "all" || label_position.indexOf("right") >= 0,
             draw_bottom_labels: label_position === "all" || label_position.indexOf("bottom") >= 0,
             variation_stone_opacity: preferences.get("variation-stone-opacity"),
+            stone_font_scale: preferences.get("stone-font-scale"),
             onScoreEstimationUpdated: () => {
                 goban.current?.redraw(true);
             },

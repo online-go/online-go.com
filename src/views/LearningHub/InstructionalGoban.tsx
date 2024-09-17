@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import * as preferences from "@/lib/preferences";
 import { createGoban, GobanRenderer } from "goban";
 import { sfx } from "@/lib/sfx";
 import { PersistentElement } from "@/components/PersistentElement";
@@ -78,6 +79,8 @@ export class InstructionalGoban extends React.Component<InstructionalGobanProps>
 
                 puzzle_opponent_move_mode: "automatic",
                 puzzle_player_move_mode: "free",
+                stone_font_scale: preferences.get("stone-font-scale"),
+
                 getPuzzlePlacementSetting: () => {
                     return { mode: "play" };
                 },
