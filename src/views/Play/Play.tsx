@@ -44,7 +44,7 @@ import { automatch_manager, AutomatchPreferences } from "@/lib/automatch_manager
 import { bot_count } from "@/lib/bots";
 import { CreatedChallengeInfo } from "@/lib/types";
 import { ChallengeLinkButton } from "@/components/ChallengeLinkButton";
-import { allocateCanvasOrError } from "goban";
+import { allocateCanvasOrError, Speed } from "goban";
 
 import { alert } from "@/lib/swal_config";
 import { Size } from "@/lib/types";
@@ -57,6 +57,7 @@ import {
     ChallengeFilterKey,
     shouldDisplayChallenge,
 } from "@/lib/challenge_utils";
+import { useData, useRefresh } from "@/lib/hooks";
 
 const CHALLENGE_LIST_FREEZE_PERIOD = 1000; // Freeze challenge list for this period while they move their mouse on it
 
@@ -64,9 +65,7 @@ interface PlayState {
     live_list: Array<Challenge>;
     correspondence_list: Array<Challenge>;
     rengo_list: Array<Challenge>;
-    showLoadingSpinnerForCorrespondence: boolean;
     filter: ChallengeFilter;
-    automatch_size_options: Size[];
     freeze_challenge_list: boolean; // Don't change the challenge list while they are trying to point the mouse at it
     pending_challenges: { [id: number]: Challenge }; // challenges received while frozen
     show_in_rengo_management_pane: number[]; // a challenge_ids for challenges to show with pane open in the rengo challenge list
@@ -114,9 +113,7 @@ export class Play extends React.Component<{}, PlayState> {
             live_list: [],
             correspondence_list: [],
             rengo_list: [],
-            showLoadingSpinnerForCorrespondence: false,
             filter: filter as ChallengeFilter,
-            automatch_size_options: data.get("automatch.size_options", ["9x9", "13x13", "19x19"]),
             freeze_challenge_list: false, // Don't change the challenge list while they are trying to point the mouse at it
             pending_challenges: [], // challenges received while frozen
             show_in_rengo_management_pane: [],
@@ -133,9 +130,6 @@ export class Play extends React.Component<{}, PlayState> {
         });
         this.onResize();
         this.seekgraph.on("challenges", this.updateChallenges as any);
-        automatch_manager.on("entry", this.onAutomatchEntry);
-        automatch_manager.on("start", this.onAutomatchStart);
-        automatch_manager.on("cancel", this.onAutomatchCancel);
 
         const [match, id] = window.location.hash.match(/#rengo:(\d+)/) || [];
         if (match) {
@@ -144,9 +138,6 @@ export class Play extends React.Component<{}, PlayState> {
     }
 
     componentWillUnmount() {
-        automatch_manager.off("entry", this.onAutomatchEntry);
-        automatch_manager.off("start", this.onAutomatchStart);
-        automatch_manager.off("cancel", this.onAutomatchCancel);
         this.seekgraph.destroy();
         if (this.list_freeze_timeout) {
             clearTimeout(this.list_freeze_timeout);
@@ -300,14 +291,6 @@ export class Play extends React.Component<{}, PlayState> {
         this.unfreezeChallenges();
     };
 
-    cancelOwnChallenges = (challenge_list: Challenge[]) => {
-        challenge_list.forEach((c) => {
-            if (c.user_challenge) {
-                this.cancelOpenChallenge(c);
-            }
-        });
-    };
-
     extractUser(challenge: Challenge) {
         return {
             id: challenge.user_id,
@@ -315,100 +298,6 @@ export class Play extends React.Component<{}, PlayState> {
             rank: challenge.rank,
             professional: !!challenge.pro,
         };
-    }
-
-    onAutomatchEntry = () => {
-        this.forceUpdate();
-    };
-
-    onAutomatchStart = () => {
-        this.forceUpdate();
-    };
-
-    onAutomatchCancel = () => {
-        this.forceUpdate();
-    };
-
-    findMatch = (speed: "blitz" | "live" | "correspondence") => {
-        if (data.get("user").anonymous) {
-            void alert.fire(_("Please sign in first"));
-            return;
-        }
-
-        const settings = getAutomatchSettings(speed);
-        const preferences: AutomatchPreferences = {
-            uuid: uuid(),
-            size_speed_options: this.state.automatch_size_options.map((size) => {
-                return {
-                    size: size,
-                    speed: speed,
-                };
-            }),
-            lower_rank_diff: settings.lower_rank_diff,
-            upper_rank_diff: settings.upper_rank_diff,
-            rules: {
-                condition: settings.rules.condition,
-                value: settings.rules.value,
-            },
-            time_control: {
-                condition: settings.time_control.condition,
-                value: settings.time_control.value,
-            },
-            handicap: {
-                condition: settings.handicap.condition,
-                value: settings.handicap.value,
-            },
-        };
-        preferences.uuid = uuid();
-        automatch_manager.findMatch(preferences);
-        this.onAutomatchEntry();
-
-        if (speed === "correspondence") {
-            this.setState({ showLoadingSpinnerForCorrespondence: true });
-        }
-    };
-
-    dismissCorrespondenceSpinner = () => {
-        this.setState({ showLoadingSpinnerForCorrespondence: false });
-    };
-
-    cancelActiveAutomatch = () => {
-        if (automatch_manager.active_live_automatcher) {
-            automatch_manager.cancel(automatch_manager.active_live_automatcher.uuid);
-        }
-        this.forceUpdate();
-    };
-
-    newComputerGame = () => {
-        if (bot_count() === 0) {
-            void alert.fire(_("Sorry, all bots seem to be offline, please try again later."));
-            return;
-        }
-        challengeComputer();
-    };
-
-    newCustomGame = () => {
-        challenge(undefined, undefined, undefined, undefined, this.challengeCreated);
-    };
-
-    challengeCreated = (c: CreatedChallengeInfo) => {
-        if (c.rengo && !c.live) {
-            this.toggleRengoChallengePane(c.challenge_id);
-        }
-    };
-
-    toggleSize(size: Size) {
-        let size_options = dup(this.state.automatch_size_options);
-        if (size_options.indexOf(size) >= 0) {
-            size_options = size_options.filter((x) => x !== size);
-        } else {
-            size_options.push(size);
-        }
-        if (size_options.length === 0) {
-            size_options.push("19x19");
-        }
-        data.set("automatch.size_options", size_options);
-        this.setState({ automatch_size_options: size_options });
     }
 
     toggleFilterHandler = (key: ChallengeFilterKey) => {
@@ -489,7 +378,21 @@ export class Play extends React.Component<{}, PlayState> {
             <div className="Play container">
                 <div className="row">
                     <div className="col-sm-6 play-column">
-                        <Card>{this.automatchContainer()}</Card>
+                        <Card>
+                            <FindGame
+                                own_rengo_challenges_pending={this.ownRengoChallengesPending()}
+                                joined_rengo_challenges_pending={this.joinedRengoChallengesPending()}
+                                live_own_challenge_pending={this.liveOwnChallengePending()}
+                                live_list={this.state.live_list}
+                                rengo_list={this.state.rengo_list}
+                                cancelOpenRengoChallenge={this.cancelOpenRengoChallenge}
+                                unNominateForRengoChallenge={this.unNominateForRengoChallenge}
+                                rengo_manage_pane_lock={this.state.rengo_manage_pane_lock}
+                                setPaneLock={this.setPaneLock}
+                                toggleRengoChallengePane={this.toggleRengoChallengePane}
+                                cancelOpenChallenge={this.cancelOpenChallenge}
+                            />
+                        </Card>
                     </div>
                     {showSeekGraph && (
                         <div className="col-sm-6 play-column">
@@ -542,9 +445,11 @@ export class Play extends React.Component<{}, PlayState> {
                                             onClick={() => {
                                                 automatch_manager.cancel(m.uuid);
                                                 if (corr_automatchers.length === 1) {
+                                                    /*
                                                     this.setState({
                                                         showLoadingSpinnerForCorrespondence: false,
                                                     });
+                                                    */
                                                 }
                                             }}
                                         >
@@ -639,239 +544,6 @@ export class Play extends React.Component<{}, PlayState> {
                 </div>
             </div>
         );
-    }
-
-    automatchContainer() {
-        const size_enabled = (size: Size) => {
-            return this.state.automatch_size_options.indexOf(size) >= 0;
-        };
-
-        const own_live_rengo_challenge = this.ownRengoChallengesPending().find((c) =>
-            isLiveGame(c.time_control_parameters, c.width, c.height),
-        );
-        const joined_live_rengo_challenge = this.joinedRengoChallengesPending().find((c) =>
-            isLiveGame(c.time_control_parameters, c.width, c.height),
-        );
-
-        const rengo_challenge_to_show = own_live_rengo_challenge || joined_live_rengo_challenge;
-
-        const user = data.get("user");
-        const anon = user.anonymous;
-        const warned = user.has_active_warning_flag;
-
-        //  Construction of the pane we need to show...
-        if (automatch_manager.active_live_automatcher) {
-            return (
-                <div className="automatch-container">
-                    <div className="automatch-header">{_("Finding you a game...")}</div>
-                    <div className="automatch-row-container">
-                        <div className="spinner">
-                            <div className="double-bounce1"></div>
-                            <div className="double-bounce2"></div>
-                        </div>
-                    </div>
-                    <div className="automatch-settings">
-                        <button className="danger sm" onClick={this.cancelActiveAutomatch}>
-                            {pgettext("Cancel automatch", "Cancel")}
-                        </button>
-                    </div>
-                </div>
-            );
-        } else if (this.liveOwnChallengePending()) {
-            return (
-                <div className="automatch-container">
-                    <div className="automatch-header">{_("Waiting for opponent...")}</div>
-                    <div className="automatch-row-container">
-                        <div className="spinner">
-                            <div className="double-bounce1"></div>
-                            <div className="double-bounce2"></div>
-                        </div>
-                    </div>
-                    <div className="automatch-settings">
-                        <button
-                            className="danger sm"
-                            onClick={this.cancelOwnChallenges.bind(self, this.state.live_list)}
-                        >
-                            {pgettext("Cancel challenge", "Cancel")}
-                        </button>
-                    </div>
-                </div>
-            );
-        } else if (rengo_challenge_to_show) {
-            return (
-                <div className="automatch-container">
-                    <div className="rengo-live-match-header">
-                        <div className="small-spinner">
-                            <div className="double-bounce1"></div>
-                            <div className="double-bounce2"></div>
-                        </div>
-                    </div>
-                    <RengoManagementPane
-                        user={user}
-                        challenge_id={rengo_challenge_to_show.challenge_id}
-                        rengo_challenge_list={this.state.rengo_list}
-                        startRengoChallenge={rengo_utils.startOwnRengoChallenge}
-                        cancelChallenge={this.cancelOpenRengoChallenge}
-                        withdrawFromRengoChallenge={this.unNominateForRengoChallenge}
-                        joinRengoChallenge={rengo_utils.nominateForRengoChallenge}
-                        lock={
-                            this.state.rengo_manage_pane_lock[rengo_challenge_to_show.challenge_id]
-                        }
-                    >
-                        <RengoTeamManagementPane
-                            user={user}
-                            challenge_id={rengo_challenge_to_show.challenge_id}
-                            challenge_list={this.state.rengo_list}
-                            moderator={user.is_moderator}
-                            show_chat={false}
-                            assignToTeam={rengo_utils.assignToTeam}
-                            kickRengoUser={rengo_utils.kickRengoUser}
-                            locked={
-                                this.state.rengo_manage_pane_lock[
-                                    rengo_challenge_to_show.challenge_id
-                                ]
-                            }
-                            lock={(lock: boolean) =>
-                                this.setPaneLock(rengo_challenge_to_show.challenge_id, lock)
-                            }
-                        />
-                    </RengoManagementPane>
-                </div>
-            );
-        } else if (this.state.showLoadingSpinnerForCorrespondence) {
-            return (
-                <div className="automatch-container">
-                    <div className="automatch-header">{_("Finding you a game...")}</div>
-                    <div className="automatch-settings-corr">
-                        {_(
-                            'This can take several minutes. You will be notified when your match has been found. To view or cancel your automatch requests, please see the list below labeled "Your Automatch Requests".',
-                        )}
-                    </div>
-                    <div className="automatch-row-container">
-                        <button className="primary" onClick={this.dismissCorrespondenceSpinner}>
-                            {_(
-                                pgettext(
-                                    "Dismiss the 'finding correspondence automatch' message",
-                                    "Got it",
-                                ),
-                            )}
-                        </button>
-                    </div>
-                </div>
-            );
-        } else {
-            return (
-                <div className="automatch-container">
-                    <div className="automatch-header">
-                        <div>{_("Automatch finder")}</div>
-                        <div className="btn-group">
-                            <button
-                                className={size_enabled("9x9") ? "primary sm" : "sm"}
-                                onClick={() => this.toggleSize("9x9")}
-                            >
-                                9x9
-                            </button>
-                            <button
-                                className={size_enabled("13x13") ? "primary sm" : "sm"}
-                                onClick={() => this.toggleSize("13x13")}
-                            >
-                                13x13
-                            </button>
-                            <button
-                                className={size_enabled("19x19") ? "primary sm" : "sm"}
-                                onClick={() => this.toggleSize("19x19")}
-                            >
-                                19x19
-                            </button>
-                        </div>
-                        <div className="automatch-settings">
-                            <span
-                                className="automatch-settings-link fake-link"
-                                onClick={openAutomatchSettings}
-                            >
-                                <i className="fa fa-gear" />
-                                {_("Settings ")}
-                            </span>
-                        </div>
-                    </div>
-                    <div className="automatch-row-container">
-                        <div className="automatch-row">
-                            <button
-                                className="primary"
-                                onClick={() => this.findMatch("blitz")}
-                                disabled={anon || warned}
-                            >
-                                <div className="play-button-text-root">
-                                    <i className="fa fa-bolt" /> {_("Blitz")}
-                                    <span className="time-per-move">
-                                        {pgettext(
-                                            "Automatch average time per move",
-                                            "~10s per move",
-                                        )}
-                                    </span>
-                                </div>
-                            </button>
-                            <button
-                                className="primary"
-                                onClick={() => this.findMatch("live")}
-                                disabled={anon || warned}
-                            >
-                                <div className="play-button-text-root">
-                                    <i className="fa fa-clock-o" /> {_("Normal")}
-                                    <span className="time-per-move">
-                                        {pgettext(
-                                            "Automatch average time per move",
-                                            "~30s per move",
-                                        )}
-                                    </span>
-                                </div>
-                            </button>
-                        </div>
-                        <div className="automatch-row">
-                            <button
-                                className="primary"
-                                onClick={this.newComputerGame}
-                                disabled={anon || warned}
-                            >
-                                <div className="play-button-text-root">
-                                    <i className="fa fa-desktop" /> {_("Computer")}
-                                    <span className="time-per-move"></span>
-                                </div>
-                            </button>
-                            <button
-                                className="primary"
-                                onClick={() => this.findMatch("correspondence")}
-                                disabled={anon || warned}
-                            >
-                                <div className="play-button-text-root">
-                                    <span>
-                                        <i className="ogs-turtle" /> {_("Correspondence")}
-                                    </span>
-                                    <span className="time-per-move">
-                                        {pgettext(
-                                            "Automatch average time per move",
-                                            "~1 day per move",
-                                        )}
-                                    </span>
-                                </div>
-                            </button>
-                        </div>
-                        <div className="custom-game-header">
-                            <div>{_("Custom Game")}</div>
-                        </div>
-                        <div className="custom-game-row">
-                            <button
-                                className="primary"
-                                onClick={this.newCustomGame}
-                                disabled={anon || warned}
-                            >
-                                <i className="fa fa-cog" /> {_("Create")}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            );
-        }
     }
 
     suspectChallengeIcon = (C: Challenge): JSX.Element | null =>
@@ -1410,4 +1082,345 @@ export function time_per_move_challenge_sort(A: Challenge, B: Challenge) {
     const createdA = A.created ? new Date(A.created).getTime() : -Infinity;
     const createdB = B.created ? new Date(B.created).getTime() : -Infinity;
     return createdA - createdB;
+}
+
+interface FindGameProps {
+    own_rengo_challenges_pending: Challenge[];
+    joined_rengo_challenges_pending: Challenge[];
+    live_own_challenge_pending: Challenge | undefined;
+    live_list: Challenge[];
+    rengo_list: Challenge[];
+    rengo_manage_pane_lock: { [key: number]: boolean };
+    setPaneLock: (challenge_id: number, lock: boolean) => void;
+    cancelOpenRengoChallenge: (C: Challenge) => void;
+    unNominateForRengoChallenge: (C: Challenge) => void;
+    toggleRengoChallengePane: (challenge_id: number) => void;
+    cancelOpenChallenge: (C: Challenge) => void;
+}
+
+function FindGame(props: FindGameProps): JSX.Element {
+    const refresh = useRefresh();
+    const [automatch_size_options, setAutomatchSizeOptions] = useData("automatch.size_options", [
+        "9x9",
+        "13x13",
+        "19x19",
+    ]);
+    const [correspondence_spinner, setCorrespondenceSpinner] = React.useState(false);
+
+    React.useEffect(() => {
+        automatch_manager.on("entry", refresh);
+        automatch_manager.on("start", refresh);
+        automatch_manager.on("cancel", refresh);
+
+        return () => {
+            automatch_manager.off("entry", refresh);
+            automatch_manager.off("start", refresh);
+            automatch_manager.off("cancel", refresh);
+        };
+    }, []);
+
+    const size_enabled = (size: Size) => {
+        return automatch_size_options.indexOf(size) >= 0;
+    };
+
+    const own_live_rengo_challenge = props.own_rengo_challenges_pending.find((c) =>
+        isLiveGame(c.time_control_parameters, c.width, c.height),
+    );
+    const joined_live_rengo_challenge = props.joined_rengo_challenges_pending.find((c) =>
+        isLiveGame(c.time_control_parameters, c.width, c.height),
+    );
+
+    const rengo_challenge_to_show = own_live_rengo_challenge || joined_live_rengo_challenge;
+
+    const user = data.get("user");
+    const anon = user.anonymous;
+    const warned = user.has_active_warning_flag;
+
+    const cancelActiveAutomatch = () => {
+        if (automatch_manager.active_live_automatcher) {
+            automatch_manager.cancel(automatch_manager.active_live_automatcher.uuid);
+        }
+        refresh();
+    };
+
+    const cancelOwnChallenges = (challenge_list: Challenge[]) => {
+        challenge_list.forEach((c) => {
+            if (c.user_challenge) {
+                props.cancelOpenChallenge(c);
+            }
+        });
+    };
+
+    const toggleSize = (size: Size) => {
+        let size_options = dup(automatch_size_options);
+        if (size_options.indexOf(size) >= 0) {
+            size_options = size_options.filter((x) => x !== size);
+        } else {
+            size_options.push(size);
+        }
+        if (size_options.length === 0) {
+            size_options.push("19x19");
+        }
+        setAutomatchSizeOptions(size_options);
+    };
+
+    const findMatch = (speed: Speed) => {
+        if (data.get("user").anonymous) {
+            void alert.fire(_("Please sign in first"));
+            return;
+        }
+
+        const settings = getAutomatchSettings(speed);
+        const preferences: AutomatchPreferences = {
+            uuid: uuid(),
+            size_speed_options: automatch_size_options.map((size) => {
+                return {
+                    size: size,
+                    speed: speed,
+                };
+            }),
+            lower_rank_diff: settings.lower_rank_diff,
+            upper_rank_diff: settings.upper_rank_diff,
+            rules: {
+                condition: settings.rules.condition,
+                value: settings.rules.value,
+            },
+            time_control: {
+                condition: settings.time_control.condition,
+                value: settings.time_control.value,
+            },
+            handicap: {
+                condition: settings.handicap.condition,
+                value: settings.handicap.value,
+            },
+        };
+        preferences.uuid = uuid();
+        automatch_manager.findMatch(preferences);
+        refresh();
+
+        if (speed === "correspondence") {
+            setCorrespondenceSpinner(true);
+        }
+    };
+
+    const dismissCorrespondenceSpinner = () => {
+        setCorrespondenceSpinner(false);
+    };
+
+    const newComputerGame = () => {
+        if (bot_count() === 0) {
+            void alert.fire(_("Sorry, all bots seem to be offline, please try again later."));
+            return;
+        }
+        challengeComputer();
+    };
+
+    const newCustomGame = () => {
+        const challengeCreated = (c: CreatedChallengeInfo) => {
+            if (c.rengo && !c.live) {
+                props.toggleRengoChallengePane(c.challenge_id);
+            }
+        };
+
+        challenge(undefined, undefined, undefined, undefined, challengeCreated);
+    };
+
+    //  Construction of the pane we need to show...
+    if (automatch_manager.active_live_automatcher) {
+        return (
+            <div className="automatch-container">
+                <div className="automatch-header">{_("Finding you a game...")}</div>
+                <div className="automatch-row-container">
+                    <div className="spinner">
+                        <div className="double-bounce1"></div>
+                        <div className="double-bounce2"></div>
+                    </div>
+                </div>
+                <div className="automatch-settings">
+                    <button className="danger sm" onClick={cancelActiveAutomatch}>
+                        {pgettext("Cancel automatch", "Cancel")}
+                    </button>
+                </div>
+            </div>
+        );
+    } else if (props.live_own_challenge_pending) {
+        return (
+            <div className="automatch-container">
+                <div className="automatch-header">{_("Waiting for opponent...")}</div>
+                <div className="automatch-row-container">
+                    <div className="spinner">
+                        <div className="double-bounce1"></div>
+                        <div className="double-bounce2"></div>
+                    </div>
+                </div>
+                <div className="automatch-settings">
+                    <button
+                        className="danger sm"
+                        onClick={() => cancelOwnChallenges(props.live_list)}
+                    >
+                        {pgettext("Cancel challenge", "Cancel")}
+                    </button>
+                </div>
+            </div>
+        );
+    } else if (rengo_challenge_to_show) {
+        return (
+            <div className="automatch-container">
+                <div className="rengo-live-match-header">
+                    <div className="small-spinner">
+                        <div className="double-bounce1"></div>
+                        <div className="double-bounce2"></div>
+                    </div>
+                </div>
+                <RengoManagementPane
+                    user={user}
+                    challenge_id={rengo_challenge_to_show.challenge_id}
+                    rengo_challenge_list={props.rengo_list}
+                    startRengoChallenge={rengo_utils.startOwnRengoChallenge}
+                    cancelChallenge={props.cancelOpenRengoChallenge}
+                    withdrawFromRengoChallenge={props.unNominateForRengoChallenge}
+                    joinRengoChallenge={rengo_utils.nominateForRengoChallenge}
+                    lock={props.rengo_manage_pane_lock[rengo_challenge_to_show.challenge_id]}
+                >
+                    <RengoTeamManagementPane
+                        user={user}
+                        challenge_id={rengo_challenge_to_show.challenge_id}
+                        challenge_list={props.rengo_list}
+                        moderator={user.is_moderator}
+                        show_chat={false}
+                        assignToTeam={rengo_utils.assignToTeam}
+                        kickRengoUser={rengo_utils.kickRengoUser}
+                        locked={props.rengo_manage_pane_lock[rengo_challenge_to_show.challenge_id]}
+                        lock={(lock: boolean) =>
+                            props.setPaneLock(rengo_challenge_to_show.challenge_id, lock)
+                        }
+                    />
+                </RengoManagementPane>
+            </div>
+        );
+    } else if (correspondence_spinner) {
+        return (
+            <div className="automatch-container">
+                <div className="automatch-header">{_("Finding you a game...")}</div>
+                <div className="automatch-settings-corr">
+                    {_(
+                        'This can take several minutes. You will be notified when your match has been found. To view or cancel your automatch requests, please see the list below labeled "Your Automatch Requests".',
+                    )}
+                </div>
+                <div className="automatch-row-container">
+                    <button className="primary" onClick={dismissCorrespondenceSpinner}>
+                        {_(
+                            pgettext(
+                                "Dismiss the 'finding correspondence automatch' message",
+                                "Got it",
+                            ),
+                        )}
+                    </button>
+                </div>
+            </div>
+        );
+    } else {
+        return (
+            <div className="automatch-container">
+                <div className="automatch-header">
+                    <div>{_("Automatch finder")}</div>
+                    <div className="btn-group">
+                        <button
+                            className={size_enabled("9x9") ? "primary sm" : "sm"}
+                            onClick={() => toggleSize("9x9")}
+                        >
+                            9x9
+                        </button>
+                        <button
+                            className={size_enabled("13x13") ? "primary sm" : "sm"}
+                            onClick={() => toggleSize("13x13")}
+                        >
+                            13x13
+                        </button>
+                        <button
+                            className={size_enabled("19x19") ? "primary sm" : "sm"}
+                            onClick={() => toggleSize("19x19")}
+                        >
+                            19x19
+                        </button>
+                    </div>
+                    <div className="automatch-settings">
+                        <span
+                            className="automatch-settings-link fake-link"
+                            onClick={openAutomatchSettings}
+                        >
+                            <i className="fa fa-gear" />
+                            {_("Settings ")}
+                        </span>
+                    </div>
+                </div>
+                <div className="automatch-row-container">
+                    <div className="automatch-row">
+                        <button
+                            className="primary"
+                            onClick={() => findMatch("blitz")}
+                            disabled={anon || warned}
+                        >
+                            <div className="play-button-text-root">
+                                <i className="fa fa-bolt" /> {_("Blitz")}
+                                <span className="time-per-move">
+                                    {pgettext("Automatch average time per move", "~10s per move")}
+                                </span>
+                            </div>
+                        </button>
+                        <button
+                            className="primary"
+                            onClick={() => findMatch("live")}
+                            disabled={anon || warned}
+                        >
+                            <div className="play-button-text-root">
+                                <i className="fa fa-clock-o" /> {_("Normal")}
+                                <span className="time-per-move">
+                                    {pgettext("Automatch average time per move", "~30s per move")}
+                                </span>
+                            </div>
+                        </button>
+                    </div>
+                    <div className="automatch-row">
+                        <button
+                            className="primary"
+                            onClick={newComputerGame}
+                            disabled={anon || warned}
+                        >
+                            <div className="play-button-text-root">
+                                <i className="fa fa-desktop" /> {_("Computer")}
+                                <span className="time-per-move"></span>
+                            </div>
+                        </button>
+                        <button
+                            className="primary"
+                            onClick={() => findMatch("correspondence")}
+                            disabled={anon || warned}
+                        >
+                            <div className="play-button-text-root">
+                                <span>
+                                    <i className="ogs-turtle" /> {_("Correspondence")}
+                                </span>
+                                <span className="time-per-move">
+                                    {pgettext("Automatch average time per move", "~1 day per move")}
+                                </span>
+                            </div>
+                        </button>
+                    </div>
+                    <div className="custom-game-header">
+                        <div>{_("Custom Game")}</div>
+                    </div>
+                    <div className="custom-game-row">
+                        <button
+                            className="primary"
+                            onClick={newCustomGame}
+                            disabled={anon || warned}
+                        >
+                            <i className="fa fa-cog" /> {_("Create")}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 }
