@@ -82,12 +82,8 @@ const PlayContext = React.createContext<{
 
 export function Play(): JSX.Element {
     const ref_container: React.RefObject<HTMLDivElement> = React.createRef();
-    const canvas: HTMLCanvasElement = React.useMemo(() => allocateCanvasOrError(), []);
-
-    //static contextType: React.Context<DynamicHelp.AppApi> = DynamicHelp.Api;
-    //declare context: React.ContextType<typeof DynamicHelp.Api>;
-
     const list_freeze_timeout = React.useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+    const canvas: HTMLCanvasElement = React.useMemo(() => allocateCanvasOrError(), []);
 
     const user = useUser();
     const [live_list, setLiveList] = React.useState<Array<Challenge>>([]);
@@ -104,14 +100,7 @@ export function Play(): JSX.Element {
     });
 
     const [filter, setFilter] = React.useState<ChallengeFilter>(default_filter as ChallengeFilter);
-    const seekgraph: SeekGraph = React.useMemo<SeekGraph>(
-        () =>
-            new SeekGraph({
-                canvas,
-                filter: default_filter as ChallengeFilter,
-            }),
-        [],
-    );
+    const seekgraph = React.useRef<SeekGraph>();
 
     // Used to not change the challenge list while they are trying to point the mouse at it
     const [freeze_challenge_list, setFreezeChallengeList] = React.useState<boolean>(false);
@@ -135,8 +124,8 @@ export function Play(): JSX.Element {
 
         const w = ref_container.current.offsetWidth;
         const h = ref_container.current.offsetHeight;
-        if (w !== seekgraph.width || h !== seekgraph.height) {
-            seekgraph.resize(w, h);
+        if (w !== seekgraph.current?.width || h !== seekgraph.current?.height) {
+            seekgraph.current?.resize(w, h);
         }
         if (w === 0 || h === 0) {
             // Wait for positive size
@@ -144,7 +133,11 @@ export function Play(): JSX.Element {
         }
     };
 
-    const updateChallenges = (challenges: { [id: number]: Challenge }) => {
+    const updateChallenges = (challenges?: { [id: number]: Challenge }) => {
+        if (!challenges) {
+            return;
+        }
+
         if (freeze_challenge_list) {
             const live = live_list;
             const corr = correspondence_list;
@@ -153,7 +146,6 @@ export function Play(): JSX.Element {
                 for (const i in list) {
                     const id = list[i].challenge_id;
                     if (!challenges[id]) {
-                        // console.log("Challenge went away:", id);
                         list[i].removed = true;
                         list[i].ineligible_reason = _(
                             "challenge no longer available",
@@ -161,14 +153,13 @@ export function Play(): JSX.Element {
                     }
                 }
             }
-            //console.log("pending list store...");
             setPendingChallenges(challenges);
             setLiveList(live);
             setCorrespondenceList(corr);
+
             return;
         }
 
-        //console.log("Updating challenges with:", challenges);
         const live: any[] = [];
         const corr: any[] = [];
         const rengo: any[] = [];
@@ -186,8 +177,6 @@ export function Play(): JSX.Element {
             } else {
                 C.handicap_text = C.handicap;
             }
-
-            // console.log(C);
 
             if (C.komi === null) {
                 C.komi_text = _("Auto");
@@ -207,7 +196,6 @@ export function Play(): JSX.Element {
         corr.sort(challenge_sort);
         rengo.sort(time_per_move_challenge_sort);
 
-        //console.log("list update...");
         setLiveList(live);
         setCorrespondenceList(corr);
         setRengoList(rengo);
@@ -247,9 +235,7 @@ export function Play(): JSX.Element {
         const newValue = !filter[key];
         const newFilter = { ...filter };
         newFilter[key] = newValue;
-        if (seekgraph) {
-            seekgraph.setFilter(newFilter);
-        }
+        seekgraph.current?.setFilter(newFilter);
         const pref_key = filterPreferenceMapping.get(key);
         if (pref_key) {
             preferences.set(pref_key, newValue);
@@ -280,14 +266,12 @@ export function Play(): JSX.Element {
             clearTimeout(list_freeze_timeout.current);
         }
         if (!freeze_challenge_list) {
-            //console.log("Freeze challenges...");
             setFreezeChallengeList(true);
         }
         list_freeze_timeout.current = setTimeout(unfreezeChallenges, CHALLENGE_LIST_FREEZE_PERIOD);
     };
 
     const unfreezeChallenges = () => {
-        //console.log("Unfreeze challenges...");
         setFreezeChallengeList(false);
         if (list_freeze_timeout.current) {
             clearTimeout(list_freeze_timeout.current);
@@ -327,7 +311,12 @@ export function Play(): JSX.Element {
     React.useEffect(() => {
         window.document.title = _("Play");
         onResize();
-        seekgraph.on("challenges", updateChallenges as any);
+
+        seekgraph.current = new SeekGraph({
+            canvas,
+            filter: default_filter as ChallengeFilter,
+        });
+        seekgraph.current.on("challenges", updateChallenges);
 
         const [match, id] = window.location.hash.match(/#rengo:(\d+)/) || [];
         if (match) {
@@ -335,7 +324,7 @@ export function Play(): JSX.Element {
         }
 
         return () => {
-            seekgraph.destroy();
+            seekgraph.current?.destroy();
             if (list_freeze_timeout.current) {
                 clearTimeout(list_freeze_timeout.current);
                 list_freeze_timeout.current = undefined;
@@ -344,7 +333,9 @@ export function Play(): JSX.Element {
     }, []);
 
     React.useEffect(() => {
-        updateChallenges(pending_challenges);
+        if (!freeze_challenge_list && Object.keys(pending_challenges).length) {
+            updateChallenges(pending_challenges);
+        }
     }, [freeze_challenge_list, Object.keys(pending_challenges).length]);
 
     const corr_automatcher_uuids = Object.keys(
