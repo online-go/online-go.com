@@ -1,6 +1,8 @@
-import jsdoc from "eslint-plugin-jsdoc";
+// TODO: Re-add jsdoc replace eslint + prettier with biome or oxc
+//import jsdoc from "eslint-plugin-jsdoc";
 import header from "@tony.ganchev/eslint-plugin-header";
-import prettier from "eslint-plugin-prettier";
+//import prettier from "eslint-plugin-prettier";
+import reactRefresh from "eslint-plugin-react-refresh";
 import reactHooks from "eslint-plugin-react-hooks";
 import typescriptEslint from "@typescript-eslint/eslint-plugin";
 import { fixupPluginRules } from "@eslint/compat";
@@ -21,14 +23,15 @@ const compat = new FlatCompat({
 
 export default [
     {
-        ignores: ["**/node_modules", "**/dist", "**/i18n", "**/typings_manual", "**/.github"],
+        ignores: ["**/node_modules", "**/dist", "**/i18n", "**/typings_manual", "**/.github", "eslint.config.js"],
     },
-    ...compat.extends("eslint:recommended", "plugin:@typescript-eslint/recommended", "prettier"),
+    ...compat.extends("eslint:recommended", "plugin:@typescript-eslint/recommended"),//, //"prettier"),
     {
         plugins: {
-            jsdoc,
+            //jsdoc,
             header,
-            prettier,
+            //prettier,
+            reactRefresh,
             "react-hooks": fixupPluginRules(reactHooks),
             "@typescript-eslint": typescriptEslint,
         },
@@ -65,6 +68,7 @@ export default [
             "@typescript-eslint/consistent-type-assertions": "error",
             "@typescript-eslint/member-delimiter-style": "error",
             "@typescript-eslint/no-floating-promises": "error",
+            "reactRefresh/only-export-components": "warn",
 
             "@typescript-eslint/no-inferrable-types": [
                 "error",
@@ -105,8 +109,8 @@ export default [
             ],
 
             "id-match": "error",
-            "jsdoc/check-alignment": "error",
-            "jsdoc/require-asterisk-prefix": "error",
+            //"jsdoc/check-alignment": "error",
+            //"jsdoc/require-asterisk-prefix": "error",
             "linebreak-style": ["error", "unix"],
             "no-caller": "error",
             "no-cond-assign": "error",
@@ -145,7 +149,7 @@ export default [
                 },
             ],
 
-            "prettier/prettier": "error",
+            //"prettier/prettier": "error",
             "use-isnan": "error",
 
             "header/header": [

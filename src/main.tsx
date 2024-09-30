@@ -17,6 +17,7 @@
 
 import * as Sentry from "@sentry/browser";
 import { configure_goban } from "@/lib/configure-goban";
+import "@/ogs.styl";
 import {
     init_wasm_ownership_estimator,
     init_remote_ownership_estimator,
