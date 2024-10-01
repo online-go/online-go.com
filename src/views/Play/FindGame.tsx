@@ -84,86 +84,95 @@ export function FindGame(props: FindGameProps): JSX.Element {
     const anon = user.anonymous;
     const warned = user.has_active_warning_flag;
 
-    const cancelActiveAutomatch = () => {
+    const cancelActiveAutomatch = React.useCallback(() => {
         if (automatch_manager.active_live_automatcher) {
             automatch_manager.cancel(automatch_manager.active_live_automatcher.uuid);
         }
         refresh();
-    };
+    }, [refresh]);
 
-    const cancelOwnChallenges = (challenge_list: Challenge[]) => {
-        challenge_list.forEach((c) => {
-            if (c.user_challenge) {
-                ctx.cancelOpenChallenge(c);
+    const cancelOwnChallenges = React.useCallback(
+        (challenge_list: Challenge[]) => {
+            challenge_list.forEach((c) => {
+                if (c.user_challenge) {
+                    ctx.cancelOpenChallenge(c);
+                }
+            });
+        },
+        [ctx?.cancelOpenChallenge],
+    );
+
+    const toggleSize = React.useCallback(
+        (size: Size) => {
+            let size_options = dup(automatch_size_options);
+            if (size_options.indexOf(size) >= 0) {
+                size_options = size_options.filter((x) => x !== size);
+            } else {
+                size_options.push(size);
             }
-        });
-    };
+            if (size_options.length === 0) {
+                size_options.push("19x19");
+            }
+            setAutomatchSizeOptions(size_options);
+        },
+        [automatch_size_options, setAutomatchSizeOptions],
+    );
 
-    const toggleSize = (size: Size) => {
-        let size_options = dup(automatch_size_options);
-        if (size_options.indexOf(size) >= 0) {
-            size_options = size_options.filter((x) => x !== size);
-        } else {
-            size_options.push(size);
-        }
-        if (size_options.length === 0) {
-            size_options.push("19x19");
-        }
-        setAutomatchSizeOptions(size_options);
-    };
+    const findMatch = React.useCallback(
+        (speed: Speed) => {
+            if (data.get("user").anonymous) {
+                void alert.fire(_("Please sign in first"));
+                return;
+            }
 
-    const findMatch = (speed: Speed) => {
-        if (data.get("user").anonymous) {
-            void alert.fire(_("Please sign in first"));
-            return;
-        }
+            const settings = getAutomatchSettings(speed);
+            const preferences: AutomatchPreferences = {
+                uuid: uuid(),
+                size_speed_options: automatch_size_options.map((size) => {
+                    return {
+                        size: size,
+                        speed: speed,
+                    };
+                }),
+                lower_rank_diff: settings.lower_rank_diff,
+                upper_rank_diff: settings.upper_rank_diff,
+                rules: {
+                    condition: settings.rules.condition,
+                    value: settings.rules.value,
+                },
+                time_control: {
+                    condition: settings.time_control.condition,
+                    value: settings.time_control.value,
+                },
+                handicap: {
+                    condition: settings.handicap.condition,
+                    value: settings.handicap.value,
+                },
+            };
+            preferences.uuid = uuid();
+            automatch_manager.findMatch(preferences);
+            refresh();
 
-        const settings = getAutomatchSettings(speed);
-        const preferences: AutomatchPreferences = {
-            uuid: uuid(),
-            size_speed_options: automatch_size_options.map((size) => {
-                return {
-                    size: size,
-                    speed: speed,
-                };
-            }),
-            lower_rank_diff: settings.lower_rank_diff,
-            upper_rank_diff: settings.upper_rank_diff,
-            rules: {
-                condition: settings.rules.condition,
-                value: settings.rules.value,
-            },
-            time_control: {
-                condition: settings.time_control.condition,
-                value: settings.time_control.value,
-            },
-            handicap: {
-                condition: settings.handicap.condition,
-                value: settings.handicap.value,
-            },
-        };
-        preferences.uuid = uuid();
-        automatch_manager.findMatch(preferences);
-        refresh();
+            if (speed === "correspondence") {
+                setCorrespondenceSpinner(true);
+            }
+        },
+        [automatch_size_options, refresh],
+    );
 
-        if (speed === "correspondence") {
-            setCorrespondenceSpinner(true);
-        }
-    };
-
-    const dismissCorrespondenceSpinner = () => {
+    const dismissCorrespondenceSpinner = React.useCallback(() => {
         setCorrespondenceSpinner(false);
-    };
+    }, []);
 
-    const newComputerGame = () => {
+    const newComputerGame = React.useCallback(() => {
         if (bot_count() === 0) {
             void alert.fire(_("Sorry, all bots seem to be offline, please try again later."));
             return;
         }
         challengeComputer();
-    };
+    }, []);
 
-    const newCustomGame = () => {
+    const newCustomGame = React.useCallback(() => {
         const challengeCreated = (c: CreatedChallengeInfo) => {
             if (c.rengo && !c.live) {
                 ctx.toggleRengoChallengePane(c.challenge_id);
@@ -171,7 +180,7 @@ export function FindGame(props: FindGameProps): JSX.Element {
         };
 
         challenge(undefined, undefined, undefined, undefined, challengeCreated);
-    };
+    }, [ctx?.toggleRengoChallengePane]);
 
     //  Construction of the pane we need to show...
     if (automatch_manager.active_live_automatcher) {
