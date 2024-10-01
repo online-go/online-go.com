@@ -15,5 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export * from "./Play";
-export * from "./ChallengeLists";
+import * as React from "react";
+import { Challenge } from "@/lib/challenge_utils";
+
+export const PlayContext = React.createContext<{
+    closeChallengeManagementPane: (challenge_id: number) => void;
+    cancelOpenRengoChallenge: (challenge: Challenge) => void;
+    unNominateForRengoChallenge: (challenge: Challenge) => void;
+    setPaneLock: (id: number, lock: boolean) => void;
+    toggleRengoChallengePane: (challenge_id: number) => void;
+    cancelOpenChallenge: (challenge: Challenge) => void;
+    unfreezeChallenges: () => void;
+}>(undefined as any);
