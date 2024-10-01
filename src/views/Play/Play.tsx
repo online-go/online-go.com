@@ -42,7 +42,7 @@ import {
     RengoListHeaders,
 } from "./ChallengeLists";
 import { PlayContext } from "./context";
-import { anyChallengesToShow } from "./utils";
+import { anyChallengesToShow, challenge_sort, time_per_move_challenge_sort } from "./utils";
 import { FindGame } from "./FindGame";
 
 const CHALLENGE_LIST_FREEZE_PERIOD = 1000; // Freeze challenge list for this period while they move their mouse on it
@@ -94,6 +94,7 @@ export function Play(): JSX.Element {
     const [rengo_manage_pane_lock, setRengoManagePaneLock] = React.useState<{
         [id: number]: boolean;
     }>({});
+
     const onResize = React.useCallback(() => {
         if (!ref_container.current) {
             return;
@@ -536,59 +537,4 @@ export function Play(): JSX.Element {
             </div>
         </PlayContext.Provider>
     );
-}
-
-function challenge_sort(A: Challenge, B: Challenge) {
-    if (A.eligible && !B.eligible) {
-        return -1;
-    }
-    if (!A.eligible && B.eligible) {
-        return 1;
-    }
-
-    if (A.user_challenge && !B.user_challenge) {
-        return -1;
-    }
-    if (!A.user_challenge && B.user_challenge) {
-        return 1;
-    }
-
-    const t = A.username.localeCompare(B.username);
-    if (t) {
-        return t;
-    }
-
-    if (A.ranked && !B.ranked) {
-        return -1;
-    }
-    if (!A.ranked && B.ranked) {
-        return 1;
-    }
-
-    return A.challenge_id - B.challenge_id;
-}
-
-export function time_per_move_challenge_sort(A: Challenge, B: Challenge) {
-    const comparison = Math.sign(A.time_per_move - B.time_per_move);
-
-    if (comparison) {
-        return comparison;
-    }
-
-    if (A.eligible && !B.eligible) {
-        return -1;
-    }
-    if (!A.eligible && B.eligible) {
-        return 1;
-    }
-    if (A.user_challenge && !B.user_challenge) {
-        return -1;
-    }
-    if (!A.user_challenge && B.user_challenge) {
-        return 1;
-    }
-
-    const createdA = A.created ? new Date(A.created).getTime() : -Infinity;
-    const createdB = B.created ? new Date(B.created).getTime() : -Infinity;
-    return createdA - createdB;
 }
