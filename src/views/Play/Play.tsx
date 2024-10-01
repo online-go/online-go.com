@@ -94,8 +94,7 @@ export function Play(): JSX.Element {
     const [rengo_manage_pane_lock, setRengoManagePaneLock] = React.useState<{
         [id: number]: boolean;
     }>({});
-
-    const onResize = () => {
+    const onResize = React.useCallback(() => {
         if (!ref_container.current) {
             return;
         }
@@ -109,137 +108,167 @@ export function Play(): JSX.Element {
             // Wait for positive size
             setTimeout(onResize, 500);
         }
-    };
+    }, [ref_container, seekgraph]);
 
-    const updateChallenges = (challenges?: { [id: number]: Challenge }) => {
-        if (!challenges) {
-            return;
-        }
+    const updateChallenges = React.useCallback(
+        (challenges?: { [id: number]: Challenge }) => {
+            if (!challenges) {
+                return;
+            }
 
-        if (freeze_challenge_list) {
-            const live = live_list;
-            const corr = correspondence_list;
-            const rengo = rengo_list;
-            for (const list of [live, corr, rengo]) {
-                for (const i in list) {
-                    const id = list[i].challenge_id;
-                    if (!challenges[id]) {
-                        list[i].removed = true;
-                        list[i].ineligible_reason = _(
-                            "challenge no longer available",
-                        ); /* translator: the person can't accept this challenge because it has been removed or accepted already */
+            if (freeze_challenge_list) {
+                const live = live_list;
+                const corr = correspondence_list;
+                const rengo = rengo_list;
+                for (const list of [live, corr, rengo]) {
+                    for (const i in list) {
+                        const id = list[i].challenge_id;
+                        if (!challenges[id]) {
+                            list[i].removed = true;
+                            list[i].ineligible_reason = _(
+                                "challenge no longer available",
+                            ); /* translator: the person can't accept this challenge because it has been removed or accepted already */
+                        }
                     }
                 }
+                setPendingChallenges(challenges);
+                setLiveList(live);
+                setCorrespondenceList(corr);
+
+                return;
             }
-            setPendingChallenges(challenges);
+
+            const live: any[] = [];
+            const corr: any[] = [];
+            const rengo: any[] = [];
+            for (const i in challenges) {
+                const C = challenges[i];
+                player_cache
+                    .fetch(C.user_id)
+                    .then(() => 0)
+                    .catch(
+                        ignore,
+                    ); /* just get the user data ready ready if we don't already have it */
+                C.ranked_text = C.ranked ? _("Yes") : _("No");
+                if (C.handicap === -1) {
+                    C.handicap_text = _("Auto");
+                } else if (C.handicap === 0) {
+                    C.handicap_text = _("No");
+                } else {
+                    C.handicap_text = C.handicap;
+                }
+
+                if (C.komi === null) {
+                    C.komi_text = _("Auto");
+                } else {
+                    C.komi_text = C.komi;
+                }
+
+                if (C.rengo) {
+                    rengo.push(C);
+                } else if (isLiveGame(C.time_control_parameters, C.width, C.height)) {
+                    live.push(C);
+                } else {
+                    corr.push(C);
+                }
+            }
+            live.sort(challenge_sort);
+            corr.sort(challenge_sort);
+            rengo.sort(time_per_move_challenge_sort);
+
             setLiveList(live);
             setCorrespondenceList(corr);
+            setRengoList(rengo);
+            setPendingChallenges([]);
+        },
+        [freeze_challenge_list, live_list, correspondence_list, rengo_list],
+    );
 
-            return;
-        }
+    const setPaneLock = React.useCallback((id: number, lock: boolean) => {
+        setRengoManagePaneLock((prev) => ({ ...prev, [id]: lock }));
+    }, []);
 
-        const live: any[] = [];
-        const corr: any[] = [];
-        const rengo: any[] = [];
-        for (const i in challenges) {
-            const C = challenges[i];
-            player_cache
-                .fetch(C.user_id)
-                .then(() => 0)
-                .catch(ignore); /* just get the user data ready ready if we don't already have it */
-            C.ranked_text = C.ranked ? _("Yes") : _("No");
-            if (C.handicap === -1) {
-                C.handicap_text = _("Auto");
-            } else if (C.handicap === 0) {
-                C.handicap_text = _("No");
-            } else {
-                C.handicap_text = C.handicap;
+    const closeChallengeManagementPane = React.useCallback(
+        (challenge_id: number) => {
+            if (show_in_rengo_management_pane.includes(challenge_id)) {
+                setShowInRengoManagementPane((prev) => prev.filter((c) => c !== challenge_id));
             }
+        },
+        [show_in_rengo_management_pane],
+    );
+    const cancelOpenRengoChallenge = React.useCallback(
+        (challenge: Challenge) => {
+            alert
+                .fire({
+                    text: _("Are you sure you want to delete this rengo challenge?"),
+                    showCancelButton: true,
+                    confirmButtonText: _("Yes"),
+                    cancelButtonText: _("Cancel"),
+                })
+                .then(({ value: yes }) => {
+                    if (yes) {
+                        // stop trying to show the cancelled challenge
+                        closeChallengeManagementPane(challenge.challenge_id);
 
-            if (C.komi === null) {
-                C.komi_text = _("Auto");
-            } else {
-                C.komi_text = C.komi;
-            }
+                        // do the action
+                        rengo_utils.cancelRengoChallenge(challenge).catch(errorAlerter);
+                    }
+                })
+                .catch(() => 0);
+        },
+        [closeChallengeManagementPane, _],
+    );
 
-            if (C.rengo) {
-                rengo.push(C);
-            } else if (isLiveGame(C.time_control_parameters, C.width, C.height)) {
-                live.push(C);
-            } else {
-                corr.push(C);
-            }
+    const unfreezeChallenges = React.useCallback(() => {
+        setFreezeChallengeList(false);
+        if (list_freeze_timeout.current) {
+            clearTimeout(list_freeze_timeout.current);
+            list_freeze_timeout.current = undefined;
         }
-        live.sort(challenge_sort);
-        corr.sort(challenge_sort);
-        rengo.sort(time_per_move_challenge_sort);
+    }, []);
 
-        setLiveList(live);
-        setCorrespondenceList(corr);
-        setRengoList(rengo);
-        setPendingChallenges([]);
-    };
+    const cancelOpenChallenge = React.useCallback(
+        (challenge: Challenge) => {
+            del(`challenges/${challenge.challenge_id}`).catch(errorAlerter);
+            unfreezeChallenges();
+        },
+        [unfreezeChallenges],
+    );
 
-    const setPaneLock = (id: number, lock: boolean) => {
-        setRengoManagePaneLock({ ...rengo_manage_pane_lock, [id]: lock });
-    };
+    const toggleFilterHandler = React.useCallback(
+        (key: ChallengeFilterKey) => {
+            const newValue = !filter[key];
+            const newFilter = { ...filter };
+            newFilter[key] = newValue;
+            seekgraph.current?.setFilter(newFilter);
+            const pref_key = filterPreferenceMapping.get(key);
+            if (pref_key) {
+                preferences.set(pref_key, newValue);
+            }
+            setFilter(newFilter);
+        },
+        [filter, seekgraph],
+    );
 
-    const cancelOpenRengoChallenge = (challenge: Challenge) => {
-        alert
-            .fire({
-                text: _("Are you sure you want to delete this rengo challenge?"),
-                showCancelButton: true,
-                confirmButtonText: _("Yes"),
-                cancelButtonText: _("Cancel"),
-            })
-            .then(({ value: yes }) => {
-                if (yes) {
-                    // stop trying to show the cancelled challenge
-                    closeChallengeManagementPane(challenge.challenge_id);
-
-                    // do the action
-                    rengo_utils.cancelRengoChallenge(challenge).catch(errorAlerter);
-                }
-            })
-            .catch(() => 0);
-    };
-
-    const cancelOpenChallenge = (challenge: Challenge) => {
-        del(`challenges/${challenge.challenge_id}`).catch(errorAlerter);
-        unfreezeChallenges();
-    };
-
-    const toggleFilterHandler = (key: ChallengeFilterKey) => {
-        const newValue = !filter[key];
-        const newFilter = { ...filter };
-        newFilter[key] = newValue;
-        seekgraph.current?.setFilter(newFilter);
-        const pref_key = filterPreferenceMapping.get(key);
-        if (pref_key) {
-            preferences.set(pref_key, newValue);
-        }
-        setFilter(newFilter);
-    };
-
-    const liveOwnChallengePending = (): Challenge | undefined => {
+    const liveOwnChallengePending = React.useCallback((): Challenge | undefined => {
         // a user should have only one of these at any time
         return live_list.find((c) => c.user_challenge);
-    };
+    }, [live_list]);
 
-    const ownRengoChallengesPending = (): Challenge[] => {
+    const ownRengoChallengesPending = React.useCallback((): Challenge[] => {
         // multiple correspondence are possible, plus one live
         return rengo_list.filter((c) => c.user_challenge);
-    };
+    }, [rengo_list]);
 
-    const joinedRengoChallengesPending = (): Challenge[] => {
+    const joinedRengoChallengesPending = React.useCallback((): Challenge[] => {
         // multiple correspondence are possible, plus one live
         const user_id = data.get("config.user").id;
         return rengo_list.filter(
             (c) => c["rengo_participants"].includes(user_id) && !c.user_challenge,
         );
-    };
+    }, [rengo_list]);
 
-    const freezeChallenges = () => {
+    const freezeChallenges = React.useCallback(() => {
         if (list_freeze_timeout.current) {
             clearTimeout(list_freeze_timeout.current);
         }
@@ -247,44 +276,37 @@ export function Play(): JSX.Element {
             setFreezeChallengeList(true);
         }
         list_freeze_timeout.current = setTimeout(unfreezeChallenges, CHALLENGE_LIST_FREEZE_PERIOD);
-    };
+    }, [freeze_challenge_list, unfreezeChallenges]);
 
-    const unfreezeChallenges = () => {
-        setFreezeChallengeList(false);
-        if (list_freeze_timeout.current) {
-            clearTimeout(list_freeze_timeout.current);
-            list_freeze_timeout.current = undefined;
-        }
-    };
+    const unNominateForRengoChallenge = React.useCallback(
+        (C: Challenge) => {
+            closeChallengeManagementPane(C.challenge_id);
 
-    const unNominateForRengoChallenge = (C: Challenge) => {
-        closeChallengeManagementPane(C.challenge_id);
+            rengo_utils.unNominate(C).catch(errorAlerter);
+        },
+        [closeChallengeManagementPane],
+    );
 
-        rengo_utils.unNominate(C).catch(errorAlerter);
-    };
+    const openRengoChallengePane = React.useCallback(
+        (challenge_id: number) => {
+            if (!show_in_rengo_management_pane.includes(challenge_id)) {
+                setShowInRengoManagementPane((prev) => [challenge_id, ...prev]);
+            }
+        },
+        [show_in_rengo_management_pane],
+    );
 
-    const openRengoChallengePane = (challenge_id: number) => {
-        if (!show_in_rengo_management_pane.includes(challenge_id)) {
-            setShowInRengoManagementPane([challenge_id, ...show_in_rengo_management_pane]);
-        }
-    };
-
-    const toggleRengoChallengePane = (challenge_id: number) => {
-        if (show_in_rengo_management_pane.includes(challenge_id)) {
-            closeChallengeManagementPane(challenge_id);
-        } else {
-            setShowInRengoManagementPane([challenge_id, ...show_in_rengo_management_pane]);
-            setRengoManagePaneLock({ ...rengo_manage_pane_lock, [challenge_id]: false });
-        }
-    };
-
-    const closeChallengeManagementPane = (challenge_id: number) => {
-        if (show_in_rengo_management_pane.includes(challenge_id)) {
-            setShowInRengoManagementPane(
-                show_in_rengo_management_pane.filter((c) => c !== challenge_id),
-            );
-        }
-    };
+    const toggleRengoChallengePane = React.useCallback(
+        (challenge_id: number) => {
+            if (show_in_rengo_management_pane.includes(challenge_id)) {
+                closeChallengeManagementPane(challenge_id);
+            } else {
+                setShowInRengoManagementPane((prev) => [challenge_id, ...prev]);
+                setRengoManagePaneLock((prev) => ({ ...prev, [challenge_id]: false }));
+            }
+        },
+        [show_in_rengo_management_pane, closeChallengeManagementPane],
+    );
 
     React.useEffect(() => {
         window.document.title = _("Play");
@@ -325,18 +347,28 @@ export function Play(): JSX.Element {
     corr_automatchers.sort((a, b) => (a.timestamp as number) - (b.timestamp as number));
     const showSeekGraph = preferences.get("show-seek-graph");
 
+    const ctx = React.useMemo(() => {
+        return {
+            closeChallengeManagementPane,
+            cancelOpenRengoChallenge,
+            unNominateForRengoChallenge,
+            setPaneLock,
+            toggleRengoChallengePane,
+            cancelOpenChallenge,
+            unfreezeChallenges,
+        };
+    }, [
+        closeChallengeManagementPane,
+        cancelOpenRengoChallenge,
+        unNominateForRengoChallenge,
+        setPaneLock,
+        toggleRengoChallengePane,
+        cancelOpenChallenge,
+        unfreezeChallenges,
+    ]);
+
     return (
-        <PlayContext.Provider
-            value={{
-                closeChallengeManagementPane,
-                cancelOpenRengoChallenge,
-                unNominateForRengoChallenge,
-                setPaneLock,
-                toggleRengoChallengePane,
-                cancelOpenChallenge,
-                unfreezeChallenges,
-            }}
-        >
+        <PlayContext.Provider value={ctx}>
             <div className="Play container">
                 <div className="row">
                     <div className="col-sm-6 play-column">

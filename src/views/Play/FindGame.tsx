@@ -17,8 +17,9 @@
 
 import * as React from "react";
 import * as data from "@/lib/data";
-
 import * as rengo_utils from "@/lib/rengo_utils";
+
+import { Speed } from "goban";
 import { _, pgettext } from "@/lib/translate";
 import { isLiveGame } from "@/components/TimeControl";
 import { challenge, challengeComputer } from "@/components/ChallengeModal";
@@ -27,11 +28,8 @@ import { openAutomatchSettings, getAutomatchSettings } from "@/components/Automa
 import { automatch_manager, AutomatchPreferences } from "@/lib/automatch_manager";
 import { bot_count } from "@/lib/bots";
 import { CreatedChallengeInfo } from "@/lib/types";
-import { Speed } from "goban";
-
 import { alert } from "@/lib/swal_config";
 import { Size } from "@/lib/types";
-
 import { RengoManagementPane } from "@/components/RengoManagementPane";
 import { RengoTeamManagementPane } from "@/components/RengoTeamManagementPane";
 import { Challenge } from "@/lib/challenge_utils";
