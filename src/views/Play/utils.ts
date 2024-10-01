@@ -14,6 +14,13 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+import { ChallengeFilter, Challenge } from "@/lib/challenge_utils";
 
-export * from "./Play";
-export * from "./ChallengeLists";
+export function anyChallengesToShow(filter: ChallengeFilter, challenge_list: Challenge[]): boolean {
+    return (
+        (filter.showIneligible && (challenge_list.length as any)) ||
+        challenge_list.reduce((accumulator, current) => {
+            return accumulator || current.eligible || !!current.user_challenge;
+        }, false)
+    );
+}
