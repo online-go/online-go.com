@@ -198,7 +198,7 @@ export class NotificationManager {
     event_emitter: TypedEventEmitter<NotificationManagerEvents>;
 
     constructor() {
-        (window as any)["notification_manager"] = this;
+        window.notification_manager = this;
         this.event_emitter = new TypedEventEmitter<NotificationManagerEvents>();
 
         this.notifications = {};

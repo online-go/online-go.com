@@ -154,7 +154,7 @@ function load_checkout_libraries(): void {
             script.async = true;
             //script.charset = "utf-8";
             script.onload = () => {
-                (window as any)["stripe"] = stripe = new Stripe(data.get("config")?.stripe_pk);
+                window.stripe = stripe = new Stripe(data.get("config")?.stripe_pk);
                 resolve();
             };
             script.onerror = () => {

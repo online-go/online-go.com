@@ -87,7 +87,7 @@ export function NetworkStatus(): JSX.Element | null {
         in_live_game ? "in live game," : "not in live game,",
         manually_closed ? "manually closed notification," : "didn't close notification",
         "time control:",
-        (window as any)["global_goban"]?.engine?.time_control,
+        window.global_goban?.engine?.time_control,
     );
 
     if (state === "connected" || state === "went-away") {

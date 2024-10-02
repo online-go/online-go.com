@@ -121,7 +121,7 @@ import * as preferences from "@/lib/preferences";
 
 try {
     // default_theme is set in index.html based on looking at the OS theme
-    data.setDefault("theme", (window as any)["default_theme"]);
+    data.setDefault("theme", window.default_theme);
 } catch (e) {
     data.setDefault("theme", "light");
 }
@@ -145,16 +145,13 @@ data.setDefault("config", { user: default_user });
 
 data.setDefault("config.user", default_user);
 
-data.setDefault("config.cdn", (window as any)["cdn_service"]);
+data.setDefault("config.cdn", window.cdn_service);
 data.setDefault(
     "config.cdn_host",
-    (window as any)["cdn_service"].replace("https://", "").replace("http://", "").replace("//", ""),
+    window.cdn_service.replace("https://", "").replace("http://", "").replace("//", ""),
 );
-data.setDefault(
-    "config.cdn_release",
-    (window as any)["cdn_service"] + "/" + (window as any)["ogs_release"],
-);
-data.setDefault("config.release", (window as any)["ogs_release"]);
+data.setDefault("config.cdn_release", window.cdn_service + "/" + window.ogs_release);
+data.setDefault("config.release", window.ogs_release);
 
 configure_goban();
 
@@ -224,7 +221,7 @@ try {
 
 player_cache.update(user);
 data.set("user", user);
-(window as any)["user"] = user;
+window.user = user;
 
 console.log("initial user", user);
 /***
@@ -280,7 +277,7 @@ sockets.socket.on("user/update", (user: any) => {
         data.set("config.user", user);
         player_cache.update(user);
         data.set("user", user);
-        (window as any)["user"] = user;
+        window.user = user;
     } else {
         console.log("Ignoring user update for user", user);
     }
@@ -337,9 +334,9 @@ react_root.render(
     </React.StrictMode>,
 );
 
-(window as any)["data"] = data;
-(window as any)["preferences"] = preferences;
-(window as any)["player_cache"] = player_cache;
+window.data = data;
+window.preferences = preferences;
+window.player_cache = player_cache;
 
 import * as requests from "@/lib/requests";
-(window as any)["requests"] = requests;
+window.requests = requests;

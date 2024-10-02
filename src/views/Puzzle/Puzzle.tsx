@@ -290,7 +290,7 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
         }
         this.goban = createGoban(opts);
         this.goban.setMode("puzzle");
-        (window as any)["global_goban"] = this.goban;
+        window.global_goban = this.goban;
         this.goban.on("update", () => this.onUpdate());
 
         this.goban.on("puzzle-wrong-answer", this.onWrongAnswer);

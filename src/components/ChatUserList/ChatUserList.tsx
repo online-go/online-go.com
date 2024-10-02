@@ -43,7 +43,7 @@ export function ChatUserList(props: ChatUserListProperties): JSX.Element {
         proxy.current.on("part", () => refresh(proxy?.current?.channel.users_by_name.length || 0));
         proxy.current.on("join", () => console.log("JOin!"));
         proxy.current.on("part", () => console.log("Part!"));
-        (window as any)["proxy"] = proxy.current;
+        window.proxy = proxy.current;
         refresh(proxy.current.channel.users_by_name.length);
 
         return () => {

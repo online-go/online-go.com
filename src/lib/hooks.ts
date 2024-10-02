@@ -66,8 +66,8 @@ export function useRefresh(): () => void {
     return React.useCallback(() => refresh(() => Math.random()), [refresh]);
 }
 
-export function useMainGoban(): Goban | null {
-    return (window as any)["global_goban"];
+export function useMainGoban(): Goban | null | undefined {
+    return window.global_goban;
 }
 
 export const useIsDesktop = () => {

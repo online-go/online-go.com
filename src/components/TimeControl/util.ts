@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { computeAverageMoveTime, GobanRenderer, JGOFTimeControl } from "goban";
+import { computeAverageMoveTime, JGOFTimeControl } from "goban";
 import { _, pgettext, ngettext, interpolate } from "@/lib/translate";
 import { TimeControl, TimeControlTypes } from "./TimeControl";
 
@@ -454,7 +454,7 @@ export function usedForCheating(_time_control: ValidTimeControlFormats) {
 
 export function lookingAtOurLiveGame(): boolean {
     // Is the current page looking at a game we are live playing in...
-    const goban = (window as any)["global_goban"] as GobanRenderer;
+    const goban = window.global_goban;
     if (!goban) {
         return false;
     }

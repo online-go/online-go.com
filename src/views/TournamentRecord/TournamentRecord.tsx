@@ -26,7 +26,7 @@ import { ignore, errorAlerter, dup } from "@/lib/misc";
 import { rankString, allRanks } from "@/lib/rank_utils";
 import { createDemoBoard } from "@/components/ChallengeModal";
 
-(window as any)["dup"] = dup;
+window.dup = dup;
 
 import { alert } from "@/lib/swal_config";
 const ranks = allRanks();

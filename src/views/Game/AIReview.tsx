@@ -102,7 +102,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             table_hidden: preferences.get("ai-summary-table-show"),
         };
         this.state = state;
-        (window as any)["aireview"] = this;
+        window.aireview = this;
     }
 
     componentDidMount() {
