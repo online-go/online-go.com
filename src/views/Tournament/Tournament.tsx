@@ -852,7 +852,7 @@ export function Tournament(): JSX.Element {
         }
     };
 
-    (window as any)["tournament"] = tournament;
+    window.tournament = tournament;
 
     let tournament_time_start_text = "";
     if (tournament.time_start) {
@@ -2631,7 +2631,7 @@ function OpenGothaRoster({
     tournament: TournamentInterface;
     players: TournamentPlayer[];
 }): JSX.Element {
-    (window as any)["players"] = players;
+    window.players = players;
     players.sort((a, b) => a.username.localeCompare(b.username));
     return (
         <div className="OpenGothaRoster">
@@ -2674,7 +2674,7 @@ function OpenGothaTournamentRound({
     const [notes, _set_notes]: [string, (s: string) => void] = React.useState(roundNotes);
     const [notes_updated, set_notes_updated]: [boolean, (b: boolean) => void] =
         React.useState(false);
-    (window as any)["rounds"] = rounds;
+    window.rounds = rounds;
     const round_started = !!(
         rounds.length >= selectedRound && (rounds[selectedRound - 1]?.matches.length || 0) > 0
     );

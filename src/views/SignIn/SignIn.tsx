@@ -29,7 +29,7 @@ import { useUser } from "@/lib/hooks";
 
 import { SocialLoginButtons } from "@/components/SocialLoginButtons";
 
-(window as any)["Md5"] = Md5;
+window.Md5 = Md5;
 import { alert } from "@/lib/swal_config";
 import { LoadingButton } from "@/components/LoadingButton";
 

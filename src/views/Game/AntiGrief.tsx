@@ -38,7 +38,7 @@ let was_player = false;
 function checkForLeavingLiveGame(pathname: string) {
     try {
         const user = data.get("user");
-        const goban = (window as any)["global_goban"];
+        const goban = window.global_goban;
         const was_on_page = on_game_page;
         const was_live_game = live_game;
 
