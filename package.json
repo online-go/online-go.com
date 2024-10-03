@@ -102,7 +102,7 @@
         "@nivo/core": "^0.87.0",
         "@nivo/line": "^0.87.0",
         "@nivo/pie": "^0.87.0",
-        "@sentry/browser": "^7.92.0",
+        "@sentry/browser": "^8.33.0",
         "@types/d3": "^7.4.0",
         "@types/howler": "^2.2.2",
         "@types/jquery": "^2.0.41",
