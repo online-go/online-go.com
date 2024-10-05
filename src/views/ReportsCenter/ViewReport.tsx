@@ -596,15 +596,17 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                                         </ul>
                                     </div>
                                 )}
-                                {report.escalated && report.community_mod_note && (
-                                    <div className="community-mod-note">
-                                        <h5>Community Moderator Note:</h5>
-                                        <div className="Card">{report.community_mod_note}</div>
-                                    </div>
-                                )}
                             </>
                         )}
                     </div>
+                    {report.escalated &&
+                        report.community_mod_note &&
+                        (user.is_moderator || user.moderator_powers & MODERATOR_POWERS.SUSPEND) && (
+                            <div className="community-mod-note">
+                                <h5>Community Moderator Note:</h5>
+                                <div className="Card">{report.community_mod_note}</div>
+                            </div>
+                        )}
                     {user.is_moderator && (
                         <div className="actions-right">
                             {reportState !== "resolved" && report.detected_ai_games?.length > 0 ? (
