@@ -31,6 +31,7 @@ export enum MODERATOR_POWERS {
     HANDLE_SCORE_CHEAT = 0b001,
     HANDLE_ESCAPING = 0b010,
     HANDLE_STALLING = 0b100,
+    SUSPEND = 0b1000,
 }
 
 export const MOD_POWER_NAMES: { [key in MODERATOR_POWERS]: string } = {
@@ -47,6 +48,7 @@ export const MOD_POWER_NAMES: { [key in MODERATOR_POWERS]: string } = {
         "A label for a moderator power",
         "Handle Stalling Reports",
     ),
+    [MODERATOR_POWERS.SUSPEND]: pgettext("A label for a moderator power", "Vote for Suspension"),
 };
 
 export function doAnnul(

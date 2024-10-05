@@ -23,6 +23,7 @@ import { ReportType } from "@/components/Report";
 interface Vote {
     voter_id: number;
     action: string;
+    updated: string;
 }
 
 export interface Report {
@@ -33,6 +34,7 @@ export interface Report {
     updated: string;
     state: string;
     escalated: boolean;
+    escalated_at: string;
     retyped: boolean;
     source: string;
     report_type: ReportType;
@@ -100,14 +102,17 @@ export function community_mod_has_power(
 
 export function community_mod_can_handle(user: rest_api.UserConfig, report: Report): boolean {
     // Community moderators only get to see reports that they have the power for and
-    // that they have not yet voted on, and are not escalated
+    // that they have not yet voted on... or if it's escalated, they must have suspend power
 
     if (!user.moderator_powers) {
         return false;
     }
+
+    const they_already_voted = report.voters?.some((vote) => vote.voter_id === user.id);
+    const they_can_vote_to_suspend = user.moderator_powers & MODERATOR_POWERS.SUSPEND;
     if (
         community_mod_has_power(user.moderator_powers, report.report_type) &&
-        !(report.voters?.some((vote) => vote.voter_id === user.id) || report.escalated)
+        (!they_already_voted || (report.escalated && they_can_vote_to_suspend))
     ) {
         return true;
     }

@@ -294,7 +294,23 @@ moderator to let them know.
 Thanks for your recent report about {{bot}}.
 
 We've notified the owner of that bot.
-            `),
+`),
             { bot },
+        ),
+    ack_suspended: (reported) =>
+        interpolate(
+            _(`
+Thank you for your report.  {{reported}} is a repeat offender, their account has been suspended.
+`),
+            { reported },
+        ),
+
+    ack_suspended_and_annul: (reported) =>
+        interpolate(
+            _(`
+Thank you for your report.  {{reported}} is a repeat offender, their has been suspended. \
+The reported game has been annulled.
+`),
+            { reported },
         ),
 };

@@ -32,6 +32,7 @@ import { EventEmitter } from "eventemitter3";
 import { emitNotification } from "@/components/Notifications";
 import { browserHistory } from "@/lib/ogsHistory";
 import { get, post } from "@/lib/requests";
+import { MODERATOR_POWERS } from "./moderation";
 
 export interface ReportRelation {
     relationship: string;
@@ -87,6 +88,7 @@ class ReportManager extends EventEmitter<Events> {
         const user = data.get("user");
         report.id = parseInt(report.id as unknown as string);
 
+        console.log("updateIncidentReport", report);
         if (!(report.id in this.active_incident_reports)) {
             if (
                 data.get("user").is_moderator &&
@@ -109,11 +111,19 @@ class ReportManager extends EventEmitter<Events> {
             }
         }
 
-        if (
-            report.state === "resolved" ||
-            report.voters?.some((vote) => vote.voter_id === user.id) ||
-            (user.moderator_powers && report.escalated)
-        ) {
+        // They voted if there is a vote from them (obviously) - but:
+        // if the report is escalated _and_ they have SUSPEND power, we are only interested in votes
+        // after the escalated_at time
+
+        const they_already_voted = report.voters?.some(
+            (vote) =>
+                vote.voter_id === user.id &&
+                (!report.escalated || // If the report is not escalated, any vote counts
+                    !(user.moderator_powers & MODERATOR_POWERS.SUSPEND) || // If the user does not have SUSPEND powers, any vote counts
+                    new Date(vote.updated) > new Date(report.escalated_at)), // If the user has SUSPEND powers, vote must be after escalation
+        );
+
+        if (report.state === "resolved" || they_already_voted) {
             delete this.active_incident_reports[report.id];
             this.this_user_reported_games = this.this_user_reported_games.filter(
                 (game_id) => game_id !== report.reported_game,
@@ -148,6 +158,7 @@ class ReportManager extends EventEmitter<Events> {
         reports.sort(compare_reports);
 
         this.sorted_active_incident_reports = reports;
+        console.log("active reports", reports.length, normal_ct);
         this.emit("active-count", normal_ct);
         this.emit("update");
     }
@@ -162,7 +173,6 @@ class ReportManager extends EventEmitter<Events> {
     // Clients should use getEligibleReports
     private getAvailableReports(): Report[] {
         const user = data.get("user");
-
         return this.sorted_active_incident_reports.filter((report) => {
             if (!report) {
                 return false;
@@ -185,22 +195,19 @@ class ReportManager extends EventEmitter<Events> {
             // that they have not yet voted on, and are not escalated
 
             if (user.moderator_powers && !community_mod_can_handle(user, report)) {
+                console.log("community_mod_can_handle reject", report.id, report.report_type);
                 return false;
             }
 
-            const show_cm_reports = preferences.get("show-cm-reports");
-            if (!show_cm_reports) {
-                // don't hand community moderation reports to full mods unless the report is escalated,
-                // or they've asked to show them explicitly in settings,
-                // because community moderators are supposed to do these!
-                if (
-                    user.is_moderator &&
-                    !(report.moderator?.id === user.id) && // maybe they already have it, so they need to see it
-                    ["escaping", "score_cheating", "stalling"].includes(report.report_type) &&
-                    !report.escalated
-                ) {
-                    return false;
-                }
+            // Don't offer community moderation reports to full mods, because community moderators do these.
+            // (The only way full moderators see CM-class reports is if they go hunting and claim them)
+            if (
+                user.is_moderator &&
+                !(report.moderator?.id === user.id) && // maybe they already have it, so they need to see it
+                ["escaping", "score_cheating", "stalling"].includes(report.report_type) &&
+                !report.escalated
+            ) {
+                return false;
             }
 
             // Never give a claimed report to community moderators
