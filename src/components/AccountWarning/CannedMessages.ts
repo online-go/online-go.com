@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { _, interpolate } from "@/lib/translate";
+import { _, interpolate, llm_pgettext } from "@/lib/translate";
 
 // These are the "canned messages" that Community Moderators can vote for.
 
@@ -290,27 +290,36 @@ moderator to let them know.
         ),
     bot_owner_notified: (bot) =>
         interpolate(
-            _(`
+            llm_pgettext(
+                "Message to acknowledge a report of a bot",
+                `
 Thanks for your recent report about {{bot}}.
 
 We've notified the owner of that bot.
-`),
+`,
+            ),
             { bot },
         ),
     ack_suspended: (reported) =>
         interpolate(
-            _(`
+            llm_pgettext(
+                "Message to acknowledge a report of a repeat offender",
+                `
 Thank you for your report.  {{reported}} is a repeat offender, their account has been suspended.
-`),
+`,
+            ),
             { reported },
         ),
 
     ack_suspended_and_annul: (reported) =>
         interpolate(
-            _(`
+            llm_pgettext(
+                "Message to acknowledge a report of a repeat offender and annul a game",
+                `
 Thank you for your report.  {{reported}} is a repeat offender, their has been suspended. \
 The reported game has been annulled.
-`),
+`,
+            ),
             { reported },
         ),
 };
