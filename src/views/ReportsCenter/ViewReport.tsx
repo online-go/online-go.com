@@ -41,6 +41,7 @@ import { ReportTypeSelector } from "./ReportTypeSelector";
 import { alert } from "@/lib/swal_config";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import * as DynamicHelp from "react-dynamic-help";
+import { MODERATOR_POWERS } from "@/lib/moderation";
 
 interface ViewReportProps {
     reports: Report[];
@@ -77,6 +78,15 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
     const { registerTargetItem } = React.useContext(DynamicHelp.Api);
     const { ref: ignore_button } = registerTargetItem("ignore-button");
 
+    const captureReport = (report: Report) => {
+        setReport(report);
+        setModeratorId(report?.moderator?.id);
+        setReportState(report?.state);
+        setAnnulQueue(report?.detected_ai_games);
+        setAvailableActions(report?.available_actions);
+        setVoteCounts(report?.vote_counts);
+    };
+
     React.useEffect(() => {
         if (report_id) {
             // For some reason we have to capture the state of the report at the time that report_id goes valid
@@ -86,12 +96,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                 .getReport(report_id)
                 .then((report) => {
                     setError(null);
-                    setReport(report);
-                    setModeratorId(report?.moderator?.id);
-                    setReportState(report?.state);
-                    setAnnulQueue(report?.detected_ai_games);
-                    setAvailableActions(report?.available_actions);
-                    setVoteCounts(report?.vote_counts);
+                    captureReport(report);
                 })
                 .catch((err) => {
                     console.error(err);
@@ -108,9 +113,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
     React.useEffect(() => {
         const onUpdate = (r: Report) => {
             if (r.id === report?.id) {
-                setReport(r);
-                setModeratorId(r?.moderator?.id);
-                setReportState(r?.state);
+                captureReport(r);
             }
         };
         report_manager.on("incident-report", onUpdate);
@@ -550,7 +553,11 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                                         .vote(report.id, action, note)
                                         .then(() => next());
                                 }}
-                                enable={report.state === "pending" && !report.escalated}
+                                enable={
+                                    report.state === "pending" &&
+                                    (!report.escalated ||
+                                        !!(user.moderator_powers & MODERATOR_POWERS.SUSPEND))
+                                }
                                 // clear the selection for subsequent reports
                                 key={report.id}
                                 report={report}
