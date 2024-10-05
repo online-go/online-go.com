@@ -18,6 +18,7 @@ import * as React from "react";
 
 import * as data from "@/lib/data";
 import * as player_cache from "@/lib/player_cache";
+import * as DynamicHelp from "react-dynamic-help";
 
 import { OgsResizeDetector } from "@/components/OgsResizeDetector";
 import { browserHistory } from "@/lib/ogsHistory";
@@ -64,7 +65,7 @@ import {
 
 export type ChallengeDetails = rest_api.ChallengeDetails;
 
-type ChallengeModes = "open" | "computer" | "player" | "demo";
+export type ChallengeModes = "open" | "computer" | "player" | "demo";
 
 interface Events {}
 
@@ -1778,7 +1779,22 @@ export class ChallengeModalBody extends React.Component<
                                 &nbsp; {player_username}
                             </span>
                         )}
-                        {mode === "computer" && <span>{_("Computer")}</span>}
+                        {mode === "computer" && (
+                            <DynamicHelp.Api.Consumer>
+                                {(value) => {
+                                    const { ref: modalHelpIntro } =
+                                        value.registerTargetItem("modal-help-intro");
+                                    return (
+                                        <span
+                                            ref={modalHelpIntro}
+                                            onClick={() => value.triggerFlow("modal-help")}
+                                        >
+                                            {_("Computer")}
+                                        </span>
+                                    );
+                                }}
+                            </DynamicHelp.Api.Consumer>
+                        )}
                     </h2>
                 </div>
                 <div className="body">

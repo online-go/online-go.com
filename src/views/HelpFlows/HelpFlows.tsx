@@ -29,6 +29,7 @@ import { UndoRequestReceivedIntro } from "./UndoIntro";
 import { CommunityModeratorIntro } from "./CommunityModeratorIntro";
 import { OJEIntro } from "./OJEIntro";
 import { GameLogHelp } from "./GameLogHelp";
+import { ModalHelp } from "./ModalHelp";
 
 /**
  * This component is a handy wrapper for all the Help Flows, and reset on login/logout
@@ -80,7 +81,7 @@ export function HelpFlows(): JSX.Element {
             <GuestUserIntro />
 
             <GuestUserIntroRengo />
-
+            <ModalHelp />
             <OOLUserIntro />
             <OOLSpectatorIntro />
 

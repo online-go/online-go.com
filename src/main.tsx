@@ -328,7 +328,7 @@ const react_root = ReactDOM.createRoot(document.getElementById("main-content") a
 react_root.render(
     <React.StrictMode>
         <OgsHelpProvider>
-            {routes}
+            <ModalProvider>{routes}</ModalProvider>
             <HelpFlows />
         </OgsHelpProvider>
     </React.StrictMode>,
@@ -339,4 +339,5 @@ window.preferences = preferences;
 window.player_cache = player_cache;
 
 import * as requests from "@/lib/requests";
+import { ModalProvider } from "./components/Modal/ModalProvider";
 window.requests = requests;

@@ -57,6 +57,7 @@ import {
     ChallengeFilterKey,
     shouldDisplayChallenge,
 } from "@/lib/challenge_utils";
+import { ModalConsumer, ModalTypes } from "../../components/Modal/ModalProvider";
 
 const CHALLENGE_LIST_FREEZE_PERIOD = 1000; // Freeze challenge list for this period while they move their mouse on it
 
@@ -828,16 +829,22 @@ export class Play extends React.Component<{}, PlayState> {
                             </button>
                         </div>
                         <div className="automatch-row">
-                            <button
-                                className="primary"
-                                onClick={this.newComputerGame}
-                                disabled={anon || warned}
-                            >
-                                <div className="play-button-text-root">
-                                    <i className="fa fa-desktop" /> {_("Computer")}
-                                    <span className="time-per-move"></span>
-                                </div>
-                            </button>
+                            <ModalConsumer>
+                                {({ showModal }) => {
+                                    return (
+                                        <button
+                                            className="primary"
+                                            onClick={() => showModal(ModalTypes.Challenge)}
+                                            disabled={anon || warned}
+                                        >
+                                            <div className="play-button-text-root">
+                                                <i className="fa fa-desktop" /> {_("Computer")}
+                                                <span className="time-per-move"></span>
+                                            </div>
+                                        </button>
+                                    );
+                                }}
+                            </ModalConsumer>
                             <button
                                 className="primary"
                                 onClick={() => this.findMatch("correspondence")}
