@@ -34,4 +34,4 @@ export const alert = Swal.mixin({
     allowEscapeKey: true,
 });
 
-(window as any)["swal"] = alert;
+window.swal = alert;

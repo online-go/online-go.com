@@ -421,4 +421,4 @@ function compare_reports(a: Report, b: Report): number {
 
 export const report_manager = new ReportManager();
 
-(window as any)["report_manager"] = report_manager;
+window.report_manager = report_manager;

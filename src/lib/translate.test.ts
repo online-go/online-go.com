@@ -4,8 +4,8 @@
  */
 
 // Set the window variables before importing the module
-(window as any)["ogs_current_language"] = "test_language";
-(window as any)["ogs_locales"] = {
+window.ogs_current_language = "test_language";
+window.ogs_locales = {
     en: {},
     test_language: {
         msgid_1: ["translation_1"],
@@ -16,7 +16,7 @@
         "context\u0004singular\u0005plural": ["tr_singular_2", "tr_plural_2"],
     },
 };
-(window as any)["ogs_countries"] = {
+window.ogs_countries = {
     en: { us: "United States" },
     test_language: { test_cc: "test_country" },
 };

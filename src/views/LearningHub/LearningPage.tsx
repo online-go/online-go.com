@@ -220,7 +220,7 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
                     this.instructional_goban!.goban!.engine.getStoneRemovalString(),
                 );
             });
-            (window as any)["global_goban"] = r.goban;
+            window.global_goban = r.goban;
         }
     };
 

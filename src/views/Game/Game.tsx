@@ -1144,7 +1144,7 @@ export function Game(): JSX.Element | null {
         goban.current = createGoban(opts);
 
         onResize(true);
-        (window as any)["global_goban"] = goban.current;
+        window.global_goban = goban.current;
         if (review_id) {
             goban.current.setMode("analyze");
         }
@@ -1617,8 +1617,8 @@ export function Game(): JSX.Element | null {
             if (autoplay_timer.current) {
                 clearTimeout(autoplay_timer.current);
             }
-            (window as any)["Game"] = null;
-            (window as any)["global_goban"] = null;
+            window.Game = null;
+            window.global_goban = null;
 
             setExtraActionCallback(null as any);
             $(window).off("focus", onFocus);

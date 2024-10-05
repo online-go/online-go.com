@@ -140,7 +140,7 @@ export function MiniGoban(props: MiniGobanProps): JSX.Element {
         }
 
         if (props.sampleOptions?.undo) {
-            (window as any)["mini_goban"] = goban.current;
+            window.mini_goban = goban.current;
             //goban.current.visual_undo_request_indicator = true;
             goban.current.engine.undo_requested = goban.current.engine.cur_move.move_number;
         }

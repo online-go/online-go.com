@@ -90,7 +90,7 @@ export class InstructionalGoban extends React.Component<InstructionalGobanProps>
             },
             this.props.config,
         );
-        (window as any)["goban"] = this.goban;
+        window.goban = this.goban;
 
         this.goban.setMode(this.props.config.mode || "puzzle");
         if (this.props.config.engine_phase) {
