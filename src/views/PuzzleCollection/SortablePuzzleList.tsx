@@ -16,11 +16,11 @@
  */
 
 import * as React from "react";
-import { _ } from "translate";
-import { errorAlerter, navigateTo } from "misc";
-import { get, put } from "requests";
-import { longRankString } from "rank_utils";
-import { MiniGoban } from "MiniGoban";
+import { _ } from "@/lib/translate";
+import { errorAlerter, navigateTo } from "@/lib/misc";
+import { get, put } from "@/lib/requests";
+import { longRankString } from "@/lib/rank_utils";
+import { MiniGoban } from "@/components/MiniGoban";
 import {
     DndContext,
     DragEndEvent,
@@ -36,7 +36,7 @@ import {
     useSortable,
     verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { IdType } from "src/lib/types";
+import { IdType } from "@/lib/types";
 
 interface PuzzleEntryInterface {
     id: number;

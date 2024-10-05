@@ -16,11 +16,11 @@
  */
 
 import * as React from "react";
-import * as moment from "moment";
-import * as data from "data";
-import { Player } from "Player";
+import moment from "moment";
+import * as data from "@/lib/data";
+import { Player } from "@/components/Player";
 import { chat_markup } from "./chat_markup";
-import { ChatMessage } from "chat_manager";
+import { ChatMessage } from "@/lib/chat_manager";
 
 let name_match_regex = /^loading...$/;
 data.watch("config.user", (user) => {

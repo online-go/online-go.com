@@ -16,10 +16,7 @@
  */
 
 import * as Sentry from "@sentry/browser";
-import { apply_polyfills } from "polyfills";
-apply_polyfills();
-
-import { configure_goban } from "configure-goban";
+import { configure_goban } from "@/lib/configure-goban";
 import {
     init_wasm_ownership_estimator,
     init_remote_ownership_estimator,
@@ -27,11 +24,12 @@ import {
     ScoreEstimateResponse,
 } from "goban";
 
-import { OgsHelpProvider } from "OgsHelpProvider";
-import { HelpFlows } from "HelpFlows";
-import { sfx } from "sfx";
-import { post } from "requests";
-import { ai_host } from "sockets";
+import { OgsHelpProvider } from "@/components/OgsHelpProvider";
+import { ModalProvider } from "@/components/Modal/ModalProvider";
+import { HelpFlows } from "@/views/HelpFlows";
+import { sfx } from "@/lib/sfx";
+import { post } from "@/lib/requests";
+import { ai_host } from "@/lib/sockets";
 sfx.sync();
 
 declare let ogs_current_language: string;
@@ -118,13 +116,13 @@ try {
     console.log(e);
 }
 
-import * as data from "data";
+import * as data from "@/lib/data";
 
-import * as preferences from "preferences";
+import * as preferences from "@/lib/preferences";
 
 try {
     // default_theme is set in index.html based on looking at the OS theme
-    data.setDefault("theme", (window as any)["default_theme"]);
+    data.setDefault("theme", window.default_theme);
 } catch (e) {
     data.setDefault("theme", "light");
 }
@@ -148,37 +146,34 @@ data.setDefault("config", { user: default_user });
 
 data.setDefault("config.user", default_user);
 
-data.setDefault("config.cdn", (window as any)["cdn_service"]);
+data.setDefault("config.cdn", window.cdn_service);
 data.setDefault(
     "config.cdn_host",
-    (window as any)["cdn_service"].replace("https://", "").replace("http://", "").replace("//", ""),
+    window.cdn_service.replace("https://", "").replace("http://", "").replace("//", ""),
 );
-data.setDefault(
-    "config.cdn_release",
-    (window as any)["cdn_service"] + "/" + (window as any)["ogs_release"],
-);
-data.setDefault("config.release", (window as any)["ogs_release"]);
+data.setDefault("config.cdn_release", window.cdn_service + "/" + window.ogs_release);
+data.setDefault("config.release", window.ogs_release);
 
 configure_goban();
 
 import * as React from "react";
 import * as ReactDOM from "react-dom/client";
-import { browserHistory } from "./ogsHistory";
+import { browserHistory } from "@/lib/ogsHistory";
 import { routes } from "./routes";
 
 //import {Promise} from "es6-promise";
-import { errorAlerter } from "misc";
-import { close_all_popovers } from "popover";
-import * as sockets from "sockets";
-import { _, setCurrentLanguage } from "translate";
-import { init_tab_complete } from "tab_complete";
-import * as player_cache from "player_cache";
-import { toast } from "toast";
-import cached from "cached";
-import * as moment from "moment";
-import { get_device_id } from "SignIn";
+import { errorAlerter } from "@/lib/misc";
+import { close_all_popovers } from "@/lib/popover";
+import * as sockets from "@/lib/sockets";
+import { _, setCurrentLanguage } from "@/lib/translate";
+import { init_tab_complete } from "@/lib/tab_complete";
+import * as player_cache from "@/lib/player_cache";
+import { toast } from "@/lib/toast";
+import cached from "@/lib/cached";
+import moment from "moment";
+import { get_device_id } from "@/views/SignIn";
 
-import { ConfigSchema } from "data_schema";
+import { ConfigSchema } from "@/lib/data_schema";
 import * as history from "history";
 import "debug";
 
@@ -227,7 +222,7 @@ try {
 
 player_cache.update(user);
 data.set("user", user);
-(window as any)["user"] = user;
+window.user = user;
 
 console.log("initial user", user);
 /***
@@ -283,7 +278,7 @@ sockets.socket.on("user/update", (user: any) => {
         data.set("config.user", user);
         player_cache.update(user);
         data.set("user", user);
-        (window as any)["user"] = user;
+        window.user = user;
     } else {
         console.log("Ignoring user update for user", user);
     }
@@ -340,10 +335,9 @@ react_root.render(
     </React.StrictMode>,
 );
 
-(window as any)["data"] = data;
-(window as any)["preferences"] = preferences;
-(window as any)["player_cache"] = player_cache;
+window.data = data;
+window.preferences = preferences;
+window.player_cache = player_cache;
 
-import * as requests from "requests";
-import { ModalProvider } from "./components/Modal/ModalProvider";
-(window as any)["requests"] = requests;
+import * as requests from "@/lib/requests";
+window.requests = requests;

@@ -19,10 +19,10 @@ import * as React from "react";
 
 import * as DynamicHelp from "react-dynamic-help";
 
-import { _, pgettext } from "translate";
+import { _, pgettext } from "@/lib/translate";
 
-import { PreferenceLine } from "SettingsCommon";
-import { Toggle } from "Toggle";
+import { PreferenceLine } from "@/lib/SettingsCommon";
+import { Toggle } from "@/components/Toggle";
 
 export function HelpSettings(): JSX.Element {
     const {

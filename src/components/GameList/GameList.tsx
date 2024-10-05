@@ -16,11 +16,11 @@
  */
 
 import * as React from "react";
-import { _, pgettext } from "translate";
-import * as preferences from "preferences";
-import { MiniGoban, MiniGobanProps } from "MiniGoban";
-import { GobanLineSummary } from "GobanLineSummary";
-import { Player } from "Player";
+import { _, pgettext } from "@/lib/translate";
+import * as preferences from "@/lib/preferences";
+import { MiniGoban, MiniGobanProps } from "@/components/MiniGoban";
+import { GobanLineSummary } from "@/components/GobanLineSummary";
+import { Player } from "@/components/Player";
 import {
     JGOFTimeControl,
     JGOFPauseState,

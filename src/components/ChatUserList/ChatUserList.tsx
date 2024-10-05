@@ -16,10 +16,10 @@
  */
 
 import * as React from "react";
-import { _, interpolate } from "translate";
-import { chat_manager, ChatChannelProxy } from "chat_manager";
-import * as preferences from "preferences";
-import { Player } from "Player";
+import { _, interpolate } from "@/lib/translate";
+import { chat_manager, ChatChannelProxy } from "@/lib/chat_manager";
+import * as preferences from "@/lib/preferences";
+import { Player } from "@/components/Player";
 
 interface ChatUserListProperties {
     channel: string;
@@ -43,7 +43,7 @@ export function ChatUserList(props: ChatUserListProperties): JSX.Element {
         proxy.current.on("part", () => refresh(proxy?.current?.channel.users_by_name.length || 0));
         proxy.current.on("join", () => console.log("JOin!"));
         proxy.current.on("part", () => console.log("Part!"));
-        (window as any)["proxy"] = proxy.current;
+        window.proxy = proxy.current;
         refresh(proxy.current.channel.users_by_name.length);
 
         return () => {

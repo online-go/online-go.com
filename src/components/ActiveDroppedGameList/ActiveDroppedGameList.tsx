@@ -16,9 +16,9 @@
  */
 
 import * as React from "react";
-import { _ } from "translate";
-import { GameList } from "GameList";
-import { PlayerCacheEntry } from "src/lib/player_cache";
+import { _ } from "@/lib/translate";
+import { GameList } from "@/components/GameList";
+import { PlayerCacheEntry } from "@/lib/player_cache";
 
 interface UserType {
     id: number;

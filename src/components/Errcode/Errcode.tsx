@@ -18,9 +18,9 @@
 /* cspell: disable */
 
 import * as React from "react";
-import { MessageId, MessageObject } from "messages";
+import { MessageId, MessageObject } from "@/lib/messages";
 import { GobanMoveErrorMessageObject } from "goban";
-import { _ } from "translate";
+import { _ } from "@/lib/translate";
 
 export interface MessageProps {
     message?: MessageObject;

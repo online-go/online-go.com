@@ -17,7 +17,7 @@
 
 import { PuzzleConfig } from "goban";
 import { LearningPage, LearningPageProperties } from "./LearningPage";
-import { _, pgettext } from "translate";
+import { _, pgettext } from "@/lib/translate";
 import { LearningHubSection } from "./LearningHubSection";
 
 export class Defend extends LearningHubSection {

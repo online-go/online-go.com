@@ -16,18 +16,18 @@
  */
 
 import * as React from "react";
-import * as preferences from "preferences";
-import * as data from "data";
+import * as preferences from "@/lib/preferences";
+import * as data from "@/lib/data";
 import { Link, useNavigate } from "react-router-dom";
-import { alert } from "swal_config";
-import { pgettext } from "translate";
-import { post } from "requests";
-import { usePreference } from "preferences";
+import { alert } from "@/lib/swal_config";
+import { pgettext } from "@/lib/translate";
+import { post } from "@/lib/requests";
+import { usePreference } from "@/lib/preferences";
 
-import { ignore, errorAlerter } from "misc";
-import { report_manager } from "report_manager";
-import { Report } from "report_util";
-import { useRefresh, useUser } from "hooks";
+import { ignore, errorAlerter } from "@/lib/misc";
+import { report_manager } from "@/lib/report_manager";
+import { Report } from "@/lib/report_util";
+import { useRefresh, useUser } from "@/lib/hooks";
 import * as DynamicHelp from "react-dynamic-help";
 import { IncidentReportCard } from "./IncidentReportCard";
 
@@ -44,6 +44,7 @@ export function IncidentReportTracker(): JSX.Element | null {
     const { registerTargetItem, triggerFlow, signalUsed } = React.useContext(DynamicHelp.Api);
     const { ref: incident_report_indicator, active: incidentReportIndicatorActive } =
         registerTargetItem("incident-report-indicator");
+
     const { ref: hidden_incident_report_indicator } = registerTargetItem(
         "hidden-incident-report-indicator",
     );

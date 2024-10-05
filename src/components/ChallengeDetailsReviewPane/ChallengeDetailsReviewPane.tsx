@@ -16,10 +16,10 @@
  */
 
 import * as React from "react";
-import { pgettext, _ } from "translate";
+import { pgettext, _ } from "@/lib/translate";
 
-import { timeControlDescription, usedForCheating } from "TimeControl";
-import { rulesText, yesno } from "misc";
+import { timeControlDescription, usedForCheating } from "@/components/TimeControl";
+import { rulesText, yesno } from "@/lib/misc";
 
 type Challenge = socket_api.seekgraph_global.Challenge;
 

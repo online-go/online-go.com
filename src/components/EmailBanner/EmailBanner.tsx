@@ -16,10 +16,10 @@
  */
 
 import * as React from "react";
-import { browserHistory } from "ogsHistory";
-import { _ } from "translate";
-import * as data from "data";
-import { Card } from "material";
+import { browserHistory } from "@/lib/ogsHistory";
+import { _ } from "@/lib/translate";
+import * as data from "@/lib/data";
+import { Card } from "@/components/material";
 
 export class EmailBanner extends React.PureComponent {
     constructor(props: {}) {

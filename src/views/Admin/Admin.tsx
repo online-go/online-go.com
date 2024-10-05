@@ -17,9 +17,9 @@
 
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { post } from "requests";
-import { getPrintableError } from "misc";
-import { alert } from "swal_config";
+import { post } from "@/lib/requests";
+import { getPrintableError } from "@/lib/misc";
+import { alert } from "@/lib/swal_config";
 
 interface AdminState {
     results: any[];

@@ -16,14 +16,14 @@
  */
 
 import * as React from "react";
-import { pgettext, interpolate } from "translate";
-import { ai_socket } from "sockets";
-import { Toggle } from "Toggle";
-import { uuid } from "misc";
-import * as preferences from "preferences";
-import { usePreference } from "preferences";
+import { pgettext, interpolate } from "@/lib/translate";
+import { ai_socket } from "@/lib/sockets";
+import { Toggle } from "@/components/Toggle";
+import { uuid } from "@/lib/misc";
+import * as preferences from "@/lib/preferences";
+import { usePreference } from "@/lib/preferences";
 import { JGOFNumericPlayerColor, ColoredCircle, MoveTree, GobanRenderer } from "goban";
-import { useUser } from "hooks";
+import { useUser } from "@/lib/hooks";
 
 const cached_data: { [review_id: number]: { [board_string: string]: any } } = {};
 

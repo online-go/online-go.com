@@ -16,17 +16,17 @@
  */
 
 import * as React from "react";
-import { PaginatedTable } from "PaginatedTable";
-import { Card } from "material";
-import * as moment from "moment";
-import { Player } from "Player";
-import { openModal } from "Modal";
-import { NotesModal } from "NotesModal";
-import { _ } from "translate";
-import { errorAlerter } from "misc";
-import { put, get } from "requests";
-import { IPDetails } from "Moderator";
-import { usePreference } from "preferences";
+import { PaginatedTable } from "@/components/PaginatedTable";
+import { Card } from "@/components/material";
+import moment from "moment";
+import { Player } from "@/components/Player";
+import { openModal } from "@/components/Modal";
+import { NotesModal } from "@/components/NotesModal";
+import { _ } from "@/lib/translate";
+import { errorAlerter } from "@/lib/misc";
+import { put, get } from "@/lib/requests";
+import { IPDetails } from "@/views/Moderator";
+import { usePreference } from "@/lib/preferences";
 import { ModLog } from "./ModLog";
 
 interface ModToolsProps {

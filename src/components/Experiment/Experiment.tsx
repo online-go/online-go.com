@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { useData } from "hooks";
+import { useData } from "@/lib/hooks";
 import { Default } from "./Default";
 
 interface ExperimentProps {

@@ -16,21 +16,21 @@
  */
 
 import * as React from "react";
-import { del, get, put, post, abort_requests_in_flight } from "requests";
-import { errorAlerter } from "misc";
-import { _, pgettext, interpolate } from "translate";
-import * as data from "data";
+import { del, get, put, post, abort_requests_in_flight } from "@/lib/requests";
+import { errorAlerter } from "@/lib/misc";
+import { _, pgettext, interpolate } from "@/lib/translate";
+import * as data from "@/lib/data";
 import { List, AutoSizer } from "react-virtualized";
-import { Player } from "Player";
-import { UIPush } from "UIPush";
-import { shouldOpenNewTab, rulesText } from "misc";
-import { PlayerAutocomplete } from "PlayerAutocomplete";
-import { close_all_popovers, popover } from "popover";
-import { browserHistory } from "ogsHistory";
-import { alert } from "swal_config";
-import { RouteComponentProps, rr6ClassShim } from "ogs-rr6-shims";
-import { IdType } from "src/lib/types";
-import { PlayerCacheEntry } from "src/lib/player_cache";
+import { Player } from "@/components/Player";
+import { UIPush } from "@/components/UIPush";
+import { shouldOpenNewTab, rulesText } from "@/lib/misc";
+import { PlayerAutocomplete } from "@/components/PlayerAutocomplete";
+import { close_all_popovers, popover } from "@/lib/popover";
+import { browserHistory } from "@/lib/ogsHistory";
+import { alert } from "@/lib/swal_config";
+import { RouteComponentProps, rr6ClassShim } from "@/lib/ogs-rr6-shims";
+import { IdType } from "@/lib/types";
+import { PlayerCacheEntry } from "@/lib/player_cache";
 
 type LadderProperties = RouteComponentProps<{
     ladder_id: string;

@@ -8,12 +8,12 @@ import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { act, render, screen, getByRole, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
 
-import * as ogs_hooks from "hooks";
+import * as ogs_hooks from "@/lib/hooks";
 
-import { OgsHelpProvider } from "OgsHelpProvider";
+import { OgsHelpProvider } from "@/components/OgsHelpProvider";
 
-import * as requests from "requests";
-import * as data from "data";
+import * as requests from "@/lib/requests";
+import * as data from "@/lib/data";
 
 import { uiPushActions } from "../../components/UIPush/MockUIPush";
 

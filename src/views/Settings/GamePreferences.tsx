@@ -17,19 +17,19 @@
 
 import * as React from "react";
 
-import { _, interpolate } from "translate";
+import { _, interpolate } from "@/lib/translate";
 
-import * as preferences from "preferences";
-import { usePreference, ValidPreference } from "preferences";
+import * as preferences from "@/lib/preferences";
+import { usePreference, ValidPreference } from "@/lib/preferences";
 
-import { Toggle } from "Toggle";
+import { Toggle } from "@/components/Toggle";
 
 import {
     PreferenceLine,
     PreferenceDropdown,
     MAX_DOCK_DELAY,
     MAX_AI_VAR_MOVES,
-} from "SettingsCommon";
+} from "@/lib/SettingsCommon";
 
 export function GamePreferences(): JSX.Element {
     const [dock_delay, _setDockDelay]: [number, (x: number) => void] = React.useState(

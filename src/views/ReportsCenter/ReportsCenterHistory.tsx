@@ -17,9 +17,9 @@
 
 import * as React from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { PaginatedTable } from "PaginatedTable";
-import { Player } from "Player";
-import { PlayerAutocomplete } from "PlayerAutocomplete";
+import { PaginatedTable } from "@/components/PaginatedTable";
+import { Player } from "@/components/Player";
+import { PlayerAutocomplete } from "@/components/PlayerAutocomplete";
 
 export function ReportsCenterHistory(): JSX.Element {
     const navigateTo = useNavigate();

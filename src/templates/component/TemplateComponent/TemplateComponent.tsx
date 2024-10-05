@@ -17,9 +17,9 @@
 
 import * as React from "react";
 
-import { useUser } from "hooks";
+import { useUser } from "@/lib/hooks";
 
-import { pgettext } from "translate";
+import { pgettext } from "@/lib/translate";
 
 type TemplateComponentProps = {
     render_twice?: boolean;

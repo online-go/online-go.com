@@ -16,9 +16,9 @@
  */
 
 import * as React from "react";
-import { browserHistory } from "ogsHistory";
-import { Modal, openModal } from "Modal";
-import { _ } from "translate";
+import { browserHistory } from "@/lib/ogsHistory";
+import { Modal, openModal } from "@/components/Modal";
+import { _ } from "@/lib/translate";
 //import {SiteSupporterText} from "./Supporter";
 import { Supporter } from "./Supporter";
 

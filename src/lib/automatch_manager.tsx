@@ -16,11 +16,11 @@
  */
 
 import * as React from "react";
-import { pgettext, interpolate } from "translate";
-import { socket } from "sockets";
-import { TypedEventEmitter } from "TypedEventEmitter";
-import { browserHistory } from "ogsHistory";
-import { Toast, toast } from "toast";
+import { pgettext, interpolate } from "@/lib/translate";
+import { socket } from "@/lib/sockets";
+import { TypedEventEmitter } from "@/lib/TypedEventEmitter";
+import { browserHistory } from "@/lib/ogsHistory";
+import { Toast, toast } from "@/lib/toast";
 import { AutomatchPreferencesBase, Size, Speed } from "./types";
 
 interface Events {

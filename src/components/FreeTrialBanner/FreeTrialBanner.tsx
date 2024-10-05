@@ -16,14 +16,14 @@
  */
 
 import * as React from "react";
-import * as data from "data";
-import { _, pgettext } from "translate";
-import { useUser } from "hooks";
-import { LoadingButton } from "LoadingButton";
-import { post } from "requests";
+import * as data from "@/lib/data";
+import { _, pgettext } from "@/lib/translate";
+import { useUser } from "@/lib/hooks";
+import { LoadingButton } from "@/components/LoadingButton";
+import { post } from "@/lib/requests";
 import { LearnMore } from "./LearnMore";
-import { openModal } from "Modal";
-//import * as data from "data";
+import { openModal } from "@/components/Modal";
+//import * as data from "@/lib/data";
 
 const DAYS_PER_YEAR = 365.2422;
 

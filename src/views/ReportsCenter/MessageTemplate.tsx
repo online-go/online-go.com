@@ -19,14 +19,14 @@
 //  ("canned messages" voted for by CMs are in CannedMessages.ts)
 
 import * as React from "react";
-import { PlayerCacheEntry } from "player_cache";
-import { Player } from "Player";
-import { getPrivateChat } from "PrivateChat";
-import { alert } from "swal_config";
-import { post, put } from "requests";
-import { errorAlerter } from "misc";
-import { toast } from "toast";
-import { useUser } from "hooks";
+import { PlayerCacheEntry } from "@/lib/player_cache";
+import { Player } from "@/components/Player";
+import { getPrivateChat } from "@/components/PrivateChat";
+import { alert } from "@/lib/swal_config";
+import { post, put } from "@/lib/requests";
+import { errorAlerter } from "@/lib/misc";
+import { toast } from "@/lib/toast";
+import { useUser } from "@/lib/hooks";
 
 interface TemplateEntry {
     message: string;

@@ -16,13 +16,13 @@
  */
 
 import * as React from "react";
-import { pgettext } from "translate";
-import { openModal, Modal } from "Modal";
-import { alert } from "swal_config";
-import { patch } from "requests";
+import { pgettext } from "@/lib/translate";
+import { openModal, Modal } from "@/components/Modal";
+import { alert } from "@/lib/swal_config";
+import { patch } from "@/lib/requests";
 
-import { errorAlerter } from "misc";
-import { MODERATOR_POWERS, MOD_POWER_NAMES } from "moderation";
+import { errorAlerter } from "@/lib/misc";
+import { MODERATOR_POWERS, MOD_POWER_NAMES } from "@/lib/moderation";
 
 interface Events {}
 

@@ -19,7 +19,7 @@ import * as React from "react";
 import { ConditionalMoveTree } from "goban";
 import { useGoban } from "./goban_context";
 import { generateGobanHook } from "./GameHooks";
-import { _ } from "translate";
+import { _ } from "@/lib/translate";
 
 interface ConditionalMoveTreeDisplayProps {
     tree: ConditionalMoveTree;

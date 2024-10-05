@@ -15,11 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { _, interpolate, pgettext } from "translate";
-import { errcodeAlerter } from "ErrcodeModal";
-import { browserHistory } from "ogsHistory";
-import * as preferences from "preferences";
-import { alert } from "swal_config";
+import { _, interpolate, pgettext } from "@/lib/translate";
+import { errcodeAlerter } from "@/components/ErrcodeModal";
+import { browserHistory } from "@/lib/ogsHistory";
+import * as preferences from "@/lib/preferences";
+import { alert } from "@/lib/swal_config";
 import React from "react";
 import moment from "moment";
 
@@ -656,7 +656,8 @@ export function getCurrentGameId() {
     return null;
 }
 
-// x is a  date, y is data for that date
+// x is a date, y is data for that date
+// sets y for the last date in the data array to null
 export function dropCurrentPeriod(data: { x: string; y: number | null }[]) {
     const newData = [...data];
     if (newData.length > 0) {
@@ -1192,7 +1193,7 @@ const real_now = Date.now;
 export function skew_clock(ms: number): void {
     Date.now = () => real_now() + ms;
 }
-(window as any).skew_clock = skew_clock;
+window.skew_clock = skew_clock;
 
 /** Returns true if we are running in local development or on a beta site.
  * False if we are running in production. */

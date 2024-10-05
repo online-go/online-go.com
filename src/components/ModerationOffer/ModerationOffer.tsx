@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { _, pgettext } from "translate";
+import { _, pgettext } from "@/lib/translate";
 
 import { openModerationOfferModal } from "./ModerationOfferModal";
 

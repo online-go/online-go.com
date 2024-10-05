@@ -18,15 +18,15 @@
 /* spell-checker: disable */
 
 import * as React from "react";
-import * as moment from "moment";
-import * as data from "data";
+import moment from "moment";
+import * as data from "@/lib/data";
 import { Link } from "react-router-dom";
-import { _ } from "translate";
-import { PaginatedTable } from "PaginatedTable";
-import { Card } from "material";
-import { SearchInput } from "misc-ui";
-import { Player } from "Player";
-import { chat_markup } from "Chat";
+import { _ } from "@/lib/translate";
+import { PaginatedTable } from "@/components/PaginatedTable";
+import { Card } from "@/components/material";
+import { SearchInput } from "@/components/misc-ui";
+import { Player } from "@/components/Player";
+import { chat_markup } from "@/components/Chat";
 import { ban, shadowban } from "./ban_functions";
 
 const whitelist = [

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { _ } from "translate";
+import { _ } from "@/lib/translate";
 import Swal from "sweetalert2";
 
 /*** SweetAlert setup ***/
@@ -34,4 +34,4 @@ export const alert = Swal.mixin({
     allowEscapeKey: true,
 });
 
-(window as any)["swal"] = alert;
+window.swal = alert;

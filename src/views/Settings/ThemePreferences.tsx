@@ -16,13 +16,13 @@
  */
 
 import * as React from "react";
-import * as data from "data";
-import { _, pgettext } from "translate";
-import { usePreference } from "preferences";
-import * as preferences from "preferences";
-import { PreferenceDropdown, PreferenceLine } from "SettingsCommon";
-//import { ReportsCenterSettings } from "ReportsCenter";
-//import * as preferences from "preferences";
+import * as data from "@/lib/data";
+import { _, pgettext } from "@/lib/translate";
+import { usePreference } from "@/lib/preferences";
+import * as preferences from "@/lib/preferences";
+import { PreferenceDropdown, PreferenceLine } from "@/lib/SettingsCommon";
+//import { ReportsCenterSettings } from "@/views/ReportsCenter";
+//import * as preferences from "@/lib/preferences";
 import {
     GobanBlackThemePicker,
     GobanWhiteThemePicker,
@@ -30,11 +30,11 @@ import {
     GobanCustomBoardPicker,
     GobanCustomWhitePicker,
     GobanCustomBlackPicker,
-} from "GobanThemePicker";
-import { useData } from "hooks";
-import { MiniGoban } from "MiniGoban";
+} from "@/components/GobanThemePicker";
+import { useData } from "@/lib/hooks";
+import { MiniGoban } from "@/components/MiniGoban";
 import { GobanEngineConfig, setGobanRenderer } from "goban";
-import { Toggle } from "Toggle";
+import { Toggle } from "@/components/Toggle";
 
 const sample_board_data: GobanEngineConfig = {
     width: 3,
@@ -80,6 +80,7 @@ export function ThemePreferences(): JSX.Element | null {
         "visual-undo-request-indicator",
     );
     const [last_move_opacity, _setLastMoveOpacity] = usePreference("last-move-opacity");
+    const [stone_font_scale, _setStoneFontScale] = usePreference("stone-font-scale");
     /*
     const [variation_stone_opacity, _setVariationStoneOpacity] =
         usePreference("variation-stone-opacity");
@@ -117,6 +118,14 @@ export function ThemePreferences(): JSX.Element | null {
         _setShowVariationMoveNumbers(tf);
     }, []);
 
+    function setStoneFontScale(ev: React.ChangeEvent<HTMLInputElement>) {
+        const value = parseFloat(ev.target.value);
+
+        if (value >= 0.3 && value <= 1.3) {
+            _setStoneFontScale(value);
+        }
+    }
+
     function setLastMoveOpacity(ev: React.ChangeEvent<HTMLInputElement>) {
         const value = parseFloat(ev.target.value);
 
@@ -143,6 +152,7 @@ export function ThemePreferences(): JSX.Element | null {
         (enable_svg ? "svg" : "canvas") +
         board_labeling +
         label_positioning +
+        stone_font_scale +
         //stone_removal_graphic +
         //removal_scale +
         visual_undo_request_indicator +
@@ -268,6 +278,46 @@ export function ThemePreferences(): JSX.Element | null {
                     onChange={toggleRemovalScale}
                     checked={removal_scale < 1.0}
                 />
+            </PreferenceLine>
+            <PreferenceLine
+                title={_("Stone font scale")}
+                description={_("Adjust the size of the font used to display symbols on stones.")}
+            >
+                <div className="with-sample-goban">
+                    <div className="left">
+                        <input
+                            type="range"
+                            step="0.05"
+                            min="0.3"
+                            max="1.3"
+                            onChange={setStoneFontScale}
+                            value={stone_font_scale}
+                        />
+                        <span>{stone_font_scale}</span>
+                    </div>
+
+                    <MiniGoban
+                        className="inline"
+                        key={stone_font_scale + "" + _refresh}
+                        json={{
+                            width: 3,
+                            height: 1,
+                            moves: [
+                                { x: 0, y: 0 },
+                                { x: 2, y: 0 },
+                            ],
+                            marks: {
+                                "1": "aa",
+                            },
+                        }}
+                        noLink={true}
+                        width={2}
+                        height={1}
+                        displayWidth={80}
+                        labels_positioning={"none"}
+                        sampleOptions={{}}
+                    />
+                </div>
             </PreferenceLine>
 
             <PreferenceLine

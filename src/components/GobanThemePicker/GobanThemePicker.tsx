@@ -16,10 +16,10 @@
  */
 
 import * as React from "react";
-import { _, pgettext } from "translate";
+import { _, pgettext } from "@/lib/translate";
 import { Goban, GobanTheme /*, GobanThemeBackgroundCSS */ } from "goban";
-import { getSelectedThemes, usePreference } from "preferences";
-import { PersistentElement } from "PersistentElement";
+import { getSelectedThemes, usePreference } from "@/lib/preferences";
+import { PersistentElement } from "@/components/PersistentElement";
 import { Experiment, Variant, Default } from "../Experiment";
 import { LineText } from "../misc-ui";
 import { Link } from "react-router-dom";
@@ -107,7 +107,7 @@ export function GobanBoardThemePicker(props: GobanThemePickerProperties): JSX.El
                         style={theme.styles}
                         onClick={selectTheme.current[theme.theme_name]}
                     >
-                        <PersistentElement elt={canvases.current[idx]} />
+                        {canvases.current[idx] && <PersistentElement elt={canvases.current[idx]} />}
                     </div>
                 ))}
             </div>
@@ -173,7 +173,7 @@ export function GobanCustomBoardPicker(props: GobanThemePickerProperties): JSX.E
                             style={theme.styles}
                             onClick={() => setBoard("Custom")}
                         >
-                            <PersistentElement elt={sample_canvas.current} />
+                            {sample_canvas && <PersistentElement elt={sample_canvas.current} />}
                         </div>
                     </div>
 
@@ -353,7 +353,9 @@ export function GobanWhiteThemePicker(props: GobanThemePickerProperties): JSX.El
                                 }}
                                 onClick={selectTheme.current[theme.theme_name]}
                             >
-                                <PersistentElement elt={canvases.current[idx]} />
+                                {canvases.current[idx] && (
+                                    <PersistentElement elt={canvases.current[idx]} />
+                                )}
                             </div>
                         ))}
                     </div>
@@ -550,7 +552,9 @@ export function GobanBlackThemePicker(props: GobanThemePickerProperties): JSX.El
                                 }}
                                 onClick={selectTheme.current[theme.theme_name]}
                             >
-                                <PersistentElement elt={canvases.current[idx]} />
+                                {canvases.current[idx] && (
+                                    <PersistentElement elt={canvases.current[idx]} />
+                                )}
                             </div>
                         ))}
                     </div>

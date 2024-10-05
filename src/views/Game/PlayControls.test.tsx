@@ -7,11 +7,11 @@ import { createGoban, GobanRenderer, ConditionalMoveTree } from "goban";
 import { PlayControls } from "./PlayControls";
 import { render, screen } from "@testing-library/react";
 import * as React from "react";
-import * as data from "data";
+import * as data from "@/lib/data";
 import { MemoryRouter as Router } from "react-router-dom";
 import { GobanContext } from "./goban_context";
 import { act } from "react-dom/test-utils";
-import { OgsHelpProvider } from "OgsHelpProvider";
+import { OgsHelpProvider } from "@/components/OgsHelpProvider";
 const TEST_USER = {
     anonymous: false,
     id: 123,

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { effective_outcome, EffectiveOutcome } from "rank_utils";
+import { effective_outcome, EffectiveOutcome } from "@/lib/rank_utils";
 
 export interface IRatingEntry {
     ended: Date;

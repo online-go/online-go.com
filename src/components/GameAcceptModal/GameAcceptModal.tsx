@@ -16,14 +16,14 @@
  */
 
 import * as React from "react";
-import { _ } from "translate";
-import { post } from "requests";
-import { openModal, Modal } from "Modal";
-import { Player, PlayerObjectType } from "Player";
-import { errorAlerter } from "misc";
-import { alert } from "swal_config";
+import { _ } from "@/lib/translate";
+import { post } from "@/lib/requests";
+import { openModal, Modal } from "@/components/Modal";
+import { Player, PlayerObjectType } from "@/components/Player";
+import { errorAlerter } from "@/lib/misc";
+import { alert } from "@/lib/swal_config";
 import { ChallengeDetailsReviewPane } from "../ChallengeDetailsReviewPane";
-import { Challenge } from "src/lib/challenge_utils";
+import { Challenge } from "@/lib/challenge_utils";
 
 interface Events {}
 

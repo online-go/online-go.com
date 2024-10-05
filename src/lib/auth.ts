@@ -15,12 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as data from "data";
-import cached from "cached";
-import { get } from "requests";
-import { errorLogger } from "misc";
-import ITC from "ITC";
-import { alert } from "swal_config";
+import * as data from "@/lib/data";
+import cached from "@/lib/cached";
+import { get } from "@/lib/requests";
+import { errorLogger } from "@/lib/misc";
+import ITC from "@/lib/ITC";
+import { alert } from "@/lib/swal_config";
 
 ITC.register("logout", (device_uuid: string) => {
     if (device_uuid !== data.get("device.uuid", "")) {

@@ -16,9 +16,9 @@
  */
 
 import * as React from "react";
-import { _ } from "translate";
-import { post, get } from "requests";
-import * as data from "data";
+import { _ } from "@/lib/translate";
+import { post, get } from "@/lib/requests";
+import * as data from "@/lib/data";
 import { UIPush } from "../UIPush";
 
 interface PaginatedTableColumnProperties<EntryT> {
@@ -55,6 +55,7 @@ interface PaginatedTableProperties<RawEntryT, GroomedEntryT = RawEntryT> {
     onRowClick?: (
         row: GroomedEntryT,
         ev: React.MouseEvent | React.TouchEvent | React.PointerEvent,
+        rows: GroomedEntryT[],
     ) => any;
     debug?: boolean;
     pageSizeOptions?: Array<number>;
@@ -63,7 +64,7 @@ interface PaginatedTableProperties<RawEntryT, GroomedEntryT = RawEntryT> {
     hidePageControls?: boolean;
     /** If provided, the table will listen for this push event and refresh its data accordingly */
     uiPushProps?: { event: string; channel: string };
-    annulQueue?: any[];
+    highlightedRows?: any[];
 }
 
 export interface PaginatedTableRef {
@@ -88,7 +89,7 @@ function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(
     const [page_input_text, _setPageInputText]: [string, (s: string) => void] = React.useState(
         (props.startingPage || 1).toString(),
     );
-    const [num_pages, setNumPages]: [number, (x: number) => void] = React.useState(0);
+    const [num_pages, setNumPages]: [number, (x: number) => void] = React.useState(1);
     const [page_size, _setPageSize]: [number, (x: number) => void] = React.useState(
         data.get(`paginated-table.${table_name}.page_size`, props.pageSize || 10),
     );
@@ -163,7 +164,7 @@ function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(
                     setLoadAgainRefresh(load_again_refresh + 1);
                 }
                 setRows(new_rows);
-                setNumPages(Math.ceil(res.count / page_size));
+                setNumPages(Math.ceil(res.count / page_size) || 1);
                 if (page > Math.ceil(res.count / page_size)) {
                     const new_page = Math.max(1, Math.ceil(res.count / page_size));
                     _setPage(new_page);
@@ -355,40 +356,21 @@ function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(
                                     {column_render(column, row)}
                                 </td>
                             ));
-                            if (props.annulQueue) {
-                                if (props.onRowClick) {
-                                    return (
-                                        <tr
-                                            key={row.id}
-                                            className={
-                                                props.annulQueue.includes(row) ? "queued" : ""
-                                            }
-                                            onMouseUp={(ev) =>
-                                                props.onRowClick && props.onRowClick(row, ev)
-                                            }
-                                        >
-                                            {cols}
-                                        </tr>
-                                    );
-                                } else {
-                                    return <tr key={row.id}>{cols}</tr>;
-                                }
-                            } else {
-                                if (props.onRowClick) {
-                                    return (
-                                        <tr
-                                            key={row.id}
-                                            onMouseUp={(ev) =>
-                                                props.onRowClick && props.onRowClick(row, ev)
-                                            }
-                                        >
-                                            {cols}
-                                        </tr>
-                                    );
-                                } else {
-                                    return <tr key={row.id}>{cols}</tr>;
-                                }
-                            }
+                            return (
+                                <tr
+                                    key={row.id}
+                                    className={
+                                        props.highlightedRows && props.highlightedRows.includes(row)
+                                            ? "queued"
+                                            : ""
+                                    }
+                                    onMouseUp={(ev) =>
+                                        props.onRowClick && props.onRowClick(row, ev, rows)
+                                    }
+                                >
+                                    {cols}
+                                </tr>
+                            );
                         })}
                         {blank_rows}
                     </tbody>

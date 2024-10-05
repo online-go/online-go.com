@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import * as data from "data";
+import * as data from "@/lib/data";
 import { DataSchema } from "./data_schema";
 import { Goban } from "goban";
 
@@ -66,8 +66,8 @@ export function useRefresh(): () => void {
     return React.useCallback(() => refresh(() => Math.random()), [refresh]);
 }
 
-export function useMainGoban(): Goban | null {
-    return (window as any)["global_goban"];
+export function useMainGoban(): Goban | null | undefined {
+    return window.global_goban;
 }
 
 export const useIsDesktop = () => {

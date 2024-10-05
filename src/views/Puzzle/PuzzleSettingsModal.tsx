@@ -16,8 +16,8 @@
  */
 
 import * as React from "react";
-import * as preferences from "preferences";
-import { _ } from "translate";
+import * as preferences from "@/lib/preferences";
+import { _ } from "@/lib/translate";
 
 interface PuzzleSettingsModalState {
     randomize_transform: boolean;

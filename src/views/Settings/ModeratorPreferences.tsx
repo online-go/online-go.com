@@ -16,13 +16,13 @@
  */
 
 import * as React from "react";
-import * as data from "data";
-import { _ } from "translate";
-import { usePreference } from "preferences";
-import { Toggle } from "Toggle";
-import { SettingGroupPageProps, PreferenceLine } from "SettingsCommon";
-import { ReportsCenterSettings } from "ReportsCenter";
-import * as preferences from "preferences";
+import * as data from "@/lib/data";
+import { _ } from "@/lib/translate";
+import { usePreference } from "@/lib/preferences";
+import { Toggle } from "@/components/Toggle";
+import { SettingGroupPageProps, PreferenceLine } from "@/lib/SettingsCommon";
+import { ReportsCenterSettings } from "@/views/ReportsCenter";
+import * as preferences from "@/lib/preferences";
 
 export function ModeratorPreferences(_props: SettingGroupPageProps): JSX.Element | null {
     const [incident_report_notifications, setIncidentReportNotifications] = usePreference(
@@ -56,6 +56,14 @@ export function ModeratorPreferences(_props: SettingGroupPageProps): JSX.Element
             _setReportQuota(ev.target.value as any);
         }
     }
+
+    // At the moment we want moderators do non-CM reports
+    React.useEffect(() => {
+        if (show_cm_reports) {
+            setShowCMReports(false);
+        }
+    }, [show_cm_reports, setShowCMReports]);
+
     if (!user.is_moderator && !user.moderator_powers) {
         return null;
     }
@@ -89,8 +97,11 @@ export function ModeratorPreferences(_props: SettingGroupPageProps): JSX.Element
                         <Toggle checked={hide_claimed_reports} onChange={setHideClaimedReports} />
                     </PreferenceLine>
                     <PreferenceLine title="Show un-escalated reports">
-                        <Toggle checked={show_cm_reports} onChange={setShowCMReports} />
-                        <span>This will include for you reports that CMs can still vote on</span>
+                        <Toggle checked={false} onChange={() => {}} />
+                        <span>
+                            This would include for you reports that CMs can still vote on, but is
+                            not currently available.
+                        </span>
                     </PreferenceLine>
                     <PreferenceLine title="Join games anonymously">
                         <Toggle

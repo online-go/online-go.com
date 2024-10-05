@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { TypedEventEmitter } from "TypedEventEmitter";
+import { TypedEventEmitter } from "@/lib/TypedEventEmitter";
 
 export class TypedEventEmitterPureComponent<Events, Props, State> extends React.PureComponent<
     Props,

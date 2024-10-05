@@ -16,30 +16,30 @@
  */
 
 import * as React from "react";
-import { toast } from "toast";
-import { browserHistory } from "ogsHistory";
-import { _, pgettext } from "translate";
-import { post } from "requests";
-import { shouldOpenNewTab, errorAlerter, ignore } from "misc";
-import { getUserRating, humble_rating } from "rank_utils";
-import * as player_cache from "player_cache";
-import { icon_size_url } from "PlayerIcon";
-import { socket } from "sockets";
-import * as data from "data";
-import { close_all_popovers } from "popover";
-import { Flag } from "Flag";
-import { ban, shadowban, remove_shadowban, remove_ban } from "Moderator/ban_functions";
-import { challenge } from "ChallengeModal";
-import { getPrivateChat } from "PrivateChat";
-import { openBlockPlayerControls } from "BlockPlayer";
+import { toast } from "@/lib/toast";
+import { browserHistory } from "@/lib/ogsHistory";
+import { _, pgettext } from "@/lib/translate";
+import { post } from "@/lib/requests";
+import { shouldOpenNewTab, errorAlerter, ignore } from "@/lib/misc";
+import { getUserRating, humble_rating } from "@/lib/rank_utils";
+import * as player_cache from "@/lib/player_cache";
+import { icon_size_url } from "@/components/PlayerIcon";
+import { socket } from "@/lib/sockets";
+import * as data from "@/lib/data";
+import { close_all_popovers } from "@/lib/popover";
+import { Flag } from "@/components/Flag";
+import { ban, shadowban, remove_shadowban, remove_ban } from "@/views/Moderator/ban_functions";
+import { challenge } from "@/components/ChallengeModal";
+import { getPrivateChat } from "@/components/PrivateChat";
+import { openBlockPlayerControls } from "@/components/BlockPlayer";
 import { Player } from "./Player";
-import * as preferences from "preferences";
-import { close_friend_list } from "FriendList/close_friend_list";
-import cached from "cached";
-import { openPlayerNotesModal } from "PlayerNotesModal";
-import { alert } from "swal_config";
-import { PlayerCacheEntry } from "player_cache";
-import { openReport } from "Report";
+import * as preferences from "@/lib/preferences";
+import { close_friend_list } from "@/components/FriendList/close_friend_list";
+import cached from "@/lib/cached";
+import { openPlayerNotesModal } from "@/components/PlayerNotesModal";
+import { alert } from "@/lib/swal_config";
+import { PlayerCacheEntry } from "@/lib/player_cache";
+import { openReport } from "@/components/Report";
 
 interface PlayerDetailsProperties {
     playerId: number;

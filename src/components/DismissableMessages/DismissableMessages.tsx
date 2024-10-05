@@ -16,11 +16,11 @@
  */
 
 import * as React from "react";
-import * as data from "data";
-import { del } from "requests";
-import { DismissableMessagesSchema } from "data_schema";
-import { AutoTranslate } from "AutoTranslate";
-import { UIPush } from "UIPush";
+import * as data from "@/lib/data";
+import { del } from "@/lib/requests";
+import { DismissableMessagesSchema } from "@/lib/data_schema";
+import { AutoTranslate } from "@/components/AutoTranslate";
+import { UIPush } from "@/components/UIPush";
 
 export function DismissableMessages(): JSX.Element | null {
     const [messages, setMessages] = React.useState<DismissableMessagesSchema | undefined>(

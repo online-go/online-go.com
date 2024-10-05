@@ -16,10 +16,10 @@
  */
 
 import * as React from "react";
-import { _ } from "translate";
-import { post } from "requests";
-import { errorAlerter } from "misc";
-import { browserHistory } from "ogsHistory";
+import { _ } from "@/lib/translate";
+import { post } from "@/lib/requests";
+import { errorAlerter } from "@/lib/misc";
+import { browserHistory } from "@/lib/ogsHistory";
 
 interface GroupCreateState {
     name: string;

@@ -16,16 +16,16 @@
  */
 
 import * as React from "react";
-import * as data from "data";
+import * as data from "@/lib/data";
 import { Link, useParams } from "react-router-dom";
-import { CardLink } from "material";
-import { _, pgettext } from "translate";
+import { CardLink } from "@/components/material";
+import { _, pgettext } from "@/lib/translate";
 import { sections, all_sections } from "./sections";
-import { Ribbon } from "misc-ui";
+import { Ribbon } from "@/components/misc-ui";
 import { getSectionCompletion, getSectionByName } from "./util";
-import { browserHistory } from "ogsHistory";
-import { MiniGoban } from "MiniGoban";
-import { alert } from "swal_config";
+import { browserHistory } from "@/lib/ogsHistory";
+import { MiniGoban } from "@/components/MiniGoban";
+import { alert } from "@/lib/swal_config";
 
 interface LearningHubParams {
     section: string;

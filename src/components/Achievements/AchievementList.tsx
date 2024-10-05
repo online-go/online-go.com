@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-//import * as preferences from "preferences";
+//import * as preferences from "@/lib/preferences";
 
 interface AchievementEntry {
     name: string;

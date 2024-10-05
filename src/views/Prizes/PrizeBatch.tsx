@@ -17,11 +17,10 @@
 
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { get, post, del } from "requests";
-import { useUser } from "hooks";
-import { Player } from "Player";
-import { _, interpolate } from "translate";
-
+import { get, post, del } from "@/lib/requests";
+import { useUser } from "@/lib/hooks";
+import { Player } from "@/components/Player";
+import { _, interpolate } from "@/lib/translate";
 interface PrizeBatch {
     id: string;
     created_at: string;
@@ -165,18 +164,18 @@ export const PrizeBatch: React.FC = () => {
                             @page {
                                 margin: 0;
                             }
-                        
+
                             body {
                                 margin: 0;
                                 font-family: Arial, sans-serif;
                             }
-                        
+
                             .voucher-container {
                                 padding: 2cm;
                                 padding-top: 3cm;
                                 page-break-after: always;
                             }
-                        
+
                             .voucher {
                                 border: 2px solid #3498db;
                                 padding: 20px;
@@ -187,7 +186,7 @@ export const PrizeBatch: React.FC = () => {
                                 page-break-inside: avoid;
                                 margin-bottom: 1.6cm;
                             }
-                        
+
                             .header {
                                 display: flex;
                                 justify-content: center;
@@ -212,31 +211,31 @@ export const PrizeBatch: React.FC = () => {
                                 margin-top: 2rem;
                                 margin-bottom: 2rem;
                             }
-                        
+
                             .logo {
                                 max-width: 100px;
                                 height: auto;
                                 margin-right: 20px;
                             }
-                        
+
                             .content {
                                 line-height: 1.6;
                                 text-align: center;
                             }
-                        
+
                             .congratulations {
                                 font-size: 28px;
                                 font-weight: bold;
                                 margin-bottom: 10px;
                             }
-                        
+
                             .message {
                                 font-size: 20px;
                                 color: #34495e;
                                 margin-bottom: 30px;
                                 text-align: justify;
                             }
-                        
+
                             .code-info {
                                 margin-top: 5rem;
                                 margin-bottom: 5rem;
@@ -244,7 +243,7 @@ export const PrizeBatch: React.FC = () => {
                                 border-radius: 5px;
                                 border: 1px solid #ddd;
                             }
-                            
+
                             .header, .footer {
                                 display: flex;
                                 justify-content: space-between;

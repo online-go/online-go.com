@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as data from "data";
+import * as data from "@/lib/data";
 import { sections, all_sections } from "./sections";
 import { LearningHubSection } from "./LearningHubSection";
 

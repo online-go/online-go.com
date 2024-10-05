@@ -16,14 +16,14 @@
  */
 
 import * as React from "react";
-import * as data from "data";
-import { _ } from "translate";
-import { Modal, openModal } from "Modal";
+import * as data from "@/lib/data";
+import { _ } from "@/lib/translate";
+import { Modal, openModal } from "@/components/Modal";
 import { GobanRenderer } from "goban";
-import { PlayerAutocomplete } from "PlayerAutocomplete";
-import { MiniGoban } from "MiniGoban";
-import { challenge } from "ChallengeModal";
-import { PlayerCacheEntry } from "src/lib/player_cache";
+import { PlayerAutocomplete } from "@/components/PlayerAutocomplete";
+import { MiniGoban } from "@/components/MiniGoban";
+import { challenge } from "@/components/ChallengeModal";
+import { PlayerCacheEntry } from "@/lib/player_cache";
 
 interface Events {}
 

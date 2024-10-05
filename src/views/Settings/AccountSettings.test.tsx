@@ -5,9 +5,9 @@
 import { AccountSettings } from "./AccountSettings";
 import * as React from "react";
 import { act, render, screen } from "@testing-library/react";
-import * as requests from "requests";
-import * as ogs_hooks from "hooks";
-import { OgsHelpProvider } from "OgsHelpProvider";
+import * as requests from "@/lib/requests";
+import * as ogs_hooks from "@/lib/hooks";
+import { OgsHelpProvider } from "@/components/OgsHelpProvider";
 
 const BASE_PROPS = {
     state: { profile: { email: "" } },

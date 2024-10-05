@@ -17,9 +17,9 @@
 
 import * as React from "react";
 import { Link } from "react-router-dom";
-import * as data from "data";
-import * as moment from "moment";
-import { usePreference } from "preferences";
+import * as data from "@/lib/data";
+import moment from "moment";
+import { usePreference } from "@/lib/preferences";
 
 export function TournamentIndicator(): JSX.Element | null {
     const [tournament, setTournament] = React.useState<any>(null);

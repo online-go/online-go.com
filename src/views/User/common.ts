@@ -15,9 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { browserHistory } from "ogsHistory";
-import { shouldOpenNewTab } from "misc";
-import * as preferences from "preferences";
+import { browserHistory } from "@/lib/ogsHistory";
+import { shouldOpenNewTab } from "@/lib/misc";
+import * as preferences from "@/lib/preferences";
 
 export function openUrlIfALinkWasNotClicked(ev: any, url: string) {
     let cur = ev.target;

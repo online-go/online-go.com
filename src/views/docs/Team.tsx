@@ -18,11 +18,11 @@
 /* spell-checker: disable */
 
 import * as React from "react";
-import { _, pgettext, getLanguageFlag } from "translate";
-import { get } from "requests";
-import { Flag } from "Flag";
-import { Player } from "Player";
-import * as data from "data";
+import { _, pgettext, getLanguageFlag } from "@/lib/translate";
+import { get } from "@/lib/requests";
+import { Flag } from "@/components/Flag";
+import { Player } from "@/components/Player";
+import * as data from "@/lib/data";
 
 function shuffleArray(array: any[]) {
     for (let i = array.length - 1; i >= 0; i--) {

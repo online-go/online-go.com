@@ -16,10 +16,10 @@
  */
 
 import * as React from "react";
-import { getUserRating, is_novice, is_provisional, humble_rating } from "rank_utils";
-import { Player } from "Player";
-import { PlayerIcon } from "PlayerIcon";
-import * as preferences from "preferences";
+import { getUserRating, is_novice, is_provisional, humble_rating } from "@/lib/rank_utils";
+import { Player } from "@/components/Player";
+import { PlayerIcon } from "@/components/PlayerIcon";
+import * as preferences from "@/lib/preferences";
 
 interface ProfileCardInterface {
     user: any;

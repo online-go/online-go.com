@@ -16,13 +16,13 @@
  */
 
 import * as React from "react";
-import * as data from "data";
+import * as data from "@/lib/data";
 import { Link } from "react-router-dom";
-import { _ } from "translate";
-import { PaginatedTable } from "PaginatedTable";
-import { SearchInput } from "misc-ui";
-import { navigateTo } from "misc";
-import { useUser } from "hooks";
+import { _ } from "@/lib/translate";
+import { PaginatedTable } from "@/components/PaginatedTable";
+import { SearchInput } from "@/components/misc-ui";
+import { navigateTo } from "@/lib/misc";
+import { useUser } from "@/lib/hooks";
 
 export function GroupList(): JSX.Element {
     const user = useUser();

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as moment from "moment-timezone";
+import moment from "moment-timezone";
 
 export function localize_time_strings(str: string): string {
     try {

@@ -15,13 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Debug from "debug";
+import Debug from "@/lib/debug";
 import { GobanSocket, protocol, GobanRenderer, JGOFTimeControl } from "goban";
-import { lookingAtOurLiveGame } from "TimeControl/util";
+import { lookingAtOurLiveGame } from "@/components/TimeControl/util";
 
 const debug = new Debug("sockets");
 
-export const socket = new GobanSocket((window as any)["websocket_host"] ?? window.location.origin);
+export const socket = new GobanSocket(window.websocket_host ?? window.location.origin);
 
 // Updated to be more helpful (shorter) when we know latencies
 socket.options.ping_interval = 10000;
@@ -33,17 +33,19 @@ const MIN_TIMEOUT_DELAY = 1000;
 const MAX_PING_INTERVAL = 15000;
 const MAX_TIMEOUT_DELAY = 14000;
 
-export let ai_host = "http://localhost:13284";
+// TODO: localhost option removed for ai_host. Refactor.
+
+export let ai_host = "https://beta-ai.online-go.com";
 if (
     window.location.hostname.indexOf("dev.beta") >= 0 &&
-    (window as any)["websocket_host"] === "https://online-go.com"
+    window.websocket_host === "https://online-go.com"
 ) {
     // if we're developing locally but connecting to the production system, use our local system for estimation
     ai_host = `http://localhost:13284`;
     console.log("AI Host set to: ", ai_host);
 } else if (typeof process !== "undefined" && process.env.OGS_BACKEND === "LOCAL") {
     // if we're a developer using a local server, then use it for ai
-    ai_host = "http://localhost:13284";
+    ai_host = `http://localhost:13284`;
 } else if (
     // The CI doesn't work with beta.  Note that jest in the CI has NODE_ENV==="test".
     // the .org exception is for anoek's development environment
@@ -95,7 +97,7 @@ socket.on("latency", (latency, drift) => {
     // If they are playing a live game at the moment, work out what timing they would like
     // us to make sure that they have...
     if (lookingAtOurLiveGame()) {
-        const goban = (window as any)["global_goban"] as GobanRenderer;
+        const goban = window.global_goban as GobanRenderer;
         const time_control = goban.engine.time_control as JGOFTimeControl;
         switch (time_control.system) {
             case "fischer":
@@ -190,4 +192,4 @@ export default {
     get_network_latency: get_network_latency,
 };
 
-(window as any)["socket"] = socket;
+window.socket = socket;

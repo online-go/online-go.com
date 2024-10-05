@@ -19,19 +19,19 @@
 
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { _, pgettext, interpolate } from "translate";
-import { get } from "requests";
-import * as preferences from "preferences";
-import { errorAlerter } from "misc";
-import { shortShortTimeControl } from "TimeControl";
+import { _, pgettext, interpolate } from "@/lib/translate";
+import { get } from "@/lib/requests";
+import * as preferences from "@/lib/preferences";
+import { errorAlerter } from "@/lib/misc";
+import { shortShortTimeControl } from "@/components/TimeControl";
 import { computeAverageMoveTime } from "goban";
-import { PaginatedTable, Filter } from "PaginatedTable";
-import * as moment from "moment";
-import { TOURNAMENT_TYPE_NAMES, shortRankRestrictionText } from "Tournament";
-import tooltip from "tooltip";
-import { Toggle } from "Toggle";
-import { IdType } from "src/lib/types";
-import { useUser } from "hooks";
+import { PaginatedTable, Filter } from "@/components/PaginatedTable";
+import moment from "moment";
+import { TOURNAMENT_TYPE_NAMES, shortRankRestrictionText } from "@/views/Tournament";
+import tooltip from "@/lib/tooltip";
+import { Toggle } from "@/components/Toggle";
+import { IdType } from "@/lib/types";
+import { useUser } from "@/lib/hooks";
 
 interface TournamentListProperties {
     phase: "open" | "active" | "finished";

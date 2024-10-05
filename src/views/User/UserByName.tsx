@@ -16,9 +16,9 @@
  */
 
 import * as React from "react";
-import { get } from "requests";
-import { errorAlerter } from "misc";
-import * as player_cache from "player_cache";
+import { get } from "@/lib/requests";
+import { errorAlerter } from "@/lib/misc";
+import * as player_cache from "@/lib/player_cache";
 import { useParams } from "react-router-dom";
 import { User } from "./User";
 

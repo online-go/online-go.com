@@ -18,36 +18,36 @@
 /* cspell: words gameid tourn */
 
 import * as React from "react";
-import { LoadingPage } from "Loading";
+import { LoadingPage } from "@/components/Loading";
 import { Link, useParams } from "react-router-dom";
-import { browserHistory } from "ogsHistory";
-import { _, pgettext, interpolate } from "translate";
-import { abort_requests_in_flight, del, put, post, get } from "requests";
-import { ignore, errorAlerter, rulesText, dup } from "misc";
-import { bounded_rank, longRankString, rankString, amateurRanks } from "rank_utils";
-import { handicapText } from "GameAcceptModal";
-import { TimeControl, timeControlDescription } from "TimeControl";
-import { Markdown } from "Markdown";
-import { Player, setExtraActionCallback } from "Player";
-import * as moment from "moment";
+import { browserHistory } from "@/lib/ogsHistory";
+import { _, pgettext, interpolate } from "@/lib/translate";
+import { abort_requests_in_flight, del, put, post, get } from "@/lib/requests";
+import { ignore, errorAlerter, rulesText, dup } from "@/lib/misc";
+import { bounded_rank, longRankString, rankString, amateurRanks } from "@/lib/rank_utils";
+import { handicapText } from "@/components/GameAcceptModal";
+import { TimeControl, timeControlDescription } from "@/components/TimeControl";
+import { Markdown } from "@/components/Markdown";
+import { Player, setExtraActionCallback } from "@/components/Player";
+import moment from "moment";
 import Datetime from "react-datetime";
-import { UIPush } from "UIPush";
-import { Card } from "material";
-import { EmbeddedChatCard } from "Chat";
-import * as data from "data";
-import { PlayerAutocomplete } from "PlayerAutocomplete";
-import { MiniGoban } from "MiniGoban";
-import * as player_cache from "player_cache";
-import { Steps } from "Steps";
-import { TimeControlPicker } from "TimeControl";
-import { close_all_popovers } from "popover";
+import { UIPush } from "@/components/UIPush";
+import { Card } from "@/components/material";
+import { EmbeddedChatCard } from "@/components/Chat";
+import * as data from "@/lib/data";
+import { PlayerAutocomplete } from "@/components/PlayerAutocomplete";
+import { MiniGoban } from "@/components/MiniGoban";
+import * as player_cache from "@/lib/player_cache";
+import { Steps } from "@/components/Steps";
+import { TimeControlPicker } from "@/components/TimeControl";
+import { close_all_popovers } from "@/lib/popover";
 import { computeAverageMoveTime, GobanEngineRules } from "goban";
-import { openMergeReportModal } from "MergeReportModal";
+import { openMergeReportModal } from "@/components/MergeReportModal";
 import * as d3 from "d3";
 import Dropzone from "react-dropzone";
-import { alert } from "swal_config";
-import { useUser } from "hooks";
-import { PlayerCacheEntry } from "player_cache";
+import { alert } from "@/lib/swal_config";
+import { useUser } from "@/lib/hooks";
+import { PlayerCacheEntry } from "@/lib/player_cache";
 
 let log_spam_debounce: any;
 
@@ -852,7 +852,7 @@ export function Tournament(): JSX.Element {
         }
     };
 
-    (window as any)["tournament"] = tournament;
+    window.tournament = tournament;
 
     let tournament_time_start_text = "";
     if (tournament.time_start) {
@@ -2631,7 +2631,7 @@ function OpenGothaRoster({
     tournament: TournamentInterface;
     players: TournamentPlayer[];
 }): JSX.Element {
-    (window as any)["players"] = players;
+    window.players = players;
     players.sort((a, b) => a.username.localeCompare(b.username));
     return (
         <div className="OpenGothaRoster">
@@ -2674,7 +2674,7 @@ function OpenGothaTournamentRound({
     const [notes, _set_notes]: [string, (s: string) => void] = React.useState(roundNotes);
     const [notes_updated, set_notes_updated]: [boolean, (b: boolean) => void] =
         React.useState(false);
-    (window as any)["rounds"] = rounds;
+    window.rounds = rounds;
     const round_started = !!(
         rounds.length >= selectedRound && (rounds[selectedRound - 1]?.matches.length || 0) > 0
     );

@@ -6,22 +6,27 @@ BACKEND = BACKEND.toUpperCase();
 //BACKEND = 'PRODUCTION';
 //BACKEND = 'LOCAL';
 
-const spawn = require("child_process").spawn;
-const fs = require("fs");
-const gulp = require("gulp");
-const path = require("path");
-const execSync = require("child_process").execSync;
-const livereload = require("gulp-livereload");
-const stylus = require("gulp-stylus");
-const sourcemaps = require("gulp-sourcemaps");
-const rename = require("gulp-rename");
-const pump = require("pump");
-const autoprefixer = require("autoprefixer");
-const postcss = require("gulp-postcss");
-const cssnano = require("cssnano");
-const inline_svg = require("postcss-inline-svg");
-const gulpEslint = require("gulp-eslint-new");
-const html_minifier = require("html-minifier").minify;
+import { spawn, execSync } from "child_process";
+import fs from "fs";
+import gulp from "gulp";
+import path from "path";
+import livereload from "gulp-livereload";
+import stylus from "gulp-stylus";
+import sourcemaps from "gulp-sourcemaps";
+import rename from "gulp-rename";
+import pump from "pump";
+import autoprefixer from "autoprefixer";
+import postcss from "gulp-postcss";
+import cssnano from "cssnano";
+import inline_svg from "postcss-inline-svg";
+import gulpEslint from "gulp-eslint-new";
+import { minify as html_minifier } from "html-minifier";
+
+import express from "express";
+import body_parser from "body-parser";
+import http from "http";
+import proxy from "express-http-proxy";
+import url from "url";
 
 let ts_sources = ["src/**/*.ts", "src/**/*.tsx", "!src/**/*.test.ts", "!src/**/*.test.tsx"];
 
@@ -187,16 +192,11 @@ function dev_server(done) {
             process.exit(1);
     }
 
-    let express = require("express");
-    let body_parser = require("body-parser");
-    let http = require("http");
-    var proxy = require("express-http-proxy");
-    let url = require("url");
     let dev_server = express();
     dev_server.use(body_parser.json());
     dev_server.use(body_parser.text());
 
-    http.createServer(dev_server).listen(port, null, function() {
+    http.createServer(dev_server).listen(port, null, function () {
         console.info(`\n\n#############################################`);
         console.info(`## Development server started on port ${port}`);
         console.info(`##  ( http://localhost:${port} )`);
@@ -226,13 +226,13 @@ function dev_server(done) {
     let backend_proxy = (prefix) =>
         proxy_wrapper(server_url, {
             https: use_https,
-            proxyReqPathResolver: function(req) {
+            proxyReqPathResolver: function (req) {
                 let path = prefix + url.parse(req.url).path;
                 console.log("-->", path);
                 return path;
             },
-            proxyReqOptDecorator: function(proxyReqOpts, srcReq) {
-                return new Promise(function(resolve, reject) {
+            proxyReqOptDecorator: function (proxyReqOpts, srcReq) {
+                return new Promise(function (resolve, reject) {
                     if (!("Content-Type" in srcReq.headers)) {
                         proxyReqOpts.headers["Content-Type"] = "application/json";
                     }
@@ -487,7 +487,7 @@ function getPreferredLanguage(req, supported_languages) {
                 return lang;
             }
         }
-    } catch (e) { }
+    } catch (e) {}
 
     return "en";
 }

@@ -17,16 +17,16 @@
 
 import * as React from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { alert } from "swal_config";
+import { alert } from "@/lib/swal_config";
 
-import { _, pgettext } from "translate";
-import { get } from "requests";
-import { errorAlerter } from "misc";
+import { _, pgettext } from "@/lib/translate";
+import { get } from "@/lib/requests";
+import { errorAlerter } from "@/lib/misc";
 import * as DynamicHelp from "react-dynamic-help";
-import { useUser } from "hooks";
-import { LoadingPage } from "Loading";
-import { UIPush } from "UIPush";
-import { EmbeddedChatCard } from "Chat";
+import { useUser } from "@/lib/hooks";
+import { LoadingPage } from "@/components/Loading";
+import { UIPush } from "@/components/UIPush";
+import { EmbeddedChatCard } from "@/components/Chat";
 
 // Spectators are intended to arrive here via an online-league spectate URL that provides
 // the Online League match ID

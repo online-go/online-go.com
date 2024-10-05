@@ -17,13 +17,13 @@
 
 import * as React from "react";
 
-import { _, interpolate } from "translate";
-import { put, del } from "requests";
-import { errorAlerter } from "misc";
+import { _, interpolate } from "@/lib/translate";
+import { put, del } from "@/lib/requests";
+import { errorAlerter } from "@/lib/misc";
 
-import { durationString } from "TimeControl";
+import { durationString } from "@/components/TimeControl";
 
-import { SettingGroupPageProps } from "SettingsCommon";
+import { SettingGroupPageProps } from "@/lib/SettingsCommon";
 
 export function VacationSettings(props: SettingGroupPageProps): JSX.Element {
     const [vacation_left, set_vacation_left]: [number, (x: number) => void] = React.useState(

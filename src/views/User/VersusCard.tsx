@@ -15,9 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Card } from "material";
-import { interpolate } from "translate";
-import * as moment from "moment";
+import { Card } from "@/components/material";
+import { interpolate } from "@/lib/translate";
+import moment from "moment";
 import * as React from "react";
 
 type VersusCardProps = rest_api.FullPlayerDetail["vs"] & { username: string };

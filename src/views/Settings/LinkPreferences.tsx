@@ -17,18 +17,18 @@
 
 import * as React from "react";
 
-import { _, pgettext } from "translate";
+import { _, pgettext } from "@/lib/translate";
 
-import * as data from "data";
-import { put } from "requests";
-import { errorAlerter, Timeout } from "misc";
+import * as data from "@/lib/data";
+import { put } from "@/lib/requests";
+import { errorAlerter, Timeout } from "@/lib/misc";
 
-import { Toggle } from "Toggle";
+import { Toggle } from "@/components/Toggle";
 
-import { SettingGroupPageProps, PreferenceLine } from "SettingsCommon";
+import { SettingGroupPageProps, PreferenceLine } from "@/lib/SettingsCommon";
 
-import { IAssociation, associations } from "associations";
-import { allRanks, IRankInfo } from "rank_utils";
+import { IAssociation, associations } from "@/lib/associations";
+import { allRanks, IRankInfo } from "@/lib/rank_utils";
 
 let update_link_preferences_debounce: Timeout | undefined;
 

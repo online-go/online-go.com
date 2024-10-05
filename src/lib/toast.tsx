@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import * as ReactDOM from "react-dom/client";
-import { TypedEventEmitter } from "TypedEventEmitter";
+import { TypedEventEmitter } from "@/lib/TypedEventEmitter";
 
 interface Events {
     close: never;
@@ -89,4 +89,4 @@ export function toast(element: React.ReactElement<any>, timeout: number = 0): To
     return ret;
 }
 
-(window as any)["toast"] = toast;
+window.toast = toast;

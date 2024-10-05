@@ -17,15 +17,15 @@
 
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { get } from "requests";
-import { UIPush } from "UIPush";
-import { TypedEventEmitter } from "TypedEventEmitter";
-import { errorLogger } from "misc";
-import * as moment from "moment";
-import ITC from "ITC";
-import * as data from "data";
+import { get } from "@/lib/requests";
+import { UIPush } from "@/components/UIPush";
+import { TypedEventEmitter } from "@/lib/TypedEventEmitter";
+import { errorLogger } from "@/lib/misc";
+import moment from "moment";
+import ITC from "@/lib/ITC";
+import * as data from "@/lib/data";
 import { getBlocks } from "../BlockPlayer";
-import * as preferences from "preferences";
+import * as preferences from "@/lib/preferences";
 
 interface Events {
     announcement: any;

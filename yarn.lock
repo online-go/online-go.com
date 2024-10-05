@@ -6006,10 +6006,10 @@ glogg@^2.2.0:
   dependencies:
     sparkles "^2.1.0"
 
-goban@=8.3.50:
-  version "8.3.50"
-  resolved "https://registry.yarnpkg.com/goban/-/goban-8.3.50.tgz#7be3c2f115bc61e2d225b3dd86a427a910f9a3b6"
-  integrity sha512-6pGWnuN/E8PUv4h369iVW6oTvSQiU/4haWXitL02DdVFEoR9qeDqAjccota2Lot2DDoeiFW/h9aCIPFlMNzmjA==
+goban@=8.3.61:
+  version "8.3.61"
+  resolved "https://registry.yarnpkg.com/goban/-/goban-8.3.61.tgz#20983f7acf86ac95ce453cc5a4c77226071977c2"
+  integrity sha512-63Czd8diJR1Oq7lTjkESdHyBxLuEJNZV72Jr7qlM+ulzvknw1XjPC6wrOoYELAVxqkfbdce4PrwJiHLKCXTZbA==
   dependencies:
     eventemitter3 "^5.0.0"
 
@@ -9181,10 +9181,10 @@ react-dropzone@^12.0.5:
     file-selector "^0.5.0"
     prop-types "^15.8.1"
 
-react-dynamic-help@^3.0.1:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/react-dynamic-help/-/react-dynamic-help-3.0.1.tgz#e1df13afb3aa570e12ce6518ff764a05ef0fd1f2"
-  integrity sha512-eZ53H0SQuX5oiatXWy+dKsMVlMGxIlDxk06CPnr2oLdAY3cCZd8ztUhpNwsWfM9GtpeZAIxsBeTiwlXyFRutug==
+react-dynamic-help@^3.1.2:
+  version "3.1.2"
+  resolved "https://registry.yarnpkg.com/react-dynamic-help/-/react-dynamic-help-3.1.2.tgz#60d5471ab6b93cbf75df6620d2a729ccab40566b"
+  integrity sha512-oVxyg4Lo/UPUYyc5MTqGoFvrGYY3ZxrUdgMfmK3PY7z5voHR9EJ9IAptCHkh9rWEtdpmeSpvS+jgvxxF9KkInQ==
 
 react-is@^16.13.1, react-is@^16.7.0, react-is@^16.8.1:
   version "16.13.1"
@@ -9213,13 +9213,6 @@ react-linkify@^1.0.0-alpha:
   dependencies:
     linkify-it "^2.0.3"
     tlds "^1.199.0"
-
-react-number-format@^3.0.2:
-  version "3.6.2"
-  resolved "https://registry.yarnpkg.com/react-number-format/-/react-number-format-3.6.2.tgz#46fb692a88ed25808f0cb08fd12aeae4ae68295a"
-  integrity sha512-HsO11fH6WiugtJflrMQn3/Yhq2J4uEWLxrKCQbI1gSGAOwIhUsOGJJeP8Vci/U4A7xK5SjC95ngZU8//Nuz3Gg==
-  dependencies:
-    prop-types "^15.6.0"
 
 react-router-dom@=6.3.0:
   version "6.3.0"
@@ -9259,12 +9252,12 @@ react-split@^2.0.9:
     prop-types "^15.5.7"
     split.js "^1.6.0"
 
-react-switch@^5.0.1:
-  version "5.0.1"
-  resolved "https://registry.yarnpkg.com/react-switch/-/react-switch-5.0.1.tgz#449277f4c3aed5286fffd0f50d5cbc2a23330406"
-  integrity sha512-Pa5kvqRfX85QUCK1Jv0rxyeElbC3aNpCP5hV0LoJpU/Y6kydf0t4kRriQ6ZYA4kxWwAYk/cH51T4/sPzV9mCgQ==
+react-switch@7.0.0:
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/react-switch/-/react-switch-7.0.0.tgz#400990bb9822864938e343ed24f13276a617bdc0"
+  integrity sha512-KkDeW+cozZXI6knDPyUt3KBN1rmhoVYgAdCJqAh7st7tk8YE6N0iR89zjCWO8T8dUTeJGTR0KU+5CHCRMRffiA==
   dependencies:
-    prop-types "^15.6.2"
+    prop-types "^15.7.2"
 
 react-table@^6.10.0:
   version "6.11.5"

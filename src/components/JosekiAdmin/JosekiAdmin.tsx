@@ -16,18 +16,18 @@
  */
 
 import * as React from "react";
-import { _, interpolate, pgettext } from "translate";
-import { get, post, put } from "requests";
+import { _, interpolate, pgettext } from "@/lib/translate";
+import { get, post, put } from "@/lib/requests";
 
 import ReactTable from "react-table";
 
 import selectTableHOC from "react-table/lib/hoc/selectTable";
 
-import { openModal } from "Modal";
-import { Player } from "Player";
+import { openModal } from "@/components/Modal";
+import { Player } from "@/components/Player";
 
-import { JosekiPermissionsPanel } from "JosekiPermissionsPanel";
-import { JosekiPageVisits, JosekiStatsModal } from "JosekiStatsModal";
+import { JosekiPermissionsPanel } from "@/components/JosekiPermissionsPanel";
+import { JosekiPageVisits, JosekiStatsModal } from "@/components/JosekiStatsModal";
 
 interface JosekiAdminProps {
     server_url: string;

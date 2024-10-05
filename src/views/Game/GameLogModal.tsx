@@ -17,10 +17,10 @@
 
 import * as React from "react";
 
-import { _ } from "translate";
-import { openModal, Modal } from "Modal";
-import { Player } from "Player";
-import { socket } from "sockets";
+import { _ } from "@/lib/translate";
+import { openModal, Modal } from "@/components/Modal";
+import { Player } from "@/components/Player";
+import { socket } from "@/lib/sockets";
 import { GameLog } from "./GameLog";
 
 interface Events {}

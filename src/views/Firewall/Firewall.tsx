@@ -16,19 +16,19 @@
  */
 
 import * as React from "react";
-import * as moment from "moment";
-import * as data from "data";
-import { post, put, del } from "requests";
-import { deepCompare, errorAlerter } from "misc";
-import { PaginatedTable } from "PaginatedTable";
-import { Player } from "Player";
-import { alert } from "swal_config";
+import moment from "moment";
+import * as data from "@/lib/data";
+import { post, put, del } from "@/lib/requests";
+import { deepCompare, errorAlerter } from "@/lib/misc";
+import { PaginatedTable } from "@/components/PaginatedTable";
+import { Player } from "@/components/Player";
+import { alert } from "@/lib/swal_config";
 /*
-import { Card } from "material";
-import { SearchInput } from "misc-ui";
-import { Player } from "Player";
-import * as moment from "moment";
-import { chat_markup } from "Chat";
+import { Card } from "@/components/material";
+import { SearchInput } from "@/components/misc-ui";
+import { Player } from "@/components/Player";
+import moment from "moment";
+import { chat_markup } from "@/components/Chat";
 */
 
 type Operator = "EQUALS" | "GREATER_THAN" | "LESS_THAN" | "REGEX_MATCHES" | "OR" | "AND";

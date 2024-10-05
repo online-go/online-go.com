@@ -16,10 +16,10 @@
  */
 
 import * as React from "react";
-import { _ } from "translate";
+import { _ } from "@/lib/translate";
 import { Link } from "react-router-dom";
-import * as data from "data";
-import { ServerTimeDisplay } from "ServerTimeDisplay";
+import * as data from "@/lib/data";
+import { ServerTimeDisplay } from "@/components/ServerTimeDisplay";
 
 declare let ogs_version: string;
 declare let ogs_current_language: string;

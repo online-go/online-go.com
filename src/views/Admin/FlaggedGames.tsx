@@ -17,9 +17,9 @@
 
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { get } from "requests";
-import { Player } from "Player";
-//import * as moment from "moment";
+import { get } from "@/lib/requests";
+import { Player } from "@/components/Player";
+//import moment from "moment";
 
 export function FlaggedGames(): JSX.Element {
     const [flagged_games, setFlaggedGames] = React.useState<any[]>([]);

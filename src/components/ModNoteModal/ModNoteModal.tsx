@@ -16,13 +16,13 @@
  */
 
 import * as React from "react";
-import { browserHistory } from "ogsHistory";
-import { put } from "requests";
-import { errorAlerter } from "misc";
-import * as player_cache from "player_cache";
-import { _ } from "translate";
+import { browserHistory } from "@/lib/ogsHistory";
+import { put } from "@/lib/requests";
+import { errorAlerter } from "@/lib/misc";
+import * as player_cache from "@/lib/player_cache";
+import { _ } from "@/lib/translate";
 
-import { Modal, openModal } from "Modal";
+import { Modal, openModal } from "@/components/Modal";
 
 interface Events {}
 

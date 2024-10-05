@@ -16,8 +16,8 @@
  */
 
 import * as React from "react";
-import { _ } from "translate";
-import { chat_manager, ChatChannelProxy } from "chat_manager";
+import { _ } from "@/lib/translate";
+import { chat_manager, ChatChannelProxy } from "@/lib/chat_manager";
 
 interface ChatPresenceIndicatorProperties {
     channel: string;

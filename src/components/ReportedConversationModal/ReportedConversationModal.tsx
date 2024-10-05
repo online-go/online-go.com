@@ -16,10 +16,10 @@
  */
 
 import * as React from "react";
-import { Player } from "Player";
-import { _ } from "translate";
-import { Modal, openModal } from "Modal";
-import { ReportedConversation } from "Report";
+import { Player } from "@/components/Player";
+import { _ } from "@/lib/translate";
+import { Modal, openModal } from "@/components/Modal";
+import { ReportedConversation } from "@/components/Report";
 
 interface ReportedConversationModalProps {
     player_id: number;

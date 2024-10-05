@@ -16,9 +16,9 @@
  */
 
 import * as React from "react";
-import * as data from "data";
+import * as data from "@/lib/data";
 import { useState, useEffect, useCallback } from "react";
-import { ChatChannelList, ChatLog, ChatUsersList } from "Chat";
+import { ChatChannelList, ChatLog, ChatUsersList } from "@/components/Chat";
 import { useParams } from "react-router";
 
 export function ChatView(): JSX.Element | null {

@@ -44,7 +44,9 @@ declare namespace rest_api {
             | "no_stalling_evident"
             | "warn_duplicate_report"
             | "report_type_changed"
-            | "bot_owner_notified";
+            | "bot_owner_notified"
+            | "ack_suspended"
+            | "ack_suspended_and_annul";
 
         type Severity = "warning" | "acknowledgement" | "info";
 

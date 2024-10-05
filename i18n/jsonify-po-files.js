@@ -2,8 +2,8 @@
 
 // cspell: words autotranslations conv
 
-const fs = require("fs");
-const PO = require("pofile");
+import fs from "fs";
+import PO from "pofile";
 
 async function main() {
     const countries = JSON.parse(await fs.promises.readFile("./build/countries.json", "utf-8"));

@@ -16,8 +16,8 @@
  */
 
 import * as React from "react";
-import { capitalize } from "misc";
-import { _ } from "translate";
+import { capitalize } from "@/lib/misc";
+import { _ } from "@/lib/translate";
 
 import { TimeControl, TimeControlTypes } from "./TimeControl";
 import { updateProperty, updateSpeed, updateSystem } from "./TimeControlUpdates";

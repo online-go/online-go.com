@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { socket } from "sockets";
-import { getUserRating } from "rank_utils";
+import { socket } from "@/lib/sockets";
+import { getUserRating } from "@/lib/rank_utils";
 import { User } from "goban";
 
 let active_bots: { [id: number]: User } = {};

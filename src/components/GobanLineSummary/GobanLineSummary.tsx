@@ -17,15 +17,15 @@
 
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { interpolate } from "translate";
+import { interpolate } from "@/lib/translate";
 import { createGoban, GobanRenderer } from "goban";
-import * as data from "data";
-import { rankString } from "rank_utils";
-import { Player } from "Player";
-import { Clock } from "Clock";
-import { GobanInfoStateBase } from "src/lib/types";
+import * as data from "@/lib/data";
+import { rankString } from "@/lib/rank_utils";
+import { Player } from "@/components/Player";
+import { Clock } from "@/components/Clock";
+import { GobanInfoStateBase } from "@/lib/types";
 import { LineSummaryTableMode } from "../GameList";
-import { PlayerCacheEntry } from "src/lib/player_cache";
+import { PlayerCacheEntry } from "@/lib/player_cache";
 
 interface UserType {
     id: number;

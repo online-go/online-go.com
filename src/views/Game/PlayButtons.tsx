@@ -16,12 +16,12 @@
  */
 
 import * as React from "react";
-import { _ } from "translate";
-import { isLiveGame } from "TimeControl";
-import * as preferences from "preferences";
-import * as data from "data";
+import { _ } from "@/lib/translate";
+import { isLiveGame } from "@/components/TimeControl";
+import * as preferences from "@/lib/preferences";
+import * as data from "@/lib/data";
 import { game_control } from "./game_control";
-import { alert } from "swal_config";
+import { alert } from "@/lib/swal_config";
 import { useCurrentMoveNumber, usePlayerToMove, useShowUndoRequested } from "./GameHooks";
 import { useGoban } from "./goban_context";
 import * as DynamicHelp from "react-dynamic-help";

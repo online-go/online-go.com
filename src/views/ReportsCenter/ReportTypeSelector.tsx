@@ -19,7 +19,7 @@ import * as React from "react";
 
 import Select, { SingleValue, components } from "react-select";
 
-import { ReportType } from "Report";
+import { ReportType } from "@/components/Report";
 
 const REPORT_TYPE_SELECTIONS: ReportTypeSelection[] = [
     { value: "escaping", label: "Stopped Playing" },

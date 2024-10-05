@@ -22,14 +22,14 @@
 /* (Which is why it's structure is the same) */
 
 import * as d3 from "d3";
-import * as moment from "moment";
+import moment from "moment";
 import * as React from "react";
-import { OgsResizeDetector } from "OgsResizeDetector";
-import { _, pgettext, interpolate } from "translate";
-import { PersistentElement } from "PersistentElement";
+import { OgsResizeDetector } from "@/components/OgsResizeDetector";
+import { _, pgettext, interpolate } from "@/lib/translate";
+import { PersistentElement } from "@/components/PersistentElement";
 import { RatingEntry, makeRatingEntry } from "./RatingEntry";
-import { errorLogger } from "misc";
-import { MiniGoban } from "MiniGoban";
+import { errorLogger } from "@/lib/misc";
+import { MiniGoban } from "@/components/MiniGoban";
 
 import {
     rating_to_rank,
@@ -37,7 +37,7 @@ import {
     is_rank_bounded,
     humble_rating,
     bounded_rank,
-} from "rank_utils";
+} from "@/lib/rank_utils";
 
 type speed_t = "overall" | "blitz" | "live" | "correspondence";
 

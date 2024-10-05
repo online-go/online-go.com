@@ -125,7 +125,7 @@ purge-cdn-files:
 dist/ogs.min.js: dist/ogs.js
 	npm run webpack -- --mode=production --optimization-minimize --devtool=source-map
 
-dist/vendor.min.js: dist/vendor.js
+dist/vendor.min.js: 
 	npm run webpack -- --mode=production --optimization-minimize --devtool=source-map
 
 dist/ogs.$(VERSION).css: 

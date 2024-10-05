@@ -16,9 +16,9 @@
  */
 
 import * as React from "react";
-import { _ } from "translate";
-import { get, abort_requests_in_flight } from "requests";
-import * as Autosuggest from "react-autosuggest";
+import { _ } from "@/lib/translate";
+import { get, abort_requests_in_flight } from "@/lib/requests";
+import Autosuggest from "react-autosuggest";
 
 interface GroupAutocompleteProperties {
     onComplete: (group: Suggestion | null) => void;

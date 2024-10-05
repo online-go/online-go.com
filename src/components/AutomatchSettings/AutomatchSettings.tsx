@@ -16,11 +16,11 @@
  */
 
 import * as React from "react";
-import { _ } from "translate";
-import { Modal, openModal } from "Modal";
-import { dup } from "misc";
-import * as data from "data";
-import { AutomatchPreferencesBase, AutomatchTimeControlSystem, Size, Speed } from "src/lib/types";
+import { _ } from "@/lib/translate";
+import { Modal, openModal } from "@/components/Modal";
+import { dup } from "@/lib/misc";
+import * as data from "@/lib/data";
+import { AutomatchPreferencesBase, AutomatchTimeControlSystem, Size, Speed } from "@/lib/types";
 import { AutomatchCondition, RuleSet } from "goban";
 
 interface Events {}

@@ -16,10 +16,10 @@
  */
 
 import * as React from "react";
-import * as preferences from "preferences";
-import { _ } from "translate";
-import { socket } from "sockets";
-import { lookingAtOurLiveGame } from "TimeControl/util";
+import * as preferences from "@/lib/preferences";
+import { _ } from "@/lib/translate";
+import { socket } from "@/lib/sockets";
+import { lookingAtOurLiveGame } from "@/components/TimeControl/util";
 
 //interface NetworkStatusProps {}
 
@@ -87,7 +87,7 @@ export function NetworkStatus(): JSX.Element | null {
         in_live_game ? "in live game," : "not in live game,",
         manually_closed ? "manually closed notification," : "didn't close notification",
         "time control:",
-        (window as any)["global_goban"]?.engine?.time_control,
+        window.global_goban?.engine?.time_control,
     );
 
     if (state === "connected" || state === "went-away") {

@@ -16,11 +16,11 @@
  */
 
 import * as React from "react";
-import * as moment from "moment";
+import moment from "moment";
 import { ResponsiveLine } from "@nivo/line";
-import * as data from "data";
-import { _ } from "translate";
-import { Modal } from "Modal";
+import * as data from "@/lib/data";
+import { _ } from "@/lib/translate";
+import { Modal } from "@/components/Modal";
 
 interface Events {}
 

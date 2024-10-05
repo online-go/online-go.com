@@ -16,14 +16,14 @@
  */
 
 import * as React from "react";
-import { PlayerAutocomplete } from "PlayerAutocomplete";
-import { PaginatedTable } from "PaginatedTable";
-import { _ } from "translate";
-import { Card } from "material";
+import { PlayerAutocomplete } from "@/components/PlayerAutocomplete";
+import { PaginatedTable } from "@/components/PaginatedTable";
+import { _ } from "@/lib/translate";
+import { Card } from "@/components/material";
 import { Link } from "react-router-dom";
 import { openUrlIfALinkWasNotClicked } from "./common";
-import * as moment from "moment";
-import { Player } from "Player";
+import moment from "moment";
+import { Player } from "@/components/Player";
 
 interface ReviewsAndDemosProps {
     user_id: number;

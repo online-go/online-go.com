@@ -16,13 +16,13 @@
  */
 
 import * as React from "react";
-import { _ } from "translate";
-import online_status from "online_status";
-import * as data from "data";
-import * as preferences from "preferences";
-import { Player } from "Player";
-import cached from "cached";
-import { PlayerCacheEntry } from "src/lib/player_cache";
+import { _ } from "@/lib/translate";
+import online_status from "@/lib/online_status";
+import * as data from "@/lib/data";
+import * as preferences from "@/lib/preferences";
+import { Player } from "@/components/Player";
+import cached from "@/lib/cached";
+import { PlayerCacheEntry } from "@/lib/player_cache";
 
 export class FriendList extends React.PureComponent<{}, any> {
     constructor(props: {}) {

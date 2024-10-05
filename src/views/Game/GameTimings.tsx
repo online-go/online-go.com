@@ -15,14 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as moment from "moment";
+import moment from "moment";
 import "moment-duration-format";
 
 import * as React from "react";
 
 import { AdHocPackedMove, GobanMovesArray } from "goban";
-import { useUser } from "hooks";
-import { showSecondsResolution } from "misc";
+import { useUser } from "@/lib/hooks";
+import { showSecondsResolution } from "@/lib/misc";
 
 interface GameTimingProperties {
     moves: GobanMovesArray;

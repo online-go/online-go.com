@@ -16,16 +16,16 @@
  */
 
 import * as React from "react";
-import * as data from "data";
-import * as moment from "moment";
-import { Card } from "material";
-import { post, get, patch } from "requests";
-import { _, pgettext, interpolate } from "translate";
-import { errorAlerter } from "misc";
+import * as data from "@/lib/data";
+import moment from "moment";
+import { Card } from "@/components/material";
+import { post, get, patch } from "@/lib/requests";
+import { _, pgettext, interpolate } from "@/lib/translate";
+import { errorAlerter } from "@/lib/misc";
 import { useParams } from "react-router";
-import { Player } from "Player";
-import { AutoTranslate } from "AutoTranslate";
-import { UIPush } from "UIPush";
+import { Player } from "@/components/Player";
+import { AutoTranslate } from "@/components/AutoTranslate";
+import { UIPush } from "@/components/UIPush";
 
 interface AppealMessage {
     id: number;

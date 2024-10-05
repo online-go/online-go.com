@@ -19,7 +19,7 @@ import React from "react";
 
 import { HelpFlow, HelpItem } from "react-dynamic-help";
 
-import { llm_pgettext } from "translate";
+import { llm_pgettext } from "@/lib/translate";
 
 /**
  * A help flow intended for moderators and CMs wondering about mysterious auto score entries

@@ -16,21 +16,21 @@
  */
 
 import * as React from "react";
-import * as moment from "moment";
+import moment from "moment";
 
-import { _, pgettext } from "translate";
+import { _, pgettext } from "@/lib/translate";
 
-import { errorAlerter } from "misc";
+import { errorAlerter } from "@/lib/misc";
 
-import { usePreference } from "preferences";
+import { usePreference } from "@/lib/preferences";
 
-import { BlockPlayerModal, getAllBlocksWithUsernames } from "BlockPlayer";
-import { Player } from "Player";
-import { PaginatedTable } from "PaginatedTable";
+import { BlockPlayerModal, getAllBlocksWithUsernames } from "@/components/BlockPlayer";
+import { Player } from "@/components/Player";
+import { PaginatedTable } from "@/components/PaginatedTable";
 
-import { Toggle } from "Toggle";
+import { Toggle } from "@/components/Toggle";
 
-import { PreferenceLine } from "SettingsCommon";
+import { PreferenceLine } from "@/lib/SettingsCommon";
 
 export function AnnouncementPreferences(): JSX.Element {
     const [blocked_players, setBlockedPlayers]: [

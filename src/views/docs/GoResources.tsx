@@ -18,10 +18,10 @@
 /* spell-checker: disable */
 
 import * as React from "react";
-import { pgettext, _, getLanguageFlag, interpolate } from "translate";
-import { Flag } from "Flag";
-import * as data from "data";
-import { Markdown } from "Markdown";
+import { pgettext, _, getLanguageFlag, interpolate } from "@/lib/translate";
+import { Flag } from "@/components/Flag";
+import * as data from "@/lib/data";
+import { Markdown } from "@/components/Markdown";
 
 function shuffleArray(array: JSX.Element[]) {
     for (let i = array.length - 1; i >= 0; i--) {

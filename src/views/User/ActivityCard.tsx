@@ -15,13 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 import * as React from "react";
-import { _, pgettext } from "translate";
+import { _, pgettext } from "@/lib/translate";
 import { Link } from "react-router-dom";
-import { daysOnlyDurationString } from "TimeControl";
-import { Card } from "material";
+import { daysOnlyDurationString } from "@/components/TimeControl";
+import { Card } from "@/components/material";
 import { UserVoteActivityGraph } from "./VoteActivityGraph";
 import { CMPieCharts } from "./CMPieCharts";
-import { useUser } from "hooks";
+import { useUser } from "@/lib/hooks";
 
 /** Activity card doesn't care about that many user traits */
 interface ActivityCardUser {

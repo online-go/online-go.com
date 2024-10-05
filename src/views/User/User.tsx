@@ -17,16 +17,16 @@
 
 import * as React from "react";
 import { useLocation, useParams } from "react-router-dom";
-import { _, pgettext } from "translate";
-import { get, put } from "requests";
+import { _, pgettext } from "@/lib/translate";
+import { get, put } from "@/lib/requests";
 import { parse } from "query-string";
-import * as data from "data";
-import * as moment from "moment";
+import * as data from "@/lib/data";
+import moment from "moment";
 
-import * as preferences from "preferences";
-import * as player_cache from "player_cache";
+import * as preferences from "@/lib/preferences";
+import * as player_cache from "@/lib/player_cache";
 
-import { Card } from "material";
+import { Card } from "@/components/material";
 
 import { ModTools } from "./ModTools";
 import { GameHistoryTable } from "./GameHistoryTable";
@@ -39,21 +39,21 @@ import {
     rating_to_rank,
     boundedRankString,
     rank_deviation,
-} from "rank_utils";
-import { openModerateUserModal } from "ModerateUser";
-import { errorAlerter } from "misc";
-import { Flag } from "Flag";
-import { Markdown } from "Markdown";
-import { RatingsChart } from "RatingsChart";
-import { RatingsChartByGame } from "RatingsChartByGame";
-import { associations } from "associations";
-import { Toggle } from "Toggle";
-import { AchievementList } from "Achievements";
+} from "@/lib/rank_utils";
+import { openModerateUserModal } from "@/components/ModerateUser";
+import { errorAlerter } from "@/lib/misc";
+import { Flag } from "@/components/Flag";
+import { Markdown } from "@/components/Markdown";
+import { RatingsChart } from "@/components/RatingsChart";
+import { RatingsChartByGame } from "@/components/RatingsChartByGame";
+import { associations } from "@/lib/associations";
+import { Toggle } from "@/components/Toggle";
+import { AchievementList } from "@/components/Achievements";
 import { VersusCard } from "./VersusCard";
 import { AvatarCard, AvatarCardEditableFields } from "./AvatarCard";
 import { ActivityCard } from "./ActivityCard";
-import { ActiveDroppedGameList } from "ActiveDroppedGameList";
-import { NewUserRankChooser } from "NewUserRankChooser";
+import { ActiveDroppedGameList } from "@/components/ActiveDroppedGameList";
+import { NewUserRankChooser } from "@/components/NewUserRankChooser";
 
 type RatingsSpeed = "overall" | "blitz" | "live" | "correspondence";
 type RatingsSize = 0 | 9 | 13 | 19;

@@ -16,11 +16,11 @@
  */
 
 import * as React from "react";
-import { _, pgettext } from "translate";
+import { _, pgettext } from "@/lib/translate";
 
 import * as DynamicHelp from "react-dynamic-help";
-import { useUser } from "hooks";
-import { Report } from "report_util";
+import { useUser } from "@/lib/hooks";
+import { Report } from "@/lib/report_util";
 
 interface ModerationActionSelectorProps {
     available_actions: string[];
@@ -102,6 +102,14 @@ const ACTION_PROMPTS = {
         "Label for a moderator to select this option",
         "Duplicate report - ask them not to do that.",
     ),
+
+    suspend_user: pgettext("Label for a moderator to select this option", "Suspend the user."),
+
+    suspend_user_and_annul: pgettext(
+        "Label for a moderator to select this option",
+        "Suspend user and annul game.",
+    ),
+
     // Note: keep this last, so it's positioned above the "note to moderator" input field
     escalate: pgettext(
         "A label for a community moderator to select this option - send report to to full moderators",

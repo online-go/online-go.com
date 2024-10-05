@@ -16,31 +16,32 @@
  */
 
 import * as React from "react";
-import * as moment from "moment";
+import moment from "moment";
 import * as ReactSelect from "react-select";
 import Select from "react-select";
-import { useUser } from "hooks";
-import { report_categories, ReportType } from "Report";
-import { report_manager } from "report_manager";
-import { Report } from "report_util";
-import { AutoTranslate } from "AutoTranslate";
-import { interpolate, _, pgettext } from "translate";
-import { Player, ShowPlayersInReportContext } from "Player";
+import { useUser } from "@/lib/hooks";
+import { report_categories, ReportType } from "@/components/Report";
+import { report_manager } from "@/lib/report_manager";
+import { Report } from "@/lib/report_util";
+import { AutoTranslate } from "@/components/AutoTranslate";
+import { interpolate, _, pgettext } from "@/lib/translate";
+import { Player, ShowPlayersInReportContext } from "@/components/Player";
 import { Link } from "react-router-dom";
-import { post } from "requests";
-import { PlayerCacheEntry } from "player_cache";
-import { errorAlerter, ignore } from "misc";
+import { post } from "@/lib/requests";
+import { PlayerCacheEntry } from "@/lib/player_cache";
+import { errorAlerter, ignore } from "@/lib/misc";
 import { UserHistory } from "./UserHistory";
 import { ReportedGame } from "./ReportedGame";
 import { AppealView } from "./AppealView";
-import { get } from "requests";
+import { get } from "@/lib/requests";
 import { MessageTemplate, WARNING_TEMPLATES, REPORTER_RESPONSE_TEMPLATES } from "./MessageTemplate";
 import { ModerationActionSelector } from "./ModerationActionSelector";
-import { openAnnulQueueModal, AnnulQueueModal } from "AnnulQueueModal";
+import { openAnnulQueueModal, AnnulQueueModal } from "@/components/AnnulQueueModal";
 import { ReportTypeSelector } from "./ReportTypeSelector";
-import { alert } from "swal_config";
-import { ErrorBoundary } from "ErrorBoundary";
+import { alert } from "@/lib/swal_config";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import * as DynamicHelp from "react-dynamic-help";
+import { MODERATOR_POWERS } from "@/lib/moderation";
 
 interface ViewReportProps {
     reports: Report[];
@@ -77,6 +78,15 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
     const { registerTargetItem } = React.useContext(DynamicHelp.Api);
     const { ref: ignore_button } = registerTargetItem("ignore-button");
 
+    const captureReport = (report: Report) => {
+        setReport(report);
+        setModeratorId(report?.moderator?.id);
+        setReportState(report?.state);
+        setAnnulQueue(report?.detected_ai_games);
+        setAvailableActions(report?.available_actions);
+        setVoteCounts(report?.vote_counts);
+    };
+
     React.useEffect(() => {
         if (report_id) {
             // For some reason we have to capture the state of the report at the time that report_id goes valid
@@ -86,12 +96,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                 .getReport(report_id)
                 .then((report) => {
                     setError(null);
-                    setReport(report);
-                    setModeratorId(report?.moderator?.id);
-                    setReportState(report?.state);
-                    setAnnulQueue(report?.detected_ai_games);
-                    setAvailableActions(report?.available_actions);
-                    setVoteCounts(report?.vote_counts);
+                    captureReport(report);
                 })
                 .catch((err) => {
                     console.error(err);
@@ -108,9 +113,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
     React.useEffect(() => {
         const onUpdate = (r: Report) => {
             if (r.id === report?.id) {
-                setReport(r);
-                setModeratorId(r?.moderator?.id);
-                setReportState(r?.state);
+                captureReport(r);
             }
         };
         report_manager.on("incident-report", onUpdate);
@@ -550,7 +553,11 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                                         .vote(report.id, action, note)
                                         .then(() => next());
                                 }}
-                                enable={report.state === "pending" && !report.escalated}
+                                enable={
+                                    report.state === "pending" &&
+                                    (!report.escalated ||
+                                        !!(user.moderator_powers & MODERATOR_POWERS.SUSPEND))
+                                }
                                 // clear the selection for subsequent reports
                                 key={report.id}
                                 report={report}

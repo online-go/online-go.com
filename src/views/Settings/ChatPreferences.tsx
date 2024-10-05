@@ -17,13 +17,13 @@
 
 import * as React from "react";
 
-import { _ } from "translate";
+import { _ } from "@/lib/translate";
 
-import { usePreference } from "preferences";
+import { usePreference } from "@/lib/preferences";
 
-import { Toggle } from "Toggle";
+import { Toggle } from "@/components/Toggle";
 
-import { PreferenceLine } from "SettingsCommon";
+import { PreferenceLine } from "@/lib/SettingsCommon";
 
 export function ChatPreferences(): JSX.Element {
     const [show_empty_chat_notification, toggleEmptyChatNotification] = usePreference(

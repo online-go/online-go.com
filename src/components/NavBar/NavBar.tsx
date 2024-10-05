@@ -19,26 +19,26 @@ import * as React from "react";
 import { Link, useLocation } from "react-router-dom";
 
 import * as DynamicHelp from "react-dynamic-help";
-import * as data from "data";
+import * as data from "@/lib/data";
 
-import { _, pgettext } from "translate";
-import { PlayerIcon } from "PlayerIcon";
-import { LineText } from "misc-ui";
-import { createDemoBoard } from "ChallengeModal";
-import { LanguagePicker } from "LanguagePicker";
-import { GobanThemePicker } from "GobanThemePicker";
-import { IncidentReportTracker } from "IncidentReportTracker";
-import { KBShortcut } from "KBShortcut";
-import { NotificationList, notification_manager } from "Notifications";
-import { TurnIndicator } from "TurnIndicator";
-import { NotificationIndicator } from "NotificationIndicator";
-import { TournamentIndicator } from "Announcements";
-import { FriendIndicator } from "FriendList";
-import { ChatIndicator } from "Chat";
-import { GoTVIndicator } from "GoTV";
+import { _, pgettext } from "@/lib/translate";
+import { PlayerIcon } from "@/components/PlayerIcon";
+import { LineText } from "@/components/misc-ui";
+import { createDemoBoard } from "@/components/ChallengeModal";
+import { LanguagePicker } from "@/components/LanguagePicker";
+import { GobanThemePicker } from "@/components/GobanThemePicker";
+import { IncidentReportTracker } from "@/components/IncidentReportTracker";
+import { KBShortcut } from "@/components/KBShortcut";
+import { NotificationList, notification_manager } from "@/components/Notifications";
+import { TurnIndicator } from "@/components/TurnIndicator";
+import { NotificationIndicator } from "@/components/NotificationIndicator";
+import { TournamentIndicator } from "@/components/Announcements";
+import { FriendIndicator } from "@/components/FriendList";
+import { ChatIndicator } from "@/components/Chat";
+import { GoTVIndicator } from "@/views/GoTV";
 
-import { logout } from "auth";
-import { useUser, useData } from "hooks";
+import { logout } from "@/lib/auth";
+import { useUser, useData } from "@/lib/hooks";
 import { OmniSearch } from "./OmniSearch";
 
 const body = $(document.body);

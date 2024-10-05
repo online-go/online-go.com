@@ -447,7 +447,7 @@ export class SFXManager {
         const release_base: string = data.get("config.cdn_release", "");
         const howl = new Howl({
             src:
-                (window as any).safari !== undefined // As of safari 14.1, their webm implementation cannot play our webm audio files correctly.
+                window.safari !== undefined // As of safari 14.1, their webm implementation cannot play our webm audio files correctly.
                     ? [`${release_base}/sound/${sprite_pack.filename_prefix}.mp3`]
                     : [
                           `${release_base}/sound/${sprite_pack.filename_prefix}.webm`,
@@ -630,7 +630,7 @@ export class SFXManager {
 
 export { sprite_packs } from "./sfx_sprites";
 export const sfx = new SFXManager();
-(window as any)["sfx"] = sfx;
+window.sfx = sfx;
 
 const I = setInterval(() => {
     /* postpone downloading stuff till more important things have begun loading */
@@ -643,7 +643,7 @@ const I = setInterval(() => {
 }, 100);
 
 /* Check and warn if we don't have an effect mapping for every sound voice sound */
-(window as any)["sprite_packs"] = sprite_packs;
+window.sprite_packs = sprite_packs;
 const effects = sprite_packs["zz-un-effects"];
 for (const pack of [GameVoiceSounds, CountdownSounds, StoneSounds, EffectsSounds]) {
     for (const name of pack) {

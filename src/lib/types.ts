@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { PlayerCacheEntry } from "player_cache";
+import { PlayerCacheEntry } from "@/lib/player_cache";
 import { GobanEngineRules, JGOFTimeControl } from "goban";
 
 export interface Player extends PlayerCacheEntry {

@@ -16,8 +16,8 @@
  */
 
 import React from "react";
-import { Card } from "material";
-import { _ } from "translate";
+import { Card } from "@/components/material";
+import { _ } from "@/lib/translate";
 import {
     drawChallengeCircle,
     drawChallengeSquare,
@@ -25,8 +25,8 @@ import {
     drawLegendKey,
 } from "./SeekGraphSymbols";
 import { ChallengePointStyle, SeekGraphColorPalette, SeekGraphPalettes } from "./SeekGraphPalettes";
-import * as data from "data";
-import { ChallengeFilter, ChallengeFilterKey } from "challenge_utils";
+import * as data from "@/lib/data";
+import { ChallengeFilter, ChallengeFilterKey } from "@/lib/challenge_utils";
 // import { SeekGraph } from "./SeekGraph";
 // import { SeekGraphColorPalette } from "./SeekGraphPalettes";
 

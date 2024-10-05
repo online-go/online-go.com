@@ -21,8 +21,8 @@
 
 import * as React from "react";
 import { useParams, useSearchParams } from "react-router-dom";
-import { useResizeDetector } from "OgsResizeDetector";
-import { MiniGoban } from "MiniGoban";
+import { useResizeDetector } from "@/components/OgsResizeDetector";
+import { MiniGoban } from "@/components/MiniGoban";
 
 // For the layout, this seems to give just enough room for the point tally on
 // the right and left.

@@ -16,19 +16,19 @@
  */
 
 import * as React from "react";
-import * as data from "data";
+import * as data from "@/lib/data";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import { _, pgettext } from "translate";
-import { Card } from "material";
-import { errorAlerter } from "misc";
-import { post } from "requests";
-import { get_ebi } from "SignIn";
-import { useUser } from "hooks";
-import cached from "cached";
+import { _, pgettext } from "@/lib/translate";
+import { Card } from "@/components/material";
+import { errorAlerter } from "@/lib/misc";
+import { post } from "@/lib/requests";
+import { get_ebi } from "@/views/SignIn";
+import { useUser } from "@/lib/hooks";
+import cached from "@/lib/cached";
 
-import { SocialLoginButtons } from "SocialLoginButtons";
-import { LoadingButton } from "LoadingButton";
+import { SocialLoginButtons } from "@/components/SocialLoginButtons";
+import { LoadingButton } from "@/components/LoadingButton";
 
 export function Register(): JSX.Element {
     const navigate = useNavigate();

@@ -16,13 +16,13 @@
  */
 
 import * as React from "react";
-import { _ } from "translate";
-import { MiniGoban } from "MiniGoban";
+import { _ } from "@/lib/translate";
+import { MiniGoban } from "@/components/MiniGoban";
 import { GobanRenderer } from "goban";
-import { AIReview, GameTimings, ChatMode, GameChat, GobanContext } from "Game";
-import { Player } from "Player";
-import { Resizable } from "Resizable";
-import { post, put } from "requests";
+import { AIReview, GameTimings, ChatMode, GameChat, GobanContext } from "@/views/Game";
+import { Player } from "@/components/Player";
+import { Resizable } from "@/components/Resizable";
+import { post, put } from "@/lib/requests";
 
 // Define the AnnulQueueModalProps interface
 interface AnnulQueueModalProps {

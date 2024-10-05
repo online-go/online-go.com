@@ -19,7 +19,7 @@ import React from "react";
 
 import { HelpFlow, HelpItem } from "react-dynamic-help";
 
-import { pgettext } from "translate";
+import { pgettext } from "@/lib/translate";
 
 /**
  * Help flows for people who just got Community Moderator powers

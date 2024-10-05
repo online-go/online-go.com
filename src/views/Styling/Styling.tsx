@@ -16,22 +16,22 @@
  */
 
 import * as React from "react";
-import { Card, FabX, FabCheck, FabAdd } from "material";
+import { Card, FabX, FabCheck, FabAdd } from "@/components/material";
 import { Link } from "react-router-dom";
-import { Ribbon } from "misc-ui";
-import { Player } from "Player";
-import { PlayerIcon } from "PlayerIcon";
-import { toast } from "toast";
+import { Ribbon } from "@/components/misc-ui";
+import { Player } from "@/components/Player";
+import { PlayerIcon } from "@/components/PlayerIcon";
+import { toast } from "@/lib/toast";
 import Datetime from "react-datetime";
-import { StarRating } from "StarRating";
-import { PlayerAutocomplete } from "PlayerAutocomplete";
-import { GroupAutocomplete } from "GroupAutocomplete";
-import { Markdown } from "Markdown";
-import { Steps } from "Steps";
-import { errcodeAlerter } from "ErrcodeModal";
-import * as moment from "moment";
-import { alert } from "swal_config";
-import { PlayerCacheEntry } from "src/lib/player_cache";
+import { StarRating } from "@/components/StarRating";
+import { PlayerAutocomplete } from "@/components/PlayerAutocomplete";
+import { GroupAutocomplete } from "@/components/GroupAutocomplete";
+import { Markdown } from "@/components/Markdown";
+import { Steps } from "@/components/Steps";
+import { errcodeAlerter } from "@/components/ErrcodeModal";
+import moment from "moment";
+import { alert } from "@/lib/swal_config";
+import { PlayerCacheEntry } from "@/lib/player_cache";
 
 export class Styling extends React.PureComponent<{}, any> {
     constructor(props: {}) {

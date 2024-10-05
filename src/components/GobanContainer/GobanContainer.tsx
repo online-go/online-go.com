@@ -16,14 +16,14 @@
  */
 
 import * as React from "react";
-import { PersistentElement } from "PersistentElement";
-import { OgsResizeDetector } from "OgsResizeDetector";
+import { PersistentElement } from "@/components/PersistentElement";
+import { OgsResizeDetector } from "@/components/OgsResizeDetector";
 import { GobanRenderer, GobanRendererConfig } from "goban";
 // Pull this out its own util
-import { goban_view_mode } from "Game/util";
-//import { generateGobanHook } from "Game/GameHooks";
+import { goban_view_mode } from "@/views/Game/util";
+//import { generateGobanHook } from "@/views/Game/GameHooks";
 
-import { usePreference } from "preferences";
+import { usePreference } from "@/lib/preferences";
 
 interface GobanContainerProps {
     goban?: GobanRenderer;

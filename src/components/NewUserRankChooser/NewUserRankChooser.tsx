@@ -17,10 +17,10 @@
 
 import * as React from "react";
 
-import { pgettext } from "translate";
-import { put } from "requests";
-import { errorAlerter } from "misc";
-import { useUser } from "hooks";
+import { pgettext } from "@/lib/translate";
+import { put } from "@/lib/requests";
+import { errorAlerter } from "@/lib/misc";
+import { useUser } from "@/lib/hooks";
 
 interface NewUserRankChooserProps {
     show_skip?: boolean;

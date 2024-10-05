@@ -16,14 +16,14 @@
  */
 
 import * as React from "react";
-import * as data from "data";
-import { _, pgettext } from "translate";
-import { put, get, del } from "requests";
-import { errorAlerter } from "misc";
-import { proRankList } from "rank_utils";
-import { Modal, openModal } from "Modal";
-import { PlayerCacheEntry, lookup } from "player_cache";
-import { MODERATOR_POWERS } from "moderation";
+import * as data from "@/lib/data";
+import { _, pgettext } from "@/lib/translate";
+import { put, get, del } from "@/lib/requests";
+import { errorAlerter } from "@/lib/misc";
+import { proRankList } from "@/lib/rank_utils";
+import { Modal, openModal } from "@/components/Modal";
+import { PlayerCacheEntry, lookup } from "@/lib/player_cache";
+import { MODERATOR_POWERS } from "@/lib/moderation";
 
 interface Events {}
 
@@ -31,8 +31,8 @@ interface ModerateUserProperties {
     playerId?: number;
 }
 
-import { alert } from "swal_config";
-import { ModerationOfferControl } from "ModerationOfferControl";
+import { alert } from "@/lib/swal_config";
+import { ModerationOfferControl } from "@/components/ModerationOfferControl";
 
 const pro_ranks = proRankList(false);
 
@@ -374,6 +374,19 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
                                 "Handle Stalling",
                             )}
                             ability_mask={MODERATOR_POWERS.HANDLE_STALLING}
+                            currently_offered={this.state.offered_moderator_powers}
+                            moderator_powers={this.state.moderator_powers}
+                            previously_rejected={this.state.mod_powers_rejected}
+                            onMakeOffer={this.makeOffer}
+                            onRetractOffer={this.retractOffer}
+                            onRemovePower={this.removePower}
+                        />
+                        <ModerationOfferControl
+                            ability={pgettext(
+                                "Label for a button to let a community moderator vote for suspension",
+                                "Vote for Suspension",
+                            )}
+                            ability_mask={MODERATOR_POWERS.SUSPEND}
                             currently_offered={this.state.offered_moderator_powers}
                             moderator_powers={this.state.moderator_powers}
                             previously_rejected={this.state.mod_powers_rejected}

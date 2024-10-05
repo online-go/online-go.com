@@ -17,14 +17,14 @@
 
 import * as React from "react";
 
-import { _ } from "translate";
+import { _ } from "@/lib/translate";
 
-import { put } from "requests";
-import { errorAlerter } from "misc";
+import { put } from "@/lib/requests";
+import { errorAlerter } from "@/lib/misc";
 
-import { Toggle } from "Toggle";
+import { Toggle } from "@/components/Toggle";
 
-import { SettingGroupPageProps, SettingsState } from "SettingsCommon";
+import { SettingGroupPageProps, SettingsState } from "@/lib/SettingsCommon";
 
 export function EmailPreferences(props: SettingGroupPageProps): JSX.Element {
     return (
