@@ -20,9 +20,11 @@ import * as React from "react";
 
 import { ChallengeModal, ChallengeModes } from "../ChallengeModal";
 import { createPortal } from "react-dom";
+import { deepEqual } from "@/lib/misc";
 
 type ModalProviderType = {
     showModal: (types: ModalTypes) => void;
+    hideModal: () => void;
 };
 
 export enum ModalTypes {
@@ -39,7 +41,8 @@ interface Modals {
 
 type Property<T, K extends keyof T> = T[K];
 
-const { Provider, Consumer } = React.createContext({} as ModalProviderType);
+export const ModalContext = React.createContext({} as ModalProviderType);
+const { Provider, Consumer } = ModalContext;
 
 export const ModalConsumer = Consumer;
 
@@ -49,22 +52,27 @@ export const ModalProvider = ({ children }: React.PropsWithChildren): JSX.Elemen
 
     function showModal() {
         setModal(true);
-        setProps({
-            mode: "computer",
+
+        const payload = {
+            mode: "computer" as ChallengeModes,
             initialState: null,
             playerId: undefined,
-        });
+        };
+
+        if (!deepEqual(props, payload)) {
+            setProps(payload);
+        }
     }
 
-    const hideModal = () => {
+    function hideModal() {
         setModal(false);
-    };
+    }
     return (
-        <Provider value={{ showModal }}>
+        <Provider value={{ showModal, hideModal }}>
             {modal &&
                 createPortal(
                     <div className="Modal-container">
-                        <ChallengeModal {...props} onClose={hideModal} />
+                        <ChallengeModal {...props} />
                     </div>,
                     document.body,
                 )}

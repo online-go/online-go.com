@@ -62,6 +62,7 @@ import {
     saveTimeControlSettings,
     updateSystem,
 } from "@/components/TimeControl/TimeControlUpdates";
+import { ModalConsumer } from "../Modal/ModalProvider";
 
 export type ChallengeDetails = rest_api.ChallengeDetails;
 
@@ -1791,7 +1792,18 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                     </div>
                 )} */}
                 <div className="buttons">
-                    <button onClick={this.close}>{_("Close")}</button>
+                    <ModalConsumer>
+                        {(value) => (
+                            <button
+                                onClick={() => {
+                                    this.close();
+                                    value.hideModal();
+                                }}
+                            >
+                                {_("Close")}
+                            </button>
+                        )}
+                    </ModalConsumer>
                     {mode === "demo" && (
                         <button onClick={this.createDemo} className="primary">
                             {this.props.game_record_mode
