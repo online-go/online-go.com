@@ -62,6 +62,7 @@ import {
     saveTimeControlSettings,
     updateSystem,
 } from "@/components/TimeControl/TimeControlUpdates";
+import { ModalConsumer } from "../Modal/ModalProvider";
 
 export type ChallengeDetails = rest_api.ChallengeDetails;
 

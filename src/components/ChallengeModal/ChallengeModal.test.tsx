@@ -19,9 +19,9 @@
 import * as React from "react";
 
 import * as ChallengeModal from "./ChallengeModal";
-import * as Modal from "./../Modal";
-import { render } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { ModalConsumer, ModalProvider, ModalTypes } from "../Modal/ModalProvider";
+import * as DynamicHelp from "react-dynamic-help";
 
 jest.mock("./../Modal", () => {
     return {
@@ -40,25 +40,49 @@ describe("ChallengeModal", () => {
                 <ModalConsumer>
                     {({ showModal }) => {
                         showModal(ModalTypes.Challenge);
-                        return <div />;
+                        return null;
                     }}
                 </ModalConsumer>
             </ModalProvider>,
         );
-        expect(challengeModalSpy).toHaveBeenCalledWith(
-            expect.objectContaining({
-                game_record_mode: true,
-                mode: "open",
-            }),
-            {},
-        );
+
+        expect(challengeModalSpy.mock.calls[0][0]).toStrictEqual({
+            mode: "computer",
+            initialState: null,
+            playerId: undefined,
+        });
+
+        challengeModalSpy.mockRestore();
     });
 
-    it("should do a computer challenge via modal", () => {
-        const modalSpy = jest.spyOn(Modal, "openModal").mockReturnValue(true);
-        ChallengeModal.challengeComputer();
-        expect(modalSpy).toHaveBeenCalledWith(
-            <ChallengeModal.ChallengeModal initialState={null} mode="computer" />,
+    it("should close", () => {
+        const DynamicHelpProviderValue = {
+            registerTargetItem: jest.fn().mockReturnValue({ ref: jest.fn() }),
+            triggerFlow: jest.fn(),
+            enableHelp: jest.fn(),
+            getFlowInfo: jest.fn(),
+            enableFlow: jest.fn(),
+            reloadUserState: jest.fn(),
+            signalUsed: jest.fn(),
+            getSystemStatus: jest.fn(),
+            resetHelp: jest.fn(),
+        };
+
+        render(
+            <DynamicHelp.Api.Provider value={DynamicHelpProviderValue}>
+                <ModalProvider>
+                    <ModalConsumer>
+                        {({ showModal }) => {
+                            showModal(ModalTypes.Challenge);
+                            return null;
+                        }}
+                    </ModalConsumer>
+                </ModalProvider>
+            </DynamicHelp.Api.Provider>,
         );
+        const closeButton = screen.getByText("Close");
+        expect(closeButton).toBeInTheDocument();
+        fireEvent.click(closeButton);
+        expect(closeButton).not.toBeInTheDocument();
     });
 });
