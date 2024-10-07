@@ -540,6 +540,15 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                         </div>
                     )}
 
+                    {report.escalated &&
+                        report.community_mod_note &&
+                        (user.is_moderator || user.moderator_powers & MODERATOR_POWERS.SUSPEND) && (
+                            <div className="notes">
+                                <h4>Escalator's note:</h4>
+                                <div className="Card">{report.community_mod_note}</div>
+                            </div>
+                        )}
+
                     {((!user.is_moderator && user.moderator_powers) || null) && (
                         <div className="voting">
                             <ModerationActionSelector
@@ -594,12 +603,6 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                                                 </li>
                                             ))}
                                         </ul>
-                                    </div>
-                                )}
-                                {report.escalated && report.community_mod_note && (
-                                    <div className="community-mod-note">
-                                        <h5>Community Moderator Note:</h5>
-                                        <div className="Card">{report.community_mod_note}</div>
                                     </div>
                                 )}
                             </>
