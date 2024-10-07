@@ -1791,13 +1791,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                     </div>
                 )} */}
                 <div className="buttons">
-                    <button
-                        onClick={() => {
-                            this.close();
-                        }}
-                    >
-                        {_("Close")}
-                    </button>
+                    <button onClick={this.close}>{_("Close")}</button>
                     {mode === "demo" && (
                         <button onClick={this.createDemo} className="primary">
                             {this.props.game_record_mode
