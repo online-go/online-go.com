@@ -62,7 +62,6 @@ import {
     saveTimeControlSettings,
     updateSystem,
 } from "@/components/TimeControl/TimeControlUpdates";
-import { ModalConsumer } from "../Modal/ModalProvider";
 
 export type ChallengeDetails = rest_api.ChallengeDetails;
 
@@ -1792,18 +1791,13 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                     </div>
                 )} */}
                 <div className="buttons">
-                    <ModalConsumer>
-                        {(value) => (
-                            <button
-                                onClick={() => {
-                                    this.close();
-                                    value.hideModal();
-                                }}
-                            >
-                                {_("Close")}
-                            </button>
-                        )}
-                    </ModalConsumer>
+                    <button
+                        onClick={() => {
+                            this.close();
+                        }}
+                    >
+                        {_("Close")}
+                    </button>
                     {mode === "demo" && (
                         <button onClick={this.createDemo} className="primary">
                             {this.props.game_record_mode
@@ -1956,9 +1950,6 @@ export function createDemoBoard(
             tournamentRecordRoundId={tournament_record_round_id}
         />,
     );
-}
-export function challengeComputer() {
-    return challenge(undefined, null, true);
 }
 export function challengeRematch(
     goban: GobanRenderer,
