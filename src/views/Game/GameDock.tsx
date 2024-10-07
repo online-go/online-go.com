@@ -30,7 +30,6 @@ import { openGameLinkModal } from "./GameLinkModal";
 import { openGameLogModal } from "./GameLogModal";
 import { sfx } from "@/lib/sfx";
 import { alert } from "@/lib/swal_config";
-import { challengeFromBoardPosition } from "@/components/ChallengeModal/ForkModal";
 import { errorAlerter } from "@/lib/misc";
 import { doAnnul } from "@/lib/moderation";
 import { openReport } from "@/components/Report";
@@ -39,6 +38,7 @@ import { openGameInfoModal } from "./GameInfoModal";
 import { useUserIsParticipant } from "./GameHooks";
 import { useGoban } from "./goban_context";
 import { Tooltip } from "../../components/Tooltip";
+import { ModalConsumer, ModalTypes } from "@/components/Modal/ModalProvider";
 
 interface DockProps {
     annulled: boolean;
@@ -139,11 +139,6 @@ export function GameDock({
         }
     };
 
-    const fork = () => {
-        if (!user.anonymous && !engine.rengo && !goban.isAnalysisDisabled()) {
-            challengeFromBoardPosition(goban);
-        }
-    };
     const showLinkModal = () => {
         openGameLinkModal(goban);
     };
@@ -446,16 +441,34 @@ export function GameDock({
                 </a>
             </Tooltip>
             <Tooltip tooltipRequired={tooltipRequired} title={_("Fork game")}>
-                <a
-                    onClick={fork}
-                    className={
-                        user.anonymous || engine.rengo || goban.isAnalysisDisabled()
-                            ? "disabled"
-                            : ""
-                    }
-                >
-                    <i className="fa fa-code-fork"></i> {_("Fork game")}
-                </a>
+                <ModalConsumer>
+                    {({ showModal }) => (
+                        <a
+                            onClick={() => {
+                                if (
+                                    !user.anonymous &&
+                                    !engine.rengo &&
+                                    !goban.isAnalysisDisabled()
+                                ) {
+                                    if (!goban) {
+                                        return;
+                                    }
+
+                                    return showModal(ModalTypes.Fork, {
+                                        goban,
+                                    });
+                                }
+                            }}
+                            className={
+                                user.anonymous || engine.rengo || goban.isAnalysisDisabled()
+                                    ? "disabled"
+                                    : ""
+                            }
+                        >
+                            <i className="fa fa-code-fork"></i> {_("Fork game")}
+                        </a>
+                    )}
+                </ModalConsumer>
             </Tooltip>
             <Tooltip tooltipRequired={tooltipRequired} title={_("Call moderator")}>
                 <a onClick={alertModerator} className={user.anonymous ? "disabled" : ""}>

@@ -21,15 +21,18 @@ import * as React from "react";
 import { ChallengeModal, ChallengeModes } from "../ChallengeModal";
 import { createPortal } from "react-dom";
 import { LanguagePickerModal } from "../LanguagePicker";
+import { ForkModal } from "../ChallengeModal/ForkModal";
+import { GobanRenderer } from "goban";
 
 type ModalProviderType = {
-    showModal: (type: ModalTypes) => void;
+    showModal: (type: ModalTypes, props?: ModalTypesProps) => void;
     hideModal: () => void;
 };
 
 export enum ModalTypes {
     Challenge = "challenge",
     LanguagePicker = "languagePicker",
+    Fork = "fork",
 }
 
 interface Modals {
@@ -37,6 +40,9 @@ interface Modals {
         mode: ChallengeModes;
         playerId?: number;
         initialState: any;
+    };
+    fork: {
+        goban: GobanRenderer;
     };
 }
 
@@ -53,7 +59,7 @@ export const ModalProvider = ({ children }: React.PropsWithChildren): JSX.Elemen
     const [modalType, setModalType] = React.useState(null as ModalTypes | null);
     const [modalProps, setModalProps] = React.useState({} as ModalTypesProps);
 
-    const showModal = (type: ModalTypes) => {
+    const showModal = (type: ModalTypes, props?: ModalTypesProps) => {
         setModalType(type);
 
         switch (type) {
@@ -62,6 +68,11 @@ export const ModalProvider = ({ children }: React.PropsWithChildren): JSX.Elemen
                     mode: "computer" as ChallengeModes,
                     initialState: null,
                     playerId: undefined,
+                });
+                break;
+            case ModalTypes.Fork:
+                setModalProps({
+                    goban: (props as Modals["fork"]).goban,
                 });
                 break;
             default:
@@ -99,6 +110,9 @@ export const ModalProvider = ({ children }: React.PropsWithChildren): JSX.Elemen
                             />
                         )}
                         {modalType === ModalTypes.LanguagePicker && <LanguagePickerModal />}
+                        {modalType === ModalTypes.Fork && (
+                            <ForkModal {...(modalProps as Modals["fork"])} />
+                        )}
                     </div>,
                     document.body,
                 )}
