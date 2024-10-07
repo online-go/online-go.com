@@ -20,15 +20,16 @@ import * as React from "react";
 
 import { ChallengeModal, ChallengeModes } from "../ChallengeModal";
 import { createPortal } from "react-dom";
-import { deepEqual } from "@/lib/misc";
+import { LanguagePickerModal } from "../LanguagePicker";
 
 type ModalProviderType = {
-    showModal: (types: ModalTypes) => void;
+    showModal: (type: ModalTypes) => void;
     hideModal: () => void;
 };
 
 export enum ModalTypes {
     Challenge = "challenge",
+    LanguagePicker = "languagePicker",
 }
 
 interface Modals {
@@ -39,7 +40,9 @@ interface Modals {
     };
 }
 
-type Property<T, K extends keyof T> = T[K];
+type ModalTypesProps = {
+    [key: string]: any;
+};
 
 export const ModalContext = React.createContext({} as ModalProviderType);
 const { Provider, Consumer } = ModalContext;
@@ -47,32 +50,55 @@ const { Provider, Consumer } = ModalContext;
 export const ModalConsumer = Consumer;
 
 export const ModalProvider = ({ children }: React.PropsWithChildren): JSX.Element => {
-    const [modal, setModal] = React.useState(false);
-    const [props, setProps] = React.useState({} as Property<Modals, ModalTypes>);
+    const [modalType, setModalType] = React.useState(null as ModalTypes | null);
+    const [modalProps, setModalProps] = React.useState({} as ModalTypesProps);
 
-    function showModal() {
-        setModal(true);
+    const showModal = (type: ModalTypes) => {
+        setModalType(type);
 
-        const payload = {
-            mode: "computer" as ChallengeModes,
-            initialState: null,
-            playerId: undefined,
+        switch (type) {
+            case ModalTypes.Challenge:
+                setModalProps({
+                    mode: "computer" as ChallengeModes,
+                    initialState: null,
+                    playerId: undefined,
+                });
+                break;
+            default:
+                break;
+        }
+    };
+
+    const hideModal = () => {
+        setModalType(null);
+    };
+
+    React.useEffect(() => {
+        const handleEscape = (event: KeyboardEvent) => {
+            if (event.key === "Escape" && modalType) {
+                hideModal();
+            }
         };
 
-        if (!deepEqual(props, payload)) {
-            setProps(payload);
-        }
-    }
+        document.addEventListener("keydown", handleEscape);
 
-    function hideModal() {
-        setModal(false);
-    }
+        return () => {
+            document.removeEventListener("keydown", handleEscape);
+        };
+    }, [modalType, hideModal]);
+
     return (
         <Provider value={{ showModal, hideModal }}>
-            {modal &&
+            {modalType &&
                 createPortal(
                     <div className="Modal-container">
-                        <ChallengeModal {...props} />
+                        {modalType === ModalTypes.Challenge && (
+                            <ChallengeModal
+                                {...(modalProps as Modals["challenge"])}
+                                onClose={hideModal}
+                            />
+                        )}
+                        {modalType === ModalTypes.LanguagePicker && <LanguagePickerModal />}
                     </div>,
                     document.body,
                 )}

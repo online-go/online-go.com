@@ -17,19 +17,8 @@
 
 import * as React from "react";
 import { _, setCurrentLanguage, current_language, languages } from "@/lib/translate";
-import { Modal, openModal } from "@/components/Modal";
 import * as preferences from "@/lib/preferences";
-
-interface Events {}
-
-interface LanguagePickerProperties {}
-
-let language_modal: JSX.Element | null = null;
-
-function openLanguageModal() {
-    language_modal = <LanguagePickerModal />;
-    openModal(language_modal);
-}
+import { ModalConsumer, ModalContext, ModalTypes } from "../Modal/ModalProvider";
 
 function language_sorter(a: string, b: string) {
     if (a === "auto") {
@@ -48,64 +37,63 @@ function language_sorter(a: string, b: string) {
 }
 
 export const LanguagePicker = () => (
-    <span className="LanguagePicker fakelink" onClick={openLanguageModal}>
-        <i className="fa fa-language" />
-        {languages[current_language]}
-    </span>
+    <ModalConsumer>
+        {(value) => (
+            <span
+                className="LanguagePicker fakelink"
+                onClick={() => value.showModal(ModalTypes.LanguagePicker)}
+            >
+                <i className="fa fa-language" />
+                {languages[current_language]}
+            </span>
+        )}
+    </ModalConsumer>
 );
 
-class LanguagePickerModal extends Modal<Events, LanguagePickerProperties, any> {
-    constructor(props: LanguagePickerProperties) {
-        super(props);
-        this.state = {
-            selected_language: current_language,
-        };
-    }
+export const LanguagePickerModal = () => {
+    const { hideModal } = React.useContext(ModalContext);
 
-    setLanguage(language_code: string) {
+    const setLanguage = (language_code: string) => {
         preferences.set("language", language_code);
         setCurrentLanguage(language_code);
-        this.close();
         window.location.reload();
-    }
+    };
 
-    render() {
-        const auto = preferences.get("language") === "auto";
-        function computeClass(lc: string) {
-            let ret = "";
-            if (auto) {
-                if (lc === "auto") {
-                    ret += "selected";
-                } else if (lc === current_language) {
-                    ret += "auto";
-                }
-            } else {
-                if (lc === current_language) {
-                    ret += "selected";
-                }
+    const auto = preferences.get("language") === "auto";
+    function computeClass(lc: string) {
+        let ret = "";
+        if (auto) {
+            if (lc === "auto") {
+                ret += "selected";
+            } else if (lc === current_language) {
+                ret += "auto";
             }
-            return ret;
+        } else {
+            if (lc === current_language) {
+                ret += "selected";
+            }
         }
-
-        return (
-            <div className="Modal LanguagePickerModal">
-                <div className="body">
-                    {Object.keys(languages)
-                        .sort(language_sorter)
-                        .map((lc, idx) => (
-                            <span
-                                key={idx}
-                                className={computeClass(lc) + " fakelink language-option"}
-                                onClick={() => this.setLanguage(lc)}
-                            >
-                                {languages[lc]}
-                            </span>
-                        ))}
-                </div>
-                <div className="footer">
-                    <button onClick={this.close}>{_("Cancel")}</button>
-                </div>
-            </div>
-        );
+        return ret;
     }
-}
+
+    return (
+        <div className="Modal LanguagePickerModal">
+            <div className="body">
+                {Object.keys(languages)
+                    .sort(language_sorter)
+                    .map((lc, idx) => (
+                        <span
+                            key={idx}
+                            className={computeClass(lc) + " fakelink language-option"}
+                            onClick={() => setLanguage(lc)}
+                        >
+                            {languages[lc]}
+                        </span>
+                    ))}
+            </div>
+            <div className="footer">
+                <button onClick={hideModal}>{_("Cancel")}</button>
+            </div>
+        </div>
+    );
+};

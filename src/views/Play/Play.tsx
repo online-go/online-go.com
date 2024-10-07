@@ -35,7 +35,7 @@ import {
     timeControlSystemText,
     usedForCheating,
 } from "@/components/TimeControl";
-import { challenge, challengeComputer } from "@/components/ChallengeModal";
+import { challenge } from "@/components/ChallengeModal";
 import { openGameAcceptModal } from "@/components/GameAcceptModal";
 import { errorAlerter, rulesText, dup, uuid, ignore } from "@/lib/misc";
 import { Player } from "@/components/Player";
@@ -378,14 +378,6 @@ export class Play extends React.Component<{}, PlayState> {
             automatch_manager.cancel(automatch_manager.active_live_automatcher.uuid);
         }
         this.forceUpdate();
-    };
-
-    newComputerGame = () => {
-        if (bot_count() === 0) {
-            void alert.fire(_("Sorry, all bots seem to be offline, please try again later."));
-            return;
-        }
-        challengeComputer();
     };
 
     newCustomGame = () => {
@@ -834,7 +826,17 @@ export class Play extends React.Component<{}, PlayState> {
                                     return (
                                         <button
                                             className="primary"
-                                            onClick={() => showModal(ModalTypes.Challenge)}
+                                            onClick={() => {
+                                                if (bot_count() === 0) {
+                                                    void alert.fire(
+                                                        _(
+                                                            "Sorry, all bots seem to be offline, please try again later.",
+                                                        ),
+                                                    );
+                                                    return;
+                                                }
+                                                showModal(ModalTypes.Challenge);
+                                            }}
                                             disabled={anon || warned}
                                         >
                                             <div className="play-button-text-root">
