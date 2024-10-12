@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import { PlayerCacheEntry } from "@/lib/player_cache";
-import { GobanEngineRules, JGOFTimeControl } from "goban";
+import { GobanEngineRules, JGOFTimeControl, JGOFTimeControlSpeed } from "goban";
 
 export interface Player extends PlayerCacheEntry {
     professional: boolean;
@@ -83,7 +83,7 @@ export interface ActiveTournament {
 
 export type ActiveTournamentList = Array<ActiveTournament>;
 
-export type Speed = "blitz" | "live" | "correspondence";
+export type Speed = JGOFTimeControlSpeed;
 export type Size = "9x9" | "13x13" | "19x19";
 export type AutomatchCondition = "required" | "preferred" | "no-preference";
 export type RuleSet = "japanese" | "chinese" | "aga" | "korean" | "nz" | "ing";

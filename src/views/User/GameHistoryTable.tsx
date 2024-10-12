@@ -576,6 +576,8 @@ function getSpeedClass(speed: Speed) {
             return "speed-icon ogs-turtle";
         case "live":
             return "speed-icon fa fa-clock-o";
+        case "rapid":
+            return "speed-icon fa fa-clock-o";
         case "blitz":
             return "speed-icon fa fa-bolt";
     }

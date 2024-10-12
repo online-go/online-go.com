@@ -21,7 +21,7 @@ import { Modal, openModal } from "@/components/Modal";
 import { dup } from "@/lib/misc";
 import * as data from "@/lib/data";
 import { AutomatchPreferencesBase, AutomatchTimeControlSystem, Size, Speed } from "@/lib/types";
-import { AutomatchCondition, RuleSet } from "goban";
+import { AutomatchCondition, JGOFTimeControlSpeed, RuleSet } from "goban";
 
 interface Events {}
 
@@ -104,10 +104,12 @@ const ConditionSelect = (props: { value: any; onChange: (x: any) => void }) => (
     </div>
 );
 
-export function getAutomatchSettings(speed: "blitz" | "live" | "correspondence") {
+export function getAutomatchSettings(speed: JGOFTimeControlSpeed) {
     switch (speed) {
         case "blitz":
             return dup(data.get("automatch.blitz", default_blitz));
+        case "rapid":
+            throw new Error("Rapid is not supported yet");
         case "live":
             return dup(data.get("automatch.live", default_live));
         case "correspondence":
@@ -130,7 +132,7 @@ export class AutomatchSettings extends Modal<
         };
     }
 
-    setTab = (tab: Speed) => {
+    setTab = (tab: JGOFTimeControlSpeed) => {
         data.set("automatch.last-tab", tab);
         this.setState({ tab: tab });
     };

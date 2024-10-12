@@ -30,6 +30,7 @@ import TimeControlSystem = TimeControlTypes.TimeControlSystem;
 import { AutomatchPreferences } from "@/components/AutomatchSettings";
 import { JosekiFilter } from "@/components/JosekiVariationFilter";
 import { Challenge } from "@/lib/challenge_utils";
+import { JGOFTimeControlSpeed } from "goban";
 
 interface CachedSchema {
     groups: GroupList;
@@ -159,7 +160,7 @@ interface PMSchema {
 }
 
 type AutomatchSchema = {
-    "last-tab": TimeControlSpeed;
+    "last-tab": JGOFTimeControlSpeed;
     size_options: Size[];
 } & {
     [speed_key in TimeControlSpeed]: AutomatchPreferences;
