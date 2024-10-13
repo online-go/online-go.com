@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import commonjs from '@rollup/plugin-commonjs';
 import fixReactVirtualized from "esbuild-plugin-react-virtualized";
 import path from "path";
 
@@ -16,7 +17,9 @@ export default defineConfig({
     },
     optimizeDeps: {
         esbuildOptions: {
-            plugins: [fixReactVirtualized],
+            plugins: [
+                fixReactVirtualized,
+            ],
         },
     },
 });

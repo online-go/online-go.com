@@ -22,6 +22,8 @@ import { current_language } from "@/lib/translate";
 import { DataSchema } from "./data_schema";
 import { FollowedChannel } from "@/views/GoTV";
 import { getWindowWidth } from "./device";
+import $ from "jquery";
+
 
 export const defaults = {
     "ai-review-enabled": true,

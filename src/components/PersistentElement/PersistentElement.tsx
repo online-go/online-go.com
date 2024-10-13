@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import jQuery from "jquery";
 
 interface PersistentElementProps {
     elt: HTMLElement | JQuery;

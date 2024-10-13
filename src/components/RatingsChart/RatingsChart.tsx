@@ -26,6 +26,7 @@ import { _, pgettext, interpolate } from "@/lib/translate";
 import { PersistentElement } from "@/components/PersistentElement";
 import { RatingEntry, makeRatingEntry } from "./RatingEntry";
 import { errorLogger } from "@/lib/misc";
+import $ from "jquery";
 
 import {
     rating_to_rank,

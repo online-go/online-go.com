@@ -16,6 +16,7 @@
  */
 
 import { socket } from "@/lib/sockets";
+import $ from "jquery";
 
 const win = $(window);
 

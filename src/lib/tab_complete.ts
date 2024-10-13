@@ -19,8 +19,7 @@
  */
 
 import * as player_cache from "@/lib/player_cache";
-
-declare let $: any;
+import $ from "jquery";
 
 interface TabCompleteOptions {
     nick_match: RegExp;

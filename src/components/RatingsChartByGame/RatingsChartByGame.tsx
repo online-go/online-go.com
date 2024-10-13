@@ -38,6 +38,7 @@ import {
     humble_rating,
     bounded_rank,
 } from "@/lib/rank_utils";
+import $ from "jquery";
 
 type speed_t = "overall" | "blitz" | "live" | "correspondence";
 

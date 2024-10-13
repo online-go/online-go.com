@@ -21,6 +21,7 @@ import { errorAlerter, errorLogger } from "@/lib/misc";
 import ITC from "@/lib/ITC";
 import cached from "@/lib/cached";
 import * as player_cache from "@/lib/player_cache";
+import $ from "jquery";
 
 export class BlockState {
     blocked: number; // player id

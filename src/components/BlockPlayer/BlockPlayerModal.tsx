@@ -25,6 +25,7 @@ import {
     setGameBlock,
     setAnnouncementBlock,
 } from "./BlockPlayer";
+import $ from "jquery";
 
 interface BlockPlayerModalProperties {
     playerId: number;

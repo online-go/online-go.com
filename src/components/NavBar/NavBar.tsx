@@ -40,6 +40,7 @@ import { GoTVIndicator } from "@/views/GoTV";
 import { logout } from "@/lib/auth";
 import { useUser, useData } from "@/lib/hooks";
 import { OmniSearch } from "./OmniSearch";
+import $ from "jquery";
 
 const body = $(document.body);
 

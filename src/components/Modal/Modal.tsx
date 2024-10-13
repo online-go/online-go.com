@@ -18,6 +18,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom/client";
 import { TypedEventEmitterPureComponent } from "@/components/TypedEventEmitterPureComponent";
+import $ from "jquery";
 
 let current_modal: any = null;
 

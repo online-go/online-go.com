@@ -37,6 +37,7 @@ import { PuzzleNavigation } from "./PuzzleNavigation";
 import { PuzzleEditor, getAllPuzzleCollections } from "./PuzzleEditing";
 import { GobanContainer } from "@/components/GobanContainer";
 import { alert } from "@/lib/swal_config";
+import $ from "jquery";
 
 type PuzzleProperties = RouteComponentProps<{ puzzle_id: string }>;
 type TransformationOptions = "x" | "h" | "v" | "color" | "zoom";

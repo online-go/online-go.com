@@ -61,6 +61,7 @@ import {
     saveTimeControlSettings,
     updateSystem,
 } from "@/components/TimeControl/TimeControlUpdates";
+import $ from "jquery";
 
 export type ChallengeDetails = rest_api.ChallengeDetails;
 

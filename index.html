@@ -270,124 +270,10 @@
             console.error(e);
         }
       </script>
-      <script defer src="https://cdn.online-go.com/lib/jquery/3.1.1/jquery.js"></script>
+      <script defer src=""></script>
       <script defer src="https://cdn.online-go.com/goban/8.3.50/goban.js"></script>
 
       <script type="text/javascript">var supported_languages = {"be":"Беларуская","ca":"Català","cs":"Čeština","da":"Dansk","de":"Deutsch","en":"English","eo":"Esperanto","es":"Español","eu":"Euskara","et":"Eesti keel","el":"ελληνικά","fi":"Suomi","fr":"Français","he":"עִבְרִית","hu":"Magyar","hr":"Hrvatski","it":"Italiano","ja":"日本語","ko":"한국어","nl":"Nederlands","pl":"Polski","pt":"Português","ro":"Română","ru":"Русский","sr":"Српски","sv":"Svenska","tr":"Türkçe","uk":"Українська","th":"ภาษาไทย","vi":"Tiếng Việt","zh-cn":"简体中文","zh-tw":"繁體中文","debug":"Debug"};</script>
-      <script type="text/javascript">
-        var ogs_version='';
-        var ogs_release='';
-        var ogs_language_version='';
-        var cdn_service = '//localhost:8080/';
-
-        /* Detect preferred language  */
-
-        function isSupportedLanguage(lang) {
-            if (!lang) {
-                return null;
-            }
-
-            lang = lang.toLowerCase();
-
-            if (lang in supported_languages) {
-                return lang;
-            }
-
-            lang = lang.replace(/_/, '-');
-
-            if (lang in supported_languages) {
-                return lang;
-            }
-
-            if (lang === 'zh') {
-                lang = 'zh-cn';
-            }
-            if (lang.indexOf('zh-hans') >= 0) {
-                lang = 'zh-cn';
-            }
-            if (lang.indexOf('zh-hant') >= 0) {
-                lang = 'zh-tw';
-            }
-            if (lang.indexOf('zh-hk') >= 0) {
-                lang = 'zh-tw';
-            }
-
-            if (lang in supported_languages) {
-                return lang;
-            }
-
-            lang = lang.replace(/-[a-z]+/, '');
-
-            if (lang in supported_languages) {
-                return lang;
-            }
-
-            return null;
-        }
-
-        function getPreferredLanguage() {
-            try {
-                var set_lang = JSON.parse(localStorage.getItem('ogs.preferences.language') || 'null');
-                if (set_lang !== "auto") {
-                    var lang = isSupportedLanguage(set_lang);
-                    if (lang) {
-                        return lang;
-                    } else if (set_lang && localStorage.getItem('ogs.preferences.language') != '"auto"') {
-                        console.error('User selected language: ', localStorage.getItem('ogs.preferences.language'), 'is not a recognized supported language');
-                    }
-                }
-            } catch (e) {
-                console.error(e);
-            }
-
-            try {
-                for (var i = 0; i < navigator.languages.length; ++i) {
-                    var lang = isSupportedLanguage(navigator.languages[i]);
-                    if (lang) {
-                        return lang;
-                    }
-                }
-            } catch (e) {
-            }
-
-            try {
-                return isSupportedLanguage(navigator.language || navigator.userLanguage) || 'en';
-            } catch (e) {
-            }
-
-            return 'en';
-        }
-
-
-        var ogs_current_language = 'en';
-        try {
-            ogs_current_language = getPreferredLanguage();
-        } catch (e) {
-            console.error(e);
-        }
-        window['ogs_current_language'] = ogs_current_language || 'en';
-
-        /* Load our translations */
-        var language_path = "//localhost:8080///locale/" + ogs_current_language + ".js";
-        language_path = language_path.replace('///', '/'); /* in dev mode, we don't use the cdn or release vars */
-        document.write('<script defer src="' + language_path + '"><' + '/script>');
-
-        /* Load OGS. We can override what script is loaded by setting the
-         * 'ogs-script' entry in localStorage (useful for testing versions before they're
-         * released to everyone) */
-        var ogs_script_path = "//localhost:8080///ogs.js";
-        try {
-            if (localStorage.getItem('ogs-script')) {
-                ogs_script_path = "//localhost:8080//" + localStorage.getItem('ogs-script');
-            }
-        } catch (e) {
-            console.error(e);
-        }
-        //document.write('<script defer src="' + ogs_script_path + '"><'+'/script>');
-
-      </script>
-
-
       <script>
         var MODE = 'dev';
         if (/online-(go|baduk|weiqi|covay|igo).(com|net)$/.test(document.location.host) && !(/dev/.test(document.location.host))) {
@@ -403,37 +289,6 @@
         }
       </script>
 
-      <script type="text/javascript">
-          function version_print_setters() {
-              var ret = "\n\n";
-
-              var scripts = $("script");
-              for (var idx = 0; idx < scripts.length; ++idx) {
-                  var m = scripts[idx].src.match(/https?:\/\/[^\/]+\/(.*\/ogs\..*\.js)/)
-                  if (m) {
-                      var path = scripts[idx].src
-                      ret += "localStorage.setItem('ogs-script', '" + m[1] + "');\n";
-                  }
-              }
-
-              var stylesheets = $("link");
-              for (var idx = 0; idx < stylesheets.length; ++idx) {
-                  if (stylesheets[idx].rel === "stylesheet") {
-                      var m = stylesheets[idx].href.match(/https?:\/\/[^\/]+\/(.*\/ogs\..*\.css)/)
-                      if (m) {
-                          var path = stylesheets[idx].src
-                          ret += "localStorage.setItem('ogs-css', '" + m[1] + "');\n";
-                      }
-                  }
-              }
-
-              return ret + "\n\n";
-          }
-          function version_clear() {
-              localStorage.removeItem('ogs-css');
-              localStorage.removeItem('ogs-script');
-          }
-      </script>
       <script type="module" src="src/main.tsx"></script>
 </body>
 

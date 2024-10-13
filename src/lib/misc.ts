@@ -22,6 +22,7 @@ import * as preferences from "@/lib/preferences";
 import { alert } from "@/lib/swal_config";
 import React from "react";
 import moment from "moment";
+import $ from "jquery";
 
 export type Timeout = ReturnType<typeof setTimeout>;
 

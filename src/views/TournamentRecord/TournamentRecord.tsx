@@ -25,6 +25,7 @@ import { Player } from "@/components/Player";
 import { ignore, errorAlerter, dup } from "@/lib/misc";
 import { rankString, allRanks } from "@/lib/rank_utils";
 import { createDemoBoard } from "@/components/ChallengeModal";
+import $ from "jquery";
 
 (window as any)["dup"] = dup;
 

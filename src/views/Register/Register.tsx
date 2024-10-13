@@ -29,6 +29,7 @@ import cached from "@/lib/cached";
 
 import { SocialLoginButtons } from "@/components/SocialLoginButtons";
 import { LoadingButton } from "@/components/LoadingButton";
+import $ from "jquery";
 
 export function Register(): JSX.Element {
     const navigate = useNavigate();

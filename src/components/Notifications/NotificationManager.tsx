@@ -31,6 +31,7 @@ import { ogs_has_focus, getCurrentGameId, shouldOpenNewTab } from "@/lib/misc";
 import { lookingAtOurLiveGame } from "@/components/TimeControl/util";
 import { PlayerCacheEntry } from "@/lib/player_cache";
 import { GameListEntry } from "goban";
+import $ from "jquery";
 
 //declare let Notification: any;
 

@@ -24,6 +24,7 @@ import { goban_view_mode } from "@/views/Game/util";
 //import { generateGobanHook } from "@/views/Game/GameHooks";
 
 import { usePreference } from "@/lib/preferences";
+import $ from "jquery";
 
 interface GobanContainerProps {
     goban?: GobanRenderer;

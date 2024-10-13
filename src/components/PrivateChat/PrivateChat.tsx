@@ -30,6 +30,7 @@ import * as player_cache from "@/lib/player_cache";
 import online_status from "@/lib/online_status";
 import { openReport } from "@/components/Report";
 import { alert } from "@/lib/swal_config";
+import $ from "jquery";
 
 let last_id = 0;
 

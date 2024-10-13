@@ -25,6 +25,7 @@ import { current_language } from "@/lib/translate";
 import { Goban, GobanBase, GobanEngine, setGobanRenderer } from "goban";
 import { sfx } from "@/lib/sfx";
 import { toast } from "@/lib/toast";
+import $ from "jquery";
 
 (window as any)["GobanThemes"] = Goban.THEMES;
 (window as any)["GobanEngine"] = GobanEngine;

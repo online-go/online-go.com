@@ -17,6 +17,7 @@
 
 import * as React from "react";
 import * as preferences from "@/lib/preferences";
+import $ from "jquery";
 
 let binding_id = 0;
 

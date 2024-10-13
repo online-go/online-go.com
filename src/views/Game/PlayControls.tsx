@@ -62,6 +62,7 @@ import { enableTouchAction } from "./touch_actions";
 import { ConditionalMoveTreeDisplay } from "./ConditionalMoveTreeDisplay";
 import { useUser } from "@/lib/hooks";
 import { AntiGrief } from "./AntiGrief";
+import $ from "jquery";
 
 import moment from "moment";
 

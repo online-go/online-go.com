@@ -75,6 +75,7 @@ import { is_valid_url } from "@/lib/url_validation";
 import { disableTouchAction, enableTouchAction } from "./touch_actions";
 import { BotDetectionResults } from "./BotDetectionResults";
 import { ActiveTournament } from "@/lib/types";
+import $ from "jquery";
 
 export function Game(): JSX.Element | null {
     const params = useParams<"game_id" | "review_id" | "move_number">();

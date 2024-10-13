@@ -32,9 +32,16 @@ import { post } from "@/lib/requests";
 import { ai_host } from "@/lib/sockets";
 sfx.sync();
 
-declare let ogs_current_language: string;
-declare let ogs_language_version: string;
-declare let ogs_version: string;
+//declare let ogs_current_language: string;
+let ogs_current_language = "en"; // default
+let ogs_language_version = "";
+let ogs_version = "";
+
+try {
+    ogs_current_language = getPreferredLanguage();
+} catch (e) {
+    console.error(e);
+}
 
 let sentry_env = "production";
 
@@ -141,21 +148,23 @@ const default_user = {
     can_create_tournaments: false,
     tournament_admin: false,
 };
+const cdn_service = "//localhost:8080/";
+const ogs_release = "";
 
 data.setDefault("config", { user: default_user });
 
 data.setDefault("config.user", default_user);
 
-data.setDefault("config.cdn", (window as any)["cdn_service"]);
+data.setDefault("config.cdn", cdn_service);
 data.setDefault(
     "config.cdn_host",
-    (window as any)["cdn_service"].replace("https://", "").replace("http://", "").replace("//", ""),
+    cdn_service.replace("https://", "").replace("http://", "").replace("//", ""),
 );
 data.setDefault(
     "config.cdn_release",
-    (window as any)["cdn_service"] + "/" + (window as any)["ogs_release"],
+    cdn_service + "/" + ogs_release,
 );
-data.setDefault("config.release", (window as any)["ogs_release"]);
+data.setDefault("config.release", ogs_release);
 
 configure_goban();
 
@@ -184,7 +193,87 @@ import "debug";
  * getPreferredLanguage() is defined in index.html. It gets the user's chosen
  * language from preferences.
  */
-declare function getPreferredLanguage(): string;
+
+
+
+const supported_languages = {"be":"Беларуская","ca":"Català","cs":"Čeština","da":"Dansk","de":"Deutsch","en":"English","eo":"Esperanto","es":"Español","eu":"Euskara","et":"Eesti keel","el":"ελληνικά","fi":"Suomi","fr":"Français","he":"עִבְרִית","hu":"Magyar","hr":"Hrvatski","it":"Italiano","ja":"日本語","ko":"한국어","nl":"Nederlands","pl":"Polski","pt":"Português","ro":"Română","ru":"Русский","sr":"Српски","sv":"Svenska","tr":"Türkçe","uk":"Українська","th":"ภาษาไทย","vi":"Tiếng Việt","zh-cn":"简体中文","zh-tw":"繁體中文","debug":"Debug"};
+  /* Detect preferred language  */
+
+  function isSupportedLanguage(lang) {
+      if (!lang) {
+          return null;
+      }
+
+      lang = lang.toLowerCase();
+
+      if (lang in supported_languages) {
+          return lang;
+      }
+
+      lang = lang.replace(/_/, '-');
+
+      if (lang in supported_languages) {
+          return lang;
+      }
+
+      if (lang === 'zh') {
+          lang = 'zh-cn';
+      }
+      if (lang.indexOf('zh-hans') >= 0) {
+          lang = 'zh-cn';
+      }
+      if (lang.indexOf('zh-hant') >= 0) {
+          lang = 'zh-tw';
+      }
+      if (lang.indexOf('zh-hk') >= 0) {
+          lang = 'zh-tw';
+      }
+
+      if (lang in supported_languages) {
+          return lang;
+      }
+
+      lang = lang.replace(/-[a-z]+/, '');
+
+      if (lang in supported_languages) {
+          return lang;
+      }
+
+      return null;
+  }
+
+function getPreferredLanguage() {
+    try {
+        const set_lang = JSON.parse(localStorage.getItem('ogs.preferences.language') || 'null');
+        if (set_lang !== "auto") {
+            const lang = isSupportedLanguage(set_lang);
+            if (lang) {
+                return lang;
+            } else if (set_lang && localStorage.getItem('ogs.preferences.language') != '"auto"') {
+                console.error('User selected language: ', localStorage.getItem('ogs.preferences.language'), 'is not a recognized supported language');
+            }
+        }
+    } catch (e) {
+        console.error(e);
+    }
+
+    try {
+        for (const i = 0; i < navigator.languages.length; ++i) {
+            const lang = isSupportedLanguage(navigator.languages[i]);
+            if (lang) {
+                return lang;
+            }
+        }
+    } catch (e) { }
+
+    try {
+        return isSupportedLanguage(navigator.language || navigator.userLanguage) || 'en';
+    } catch (e) { }
+
+    return 'en';
+}
+
+//declare function getPreferredLanguage(): string;
 
 // Initialize moment in our current language
 moment.locale(getPreferredLanguage());
