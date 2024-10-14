@@ -156,12 +156,26 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
 }
 
 export class ChallengeModalBody extends React.Component<
-    ChallengeModalProperties & { modal: ChallengeModal },
+    ChallengeModalProperties & {
+        modal: {
+            close: () => void;
+            on: (event: "open" | "close", callback: () => void) => void;
+            off: (event: "open" | "close", callback: () => void) => void;
+        };
+    },
     any
 > {
     ref: React.RefObject<HTMLDivElement> = React.createRef();
 
-    constructor(props: ChallengeModalProperties & { modal: ChallengeModal }) {
+    constructor(
+        props: ChallengeModalProperties & {
+            modal: {
+                close: () => void;
+                on: (event: "open" | "close", callback: () => void) => void;
+                off: (event: "open" | "close", callback: () => void) => void;
+            };
+        },
+    ) {
         super(props);
 
         const speed = data.get("challenge.speed", "live");
