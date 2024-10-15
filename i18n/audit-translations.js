@@ -172,16 +172,16 @@ async function main() {
         JSON.stringify(translations_missing, null, 4),
     );
 
-    // LLM translations
-    let llm_translations_needed = JSON.parse(fs.readFileSync("./build/llm-keys.json", "utf-8"));
-    for (let key in llm_translations_needed) {
-        for (let lang in languages) {
-            llm_translate(key, llm_translations_needed[key], lang, languages[lang]);
-        }
-    }
-
     // Auto translate missing strs with deepl or google depending on language support
     if (deepl_translator && googleTranslate && openai) {
+        // LLM translations
+        let llm_translations_needed = JSON.parse(fs.readFileSync("./build/llm-keys.json", "utf-8"));
+        for (let key in llm_translations_needed) {
+            for (let lang in languages) {
+                llm_translate(key, llm_translations_needed[key], lang, languages[lang]);
+            }
+        }
+
         if (Object.keys(vandalized_languages).length > 0) {
             console.error(
                 `Critical error: ${
