@@ -19,14 +19,8 @@
 declare namespace rest_api {
     namespace warnings {
         // These must match voting handling in django moderation.py
+        // Don't forget to also update ACTION_PROMPTS as needed: new messages usually mean new actions.
         type WarningMessageId =
-            | "warn_beginner_score_cheat"
-            | "warn_score_cheat"
-            | "ack_educated_beginner_score_cheat"
-            | "ack_educated_beginner_score_cheat_and_annul"
-            | "ack_warned_score_cheat"
-            | "ack_warned_score_cheat_and_annul"
-            | "no_score_cheating_evident"
             | "warn_beginner_escaper"
             | "warn_escaper"
             | "ack_educated_beginner_escaper"
@@ -42,11 +36,30 @@ declare namespace rest_api {
             | "ack_warned_staller"
             | "ack_warned_staller_and_annul"
             | "no_stalling_evident"
+            | "warn_beginner_score_cheat"
+            | "warn_score_cheat"
+            | "ack_educated_beginner_score_cheat"
+            | "ack_educated_beginner_score_cheat_and_annul"
+            | "ack_warned_score_cheat"
+            | "ack_warned_score_cheat_and_annul"
+            | "no_score_cheating_evident"
+            | "final_warn_escaper"
+            | "final_warn_escaper_and_annul"
+            | "final_warn_staller"
+            | "final_warn_staller_and_annul"
+            | "final_warn_score_cheat"
+            | "final_warn_score_cheat_and_annul"
+            | "ack_final_warn_escaper"
+            | "ack_final_warn_escaper_and_annul"
+            | "ack_final_warn_staller"
+            | "ack_final_warn_staller_and_annul"
+            | "ack_final_warn_score_cheat"
+            | "ack_final_warn_score_cheat_and_annul"
+            | "ack_suspended"
+            | "ack_suspended_and_annul"
             | "warn_duplicate_report"
             | "report_type_changed"
-            | "bot_owner_notified"
-            | "ack_suspended"
-            | "ack_suspended_and_annul";
+            | "bot_owner_notified";
 
         type Severity = "warning" | "acknowledgement" | "info";
 
