@@ -146,9 +146,36 @@ const standard_board_sizes: { [k: string]: string | undefined } = {
 };
 
 export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any> {
+    constructor(props: ChallengeModalProperties) {
+        super(props);
+    }
+
+    render() {
+        return <ChallengeModalBody {...this.props} modal={this} />;
+    }
+}
+
+export class ChallengeModalBody extends React.Component<
+    ChallengeModalProperties & {
+        modal: {
+            close: () => void;
+            on: (event: "open" | "close", callback: () => void) => void;
+            off: (event: "open" | "close", callback: () => void) => void;
+        };
+    },
+    any
+> {
     ref: React.RefObject<HTMLDivElement> = React.createRef();
 
-    constructor(props: ChallengeModalProperties) {
+    constructor(
+        props: ChallengeModalProperties & {
+            modal: {
+                close: () => void;
+                on: (event: "open" | "close", callback: () => void) => void;
+                off: (event: "open" | "close", callback: () => void) => void;
+            };
+        },
+    ) {
         super(props);
 
         const speed = data.get("challenge.speed", "live");
@@ -293,14 +320,14 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         if (this.props.autoCreate) {
             setTimeout(() => {
                 this.createChallenge();
-                this.close();
+                this.props.modal.close();
             }, 1);
         }
 
-        this.on("open", () => {
+        this.props.modal.on("open", () => {
             data.watch("preferred-game-settings", this.preferredSettingsUpdated);
         });
-        this.on("close", () => {
+        this.props.modal.on("close", () => {
             data.unwatch("preferred-game-settings", this.preferredSettingsUpdated);
         });
     }
@@ -492,7 +519,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
 
         console.log("Sending", settings);
         this.saveSettings();
-        this.close();
+        this.props.modal.close();
 
         if (this.props.game_record_mode) {
             settings.library_collection_id = this.props.libraryCollectionId;
@@ -651,7 +678,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         */
 
         this.saveSettings();
-        this.close();
+        this.props.modal.close();
 
         post(player_id ? `players/${player_id}/challenge` : "challenges", challenge)
             .then((res) => {
@@ -1775,7 +1802,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                     </div>
                 )} */}
                 <div className="buttons">
-                    <button onClick={this.close}>{_("Close")}</button>
+                    <button onClick={this.props.modal.close}>{_("Close")}</button>
                     {mode === "demo" && (
                         <button onClick={this.createDemo} className="primary">
                             {this.props.game_record_mode
