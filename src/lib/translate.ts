@@ -220,6 +220,10 @@ export function pgettext(context: string, msgid: string) {
  * The msgid is the message that needs to be translated.
  */
 export function llm_pgettext(context: string, msgid: string) {
+    if (current_language === "en") {
+        return msgid;
+    }
+
     const key = context + "" + msgid;
     if (key in catalog) {
         return catalog[key][0];
