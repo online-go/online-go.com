@@ -158,7 +158,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
 export class ChallengeModalBody extends React.Component<
     ChallengeModalProperties & {
         modal: {
-            close: () => void;
+            close?: () => void;
             on: (event: "open" | "close", callback: () => void) => void;
             off: (event: "open" | "close", callback: () => void) => void;
         };
@@ -170,7 +170,7 @@ export class ChallengeModalBody extends React.Component<
     constructor(
         props: ChallengeModalProperties & {
             modal: {
-                close: () => void;
+                close?: () => void;
                 on: (event: "open" | "close", callback: () => void) => void;
                 off: (event: "open" | "close", callback: () => void) => void;
             };
@@ -320,7 +320,7 @@ export class ChallengeModalBody extends React.Component<
         if (this.props.autoCreate) {
             setTimeout(() => {
                 this.createChallenge();
-                this.props.modal.close();
+                this.props.modal.close?.();
             }, 1);
         }
 
@@ -519,7 +519,7 @@ export class ChallengeModalBody extends React.Component<
 
         console.log("Sending", settings);
         this.saveSettings();
-        this.props.modal.close();
+        this.props.modal.close?.();
 
         if (this.props.game_record_mode) {
             settings.library_collection_id = this.props.libraryCollectionId;
@@ -678,7 +678,7 @@ export class ChallengeModalBody extends React.Component<
         */
 
         this.saveSettings();
-        this.props.modal.close();
+        this.props.modal.close?.();
 
         post(player_id ? `players/${player_id}/challenge` : "challenges", challenge)
             .then((res) => {
@@ -1802,7 +1802,11 @@ export class ChallengeModalBody extends React.Component<
                     </div>
                 )} */}
                 <div className="buttons">
-                    <button onClick={this.props.modal.close}>{_("Close")}</button>
+                    {this.props.modal.close ? (
+                        <button onClick={this.props.modal.close}>{_("Close")}</button>
+                    ) : (
+                        <span />
+                    )}
                     {mode === "demo" && (
                         <button onClick={this.createDemo} className="primary">
                             {this.props.game_record_mode
@@ -1826,7 +1830,7 @@ export class ChallengeModalBody extends React.Component<
                             className="primary"
                             disabled={this.state.input_value_warning}
                         >
-                            {_("Create Challenge")}
+                            {pgettext("Create a game anyone can join", "Create Game")}
                         </button>
                     )}
                 </div>
