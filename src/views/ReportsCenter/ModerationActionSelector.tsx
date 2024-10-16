@@ -155,7 +155,7 @@ export function ModerationActionSelector({
     const reportedBySelf = user.id === report.reporting_user.id;
 
     const [selectedOption, setSelectedOption] = React.useState("");
-    const [mod_note, setModNote] = React.useState("");
+    const [community_mod_note, setModNote] = React.useState("");
     const [voted, setVoted] = React.useState(false);
 
     const updateSelectedAction = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -219,7 +219,7 @@ export function ModerationActionSelector({
                         "Reason for escalating?",
                     )}
                     rows={5}
-                    value={mod_note}
+                    value={community_mod_note}
                     onChange={(ev) => setModNote(ev.target.value)}
                 />
             )}
@@ -236,11 +236,13 @@ export function ModerationActionSelector({
                     <button
                         className="success"
                         disabled={
-                            voted || !selectedOption || (selectedOption === "escalate" && !mod_note)
+                            voted ||
+                            !selectedOption ||
+                            (selectedOption === "escalate" && !community_mod_note)
                         }
                         onClick={() => {
                             setVoted(true);
-                            submit(selectedOption, mod_note);
+                            submit(selectedOption, community_mod_note);
                         }}
                     >
                         {llm_pgettext("A label on a button for submitting a vote", "Vote")}
