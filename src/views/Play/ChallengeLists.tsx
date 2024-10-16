@@ -31,7 +31,7 @@ import { RengoTeamManagementPane } from "@/components/RengoTeamManagementPane";
 import { Challenge, ChallengeFilter, shouldDisplayChallenge } from "@/lib/challenge_utils";
 import { useUser } from "@/lib/hooks";
 import { alert } from "@/lib/swal_config";
-import { PlayContext } from "./context";
+import { PlayContext } from "./PlayContext";
 import { anyChallengesToShow } from "./utils";
 
 interface ChallengeListProps {

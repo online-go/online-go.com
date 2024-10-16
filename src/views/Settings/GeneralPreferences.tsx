@@ -49,7 +49,6 @@ export function GeneralPreferences(props: SettingGroupPageProps): JSX.Element {
         usePreference("desktop-notifications-require-interaction");
     */
     const [show_offline_friends, setShowOfflineFriends] = usePreference("show-offline-friends");
-    const [show_seek_graph, setShowSeekGraph] = usePreference("show-seek-graph");
     const [unicode_filter_usernames, setUnicodeFilterUsernames] = usePreference("unicode-filter");
     const [translation_dialog_never_show, setTranslationDialogNeverShow] = usePreference(
         "translation-dialog-never-show",
@@ -262,10 +261,6 @@ export function GeneralPreferences(props: SettingGroupPageProps): JSX.Element {
                     />
                 </PreferenceLine>
             )*/}
-
-            <PreferenceLine title={_("Show seek graph")}>
-                <Toggle checked={show_seek_graph} onChange={setShowSeekGraph} />
-            </PreferenceLine>
 
             <PreferenceLine title={_("Show offline friends on list")}>
                 <Toggle checked={show_offline_friends} onChange={setShowOfflineFriends} />
