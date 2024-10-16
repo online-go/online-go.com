@@ -631,44 +631,44 @@ export function getDefaultTimeControl<T extends TimeControlSystem>(
 export const time_options: TimeOptionsMap = {
     blitz: {
         fischer: {
-            initial_time: gen(5, 300),
-            time_increment: gen(1, 10),
-            max_time: gen(5, 300),
+            initial_time: gen(5, 60),
+            time_increment: gen(1, 4),
+            max_time: gen(5, 900),
         },
         simple: {
-            per_move: gen(3, 9),
+            per_move: gen(3, 4),
         },
         canadian: {
-            main_time: [zero].concat(gen(0, 300)),
+            main_time: [zero].concat(gen(0, 60)),
             period_time: gen(5, 30),
         },
         byoyomi: {
-            main_time: [zero].concat(gen(0, 300)),
+            main_time: [zero].concat(gen(0, 60)),
             period_time: gen(1, 10),
         },
         absolute: {
-            total_time: gen(45, 300),
+            total_time: gen(45, 180),
         },
     },
     rapid: {
         fischer: {
-            initial_time: gen(30, 3600 * 4),
-            time_increment: gen(10, 1800),
-            max_time: gen(30, 3600 * 4),
+            initial_time: gen(30, 300),
+            time_increment: gen(4, 10),
+            max_time: gen(30, 3600),
         },
         simple: {
-            per_move: gen(10, 3600),
+            per_move: gen(5, 10),
         },
         canadian: {
-            main_time: [zero].concat(gen(30, 3600 * 4)),
-            period_time: gen(20, 3600),
+            main_time: [zero].concat(gen(30, 300)),
+            period_time: gen(20, 300),
         },
         byoyomi: {
-            main_time: [zero].concat(gen(30, 3600 * 4)),
-            period_time: gen(10, 3600),
+            main_time: [zero].concat(gen(30, 300)),
+            period_time: gen(10, 30),
         },
         absolute: {
-            total_time: gen(600, 14400),
+            total_time: gen(180, 600),
         },
     },
     live: {
@@ -722,7 +722,7 @@ export const default_time_settings: DefaultTimeSettingsMap = {
         fischer: {
             initial_time: 30,
             time_increment: 10,
-            max_time: 60,
+            max_time: 300,
             pause_on_weekends: false,
         },
         byoyomi: {
@@ -730,15 +730,15 @@ export const default_time_settings: DefaultTimeSettingsMap = {
             period_time: 5,
             periods: 5,
             periods_min: 1,
-            periods_max: 300,
+            periods_max: 10,
             pause_on_weekends: false,
         },
         canadian: {
             main_time: 30,
-            period_time: 30,
-            stones_per_period: 5,
+            period_time: 20,
+            stones_per_period: 3,
             stones_per_period_min: 1,
-            stones_per_period_max: 50,
+            stones_per_period_max: 10,
             pause_on_weekends: false,
         },
         simple: {
@@ -755,33 +755,33 @@ export const default_time_settings: DefaultTimeSettingsMap = {
     },
     rapid: {
         fischer: {
-            initial_time: 30,
-            time_increment: 10,
-            max_time: 60,
+            initial_time: 300,
+            time_increment: 5,
+            max_time: 3600,
             pause_on_weekends: false,
         },
         byoyomi: {
-            main_time: 30,
-            period_time: 5,
+            main_time: 300,
+            period_time: 30,
             periods: 5,
             periods_min: 1,
-            periods_max: 300,
+            periods_max: 10,
             pause_on_weekends: false,
         },
         canadian: {
-            main_time: 30,
-            period_time: 30,
-            stones_per_period: 5,
+            main_time: 300,
+            period_time: 60,
+            stones_per_period: 3,
             stones_per_period_min: 1,
-            stones_per_period_max: 50,
+            stones_per_period_max: 10,
             pause_on_weekends: false,
         },
         simple: {
-            per_move: 5,
+            per_move: 10,
             pause_on_weekends: false,
         },
         absolute: {
-            total_time: 300,
+            total_time: 600,
             pause_on_weekends: false,
         },
         none: {
@@ -790,9 +790,9 @@ export const default_time_settings: DefaultTimeSettingsMap = {
     },
     live: {
         fischer: {
-            initial_time: 120,
-            time_increment: 30,
-            max_time: 300,
+            initial_time: 600,
+            time_increment: 10,
+            max_time: 3600,
             pause_on_weekends: false,
         },
         byoyomi: {
@@ -812,7 +812,7 @@ export const default_time_settings: DefaultTimeSettingsMap = {
             pause_on_weekends: false,
         },
         simple: {
-            per_move: 60,
+            per_move: 15,
             pause_on_weekends: false,
         },
         absolute: {
