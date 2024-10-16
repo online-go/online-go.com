@@ -77,45 +77,46 @@ interface GameSpeedOptions {
 const SPEED_OPTIONS: GameSpeedOptions = {
     "9x9": {
         blitz: {
-            time_estimate: "~ 4-" + moment.duration(6, "minutes").humanize(),
+            time_estimate: "\u223c 4\u2212" + moment.duration(6, "minutes").humanize(),
             fischer: {
                 initial_time: 30,
                 time_increment: 3,
-                time_estimate: "~ 4-" + moment.duration(6, "minutes").humanize(),
+                //time_estimate: "~ 4-" + moment.duration(6, "minutes").humanize(),
+                time_estimate: "\u223c 4\u2212" + moment.duration(6, "minutes").humanize(),
             },
             byoyomi: {
                 main_time: 30,
                 periods: 5,
                 period_time: 10,
-                time_estimate: "~ 4-" + moment.duration(6, "minutes").humanize(),
+                time_estimate: "\u223c 4\u2212" + moment.duration(6, "minutes").humanize(),
             },
         },
         rapid: {
-            time_estimate: "~ 7-" + moment.duration(14, "minutes").humanize(),
+            time_estimate: "\u223c 7\u2212" + moment.duration(14, "minutes").humanize(),
             fischer: {
                 initial_time: 120,
                 time_increment: 5,
-                time_estimate: "~ 7-" + moment.duration(9, "minutes").humanize(),
+                time_estimate: "\u223c 7\u2212" + moment.duration(9, "minutes").humanize(),
             },
             byoyomi: {
                 main_time: 120,
                 periods: 5,
                 period_time: 30,
-                time_estimate: "~ 8-" + moment.duration(14, "minutes").humanize(),
+                time_estimate: "\u223c 8\u2212" + moment.duration(14, "minutes").humanize(),
             },
         },
         live: {
-            time_estimate: "~ 9-" + moment.duration(17, "minutes").humanize(),
+            time_estimate: "\u223c 9\u2212" + moment.duration(17, "minutes").humanize(),
             fischer: {
                 initial_time: 180,
                 time_increment: 10,
-                time_estimate: "~ 9-" + moment.duration(13, "minutes").humanize(),
+                time_estimate: "\u223c 9\u2212" + moment.duration(13, "minutes").humanize(),
             },
             byoyomi: {
                 main_time: 300,
                 periods: 5,
                 period_time: 30,
-                time_estimate: "~ 11-" + moment.duration(17, "minutes").humanize(),
+                time_estimate: "\u223c 11\u2212" + moment.duration(17, "minutes").humanize(),
             },
         },
         correspondence: {
@@ -129,45 +130,45 @@ const SPEED_OPTIONS: GameSpeedOptions = {
     },
     "13x13": {
         blitz: {
-            time_estimate: "~ 8-" + moment.duration(10, "minutes").humanize(),
+            time_estimate: "\u223c 8\u2212" + moment.duration(10, "minutes").humanize(),
             fischer: {
                 initial_time: 30,
                 time_increment: 3,
-                time_estimate: "~ -" + moment.duration(15, "minutes").humanize(),
+                time_estimate: "\u223c 8\u2212" + moment.duration(15, "minutes").humanize(),
             },
             byoyomi: {
                 main_time: 30,
                 periods: 5,
                 period_time: 10,
-                time_estimate: "~ 11-" + moment.duration(17, "minutes").humanize(),
+                time_estimate: "\u223c 11\u2212" + moment.duration(17, "minutes").humanize(),
             },
         },
         rapid: {
-            time_estimate: "~ 16-" + moment.duration(25, "minutes").humanize(),
+            time_estimate: "\u223c 16\u2212" + moment.duration(25, "minutes").humanize(),
             fischer: {
                 initial_time: 180,
                 time_increment: 5,
-                time_estimate: "~ 16-" + moment.duration(20, "minutes").humanize(),
+                time_estimate: "\u223c 16\u2212" + moment.duration(20, "minutes").humanize(),
             },
             byoyomi: {
                 main_time: 180,
                 periods: 5,
                 period_time: 30,
-                time_estimate: "~ 18-" + moment.duration(25, "minutes").humanize(),
+                time_estimate: "\u223c 18\u2212" + moment.duration(25, "minutes").humanize(),
             },
         },
         live: {
-            time_estimate: "~ 20-" + moment.duration(35, "minutes").humanize(),
+            time_estimate: "\u223c 20\u2212" + moment.duration(35, "minutes").humanize(),
             fischer: {
                 initial_time: 300,
                 time_increment: 10,
-                time_estimate: "~ 20-" + moment.duration(30, "minutes").humanize(),
+                time_estimate: "\u223c 20\u2212" + moment.duration(30, "minutes").humanize(),
             },
             byoyomi: {
                 main_time: 600,
                 periods: 5,
                 period_time: 30,
-                time_estimate: "~ 20-" + moment.duration(35, "minutes").humanize(),
+                time_estimate: "\u223c 20\u2212" + moment.duration(35, "minutes").humanize(),
             },
         },
         correspondence: {
@@ -181,45 +182,45 @@ const SPEED_OPTIONS: GameSpeedOptions = {
     },
     "19x19": {
         blitz: {
-            time_estimate: "~ 10-" + moment.duration(15, "minutes").humanize(),
+            time_estimate: "\u223c 10\u2212" + moment.duration(15, "minutes").humanize(),
             fischer: {
                 initial_time: 30,
                 time_increment: 3,
-                time_estimate: "~ 10-" + moment.duration(15, "minutes").humanize(),
+                time_estimate: "\u223c 10\u2212" + moment.duration(15, "minutes").humanize(),
             },
             byoyomi: {
                 main_time: 30,
                 periods: 5,
                 period_time: 10,
-                time_estimate: "~ 11-" + moment.duration(17, "minutes").humanize(),
+                time_estimate: "\u223c 11\u2212" + moment.duration(17, "minutes").humanize(),
             },
         },
         rapid: {
-            time_estimate: "~ 21-" + moment.duration(31, "minutes").humanize(),
+            time_estimate: "\u223c 21\u2212" + moment.duration(31, "minutes").humanize(),
             fischer: {
                 initial_time: 300,
                 time_increment: 5,
-                time_estimate: "~ 21-" + moment.duration(31, "minutes").humanize(),
+                time_estimate: "\u223c 21\u2212" + moment.duration(31, "minutes").humanize(),
             },
             byoyomi: {
                 main_time: 300,
                 periods: 5,
                 period_time: 30,
-                time_estimate: "~ 20-" + moment.duration(35, "minutes").humanize(),
+                time_estimate: "\u223c 20\u2212" + moment.duration(35, "minutes").humanize(),
             },
         },
         live: {
-            time_estimate: "~ 26-" + moment.duration(52, "minutes").humanize(),
+            time_estimate: "\u223c 26\u2212" + moment.duration(52, "minutes").humanize(),
             fischer: {
                 initial_time: 600,
                 time_increment: 10,
-                time_estimate: "~ 26-" + moment.duration(52, "minutes").humanize(),
+                time_estimate: "\u223c 26\u2212" + moment.duration(52, "minutes").humanize(),
             },
             byoyomi: {
                 main_time: 1200,
                 periods: 5,
                 period_time: 30,
-                time_estimate: "~ 28-" + moment.duration(49, "minutes").humanize(),
+                time_estimate: "\u223c 28\u2212" + moment.duration(49, "minutes").humanize(),
             },
         },
         correspondence: {
@@ -529,15 +530,27 @@ export function QuickMatch(): JSX.Element {
                 <div className="GameOption">
                     <span>{_("Game Speed")}</span>
                     <div className="flexible-setting">
-                        {pgettext(
-                            "Option to allow the user to be flexible on which time setting to use",
-                            "Flexible",
-                        )}{" "}
-                        <Toggle
-                            checked={flexible}
-                            disabled={search_active}
-                            onChange={setFlexible}
-                        />
+                        <span className="toggle-container">
+                            <label
+                                onClick={() => {
+                                    if (!search_active) {
+                                        setFlexible(!flexible);
+                                    }
+                                }}
+                                className="toggle-label"
+                            >
+                                {pgettext(
+                                    "Option to allow the user to be flexible on which time setting to use",
+                                    "Flexible",
+                                )}
+                            </label>
+
+                            <Toggle
+                                checked={flexible}
+                                disabled={search_active}
+                                onChange={setFlexible}
+                            />
+                        </span>
                     </div>
                 </div>
 
@@ -556,7 +569,14 @@ export function QuickMatch(): JSX.Element {
                                     key={speed}
                                 >
                                     <div className="game-speed-title">
-                                        <span className="description">{opt.time_estimate}</span>
+                                        <span className="description">
+                                            {opt.fischer.time_estimate || opt.time_estimate}
+                                        </span>
+                                        {opt.byoyomi?.time_estimate && (
+                                            <span className="description">
+                                                {opt.byoyomi.time_estimate}
+                                            </span>
+                                        )}
                                     </div>
                                     <div className="game-speed-buttons">
                                         <button
@@ -716,7 +736,23 @@ export function QuickMatch(): JSX.Element {
             <div className="GameOption-cell">
                 <div className="GameOption">
                     <span>{_("Difficulty Balancing")}</span>
-                    <Toggle checked={handicap} disabled={search_active} onChange={setHandicap} />
+                    <span className="toggle-container">
+                        <label
+                            onClick={() => {
+                                if (!search_active) {
+                                    setHandicap(!handicap);
+                                }
+                            }}
+                            className="toggle-label"
+                        >
+                            {pgettext("Handicap abbreviation", "HC")}
+                        </label>
+                        <Toggle
+                            checked={handicap}
+                            disabled={search_active}
+                            onChange={setHandicap}
+                        />
+                    </span>
                 </div>
 
                 {automatch_manager.active_live_automatcher && (
