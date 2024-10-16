@@ -38,8 +38,7 @@ import {
     humble_rating,
     bounded_rank,
 } from "@/lib/rank_utils";
-
-type speed_t = "overall" | "blitz" | "live" | "correspondence";
+import { speed_translation, speed_t } from "../RatingsChart/RatingsChart";
 
 interface RatingsChartProperties {
     playerId: number;
@@ -1055,18 +1054,5 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
                 </div>
             </div>
         );
-    }
-}
-
-function speed_translation(speed: speed_t) {
-    switch (speed) {
-        case "overall":
-            return _("Overall");
-        case "blitz":
-            return _("Blitz");
-        case "live":
-            return _("Live");
-        case "correspondence":
-            return _("Correspondence");
     }
 }

@@ -16,12 +16,13 @@
  */
 
 import * as data from "@/lib/data";
-import { GobanSelectedThemes, Goban, LabelPosition } from "goban";
+import { GobanSelectedThemes, Goban, LabelPosition, JGOFTimeControlSpeed, Size } from "goban";
 import * as React from "react";
 import { current_language } from "@/lib/translate";
 import { DataSchema } from "./data_schema";
 import { FollowedChannel } from "@/views/GoTV";
 import { getWindowWidth } from "./device";
+import type { PreferRequireIndifferent } from "@/components/TogglePreferRequired";
 
 export const defaults = {
     "ai-review-enabled": true,
@@ -31,6 +32,21 @@ export const defaults = {
     "asked-to-enable-desktop-notifications": false,
     "auto-advance-after-submit": true,
     "autoplay-delay": 10000,
+    "play.tab": "automatch" as "automatch" | "custom",
+    "automatch.size": "9x9" as Size,
+    "automatch.speed": "rapid" as JGOFTimeControlSpeed,
+    "automatch.speed-flexibility": true,
+    "automatch.time-control": "fischer" as "fischer" | "byoyomi",
+    "automatch.opponent": "human" as "human" | "bot",
+    "automatch.handicap": true,
+    "automatch.bot": 0,
+    "automatch.blitz": { priority: "prefer" as PreferRequireIndifferent, value: "fischer" },
+    "automatch.rapid": { priority: "prefer" as PreferRequireIndifferent, value: "fischer" },
+    "automatch.live": { priority: "prefer" as PreferRequireIndifferent, value: "fischer" },
+    "automatch.correspondence": {
+        priority: "prefer" as PreferRequireIndifferent,
+        value: "fischer",
+    },
     "board-labeling": "automatic",
     "chat.show-all-global-channels": true,
     "chat.show-all-group-channels": true,
@@ -97,7 +113,6 @@ export const defaults = {
     "show-rengo-challenges": true,
     "show-move-numbers": true,
     "show-offline-friends": true,
-    "show-seek-graph": true,
     "show-ratings-in-rating-grid": false,
 
     "show-tournament-indicator": true, // implicitly on desktop
