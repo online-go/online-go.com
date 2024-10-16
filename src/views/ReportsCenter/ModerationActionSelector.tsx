@@ -214,7 +214,10 @@ export function ModerationActionSelector({
             {selectedOption === "escalate" && (
                 <textarea
                     id="mod-note-text"
-                    placeholder={_("Message for moderators...")}
+                    placeholder={llm_pgettext(
+                        "A placeholder prompting community moderators for the reason why they are escalating a report",
+                        "Reason for escalating?",
+                    )}
                     rows={5}
                     value={mod_note}
                     onChange={(ev) => setModNote(ev.target.value)}
@@ -232,7 +235,9 @@ export function ModerationActionSelector({
                 {((action_choices && enable) || null) && (
                     <button
                         className="success"
-                        disabled={voted || !selectedOption}
+                        disabled={
+                            voted || !selectedOption || (selectedOption === "escalate" && !mod_note)
+                        }
                         onClick={() => {
                             setVoted(true);
                             submit(selectedOption, mod_note);
