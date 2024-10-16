@@ -541,11 +541,12 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                     )}
 
                     {report.escalated &&
-                        report.community_mod_note &&
                         (user.is_moderator || user.moderator_powers & MODERATOR_POWERS.SUSPEND) && (
                             <div className="notes">
                                 <h4>Escalator's note:</h4>
-                                <div className="Card">{report.community_mod_note}</div>
+                                <div className="Card">
+                                    {report.community_mod_note || "(none provided)"}
+                                </div>
                             </div>
                         )}
 
