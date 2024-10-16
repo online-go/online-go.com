@@ -27,7 +27,7 @@ export namespace TimeControlTypes {
         | "absolute"
         | "none";
 
-    export const ALL_SPEEDS: TimeControlSpeed[] = ["blitz", "live", "correspondence"];
+    export const ALL_SPEEDS: TimeControlSpeed[] = ["blitz", "rapid", "live", "correspondence"];
     export const ALL_SYSTEMS: TimeControlSystem[] = [
         "fischer",
         "byoyomi",
