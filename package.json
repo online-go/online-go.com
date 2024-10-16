@@ -139,7 +139,7 @@
         "react-dynamic-help": "^3.1.2",
         "react-linkify": "^1.0.0-alpha",
         "react-router-dom": "=6.3.0",
-        "react-select": "^5.0.1",
+        "react-select": "^5.8.1",
         "react-split": "^2.0.9",
         "react-switch": "7.0.0",
         "react-table": "^6.10.0",
