@@ -67,6 +67,17 @@
         justify-content: center;
     }
     
+    
+    .toggle-container {
+        display: flex;
+        align-items: center;
+    }
+    .toggle-label {
+        cursor: pointer;
+        font-size: 0.9rem;
+        themed color shade3
+        margin-right: 0.5rem;
+    }
 
     .finding-game-container {
         //flex-shrink: 0;
@@ -253,11 +264,6 @@
             align-items: center;
             font-size: 1.1rem;
             font-weight: normal;
-            
-            .Toggle {
-                margin-left: 1rem;
-            }
-            
         }
 
     }
@@ -343,17 +349,19 @@
         font-size: 1.2rem;
         display: flex;
         align-items: center;
+        justify-content: space-between;
 
 
         .description {
             padding-left: 1rem;
+            padding-right: 1rem;
             font-style: italic;
             font-size: 0.9rem;
         }
     }
     
     .game-speed-buttons {
-        padding-left: 2rem;
+        //padding-left: 2rem;
         display: flex;
         justify-content: space-around;
         align-items: center;

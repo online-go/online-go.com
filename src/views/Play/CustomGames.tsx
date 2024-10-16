@@ -369,8 +369,10 @@ export function CustomGames(): JSX.Element {
         }
     }, [freeze_challenge_list, Object.keys(pending_challenges).length]);
 
-    const rengo_challenge_to_show = React.useMemo(() => {
-        return rengo_list.find((c) => c.user_challenge);
+    const live_rengo_challenge_to_show = React.useMemo(() => {
+        return rengo_list.find(
+            (c) => c.user_challenge && c.time_per_move > 0 && c.time_per_move < 3600,
+        );
     }, [rengo_list]);
 
     const cancelOwnChallenges = React.useCallback(() => {
@@ -410,29 +412,35 @@ export function CustomGames(): JSX.Element {
                                 </button>
                             </div>
                         </>
-                    ) : rengo_challenge_to_show ? (
+                    ) : live_rengo_challenge_to_show ? (
                         <>
                             <RengoManagementPane
-                                challenge_id={rengo_challenge_to_show.challenge_id}
+                                challenge_id={live_rengo_challenge_to_show.challenge_id}
                                 rengo_challenge_list={rengo_list}
                                 startRengoChallenge={rengo_utils.startOwnRengoChallenge}
                                 cancelChallenge={cancelOpenRengoChallenge}
                                 withdrawFromRengoChallenge={unNominateForRengoChallenge}
                                 joinRengoChallenge={rengo_utils.nominateForRengoChallenge}
-                                lock={rengo_manage_pane_lock[rengo_challenge_to_show?.challenge_id]}
+                                lock={
+                                    rengo_manage_pane_lock[
+                                        live_rengo_challenge_to_show?.challenge_id
+                                    ]
+                                }
                             >
                                 <RengoTeamManagementPane
-                                    challenge_id={rengo_challenge_to_show.challenge_id}
+                                    challenge_id={live_rengo_challenge_to_show.challenge_id}
                                     challenge_list={rengo_list}
                                     moderator={user.is_moderator}
                                     show_chat={false}
                                     assignToTeam={rengo_utils.assignToTeam}
                                     kickRengoUser={rengo_utils.kickRengoUser}
                                     locked={
-                                        rengo_manage_pane_lock[rengo_challenge_to_show.challenge_id]
+                                        rengo_manage_pane_lock[
+                                            live_rengo_challenge_to_show.challenge_id
+                                        ]
                                     }
                                     lock={(lock: boolean) =>
-                                        setPaneLock(rengo_challenge_to_show.challenge_id, lock)
+                                        setPaneLock(live_rengo_challenge_to_show.challenge_id, lock)
                                     }
                                 />
                             </RengoManagementPane>
