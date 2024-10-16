@@ -15,8 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import type { JGOFTimeControlSpeed } from "goban";
+
 export namespace TimeControlTypes {
-    export type TimeControlSpeed = "blitz" | "live" | "correspondence";
+    export type TimeControlSpeed = JGOFTimeControlSpeed;
     export type TimeControlSystem =
         | "fischer"
         | "byoyomi"

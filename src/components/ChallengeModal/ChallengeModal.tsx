@@ -84,7 +84,7 @@ interface ChallengeModalProperties {
 
 /* These rejection details come from gtp2ogs and allows bots to
  * be clear about why a challenge is being rejected. */
-interface RejectionDetails {
+export interface RejectionDetails {
     rejection_code:
         | "blacklisted"
         | "board_size_not_square"
@@ -2126,7 +2126,7 @@ interface TimeControlConfig {
 }
 
 /* This function provides translations for rejection reasons coming gtp2ogs bot interface scripts. */
-function rejectionDetailsToMessage(details: RejectionDetails): string | undefined {
+export function rejectionDetailsToMessage(details: RejectionDetails): string | undefined {
     switch (details.rejection_code) {
         case "blacklisted":
             return pgettext(

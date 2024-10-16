@@ -66,6 +66,34 @@
         align-items: center;
         justify-content: center;
     }
+    
+
+    .finding-game-container {
+        //flex-shrink: 0;
+        //flex-grow: 0;
+        //flex-basis: 2.5rem;
+        font-size: 1.3rem;
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 2.5rem;
+        
+        
+
+        .spinner {
+            margin: 0;
+            height: 20px;
+            width: 20px;
+            margin-left: 1rem;
+            margin-right: 1rem;
+        }
+        button {
+            margin-left: 2rem;
+            font-size: 1.1rem;
+        }
+    }
 
     .automatch-row {
         display: flex;
@@ -389,6 +417,18 @@
                 themed-important border-color primary
             }
             
+            &.disabled {
+                themed-desaturate background-color default-button button-disabled-desaturate-amount
+                themed color shade2
+                themed-desaturate border-color default-button button-disabled-desaturate-amount
+                box-shadow: none;
+                cursor: default;
+                cursor: not-allowed;
+                
+                select {
+                    themed color shade2
+                }
+            }
 
             .opponent-title {
                 text-align: center;

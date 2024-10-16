@@ -88,7 +88,7 @@ class ReportManager extends EventEmitter<Events> {
         const user = data.get("user");
         report.id = parseInt(report.id as unknown as string);
 
-        console.log("updateIncidentReport", report);
+        //console.log("updateIncidentReport", report);
         if (!(report.id in this.active_incident_reports)) {
             if (
                 data.get("user").is_moderator &&
@@ -158,7 +158,7 @@ class ReportManager extends EventEmitter<Events> {
         reports.sort(compare_reports);
 
         this.sorted_active_incident_reports = reports;
-        console.log("active reports", reports.length, normal_ct);
+        //console.log("active reports", reports.length, normal_ct);
         this.emit("active-count", normal_ct);
         this.emit("update");
     }

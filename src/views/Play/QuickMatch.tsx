@@ -36,7 +36,17 @@ import { Toggle } from "@/components/Toggle";
 import { MiniGoban } from "@/components/MiniGoban";
 import { getUserRating, rankString } from "@/lib/rank_utils";
 import { uuid } from "@/lib/misc";
-import { getAutomatchSettings } from "@/components/AutomatchSettings";
+import { LoadingButton } from "@/components/LoadingButton";
+import { post } from "@/lib/requests";
+import { browserHistory } from "@/lib/ogsHistory";
+import {
+    ChallengeDetails,
+    RejectionDetails,
+    rejectionDetailsToMessage,
+} from "@/components/ChallengeModal";
+import { notification_manager, NotificationManagerEvents } from "@/components/Notifications";
+import { socket } from "@/lib/sockets";
+import { sfx } from "@/lib/sfx";
 
 moment.relativeTimeThreshold("m", 56);
 export interface SelectOption {
@@ -223,20 +233,7 @@ const SPEED_OPTIONS: GameSpeedOptions = {
     },
 };
 
-/*
-function usePriorityValuePreference(
-    key: "automatch.blitz" | "automatch.rapid" | "automatch.live" | "automatch.correspondence",
-): [
-    { priority: PreferRequireIndifferent; value: string },
-    (priority: PreferRequireIndifferent, value: string) => void,
-] {
-    const [pref, setPref] = preferences.usePreference(key);
-    return [pref, (priority, value) => setPref({ priority, value })];
-}
-*/
-
 export function QuickMatch(): JSX.Element {
-    //const ctx = React.useContext(PlayContext);
     const user = useUser();
     const refresh = useRefresh();
     const [board_size, setBoardSize] = preferences.usePreference("automatch.size");
@@ -247,15 +244,16 @@ export function QuickMatch(): JSX.Element {
     const [opponent, setOpponent] = preferences.usePreference("automatch.opponent");
     const [selected_bot, setSelectedBot] = preferences.usePreference("automatch.bot");
     const [handicap, setHandicap] = preferences.usePreference("automatch.handicap");
+    const [lower_rank_diff, setLowerRankDiff] = preferences.usePreference(
+        "automatch.lower-rank-diff",
+    );
+    const [upper_rank_diff, setUpperRankDiff] = preferences.usePreference(
+        "automatch.upper-rank-diff",
+    );
 
-    /*
-    const [automatch_size_options, setAutomatchSizeOptions] = useData("automatch.size_options", [
-        "9x9",
-        "13x13",
-        "19x19",
-    ]);
-    */
     const [correspondence_spinner, setCorrespondenceSpinner] = React.useState(false);
+    const [bot_spinner, setBotSpinner] = React.useState(false);
+    const cancel_bot_game = React.useRef<() => void>(() => {});
 
     React.useEffect(() => {
         automatch_manager.on("entry", refresh);
@@ -269,23 +267,6 @@ export function QuickMatch(): JSX.Element {
         };
     }, []);
 
-    /*
-    const size_enabled = (size: Size) => {
-        return automatch_size_options.indexOf(size) >= 0;
-    };
-    */
-
-    /*
-    const own_live_rengo_challenge = props.own_rengo_challenges_pending.find((c) =>
-        isLiveGame(c.time_control_parameters, c.width, c.height),
-    );
-    const joined_live_rengo_challenge = props.joined_rengo_challenges_pending.find((c) =>
-        isLiveGame(c.time_control_parameters, c.width, c.height),
-    );
-    */
-
-    //const rengo_challenge_to_show = own_live_rengo_challenge || joined_live_rengo_challenge;
-
     const anon = user.anonymous;
     const warned = user.has_active_warning_flag;
 
@@ -296,18 +277,190 @@ export function QuickMatch(): JSX.Element {
         refresh();
     }, [refresh]);
 
-    /*
-    const cancelOwnChallenges = React.useCallback(
-        (challenge_list: Challenge[]) => {
-            challenge_list.forEach((c) => {
-                if (c.user_challenge) {
-                    ctx.cancelOpenChallenge(c);
-                }
+    const createOpenChallenge = React.useCallback(() => {
+        if (data.get("user").anonymous) {
+            void alert.fire(_("Please sign in first"));
+            return;
+        }
+
+        // Open challenge
+        console.log("findMatch", board_size, game_speed);
+
+        const size_speed_options: Array<{ size: Size; speed: Speed }> = [
+            { size: board_size, speed: game_speed },
+        ];
+
+        const preferences: AutomatchPreferences = {
+            uuid: uuid(),
+            size_speed_options,
+            lower_rank_diff,
+            upper_rank_diff,
+            rules: {
+                condition: "required",
+                value: "japanese",
+            },
+            time_control: {
+                condition: flexible ? "preferred" : "required",
+                value: {
+                    system: time_control_system,
+                },
+            },
+            handicap: {
+                condition: "required",
+                value: handicap ? "enabled" : "disabled",
+            },
+        };
+        console.log(preferences);
+
+        automatch_manager.findMatch(preferences);
+        refresh();
+
+        if (game_speed === "correspondence") {
+            setCorrespondenceSpinner(true);
+        }
+    }, [
+        board_size,
+        game_speed,
+        opponent,
+        lower_rank_diff,
+        upper_rank_diff,
+        handicap,
+        flexible,
+        time_control_system,
+        refresh,
+        automatch_manager,
+        setCorrespondenceSpinner,
+    ]);
+
+    const playComputer = React.useCallback(() => {
+        const challenge: ChallengeDetails = {
+            initialized: false,
+            min_ranking: -99,
+            max_ranking: 99,
+            challenger_color: "automatic",
+            rengo_auto_start: 0,
+            game: {
+                name: _("Quick Match"),
+                rules: "chinese",
+                ranked: true,
+                width: board_size === "9x9" ? 9 : board_size === "13x13" ? 13 : 19,
+                height: board_size === "9x9" ? 9 : board_size === "13x13" ? 13 : 19,
+                handicap: handicap ? -1 : 0,
+                komi_auto: "automatic",
+                komi: 0,
+                disable_analysis: false,
+                initial_state: null,
+                private: false,
+                rengo: false,
+                rengo_casual_mode: false,
+                pause_on_weekends: true,
+                time_control: time_control_system,
+                time_control_parameters:
+                    time_control_system === "fischer"
+                        ? {
+                              system: "fischer",
+                              speed: game_speed,
+                              initial_time:
+                                  SPEED_OPTIONS[board_size as any][game_speed].fischer.initial_time,
+                              time_increment:
+                                  SPEED_OPTIONS[board_size as any][game_speed].fischer
+                                      .time_increment,
+                              max_time:
+                                  SPEED_OPTIONS[board_size as any][game_speed].fischer
+                                      .initial_time * 10,
+                              pause_on_weekends: true,
+                          }
+                        : {
+                              system: "byoyomi",
+                              speed: game_speed,
+                              main_time:
+                                  SPEED_OPTIONS[board_size as any][game_speed].byoyomi!.main_time,
+                              periods:
+                                  SPEED_OPTIONS[board_size as any][game_speed].byoyomi!.periods,
+                              period_time:
+                                  SPEED_OPTIONS[board_size as any][game_speed].byoyomi!.period_time,
+                              periods_min:
+                                  SPEED_OPTIONS[board_size as any][game_speed].byoyomi!.periods,
+                              periods_max:
+                                  SPEED_OPTIONS[board_size as any][game_speed].byoyomi!.periods,
+                              pause_on_weekends: true,
+                          },
+            },
+        };
+
+        setBotSpinner(true);
+        post(`players/${selected_bot}/challenge`, challenge)
+            .then((res) => {
+                const challenge_id = res.challenge;
+
+                const game_id = typeof res.game === "object" ? res.game.id : res.game;
+                let keepalive_interval: ReturnType<typeof setInterval> | undefined;
+
+                const checkForReject = (
+                    notification: NotificationManagerEvents["notification"],
+                ) => {
+                    console.log("challenge rejection check notification:", notification);
+                    if (notification.type === "gameOfferRejected") {
+                        /* non checked delete to purge old notifications that
+                         * could be around after browser refreshes, connection
+                         * drops, etc. */
+                        notification_manager.deleteNotification(notification);
+                        if (notification.game_id === game_id) {
+                            onRejected(notification.message, notification.rejection_details);
+                        }
+                    }
+                };
+
+                const active_check = () => {
+                    keepalive_interval = setInterval(() => {
+                        socket.send("challenge/keepalive", {
+                            challenge_id: challenge_id,
+                            game_id: game_id,
+                        });
+                    }, 1000);
+                    socket.send("game/connect", { game_id: game_id });
+                    socket.on(`game/${game_id}/gamedata`, onGamedata);
+                };
+
+                const onGamedata = () => {
+                    off();
+                    alert.close();
+                    //sfx.play("game_accepted");
+                    sfx.play("game_started", 3000);
+                    //sfx.play("setup-bowl");
+                    browserHistory.push(`/game/${game_id}`);
+                };
+
+                const onRejected = (message?: string, details?: RejectionDetails) => {
+                    off();
+                    alert.close();
+                    void alert.fire({
+                        text:
+                            (details && rejectionDetailsToMessage(details)) ||
+                            message ||
+                            _("Game offer was rejected"),
+                    });
+                };
+
+                const off = () => {
+                    clearTimeout(keepalive_interval);
+                    socket.send("game/disconnect", { game_id: game_id });
+                    socket.off(`game/${game_id}/gamedata`, onGamedata);
+                    //socket.off(`game/${game_id}/rejected`, onRejected);
+                    notification_manager.event_emitter.off("notification", checkForReject);
+                    cancel_bot_game.current = () => {};
+                    setBotSpinner(false);
+                };
+
+                cancel_bot_game.current = off;
+
+                notification_manager.event_emitter.on("notification", checkForReject);
+                active_check();
+            })
+            .catch((error) => {
+                console.error("Error creating challenge:", error);
             });
-        },
-        [ctx?.cancelOpenChallenge],
-    );
-    */
+    }, [selected_bot, board_size, handicap, game_speed, time_control_system, refresh]);
 
     const play = React.useCallback(() => {
         if (data.get("user").anonymous) {
@@ -316,43 +469,11 @@ export function QuickMatch(): JSX.Element {
         }
 
         if (opponent === "bot") {
-            // Bot game
+            playComputer();
         } else {
-            // Open challenge
-            console.log("findMatch", board_size, game_speed);
-
-            const size_speed_options: Array<{ size: Size; speed: Speed }> = [
-                { size: board_size, speed: game_speed },
-            ];
-
-            const settings = getAutomatchSettings(game_speed);
-            const preferences: AutomatchPreferences = {
-                uuid: uuid(),
-                size_speed_options,
-                lower_rank_diff: settings.lower_rank_diff,
-                upper_rank_diff: settings.upper_rank_diff,
-                rules: {
-                    condition: settings.rules.condition,
-                    value: settings.rules.value,
-                },
-                time_control: {
-                    condition: settings.time_control.condition,
-                    value: settings.time_control.value,
-                },
-                handicap: {
-                    condition: settings.handicap.condition,
-                    value: settings.handicap.value,
-                },
-            };
-            preferences.uuid = uuid();
-            automatch_manager.findMatch(preferences);
-            refresh();
-
-            if (game_speed === "correspondence") {
-                setCorrespondenceSpinner(true);
-            }
+            createOpenChallenge();
         }
-    }, [board_size, game_speed]);
+    }, [createOpenChallenge, playComputer]);
 
     const dismissCorrespondenceSpinner = React.useCallback(() => {
         setCorrespondenceSpinner(false);
@@ -368,93 +489,61 @@ export function QuickMatch(): JSX.Element {
     }, []);
     */
 
+    const search_active =
+        !!automatch_manager.active_live_automatcher || correspondence_spinner || bot_spinner;
+
     //  Construction of the pane we need to show...
-    if (automatch_manager.active_live_automatcher) {
-        return (
-            <div id="FindGame">
-                <div className="automatch-header">{_("Finding you a game...")}</div>
-                <div className="automatch-row-container">
-                    <div className="spinner">
-                        <div className="double-bounce1"></div>
-                        <div className="double-bounce2"></div>
-                    </div>
+    return (
+        <div id="FindGame">
+            {/* Board Size */}
+            <div className="GameOption-cell">
+                <div className="GameOption">
+                    <span>{_("Board Size")}</span>
                 </div>
-                <div className="automatch-settings">
-                    <button className="danger sm" onClick={cancelActiveAutomatch}>
-                        {pgettext("Cancel automatch", "Cancel")}
-                    </button>
+
+                <div style={{ textAlign: "center" }}>
+                    {(["9x9", "13x13", "19x19"] as Size[]).map((s) => (
+                        <button
+                            className={"btn" + (s === board_size ? " active" : "")}
+                            key={s}
+                            disabled={search_active}
+                            onClick={() => {
+                                setBoardSize(s);
+                            }}
+                        >
+                            {s}
+                        </button>
+                    ))}
                 </div>
+
+                <MiniGoban
+                    width={parseInt(board_size)}
+                    height={parseInt(board_size)}
+                    labels_positioning="all"
+                    noLink={true}
+                />
             </div>
-        );
-    } else if (correspondence_spinner) {
-        return (
-            <div id="FindGame">
-                <div className="automatch-header">{_("Finding you a game...")}</div>
-                <div className="automatch-settings-corr">
-                    {_(
-                        'This can take several minutes. You will be notified when your match has been found. To view or cancel your automatch requests, please see the list below labeled "Your Automatch Requests".',
-                    )}
-                </div>
-                <div className="automatch-row-container">
-                    <button className="primary" onClick={dismissCorrespondenceSpinner}>
-                        {_(
-                            pgettext(
-                                "Dismiss the 'finding correspondence automatch' message",
-                                "Got it",
-                            ),
-                        )}
-                    </button>
-                </div>
-            </div>
-        );
-    } else {
-        return (
-            <div id="FindGame">
-                {/* Board Size */}
-                <div className="GameOption-cell">
-                    <div className="GameOption">
-                        <span>{_("Board Size")}</span>
-                    </div>
 
-                    <div style={{ textAlign: "center" }}>
-                        {(["9x9", "13x13", "19x19"] as Size[]).map((s) => (
-                            <button
-                                className={"btn" + (s === board_size ? " active" : "")}
-                                key={s}
-                                onClick={() => {
-                                    setBoardSize(s);
-                                }}
-                            >
-                                {s}
-                            </button>
-                        ))}
+            {/* Game Speed */}
+            <div className="GameOption-cell">
+                <div className="GameOption">
+                    <span>{_("Game Speed")}</span>
+                    <div className="flexible-setting">
+                        {pgettext(
+                            "Option to allow the user to be flexible on which time setting to use",
+                            "Flexible",
+                        )}{" "}
+                        <Toggle
+                            checked={flexible}
+                            disabled={search_active}
+                            onChange={setFlexible}
+                        />
                     </div>
-
-                    <MiniGoban
-                        width={parseInt(board_size)}
-                        height={parseInt(board_size)}
-                        labels_positioning="all"
-                        noLink={true}
-                    />
                 </div>
 
-                {/* Game Speed */}
-                <div className="GameOption-cell">
-                    <div className="GameOption">
-                        <span>{_("Game Speed")}</span>
-                        <div className="flexible-setting">
-                            {pgettext(
-                                "Option to allow the user to be flexible on which time setting to use",
-                                "Flexible",
-                            )}{" "}
-                            <Toggle checked={flexible} onChange={setFlexible} />
-                        </div>
-                    </div>
-
-                    <div className="speed-options">
-                        {(
-                            ["blitz", "rapid", "live", "correspondence"] as JGOFTimeControlSpeed[]
-                        ).map((speed) => {
+                <div className="speed-options">
+                    {(["blitz", "rapid", "live", "correspondence"] as JGOFTimeControlSpeed[]).map(
+                        (speed) => {
                             const opt = SPEED_OPTIONS[board_size as any][speed];
 
                             return (
@@ -478,6 +567,7 @@ export function QuickMatch(): JSX.Element {
                                                     ? " active"
                                                     : "")
                                             }
+                                            disabled={search_active}
                                             onClick={() => {
                                                 setGameSpeed(speed);
                                                 setTimeControlSystem("fischer");
@@ -511,6 +601,7 @@ export function QuickMatch(): JSX.Element {
                                                         setGameSpeed(speed);
                                                         setTimeControlSystem("byoyomi");
                                                     }}
+                                                    disabled={search_active}
                                                 >
                                                     {shortDurationString(opt.byoyomi.main_time)}
                                                     {" + "}
@@ -524,87 +615,161 @@ export function QuickMatch(): JSX.Element {
                                     </div>
                                 </div>
                             );
-                        })}
-                    </div>
+                        },
+                    )}
+                </div>
+            </div>
+
+            {/* Opponent */}
+            <div className="GameOption-cell">
+                <div className="GameOption">
+                    <span>{_("Opponent")}</span>
                 </div>
 
-                {/* Opponent */}
-                <div className="GameOption-cell">
-                    <div className="GameOption">
-                        <span>{_("Opponent")}</span>
-                    </div>
-
-                    <div className="opponent-options">
-                        <div
-                            className={
-                                "opponent-option-container " +
-                                (opponent === "human" ? "active" : "")
+                <div className="opponent-options">
+                    <div
+                        className={
+                            "opponent-option-container " +
+                            (opponent === "human" ? "active" : "") +
+                            (search_active ? " disabled" : "")
+                        }
+                        onClick={() => {
+                            if (search_active) {
+                                return;
                             }
-                            onClick={() => setOpponent("human")}
-                        >
-                            <div className="opponent-title">
-                                {pgettext("Play a random human opponent", "Random Human")}
-                            </div>
-                            <div className="opponent-rank-range">
-                                <select>
-                                    {[-9, -8, -7, -6, -5, -4, -3, -2, -1, 0].map((v) => (
-                                        <option key={v} value={v}>
-                                            {rankString(user.ranking + v)}
-                                        </option>
-                                    ))}
-                                </select>
-                                {" - "}
-                                <select>
-                                    {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((v) => (
-                                        <option key={v} value={v}>
-                                            {rankString(user.ranking + v)}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
+                            setOpponent("human");
+                        }}
+                    >
+                        <div className="opponent-title">
+                            {pgettext("Play a random human opponent", "Random Human")}
                         </div>
-                        <div
-                            className={
-                                "opponent-option-container " + (opponent === "bot" ? "active" : "")
+                        <div className="opponent-rank-range">
+                            <select
+                                value={lower_rank_diff}
+                                onChange={(ev) => setLowerRankDiff(parseInt(ev.target.value))}
+                                disabled={search_active}
+                            >
+                                {[9, 8, 7, 6, 5, 4, 3, 2, 1, 0].map((v) => (
+                                    <option key={v} value={v}>
+                                        {rankString(user.ranking - v)}
+                                    </option>
+                                ))}
+                            </select>
+                            {" - "}
+                            <select
+                                value={upper_rank_diff}
+                                onChange={(ev) => setUpperRankDiff(parseInt(ev.target.value))}
+                                disabled={search_active}
+                            >
+                                {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((v) => (
+                                    <option key={v} value={v}>
+                                        {rankString(user.ranking + v)}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+                    <div
+                        className={
+                            "opponent-option-container " +
+                            (opponent === "bot" ? "active" : "") +
+                            (search_active ? " disabled" : "")
+                        }
+                        onClick={() => {
+                            if (search_active) {
+                                return;
                             }
-                            onClick={() => setOpponent("bot")}
-                        >
-                            <div className="opponent-title">
-                                {pgettext("Play a computer opponent", "Computer")}
-                            </div>
-                            <div className="computer-select">
-                                <select
-                                    id="challenge-ai"
-                                    value={selected_bot}
-                                    onChange={(ev) => setSelectedBot(parseInt(ev.target.value))}
-                                    required={true}
-                                >
-                                    {bots_list().map((bot, idx) => (
-                                        <option key={idx} value={bot.id}>
-                                            {bot.username} ({rankString(getUserRating(bot).rank)})
-                                        </option>
-                                    ))}
-                                </select>
-                                &nbsp;
-                                <a
-                                    href={`/user/view/${selected_bot}`}
-                                    target="_blank"
-                                    title={_("Selected AI profile")}
-                                >
-                                    <i className="fa fa-external-link" />
-                                </a>
-                            </div>
+                            setOpponent("bot");
+                        }}
+                    >
+                        <div className="opponent-title">
+                            {pgettext("Play a computer opponent", "Computer")}
+                        </div>
+                        <div className="computer-select">
+                            <select
+                                id="challenge-ai"
+                                value={selected_bot}
+                                onChange={(ev) => setSelectedBot(parseInt(ev.target.value))}
+                                required={true}
+                                disabled={search_active}
+                            >
+                                {bots_list().map((bot, idx) => (
+                                    <option key={idx} value={bot.id}>
+                                        {bot.username} ({rankString(getUserRating(bot).rank)})
+                                    </option>
+                                ))}
+                            </select>
+                            &nbsp;
+                            <a
+                                href={`/user/view/${selected_bot}`}
+                                target="_blank"
+                                title={_("Selected AI profile")}
+                            >
+                                <i className="fa fa-external-link" />
+                            </a>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                {/* Balancing and Play Button */}
-                <div className="GameOption-cell">
-                    <div className="GameOption">
-                        <span>{_("Difficulty Balancing")}</span>
-                        <Toggle checked={handicap} onChange={setHandicap} />
+            {/* Balancing and Play Button */}
+            <div className="GameOption-cell">
+                <div className="GameOption">
+                    <span>{_("Difficulty Balancing")}</span>
+                    <Toggle checked={handicap} disabled={search_active} onChange={setHandicap} />
+                </div>
+
+                {automatch_manager.active_live_automatcher && (
+                    <div>
+                        <div className="finding-game-container">
+                            <span>{_("Finding you a game...")}</span>
+
+                            <LoadingButton
+                                className="danger sm"
+                                loading={true}
+                                onClick={cancelActiveAutomatch}
+                            >
+                                {pgettext("Cancel automatch", "Cancel search")}
+                            </LoadingButton>
+                        </div>
                     </div>
+                )}
 
+                {bot_spinner && (
+                    <div>
+                        <div className="finding-game-container">
+                            <LoadingButton
+                                className="danger sm"
+                                loading={true}
+                                onClick={cancel_bot_game.current}
+                            >
+                                {pgettext("Cancel automatch", "Cancel search")}
+                            </LoadingButton>
+                        </div>
+                    </div>
+                )}
+
+                {correspondence_spinner && (
+                    <div>
+                        <div className="automatch-header">{_("Finding you a game...")}</div>
+                        <div className="automatch-settings-corr">
+                            {_(
+                                'This can take several minutes. You will be notified when your match has been found. To view or cancel your automatch requests, please see the list below labeled "Your Automatch Requests".',
+                            )}
+                        </div>
+                        <div className="automatch-row-container">
+                            <button className="primary" onClick={dismissCorrespondenceSpinner}>
+                                {_(
+                                    pgettext(
+                                        "Dismiss the 'finding correspondence automatch' message",
+                                        "Got it",
+                                    ),
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                )}
+                {!search_active && (
                     <button
                         className="primary play-button"
                         onClick={play}
@@ -612,120 +777,8 @@ export function QuickMatch(): JSX.Element {
                     >
                         {_("Play")}
                     </button>
-                </div>
+                )}
             </div>
-        );
-    }
-}
-
-/*
-                <div className="automatch-header">
-                    <div>{_("Automatch finder")}</div>
-                    <div className="btn-group">
-                        <button
-                            className={size_enabled("9x9") ? "primary sm" : "sm"}
-                            onClick={() => toggleSize("9x9")}
-                        >
-                            9x9
-                        </button>
-                        <button
-                            className={size_enabled("13x13") ? "primary sm" : "sm"}
-                            onClick={() => toggleSize("13x13")}
-                        >
-                            13x13
-                        </button>
-                        <button
-                            className={size_enabled("19x19") ? "primary sm" : "sm"}
-                            onClick={() => toggleSize("19x19")}
-                        >
-                            19x19
-                        </button>
-                    </div>
-                    <div className="automatch-settings">
-                        <span
-                            className="automatch-settings-link fake-link"
-                            onClick={openAutomatchSettings}
-                        >
-                            <i className="fa fa-gear" />
-                            {_("Settings ")}
-                        </span>
-                    </div>
-                </div>
-                <div className="automatch-row-container">
-                    <div className="automatch-row">
-                        <button
-                            className="primary"
-                            onClick={() => findMatch("blitz")}
-                            disabled={anon || warned}
-                        >
-                            <div className="play-button-text-root">
-                                <i className="fa fa-bolt" /> {_("Blitz")}
-                                <span className="time-per-move">
-                                    {pgettext("Automatch average time per move", "~10s per move")}
-                                </span>
-                            </div>
-                        </button>
-                        <button
-                            className="primary"
-                            onClick={() => findMatch("live")}
-                            disabled={anon || warned}
-                        >
-                            <div className="play-button-text-root">
-                                <i className="fa fa-clock-o" /> {_("Normal")}
-                                <span className="time-per-move">
-                                    {pgettext("Automatch average time per move", "~30s per move")}
-                                </span>
-                            </div>
-                        </button>
-                    </div>
-                    <div className="automatch-row">
-                        <button
-                            className="primary"
-                            onClick={newComputerGame}
-                            disabled={anon || warned}
-                        >
-                            <div className="play-button-text-root">
-                                <i className="fa fa-desktop" /> {_("Computer")}
-                                <span className="time-per-move"></span>
-                            </div>
-                        </button>
-                        <button
-                            className="primary"
-                            onClick={() => findMatch("correspondence")}
-                            disabled={anon || warned}
-                        >
-                            <div className="play-button-text-root">
-                                <span>
-                                    <i className="ogs-turtle" /> {_("Correspondence")}
-                                </span>
-                                <span className="time-per-move">
-                                    {pgettext("Automatch average time per move", "~1 day per move")}
-                                </span>
-                            </div>
-                        </button>
-                    </div>
-                    <div className="custom-game-header">
-                        <div>{_("Custom Game")}</div>
-                    </div>
-                    <div className="custom-game-row">
-                        <button
-                            className="primary"
-                            onClick={newCustomGame}
-                            disabled={anon || warned}
-                        >
-                            <i className="fa fa-cog" /> {_("Create")}
-                        </button>
-                    </div>
-                </div>
-*/
-
-/*
-function Caret({ up }: { up: boolean }): JSX.Element {
-    return (
-        <span className="DownCaret">
-            {up ? <i className="fa fa-caret-up" /> : <i className="fa fa-caret-down" />}
-        </span>
+        </div>
     );
 }
-
-*/
