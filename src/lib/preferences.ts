@@ -47,6 +47,8 @@ export const defaults = {
         priority: "prefer" as PreferRequireIndifferent,
         value: "fischer",
     },
+    "automatch.lower-rank-diff": 3,
+    "automatch.upper-rank-diff": 3,
     "board-labeling": "automatic",
     "chat.show-all-global-channels": true,
     "chat.show-all-group-channels": true,

@@ -104,6 +104,7 @@ const ConditionSelect = (props: { value: any; onChange: (x: any) => void }) => (
     </div>
 );
 
+/*
 export function getAutomatchSettings(speed: JGOFTimeControlSpeed) {
     switch (speed) {
         case "blitz":
@@ -116,6 +117,7 @@ export function getAutomatchSettings(speed: JGOFTimeControlSpeed) {
             return dup(data.get("automatch.correspondence", default_correspondence));
     }
 }
+*/
 
 export class AutomatchSettings extends Modal<
     Events,
