@@ -100,7 +100,7 @@ export function ChallengeList({
                     {user.is_moderator && (
                         <button
                             onClick={() => ctx.cancelOpenChallenge(C)}
-                            className="btn danger xs pull-left "
+                            className="btn reject xs pull-left "
                         >
                             <i className="fa fa-trash" />
                         </button>
@@ -115,9 +115,9 @@ export function ChallengeList({
                     {(C.user_challenge || null) && (
                         <button
                             onClick={() => ctx.cancelOpenChallenge(C)}
-                            className="btn reject xs"
+                            className="btn danger xs"
                         >
-                            {_("Remove")}
+                            {_("Cancel")}
                         </button>
                     )}
 
@@ -382,7 +382,7 @@ function RengoListItem(props: RengoComponentProps): JSX.Element {
                 {user.is_moderator && (
                     <button
                         onClick={() => ctx.cancelOpenRengoChallenge(challenge)}
-                        className="btn danger xs pull-left "
+                        className="btn reject xs pull-left "
                     >
                         <i className="fa fa-trash" />
                     </button>
@@ -391,9 +391,9 @@ function RengoListItem(props: RengoComponentProps): JSX.Element {
                 {(challenge.user_challenge || null) && (
                     <button
                         onClick={() => ctx.cancelOpenRengoChallenge(challenge)}
-                        className="btn reject xs"
+                        className="btn danger xs"
                     >
-                        {_("Remove")}
+                        {_("Cancel")}
                     </button>
                 )}
 
