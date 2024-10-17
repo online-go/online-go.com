@@ -550,7 +550,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                             </div>
                         )}
 
-                    {((!user.is_moderator && user.moderator_powers) || null) && (
+                    {!user.is_moderator && user.moderator_powers && (
                         <div className="voting">
                             <ModerationActionSelector
                                 available_actions={availableActions ?? []}
@@ -568,7 +568,6 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                                     (!report.escalated ||
                                         !!(user.moderator_powers & MODERATOR_POWERS.SUSPEND))
                                 }
-                                // clear the selection for subsequent reports
                                 key={report.id}
                                 report={report}
                             />

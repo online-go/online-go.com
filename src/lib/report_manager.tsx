@@ -351,22 +351,31 @@ class ReportManager extends EventEmitter<Events> {
         this.updateIncidentReport(res);
         return res;
     }
+
     public vote(report_id: number, voted_action: string, escalation_note: string): Promise<Report> {
-        const res = post(`moderation/incident/${report_id}`, {
-            action: "vote", // darn, yes, two different uses of the word "action" collide here
+        return post(`moderation/incident/${report_id}`, {
+            action: "vote",
             voted_action: voted_action,
             escalation_note: escalation_note,
-        }).then((res) => {
-            toast(
-                <div>
-                    {pgettext("Thanking a community moderator for voting", "Submitted, thanks!")}
-                </div>,
-                2000,
-            );
-            this.updateIncidentReport(res);
-            return res;
-        });
-        return res;
+        })
+            .then((res) => {
+                toast(
+                    <div>
+                        {pgettext(
+                            "Thanking a community moderator for voting",
+                            "Submitted, thanks!",
+                        )}
+                    </div>,
+                    2000,
+                );
+                this.updateIncidentReport(res);
+                return res;
+            })
+            .catch((error) => {
+                void alert.fire(`Error during vote submission: ${error.error}`);
+                console.error("Error during vote submission:", error);
+                throw error;
+            });
     }
 
     public getHandledTodayCount(): number {
