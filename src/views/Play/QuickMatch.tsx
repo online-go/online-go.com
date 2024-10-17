@@ -47,6 +47,7 @@ import {
 import { notification_manager, NotificationManagerEvents } from "@/components/Notifications";
 import { socket } from "@/lib/sockets";
 import { sfx } from "@/lib/sfx";
+import { Link } from "react-router-dom";
 
 moment.relativeTimeThreshold("m", 56);
 export interface SelectOption {
@@ -817,7 +818,18 @@ export function QuickMatch(): JSX.Element {
                         </div>
                     </div>
                 )}
-                {!search_active && (
+                {user.anonymous && (
+                    <div className="anonymous-container">
+                        {_("Please sign in to play")}
+                        <div>
+                            <Link to="/register#/play">{_("Register for Free")}</Link>
+                            {" | "}
+                            <Link to="/sign-in#/play">{_("Sign in")}</Link>
+                        </div>
+                    </div>
+                )}
+
+                {!search_active && !user.anonymous && (
                     <button
                         className="primary play-button"
                         onClick={play}

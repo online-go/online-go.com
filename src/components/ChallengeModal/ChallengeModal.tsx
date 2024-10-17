@@ -61,6 +61,7 @@ import {
     saveTimeControlSettings,
     updateSystem,
 } from "@/components/TimeControl/TimeControlUpdates";
+import { Link } from "react-router-dom";
 
 export type ChallengeDetails = rest_api.ChallengeDetails;
 
@@ -1741,6 +1742,7 @@ export class ChallengeModalBody extends React.Component<
     };
 
     render() {
+        const user = data.get("user");
         const mode = this.props.mode;
         const player_id = this.props.playerId;
         const player = player_id && player_cache.lookup(player_id);
@@ -1807,24 +1809,36 @@ export class ChallengeModalBody extends React.Component<
                     ) : (
                         <span />
                     )}
-                    {mode === "demo" && (
+
+                    {user?.anonymous && (
+                        <div className="anonymous-container">
+                            {_("Please sign in to play")}
+                            <div>
+                                <Link to="/register#/play">{_("Register for Free")}</Link>
+                                {" | "}
+                                <Link to="/sign-in#/play">{_("Sign in")}</Link>
+                            </div>
+                        </div>
+                    )}
+
+                    {!user?.anonymous && mode === "demo" && (
                         <button onClick={this.createDemo} className="primary">
                             {this.props.game_record_mode
                                 ? _("Create Game Record")
                                 : _("Create Demo")}
                         </button>
                     )}
-                    {mode === "computer" && (
+                    {!user?.anonymous && mode === "computer" && (
                         <button onClick={this.createChallenge} className="primary">
                             {_("Play")}
                         </button>
                     )}
-                    {mode === "player" && (
+                    {!user?.anonymous && mode === "player" && (
                         <button onClick={this.createChallenge} className="primary">
                             {_("Send Challenge")}
                         </button>
                     )}
-                    {mode === "open" && (
+                    {!user?.anonymous && mode === "open" && (
                         <button
                             onClick={this.createChallenge}
                             className="primary"
