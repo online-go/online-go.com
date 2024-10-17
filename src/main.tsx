@@ -25,6 +25,7 @@ import {
 } from "goban";
 
 import { OgsHelpProvider } from "@/components/OgsHelpProvider";
+import { ModalProvider } from "@/components/Modal/ModalProvider";
 import { HelpFlows } from "@/views/HelpFlows";
 import { sfx } from "@/lib/sfx";
 import { post } from "@/lib/requests";
@@ -328,7 +329,7 @@ const react_root = ReactDOM.createRoot(document.getElementById("main-content") a
 react_root.render(
     <React.StrictMode>
         <OgsHelpProvider>
-            {routes}
+            <ModalProvider>{routes}</ModalProvider>
             <HelpFlows />
         </OgsHelpProvider>
     </React.StrictMode>,
