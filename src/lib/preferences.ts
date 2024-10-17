@@ -22,7 +22,6 @@ import { current_language } from "@/lib/translate";
 import { DataSchema } from "./data_schema";
 import { FollowedChannel } from "@/views/GoTV";
 import { getWindowWidth } from "./device";
-import type { PreferRequireIndifferent } from "@/components/TogglePreferRequired";
 
 export const defaults = {
     "ai-review-enabled": true,
@@ -40,13 +39,6 @@ export const defaults = {
     "automatch.opponent": "human" as "human" | "bot",
     "automatch.handicap": true,
     "automatch.bot": 0,
-    "automatch.blitz": { priority: "prefer" as PreferRequireIndifferent, value: "fischer" },
-    "automatch.rapid": { priority: "prefer" as PreferRequireIndifferent, value: "fischer" },
-    "automatch.live": { priority: "prefer" as PreferRequireIndifferent, value: "fischer" },
-    "automatch.correspondence": {
-        priority: "prefer" as PreferRequireIndifferent,
-        value: "fischer",
-    },
     "automatch.lower-rank-diff": 3,
     "automatch.upper-rank-diff": 3,
     "board-labeling": "automatic",
