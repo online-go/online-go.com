@@ -351,11 +351,11 @@ class ReportManager extends EventEmitter<Events> {
         this.updateIncidentReport(res);
         return res;
     }
-    public vote(report_id: number, voted_action: string, mod_note: string): Promise<Report> {
+    public vote(report_id: number, voted_action: string, escalation_note: string): Promise<Report> {
         const res = post(`moderation/incident/${report_id}`, {
             action: "vote", // darn, yes, two different uses of the word "action" collide here
             voted_action: voted_action,
-            mod_note,
+            escalation_note: escalation_note,
         }).then((res) => {
             toast(
                 <div>

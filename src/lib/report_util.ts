@@ -66,7 +66,7 @@ export interface Report {
     available_actions: Array<string>; // community moderator actions
     vote_counts: { [action: string]: number };
     voters: Vote[]; // votes from community moderators on this report
-    community_mod_note: string;
+    escalation_note: string;
 
     unclaim: () => void;
     claim: () => void;
