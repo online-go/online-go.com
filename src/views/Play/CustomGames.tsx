@@ -501,7 +501,7 @@ export function CustomGames(): JSX.Element {
                                 <div className="challenge-row automatch-challenge-row" key={m.uuid}>
                                     <span className="cell">
                                         <button
-                                            className="reject xs"
+                                            className="danger xs"
                                             onClick={() => {
                                                 automatch_manager.cancel(m.uuid);
                                             }}
