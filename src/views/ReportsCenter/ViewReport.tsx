@@ -545,7 +545,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                             <div className="notes">
                                 <h4>Escalator's note:</h4>
                                 <div className="Card">
-                                    {report.community_mod_note || "(none provided)"}
+                                    {report.escalation_note || "(none provided)"}
                                 </div>
                             </div>
                         )}
