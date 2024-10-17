@@ -530,7 +530,13 @@ export function QuickMatch(): JSX.Element {
                 <div className="GameOption">
                     <span>{_("Game Speed")}</span>
                     <div className="flexible-setting">
-                        <span className="toggle-container">
+                        <span
+                            className="toggle-container"
+                            title={pgettext(
+                                "Tooltip title for the flexible time setting toggle on the Play page.",
+                                "The Flexible time setting allows you to choose your preferred time setting, but if there is a game with a similar expected duration, you can be matched with that game instead.",
+                            )}
+                        >
                             <label
                                 onClick={() => {
                                     if (!search_active) {
@@ -736,7 +742,13 @@ export function QuickMatch(): JSX.Element {
             <div className="GameOption-cell">
                 <div className="GameOption">
                     <span>{_("Difficulty Balancing")}</span>
-                    <span className="toggle-container">
+                    <span
+                        className="toggle-container"
+                        title={pgettext(
+                            "Tooltip title for the Difficulty Balancing toggle on the Play page.",
+                            "When enabled, the strength of your opponent will determine how many extra black stones and komi points are used in the game to balance the difficulty of the game.",
+                        )}
+                    >
                         <label
                             onClick={() => {
                                 if (!search_active) {
