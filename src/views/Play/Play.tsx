@@ -41,13 +41,13 @@ export function Play(): JSX.Element {
                         className={"tab" + (tab === "automatch" ? " active" : "")}
                         onClick={() => setTab("automatch")}
                     >
-                        {pgettext("Matchmaking tab (automatch / quick match)", "Quick match")}
+                        {pgettext("Matchmaking tab (automatch / quick match)", "Quick Match")}
                     </span>
                     <span
                         className={"tab" + (tab === "custom" ? " active" : "")}
                         onClick={() => setTab("custom")}
                     >
-                        {pgettext("Matchmaking tab", "Custom games")}
+                        {pgettext("Matchmaking tab", "Custom Games")}
                     </span>
                 </div>
             </div>
