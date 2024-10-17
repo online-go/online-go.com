@@ -34,8 +34,9 @@ import {
     humble_rating,
     bounded_rank,
 } from "@/lib/rank_utils";
+import { JGOFTimeControlSpeed } from "goban";
 
-type speed_t = "overall" | "blitz" | "live" | "correspondence";
+export type speed_t = "overall" | JGOFTimeControlSpeed;
 
 interface RatingsChartProperties {
     playerId: number;
@@ -1346,17 +1347,20 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
     }
 }
 
-function speed_translation(speed: speed_t) {
+export function speed_translation(speed: speed_t) {
     switch (speed) {
         case "overall":
             return _("Overall");
         case "blitz":
             return _("Blitz");
+        case "rapid":
+            return _("Rapid");
         case "live":
-            return _("Live");
+            return pgettext("Game speed", "Long");
         case "correspondence":
-            return _("Correspondence");
+            return pgettext("Game speed", "Daily Correspondence");
     }
+    return `<ERROR: ${speed}>`;
 }
 function is_same_month(d1: Date, d2: Date): boolean {
     return d1.getUTCFullYear() === d2.getUTCFullYear() && d1.getUTCMonth() === d2.getUTCMonth();
