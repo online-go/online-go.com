@@ -19,7 +19,7 @@ import React from "react";
 
 import { HelpFlow, HelpItem } from "react-dynamic-help";
 
-import { pgettext } from "@/lib/translate";
+import { llm_pgettext, pgettext } from "@/lib/translate";
 
 /**
  * Help flows for people who just got Community Moderator powers
@@ -76,9 +76,9 @@ export function CommunityModeratorIntro(): JSX.Element {
                 </HelpItem>
                 <HelpItem target="escalate-option" position={"bottom-centre"}>
                     <div>
-                        {pgettext(
+                        {llm_pgettext(
                             "A help message describing a community moderator voting option",
-                            "Use this option if you think a full moderator needs to take a look - serious or repeat offenders.   This will go straight to the moderator queue.",
+                            "Use this option if you think a final warning, suspension or other action is needed",
                         )}
                     </div>
                 </HelpItem>

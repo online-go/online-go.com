@@ -138,8 +138,8 @@ const ACTION_PROMPTS = {
 
     // Note: keep this last, so it's positioned above the "note to moderator" input field
     escalate: llm_pgettext(
-        "A label for a community moderator to select this option - send report to to full moderators",
-        "Escalate: send direct to moderators.",
+        "A label for a community moderator to select this option",
+        "Escalate: submit for consideration for more serious action.",
     ),
 };
 
