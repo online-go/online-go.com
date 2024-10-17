@@ -676,11 +676,15 @@ export function QuickMatch(): JSX.Element {
                                 onChange={(ev) => setLowerRankDiff(parseInt(ev.target.value))}
                                 disabled={search_active}
                             >
-                                {[9, 8, 7, 6, 5, 4, 3, 2, 1, 0].map((v) => (
-                                    <option key={v} value={v}>
-                                        {rankString(user.ranking - v)}
-                                    </option>
-                                ))}
+                                {user.anonymous ? (
+                                    <option>{"30k"}</option>
+                                ) : (
+                                    [9, 8, 7, 6, 5, 4, 3, 2, 1, 0].map((v) => (
+                                        <option key={v} value={v}>
+                                            {rankString(user.ranking - v)}
+                                        </option>
+                                    ))
+                                )}
                             </select>
                             {" - "}
                             <select
@@ -688,11 +692,15 @@ export function QuickMatch(): JSX.Element {
                                 onChange={(ev) => setUpperRankDiff(parseInt(ev.target.value))}
                                 disabled={search_active}
                             >
-                                {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((v) => (
-                                    <option key={v} value={v}>
-                                        {rankString(user.ranking + v)}
-                                    </option>
-                                ))}
+                                {user.anonymous ? (
+                                    <option>{"9d"}</option>
+                                ) : (
+                                    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((v) => (
+                                        <option key={v} value={v}>
+                                            {rankString(user.ranking + v)}
+                                        </option>
+                                    ))
+                                )}
                             </select>
                         </div>
                     </div>
