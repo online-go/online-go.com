@@ -304,7 +304,6 @@ export function InviteList(): JSX.Element {
             {(show_details || null) && (
                 <RengoManagementPane
                     challenge_id={show_details!.challenge_id}
-                    user={user}
                     rengo_challenge_list={invites}
                     startRengoChallenge={startRengoChallenge}
                     cancelChallenge={cancelRengoChallenge}
@@ -313,7 +312,6 @@ export function InviteList(): JSX.Element {
                     lock={lock}
                 >
                     <RengoTeamManagementPane
-                        user={user}
                         challenge_id={show_details!.challenge_id}
                         challenge_list={invites}
                         moderator={user.is_moderator}

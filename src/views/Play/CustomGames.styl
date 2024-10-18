@@ -1,3 +1,4 @@
+
 /*
  * Copyright (C)  Online-Go.com
  *
@@ -14,31 +15,21 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-import * as React from "react";
-
-interface LoadingButtonProps extends React.ComponentProps<"button"> {
-    loading?: boolean;
-    icon?: React.ReactElement;
-}
-
-export function LoadingButton({
-    loading,
-    icon,
-    children,
-    ...props
-}: LoadingButtonProps): JSX.Element {
-    //const prefix = loading ? <i className="fa fa-circle-o-notch rotating" /> : icon;
-    const prefix = loading ? (
-        <i className="fa fa-circle-o-notch rotating" aria-hidden="true" />
-    ) : (
-        icon
-    );
-    return (
-        <button {...props}>
-            {prefix}
-            {prefix && " "}
-            {children}
-        </button>
-    );
-}
+ 
+ #CustomGames {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    box-sizing: border-box;
+    
+    .Modal {
+        border: none;
+        box-shadow: none;
+    }
+    
+    .ChallengeModal {
+        width: 100%;
+        max-height: unset;
+    }
+ }
