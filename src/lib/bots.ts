@@ -18,7 +18,13 @@
 import { socket } from "@/lib/sockets";
 import { getUserRating } from "@/lib/rank_utils";
 import { User } from "goban";
+import EventEmitter from "eventemitter3";
 
+interface Events {
+    updated: () => void;
+}
+
+export const bot_event_emitter = new EventEmitter<Events>();
 let active_bots: { [id: number]: User } = {};
 let _bots_list: User[] = [];
 
@@ -45,4 +51,6 @@ socket.on("active-bots", (bots: { [id: number]: User }) => {
         _bots_list.push(bots[id]);
     }
     _bots_list.sort((a, b) => getUserRating(a).rating - getUserRating(b).rating);
+
+    bot_event_emitter.emit("updated");
 });

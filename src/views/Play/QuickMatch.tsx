@@ -29,13 +29,13 @@ import {
 } from "goban";
 import { _, pgettext } from "@/lib/translate";
 import { automatch_manager } from "@/lib/automatch_manager";
-import { bots_list } from "@/lib/bots";
+import { bot_event_emitter, bots_list } from "@/lib/bots";
 import { alert } from "@/lib/swal_config";
 import { useRefresh, useUser } from "@/lib/hooks";
-import { Toggle } from "@/components/Toggle";
+//import { Toggle } from "@/components/Toggle";
 import { MiniGoban } from "@/components/MiniGoban";
 import { getUserRating, rankString } from "@/lib/rank_utils";
-import { uuid } from "@/lib/misc";
+import { errorAlerter, uuid } from "@/lib/misc";
 import { LoadingButton } from "@/components/LoadingButton";
 import { post } from "@/lib/requests";
 import { browserHistory } from "@/lib/ogsHistory";
@@ -48,6 +48,7 @@ import { notification_manager, NotificationManagerEvents } from "@/components/No
 import { socket } from "@/lib/sockets";
 import { sfx } from "@/lib/sfx";
 import { Link } from "react-router-dom";
+import Select from "react-select";
 
 moment.relativeTimeThreshold("m", 56);
 export interface SelectOption {
@@ -55,6 +56,81 @@ export interface SelectOption {
     value: string;
     label: string;
 }
+
+interface OptionWithDescription {
+    value: string;
+    label: string;
+    description: string;
+}
+
+const game_clock_options: OptionWithDescription[] = [
+    {
+        value: "exact",
+        label: _("Exact"),
+        description: pgettext("Game Clock option description for Exact", "Pick one time setting"),
+    },
+    {
+        value: "flexible",
+        label: _("Flexible"),
+        description: pgettext(
+            "Game Clock option description for Flexible",
+            "Prefer one time setting, but accept the other similarly paced time setting",
+        ),
+    },
+];
+
+const difficulty_options: OptionWithDescription[] = [
+    {
+        value: "enabled",
+        label: pgettext("Difficulty balancing (handicaps) option", "Always on"),
+        description: _("Require this option for your games"),
+    },
+    {
+        value: "standard",
+        label: pgettext(
+            "Difficulty balancing (handicaps) option which prefers handicaps but will accept unbalanced even games",
+            "Standard",
+        ),
+        description: _("Enabled by default, but your opponent can disable this option."),
+    },
+    {
+        value: "disable",
+        label: pgettext("Difficulty balancing (handicaps) option", "Disabled"),
+        description: _("Do not balance games based on rank difference."),
+    },
+];
+
+const RenderOptionWithDescription = (props: {
+    data: OptionWithDescription;
+    innerProps: any;
+    innerRef: any;
+    isFocused: boolean;
+    isSelected: boolean;
+}) => {
+    const opt = props.data;
+    console.log(props);
+    return (
+        <div
+            ref={props.innerRef}
+            {...props.innerProps}
+            className={
+                "option" +
+                (props.isFocused ? " focused" : "") +
+                (props.isSelected ? " selected" : "")
+            }
+        >
+            <div className="option-label">{opt.label}</div>
+            <div className="option-description">{opt.description}</div>
+        </div>
+    );
+};
+
+const select_styles = {
+    menu: ({ ...css }) => ({
+        ...css,
+        width: "20rem",
+    }),
+};
 
 interface GameSpeedOptions {
     [size: string]: {
@@ -78,7 +154,8 @@ interface GameSpeedOptions {
 const SPEED_OPTIONS: GameSpeedOptions = {
     "9x9": {
         blitz: {
-            time_estimate: "\u223c 4\u2212" + moment.duration(6, "minutes").humanize(),
+            //time_estimate: "\u223c 4\u2212" + moment.duration(6, "minutes").humanize(),
+            time_estimate: "\u223c " + moment.duration(5, "minutes").humanize(),
             fischer: {
                 initial_time: 30,
                 time_increment: 3,
@@ -93,7 +170,8 @@ const SPEED_OPTIONS: GameSpeedOptions = {
             },
         },
         rapid: {
-            time_estimate: "\u223c 7\u2212" + moment.duration(14, "minutes").humanize(),
+            //time_estimate: "\u223c 7\u2212" + moment.duration(14, "minutes").humanize(),
+            time_estimate: "\u223c " + moment.duration(10, "minutes").humanize(),
             fischer: {
                 initial_time: 120,
                 time_increment: 5,
@@ -107,7 +185,8 @@ const SPEED_OPTIONS: GameSpeedOptions = {
             },
         },
         live: {
-            time_estimate: "\u223c 9\u2212" + moment.duration(17, "minutes").humanize(),
+            //time_estimate: "\u223c 9\u2212" + moment.duration(17, "minutes").humanize(),
+            time_estimate: "\u223c " + moment.duration(15, "minutes").humanize(),
             fischer: {
                 initial_time: 180,
                 time_increment: 10,
@@ -131,7 +210,8 @@ const SPEED_OPTIONS: GameSpeedOptions = {
     },
     "13x13": {
         blitz: {
-            time_estimate: "\u223c 8\u2212" + moment.duration(10, "minutes").humanize(),
+            //time_estimate: "\u223c 8\u2212" + moment.duration(10, "minutes").humanize(),
+            time_estimate: "\u223c " + moment.duration(10, "minutes").humanize(),
             fischer: {
                 initial_time: 30,
                 time_increment: 3,
@@ -145,7 +225,8 @@ const SPEED_OPTIONS: GameSpeedOptions = {
             },
         },
         rapid: {
-            time_estimate: "\u223c 16\u2212" + moment.duration(25, "minutes").humanize(),
+            //time_estimate: "\u223c 16\u2212" + moment.duration(25, "minutes").humanize(),
+            time_estimate: "\u223c " + moment.duration(20, "minutes").humanize(),
             fischer: {
                 initial_time: 180,
                 time_increment: 5,
@@ -159,7 +240,8 @@ const SPEED_OPTIONS: GameSpeedOptions = {
             },
         },
         live: {
-            time_estimate: "\u223c 20\u2212" + moment.duration(35, "minutes").humanize(),
+            //time_estimate: "\u223c 20\u2212" + moment.duration(35, "minutes").humanize(),
+            time_estimate: "\u223c " + moment.duration(30, "minutes").humanize(),
             fischer: {
                 initial_time: 300,
                 time_increment: 10,
@@ -183,7 +265,8 @@ const SPEED_OPTIONS: GameSpeedOptions = {
     },
     "19x19": {
         blitz: {
-            time_estimate: "\u223c 10\u2212" + moment.duration(15, "minutes").humanize(),
+            //time_estimate: "\u223c 10\u2212" + moment.duration(15, "minutes").humanize(),
+            time_estimate: "\u223c " + moment.duration(15, "minutes").humanize(),
             fischer: {
                 initial_time: 30,
                 time_increment: 3,
@@ -197,7 +280,8 @@ const SPEED_OPTIONS: GameSpeedOptions = {
             },
         },
         rapid: {
-            time_estimate: "\u223c 21\u2212" + moment.duration(31, "minutes").humanize(),
+            //time_estimate: "\u223c 21\u2212" + moment.duration(31, "minutes").humanize(),
+            time_estimate: "\u223c " + moment.duration(25, "minutes").humanize(),
             fischer: {
                 initial_time: 300,
                 time_increment: 5,
@@ -211,7 +295,8 @@ const SPEED_OPTIONS: GameSpeedOptions = {
             },
         },
         live: {
-            time_estimate: "\u223c 26\u2212" + moment.duration(52, "minutes").humanize(),
+            //time_estimate: "\u223c 26\u2212" + moment.duration(52, "minutes").humanize(),
+            time_estimate: "\u223c " + moment.duration(40, "minutes").humanize(),
             fischer: {
                 initial_time: 600,
                 time_increment: 10,
@@ -240,32 +325,35 @@ export function QuickMatch(): JSX.Element {
     const refresh = useRefresh();
     const [board_size, setBoardSize] = preferences.usePreference("automatch.size");
     const [game_speed, setGameSpeed] = preferences.usePreference("automatch.speed");
-    const [flexible, setFlexible] = preferences.usePreference("automatch.speed-flexibility");
+    const [difficulty, setDifficulty] = preferences.usePreference("automatch.difficulty");
     const [time_control_system, setTimeControlSystem] =
         preferences.usePreference("automatch.time-control");
     const [opponent, setOpponent] = preferences.usePreference("automatch.opponent");
     const [selected_bot, setSelectedBot] = preferences.usePreference("automatch.bot");
-    const [handicap, setHandicap] = preferences.usePreference("automatch.handicap");
     const [lower_rank_diff, setLowerRankDiff] = preferences.usePreference(
         "automatch.lower-rank-diff",
     );
     const [upper_rank_diff, setUpperRankDiff] = preferences.usePreference(
         "automatch.upper-rank-diff",
     );
+    const bot_select = React.useRef<HTMLSelectElement>(null);
 
     const [correspondence_spinner, setCorrespondenceSpinner] = React.useState(false);
     const [bot_spinner, setBotSpinner] = React.useState(false);
     const cancel_bot_game = React.useRef<() => void>(() => {});
+    const [game_clock, setGameClock] = preferences.usePreference("automatch.game-clock");
 
     React.useEffect(() => {
         automatch_manager.on("entry", refresh);
         automatch_manager.on("start", refresh);
         automatch_manager.on("cancel", refresh);
+        bot_event_emitter.on("updated", refresh);
 
         return () => {
             automatch_manager.off("entry", refresh);
             automatch_manager.off("start", refresh);
             automatch_manager.off("cancel", refresh);
+            bot_event_emitter.off("updated", refresh);
         };
     }, []);
 
@@ -279,7 +367,7 @@ export function QuickMatch(): JSX.Element {
         refresh();
     }, [refresh]);
 
-    const createOpenChallenge = React.useCallback(() => {
+    const doAutomatch = React.useCallback(() => {
         if (data.get("user").anonymous) {
             void alert.fire(_("Please sign in first"));
             return;
@@ -302,14 +390,14 @@ export function QuickMatch(): JSX.Element {
                 value: "japanese",
             },
             time_control: {
-                condition: flexible ? "preferred" : "required",
+                condition: game_clock === "flexible" ? "preferred" : "required",
                 value: {
                     system: time_control_system,
                 },
             },
             handicap: {
-                condition: "required",
-                value: handicap ? "enabled" : "disabled",
+                condition: difficulty === "standard" ? "preferred" : "required",
+                value: difficulty === "disabled" ? "disabled" : "enabled",
             },
         };
         console.log(preferences);
@@ -326,8 +414,8 @@ export function QuickMatch(): JSX.Element {
         opponent,
         lower_rank_diff,
         upper_rank_diff,
-        handicap,
-        flexible,
+        difficulty,
+        game_clock,
         time_control_system,
         refresh,
         automatch_manager,
@@ -347,7 +435,7 @@ export function QuickMatch(): JSX.Element {
                 ranked: true,
                 width: board_size === "9x9" ? 9 : board_size === "13x13" ? 13 : 19,
                 height: board_size === "9x9" ? 9 : board_size === "13x13" ? 13 : 19,
-                handicap: handicap ? -1 : 0,
+                handicap: difficulty === "disabled" ? 0 : -1,
                 komi_auto: "automatic",
                 komi: 0,
                 disable_analysis: false,
@@ -390,8 +478,14 @@ export function QuickMatch(): JSX.Element {
             },
         };
 
+        const bot_id = bot_select.current?.value || selected_bot;
+        if (!bot_id) {
+            void alert.fire(_("Please select a bot"));
+            return;
+        }
+
         setBotSpinner(true);
-        post(`players/${selected_bot}/challenge`, challenge)
+        post(`players/${bot_id}/challenge`, challenge)
             .then((res) => {
                 const challenge_id = res.challenge;
 
@@ -459,10 +553,11 @@ export function QuickMatch(): JSX.Element {
                 notification_manager.event_emitter.on("notification", checkForReject);
                 active_check();
             })
-            .catch((error) => {
-                console.error("Error creating challenge:", error);
+            .catch((err) => {
+                setBotSpinner(false);
+                errorAlerter(err);
             });
-    }, [selected_bot, board_size, handicap, game_speed, time_control_system, refresh]);
+    }, [selected_bot, board_size, difficulty, game_speed, time_control_system, refresh]);
 
     const play = React.useCallback(() => {
         if (data.get("user").anonymous) {
@@ -473,9 +568,9 @@ export function QuickMatch(): JSX.Element {
         if (opponent === "bot") {
             playComputer();
         } else {
-            createOpenChallenge();
+            doAutomatch();
         }
-    }, [createOpenChallenge, playComputer]);
+    }, [doAutomatch, playComputer]);
 
     const dismissCorrespondenceSpinner = React.useCallback(() => {
         setCorrespondenceSpinner(false);
@@ -529,36 +624,20 @@ export function QuickMatch(): JSX.Element {
             {/* Game Speed */}
             <div className="GameOption-cell">
                 <div className="GameOption">
-                    <span>{_("Game Speed")}</span>
-                    <div className="flexible-setting">
-                        <span
-                            className="toggle-container"
-                            title={pgettext(
-                                "Tooltip title for the flexible time setting toggle on the Play page.",
-                                "The Flexible time setting allows you to choose your preferred time setting, but if there is a game with a similar expected duration, you can be matched with that game instead.",
-                            )}
-                        >
-                            <label
-                                onClick={() => {
-                                    if (!search_active) {
-                                        setFlexible(!flexible);
-                                    }
-                                }}
-                                className="toggle-label"
-                            >
-                                {pgettext(
-                                    "Option to allow the user to be flexible on which time setting to use",
-                                    "Flexible",
-                                )}
-                            </label>
-
-                            <Toggle
-                                checked={flexible}
-                                disabled={search_active}
-                                onChange={setFlexible}
-                            />
-                        </span>
-                    </div>
+                    <span>{pgettext("Clock settings header for a new game", "Game Clock")}</span>
+                    <Select
+                        classNamePrefix="ogs-react-select"
+                        styles={select_styles}
+                        isSearchable={false}
+                        value={game_clock_options.find((o) => o.value === game_clock)}
+                        onChange={(opt) => {
+                            if (opt) {
+                                setGameClock(opt.value as "flexible" | "exact");
+                            }
+                        }}
+                        options={game_clock_options}
+                        components={{ Option: RenderOptionWithDescription }}
+                    />
                 </div>
 
                 <div className="speed-options">
@@ -576,6 +655,8 @@ export function QuickMatch(): JSX.Element {
                                     key={speed}
                                 >
                                     <div className="game-speed-title">
+                                        <span className="description">{opt.time_estimate}</span>
+                                        {/*
                                         <span className="description">
                                             {opt.fischer.time_estimate || opt.time_estimate}
                                         </span>
@@ -584,6 +665,7 @@ export function QuickMatch(): JSX.Element {
                                                 {opt.byoyomi.time_estimate}
                                             </span>
                                         )}
+                                        */}
                                     </div>
                                     <div className="game-speed-buttons">
                                         <button
@@ -606,7 +688,8 @@ export function QuickMatch(): JSX.Element {
                                         </button>
                                         {opt.byoyomi && (
                                             <>
-                                                {flexible && game_speed === speed ? (
+                                                {game_clock === "flexible" &&
+                                                game_speed === speed ? (
                                                     <span className="or">
                                                         {pgettext(
                                                             "Used on the play page to indicate that either time control preference may be used (5m+5s _or_ 5m+5x30s)",
@@ -723,6 +806,7 @@ export function QuickMatch(): JSX.Element {
                         <div className="computer-select">
                             <select
                                 id="challenge-ai"
+                                ref={bot_select}
                                 value={selected_bot}
                                 onChange={(ev) => setSelectedBot(parseInt(ev.target.value))}
                                 required={true}
@@ -751,29 +835,29 @@ export function QuickMatch(): JSX.Element {
             <div className="GameOption-cell">
                 <div className="GameOption">
                     <span>{_("Difficulty Balancing")}</span>
-                    <span
-                        className="toggle-container"
-                        title={pgettext(
-                            "Tooltip title for the Difficulty Balancing toggle on the Play page.",
-                            "When enabled, the strength of your opponent will determine how many extra black stones and komi points are used in the game to balance the difficulty of the game.",
-                        )}
-                    >
-                        <label
-                            onClick={() => {
-                                if (!search_active) {
-                                    setHandicap(!handicap);
-                                }
-                            }}
-                            className="toggle-label"
-                        >
-                            {pgettext("Handicap abbreviation", "HC")}
-                        </label>
-                        <Toggle
-                            checked={handicap}
-                            disabled={search_active}
-                            onChange={setHandicap}
-                        />
-                    </span>
+                    <Select
+                        classNamePrefix="ogs-react-select"
+                        styles={select_styles}
+                        value={difficulty_options.find((o) => o.value === difficulty)}
+                        isSearchable={false}
+                        menuPlacement="auto"
+                        onChange={(opt) => {
+                            if (opt) {
+                                setDifficulty(opt.value as "enabled" | "standard" | "disabled");
+                            }
+                        }}
+                        options={[
+                            {
+                                label: _(
+                                    "Difficulty balancing works by assigning starting stones and komi points based on the rank difference between players. This makes the game closer to fair between stronger and weaker players.",
+                                ),
+                                options: difficulty_options,
+                            },
+                        ]}
+                        components={{
+                            Option: RenderOptionWithDescription,
+                        }}
+                    />
                 </div>
 
                 {automatch_manager.active_live_automatcher && (
@@ -800,7 +884,7 @@ export function QuickMatch(): JSX.Element {
                                 loading={true}
                                 onClick={cancel_bot_game.current}
                             >
-                                {pgettext("Cancel automatch", "Cancel search")}
+                                {_("Cancel")}
                             </LoadingButton>
                         </div>
                     </div>

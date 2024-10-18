@@ -259,13 +259,6 @@
             height: 10rem;
         }
         
-        .flexible-setting {
-            display: inline-flex;
-            align-items: center;
-            font-size: 1.1rem;
-            font-weight: normal;
-        }
-
     }
     .subtext {
         font-size: 0.9rem;
@@ -353,8 +346,8 @@
 
 
         .description {
-            padding-left: 1rem;
-            padding-right: 1rem;
+            //padding-left: 1rem;
+            //padding-right: 1rem;
             font-style: italic;
             font-size: 0.9rem;
         }
@@ -482,6 +475,53 @@
             margin-right: 0.5rem;
         }
     }
+    
+    .ogs-react-select__control {
+        //min-height: 2rem;
+        //height: 2rem;
+        themed color shade1
+    }
+    .ogs-react-select__control, .ogs-react-select__menu {
+        font-size: 1.0rem;
+        font-weight: normal;
+    }
+
+    .ogs-react-select__menu {
+        right: 0;
+        width: 20rem;
+        max-width: 90vw;
+        
+        .ogs-react-select__group-heading {
+            text-transform: none;
+        }
+        
+        .option {
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+            
+            &.focused {
+                themed-important background-color shade3
+            }
+            &.selected {
+                themed-important background-color shade3
+            }
+            themed color fg
+        }
+
+        .option-label {
+            font-weight: bold;
+            padding-right: 0.5rem;
+            padding-left: 0.5rem;
+        }
+        .option-description {
+            font-size: 0.9rem;
+            font-style: italic;
+            themed color shade1
+            padding-right: 0.5rem;
+            padding-left: 0.5rem;
+        }
+    }
+    
 }
 
 @media (max-width: hamburger-cutoff) {
