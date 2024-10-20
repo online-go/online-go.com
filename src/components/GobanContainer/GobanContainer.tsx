@@ -29,6 +29,8 @@ interface GobanContainerProps {
     goban?: GobanRenderer;
     /** callback that is called when the goban detects a resize. */
     onResize?: () => void;
+    /** callback that is called when user scrolls on goban container. */
+    onWheel?: React.WheelEventHandler<HTMLDivElement> | undefined;
     /** Additional props to pass to the PersistentElement that wraps the goban_div */
     extra_props?: React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>;
 }
@@ -39,6 +41,7 @@ interface GobanContainerProps {
 export function GobanContainer({
     goban,
     onResize: onResizeCb,
+    onWheel,
     extra_props,
 }: GobanContainerProps): JSX.Element {
     const ref_goban_container = React.useRef<HTMLDivElement>(null);
@@ -119,7 +122,7 @@ export function GobanContainer({
     }
 
     return (
-        <div ref={ref_goban_container} className="goban-container">
+        <div ref={ref_goban_container} className="goban-container" onWheel={onWheel}>
             <OgsResizeDetector onResize={onResize} targetRef={ref_goban_container} />
             <PersistentElement className="Goban" elt={goban_div} extra_props={extra_props} />
         </div>

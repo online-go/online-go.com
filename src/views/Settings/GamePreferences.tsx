@@ -55,6 +55,7 @@ export function GamePreferences(): JSX.Element {
     );
     const [variation_move_count, _setVariationMoveCount] = usePreference("variation-move-count");
     const [zen_mode_by_default, _setZenModeByDefault] = usePreference("start-in-zen-mode");
+    const [scroll_to_navigate, setScrollToNavigate] = usePreference("scroll-to-navigate");
 
     function setDockDelay(ev: React.ChangeEvent<HTMLInputElement>) {
         const new_delay = parseFloat(ev.target.value);
@@ -280,6 +281,13 @@ export function GamePreferences(): JSX.Element {
                               num_moves: variation_move_count,
                           })}
                 </span>
+            </PreferenceLine>
+
+            <PreferenceLine
+                title={_("Scroll to navigate")}
+                description={_("Scroll mousewheel to navigate moves on the game page")}
+            >
+                <Toggle checked={scroll_to_navigate} onChange={setScrollToNavigate} />
             </PreferenceLine>
         </div>
     );
