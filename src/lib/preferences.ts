@@ -35,7 +35,7 @@ export const defaults = {
     "automatch.size": "9x9" as Size,
     "automatch.speed": "rapid" as JGOFTimeControlSpeed,
     "automatch.game-clock": "flexible" as "exact" | "flexible",
-    "automatch.difficulty": "standard" as "enabled" | "standard" | "disabled",
+    "automatch.handicaps": "standard" as "enabled" | "standard" | "disabled",
     "automatch.time-control": "fischer" as "fischer" | "byoyomi",
     "automatch.opponent": "human" as "human" | "bot",
     "automatch.bot": 0,

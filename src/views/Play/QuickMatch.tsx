@@ -79,24 +79,27 @@ const game_clock_options: OptionWithDescription[] = [
     },
 ];
 
-const difficulty_options: OptionWithDescription[] = [
+const handicap_options: OptionWithDescription[] = [
     {
         value: "enabled",
-        label: pgettext("Difficulty balancing (handicaps) option", "Always on"),
-        description: _("Require this option for your games"),
+        label: pgettext(
+            "Matchmaking handicap option: require handicaps for games between players with different ranks",
+            "Always on",
+        ),
+        description: _("Require handicaps between players with different ranks"),
     },
     {
         value: "standard",
         label: pgettext(
-            "Difficulty balancing (handicaps) option which prefers handicaps but will accept unbalanced even games",
+            "Matchmaking handicap option: standard, prefer handicaps but allow even games",
             "Standard",
         ),
-        description: _("Enabled by default, but your opponent can disable this option."),
+        description: _("Use handicaps by default, but accept games with handicaps disabled"),
     },
     {
         value: "disable",
-        label: pgettext("Difficulty balancing (handicaps) option", "Disabled"),
-        description: _("Do not balance games based on rank difference."),
+        label: pgettext("Matchmaking handicap option: disable handicaps", "Disabled"),
+        description: _("Disable handicaps"),
     },
 ];
 
@@ -325,7 +328,7 @@ export function QuickMatch(): JSX.Element {
     const refresh = useRefresh();
     const [board_size, setBoardSize] = preferences.usePreference("automatch.size");
     const [game_speed, setGameSpeed] = preferences.usePreference("automatch.speed");
-    const [difficulty, setDifficulty] = preferences.usePreference("automatch.difficulty");
+    const [handicaps, setHandicaps] = preferences.usePreference("automatch.handicaps");
     const [time_control_system, setTimeControlSystem] =
         preferences.usePreference("automatch.time-control");
     const [opponent, setOpponent] = preferences.usePreference("automatch.opponent");
@@ -396,8 +399,8 @@ export function QuickMatch(): JSX.Element {
                 },
             },
             handicap: {
-                condition: difficulty === "standard" ? "preferred" : "required",
-                value: difficulty === "disabled" ? "disabled" : "enabled",
+                condition: handicaps === "standard" ? "preferred" : "required",
+                value: handicaps === "disabled" ? "disabled" : "enabled",
             },
         };
         console.log(preferences);
@@ -414,7 +417,7 @@ export function QuickMatch(): JSX.Element {
         opponent,
         lower_rank_diff,
         upper_rank_diff,
-        difficulty,
+        handicaps,
         game_clock,
         time_control_system,
         refresh,
@@ -435,7 +438,7 @@ export function QuickMatch(): JSX.Element {
                 ranked: true,
                 width: board_size === "9x9" ? 9 : board_size === "13x13" ? 13 : 19,
                 height: board_size === "9x9" ? 9 : board_size === "13x13" ? 13 : 19,
-                handicap: difficulty === "disabled" ? 0 : -1,
+                handicap: handicaps === "disabled" ? 0 : -1,
                 komi_auto: "automatic",
                 komi: 0,
                 disable_analysis: false,
@@ -557,7 +560,7 @@ export function QuickMatch(): JSX.Element {
                 setBotSpinner(false);
                 errorAlerter(err);
             });
-    }, [selected_bot, board_size, difficulty, game_speed, time_control_system, refresh]);
+    }, [selected_bot, board_size, handicaps, game_speed, time_control_system, refresh]);
 
     const play = React.useCallback(() => {
         if (data.get("user").anonymous) {
@@ -834,24 +837,26 @@ export function QuickMatch(): JSX.Element {
             {/* Balancing and Play Button */}
             <div className="GameOption-cell">
                 <div className="GameOption">
-                    <span>{_("Difficulty Balancing")}</span>
+                    <span>{_("Handicaps")}</span>
                     <Select
                         classNamePrefix="ogs-react-select"
                         styles={select_styles}
-                        value={difficulty_options.find((o) => o.value === difficulty)}
+                        value={handicap_options.find((o) => o.value === handicaps)}
                         isSearchable={false}
+                        minMenuHeight={400}
+                        maxMenuHeight={400}
                         menuPlacement="auto"
                         onChange={(opt) => {
                             if (opt) {
-                                setDifficulty(opt.value as "enabled" | "standard" | "disabled");
+                                setHandicaps(opt.value as "enabled" | "standard" | "disabled");
                             }
                         }}
                         options={[
                             {
                                 label: _(
-                                    "Difficulty balancing works by assigning starting stones and komi points based on the rank difference between players. This makes the game closer to fair between stronger and weaker players.",
+                                    "Handicaps work by assigning starting stones and komi points based on the rank difference between players. This balances the game between stronger and weaker players.",
                                 ),
-                                options: difficulty_options,
+                                options: handicap_options,
                             },
                         ]}
                         components={{
