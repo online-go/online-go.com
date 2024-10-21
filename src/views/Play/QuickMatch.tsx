@@ -837,7 +837,7 @@ export function QuickMatch(): JSX.Element {
             {/* Balancing and Play Button */}
             <div className="GameOption-cell">
                 <div className="GameOption">
-                    <span>{_("Handicaps")}</span>
+                    <span>{_("Handicap")}</span>
                     <Select
                         classNamePrefix="ogs-react-select"
                         styles={select_styles}
