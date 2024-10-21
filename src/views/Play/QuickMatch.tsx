@@ -854,7 +854,7 @@ export function QuickMatch(): JSX.Element {
                         options={[
                             {
                                 label: _(
-                                    "Handicaps work by assigning starting stones and komi points based on the rank difference between players. This balances the game between stronger and weaker players.",
+                                    "Handicaps balance games between players of different ranks by adjusting starting stones and komi points.",
                                 ),
                                 options: handicap_options,
                             },
