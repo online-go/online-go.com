@@ -137,6 +137,9 @@ export function Game(): JSX.Element | null {
     const [ai_review_enabled, set_ai_review_enabled] = React.useState(
         preferences.get("ai-review-enabled"),
     );
+    const [scroll_to_navigate, _setScrollToNavigate] = React.useState(
+        preferences.get("scroll-to-navigate"),
+    );
     const [phase, set_phase] = React.useState<GobanEnginePhase>();
     const [selected_ai_review_uuid, set_selected_ai_review_uuid] = React.useState<string | null>(
         null,
@@ -408,6 +411,22 @@ export function Game(): JSX.Element | null {
         },
         [set_squashed, set_view_mode, squashed, view_mode],
     );
+
+    const onWheel: React.WheelEventHandler<HTMLDivElement> = React.useCallback(
+        (event) => {
+            if (!scroll_to_navigate) {
+                return;
+            }
+
+            if (event.deltaY > 0) {
+                nav_next();
+            } else if (event.deltaY < 0) {
+                nav_prev();
+            }
+        },
+        [scroll_to_navigate],
+    );
+
     const setAnalyzeTool = (tool: AnalysisTool | "erase", subtool: string) => {
         if (!goban.current) {
             return false;
@@ -1720,7 +1739,11 @@ export function Game(): JSX.Element | null {
                                 {frag_rengo_header()}
                             </div>
                         )}
-                        <GobanContainer goban={goban.current} onResize={onResize} />
+                        <GobanContainer
+                            goban={goban.current}
+                            onResize={onResize}
+                            onWheel={onWheel}
+                        />
 
                         {frag_below_board_controls()}
 

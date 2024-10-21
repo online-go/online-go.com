@@ -132,6 +132,7 @@ export const defaults = {
     "unicode-filter": false,
     "variations-in-chat-enabled": true,
     "start-in-zen-mode": false,
+    "scroll-to-navigate": false,
     "show-empty-chat-notification": true,
     "chat-subscribe-group-chat-unread": true,
     "chat-subscribe-group-mentions": true,
