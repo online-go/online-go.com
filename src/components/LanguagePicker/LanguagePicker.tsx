@@ -36,19 +36,19 @@ function language_sorter(a: string, b: string) {
     return 0;
 }
 
-export const LanguagePicker = () => (
-    <ModalContext.Consumer>
-        {({ showModal }) => (
-            <span
-                className="LanguagePicker fakelink"
-                onClick={() => showModal(ModalTypes.LanguagePicker)}
-            >
-                <i className="fa fa-language" />
-                {languages[current_language]}
-            </span>
-        )}
-    </ModalContext.Consumer>
-);
+export const LanguagePicker = () => {
+    const { showModal } = React.useContext(ModalContext);
+
+    return (
+        <span
+            className="LanguagePicker fakelink"
+            onClick={() => showModal(ModalTypes.LanguagePicker)}
+        >
+            <i className="fa fa-language" />
+            {languages[current_language]}
+        </span>
+    );
+};
 
 export const LanguagePickerModal = () => {
     const { hideModal } = React.useContext(ModalContext);

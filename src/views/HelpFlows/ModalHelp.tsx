@@ -20,6 +20,7 @@
 import * as React from "react";
 
 import { HelpFlow, HelpItem } from "react-dynamic-help";
+import * as DynamicHelp from "react-dynamic-help";
 
 export function ModalHelp(): JSX.Element {
     return (
@@ -30,3 +31,19 @@ export function ModalHelp(): JSX.Element {
         </HelpFlow>
     );
 }
+
+interface ActivateTooltipProps {
+    children: React.ReactNode;
+    flow: string;
+    item: string;
+}
+
+export const ActivateTooltip = ({ children, flow, item }: ActivateTooltipProps) => (
+    <DynamicHelp.Api.Consumer>
+        {(value) => {
+            const { ref: modalHelpIntro } = value.registerTargetItem(`${flow}-${item}`);
+            value.triggerFlow(flow);
+            return <div ref={modalHelpIntro}>{children}</div>;
+        }}
+    </DynamicHelp.Api.Consumer>
+);

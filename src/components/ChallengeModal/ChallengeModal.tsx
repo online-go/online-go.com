@@ -18,7 +18,6 @@ import * as React from "react";
 
 import * as data from "@/lib/data";
 import * as player_cache from "@/lib/player_cache";
-import * as DynamicHelp from "react-dynamic-help";
 
 import { OgsResizeDetector } from "@/components/OgsResizeDetector";
 import { browserHistory } from "@/lib/ogsHistory";
@@ -62,6 +61,7 @@ import {
     saveTimeControlSettings,
     updateSystem,
 } from "@/components/TimeControl/TimeControlUpdates";
+import { ActivateTooltip } from "@/views/HelpFlows/ModalHelp";
 
 export type ChallengeDetails = rest_api.ChallengeDetails;
 
@@ -1780,20 +1780,9 @@ export class ChallengeModalBody extends React.Component<
                             </span>
                         )}
                         {mode === "computer" && (
-                            <DynamicHelp.Api.Consumer>
-                                {(value) => {
-                                    const { ref: modalHelpIntro } =
-                                        value.registerTargetItem("modal-help-intro");
-                                    return (
-                                        <span
-                                            ref={modalHelpIntro}
-                                            onClick={() => value.triggerFlow("modal-help")}
-                                        >
-                                            {_("Computer")}
-                                        </span>
-                                    );
-                                }}
-                            </DynamicHelp.Api.Consumer>
+                            <ActivateTooltip flow="modal-help" item="intro">
+                                <span>{_("Computer")}</span>
+                            </ActivateTooltip>
                         )}
                     </h2>
                 </div>

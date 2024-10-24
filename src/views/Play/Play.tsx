@@ -61,6 +61,14 @@ import { ModalContext, ModalTypes } from "@/components/Modal/ModalContext";
 
 const CHALLENGE_LIST_FREEZE_PERIOD = 1000; // Freeze challenge list for this period while they move their mouse on it
 
+const handleComputerChallengeClick = (showModal: (type: ModalTypes, props?: any) => void) => {
+    if (bot_count() === 0) {
+        void alert.fire(_("Sorry, all bots seem to be offline, please try again later."));
+        return;
+    }
+    showModal(ModalTypes.Challenge);
+};
+
 interface PlayState {
     live_list: Array<Challenge>;
     correspondence_list: Array<Challenge>;
@@ -822,30 +830,18 @@ export class Play extends React.Component<{}, PlayState> {
                         </div>
                         <div className="automatch-row">
                             <ModalContext.Consumer>
-                                {({ showModal }) => {
-                                    return (
-                                        <button
-                                            className="primary"
-                                            onClick={() => {
-                                                if (bot_count() === 0) {
-                                                    void alert.fire(
-                                                        _(
-                                                            "Sorry, all bots seem to be offline, please try again later.",
-                                                        ),
-                                                    );
-                                                    return;
-                                                }
-                                                showModal(ModalTypes.Challenge);
-                                            }}
-                                            disabled={anon || warned}
-                                        >
-                                            <div className="play-button-text-root">
-                                                <i className="fa fa-desktop" /> {_("Computer")}
-                                                <span className="time-per-move"></span>
-                                            </div>
-                                        </button>
-                                    );
-                                }}
+                                {({ showModal }) => (
+                                    <button
+                                        className="primary"
+                                        onClick={() => handleComputerChallengeClick(showModal)}
+                                        disabled={anon || warned}
+                                    >
+                                        <div className="play-button-text-root">
+                                            <i className="fa fa-desktop" /> {_("Computer")}
+                                            <span className="time-per-move"></span>
+                                        </div>
+                                    </button>
+                                )}
                             </ModalContext.Consumer>
                             <button
                                 className="primary"
