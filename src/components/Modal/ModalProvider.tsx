@@ -18,22 +18,11 @@
 /* cspell: words groupadmin cotsen */
 import * as React from "react";
 
-import { ChallengeModal, ChallengeModes } from "../ChallengeModal";
+import { ChallengeModes } from "../ChallengeModal";
 import { createPortal } from "react-dom";
-import { LanguagePickerModal } from "../LanguagePicker";
-import { ForkModal } from "../ChallengeModal/ForkModal";
 import { GobanRenderer } from "goban";
-
-type ModalProviderType = {
-    showModal: (type: ModalTypes, props?: ModalTypesProps) => void;
-    hideModal: () => void;
-};
-
-export enum ModalTypes {
-    Challenge = "challenge",
-    LanguagePicker = "languagePicker",
-    Fork = "fork",
-}
+import { ModalContext, ModalTypes } from "./ModalContext";
+import { modalRegistry } from "./ModalRegistry";
 
 interface Modals {
     challenge: {
@@ -50,16 +39,11 @@ type ModalTypesProps = {
     [key: string]: any;
 };
 
-export const ModalContext = React.createContext({} as ModalProviderType);
-const { Provider, Consumer } = ModalContext;
-
-export const ModalConsumer = Consumer;
-
 export const ModalProvider = ({ children }: React.PropsWithChildren): JSX.Element => {
     const [modalType, setModalType] = React.useState(null as ModalTypes | null);
     const [modalProps, setModalProps] = React.useState({} as ModalTypesProps);
 
-    const showModal = (type: ModalTypes, props?: ModalTypesProps) => {
+    const showModal = (type: ModalTypes, props?: any) => {
         setModalType(type);
 
         switch (type) {
@@ -99,24 +83,18 @@ export const ModalProvider = ({ children }: React.PropsWithChildren): JSX.Elemen
     }, [modalType, hideModal]);
 
     return (
-        <Provider value={{ showModal, hideModal }}>
+        <ModalContext.Provider value={{ showModal, hideModal }}>
             {modalType &&
                 createPortal(
                     <div className="Modal-container">
-                        {modalType === ModalTypes.Challenge && (
-                            <ChallengeModal
-                                {...(modalProps as Modals["challenge"])}
-                                onClose={hideModal}
-                            />
-                        )}
-                        {modalType === ModalTypes.LanguagePicker && <LanguagePickerModal />}
-                        {modalType === ModalTypes.Fork && (
-                            <ForkModal {...(modalProps as Modals["fork"])} />
-                        )}
+                        {React.createElement(modalRegistry[modalType], {
+                            ...modalProps,
+                            onClose: hideModal,
+                        })}
                     </div>,
                     document.body,
                 )}
             {children}
-        </Provider>
+        </ModalContext.Provider>
     );
 };

@@ -18,7 +18,7 @@
 import * as React from "react";
 import { _, setCurrentLanguage, current_language, languages } from "@/lib/translate";
 import * as preferences from "@/lib/preferences";
-import { ModalConsumer, ModalContext, ModalTypes } from "../Modal/ModalProvider";
+import { ModalContext, ModalTypes } from "../Modal/ModalContext";
 
 function language_sorter(a: string, b: string) {
     if (a === "auto") {
@@ -37,17 +37,17 @@ function language_sorter(a: string, b: string) {
 }
 
 export const LanguagePicker = () => (
-    <ModalConsumer>
-        {(value) => (
+    <ModalContext.Consumer>
+        {({ showModal }) => (
             <span
                 className="LanguagePicker fakelink"
-                onClick={() => value.showModal(ModalTypes.LanguagePicker)}
+                onClick={() => showModal(ModalTypes.LanguagePicker)}
             >
                 <i className="fa fa-language" />
                 {languages[current_language]}
             </span>
         )}
-    </ModalConsumer>
+    </ModalContext.Consumer>
 );
 
 export const LanguagePickerModal = () => {

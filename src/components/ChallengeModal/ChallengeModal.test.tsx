@@ -20,7 +20,8 @@ import * as React from "react";
 
 import * as ChallengeModal from "./ChallengeModal";
 import { fireEvent, render, screen } from "@testing-library/react";
-import { ModalConsumer, ModalProvider, ModalTypes } from "../Modal/ModalProvider";
+import { ModalProvider } from "../Modal/ModalProvider";
+import { ModalContext, ModalTypes } from "../Modal/ModalContext";
 import * as DynamicHelp from "react-dynamic-help";
 
 jest.mock("./../Modal", () => {
@@ -37,12 +38,12 @@ describe("ChallengeModal", () => {
 
         render(
             <ModalProvider>
-                <ModalConsumer>
+                <ModalContext.Consumer>
                     {({ showModal }) => {
                         showModal(ModalTypes.Challenge);
                         return null;
                     }}
-                </ModalConsumer>
+                </ModalContext.Consumer>
             </ModalProvider>,
         );
 
@@ -71,12 +72,12 @@ describe("ChallengeModal", () => {
         render(
             <DynamicHelp.Api.Provider value={DynamicHelpProviderValue}>
                 <ModalProvider>
-                    <ModalConsumer>
+                    <ModalContext.Consumer>
                         {({ showModal }) => {
                             showModal(ModalTypes.Challenge);
                             return null;
                         }}
-                    </ModalConsumer>
+                    </ModalContext.Consumer>
                 </ModalProvider>
             </DynamicHelp.Api.Provider>,
         );

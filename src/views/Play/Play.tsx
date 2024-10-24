@@ -57,7 +57,7 @@ import {
     ChallengeFilterKey,
     shouldDisplayChallenge,
 } from "@/lib/challenge_utils";
-import { ModalConsumer, ModalTypes } from "../../components/Modal/ModalProvider";
+import { ModalContext, ModalTypes } from "@/components/Modal/ModalContext";
 
 const CHALLENGE_LIST_FREEZE_PERIOD = 1000; // Freeze challenge list for this period while they move their mouse on it
 
@@ -821,7 +821,7 @@ export class Play extends React.Component<{}, PlayState> {
                             </button>
                         </div>
                         <div className="automatch-row">
-                            <ModalConsumer>
+                            <ModalContext.Consumer>
                                 {({ showModal }) => {
                                     return (
                                         <button
@@ -846,7 +846,7 @@ export class Play extends React.Component<{}, PlayState> {
                                         </button>
                                     );
                                 }}
-                            </ModalConsumer>
+                            </ModalContext.Consumer>
                             <button
                                 className="primary"
                                 onClick={() => this.findMatch("correspondence")}

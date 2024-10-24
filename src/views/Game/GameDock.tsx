@@ -38,7 +38,7 @@ import { openGameInfoModal } from "./GameInfoModal";
 import { useUserIsParticipant } from "./GameHooks";
 import { useGoban } from "./goban_context";
 import { Tooltip } from "../../components/Tooltip";
-import { ModalConsumer, ModalTypes } from "@/components/Modal/ModalProvider";
+import { ModalContext, ModalTypes } from "@/components/Modal/ModalContext";
 
 interface DockProps {
     annulled: boolean;
@@ -441,7 +441,7 @@ export function GameDock({
                 </a>
             </Tooltip>
             <Tooltip tooltipRequired={tooltipRequired} title={_("Fork game")}>
-                <ModalConsumer>
+                <ModalContext.Consumer>
                     {({ showModal }) => (
                         <a
                             onClick={() => {
@@ -468,7 +468,7 @@ export function GameDock({
                             <i className="fa fa-code-fork"></i> {_("Fork game")}
                         </a>
                     )}
-                </ModalConsumer>
+                </ModalContext.Consumer>
             </Tooltip>
             <Tooltip tooltipRequired={tooltipRequired} title={_("Call moderator")}>
                 <a onClick={alertModerator} className={user.anonymous ? "disabled" : ""}>
