@@ -94,6 +94,7 @@ export class Play extends React.Component<{}, PlayState> {
         ["show9x9", "show-9x9-challenges"],
         ["showOtherSizes", "show-other-boardsize-challenges"],
         ["showRengo", "show-rengo-challenges"],
+        ["showHandicap", "show-handicap-challenges"],
     ]);
 
     constructor(props: {}) {
