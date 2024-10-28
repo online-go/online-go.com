@@ -17,7 +17,7 @@
 import * as React from "react";
 import moment from "moment";
 
-import { _, pgettext } from "@/lib/translate";
+import { _, llm_pgettext, pgettext } from "@/lib/translate";
 import * as DynamicHelp from "react-dynamic-help";
 
 import { LogEntry } from "@/views/Game";
@@ -135,7 +135,7 @@ export function GameLog({
                                         <td className="timestamp">
                                             {moment(entry.timestamp).format("L LTS")}
                                         </td>
-                                        <td className="event">{entry.event.replace(/_/g, " ")}</td>
+                                        <td className="event">{decodeLogEvent(entry.event)}</td>
                                         <td className="data">
                                             <LogData
                                                 config={goban_config}
@@ -160,6 +160,17 @@ export function GameLog({
         </>
     );
 }
+
+// Provide a human-readable version of the event name
+const decodeLogEvent = (event: string): string => {
+    if (event === "force_stone_removal_acceptance_abandoned") {
+        return llm_pgettext(
+            "Description of an event from the server",
+            "Forcing stone removal: someone abandoned scoring",
+        );
+    }
+    return event.replace(/_/g, " ");
+};
 
 // Fields that are only used to enhance the display of other fields,
 // or aren't used at all.
@@ -190,7 +201,7 @@ export function LogData({
             return;
         }
 
-        // Possibly obvious once you think about it: the "stones" field in `data` referring to
+        // Possibly obvious once you think about it: the "stones" field in `data` is referring to
         //          "stones that are dead, or have been marked alive"
         //  It'd be better if this was called "marked stones", but that'd be a big change.
 
