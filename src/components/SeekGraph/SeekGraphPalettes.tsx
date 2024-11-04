@@ -27,6 +27,7 @@ export interface SeekGraphColorPalette {
     size13: ChallengePointStyle;
     size9: ChallengePointStyle;
     sizeOther: ChallengePointStyle;
+    handicap: ChallengePointStyle;
     // UNRANKED: ChallengePointStyle;
     ineligible: ChallengePointStyle;
     user: ChallengePointStyle;
@@ -43,6 +44,7 @@ export class SeekGraphPalettes {
         size13: { fill: "#f000d0aa", stroke: "#ff60dd" },
         size9: { fill: "#009090aa", stroke: "#00ffff" },
         sizeOther: { fill: "#d06000aa", stroke: "#ff9000" },
+        handicap: { fill: "#d1cb0faa", stroke: "#fff712" },
         // UNRANKED: { fill: "#d06000", stroke: "#ff9000" },
         ineligible: { fill: "#6b6b6baa", stroke: "#bbb" },
         user: { fill: "#ed1f1faa", stroke: "#e37495" },
@@ -57,6 +59,7 @@ export class SeekGraphPalettes {
         size13: { fill: "#ff60ddaa", stroke: "#f000d0" },
         size9: { fill: "#00ffffaa", stroke: "#009090" },
         sizeOther: { fill: "#ff9000aa", stroke: "#d06000" },
+        handicap: { fill: "#fff712aa", stroke: "#d1cb0f" },
         // UNRANKED: { fill: "#d06000", stroke: "#ff9000" },
         ineligible: { fill: "#bbbbbbaa", stroke: "#6b6b6b" },
         user: { fill: "#e37495aa", stroke: "#ed1f1f" },
@@ -71,6 +74,7 @@ export class SeekGraphPalettes {
         size13: { fill: "#cc73a8aa", stroke: "#cc73a8" },
         size9: { fill: "#55b2ebaa", stroke: "#55b2eb" },
         sizeOther: { fill: "#d55b00aa", stroke: "#d55b00" },
+        handicap: { fill: "#d55b00aa", stroke: "#d55b00" },
         // UNRANKED: { fill: "#d06000", stroke: "#ff9000" },
         ineligible: { fill: "#bbbbbbaa", stroke: "#bbb" },
         user: { fill: "#e6a100aa", stroke: "#e6a100" },
