@@ -35,7 +35,7 @@ import {
     timeControlSystemText,
     usedForCheating,
 } from "@/components/TimeControl";
-import { challenge, challengeComputer } from "@/components/ChallengeModal";
+import { challenge } from "@/components/ChallengeModal";
 import { openGameAcceptModal } from "@/components/GameAcceptModal";
 import { errorAlerter, rulesText, dup, uuid, ignore } from "@/lib/misc";
 import { Player } from "@/components/Player";
@@ -57,8 +57,17 @@ import {
     ChallengeFilterKey,
     shouldDisplayChallenge,
 } from "@/lib/challenge_utils";
+import { ModalContext, ModalTypes } from "@/components/Modal/ModalContext";
 
 const CHALLENGE_LIST_FREEZE_PERIOD = 1000; // Freeze challenge list for this period while they move their mouse on it
+
+const handleComputerChallengeClick = (showModal: (type: ModalTypes, props?: any) => void) => {
+    if (bot_count() === 0) {
+        void alert.fire(_("Sorry, all bots seem to be offline, please try again later."));
+        return;
+    }
+    showModal(ModalTypes.Challenge);
+};
 
 interface PlayState {
     live_list: Array<Challenge>;
@@ -377,14 +386,6 @@ export class Play extends React.Component<{}, PlayState> {
             automatch_manager.cancel(automatch_manager.active_live_automatcher.uuid);
         }
         this.forceUpdate();
-    };
-
-    newComputerGame = () => {
-        if (bot_count() === 0) {
-            void alert.fire(_("Sorry, all bots seem to be offline, please try again later."));
-            return;
-        }
-        challengeComputer();
     };
 
     newCustomGame = () => {
@@ -828,16 +829,20 @@ export class Play extends React.Component<{}, PlayState> {
                             </button>
                         </div>
                         <div className="automatch-row">
-                            <button
-                                className="primary"
-                                onClick={this.newComputerGame}
-                                disabled={anon || warned}
-                            >
-                                <div className="play-button-text-root">
-                                    <i className="fa fa-desktop" /> {_("Computer")}
-                                    <span className="time-per-move"></span>
-                                </div>
-                            </button>
+                            <ModalContext.Consumer>
+                                {({ showModal }) => (
+                                    <button
+                                        className="primary"
+                                        onClick={() => handleComputerChallengeClick(showModal)}
+                                        disabled={anon || warned}
+                                    >
+                                        <div className="play-button-text-root">
+                                            <i className="fa fa-desktop" /> {_("Computer")}
+                                            <span className="time-per-move"></span>
+                                        </div>
+                                    </button>
+                                )}
+                            </ModalContext.Consumer>
                             <button
                                 className="primary"
                                 onClick={() => this.findMatch("correspondence")}

@@ -61,10 +61,11 @@ import {
     saveTimeControlSettings,
     updateSystem,
 } from "@/components/TimeControl/TimeControlUpdates";
+import { ActivateTooltip } from "@/views/HelpFlows/ModalHelp";
 
 export type ChallengeDetails = rest_api.ChallengeDetails;
 
-type ChallengeModes = "open" | "computer" | "player" | "demo";
+export type ChallengeModes = "open" | "computer" | "player" | "demo";
 
 interface Events {}
 
@@ -1778,7 +1779,11 @@ export class ChallengeModalBody extends React.Component<
                                 &nbsp; {player_username}
                             </span>
                         )}
-                        {mode === "computer" && <span>{_("Computer")}</span>}
+                        {mode === "computer" && (
+                            <ActivateTooltip flow="modal-help" item="intro">
+                                <span>{_("Computer")}</span>
+                            </ActivateTooltip>
+                        )}
                     </h2>
                 </div>
                 <div className="body">
@@ -1959,9 +1964,6 @@ export function createDemoBoard(
             tournamentRecordRoundId={tournament_record_round_id}
         />,
     );
-}
-export function challengeComputer() {
-    return challenge(undefined, null, true);
 }
 export function challengeRematch(
     goban: GobanRenderer,

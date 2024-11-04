@@ -25,6 +25,9 @@ module.exports = {
         "src",
         "node_modules"
     ],
+    "moduleNameMapper": {
+        '^@/(.*)': '<rootDir>/src/$1',
+    },
     "setupFiles": ["./setup-jest.js"],
-    "setupFilesAfterEnv": ["jest-chain"],
+    "setupFilesAfterEnv": ["jest-chain", "@testing-library/jest-dom"],
 }

@@ -30,7 +30,6 @@ import { openGameLinkModal } from "./GameLinkModal";
 import { openGameLogModal } from "./GameLogModal";
 import { sfx } from "@/lib/sfx";
 import { alert } from "@/lib/swal_config";
-import { challengeFromBoardPosition } from "@/components/ChallengeModal/ForkModal";
 import { errorAlerter } from "@/lib/misc";
 import { doAnnul } from "@/lib/moderation";
 import { openReport } from "@/components/Report";
@@ -39,6 +38,23 @@ import { openGameInfoModal } from "./GameInfoModal";
 import { useUserIsParticipant } from "./GameHooks";
 import { useGoban } from "./goban_context";
 import { Tooltip } from "../../components/Tooltip";
+import { ModalContext, ModalTypes } from "@/components/Modal/ModalContext";
+import { GobanEngine, GobanRenderer } from "goban";
+
+const handleForkGameClick = (
+    showModal: (type: ModalTypes, props?: any) => void,
+    user: rest_api.UserConfig,
+    engine: GobanEngine,
+    goban: GobanRenderer,
+) => {
+    if (!user.anonymous && !engine.rengo && !goban.isAnalysisDisabled()) {
+        if (!goban) {
+            return;
+        }
+
+        showModal(ModalTypes.Fork, { goban });
+    }
+};
 
 interface DockProps {
     annulled: boolean;
@@ -92,6 +108,7 @@ export function GameDock({
     const phase = engine.phase;
 
     const user = useUser();
+    const { showModal } = React.useContext(ModalContext);
 
     const tooltipRequired = preferences.get("dock-delay") === MAX_DOCK_DELAY;
 
@@ -139,11 +156,6 @@ export function GameDock({
         }
     };
 
-    const fork = () => {
-        if (!user.anonymous && !engine.rengo && !goban.isAnalysisDisabled()) {
-            challengeFromBoardPosition(goban);
-        }
-    };
     const showLinkModal = () => {
         openGameLinkModal(goban);
     };
@@ -447,7 +459,7 @@ export function GameDock({
             </Tooltip>
             <Tooltip tooltipRequired={tooltipRequired} title={_("Fork game")}>
                 <a
-                    onClick={fork}
+                    onClick={() => handleForkGameClick(showModal, user, engine, goban)}
                     className={
                         user.anonymous || engine.rengo || goban.isAnalysisDisabled()
                             ? "disabled"
