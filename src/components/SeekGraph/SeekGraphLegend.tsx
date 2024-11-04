@@ -71,15 +71,6 @@ export function SeekGraphLegend(props: SeekGraphLegendProps): JSX.Element {
 
     const group1 = [
         legendItem(_("19x19"), () => BoardSizeLegendIcon(currentPalette.size19), "show19x19"),
-        legendItem(_("13x13"), () => BoardSizeLegendIcon(currentPalette.size13), "show13x13"),
-        legendItem(_("9x9"), () => BoardSizeLegendIcon(currentPalette.size9), "show9x9"),
-        legendItem(
-            _("Other"),
-            () => BoardSizeLegendIcon(currentPalette.sizeOther),
-            "showOtherSizes",
-        ),
-    ];
-    const group2 = [
         legendItem(
             _("Ranked"),
             () =>
@@ -95,6 +86,14 @@ export function SeekGraphLegend(props: SeekGraphLegendProps): JSX.Element {
             "showRanked",
         ),
         legendItem(
+            _("Handicap"),
+            () => BoardSizeLegendIcon(currentPalette.handicap),
+            "showHandicap",
+        ),
+    ];
+    const group2 = [
+        legendItem(_("13x13"), () => BoardSizeLegendIcon(currentPalette.size13), "show13x13"),
+        legendItem(
             _("Unranked"),
             () =>
                 LegendIcon((ctx) => {
@@ -108,6 +107,14 @@ export function SeekGraphLegend(props: SeekGraphLegendProps): JSX.Element {
                 }),
             "showUnranked",
         ),
+        legendItem(
+            _("Other"),
+            () => BoardSizeLegendIcon(currentPalette.sizeOther),
+            "showOtherSizes",
+        ),
+    ];
+    const group3 = [
+        legendItem(_("9x9"), () => BoardSizeLegendIcon(currentPalette.size9), "show9x9"),
         legendItem(
             _("Rengo"),
             () =>
@@ -135,6 +142,7 @@ export function SeekGraphLegend(props: SeekGraphLegendProps): JSX.Element {
                 <div className="row">
                     <div className="legend-group grid">{group1}</div>
                     <div className="legend-group grid">{group2}</div>
+                    <div className="legend-group grid">{group3}</div>
                 </div>
             </Card>
         </div>
