@@ -100,6 +100,10 @@ const ACTION_PROMPTS = {
         "Label for a moderator to select this option",
         "Black is cheating - call the game for white, and warn black.",
     ),
+    annul_no_warning: llm_pgettext(
+        "Label for a moderator to select this option",
+        "Annul the game, but issue no warnings.",
+    ),
     final_warning_escaping: llm_pgettext(
         "Label for a moderator to select this option",
         "Final warning: the accused escaped.",

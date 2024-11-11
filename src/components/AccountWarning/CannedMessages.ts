@@ -295,6 +295,32 @@ Thank you for helping keep OGS enjoyable for everyone. We appreciate it.`,
             ),
             { reported },
         ),
+    annul_no_warning: (game_id) =>
+        interpolate(
+            llm_pgettext(
+                "Message to opponent who's game was annulled without warnings being given to either player",
+                `
+Just a note to let you know that we've annulled game #{{game_id}}, as the outcome was wrong.
+
+No-one was at fault, but we felt it was the best way to resolve the situation.
+`,
+            ),
+            { game_id },
+        ),
+    ack_annul_no_warning: (game_id) =>
+        interpolate(
+            llm_pgettext(
+                "Acknowledgement message to a user who reported a game that needed to be annulled",
+                `
+Thanks for your report about #{{game_id}}.
+
+We annulled that game, as the outcome was wrong.
+
+No-one was at fault - we felt this was the best way to resolve the situation.
+`,
+            ),
+            { game_id },
+        ),
     final_warn_escaper: (game_id) =>
         interpolate(
             llm_pgettext(
