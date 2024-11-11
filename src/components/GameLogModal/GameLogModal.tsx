@@ -21,7 +21,7 @@ import { _ } from "@/lib/translate";
 import { openModal, Modal } from "@/components/Modal";
 import { Player } from "@/components/Player";
 import { socket } from "@/lib/sockets";
-import { GameLog } from "./GameLog";
+import { GameLog, LogEntry } from "@/views/Game/GameLog";
 
 interface Events {}
 
@@ -30,12 +30,6 @@ interface GameLogModalProperties {
     markCoords: any;
     black: any;
     white: any;
-}
-
-export interface LogEntry {
-    timestamp: string;
-    event: string;
-    data: any;
 }
 
 export class GameLogModal extends Modal<Events, GameLogModalProperties, { log: Array<LogEntry> }> {

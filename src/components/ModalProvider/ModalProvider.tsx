@@ -15,13 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* cspell: words groupadmin cotsen */
 import * as React from "react";
 
 import { ChallengeModes } from "../ChallengeModal";
 import { createPortal } from "react-dom";
 import { GobanRenderer } from "goban";
-import { ModalContext, ModalTypes } from "./ModalContext";
+import { ModalContext } from "./ModalContext";
+import { ModalTypes } from "./ModalTypes";
 import { modalRegistry } from "./ModalRegistry";
 
 interface Modals {
@@ -57,6 +57,14 @@ export const ModalProvider = ({ children }: React.PropsWithChildren): JSX.Elemen
             case ModalTypes.Fork:
                 setModalProps({
                     goban: (props as Modals["fork"]).goban,
+                });
+                break;
+            case ModalTypes.GameLog:
+                setModalProps({
+                    config: props.config,
+                    markCoords: props.markCoords,
+                    black: props.black,
+                    white: props.white,
                 });
                 break;
             default:

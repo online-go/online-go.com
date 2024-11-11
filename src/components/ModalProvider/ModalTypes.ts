@@ -15,22 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { createContext } from "react";
-
 export enum ModalTypes {
     Challenge = "challenge",
     LanguagePicker = "languagePicker",
     Fork = "fork",
+    GameLog = "gameLog",
 }
-
-type ModalContextProps = {
-    showModal: (type: ModalTypes, props?: any) => void;
-    hideModal: () => void;
-};
-
-const defaultModalContext: ModalContextProps = {
-    showModal: () => {},
-    hideModal: () => {},
-};
-
-export const ModalContext = createContext<ModalContextProps>(defaultModalContext);

@@ -23,7 +23,7 @@ import { PlayerAutocomplete } from "@/components/PlayerAutocomplete";
 import { MiniGoban } from "@/components/MiniGoban";
 import { challenge } from "@/components/ChallengeModal";
 import { PlayerCacheEntry } from "@/lib/player_cache";
-import { ModalContext } from "../Modal/ModalContext";
+import { ModalContext } from "@/components/ModalProvider";
 
 interface ForkModalProperties {
     goban: GobanRenderer;

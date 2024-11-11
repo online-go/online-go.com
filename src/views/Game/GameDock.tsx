@@ -27,7 +27,6 @@ import { toast } from "@/lib/toast";
 import { _, pgettext } from "@/lib/translate";
 import { openACLModal } from "@/components/ACLModal";
 import { openGameLinkModal } from "./GameLinkModal";
-import { openGameLogModal } from "./GameLogModal";
 import { sfx } from "@/lib/sfx";
 import { alert } from "@/lib/swal_config";
 import { errorAlerter } from "@/lib/misc";
@@ -38,7 +37,7 @@ import { openGameInfoModal } from "./GameInfoModal";
 import { useUserIsParticipant } from "./GameHooks";
 import { useGoban } from "./goban_context";
 import { Tooltip } from "../../components/Tooltip";
-import { ModalContext, ModalTypes } from "@/components/Modal/ModalContext";
+import { ModalContext, ModalTypes } from "@/components/ModalProvider";
 import { GobanEngine, GobanRenderer } from "goban";
 
 const handleForkGameClick = (
@@ -284,13 +283,14 @@ export function GameDock({
     };
 
     const showLogModal = () => {
-        openGameLogModal(
-            goban.config,
-            onCoordinatesMarked,
-            historical_black || engine.players.black,
-            historical_white || engine.players.white,
-        );
+        showModal(ModalTypes.GameLog, {
+            config: goban.config,
+            markCoords: onCoordinatesMarked,
+            black: historical_black || engine.players.black,
+            white: historical_white || engine.players.white,
+        });
     };
+
     const toggleAnonymousModerator = () => {
         const channel = `game-${game_id}`;
         data.set(

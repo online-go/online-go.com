@@ -20,8 +20,8 @@ import * as React from "react";
 
 import * as ChallengeModal from "./ChallengeModal";
 import { fireEvent, render, screen } from "@testing-library/react";
-import { ModalProvider } from "../Modal/ModalProvider";
-import { ModalContext, ModalTypes } from "../Modal/ModalContext";
+import { ModalProvider } from "../ModalProvider/ModalProvider";
+import { ModalContext, ModalTypes } from "@/components/ModalProvider";
 import * as DynamicHelp from "react-dynamic-help";
 
 jest.mock("./../Modal", () => {

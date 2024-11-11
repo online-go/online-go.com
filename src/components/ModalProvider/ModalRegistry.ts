@@ -14,10 +14,12 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-import { ForkModal } from "../ChallengeModal/ForkModal";
-import { ChallengeModal } from "../ChallengeModal/ChallengeModal";
-import { LanguagePickerModal } from "../LanguagePicker/LanguagePicker";
-import { ModalTypes } from "./ModalContext";
+
+import { ModalTypes } from "@/components/ModalProvider/ModalTypes";
+import { ForkModal } from "@/components/ChallengeModal/ForkModal";
+import { ChallengeModal } from "@/components/ChallengeModal/ChallengeModal";
+import { LanguagePickerModal } from "@/components/LanguagePicker/LanguagePicker";
+import { GameLogModal } from "@/components/GameLogModal";
 
 interface ModalRegistry {
     [key: string]: React.ComponentType<any>;
@@ -27,6 +29,7 @@ export const modalRegistry: ModalRegistry = {
     [ModalTypes.Fork]: ForkModal,
     [ModalTypes.Challenge]: ChallengeModal,
     [ModalTypes.LanguagePicker]: LanguagePickerModal,
+    [ModalTypes.GameLog]: GameLogModal,
 };
 
 export const registerModal = (modalType: string, component: React.ComponentType<any>) => {

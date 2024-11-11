@@ -57,7 +57,8 @@ import {
     ChallengeFilterKey,
     shouldDisplayChallenge,
 } from "@/lib/challenge_utils";
-import { ModalContext, ModalTypes } from "@/components/Modal/ModalContext";
+
+import { ModalContext, ModalTypes } from "@/components/ModalProvider";
 
 const CHALLENGE_LIST_FREEZE_PERIOD = 1000; // Freeze challenge list for this period while they move their mouse on it
 

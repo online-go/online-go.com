@@ -61,7 +61,6 @@ import {
     saveTimeControlSettings,
     updateSystem,
 } from "@/components/TimeControl/TimeControlUpdates";
-import { ActivateTooltip } from "@/views/HelpFlows/ModalHelp";
 
 export type ChallengeDetails = rest_api.ChallengeDetails;
 
@@ -1780,9 +1779,7 @@ export class ChallengeModalBody extends React.Component<
                             </span>
                         )}
                         {mode === "computer" && (
-                            <ActivateTooltip flow="modal-help" item="intro">
-                                <span>{_("Computer")}</span>
-                            </ActivateTooltip>
+                            <span>{_("Computer")}</span>
                         )}
                     </h2>
                 </div>

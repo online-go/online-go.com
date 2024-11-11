@@ -339,5 +339,5 @@ window.preferences = preferences;
 window.player_cache = player_cache;
 
 import * as requests from "@/lib/requests";
-import { ModalProvider } from "./components/Modal/ModalProvider";
+import { ModalProvider } from "./components/ModalProvider/ModalProvider";
 window.requests = requests;

@@ -20,7 +20,6 @@ import moment from "moment";
 import { _, pgettext } from "@/lib/translate";
 import * as DynamicHelp from "react-dynamic-help";
 
-import { LogEntry } from "@/views/Game";
 import { GobanEngineConfig } from "goban";
 
 import { socket } from "@/lib/sockets";
@@ -28,6 +27,12 @@ import { Player } from "@/components/Player";
 import { ScoringEventThumbnail } from "./ScoringEventThumbnail";
 
 const TRUNCATED_GAME_LOG_LENGTH = 25;
+
+export interface LogEntry {
+    timestamp: string;
+    event: string;
+    data: any;
+}
 
 interface GameLogProps {
     goban_config: GobanEngineConfig;
@@ -44,9 +49,7 @@ export function GameLog({
     const [shouldDisplayFullLog, setShouldDisplayFullLog] = React.useState(false);
 
     const { registerTargetItem } = React.useContext(DynamicHelp.Api);
-    // Defend against the case where we aren't wrapped in a help provider: in a Modal
-    // TBD: made Modals be able to use the help provider
-    const autoscoreRef = registerTargetItem?.("autoscore-game-log-entry")?.ref || null;
+    const autoscoreRef = registerTargetItem("autoscore-game-log-entry").ref || null;
 
     const game_id = goban_config.game_id as number;
 
