@@ -140,10 +140,10 @@ const ACTION_PROMPTS = {
         "Suspend user and annul game.",
     ),
 
-    // Note: keep this last, so it's positioned above the "note to moderator" input field
+    // Note: keep this last, so it's positioned above the "escalation note" input field
     escalate: llm_pgettext(
         "A label for a community moderator to select this option",
-        "Escalate: submit for consideration for more serious action.",
+        "Escalate: report needs final warning or suspension, or other unusual action.",
     ),
 };
 
@@ -217,7 +217,7 @@ export function ModerationActionSelector({
                 ))}
             {selectedOption === "escalate" && (
                 <textarea
-                    id="mod-note-text"
+                    id="escalation-note-text"
                     placeholder={llm_pgettext(
                         "A placeholder prompting community moderators for the reason why they are escalating a report",
                         "Reason for escalating?",
