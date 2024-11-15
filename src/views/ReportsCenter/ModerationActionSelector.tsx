@@ -239,7 +239,7 @@ export function ModerationActionSelector({
                     id="dissenter-note"
                     placeholder={llm_pgettext(
                         "A placeholder prompting community moderators for the reason why they are disagreeing with a vote",
-                        "What is it that the other votes do not seem to take into account?",
+                        "(Optional) What is it that the other votes do not seem to take into account?",
                     )}
                     rows={5}
                     value={dissenter_note}
