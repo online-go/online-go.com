@@ -27,8 +27,7 @@ interface ModerationActionSelectorProps {
     vote_counts: { [action: string]: number };
     enable: boolean;
     report: Report;
-    claim: () => void;
-    submit: (action: string, note: string) => void;
+    submit: (action: string, note: string, dissenter_note: string) => void;
 }
 
 // Translatable versions of the prompts for Community Moderators.
@@ -152,19 +151,19 @@ export function ModerationActionSelector({
     vote_counts,
     enable,
     report,
-    claim,
     submit,
 }: ModerationActionSelectorProps): JSX.Element {
     const user = useUser();
     const reportedBySelf = user.id === report.reporting_user.id;
 
+    const [voted, setVoted] = React.useState(false);
+
     const [selectedOption, setSelectedOption] = React.useState("");
     const [escalation_note, setEscalationNote] = React.useState("");
-    const [voted, setVoted] = React.useState(false);
+    const [dissenter_note, setDissenterNote] = React.useState("");
 
     const updateSelectedAction = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSelectedOption(e.target.value);
-        claim();
     };
 
     const { registerTargetItem } = React.useContext(DynamicHelp.Api);
@@ -173,6 +172,14 @@ export function ModerationActionSelector({
 
     // If for some reason we didn't get any actions to offer, we'll just offer "escalate"
     const action_choices = available_actions ? available_actions : ["escalate"];
+
+    // If we're in dissent, we'll ask for a "dissent" note
+    const inDissent =
+        selectedOption &&
+        !!Object.keys(vote_counts).find(
+            (k: string) =>
+                k !== selectedOption && (vote_counts[selectedOption] ?? 0) < vote_counts[k],
+        );
 
     return (
         <div className="ModerationActionSelector" ref={voting_pane}>
@@ -217,7 +224,7 @@ export function ModerationActionSelector({
                 ))}
             {selectedOption === "escalate" && (
                 <textarea
-                    id="escalation-note-text"
+                    id="escalation-note"
                     placeholder={llm_pgettext(
                         "A placeholder prompting community moderators for the reason why they are escalating a report",
                         "Reason for escalating?",
@@ -225,6 +232,18 @@ export function ModerationActionSelector({
                     rows={5}
                     value={escalation_note}
                     onChange={(ev) => setEscalationNote(ev.target.value)}
+                />
+            )}
+            {inDissent && selectedOption !== "escalate" && (
+                <textarea
+                    id="dissenter-note"
+                    placeholder={llm_pgettext(
+                        "A placeholder prompting community moderators for the reason why they are disagreeing with a vote",
+                        "What is it that the other votes do not seem to take into account?",
+                    )}
+                    rows={5}
+                    value={dissenter_note}
+                    onChange={(ev) => setDissenterNote(ev.target.value)}
                 />
             )}
             <span className="action-buttons">
@@ -246,7 +265,7 @@ export function ModerationActionSelector({
                         }
                         onClick={() => {
                             setVoted(true);
-                            submit(selectedOption, escalation_note);
+                            submit(selectedOption, escalation_note, dissenter_note);
                         }}
                     >
                         {llm_pgettext("A label on a button for submitting a vote", "Vote")}

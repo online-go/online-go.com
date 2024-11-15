@@ -67,6 +67,7 @@ export interface Report {
     vote_counts: { [action: string]: number };
     voters: Vote[]; // votes from community moderators on this report
     escalation_note: string;
+    dissenter_note: string;
 
     unclaim: () => void;
     claim: () => void;
