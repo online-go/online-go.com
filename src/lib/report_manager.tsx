@@ -352,11 +352,17 @@ class ReportManager extends EventEmitter<Events> {
         return res;
     }
 
-    public vote(report_id: number, voted_action: string, escalation_note: string): Promise<Report> {
+    public vote(
+        report_id: number,
+        voted_action: string,
+        escalation_note: string,
+        dissenter_note: string,
+    ): Promise<Report> {
         return post(`moderation/incident/${report_id}`, {
             action: "vote",
             voted_action: voted_action,
             escalation_note: escalation_note,
+            ...(dissenter_note && { dissenter_note }),
         })
             .then((res) => {
                 toast(

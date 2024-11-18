@@ -24,7 +24,7 @@ import { report_categories, ReportType } from "@/components/Report";
 import { report_manager } from "@/lib/report_manager";
 import { Report } from "@/lib/report_util";
 import { AutoTranslate } from "@/components/AutoTranslate";
-import { interpolate, _, pgettext } from "@/lib/translate";
+import { interpolate, _, pgettext, llm_pgettext } from "@/lib/translate";
 import { Player, ShowPlayersInReportContext } from "@/components/Player";
 import { Link } from "react-router-dom";
 import { post } from "@/lib/requests";
@@ -555,12 +555,9 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                             <ModerationActionSelector
                                 available_actions={availableActions ?? []}
                                 vote_counts={voteCounts}
-                                claim={() => {
-                                    /* community moderators don't claim reports */
-                                }}
-                                submit={(action, note) => {
+                                submit={(action, note, dissenter_note) => {
                                     void report_manager
-                                        .vote(report.id, action, note)
+                                        .vote(report.id, action, note, dissenter_note)
                                         .then(() => next());
                                 }}
                                 enable={
@@ -571,6 +568,25 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                                 key={report.id}
                                 report={report}
                             />
+                            {report.dissenter_note && (
+                                <div className="notes">
+                                    <h4>
+                                        {llm_pgettext(
+                                            "Heading for a paragraph",
+                                            "Dissenting voter notes:",
+                                        )}
+                                    </h4>
+                                    <div className="Card">{report.dissenter_note}</div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                    {report.dissenter_note && user.is_moderator && (
+                        <div className="notes">
+                            <h4>
+                                {llm_pgettext("Heading for a paragraph", "Dissenting voter notes:")}
+                            </h4>
+                            <div className="Card">{report.dissenter_note}</div>
                         </div>
                     )}
                 </div>
