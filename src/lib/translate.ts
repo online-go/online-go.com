@@ -365,6 +365,12 @@ fantasy_countries.push(["_GoT_Targaryen", gettext("House Targaryen")]);
 fantasy_countries.push(["_GoT_Tully", gettext("House Tully")]);
 fantasy_countries.push(["_GoT_Tyrell", gettext("House Tyrell")]);
 fantasy_countries.push(["_LGBT", gettext("LGBT+ Pride")]);
+fantasy_countries.push(["_Ulster", gettext("Ulster")]);
+fantasy_countries.push(["_Leinster", gettext("Leinster")]);
+fantasy_countries.push(["_Munster", gettext("Munster")]);
+fantasy_countries.push(["_Connacht", gettext("Connacht")]);
+fantasy_countries.push(["_Ireland_Provinces", gettext("Ireland Provinces")]);
+fantasy_countries.push(["_Galicia", gettext("Galicia")]);
 
 try {
     for (const e of fantasy_countries) {
