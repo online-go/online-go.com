@@ -20,17 +20,15 @@
  * all the possible keys as well as the associated value types.
  */
 
-import { GroupList, ActiveTournamentList, Size, RuleSet } from "./types";
+import { GroupList, ActiveTournamentList, RuleSet } from "./types";
 import { Announcement } from "@/components/Announcements";
 import { ValidSound, ValidSoundGroup } from "./sfx";
 import { defaults as defaultPreferences, ValidPreference } from "./preferences";
 import { TimeControl, TimeControlTypes } from "@/components/TimeControl";
 import TimeControlSpeed = TimeControlTypes.TimeControlSpeed;
 import TimeControlSystem = TimeControlTypes.TimeControlSystem;
-import { AutomatchPreferences } from "@/components/AutomatchSettings";
 import { JosekiFilter } from "@/components/JosekiVariationFilter";
 import { Challenge } from "@/lib/challenge_utils";
-import { JGOFTimeControlSpeed } from "goban";
 
 interface CachedSchema {
     groups: GroupList;
@@ -159,13 +157,6 @@ interface PMSchema {
     [close_key: `close-${number}`]: string;
 }
 
-type AutomatchSchema = {
-    "last-tab": JGOFTimeControlSpeed;
-    size_options: Size[];
-} & {
-    [speed_key in TimeControlSpeed]: AutomatchPreferences;
-};
-
 type ObservedGamesSchema = {
     [namespace_preference_key in `${string}.${ValidPreference}`]: string;
 };
@@ -230,7 +221,6 @@ export interface DataSchema
         Prefixed<ChatIndicatorSchema, "chat-indicator">,
         Prefixed<TimeControlSchema, "time_control">,
         Prefixed<PMSchema, "pm">,
-        Prefixed<AutomatchSchema, "automatch">,
         Prefixed<ObservedGamesSchema, "observed-games">,
         Prefixed<AnnouncementsSchema, "announcements">,
         Prefixed<ChallengeSchema, "challenge"> {

@@ -15,8 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import type { JGOFTimeControlSpeed } from "goban";
+
 export namespace TimeControlTypes {
-    export type TimeControlSpeed = "blitz" | "live" | "correspondence";
+    export type TimeControlSpeed = JGOFTimeControlSpeed;
     export type TimeControlSystem =
         | "fischer"
         | "byoyomi"
@@ -25,7 +27,7 @@ export namespace TimeControlTypes {
         | "absolute"
         | "none";
 
-    export const ALL_SPEEDS: TimeControlSpeed[] = ["blitz", "live", "correspondence"];
+    export const ALL_SPEEDS: TimeControlSpeed[] = ["blitz", "rapid", "live", "correspondence"];
     export const ALL_SYSTEMS: TimeControlSystem[] = [
         "fischer",
         "byoyomi",
