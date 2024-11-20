@@ -84,7 +84,7 @@ const handicap_options: OptionWithDescription[] = [
         value: "enabled",
         label: pgettext(
             "Matchmaking handicap option: require handicaps for games between players with different ranks",
-            "Always on",
+            "Required",
         ),
         description: _("Require handicaps between players with different ranks"),
     },
@@ -670,7 +670,14 @@ export function QuickMatch(): JSX.Element {
                                         )}
                                         */}
                                     </div>
-                                    <div className="game-speed-buttons">
+                                    <div
+                                        className={
+                                            "game-speed-buttons " +
+                                            (game_speed === speed && game_clock === "flexible"
+                                                ? "flexible-active"
+                                                : "")
+                                        }
+                                    >
                                         <button
                                             className={
                                                 "time-control-button" +
@@ -754,7 +761,7 @@ export function QuickMatch(): JSX.Element {
                         }}
                     >
                         <div className="opponent-title">
-                            {pgettext("Play a random human opponent", "Random Human")}
+                            {pgettext("Play a human opponent", "Human")}
                         </div>
                         <div className="opponent-rank-range">
                             <select
@@ -834,7 +841,7 @@ export function QuickMatch(): JSX.Element {
                 </div>
             </div>
 
-            {/* Balancing and Play Button */}
+            {/* Play Button */}
             <div className="GameOption-cell">
                 <div className="GameOption">
                     <span>{_("Handicap")}</span>

@@ -45,11 +45,14 @@
 
 
 #FindGame {
-    margin-top: 2rem;
+    margin-top: 1rem;
+    margin-right: 2rem;
+    margin-left: 2rem;
     display: grid;
     // 2x2 grid
     grid-template-columns: 1fr 1fr;
     user-select: none;
+    column-gap: 4rem;
     
     .GameOption-cell {
         display: flex;
@@ -254,11 +257,11 @@
         }
         
         
-        .MiniGoban {
-            width: 10rem;
-            height: 10rem;
-        }
         
+    }
+    .MiniGoban {
+        width: 22rem !important;
+        height: 22rem !important;
     }
     .subtext {
         font-size: 0.9rem;
@@ -354,14 +357,18 @@
     }
     
     .game-speed-buttons {
-        //padding-left: 2rem;
+        //padding-bottom: 0.5rem;
         display: flex;
         justify-content: space-around;
         align-items: center;
+        //border-bottom: 0.15rem solid transparent;
+        
+        &.flexible-active {
+            //themed-important border-color shade3
+        }
+
         .time-control-button {
             min-width: 10rem;
-
-
         }
         
         .or {
@@ -390,8 +397,8 @@
             flex-direction: column;
             flex-grow: 1;
             height: 6rem;
-            margin-left: 1.0rem;
-            margin-right: 1.0rem;
+            margin-left: 0.5rem;
+            margin-right: 0.5rem;
             transition: background-color 0.3s ease;
             box-shadow: 0px 2px 5px 0px rgba(0, 0, 0, 0.15);
             border: 1px solid transparent;
@@ -529,7 +536,10 @@
     #FindGame {
         display: flex;
         flex-direction: column;
+        margin-right: 0rem;
+        margin-left: 0rem;
         margin-bottom: 4rem;
+        column-gap: 0rem;
     }
     
     .GameOption-cell {
