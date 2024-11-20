@@ -97,7 +97,7 @@ const handicap_options: OptionWithDescription[] = [
         description: _("Use handicaps by default, but accept games with handicaps disabled"),
     },
     {
-        value: "disable",
+        value: "disabled",
         label: pgettext("Matchmaking handicap option: disable handicaps", "Disabled"),
         description: _("Disable handicaps"),
     },
