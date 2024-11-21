@@ -32,7 +32,7 @@ export function Play(): JSX.Element {
     return (
         <div className="Play container">
             <div className="tab-head">
-                <h2>
+                <h2 className="Matchmaking-header">
                     <i className="ogs-goban"></i> {pgettext("Play page", "Matchmaking")}
                 </h2>
 

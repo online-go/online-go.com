@@ -597,7 +597,7 @@ export function QuickMatch(): JSX.Element {
         <div id="FindGame">
             {/* Board Size */}
             <div className="GameOption-cell">
-                <div className="GameOption">
+                <div className="GameOption BoardSize-header">
                     <span>{_("Board Size")}</span>
                 </div>
 
@@ -876,76 +876,76 @@ export function QuickMatch(): JSX.Element {
                     />
                 </div>
 
-                {automatch_manager.active_live_automatcher && (
-                    <div>
-                        <div className="finding-game-container">
-                            <span>{_("Finding you a game...")}</span>
-
-                            <LoadingButton
-                                className="danger sm"
-                                loading={true}
-                                onClick={cancelActiveAutomatch}
-                            >
-                                {pgettext("Cancel automatch", "Cancel search")}
-                            </LoadingButton>
-                        </div>
-                    </div>
-                )}
-
-                {bot_spinner && (
-                    <div>
-                        <div className="finding-game-container">
-                            <LoadingButton
-                                className="danger sm"
-                                loading={true}
-                                onClick={cancel_bot_game.current}
-                            >
-                                {_("Cancel")}
-                            </LoadingButton>
-                        </div>
-                    </div>
-                )}
-
-                {correspondence_spinner && (
-                    <div>
-                        <div className="automatch-header">{_("Finding you a game...")}</div>
-                        <div className="automatch-settings-corr">
-                            {_(
-                                'This can take several minutes. You will be notified when your match has been found. To view or cancel your automatch requests, please see the list below labeled "Your Automatch Requests".',
-                            )}
-                        </div>
-                        <div className="automatch-row-container">
-                            <button className="primary" onClick={dismissCorrespondenceSpinner}>
-                                {_(
-                                    pgettext(
-                                        "Dismiss the 'finding correspondence automatch' message",
-                                        "Got it",
-                                    ),
-                                )}
-                            </button>
-                        </div>
-                    </div>
-                )}
-                {user.anonymous && (
-                    <div className="anonymous-container">
-                        {_("Please sign in to play")}
+                <div className="PlayButton-container">
+                    {automatch_manager.active_live_automatcher && (
                         <div>
-                            <Link to="/register#/play">{_("Register for Free")}</Link>
-                            {" | "}
-                            <Link to="/sign-in#/play">{_("Sign in")}</Link>
+                            <div className="finding-game-container">
+                                <LoadingButton
+                                    className="success sm"
+                                    loading={true}
+                                    onClick={cancelActiveAutomatch}
+                                >
+                                    {pgettext("Cancel automatch", "Searching for game...")}
+                                </LoadingButton>
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
 
-                {!search_active && !user.anonymous && (
-                    <button
-                        className="primary play-button"
-                        onClick={play}
-                        disabled={anon || warned}
-                    >
-                        {_("Play")}
-                    </button>
-                )}
+                    {bot_spinner && (
+                        <div>
+                            <div className="finding-game-container">
+                                <LoadingButton
+                                    className="danger sm"
+                                    loading={true}
+                                    onClick={() => cancel_bot_game.current()}
+                                >
+                                    {_("Cancel")}
+                                </LoadingButton>
+                            </div>
+                        </div>
+                    )}
+
+                    {correspondence_spinner && (
+                        <div>
+                            <div className="automatch-header">{_("Finding you a game...")}</div>
+                            <div className="automatch-settings-corr">
+                                {_(
+                                    'This can take several minutes. You will be notified when your match has been found. To view or cancel your automatch requests, please see the list below labeled "Your Automatch Requests".',
+                                )}
+                            </div>
+                            <div className="automatch-row-container">
+                                <button className="primary" onClick={dismissCorrespondenceSpinner}>
+                                    {_(
+                                        pgettext(
+                                            "Dismiss the 'finding correspondence automatch' message",
+                                            "Got it",
+                                        ),
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                    {user.anonymous && (
+                        <div className="anonymous-container">
+                            {_("Please sign in to play")}
+                            <div>
+                                <Link to="/register#/play">{_("Register for Free")}</Link>
+                                {" | "}
+                                <Link to="/sign-in#/play">{_("Sign in")}</Link>
+                            </div>
+                        </div>
+                    )}
+
+                    {!search_active && !user.anonymous && (
+                        <button
+                            className="primary play-button"
+                            onClick={play}
+                            disabled={anon || warned}
+                        >
+                            {_("Play")}
+                        </button>
+                    )}
+                </div>
             </div>
         </div>
     );

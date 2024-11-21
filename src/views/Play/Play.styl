@@ -79,8 +79,12 @@
         flex-direction: column;
         align-items: stretch;
     }
+    
+    @media (max-width: hamburger-cutoff) {
+        .Matchmaking-header {
+            display: none;
+        }
 
-    @media (max-width 720px) {
         .rengo-management-list-item {
             margin: inherit; // override the `auto` directive so this goes to the left on narrow screens.
             width: 40%;  // try to fit the whole pane nicely on narrow phones

@@ -88,11 +88,14 @@
         //flex-basis: 2.5rem;
         font-size: 1.3rem;
         width: 100%;
+        height: 100%;
         display: flex;
         flex-direction: row;
-        justify-content: space-between;
+        justify-content: space-around;
         align-items: center;
+        //align-content: center;
         padding-bottom: 2.5rem;
+        padding-top: 1rem;
         
         
 
@@ -267,6 +270,9 @@
         font-size: 0.9rem;
     }
     
+    .PlayButton-container {
+        width: 100%;
+    }
     .play-button {
         //margin-top: 3rem;
         width: 100%;
@@ -541,8 +547,36 @@
         flex-direction: column;
         margin-right: 0rem;
         margin-left: 0rem;
-        margin-bottom: 4rem;
+        margin-bottom: 8rem;
         column-gap: 0rem;
+        margin-top: 0rem;
+
+        .speed-options {
+            margin-bottom: 0;
+        }
+        
+        .computer-select {
+            select {
+                min-width: calc(100vw - 6rem) !important;
+                max-width: calc(100vw - 6rem) !important;
+                width: calc(100vw - 6rem) !important;
+            }
+        }
+    }
+    
+    .BoardSize-header {
+        display: none;
+    }
+    .PlayButton-container {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        left: 0;
+        right: 0;
+        themed background-color bg
+        .play-button {
+            margin: 0;
+        }
     }
     
     .GameOption-cell {
