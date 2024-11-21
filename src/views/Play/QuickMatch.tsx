@@ -621,6 +621,10 @@ export function QuickMatch(): JSX.Element {
                     height={parseInt(board_size)}
                     labels_positioning="all"
                     noLink={true}
+                    json={{
+                        width: parseInt(board_size),
+                        height: parseInt(board_size),
+                    }}
                 />
             </div>
 
