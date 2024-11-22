@@ -397,86 +397,92 @@ export function CustomGames(): JSX.Element {
             }}
         >
             <div id="CustomGames">
-                <Card>
-                    {liveOwnChallengePending() ? (
-                        <>
-                            <div className="automatch-header">{_("Waiting for opponent...")}</div>
-                            <div className="automatch-row-container">
-                                <div className="spinner">
-                                    <div className="double-bounce1"></div>
-                                    <div className="double-bounce2"></div>
+                <div className="top-stuff">
+                    <Card>
+                        {liveOwnChallengePending() ? (
+                            <>
+                                <div className="automatch-header">
+                                    {_("Waiting for opponent...")}
                                 </div>
-                            </div>
-                            <div className="automatch-settings">
-                                <button className="danger sm" onClick={cancelOwnChallenges}>
-                                    {pgettext("Cancel challenge", "Cancel")}
-                                </button>
-                            </div>
-                        </>
-                    ) : live_rengo_challenge_to_show ? (
-                        <>
-                            <RengoManagementPane
-                                challenge_id={live_rengo_challenge_to_show.challenge_id}
-                                rengo_challenge_list={rengo_list}
-                                startRengoChallenge={rengo_utils.startOwnRengoChallenge}
-                                cancelChallenge={cancelOpenRengoChallenge}
-                                withdrawFromRengoChallenge={unNominateForRengoChallenge}
-                                joinRengoChallenge={rengo_utils.nominateForRengoChallenge}
-                                lock={
-                                    rengo_manage_pane_lock[
-                                        live_rengo_challenge_to_show?.challenge_id
-                                    ]
-                                }
-                            >
-                                <RengoTeamManagementPane
+                                <div className="automatch-row-container">
+                                    <div className="spinner">
+                                        <div className="double-bounce1"></div>
+                                        <div className="double-bounce2"></div>
+                                    </div>
+                                </div>
+                                <div className="automatch-settings">
+                                    <button className="danger sm" onClick={cancelOwnChallenges}>
+                                        {pgettext("Cancel challenge", "Cancel")}
+                                    </button>
+                                </div>
+                            </>
+                        ) : live_rengo_challenge_to_show ? (
+                            <>
+                                <RengoManagementPane
                                     challenge_id={live_rengo_challenge_to_show.challenge_id}
-                                    challenge_list={rengo_list}
-                                    moderator={user.is_moderator}
-                                    show_chat={false}
-                                    assignToTeam={rengo_utils.assignToTeam}
-                                    kickRengoUser={rengo_utils.kickRengoUser}
-                                    locked={
+                                    rengo_challenge_list={rengo_list}
+                                    startRengoChallenge={rengo_utils.startOwnRengoChallenge}
+                                    cancelChallenge={cancelOpenRengoChallenge}
+                                    withdrawFromRengoChallenge={unNominateForRengoChallenge}
+                                    joinRengoChallenge={rengo_utils.nominateForRengoChallenge}
+                                    lock={
                                         rengo_manage_pane_lock[
-                                            live_rengo_challenge_to_show.challenge_id
+                                            live_rengo_challenge_to_show?.challenge_id
                                         ]
                                     }
-                                    lock={(lock: boolean) =>
-                                        setPaneLock(live_rengo_challenge_to_show.challenge_id, lock)
-                                    }
+                                >
+                                    <RengoTeamManagementPane
+                                        challenge_id={live_rengo_challenge_to_show.challenge_id}
+                                        challenge_list={rengo_list}
+                                        moderator={user.is_moderator}
+                                        show_chat={false}
+                                        assignToTeam={rengo_utils.assignToTeam}
+                                        kickRengoUser={rengo_utils.kickRengoUser}
+                                        locked={
+                                            rengo_manage_pane_lock[
+                                                live_rengo_challenge_to_show.challenge_id
+                                            ]
+                                        }
+                                        lock={(lock: boolean) =>
+                                            setPaneLock(
+                                                live_rengo_challenge_to_show.challenge_id,
+                                                lock,
+                                            )
+                                        }
+                                    />
+                                </RengoManagementPane>
+                            </>
+                        ) : (
+                            <div>
+                                <ChallengeModalBody
+                                    mode="open"
+                                    modal={{
+                                        on: (event: "open" | "close", callback: () => void) => {
+                                            console.log("on", event, callback);
+                                        },
+                                        off: (event: "open" | "close", callback: () => void) => {
+                                            console.log("off", event, callback);
+                                        },
+                                    }}
                                 />
-                            </RengoManagementPane>
-                        </>
-                    ) : (
-                        <div>
-                            <ChallengeModalBody
-                                mode="open"
-                                modal={{
-                                    on: (event: "open" | "close", callback: () => void) => {
-                                        console.log("on", event, callback);
-                                    },
-                                    off: (event: "open" | "close", callback: () => void) => {
-                                        console.log("off", event, callback);
-                                    },
-                                }}
-                            />
+                            </div>
+                        )}
+                    </Card>
+                    <div className="seek-graph">
+                        <h2>{pgettext("Games available to accept", "Available Games")}</h2>
+
+                        <div ref={ref_container} className="seek-graph-container">
+                            <OgsResizeDetector onResize={onResize} targetRef={ref_container} />
+                            <PersistentElement elt={canvas} />
                         </div>
-                    )}
-                </Card>
-                <div className="row">
-                    <h2>{pgettext("Games available to accept", "Available Games")}</h2>
 
-                    <div ref={ref_container} className="seek-graph-container">
-                        <OgsResizeDetector onResize={onResize} targetRef={ref_container} />
-                        <PersistentElement elt={canvas} />
+                        <SeekGraphLegend
+                            filter={filter}
+                            showIcons={true}
+                            toggleHandler={toggleFilterHandler}
+                        ></SeekGraphLegend>
                     </div>
-
-                    <SeekGraphLegend
-                        filter={filter}
-                        showIcons={true}
-                        toggleHandler={toggleFilterHandler}
-                    ></SeekGraphLegend>
                 </div>
-
                 <div id="challenge-list-container">
                     <div id="challenge-list-inner-container">
                         <div id="challenge-list" onMouseMove={freezeChallenges}>

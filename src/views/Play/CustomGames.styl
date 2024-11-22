@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
- 
+
  #CustomGames {
     display: flex;
     flex-direction: column;
@@ -23,13 +23,35 @@
     justify-content: center;
     box-sizing: border-box;
     
+    .top-stuff {
+        display: flex;
+        flex-direction: column;
+
+        @media screen and (min-width: 850px){
+            // On deskop, put the seek graph next to the CreateGame form
+            flex-direction: row;
+            width: max-content; // Causes seek graph to be as wide as possible
+
+            .Card {
+                flex: 1;
+            }
+        }
+        .seek-graph{
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+    }
+
     .Modal {
         border: none;
         box-shadow: none;
     }
-    
+
     .ChallengeModal {
         width: 100%;
         max-height: unset;
     }
+
+
  }
