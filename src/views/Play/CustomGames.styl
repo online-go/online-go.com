@@ -22,6 +22,54 @@
     align-items: stretch;
     justify-content: center;
     box-sizing: border-box;
+
+    .header-container {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5em 0;
+        border-bottom: 1px solid #ccc;
+
+        .header-title {
+            margin: 0;
+            font-size: 1.5em;
+            flex-grow: 1; 
+        }
+
+        .toggle-container {
+            cursor: pointer;                        
+            display: flex;
+            align-items: center;
+            gap: 0.2em; 
+    
+            .toggle-indicator{
+                background: none;
+                border: none;
+                font-size: 0.8em;
+                padding: 0;
+                line-height: 1;
+            }
+
+            .toggle-label {
+                font-size: 0.9em;
+                color: #666; 
+            }
+        }
+    }
+
+
+    .seek-graph-container.hidden {
+            clip-path: inset(0 100% 100% 0); /* Clip the entire element */
+            position: absolute; /* Remove it from the layout */
+    }
+
+    .seek-graph-container.visible {
+        .seek-graph-container.visible {
+            clip-path: none; /* Restore visibility */
+            position: static; /* Return to normal layout */
+        }
+    }
     
     .Modal {
         border: none;
