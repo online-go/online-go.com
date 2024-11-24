@@ -74,7 +74,7 @@ export function CustomGames(): JSX.Element {
     const canvas: HTMLCanvasElement = React.useMemo(() => allocateCanvasOrError(), []);
     const seekgraph = React.useRef<SeekGraph>();
 
-    const [seekGraphVisible, setSeekGraphVisible] = React.useState(true);
+    const [seekGraphVisible, setSeekGraphVisible] = React.useState(false);
 
     const toggleSeekGraph = () => {
         setSeekGraphVisible((prev) => !prev);
