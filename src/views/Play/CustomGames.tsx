@@ -20,6 +20,7 @@ import * as preferences from "@/lib/preferences";
 import * as player_cache from "@/lib/player_cache";
 import * as rengo_utils from "@/lib/rengo_utils";
 
+import { usePreference } from "@/lib/preferences";
 import { del } from "@/lib/requests";
 import { alert } from "@/lib/swal_config";
 import { OgsResizeDetector } from "@/components/OgsResizeDetector";
@@ -74,10 +75,10 @@ export function CustomGames(): JSX.Element {
     const canvas: HTMLCanvasElement = React.useMemo(() => allocateCanvasOrError(), []);
     const seekgraph = React.useRef<SeekGraph>();
 
-    const [seekGraphVisible, setSeekGraphVisible] = React.useState(false);
+    const [seekGraphVisible, setSeekGraphVisible] = usePreference("show-seek-graph");
 
     const toggleSeekGraph = () => {
-        setSeekGraphVisible((prev) => !prev);
+        setSeekGraphVisible(!seekGraphVisible);
     };
 
     // Used to not change the challenge list while they are trying to point the mouse at it
