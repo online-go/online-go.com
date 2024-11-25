@@ -27,7 +27,7 @@ import { useUser } from "@/lib/hooks";
 import { PaginatedTable } from "@/components/PaginatedTable";
 import { Player } from "@/components/Player";
 import { Tab, TabList, TabPanel, Tabs } from "react-tabs";
-import { pgettext } from "@/lib/translate";
+import { llm_pgettext, pgettext } from "@/lib/translate";
 import { UserVoteActivityGraph } from "@/views/User";
 import { dropCurrentPeriod } from "@/lib/misc";
 import { CMPieCharts } from "@/views/User";
@@ -528,7 +528,7 @@ export function ReportsCenterCMDashboard(): JSX.Element {
     };
 
     const fetchVoteData = () => {
-        get(`moderation/cm_voting_outcomes`)
+        get(`moderation/cm_voting_outcomes?period=60`)
             .then((response) => {
                 const fetchedData: CMGroupVotingAlignmentData = response;
                 setVoteData(fetchedData);
@@ -539,7 +539,7 @@ export function ReportsCenterCMDashboard(): JSX.Element {
     };
 
     const fetchUsersData = () => {
-        get(`me/cm_vote_outcomes`)
+        get(`me/cm_vote_outcomes?period=60`)
             .then((response) => {
                 const fetchedData: IndividualCMVotingOutcomeData = response;
                 setUsersData(fetchedData["vote_data"]);
@@ -567,12 +567,19 @@ export function ReportsCenterCMDashboard(): JSX.Element {
                 <div className="mod-graph-header">
                     {pgettext(
                         "header for a graph showing how often the moderator voted with the others",
-                        "consensus votes (by week)",
+                        "'consensus' votes (by week)",
                     )}
                 </div>
                 <div>
                     <UserVoteActivityGraph user_id={user.id} />
                 </div>
+                <h3>{llm_pgettext("A heading for a 'vote outcomes' table", "Vote Outcomes")}</h3>
+                <h4>
+                    {llm_pgettext(
+                        "explanatory text",
+                        "Outcomes since the last 'consensus rules' update",
+                    )}
+                </h4>
                 <CMPieCharts user_id={user.id} user_moderator_powers={user.moderator_powers} />
             </TabPanel>
 
@@ -585,7 +592,7 @@ export function ReportsCenterCMDashboard(): JSX.Element {
                               {vote_data[report_type] ? (
                                   <CMVotingGroupGraph
                                       vote_data={vote_data[report_type]}
-                                      period={120}
+                                      period={60}
                                   />
                               ) : (
                                   "no data"
@@ -613,7 +620,7 @@ export function ReportsCenterCMDashboard(): JSX.Element {
                             header: "summaries",
                             className: () => "votes",
                             render: (X) => (
-                                <CMVoteCountGraph vote_data={X.vote_data["overall"]} period={120} />
+                                <CMVoteCountGraph vote_data={X.vote_data["overall"]} period={60} />
                             ),
                         },
                     ]}
