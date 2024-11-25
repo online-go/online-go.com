@@ -20,6 +20,7 @@ import * as preferences from "@/lib/preferences";
 import * as player_cache from "@/lib/player_cache";
 import * as rengo_utils from "@/lib/rengo_utils";
 
+import { usePreference } from "@/lib/preferences";
 import { del } from "@/lib/requests";
 import { alert } from "@/lib/swal_config";
 import { OgsResizeDetector } from "@/components/OgsResizeDetector";
@@ -73,6 +74,12 @@ export function CustomGames(): JSX.Element {
     const ref_container: React.RefObject<HTMLDivElement> = React.createRef();
     const canvas: HTMLCanvasElement = React.useMemo(() => allocateCanvasOrError(), []);
     const seekgraph = React.useRef<SeekGraph>();
+
+    const [seekGraphVisible, setSeekGraphVisible] = usePreference("show-seek-graph");
+
+    const toggleSeekGraph = () => {
+        setSeekGraphVisible(!seekGraphVisible);
+    };
 
     // Used to not change the challenge list while they are trying to point the mouse at it
     const [freeze_challenge_list, setFreezeChallengeList] = React.useState<boolean>(false);
@@ -463,9 +470,32 @@ export function CustomGames(): JSX.Element {
                     )}
                 </Card>
                 <div className="row">
-                    <h2>{pgettext("Games available to accept", "Available Games")}</h2>
+                    <div className="row header-container">
+                        <h2 className="header-title">
+                            {pgettext("Games available to accept", "Available Games")}
+                        </h2>
+                        <div className="toggle-container" onClick={toggleSeekGraph}>
+                            <div className="toggle-indicator">{seekGraphVisible ? "▼" : "▶"}</div>
+                            <span className="toggle-label">
+                                {seekGraphVisible
+                                    ? pgettext(
+                                          "label for button to hide the graph of available challenges vs rank",
+                                          "Hide plot",
+                                      )
+                                    : pgettext(
+                                          "label for button to show the graph of available challenges vs rank",
+                                          "Show plot",
+                                      )}
+                            </span>
+                        </div>
+                    </div>
 
-                    <div ref={ref_container} className="seek-graph-container">
+                    <div
+                        ref={ref_container}
+                        className={`seek-graph-container ${
+                            seekGraphVisible ? "visible" : "hidden"
+                        }`}
+                    >
                         <OgsResizeDetector onResize={onResize} targetRef={ref_container} />
                         <PersistentElement elt={canvas} />
                     </div>
