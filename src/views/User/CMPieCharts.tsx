@@ -32,7 +32,7 @@ export function CMPieCharts({ user_id, user_moderator_powers }: CMPieChartsProps
             <div className="mod-graph-header">
                 {pgettext(
                     "header for a graph showing breakdown of moderator's vote outcomes",
-                    "vote outcome: summary",
+                    "Summary (all report types)",
                 )}
             </div>
             <UserVoteActionSummary user_id={user_id} />
@@ -46,7 +46,7 @@ export function CMPieCharts({ user_id, user_moderator_powers }: CMPieChartsProps
                             {interpolate(
                                 pgettext(
                                     "header for a graph showing breakdown of moderator's vote outcomes",
-                                    "vote outcomes: {{report_type}}",
+                                    "{{report_type}}",
                                 ),
                                 { report_type },
                             )}
