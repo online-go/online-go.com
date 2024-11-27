@@ -59,7 +59,9 @@ export function AvailableQuickMatches(): JSX.Element {
     }, []);
 
     const available_list = Object.values(available.current).filter(
-        (entry) => entry.player.id !== user.id,
+        (entry) =>
+            entry.player.id !== user.id &&
+            entry.preferences.size_speed_options[0].speed !== "correspondence",
     );
     available_list.sort((a, b) => {
         const a_speed = a.preferences.size_speed_options[0].speed;
@@ -108,11 +110,13 @@ export function AvailableQuickMatches(): JSX.Element {
                         speed =
                             system === "fischer"
                                 ? `${shortDurationString(
-                                      speed_options.initial_time,
-                                  )} + ${shortDurationString(speed_options.time_increment)}`
-                                : `${shortDurationString(speed_options.main_time)} + ${
-                                      speed_options.periods
-                                  }x${shortDurationString(speed_options.period_time)}`;
+                                      speed_options?.initial_time,
+                                  )} + ${shortDurationString(speed_options?.time_increment)}`
+                                : `${shortDurationString(
+                                      speed_options?.main_time,
+                                  )} + ${speed_options?.periods}x${shortDurationString(
+                                      speed_options?.period_time,
+                                  )}`;
                     } catch (e) {
                         console.error(e);
                     }
