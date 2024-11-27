@@ -28,7 +28,15 @@ import * as preferences from "@/lib/preferences";
 import moment from "moment";
 */
 
-export function AvailableQuickMatches(): JSX.Element {
+interface AvailableQuickMatchesProps {
+    lower_rank_diff: number;
+    upper_rank_diff: number;
+}
+
+export function AvailableQuickMatches({
+    lower_rank_diff,
+    upper_rank_diff,
+}: AvailableQuickMatchesProps): JSX.Element {
     const available = React.useRef<{ [uuid: string]: any }>({});
     const refresh = useRefresh();
     const user = useUser();
@@ -58,11 +66,18 @@ export function AvailableQuickMatches(): JSX.Element {
         };
     }, []);
 
-    const available_list = Object.values(available.current).filter(
-        (entry) =>
-            entry.player.id !== user.id &&
-            entry.preferences.size_speed_options[0].speed !== "correspondence",
-    );
+    const available_list = Object.values(available.current).filter((entry) => {
+        return (
+            (user.anonymous ||
+                (entry.player.id !== user.id &&
+                    entry.player.bounded_rank >= user.ranking - lower_rank_diff &&
+                    entry.player.bounded_rank <= user.ranking + upper_rank_diff &&
+                    user.ranking >= entry.player.bounded_rank - entry.preferences.lower_rank_diff &&
+                    user.ranking <=
+                        entry.player.bounded_rank + entry.preferences.upper_rank_diff)) &&
+            entry.preferences.size_speed_options[0].speed !== "correspondence"
+        );
+    });
     available_list.sort((a, b) => {
         const a_speed = a.preferences.size_speed_options[0].speed;
         const b_speed = b.preferences.size_speed_options[0].speed;
@@ -81,7 +96,7 @@ export function AvailableQuickMatches(): JSX.Element {
             <h4>
                 {llm_pgettext(
                     "Active automatch searches",
-                    "Active quick match searches by other players",
+                    "Active quick match searches by other players within your rank range",
                 )}
             </h4>
             <div className="AvailableQuickMatches">

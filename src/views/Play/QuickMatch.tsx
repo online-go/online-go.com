@@ -768,7 +768,10 @@ export function QuickMatch(): JSX.Element {
                     </div>
                 </div>
             </div>
-            <AvailableQuickMatches />
+            <AvailableQuickMatches
+                lower_rank_diff={lower_rank_diff}
+                upper_rank_diff={upper_rank_diff}
+            />
         </>
     );
 }

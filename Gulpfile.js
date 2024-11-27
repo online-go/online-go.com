@@ -3,8 +3,8 @@
 // Which backend server would you like to use today? ...
 let BACKEND = process.env.OGS_BACKEND || "BETA";
 BACKEND = BACKEND.toUpperCase();
-//BACKEND = 'PRODUCTION';
-//BACKEND = 'LOCAL';
+//BACKEND = "PRODUCTION";
+//BACKEND = "LOCAL";
 
 import { spawn, execSync } from "child_process";
 import fs from "fs";
