@@ -44,6 +44,9 @@ export function bot_count() {
     return Object.keys(active_bots).length;
 }
 
+(window as any)["bots"] = bots;
+(window as any)["bots_list"] = bots_list;
+
 socket.on("active-bots", (bots: { [id: number]: User }) => {
     active_bots = bots;
     _bots_list = [];
@@ -51,6 +54,8 @@ socket.on("active-bots", (bots: { [id: number]: User }) => {
         _bots_list.push(bots[id]);
     }
     _bots_list.sort((a, b) => getUserRating(a).rating - getUserRating(b).rating);
+
+    console.log("Active bots: ", _bots_list);
 
     bot_event_emitter.emit("updated");
 });

@@ -45,13 +45,11 @@ export function AvailableQuickMatches({
         socket.send("automatch/available/subscribe", undefined);
 
         function onAdd(entry: any) {
-            console.log("onAdd", entry);
             available.current[entry.uuid] = entry;
             refresh();
         }
 
         function onRemove(uuid: string) {
-            console.log("onRemove", uuid);
             delete available.current[uuid];
             refresh();
         }
