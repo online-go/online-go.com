@@ -111,8 +111,8 @@ const VoteActivityGraph = ({ vote_data }: VoteActivityGraphProps) => {
                 colors={({ id }) => line_colors[id as keyof typeof line_colors]}
                 enableSlices="x"
                 axisBottom={{
-                    format: "%d %b %g",
-                    tickValues: "every 2 weeks",
+                    format: "%b",
+                    tickValues: "every month",
                 }}
                 xFormat="time:%Y-%m-%d"
                 xScale={{
