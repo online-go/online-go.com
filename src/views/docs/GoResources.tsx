@@ -371,6 +371,11 @@ export const GoResources = () => {
                         {scramble(
                             <BasicResource
                                 countries={[en]}
+                                title="Tsumego Hero"
+                                href="http://www.tsumego-hero.com"
+                            />,
+                            <BasicResource
+                                countries={[en]}
                                 title="GoProblems.com"
                                 href="http://www.goproblems.com"
                             />,
@@ -737,6 +742,11 @@ export const GoResources = () => {
                     <dl>
                         <dt>{_("Sites")}</dt>
                         {scramble(
+                            <BasicResource
+                                countries={["fr"]}
+                                title="Jeu de go"
+                                href="https://www.jeudego.org/"
+                            />,
                             <BasicResource
                                 countries={[eu]}
                                 title="Awesome Baduk"
