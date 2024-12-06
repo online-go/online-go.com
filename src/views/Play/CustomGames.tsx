@@ -567,10 +567,8 @@ export function CustomGames(): JSX.Element {
                                             .join(",")}
                                     </span>
 
-                                    <span className={m.time_control.condition + " cell"}>
-                                        {m.time_control.condition === "no-preference"
-                                            ? pgettext("Automatch: no preference", "No preference")
-                                            : timeControlSystemText(m.time_control.value.system)}
+                                    <span className={m.size_speed_options[0].system + " cell"}>
+                                        {timeControlSystemText(m.size_speed_options[0].system)}
                                     </span>
 
                                     <span className={m.handicap.condition + " cell"}>

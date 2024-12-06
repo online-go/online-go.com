@@ -78,6 +78,14 @@ const game_clock_options: OptionWithDescription[] = [
             "Prefer one time setting, but accept the other similarly paced time setting",
         ),
     },
+    {
+        value: "multiple",
+        label: _("Multiple"),
+        description: pgettext(
+            "Game Clock option description for being able to choose between multiple time settings",
+            "Pick multiple acceptable time settings",
+        ),
+    },
 ];
 
 const handicap_options: OptionWithDescription[] = [
@@ -159,6 +167,13 @@ export function QuickMatch(): JSX.Element {
     const cancel_bot_game = React.useRef<() => void>(() => {});
     const [game_clock, setGameClock] = preferences.usePreference("automatch.game-clock");
 
+    const [multiple_sizes, setMultipleSizes] = preferences.usePreference(
+        "automatch.multiple-sizes",
+    );
+    const [multiple_speeds, setMultipleSpeeds] = preferences.usePreference(
+        "automatch.multiple-speeds",
+    );
+
     React.useEffect(() => {
         automatch_manager.on("entry", refresh);
         automatch_manager.on("start", refresh);
@@ -192,9 +207,40 @@ export function QuickMatch(): JSX.Element {
         // Open challenge
         console.log("findMatch", board_size, game_speed);
 
-        const size_speed_options: Array<{ size: Size; speed: Speed }> = [
-            { size: board_size, speed: game_speed },
-        ];
+        const size_speed_options: Array<{
+            size: Size;
+            speed: Speed;
+            system: "fischer" | "byoyomi";
+        }> = [];
+
+        if (game_clock === "exact" || game_clock === "flexible") {
+            size_speed_options.push({
+                size: board_size,
+                speed: game_speed,
+                system: time_control_system,
+            });
+            if (game_clock === "flexible" && game_speed !== "correspondence") {
+                size_speed_options.push({
+                    size: board_size,
+                    speed: game_speed,
+                    system: time_control_system === "fischer" ? "byoyomi" : "fischer",
+                });
+            }
+        } else {
+            for (const size in multiple_sizes) {
+                if (multiple_sizes[size as keyof typeof multiple_sizes]) {
+                    for (const speed_system in multiple_speeds) {
+                        if (multiple_speeds[speed_system as keyof typeof multiple_speeds]) {
+                            const [speed, system] = speed_system.split("-");
+                            size_speed_options.push({ size, speed, system } as any);
+                        }
+                    }
+                }
+            }
+
+            // shuffle the options so we aren't biasing towards the same settings all the time
+            size_speed_options.sort(() => Math.random() - 0.5);
+        }
 
         const preferences: AutomatchPreferences = {
             uuid: uuid(),
@@ -204,12 +250,6 @@ export function QuickMatch(): JSX.Element {
             rules: {
                 condition: "required",
                 value: "japanese",
-            },
-            time_control: {
-                condition: game_clock === "flexible" ? "preferred" : "required",
-                value: {
-                    system: time_control_system,
-                },
             },
             handicap: {
                 condition: handicaps === "standard" ? "preferred" : "required",
@@ -236,6 +276,8 @@ export function QuickMatch(): JSX.Element {
         refresh,
         automatch_manager,
         setCorrespondenceSpinner,
+        multiple_sizes,
+        multiple_speeds,
     ]);
 
     const playComputer = React.useCallback(() => {
@@ -405,6 +447,70 @@ export function QuickMatch(): JSX.Element {
     const search_active =
         !!automatch_manager.active_live_automatcher || correspondence_spinner || bot_spinner;
 
+    function isSizeActive(size: Size) {
+        if (game_clock === "multiple") {
+            return multiple_sizes[size];
+        } else {
+            return board_size === size;
+        }
+    }
+
+    function isSpeedSystemActive(speed: JGOFTimeControlSpeed, system: "fischer" | "byoyomi") {
+        if (game_clock === "multiple") {
+            return multiple_speeds[`${speed as "blitz" | "rapid" | "live"}-${system}`];
+        } else {
+            return game_speed === speed && time_control_system === system;
+        }
+    }
+
+    function toggleSpeedSystem(speed: JGOFTimeControlSpeed, system: "fischer" | "byoyomi") {
+        if (game_clock === "multiple") {
+            const new_speeds = {
+                ...multiple_speeds,
+                [`${speed as "blitz" | "rapid" | "live"}-${system}`]:
+                    !multiple_speeds[`${speed as "blitz" | "rapid" | "live"}-${system}`],
+            };
+            delete (new_speeds as any)["correspondence-fischer"];
+            delete (new_speeds as any)["correspondence-byoyomi"];
+
+            if (Object.values(new_speeds).filter((x) => x).length > 0) {
+                setMultipleSpeeds(new_speeds);
+            }
+        } else {
+            setGameSpeed(speed);
+            setTimeControlSystem(system);
+        }
+    }
+
+    function toggleSize(size: Size) {
+        if (game_clock === "multiple") {
+            const new_sizes = {
+                ...multiple_sizes,
+                [size]: !multiple_sizes[size],
+            };
+
+            if (Object.values(new_sizes).filter((x) => x).length > 0) {
+                setMultipleSizes(new_sizes);
+            }
+        } else {
+            setBoardSize(size);
+        }
+    }
+
+    // nothing selected? Select what we last had selected
+    if (game_clock === "multiple") {
+        if (Object.values(multiple_sizes).filter((x) => x).length === 0) {
+            toggleSize(board_size);
+        }
+        if (Object.values(multiple_speeds).filter((x) => x).length === 0) {
+            if (game_speed !== "correspondence") {
+                toggleSpeedSystem(game_speed, time_control_system);
+            } else {
+                toggleSpeedSystem("rapid", time_control_system);
+            }
+        }
+    }
+
     //  Construction of the pane we need to show...
     return (
         <>
@@ -418,11 +524,11 @@ export function QuickMatch(): JSX.Element {
                     <div style={{ textAlign: "center" }}>
                         {(["9x9", "13x13", "19x19"] as Size[]).map((s) => (
                             <button
-                                className={"btn" + (s === board_size ? " active" : "")}
+                                className={"btn" + (isSizeActive(s) ? " active" : "")}
                                 key={s}
                                 disabled={search_active}
                                 onClick={() => {
-                                    setBoardSize(s);
+                                    toggleSize(s);
                                 }}
                             >
                                 {s}
@@ -455,15 +561,22 @@ export function QuickMatch(): JSX.Element {
                             value={game_clock_options.find((o) => o.value === game_clock)}
                             onChange={(opt) => {
                                 if (opt) {
-                                    setGameClock(opt.value as "flexible" | "exact");
+                                    setGameClock(opt.value as "flexible" | "exact" | "multiple");
+                                    if (opt.value === "multiple") {
+                                        setOpponent("human");
+                                    }
                                 }
                             }}
                             options={game_clock_options}
                             components={{ Option: RenderOptionWithDescription }}
                         />
                     </div>
-
                     <div className="speed-options">
+                        {game_clock === "multiple" && (
+                            <div className="multiple-options-description">
+                                {_("Select all the settings you are comfortable playing with.")}
+                            </div>
+                        )}
                         {(
                             ["blitz", "rapid", "live", "correspondence"] as JGOFTimeControlSpeed[]
                         ).map((speed) => {
@@ -480,16 +593,6 @@ export function QuickMatch(): JSX.Element {
                                 >
                                     <div className="game-speed-title">
                                         <span className="description">{opt.time_estimate}</span>
-                                        {/*
-                                        <span className="description">
-                                            {opt.fischer.time_estimate || opt.time_estimate}
-                                        </span>
-                                        {opt.byoyomi?.time_estimate && (
-                                            <span className="description">
-                                                {opt.byoyomi.time_estimate}
-                                            </span>
-                                        )}
-                                        */}
                                     </div>
                                     <div
                                         className={
@@ -502,15 +605,17 @@ export function QuickMatch(): JSX.Element {
                                         <button
                                             className={
                                                 "time-control-button" +
-                                                (game_speed === speed &&
-                                                time_control_system === "fischer"
+                                                (isSpeedSystemActive(speed, "fischer")
                                                     ? " active"
                                                     : "")
                                             }
-                                            disabled={search_active}
+                                            disabled={
+                                                search_active ||
+                                                (game_clock === "multiple" &&
+                                                    speed === "correspondence")
+                                            }
                                             onClick={() => {
-                                                setGameSpeed(speed);
-                                                setTimeControlSystem("fischer");
+                                                toggleSpeedSystem(speed, "fischer");
                                             }}
                                         >
                                             {shortDurationString(opt.fischer.initial_time)}
@@ -533,14 +638,12 @@ export function QuickMatch(): JSX.Element {
                                                 <button
                                                     className={
                                                         "time-control-button" +
-                                                        (game_speed === speed &&
-                                                        time_control_system === "byoyomi"
+                                                        (isSpeedSystemActive(speed, "byoyomi")
                                                             ? " active"
                                                             : "")
                                                     }
                                                     onClick={() => {
-                                                        setGameSpeed(speed);
-                                                        setTimeControlSystem("byoyomi");
+                                                        toggleSpeedSystem(speed, "byoyomi");
                                                     }}
                                                     disabled={search_active}
                                                 >
@@ -621,10 +724,10 @@ export function QuickMatch(): JSX.Element {
                             className={
                                 "opponent-option-container " +
                                 (opponent === "bot" ? "active" : "") +
-                                (search_active ? " disabled" : "")
+                                (search_active || game_clock === "multiple" ? " disabled" : "")
                             }
                             onClick={() => {
-                                if (search_active) {
+                                if (search_active || game_clock === "multiple") {
                                     return;
                                 }
                                 setOpponent("bot");
