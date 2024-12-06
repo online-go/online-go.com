@@ -41,6 +41,7 @@ export const defaults = {
     "automatch.bot": 0,
     "automatch.lower-rank-diff": 3,
     "automatch.upper-rank-diff": 3,
+    "automatch.show-custom-games": false,
     "board-labeling": "automatic",
     "chat.show-all-global-channels": true,
     "chat.show-all-group-channels": true,

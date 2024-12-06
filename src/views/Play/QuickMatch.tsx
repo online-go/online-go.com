@@ -50,7 +50,6 @@ import { sfx } from "@/lib/sfx";
 import { Link } from "react-router-dom";
 import Select from "react-select";
 import { SPEED_OPTIONS } from "./SPEED_OPTIONS";
-import { AvailableQuickMatches } from "./AvailableQuickMatches";
 
 moment.relativeTimeThreshold("m", 56);
 export interface SelectOption {
@@ -674,6 +673,7 @@ export function QuickMatch(): JSX.Element {
                             minMenuHeight={400}
                             maxMenuHeight={400}
                             menuPlacement="auto"
+                            isDisabled={search_active}
                             onChange={(opt) => {
                                 if (opt) {
                                     setHandicaps(opt.value as "enabled" | "standard" | "disabled");
@@ -768,10 +768,6 @@ export function QuickMatch(): JSX.Element {
                     </div>
                 </div>
             </div>
-            <AvailableQuickMatches
-                lower_rank_diff={lower_rank_diff}
-                upper_rank_diff={upper_rank_diff}
-            />
         </>
     );
 }
