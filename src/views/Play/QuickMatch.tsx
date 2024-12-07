@@ -697,7 +697,7 @@ export function QuickMatch(): JSX.Element {
                                     ) : (
                                         [9, 8, 7, 6, 5, 4, 3, 2, 1, 0].map((v) => (
                                             <option key={v} value={v}>
-                                                {rankString(user.ranking - v)}
+                                                {/*rankString(user.ranking - v) */}- {v}
                                             </option>
                                         ))
                                     )}
@@ -713,12 +713,13 @@ export function QuickMatch(): JSX.Element {
                                     ) : (
                                         [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((v) => (
                                             <option key={v} value={v}>
-                                                {rankString(user.ranking + v)}
+                                                {/*rankString(user.ranking + v)*/}+ {v}
                                             </option>
                                         ))
                                     )}
                                 </select>
                             </div>
+                            <div className="opponent-rank-range-description">{_("Rank range")}</div>
                         </div>
                         <div
                             className={
