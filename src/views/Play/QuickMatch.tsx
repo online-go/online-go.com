@@ -511,6 +511,20 @@ export function QuickMatch(): JSX.Element {
         }
     }
 
+    const selected_size_count =
+        game_clock === "multiple" ? Object.values(multiple_sizes).filter((x) => x).length : 1;
+
+    const min_selected_size = multiple_sizes["9x9"]
+        ? "9x9"
+        : multiple_sizes["13x13"]
+          ? "13x13"
+          : "19x19";
+    const max_selected_size = multiple_sizes["19x19"]
+        ? "19x19"
+        : multiple_sizes["13x13"]
+          ? "13x13"
+          : "9x9";
+
     //  Construction of the pane we need to show...
     return (
         <>
@@ -580,7 +594,14 @@ export function QuickMatch(): JSX.Element {
                         {(
                             ["blitz", "rapid", "live", "correspondence"] as JGOFTimeControlSpeed[]
                         ).map((speed) => {
-                            const opt = SPEED_OPTIONS[board_size as any][speed];
+                            const opt =
+                                SPEED_OPTIONS[
+                                    game_clock === "multiple"
+                                        ? min_selected_size
+                                        : (board_size as any)
+                                ][speed];
+                            const min_opt = SPEED_OPTIONS[min_selected_size as any][speed];
+                            const max_opt = SPEED_OPTIONS[max_selected_size as any][speed];
 
                             return (
                                 <div
@@ -592,7 +613,16 @@ export function QuickMatch(): JSX.Element {
                                     key={speed}
                                 >
                                     <div className="game-speed-title">
-                                        <span className="description">{opt.time_estimate}</span>
+                                        <span className="description">
+                                            {selected_size_count > 1 && speed !== "correspondence"
+                                                ? `${
+                                                      min_opt.time_estimate
+                                                  } - ${max_opt.time_estimate.replace(
+                                                      /\u223c/,
+                                                      "",
+                                                  )}`
+                                                : opt.time_estimate}
+                                        </span>
                                     </div>
                                     <div
                                         className={
@@ -618,7 +648,16 @@ export function QuickMatch(): JSX.Element {
                                                 toggleSpeedSystem(speed, "fischer");
                                             }}
                                         >
-                                            {shortDurationString(opt.fischer.initial_time)}
+                                            {selected_size_count > 1 && speed !== "correspondence"
+                                                ? `${shortDurationString(
+                                                      min_opt.fischer.initial_time,
+                                                  ).replace(
+                                                      /[^0-9]+/g,
+                                                      "",
+                                                  )} - ${shortDurationString(
+                                                      max_opt.fischer.initial_time,
+                                                  )}`
+                                                : shortDurationString(opt.fischer.initial_time)}
                                             {" + "}
                                             {shortDurationString(opt.fischer.time_increment)}
                                         </button>
@@ -647,7 +686,19 @@ export function QuickMatch(): JSX.Element {
                                                     }}
                                                     disabled={search_active}
                                                 >
-                                                    {shortDurationString(opt.byoyomi.main_time)}
+                                                    {selected_size_count > 1 &&
+                                                    speed !== "correspondence"
+                                                        ? `${shortDurationString(
+                                                              min_opt.byoyomi!.main_time,
+                                                          ).replace(
+                                                              /[^0-9]+/g,
+                                                              "",
+                                                          )} - ${shortDurationString(
+                                                              max_opt.byoyomi!.main_time,
+                                                          )}`
+                                                        : shortDurationString(
+                                                              opt.byoyomi.main_time,
+                                                          )}
                                                     {" + "}
                                                     {opt.byoyomi.periods}x
                                                     {shortDurationString(
