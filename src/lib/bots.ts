@@ -55,6 +55,7 @@ export function bot_count() {
 }
 
 interface BotChallengeOptions {
+    rank: number;
     width: number;
     height: number;
     speed: Speed;
@@ -138,6 +139,22 @@ export function getAcceptableTimeSetting(
                 );
                 return [null, "Board size not accepted"];
             }
+        }
+
+        /* Check allowed rank */
+        function rankNumber(rank: string) {
+            if (rank.endsWith("d") || rank.endsWith("D")) {
+                return parseInt(rank) + 30;
+            } else {
+                return 30 - parseInt(rank);
+            }
+        }
+
+        if (
+            options.rank < rankNumber(bot.config.allowed_rank_ranges[0]) ||
+            options.rank > rankNumber(bot.config.allowed_rank_ranges[1])
+        ) {
+            return [null, "Rank not accepted"];
         }
 
         /* Check our ranked setting */

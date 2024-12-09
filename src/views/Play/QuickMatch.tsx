@@ -330,6 +330,7 @@ export function QuickMatch(): JSX.Element {
 
     const playComputer = React.useCallback(() => {
         const settings = {
+            rank: user.ranking,
             width: parseInt(board_size),
             height: parseInt(board_size),
             ranked: true,
@@ -594,6 +595,7 @@ export function QuickMatch(): JSX.Element {
     if (game_clock !== "multiple") {
         available_bots = available_bots.filter((b) => {
             const settings = {
+                rank: user.ranking,
                 width: parseInt(board_size),
                 height: parseInt(board_size),
                 ranked: true,
