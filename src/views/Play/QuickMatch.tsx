@@ -26,15 +26,16 @@ import {
     shortDurationString,
     Size,
     Speed,
+    User,
 } from "goban";
 import { _, pgettext } from "@/lib/translate";
 import { automatch_manager } from "@/lib/automatch_manager";
-import { bot_event_emitter, bots_list } from "@/lib/bots";
+import { bot_event_emitter, bots_list, getAcceptableTimeSetting } from "@/lib/bots";
 import { alert } from "@/lib/swal_config";
 import { useRefresh, useUser } from "@/lib/hooks";
 //import { Toggle } from "@/components/Toggle";
 import { MiniGoban } from "@/components/MiniGoban";
-import { getUserRating, rankString } from "@/lib/rank_utils";
+import { rankString } from "@/lib/rank_utils";
 import { errorAlerter, uuid } from "@/lib/misc";
 import { LoadingButton } from "@/components/LoadingButton";
 import { post } from "@/lib/requests";
@@ -48,8 +49,9 @@ import { notification_manager, NotificationManagerEvents } from "@/components/No
 import { socket } from "@/lib/sockets";
 import { sfx } from "@/lib/sfx";
 import { Link } from "react-router-dom";
-import Select from "react-select";
+import Select, { components } from "react-select";
 import { SPEED_OPTIONS } from "./SPEED_OPTIONS";
+import { PlayerIcon } from "@/components/PlayerIcon";
 
 moment.relativeTimeThreshold("m", 56);
 export interface SelectOption {
@@ -137,6 +139,53 @@ const RenderOptionWithDescription = (props: {
     );
 };
 
+const RenderBotOption = (props: {
+    data: User;
+    innerProps: any;
+    innerRef: any;
+    isFocused: boolean;
+    isSelected: boolean;
+}) => {
+    const opt = props.data;
+    //console.log(opt.username, props.isSelected);
+    return (
+        <div
+            ref={props.innerRef}
+            {...props.innerProps}
+            className={"option" + (props.isFocused ? " focused" : "")}
+        >
+            <div className="option-label">
+                <PlayerIcon user={opt} size={32} style={{ width: "32px", height: "32px" }} />
+                {opt.username}
+            </div>
+            <div className="option-description">
+                {rankString(opt.ranking || 0)}
+                <a target="_blank" href={`/user/view/${opt.id}`} title={_("Selected AI profile")}>
+                    <i className="fa fa-external-link" />
+                </a>
+            </div>
+        </div>
+    );
+};
+
+const RenderBotValue = (props: any) => {
+    const opt = props.data;
+    return (
+        <components.SingleValue {...props}>
+            <PlayerIcon user={opt} size={32} style={{ width: "32px", height: "32px" }} />
+            {opt.username}
+        </components.SingleValue>
+    );
+};
+
+/*
+const RenderBotControl = (props: { data: User; ...any }) => {
+    const opt = props.data;
+    console.log(props);
+    return <components.Control {...props}>{opt.username}</components.Control>;
+};
+*/
+
 const select_styles = {
     menu: ({ ...css }) => ({
         ...css,
@@ -160,7 +209,6 @@ export function QuickMatch(): JSX.Element {
     const [upper_rank_diff, setUpperRankDiff] = preferences.usePreference(
         "automatch.upper-rank-diff",
     );
-    const bot_select = React.useRef<HTMLSelectElement>(null);
 
     const [correspondence_spinner, setCorrespondenceSpinner] = React.useState(false);
     const [bot_spinner, setBotSpinner] = React.useState(false);
@@ -281,6 +329,22 @@ export function QuickMatch(): JSX.Element {
     ]);
 
     const playComputer = React.useCallback(() => {
+        const settings = {
+            width: parseInt(board_size),
+            height: parseInt(board_size),
+            ranked: true,
+            handicap: handicaps === "disabled" ? false : true,
+            system: time_control_system,
+            speed: game_speed,
+            [time_control_system]: SPEED_OPTIONS[board_size][game_speed][time_control_system],
+        };
+        const [options, message] = getAcceptableTimeSetting(selected_bot, settings);
+        if (!options) {
+            console.error("Failed to find acceptable time setting", message);
+            void alert.fire(_("Please select a bot"));
+            return;
+        }
+
         const challenge: ChallengeDetails = {
             initialized: false,
             min_ranking: -99,
@@ -336,7 +400,7 @@ export function QuickMatch(): JSX.Element {
             },
         };
 
-        const bot_id = bot_select.current?.value || selected_bot;
+        const bot_id = selected_bot;
         if (!bot_id) {
             void alert.fire(_("Please select a bot"));
             return;
@@ -525,6 +589,57 @@ export function QuickMatch(): JSX.Element {
           ? "13x13"
           : "9x9";
 
+    let available_bots = bots_list().filter((b) => b.id > 0);
+
+    if (game_clock !== "multiple") {
+        available_bots = available_bots.filter((b) => {
+            const settings = {
+                width: parseInt(board_size),
+                height: parseInt(board_size),
+                ranked: true,
+                handicap: handicaps === "disabled" ? false : true,
+                system: time_control_system,
+                speed: game_speed,
+                [time_control_system]: SPEED_OPTIONS[board_size][game_speed][time_control_system],
+            };
+            const [options, message] = getAcceptableTimeSetting(b, settings);
+            if (!options) {
+                console.debug(b.username, message, settings);
+            }
+
+            if (options) {
+                return true;
+            }
+
+            return false;
+        });
+    }
+
+    /*
+    if (available_bots.length > 0 && selected_bot) {
+        if (available_bots.filter((bot) => bot.id === selected_bot).length === 0) {
+            console.log("selected bot not available, should be clearing");
+            if (selected_bot) {
+                console.log("cleared");
+                old_selected_bot.current = selected_bot;
+                setSelectedBot(0);
+            }
+        }
+    } else {
+        if (available_bots.length > 0 && selected_bot === 0) {
+            if (
+                old_selected_bot.current &&
+                available_bots.filter((bot) => bot.id === old_selected_bot.current).length > 0
+            ) {
+                setSelectedBot(old_selected_bot.current);
+            }
+        }
+    }
+    */
+
+    const selected_bot_value = available_bots.find((b) => b.id === selected_bot) || undefined;
+
+    console.log("selected bot ", selected_bot_value);
     //  Construction of the pane we need to show...
     return (
         <>
@@ -788,29 +903,40 @@ export function QuickMatch(): JSX.Element {
                             <div className="opponent-title">
                                 {pgettext("Play a computer opponent", "Computer")}
                             </div>
-                            <div className="computer-select">
-                                <select
-                                    id="challenge-ai"
-                                    ref={bot_select}
-                                    value={selected_bot}
-                                    onChange={(ev) => setSelectedBot(parseInt(ev.target.value))}
-                                    required={true}
-                                    disabled={search_active}
-                                >
-                                    {bots_list().map((bot, idx) => (
-                                        <option key={idx} value={bot.id}>
-                                            {bot.username} ({rankString(getUserRating(bot).rank)})
-                                        </option>
-                                    ))}
-                                </select>
-                                &nbsp;
-                                <a
-                                    href={`/user/view/${selected_bot}`}
-                                    target="_blank"
-                                    title={_("Selected AI profile")}
-                                >
-                                    <i className="fa fa-external-link" />
-                                </a>
+                            <div
+                                className={
+                                    "computer-select " +
+                                    (available_bots.length > 0 &&
+                                    opponent === "bot" &&
+                                    (!selected_bot || !selected_bot_value)
+                                        ? "error"
+                                        : "")
+                                }
+                            >
+                                <Select
+                                    classNamePrefix="ogs-react-select"
+                                    styles={select_styles}
+                                    value={selected_bot_value}
+                                    isSearchable={false}
+                                    minMenuHeight={400}
+                                    maxMenuHeight={400}
+                                    menuPlacement="auto"
+                                    isDisabled={search_active}
+                                    onChange={(opt) => {
+                                        if (opt) {
+                                            setSelectedBot(opt.id);
+                                        }
+                                    }}
+                                    options={[
+                                        {
+                                            options: available_bots,
+                                        },
+                                    ]}
+                                    components={{
+                                        Option: RenderBotOption,
+                                        SingleValue: RenderBotValue,
+                                    }}
+                                />
                             </div>
                         </div>
                     </div>
