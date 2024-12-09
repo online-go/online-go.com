@@ -643,7 +643,7 @@ export function QuickMatch(): JSX.Element {
 
     const selected_bot_value = available_bots.find((b) => b.id === selected_bot) || undefined;
 
-    console.log("selected bot ", selected_bot_value);
+    //console.log("selected bot ", selected_bot_value);
     //  Construction of the pane we need to show...
     return (
         <>
