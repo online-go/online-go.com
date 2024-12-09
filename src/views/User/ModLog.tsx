@@ -89,12 +89,12 @@ export function ModLog(props: ModLogProps): JSX.Element {
                                         </div>
                                     ) : null}
                                     <div>{X.incident_report.url}</div>
-                                    <div>{X.incident_report.system_note}</div>
                                     <div>{X.incident_report.reporter_note}</div>
                                     {X.incident_report.moderator ? (
                                         <Player user={X.incident_report.moderator} />
                                     ) : null}
                                     <i> {X.incident_report.moderator_note}</i>
+                                    <div>{highlight_cm_action(X.incident_report.system_note)}</div>
                                 </div>
                             )}
                             <pre>{chat_markup(X.note, undefined, 1024 * 128)}</pre>
@@ -104,4 +104,18 @@ export function ModLog(props: ModLogProps): JSX.Element {
             ]}
         />
     );
+}
+
+function highlight_cm_action(text: string): JSX.Element | string {
+    const match = text.match(/Actioned by community vote: (\w+)/);
+    if (match) {
+        const [prefix, action] = text.split(/Actioned by community vote: /);
+        return (
+            <>
+                {prefix}
+                Actioned by community vote: <span className="cm-action">{action}</span>
+            </>
+        );
+    }
+    return text;
 }
