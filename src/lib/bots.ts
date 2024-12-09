@@ -115,29 +115,45 @@ export function getAcceptableTimeSetting(
         }
 
         /* Check the board size */
-        if (
-            bot.config.allowed_board_sizes.length === 1 &&
-            bot.config.allowed_board_sizes[0] === 0
-        ) {
-            // 0 means any board size, so OK
-        } else {
-            // If the bot doesn't accept all board sizes, non square are rejected
+        if (bot.config.allowed_board_sizes === "all") {
+            // whatever is allowed
+        } else if (bot.config.allowed_board_sizes === "square") {
             if (options.width !== options.height) {
                 return [null, "Board size must be square"];
-            }
-
-            let found = false;
-            for (const size of bot.config.allowed_board_sizes) {
-                if (size === options.width) {
-                    found = true;
-                    break;
+            } else if (typeof bot.config.allowed_board_sizes === "number") {
+                if (options.width !== options.height) {
+                    return [null, "Board size must be square"];
                 }
-            }
-            if (!found) {
-                console.log(
-                    `Bot ${bot.username} doesn't accept board size ${options.width}x${options.height}`,
-                );
-                return [null, "Board size not accepted"];
+                if (options.width !== bot.config.allowed_board_sizes) {
+                    return [null, "Board size not accepted"];
+                }
+            } else if (
+                Array.isArray(bot.config.allowed_board_sizes) &&
+                bot.config.allowed_board_sizes.length === 1 &&
+                bot.config.allowed_board_sizes[0] === 0
+            ) {
+                // 0 means any board size too..
+            } else {
+                // If the bot doesn't accept all board sizes, non square are rejected
+                if (options.width !== options.height) {
+                    return [null, "Board size must be square"];
+                }
+
+                let found = false;
+                if (Array.isArray(bot.config.allowed_board_sizes)) {
+                    for (const size of bot.config.allowed_board_sizes) {
+                        if (size === options.width) {
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+                if (!found) {
+                    console.log(
+                        `Bot ${bot.username} doesn't accept board size ${options.width}x${options.height}`,
+                    );
+                    return [null, "Board size not accepted"];
+                }
             }
         }
 
@@ -151,8 +167,8 @@ export function getAcceptableTimeSetting(
         }
 
         if (
-            options.rank < rankNumber(bot.config.allowed_rank_ranges[0]) ||
-            options.rank > rankNumber(bot.config.allowed_rank_ranges[1])
+            options.rank < rankNumber(bot.config?.allowed_rank_range[0]) ||
+            options.rank > rankNumber(bot.config?.allowed_rank_range[1])
         ) {
             return [null, "Rank not accepted"];
         }
@@ -255,12 +271,15 @@ export function getAcceptableTimeSetting(
             return [{ ...options, _config_version: bot.config._config_version }, null];
         }
 
-        for (const speed of ["blitz", "rapid", "live", "correspondence"] as Speed[]) {
-            if (isInRange(options.system, bot.config[`allowed_${speed}_settings`])) {
-                return [
-                    { ...options, speed, _config_version: bot.config._config_version },
-                    `Speed setting adjusted to ${speed}`,
-                ];
+        if (bot.config._config_version === 1) {
+            // v1 bots didn't have rapid settings, but we map that to live settings on the server
+            for (const speed of ["live"] as Speed[]) {
+                if (isInRange(options.system, bot.config[`allowed_${speed}_settings`])) {
+                    return [
+                        { ...options, speed, _config_version: bot.config._config_version },
+                        `Speed setting adjusted to ${speed}`,
+                    ];
+                }
             }
         }
 

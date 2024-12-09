@@ -604,12 +604,14 @@ export function QuickMatch(): JSX.Element {
                 speed: game_speed,
                 [time_control_system]: SPEED_OPTIONS[board_size][game_speed][time_control_system],
             };
-            const [options, message] = getAcceptableTimeSetting(b, settings);
+            const [options, _message] = getAcceptableTimeSetting(b, settings);
+            /*
             if (!options) {
                 console.debug(b.username, message, settings);
             }
+            */
 
-            if (options) {
+            if (options && options._config_version && options._config_version > 0) {
                 return true;
             }
 
