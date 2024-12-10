@@ -27,14 +27,14 @@ import {
     Size,
     Speed,
 } from "goban";
-import { _, pgettext } from "@/lib/translate";
+import { _, llm_pgettext, pgettext } from "@/lib/translate";
 import { automatch_manager } from "@/lib/automatch_manager";
-import { bot_event_emitter, bots_list } from "@/lib/bots";
+import { Bot, bot_event_emitter, bots_list, getAcceptableTimeSetting } from "@/lib/bots";
 import { alert } from "@/lib/swal_config";
 import { useRefresh, useUser } from "@/lib/hooks";
 //import { Toggle } from "@/components/Toggle";
 import { MiniGoban } from "@/components/MiniGoban";
-import { getUserRating, rankString } from "@/lib/rank_utils";
+import { rankString } from "@/lib/rank_utils";
 import { errorAlerter, uuid } from "@/lib/misc";
 import { LoadingButton } from "@/components/LoadingButton";
 import { post } from "@/lib/requests";
@@ -48,9 +48,9 @@ import { notification_manager, NotificationManagerEvents } from "@/components/No
 import { socket } from "@/lib/sockets";
 import { sfx } from "@/lib/sfx";
 import { Link } from "react-router-dom";
-import Select from "react-select";
+import Select, { components } from "react-select";
 import { SPEED_OPTIONS } from "./SPEED_OPTIONS";
-import { AvailableQuickMatches } from "./AvailableQuickMatches";
+import { PlayerIcon } from "@/components/PlayerIcon";
 
 moment.relativeTimeThreshold("m", 56);
 export interface SelectOption {
@@ -77,6 +77,14 @@ const game_clock_options: OptionWithDescription[] = [
         description: pgettext(
             "Game Clock option description for Flexible",
             "Prefer one time setting, but accept the other similarly paced time setting",
+        ),
+    },
+    {
+        value: "multiple",
+        label: _("Multiple"),
+        description: pgettext(
+            "Game Clock option description for being able to choose between multiple time settings",
+            "Pick multiple acceptable time settings",
         ),
     },
 ];
@@ -130,6 +138,57 @@ const RenderOptionWithDescription = (props: {
     );
 };
 
+const RenderBotOption = (props: {
+    data: Bot & { disabled?: string };
+    innerProps: any;
+    innerRef: any;
+    isFocused: boolean;
+    isSelected: boolean;
+}) => {
+    const opt = props.data;
+    //console.log(opt.username, props.isSelected);
+    return (
+        <div
+            ref={props.innerRef}
+            {...props.innerProps}
+            className={
+                "option" +
+                (props.isFocused ? " focused" : "") +
+                (props.data.disabled ? " disabled" : "")
+            }
+        >
+            <div className="option-label">
+                <span>
+                    <PlayerIcon user={opt} size={32} style={{ width: "32px", height: "32px" }} />
+                    {opt.username} ({rankString(opt.ranking || 0)})
+                </span>
+                <span>
+                    <a
+                        target="_blank"
+                        href={`/user/view/${opt.id}`}
+                        title={_("Selected AI profile")}
+                    >
+                        <i className="fa fa-external-link" />
+                    </a>
+                </span>
+            </div>
+            <div className="option-description">
+                {props.data.disabled ? props.data.disabled : ""}
+            </div>
+        </div>
+    );
+};
+
+const RenderBotValue = (props: any) => {
+    const opt = props.data;
+    return (
+        <components.SingleValue {...props}>
+            <PlayerIcon user={opt} size={32} style={{ width: "32px", height: "32px" }} />
+            {opt.username} ({rankString(opt.ranking || 0)})
+        </components.SingleValue>
+    );
+};
+
 const select_styles = {
     menu: ({ ...css }) => ({
         ...css,
@@ -153,12 +212,18 @@ export function QuickMatch(): JSX.Element {
     const [upper_rank_diff, setUpperRankDiff] = preferences.usePreference(
         "automatch.upper-rank-diff",
     );
-    const bot_select = React.useRef<HTMLSelectElement>(null);
 
     const [correspondence_spinner, setCorrespondenceSpinner] = React.useState(false);
     const [bot_spinner, setBotSpinner] = React.useState(false);
     const cancel_bot_game = React.useRef<() => void>(() => {});
     const [game_clock, setGameClock] = preferences.usePreference("automatch.game-clock");
+
+    const [multiple_sizes, setMultipleSizes] = preferences.usePreference(
+        "automatch.multiple-sizes",
+    );
+    const [multiple_speeds, setMultipleSpeeds] = preferences.usePreference(
+        "automatch.multiple-speeds",
+    );
 
     React.useEffect(() => {
         automatch_manager.on("entry", refresh);
@@ -193,9 +258,40 @@ export function QuickMatch(): JSX.Element {
         // Open challenge
         console.log("findMatch", board_size, game_speed);
 
-        const size_speed_options: Array<{ size: Size; speed: Speed }> = [
-            { size: board_size, speed: game_speed },
-        ];
+        const size_speed_options: Array<{
+            size: Size;
+            speed: Speed;
+            system: "fischer" | "byoyomi";
+        }> = [];
+
+        if (game_clock === "exact" || game_clock === "flexible") {
+            size_speed_options.push({
+                size: board_size,
+                speed: game_speed,
+                system: time_control_system,
+            });
+            if (game_clock === "flexible" && game_speed !== "correspondence") {
+                size_speed_options.push({
+                    size: board_size,
+                    speed: game_speed,
+                    system: time_control_system === "fischer" ? "byoyomi" : "fischer",
+                });
+            }
+        } else {
+            for (const size in multiple_sizes) {
+                if (multiple_sizes[size as keyof typeof multiple_sizes]) {
+                    for (const speed_system in multiple_speeds) {
+                        if (multiple_speeds[speed_system as keyof typeof multiple_speeds]) {
+                            const [speed, system] = speed_system.split("-");
+                            size_speed_options.push({ size, speed, system } as any);
+                        }
+                    }
+                }
+            }
+
+            // shuffle the options so we aren't biasing towards the same settings all the time
+            size_speed_options.sort(() => Math.random() - 0.5);
+        }
 
         const preferences: AutomatchPreferences = {
             uuid: uuid(),
@@ -205,12 +301,6 @@ export function QuickMatch(): JSX.Element {
             rules: {
                 condition: "required",
                 value: "japanese",
-            },
-            time_control: {
-                condition: game_clock === "flexible" ? "preferred" : "required",
-                value: {
-                    system: time_control_system,
-                },
             },
             handicap: {
                 condition: handicaps === "standard" ? "preferred" : "required",
@@ -237,9 +327,28 @@ export function QuickMatch(): JSX.Element {
         refresh,
         automatch_manager,
         setCorrespondenceSpinner,
+        multiple_sizes,
+        multiple_speeds,
     ]);
 
     const playComputer = React.useCallback(() => {
+        const settings = {
+            rank: user.ranking,
+            width: parseInt(board_size),
+            height: parseInt(board_size),
+            ranked: true,
+            handicap: handicaps === "disabled" ? false : true,
+            system: time_control_system,
+            speed: game_speed,
+            [time_control_system]: SPEED_OPTIONS[board_size][game_speed][time_control_system],
+        };
+        const [options, message] = getAcceptableTimeSetting(selected_bot, settings);
+        if (!options) {
+            console.error("Failed to find acceptable time setting", message);
+            void alert.fire(_("Please select a bot"));
+            return;
+        }
+
         const challenge: ChallengeDetails = {
             initialized: false,
             min_ranking: -99,
@@ -295,7 +404,7 @@ export function QuickMatch(): JSX.Element {
             },
         };
 
-        const bot_id = bot_select.current?.value || selected_bot;
+        const bot_id = selected_bot;
         if (!bot_id) {
             void alert.fire(_("Please select a bot"));
             return;
@@ -406,7 +515,126 @@ export function QuickMatch(): JSX.Element {
     const search_active =
         !!automatch_manager.active_live_automatcher || correspondence_spinner || bot_spinner;
 
-    //  Construction of the pane we need to show...
+    function isSizeActive(size: Size) {
+        if (game_clock === "multiple") {
+            return multiple_sizes[size];
+        } else {
+            return board_size === size;
+        }
+    }
+
+    function isSpeedSystemActive(speed: JGOFTimeControlSpeed, system: "fischer" | "byoyomi") {
+        if (game_clock === "multiple") {
+            return multiple_speeds[`${speed as "blitz" | "rapid" | "live"}-${system}`];
+        } else {
+            return game_speed === speed && time_control_system === system;
+        }
+    }
+
+    function toggleSpeedSystem(speed: JGOFTimeControlSpeed, system: "fischer" | "byoyomi") {
+        if (game_clock === "multiple") {
+            const new_speeds = {
+                ...multiple_speeds,
+                [`${speed as "blitz" | "rapid" | "live"}-${system}`]:
+                    !multiple_speeds[`${speed as "blitz" | "rapid" | "live"}-${system}`],
+            };
+            delete (new_speeds as any)["correspondence-fischer"];
+            delete (new_speeds as any)["correspondence-byoyomi"];
+
+            if (Object.values(new_speeds).filter((x) => x).length > 0) {
+                setMultipleSpeeds(new_speeds);
+            }
+        } else {
+            setGameSpeed(speed);
+            setTimeControlSystem(system);
+        }
+    }
+
+    function toggleSize(size: Size) {
+        if (game_clock === "multiple") {
+            const new_sizes = {
+                ...multiple_sizes,
+                [size]: !multiple_sizes[size],
+            };
+
+            if (Object.values(new_sizes).filter((x) => x).length > 0) {
+                setMultipleSizes(new_sizes);
+            }
+        } else {
+            setBoardSize(size);
+        }
+    }
+
+    // nothing selected? Select what we last had selected
+    if (game_clock === "multiple") {
+        if (Object.values(multiple_sizes).filter((x) => x).length === 0) {
+            toggleSize(board_size);
+        }
+        if (Object.values(multiple_speeds).filter((x) => x).length === 0) {
+            if (game_speed !== "correspondence") {
+                toggleSpeedSystem(game_speed, time_control_system);
+            } else {
+                toggleSpeedSystem("rapid", time_control_system);
+            }
+        }
+    }
+
+    const selected_size_count =
+        game_clock === "multiple" ? Object.values(multiple_sizes).filter((x) => x).length : 1;
+
+    const min_selected_size = multiple_sizes["9x9"]
+        ? "9x9"
+        : multiple_sizes["13x13"]
+          ? "13x13"
+          : "19x19";
+    const max_selected_size = multiple_sizes["19x19"]
+        ? "19x19"
+        : multiple_sizes["13x13"]
+          ? "13x13"
+          : "9x9";
+
+    let available_bots: (Bot & { disabled?: string })[] = bots_list().filter((b) => b.id > 0);
+
+    if (game_clock !== "multiple") {
+        available_bots = available_bots.filter((b) => {
+            const settings = {
+                rank: user.ranking,
+                width: parseInt(board_size),
+                height: parseInt(board_size),
+                ranked: true,
+                handicap: handicaps === "disabled" ? false : true,
+                system: time_control_system,
+                speed: game_speed,
+                [time_control_system]: SPEED_OPTIONS[board_size][game_speed][time_control_system],
+            };
+            const [options, message] = getAcceptableTimeSetting(b, settings);
+            if (!options) {
+                b.disabled = message || undefined;
+            } else if (options && options._config_version && options._config_version === 0) {
+                b.disabled = llm_pgettext(
+                    "Bot is not configured correctly",
+                    "Bot is not configured correctly",
+                );
+            } else {
+                b.disabled = undefined;
+            }
+
+            return true;
+        });
+    }
+
+    available_bots.sort((a, b) => {
+        if (a.disabled && !b.disabled) {
+            return 1;
+        }
+        if (b.disabled && !a.disabled) {
+            return -1;
+        }
+        return (a.ranking || 0) - (b.ranking || 0);
+    });
+
+    const selected_bot_value = available_bots.find((b) => b.id === selected_bot) || undefined;
+
     return (
         <>
             <div id="QuickMatch">
@@ -419,11 +647,11 @@ export function QuickMatch(): JSX.Element {
                     <div style={{ textAlign: "center" }}>
                         {(["9x9", "13x13", "19x19"] as Size[]).map((s) => (
                             <button
-                                className={"btn" + (s === board_size ? " active" : "")}
+                                className={"btn" + (isSizeActive(s) ? " active" : "")}
                                 key={s}
                                 disabled={search_active}
                                 onClick={() => {
-                                    setBoardSize(s);
+                                    toggleSize(s);
                                 }}
                             >
                                 {s}
@@ -456,19 +684,33 @@ export function QuickMatch(): JSX.Element {
                             value={game_clock_options.find((o) => o.value === game_clock)}
                             onChange={(opt) => {
                                 if (opt) {
-                                    setGameClock(opt.value as "flexible" | "exact");
+                                    setGameClock(opt.value as "flexible" | "exact" | "multiple");
+                                    if (opt.value === "multiple") {
+                                        setOpponent("human");
+                                    }
                                 }
                             }}
                             options={game_clock_options}
                             components={{ Option: RenderOptionWithDescription }}
                         />
                     </div>
-
                     <div className="speed-options">
+                        {game_clock === "multiple" && (
+                            <div className="multiple-options-description">
+                                {_("Select all the settings you are comfortable playing with.")}
+                            </div>
+                        )}
                         {(
                             ["blitz", "rapid", "live", "correspondence"] as JGOFTimeControlSpeed[]
                         ).map((speed) => {
-                            const opt = SPEED_OPTIONS[board_size as any][speed];
+                            const opt =
+                                SPEED_OPTIONS[
+                                    game_clock === "multiple"
+                                        ? min_selected_size
+                                        : (board_size as any)
+                                ][speed];
+                            const min_opt = SPEED_OPTIONS[min_selected_size as any][speed];
+                            const max_opt = SPEED_OPTIONS[max_selected_size as any][speed];
 
                             return (
                                 <div
@@ -480,17 +722,16 @@ export function QuickMatch(): JSX.Element {
                                     key={speed}
                                 >
                                     <div className="game-speed-title">
-                                        <span className="description">{opt.time_estimate}</span>
-                                        {/*
                                         <span className="description">
-                                            {opt.fischer.time_estimate || opt.time_estimate}
+                                            {selected_size_count > 1 && speed !== "correspondence"
+                                                ? `${
+                                                      min_opt.time_estimate
+                                                  } - ${max_opt.time_estimate.replace(
+                                                      /\u223c/,
+                                                      "",
+                                                  )}`
+                                                : opt.time_estimate}
                                         </span>
-                                        {opt.byoyomi?.time_estimate && (
-                                            <span className="description">
-                                                {opt.byoyomi.time_estimate}
-                                            </span>
-                                        )}
-                                        */}
                                     </div>
                                     <div
                                         className={
@@ -503,18 +744,29 @@ export function QuickMatch(): JSX.Element {
                                         <button
                                             className={
                                                 "time-control-button" +
-                                                (game_speed === speed &&
-                                                time_control_system === "fischer"
+                                                (isSpeedSystemActive(speed, "fischer")
                                                     ? " active"
                                                     : "")
                                             }
-                                            disabled={search_active}
+                                            disabled={
+                                                search_active ||
+                                                (game_clock === "multiple" &&
+                                                    speed === "correspondence")
+                                            }
                                             onClick={() => {
-                                                setGameSpeed(speed);
-                                                setTimeControlSystem("fischer");
+                                                toggleSpeedSystem(speed, "fischer");
                                             }}
                                         >
-                                            {shortDurationString(opt.fischer.initial_time)}
+                                            {selected_size_count > 1 && speed !== "correspondence"
+                                                ? `${shortDurationString(
+                                                      min_opt.fischer.initial_time,
+                                                  ).replace(
+                                                      /[^0-9]+/g,
+                                                      "",
+                                                  )} - ${shortDurationString(
+                                                      max_opt.fischer.initial_time,
+                                                  )}`
+                                                : shortDurationString(opt.fischer.initial_time)}
                                             {" + "}
                                             {shortDurationString(opt.fischer.time_increment)}
                                         </button>
@@ -534,18 +786,28 @@ export function QuickMatch(): JSX.Element {
                                                 <button
                                                     className={
                                                         "time-control-button" +
-                                                        (game_speed === speed &&
-                                                        time_control_system === "byoyomi"
+                                                        (isSpeedSystemActive(speed, "byoyomi")
                                                             ? " active"
                                                             : "")
                                                     }
                                                     onClick={() => {
-                                                        setGameSpeed(speed);
-                                                        setTimeControlSystem("byoyomi");
+                                                        toggleSpeedSystem(speed, "byoyomi");
                                                     }}
                                                     disabled={search_active}
                                                 >
-                                                    {shortDurationString(opt.byoyomi.main_time)}
+                                                    {selected_size_count > 1 &&
+                                                    speed !== "correspondence"
+                                                        ? `${shortDurationString(
+                                                              min_opt.byoyomi!.main_time,
+                                                          ).replace(
+                                                              /[^0-9]+/g,
+                                                              "",
+                                                          )} - ${shortDurationString(
+                                                              max_opt.byoyomi!.main_time,
+                                                          )}`
+                                                        : shortDurationString(
+                                                              opt.byoyomi.main_time,
+                                                          )}
                                                     {" + "}
                                                     {opt.byoyomi.periods}x
                                                     {shortDurationString(
@@ -595,7 +857,7 @@ export function QuickMatch(): JSX.Element {
                                     ) : (
                                         [9, 8, 7, 6, 5, 4, 3, 2, 1, 0].map((v) => (
                                             <option key={v} value={v}>
-                                                {rankString(user.ranking - v)}
+                                                {/*rankString(user.ranking - v) */}- {v}
                                             </option>
                                         ))
                                     )}
@@ -611,21 +873,22 @@ export function QuickMatch(): JSX.Element {
                                     ) : (
                                         [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((v) => (
                                             <option key={v} value={v}>
-                                                {rankString(user.ranking + v)}
+                                                {/*rankString(user.ranking + v)*/}+ {v}
                                             </option>
                                         ))
                                     )}
                                 </select>
                             </div>
+                            <div className="opponent-rank-range-description">{_("Rank range")}</div>
                         </div>
                         <div
                             className={
                                 "opponent-option-container " +
                                 (opponent === "bot" ? "active" : "") +
-                                (search_active ? " disabled" : "")
+                                (search_active || game_clock === "multiple" ? " disabled" : "")
                             }
                             onClick={() => {
-                                if (search_active) {
+                                if (search_active || game_clock === "multiple") {
                                     return;
                                 }
                                 setOpponent("bot");
@@ -634,29 +897,45 @@ export function QuickMatch(): JSX.Element {
                             <div className="opponent-title">
                                 {pgettext("Play a computer opponent", "Computer")}
                             </div>
-                            <div className="computer-select">
-                                <select
-                                    id="challenge-ai"
-                                    ref={bot_select}
-                                    value={selected_bot}
-                                    onChange={(ev) => setSelectedBot(parseInt(ev.target.value))}
-                                    required={true}
-                                    disabled={search_active}
-                                >
-                                    {bots_list().map((bot, idx) => (
-                                        <option key={idx} value={bot.id}>
-                                            {bot.username} ({rankString(getUserRating(bot).rank)})
-                                        </option>
-                                    ))}
-                                </select>
-                                &nbsp;
-                                <a
-                                    href={`/user/view/${selected_bot}`}
-                                    target="_blank"
-                                    title={_("Selected AI profile")}
-                                >
-                                    <i className="fa fa-external-link" />
-                                </a>
+                            <div
+                                className={
+                                    "computer-select " +
+                                    (available_bots.length > 0 &&
+                                    opponent === "bot" &&
+                                    (!selected_bot ||
+                                        !selected_bot_value ||
+                                        selected_bot_value.disabled)
+                                        ? "error"
+                                        : "")
+                                }
+                            >
+                                <Select
+                                    classNamePrefix="ogs-react-select"
+                                    styles={select_styles}
+                                    value={selected_bot_value}
+                                    isSearchable={false}
+                                    minMenuHeight={400}
+                                    maxMenuHeight={400}
+                                    menuPlacement="auto"
+                                    isDisabled={search_active}
+                                    onChange={(opt) => {
+                                        if (opt) {
+                                            setSelectedBot(opt.id);
+                                        }
+                                    }}
+                                    isOptionDisabled={(option) => {
+                                        return option.disabled !== undefined;
+                                    }}
+                                    options={[
+                                        {
+                                            options: available_bots,
+                                        },
+                                    ]}
+                                    components={{
+                                        Option: RenderBotOption,
+                                        SingleValue: RenderBotValue,
+                                    }}
+                                />
                             </div>
                         </div>
                     </div>
@@ -674,6 +953,7 @@ export function QuickMatch(): JSX.Element {
                             minMenuHeight={400}
                             maxMenuHeight={400}
                             menuPlacement="auto"
+                            isDisabled={search_active}
                             onChange={(opt) => {
                                 if (opt) {
                                     setHandicaps(opt.value as "enabled" | "standard" | "disabled");
@@ -768,10 +1048,6 @@ export function QuickMatch(): JSX.Element {
                     </div>
                 </div>
             </div>
-            <AvailableQuickMatches
-                lower_rank_diff={lower_rank_diff}
-                upper_rank_diff={upper_rank_diff}
-            />
         </>
     );
 }

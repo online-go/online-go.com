@@ -385,7 +385,7 @@
     }
     
     .speed-options {
-        margin-bottom: 2rem;
+        //margin-bottom: 2rem;
     }
     
     .opponent-options {
@@ -452,8 +452,23 @@
             }
             
             .opponent-rank-range {
-                display: flex;
-                justify-content: space-around;
+                //display: flex;
+                text-align: center;
+                //justify-content: space-around;
+                select {
+                    text-align: center;
+                    margin-left: 0.5rem;
+                    margin-right: 0.5rem;
+                }
+            }
+
+            .opponent-rank-range-description {
+                font-size: 0.9rem;
+                themed color shade1
+                text-align: center;
+                padding-right: 0.5rem;
+                padding-left: 0.5rem;
+                margin-bottom: 0.5rem;
             }
 
             .computer-select {
@@ -537,6 +552,49 @@
             padding-right: 0.5rem;
             padding-left: 0.5rem;
         }
+        
+        
+        
+    }
+    
+    .option-label, .ogs-react-select__single-value {
+        display: flex !important;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .multiple-options-description {
+        font-size: 0.9rem;
+        font-style: italic;
+        themed color shade1
+        padding-right: 0.5rem;
+        padding-left: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .computer-select {
+        .disabled .option-label {
+            themed color shade2
+        }
+
+        .option-label {
+            display: flex;
+            justify-content: space-between;
+            gap: 0.5rem;
+
+            > span {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+        }
+
+        > div {
+            width: 100%;
+        }
+        &.error {
+            border: 1px solid red;
+        }
     }
     
 }
@@ -547,7 +605,6 @@
         flex-direction: column;
         margin-right: 0rem;
         margin-left: 0rem;
-        margin-bottom: 8rem;
         column-gap: 0rem;
         margin-top: 0rem;
 
@@ -573,6 +630,7 @@
         width: 100%;
         left: 0;
         right: 0;
+        z-index: z.dock;
         themed background-color bg
         .play-button {
             margin: 0;

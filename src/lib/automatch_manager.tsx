@@ -31,7 +31,11 @@ interface Events {
 
 export type AutomatchPreferences = AutomatchPreferencesBase & {
     uuid: string;
-    size_speed_options: Array<{ size: Size; speed: Speed }>;
+    size_speed_options: Array<{
+        size: Size;
+        speed: Speed;
+        system: "byoyomi" | "fischer";
+    }>;
 };
 
 class AutomatchToast extends React.PureComponent<{}, any> {

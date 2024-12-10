@@ -18,12 +18,18 @@
 import * as React from "react";
 import * as preferences from "@/lib/preferences";
 
-import { _, pgettext } from "@/lib/translate";
+//import { _, pgettext } from "@/lib/translate";
+import { _ } from "@/lib/translate";
 import { QuickMatch } from "./QuickMatch";
 import { CustomGames } from "./CustomGames";
 
 export function Play(): JSX.Element {
-    const [tab, setTab] = preferences.usePreference("play.tab");
+    const [show_custom_games, setShowCustomGames] = preferences.usePreference(
+        "automatch.show-custom-games",
+    );
+    const toggleCustomGames = React.useCallback(() => {
+        setShowCustomGames(!show_custom_games);
+    }, [show_custom_games]);
 
     React.useEffect(() => {
         window.document.title = _("Play");
@@ -31,6 +37,7 @@ export function Play(): JSX.Element {
 
     return (
         <div className="Play container">
+            {/*
             <div className="tab-head">
                 <h2 className="Matchmaking-header">
                     <i className="ogs-goban"></i> {pgettext("Play page", "Matchmaking")}
@@ -51,9 +58,27 @@ export function Play(): JSX.Element {
                     </span>
                 </div>
             </div>
+            */}
 
+            {/*
             {tab === "automatch" && <QuickMatch />}
             {tab === "custom" && <CustomGames />}
+            */}
+            <QuickMatch />
+
+            <div>
+                <div
+                    className={
+                        "custom-games-toggle-container " +
+                        (show_custom_games ? "showing-custom-games" : "")
+                    }
+                >
+                    <button className="custom-games-toggle" onClick={toggleCustomGames}>
+                        {show_custom_games ? _("Hide custom games") : _("Explore custom games")}
+                    </button>
+                </div>
+                {show_custom_games && <CustomGames />}
+            </div>
         </div>
     );
 }

@@ -49,7 +49,7 @@ import { anyChallengesToShow, challenge_sort, time_per_move_challenge_sort } fro
 import { RengoManagementPane } from "@/components/RengoManagementPane";
 import { RengoTeamManagementPane } from "@/components/RengoTeamManagementPane";
 import { PlayContext } from "./PlayContext";
-import { ChallengeModalBody } from "@/components/ChallengeModal";
+import { challenge } from "@/components/ChallengeModal";
 
 const CHALLENGE_LIST_FREEZE_PERIOD = 1000; // Freeze challenge list for this period while they move their mouse on it
 
@@ -391,6 +391,12 @@ export function CustomGames(): JSX.Element {
         });
     }, [live_list, cancelOpenChallenge]);
 
+    const disable_challenge_buttons = !!(
+        liveOwnChallengePending() ||
+        live_rengo_challenge_to_show ||
+        automatch_manager.active_live_automatcher
+    );
+
     return (
         <PlayContext.Provider
             value={{
@@ -404,71 +410,53 @@ export function CustomGames(): JSX.Element {
             }}
         >
             <div id="CustomGames">
-                <Card>
-                    {liveOwnChallengePending() ? (
-                        <>
-                            <div className="automatch-header">{_("Waiting for opponent...")}</div>
-                            <div className="automatch-row-container">
-                                <div className="spinner">
-                                    <div className="double-bounce1"></div>
-                                    <div className="double-bounce2"></div>
-                                </div>
+                {liveOwnChallengePending() ? (
+                    <Card>
+                        <div className="automatch-header">{_("Waiting for opponent...")}</div>
+                        <div className="automatch-row-container">
+                            <div className="spinner">
+                                <div className="double-bounce1"></div>
+                                <div className="double-bounce2"></div>
                             </div>
-                            <div className="automatch-settings">
-                                <button className="danger sm" onClick={cancelOwnChallenges}>
-                                    {pgettext("Cancel challenge", "Cancel")}
-                                </button>
-                            </div>
-                        </>
-                    ) : live_rengo_challenge_to_show ? (
-                        <>
-                            <RengoManagementPane
+                        </div>
+                        <div className="automatch-settings">
+                            <button className="danger sm" onClick={cancelOwnChallenges}>
+                                {pgettext("Cancel challenge", "Cancel")}
+                            </button>
+                        </div>
+                    </Card>
+                ) : live_rengo_challenge_to_show ? (
+                    <Card>
+                        <RengoManagementPane
+                            challenge_id={live_rengo_challenge_to_show.challenge_id}
+                            rengo_challenge_list={rengo_list}
+                            startRengoChallenge={rengo_utils.startOwnRengoChallenge}
+                            cancelChallenge={cancelOpenRengoChallenge}
+                            withdrawFromRengoChallenge={unNominateForRengoChallenge}
+                            joinRengoChallenge={rengo_utils.nominateForRengoChallenge}
+                            lock={
+                                rengo_manage_pane_lock[live_rengo_challenge_to_show?.challenge_id]
+                            }
+                        >
+                            <RengoTeamManagementPane
                                 challenge_id={live_rengo_challenge_to_show.challenge_id}
-                                rengo_challenge_list={rengo_list}
-                                startRengoChallenge={rengo_utils.startOwnRengoChallenge}
-                                cancelChallenge={cancelOpenRengoChallenge}
-                                withdrawFromRengoChallenge={unNominateForRengoChallenge}
-                                joinRengoChallenge={rengo_utils.nominateForRengoChallenge}
-                                lock={
+                                challenge_list={rengo_list}
+                                moderator={user.is_moderator}
+                                show_chat={false}
+                                assignToTeam={rengo_utils.assignToTeam}
+                                kickRengoUser={rengo_utils.kickRengoUser}
+                                locked={
                                     rengo_manage_pane_lock[
-                                        live_rengo_challenge_to_show?.challenge_id
+                                        live_rengo_challenge_to_show.challenge_id
                                     ]
                                 }
-                            >
-                                <RengoTeamManagementPane
-                                    challenge_id={live_rengo_challenge_to_show.challenge_id}
-                                    challenge_list={rengo_list}
-                                    moderator={user.is_moderator}
-                                    show_chat={false}
-                                    assignToTeam={rengo_utils.assignToTeam}
-                                    kickRengoUser={rengo_utils.kickRengoUser}
-                                    locked={
-                                        rengo_manage_pane_lock[
-                                            live_rengo_challenge_to_show.challenge_id
-                                        ]
-                                    }
-                                    lock={(lock: boolean) =>
-                                        setPaneLock(live_rengo_challenge_to_show.challenge_id, lock)
-                                    }
-                                />
-                            </RengoManagementPane>
-                        </>
-                    ) : (
-                        <div>
-                            <ChallengeModalBody
-                                mode="open"
-                                modal={{
-                                    on: (event: "open" | "close", callback: () => void) => {
-                                        console.log("on", event, callback);
-                                    },
-                                    off: (event: "open" | "close", callback: () => void) => {
-                                        console.log("off", event, callback);
-                                    },
-                                }}
+                                lock={(lock: boolean) =>
+                                    setPaneLock(live_rengo_challenge_to_show.challenge_id, lock)
+                                }
                             />
-                        </div>
-                    )}
-                </Card>
+                        </RengoManagementPane>
+                    </Card>
+                ) : null}
                 <div className="row">
                     <div className="row header-container">
                         <h2 className="header-title">
@@ -505,6 +493,27 @@ export function CustomGames(): JSX.Element {
                         showIcons={true}
                         toggleHandler={toggleFilterHandler}
                     ></SeekGraphLegend>
+
+                    <div className="create-custom-games-buttons">
+                        <button
+                            className="primary"
+                            disabled={disable_challenge_buttons}
+                            onClick={() => {
+                                challenge(undefined, undefined, undefined, undefined, undefined);
+                            }}
+                        >
+                            {_("Create a custom game")}
+                        </button>
+                        <button
+                            className="primary"
+                            disabled={disable_challenge_buttons}
+                            onClick={() => {
+                                challenge(undefined, undefined, true, undefined, undefined);
+                            }}
+                        >
+                            {_("Play a custom computer game")}
+                        </button>
+                    </div>
                 </div>
 
                 <div id="challenge-list-container">
@@ -558,10 +567,8 @@ export function CustomGames(): JSX.Element {
                                             .join(",")}
                                     </span>
 
-                                    <span className={m.time_control.condition + " cell"}>
-                                        {m.time_control.condition === "no-preference"
-                                            ? pgettext("Automatch: no preference", "No preference")
-                                            : timeControlSystemText(m.time_control.value.system)}
+                                    <span className={m.size_speed_options[0].system + " cell"}>
+                                        {timeControlSystemText(m.size_speed_options[0].system)}
                                     </span>
 
                                     <span className={m.handicap.condition + " cell"}>
