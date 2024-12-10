@@ -178,16 +178,12 @@ export function getAcceptableTimeSetting(
             if (Array.isArray(bot.config.allowed_board_sizes)) {
                 for (const size of bot.config.allowed_board_sizes) {
                     if (size === options.width) {
-                        console.log("found", size, options.width);
                         found = true;
                         break;
                     }
                 }
             }
             if (!found) {
-                console.log(
-                    `Bot ${bot.username} doesn't accept board size ${options.width}x${options.height}`,
-                );
                 return [
                     null,
                     llm_pgettext(
@@ -399,8 +395,6 @@ socket.on("active-bots", (bots) => {
         _bots_list.push(bots[id]);
     }
     _bots_list.sort((a, b) => getUserRating(a).rating - getUserRating(b).rating);
-
-    console.log("Active bots: ", _bots_list);
 
     bot_event_emitter.emit("updated");
 });
