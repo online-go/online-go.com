@@ -193,6 +193,8 @@ const select_styles = {
     }),
 };
 
+(window as any)["processed_bot_list"] = [];
+
 export function QuickMatch(): JSX.Element {
     const user = useUser();
     const refresh = useRefresh();
@@ -593,6 +595,7 @@ export function QuickMatch(): JSX.Element {
     let available_bots = bots_list().filter((b) => b.id > 0);
 
     if (game_clock !== "multiple") {
+        (window as any)["processed_bot_list"] = [];
         available_bots = available_bots.filter((b) => {
             const settings = {
                 rank: user.ranking,
@@ -605,6 +608,7 @@ export function QuickMatch(): JSX.Element {
                 [time_control_system]: SPEED_OPTIONS[board_size][game_speed][time_control_system],
             };
             const [options, _message] = getAcceptableTimeSetting(b, settings);
+            (window as any)["processed_bot_list"].push([b, options, _message]);
             /*
             if (!options) {
                 console.debug(b.username, message, settings);

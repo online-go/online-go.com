@@ -159,7 +159,9 @@ export function getAcceptableTimeSetting(
 
         /* Check allowed rank */
         function rankNumber(rank: string) {
-            if (rank.endsWith("d") || rank.endsWith("D")) {
+            if (rank.endsWith("p") || rank.endsWith("p")) {
+                return parseInt(rank) + 45;
+            } else if (rank.endsWith("d") || rank.endsWith("D")) {
                 return parseInt(rank) + 30;
             } else {
                 return 30 - parseInt(rank);
@@ -167,8 +169,9 @@ export function getAcceptableTimeSetting(
         }
 
         if (
-            options.rank < rankNumber(bot.config?.allowed_rank_range[0]) ||
-            options.rank > rankNumber(bot.config?.allowed_rank_range[1])
+            bot.config?.allowed_rank_range &&
+            (options.rank < rankNumber(bot.config?.allowed_rank_range[0]) ||
+                options.rank > rankNumber(bot.config?.allowed_rank_range[1]))
         ) {
             return [null, "Rank not accepted"];
         }
