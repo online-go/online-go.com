@@ -26,11 +26,10 @@ import {
     shortDurationString,
     Size,
     Speed,
-    User,
 } from "goban";
-import { _, pgettext } from "@/lib/translate";
+import { _, llm_pgettext, pgettext } from "@/lib/translate";
 import { automatch_manager } from "@/lib/automatch_manager";
-import { bot_event_emitter, bots_list, getAcceptableTimeSetting } from "@/lib/bots";
+import { Bot, bot_event_emitter, bots_list, getAcceptableTimeSetting } from "@/lib/bots";
 import { alert } from "@/lib/swal_config";
 import { useRefresh, useUser } from "@/lib/hooks";
 //import { Toggle } from "@/components/Toggle";
@@ -140,7 +139,7 @@ const RenderOptionWithDescription = (props: {
 };
 
 const RenderBotOption = (props: {
-    data: User;
+    data: Bot & { disabled?: string };
     innerProps: any;
     innerRef: any;
     isFocused: boolean;
@@ -152,7 +151,11 @@ const RenderBotOption = (props: {
         <div
             ref={props.innerRef}
             {...props.innerProps}
-            className={"option" + (props.isFocused ? " focused" : "")}
+            className={
+                "option" +
+                (props.isFocused ? " focused" : "") +
+                (props.data.disabled ? " disabled" : "")
+            }
         >
             <div className="option-label">
                 <span>
@@ -169,6 +172,9 @@ const RenderBotOption = (props: {
                     </a>
                 </span>
             </div>
+            <div className="option-description">
+                {props.data.disabled ? props.data.disabled : ""}
+            </div>
         </div>
     );
 };
@@ -183,22 +189,12 @@ const RenderBotValue = (props: any) => {
     );
 };
 
-/*
-const RenderBotControl = (props: { data: User; ...any }) => {
-    const opt = props.data;
-    console.log(props);
-    return <components.Control {...props}>{opt.username}</components.Control>;
-};
-*/
-
 const select_styles = {
     menu: ({ ...css }) => ({
         ...css,
         width: "20rem",
     }),
 };
-
-(window as any)["processed_bot_list"] = [];
 
 export function QuickMatch(): JSX.Element {
     const user = useUser();
@@ -597,10 +593,9 @@ export function QuickMatch(): JSX.Element {
           ? "13x13"
           : "9x9";
 
-    let available_bots = bots_list().filter((b) => b.id > 0);
+    let available_bots: (Bot & { disabled?: string })[] = bots_list().filter((b) => b.id > 0);
 
     if (game_clock !== "multiple") {
-        (window as any)["processed_bot_list"] = [];
         available_bots = available_bots.filter((b) => {
             const settings = {
                 rank: user.ranking,
@@ -612,48 +607,24 @@ export function QuickMatch(): JSX.Element {
                 speed: game_speed,
                 [time_control_system]: SPEED_OPTIONS[board_size][game_speed][time_control_system],
             };
-            const [options, _message] = getAcceptableTimeSetting(b, settings);
-            (window as any)["processed_bot_list"].push([b, options, _message]);
-            /*
+            const [options, message] = getAcceptableTimeSetting(b, settings);
             if (!options) {
-                console.debug(b.username, message, settings);
+                b.disabled = message || undefined;
+            } else if (options && options._config_version && options._config_version === 0) {
+                b.disabled = llm_pgettext(
+                    "Bot is not configured correctly",
+                    "Bot is not configured correctly",
+                );
+            } else {
+                b.disabled = undefined;
             }
-            */
 
-            if (options && options._config_version && options._config_version > 0) {
-                return true;
-            }
-
-            return false;
+            return true;
         });
     }
 
-    /*
-    if (available_bots.length > 0 && selected_bot) {
-        if (available_bots.filter((bot) => bot.id === selected_bot).length === 0) {
-            console.log("selected bot not available, should be clearing");
-            if (selected_bot) {
-                console.log("cleared");
-                old_selected_bot.current = selected_bot;
-                setSelectedBot(0);
-            }
-        }
-    } else {
-        if (available_bots.length > 0 && selected_bot === 0) {
-            if (
-                old_selected_bot.current &&
-                available_bots.filter((bot) => bot.id === old_selected_bot.current).length > 0
-            ) {
-                setSelectedBot(old_selected_bot.current);
-            }
-        }
-    }
-    */
-
     const selected_bot_value = available_bots.find((b) => b.id === selected_bot) || undefined;
 
-    //console.log("selected bot ", selected_bot_value);
-    //  Construction of the pane we need to show...
     return (
         <>
             <div id="QuickMatch">
@@ -921,7 +892,9 @@ export function QuickMatch(): JSX.Element {
                                     "computer-select " +
                                     (available_bots.length > 0 &&
                                     opponent === "bot" &&
-                                    (!selected_bot || !selected_bot_value)
+                                    (!selected_bot ||
+                                        !selected_bot_value ||
+                                        selected_bot_value.disabled)
                                         ? "error"
                                         : "")
                                 }
@@ -939,6 +912,9 @@ export function QuickMatch(): JSX.Element {
                                         if (opt) {
                                             setSelectedBot(opt.id);
                                         }
+                                    }}
+                                    isOptionDisabled={(option) => {
+                                        return option.disabled !== undefined;
                                     }}
                                     options={[
                                         {

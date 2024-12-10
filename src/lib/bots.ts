@@ -26,11 +26,12 @@ import {
 } from "goban";
 import EventEmitter from "eventemitter3";
 import { TimeControlSystem } from "./types";
+import { llm_pgettext } from "./translate";
 
 interface Events {
     updated: () => void;
 }
-interface Bot extends User {
+export interface Bot extends User {
     config: BotConfig;
 }
 
@@ -107,11 +108,20 @@ export function getAcceptableTimeSetting(
         const bot: Bot = typeof _bot === "number" ? active_bots[_bot] : _bot;
 
         if (!bot) {
-            return [null, "Bot not found"];
+            return [
+                null,
+                llm_pgettext("Unable to find a compatible game setting for bot", "Bot not found"),
+            ];
         }
 
         if (bot.config._config_version === 0) {
-            return [{ ...options, _config_version: 0 }, "Bot has no configuration"];
+            return [
+                { ...options, _config_version: 0 },
+                llm_pgettext(
+                    "Unable to find a compatible game setting for bot",
+                    "Bot has no configuration",
+                ),
+            ];
         }
 
         /* Check the board size */
@@ -119,41 +129,72 @@ export function getAcceptableTimeSetting(
             // whatever is allowed
         } else if (bot.config.allowed_board_sizes === "square") {
             if (options.width !== options.height) {
-                return [null, "Board size must be square"];
-            } else if (typeof bot.config.allowed_board_sizes === "number") {
-                if (options.width !== options.height) {
-                    return [null, "Board size must be square"];
-                }
-                if (options.width !== bot.config.allowed_board_sizes) {
-                    return [null, "Board size not accepted"];
-                }
-            } else if (
-                Array.isArray(bot.config.allowed_board_sizes) &&
-                bot.config.allowed_board_sizes.length === 1 &&
-                bot.config.allowed_board_sizes[0] === 0
-            ) {
-                // 0 means any board size too..
-            } else {
-                // If the bot doesn't accept all board sizes, non square are rejected
-                if (options.width !== options.height) {
-                    return [null, "Board size must be square"];
-                }
+                return [
+                    null,
+                    llm_pgettext(
+                        "Unable to find a compatible game setting for bot",
+                        "Bot requires a square board",
+                    ),
+                ];
+            }
+        } else if (typeof bot.config.allowed_board_sizes === "number") {
+            if (options.width !== options.height) {
+                return [
+                    null,
+                    llm_pgettext(
+                        "Unable to find a compatible game setting for bot",
+                        "Bot requires a square board",
+                    ),
+                ];
+            }
+            if (options.width !== bot.config.allowed_board_sizes) {
+                return [
+                    null,
+                    llm_pgettext(
+                        "Unable to find a compatible game setting for bot",
+                        "Bot is unable to play this board size",
+                    ),
+                ];
+            }
+        } else if (
+            Array.isArray(bot.config.allowed_board_sizes) &&
+            bot.config.allowed_board_sizes.length === 1 &&
+            bot.config.allowed_board_sizes[0] === 0
+        ) {
+            // 0 means any board size too..
+        } else {
+            // If the bot doesn't accept all board sizes, non square are rejected
+            if (options.width !== options.height) {
+                return [
+                    null,
+                    llm_pgettext(
+                        "Unable to find a compatible game setting for bot",
+                        "Bot requires a square board",
+                    ),
+                ];
+            }
 
-                let found = false;
-                if (Array.isArray(bot.config.allowed_board_sizes)) {
-                    for (const size of bot.config.allowed_board_sizes) {
-                        if (size === options.width) {
-                            found = true;
-                            break;
-                        }
+            let found = false;
+            if (Array.isArray(bot.config.allowed_board_sizes)) {
+                for (const size of bot.config.allowed_board_sizes) {
+                    if (size === options.width) {
+                        console.log("found", size, options.width);
+                        found = true;
+                        break;
                     }
                 }
-                if (!found) {
-                    console.log(
-                        `Bot ${bot.username} doesn't accept board size ${options.width}x${options.height}`,
-                    );
-                    return [null, "Board size not accepted"];
-                }
+            }
+            if (!found) {
+                console.log(
+                    `Bot ${bot.username} doesn't accept board size ${options.width}x${options.height}`,
+                );
+                return [
+                    null,
+                    llm_pgettext(
+                        "Unable to find a compatible game setting for bot",
+                        "Bot is unable to play this board size",
+                    ),
+                ];
             }
         }
 
@@ -173,23 +214,53 @@ export function getAcceptableTimeSetting(
             (options.rank < rankNumber(bot.config?.allowed_rank_range[0]) ||
                 options.rank > rankNumber(bot.config?.allowed_rank_range[1]))
         ) {
-            return [null, "Rank not accepted"];
+            return [
+                null,
+                llm_pgettext(
+                    "Unable to find a compatible game setting for bot",
+                    "Bot has an unsuitable rank restriction",
+                ),
+            ];
         }
 
         /* Check our ranked setting */
         if (options.ranked && !bot.config.allow_ranked) {
-            return [null, "Bot doesn't accept ranked games"];
+            return [
+                null,
+                llm_pgettext(
+                    "Unable to find a compatible game setting for bot",
+                    "Bot doesn't accept ranked games",
+                ),
+            ];
         }
         if (!options.ranked && bot.config.allow_unranked) {
-            return [null, "Bot doesn't accept unranked games"];
+            return [
+                null,
+                llm_pgettext(
+                    "Unable to find a compatible game setting for bot",
+                    "Bot doesn't accept unranked games",
+                ),
+            ];
         }
 
         /* Check our handicap setting */
         if (options.handicap && options.ranked && !bot.config.allow_ranked_handicap) {
-            return [null, "Bot doesn't accept ranked games with handicap"];
+            return [
+                null,
+                llm_pgettext(
+                    "Unable to find a compatible game setting for bot",
+                    "Bot doesn't accept ranked games with handicap",
+                ),
+            ];
         }
         if (options.handicap && !options.ranked && !bot.config.allow_unranked_handicap) {
-            return [null, "Bot doesn't accept unranked games with handicap"];
+            return [
+                null,
+                llm_pgettext(
+                    "Unable to find a compatible game setting for bot",
+                    "Bot doesn't accept unranked games with handicap",
+                ),
+            ];
         }
 
         /* Check our komi setting */
@@ -198,7 +269,13 @@ export function getAcceptableTimeSetting(
             options.komi < bot.config.allowed_komi_range[0] ||
             options.komi > bot.config.allowed_komi_range[1]
         ) {
-            return [null, "Komi not accepted"];
+            return [
+                null,
+                llm_pgettext(
+                    "Unable to find a compatible game setting for bot",
+                    "Komi not accepted",
+                ),
+            ];
         }
         */
 
@@ -209,7 +286,13 @@ export function getAcceptableTimeSetting(
                 `Caller didn't provide ${options.system} time control system settings`,
                 options,
             );
-            return [null, "Time control system not provided"];
+            return [
+                null,
+                llm_pgettext(
+                    "Unable to find a compatible game setting for bot",
+                    "Time control system not provided",
+                ),
+            ];
         }
 
         function isInRange(
@@ -280,16 +363,28 @@ export function getAcceptableTimeSetting(
                 if (isInRange(options.system, bot.config[`allowed_${speed}_settings`])) {
                     return [
                         { ...options, speed, _config_version: bot.config._config_version },
-                        `Speed setting adjusted to ${speed}`,
+                        null,
                     ];
                 }
             }
         }
 
-        return [null, "Unable to find a compatible settings"];
+        return [
+            null,
+            llm_pgettext(
+                "Unable to find a compatible game setting for bot",
+                "Unable to find a compatible settings",
+            ),
+        ];
     } catch (e) {
         console.error("Error getting acceptable time setting", e);
-        return [null, "Error getting acceptable time setting"];
+        return [
+            null,
+            llm_pgettext(
+                "Unable to find a compatible game setting for bot",
+                "Unable to find a compatible settings",
+            ),
+        ];
     }
 }
 
