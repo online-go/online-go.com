@@ -200,6 +200,7 @@ export function QuickMatch(): JSX.Element {
     const user = useUser();
     const refresh = useRefresh();
     const available_human_matches_list = React.useRef<{ [uuid: string]: any }>({});
+    window.available_human_matches_list = available_human_matches_list.current;
     const [recent_matches, setRecentMatches] = React.useState<{
         [size: string]: { [speed: string]: { [system: string]: number } };
     }>({});
@@ -721,10 +722,14 @@ export function QuickMatch(): JSX.Element {
                             entry.player.bounded_rank + entry.preferences.upper_rank_diff)) &&
                 entry.preferences.size_speed_options[0].speed !== "correspondence"
             ) {
-                available_human_matches[entry.preferences.size_speed_options[0].size][
-                    entry.preferences.size_speed_options[0].speed
-                ][entry.preferences.size_speed_options[0].system]++;
-                available_human_match_count_by_size[entry.preferences.size_speed_options[0].size]++;
+                for (const e of entry.preferences.size_speed_options) {
+                    try {
+                        available_human_matches[e.size][e.speed][e.system]++;
+                        available_human_match_count_by_size[e.size]++;
+                    } catch (e) {
+                        console.error(e);
+                    }
+                }
             }
         });
     } catch (e) {
@@ -733,6 +738,13 @@ export function QuickMatch(): JSX.Element {
 
     /* Returns the CSS class for the activity effect based on the number of recent and available matches for a button */
     function getActivityClass(size: string, speed?: string, system?: string): string {
+        if (speed === "correspondence") {
+            // correspondence games have longer match times and are typically
+            // available in any size, but we also don't want to flag them as
+            // being actively waited and attract impatient players
+            return " activity popular ";
+        }
+
         if (!speed || !system) {
             if (available_human_match_count_by_size[size] > 0) {
                 return " activity player-waiting ";

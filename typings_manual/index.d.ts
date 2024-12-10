@@ -13,7 +13,7 @@ interface Window {
 
     // Set by translation files
     ogs_locales: Record<string, Record<string, Array<string>>>;
-    ogs_countries: Record<string, Record<string, string>>
+    ogs_countries: Record<string, Record<string, string>>;
 
     // Set by gulp
     websocket_host: string;
@@ -28,7 +28,7 @@ interface Window {
     debug: unknown; // debug.ts
     socket: unknown; // socket.ts
 
-    // These seem to be part of some very specific debugging.  Can any be removed? 
+    // These seem to be part of some very specific debugging.  Can any be removed?
     mini_goban?: import("goban").GobanRenderer; // MiniGoban
     dup: Function; // TournamentRecord.tsx
     rounds?: unknown; // Tournament.tsx
@@ -53,4 +53,6 @@ interface Window {
     proxy?: unknown; // ChatUserList.tsx
 
     safari?: unknown;
+
+    available_human_matches_list: any[];
 }
