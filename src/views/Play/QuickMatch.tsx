@@ -155,14 +155,19 @@ const RenderBotOption = (props: {
             className={"option" + (props.isFocused ? " focused" : "")}
         >
             <div className="option-label">
-                <PlayerIcon user={opt} size={32} style={{ width: "32px", height: "32px" }} />
-                {opt.username}
-            </div>
-            <div className="option-description">
-                {rankString(opt.ranking || 0)}
-                <a target="_blank" href={`/user/view/${opt.id}`} title={_("Selected AI profile")}>
-                    <i className="fa fa-external-link" />
-                </a>
+                <span>
+                    <PlayerIcon user={opt} size={32} style={{ width: "32px", height: "32px" }} />
+                    {opt.username} ({rankString(opt.ranking || 0)})
+                </span>
+                <span>
+                    <a
+                        target="_blank"
+                        href={`/user/view/${opt.id}`}
+                        title={_("Selected AI profile")}
+                    >
+                        <i className="fa fa-external-link" />
+                    </a>
+                </span>
             </div>
         </div>
     );
@@ -173,7 +178,7 @@ const RenderBotValue = (props: any) => {
     return (
         <components.SingleValue {...props}>
             <PlayerIcon user={opt} size={32} style={{ width: "32px", height: "32px" }} />
-            {opt.username}
+            {opt.username} ({rankString(opt.ranking || 0)})
         </components.SingleValue>
     );
 };
