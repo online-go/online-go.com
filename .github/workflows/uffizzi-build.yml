@@ -66,6 +66,7 @@ jobs:
           name: preview-spec
           path: ${{ github.event_path }}
           retention-days: 2
+          overwrite: true
 
   delete-preview:
     name: Call for Preview Deletion
