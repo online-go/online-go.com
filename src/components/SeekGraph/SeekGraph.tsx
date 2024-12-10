@@ -573,7 +573,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         ctx.strokeStyle = palette.timeLineColor;
         try {
             ctx.setLineDash([2, 3]);
-        } catch (e) {
+        } catch {
             // ignore error
         }
         ctx.stroke();
@@ -609,7 +609,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
             word = _("Correspondence");
             metrics = ctx.measureText(word);
             ctx.fillText(word, live_line + (w - live_line - metrics.width) / 2, baseline);
-        } catch (e) {
+        } catch {
             // ignore error
         }
         ctx.restore();
@@ -915,7 +915,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                             shortShortTimeControl(C.time_control_parameters),
                             timeControlSystemText(C.time_control).toLocaleLowerCase(),
                         ]);
-                } catch (err) {
+                } catch {
                     // ignore error
                 }
             }

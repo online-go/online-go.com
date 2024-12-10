@@ -735,7 +735,7 @@ function AssociationLink({
                 <span className="rank">{rank ? rankString(rank) : ""}</span>
             </div>
         );
-    } catch (e) {
+    } catch {
         return <div>[invalid association]</div>;
     }
 }

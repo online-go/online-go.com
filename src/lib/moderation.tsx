@@ -86,7 +86,7 @@ export function doAnnul(
                 } else {
                     toast(<div>Game ranking has been restored</div>, 2000);
                 }
-                onGameAnnulled && onGameAnnulled(tf);
+                onGameAnnulled?.(tf);
             } else {
                 void alert.fire({ text: _("Something went wrong, no action taken!") });
             }

@@ -224,7 +224,7 @@ export function Supporter(props: SupporterProperties): JSX.Element {
                 setSearchParams({});
             }
         }
-    } catch (e) {
+    } catch {
         // ignore. This case happens when we are clicking the "Full AI REview" button because
         // we can't use search params in this context, however it's also not important since
         // this is only ever used for payment callback stuff.

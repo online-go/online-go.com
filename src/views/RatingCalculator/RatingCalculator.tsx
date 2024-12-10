@@ -262,7 +262,7 @@ export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableSt
         });
     }
 
-    calculated_rank_display_player(p12: number, win: boolean): String {
+    calculated_rank_display_player(p12: number, win: boolean): string {
         const win_index = (p12 === 1 && win) || (p12 === 2 && !win) ? 0 : 1;
         if (
             this.state.p1_new_rating.length === 0 ||
@@ -302,7 +302,7 @@ export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableSt
         }
     }
 
-    input_rank_display_player(p12: number): String {
+    input_rank_display_player(p12: number): string {
         if (
             !this.inputs_positive([
                 this.state.p1r,
@@ -351,7 +351,7 @@ export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableSt
         }
     }
 
-    rank_display(rating: Rating): String {
+    rank_display(rating: Rating): string {
         return rating.partial_bounded_rank_label + " \xB1 " + rating.rank_deviation.toFixed(1);
     }
 

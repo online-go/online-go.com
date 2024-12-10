@@ -310,7 +310,7 @@ export function getPrefix(key_prefix: string = "", strip_prefix?: boolean): { [k
 function safeLocalStorageSet(key: string, value: any) {
     try {
         localStorage.setItem(key, value);
-    } catch (e) {
+    } catch {
         console.warn(
             `Failed to save setting ${key}, LocalStorage is probably disabled. If you are using Safari, the most likely cause of this is being in Private Browsing Mode.`,
         );
@@ -320,7 +320,7 @@ function safeLocalStorageSet(key: string, value: any) {
 function safeLocalStorageRemove(key: string) {
     try {
         localStorage.removeItem(key);
-    } catch (e) {
+    } catch {
         console.warn(
             `Failed to remove ${key}, LocalStorage is probably disabled. If you are using Safari, the most likely cause of this is being in Private Browsing Mode.`,
         );

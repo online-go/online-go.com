@@ -116,7 +116,7 @@ export function GameDock({
     let sgf_download_enabled = false;
     try {
         sgf_download_enabled = !goban.isAnalysisDisabled(true);
-    } catch (e) {
+    } catch {
         // ignore error
     }
 

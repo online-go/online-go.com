@@ -82,7 +82,7 @@ export function GeneralPreferences(props: SettingGroupPageProps): JSX.Element {
         desktop_notifications_enabled =
             preferences.get("desktop-notifications") &&
             (Notification as any).permission === "granted";
-    } catch (e) {
+    } catch {
         /* not all browsers support the Notification API */
     }
 
@@ -163,7 +163,7 @@ export function GeneralPreferences(props: SettingGroupPageProps): JSX.Element {
 
                     try {
                         Notification.requestPermission().then(onRequestResult).catch(ignore);
-                    } catch (e) {
+                    } catch {
                         /* deprecated usage, but only way supported on safari currently */
                         // eslint-disable-next-line @typescript-eslint/no-floating-promises
                         Notification.requestPermission(onRequestResult);

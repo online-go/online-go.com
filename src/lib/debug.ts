@@ -37,15 +37,12 @@ export default class Debug {
     private format(message: string): string {
         return `[${this.module}] ${message}`;
     }
-    log = (message: string, ...rest: Array<any>) => {
+    log = (message: string, ...rest: Array<any>) =>
         debug[this.module] ? console.log(this.format(message), ...rest) : undefined;
-    };
-    trace = (message: string, ...rest: Array<any>) => {
+    trace = (message: string, ...rest: Array<any>) =>
         debug[this.module] ? console.trace(this.format(message), ...rest) : undefined;
-    };
-    info = (message: string, ...rest: Array<any>) => {
+    info = (message: string, ...rest: Array<any>) =>
         debug[this.module] ? console.info(this.format(message), ...rest) : undefined;
-    };
     warn = (message: string, ...rest: Array<any>) => {
         console.warn(this.format(message), ...rest);
     };

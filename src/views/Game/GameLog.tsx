@@ -55,8 +55,8 @@ export function GameLog({
     React.useEffect(() => {
         socket.send(`game/log`, { game_id }, (log) => {
             setLog(log);
-            onContainsTimeout && onContainsTimeout(null);
-            onContainsAbandonment && onContainsAbandonment(false);
+            onContainsTimeout?.(null);
+            onContainsAbandonment?.(false);
             const timeout_entry = log.find((entry) => entry.event === "timed_out");
             if (timeout_entry && onContainsTimeout) {
                 onContainsTimeout(timeout_entry.data.player_id);

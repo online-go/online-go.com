@@ -920,17 +920,17 @@ export function Tournament(): JSX.Element {
     try {
         min_bar = rankString(parseInt(tournament.settings.lower_bar));
         max_bar = rankString(parseInt(tournament.settings.upper_bar));
-    } catch (e) {
+    } catch {
         // ignore error
     }
     try {
         num_rounds = parseInt(tournament.settings.num_rounds);
-    } catch (e) {
+    } catch {
         // ignore error
     }
     try {
         group_size = parseInt(tournament.settings.group_size);
-    } catch (e) {
+    } catch {
         // ignore error
     }
 
@@ -2784,7 +2784,7 @@ function OpenGothaTournamentRound({
                                         if (match.result[0] === "B") {
                                             black_won = "win";
                                         }
-                                    } catch (e) {
+                                    } catch {
                                         // ignore error
                                     }
 

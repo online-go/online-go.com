@@ -489,7 +489,7 @@ export function Game(): JSX.Element | null {
             ) {
                 return;
             }
-        } catch (e) {
+        } catch {
             // ignore error
         }
 
