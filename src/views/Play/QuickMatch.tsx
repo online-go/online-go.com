@@ -623,6 +623,16 @@ export function QuickMatch(): JSX.Element {
         });
     }
 
+    available_bots.sort((a, b) => {
+        if (a.disabled && !b.disabled) {
+            return 1;
+        }
+        if (b.disabled && !a.disabled) {
+            return -1;
+        }
+        return (a.ranking || 0) - (b.ranking || 0);
+    });
+
     const selected_bot_value = available_bots.find((b) => b.id === selected_bot) || undefined;
 
     return (
