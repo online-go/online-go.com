@@ -54,5 +54,5 @@ interface Window {
 
     safari?: unknown;
 
-    available_human_matches_list: any[];
+    available_human_matches_list: { [uuid: string]: any };
 }
