@@ -597,7 +597,34 @@
         }
     }
     
+
+    .size-button {
+        margin-right: 0.2rem;
+        margin-left: 0.2rem;
+        width: 5.5rem;
+    }
+    
+    .activity {
+        position: relative;
+    }
+    .activity.player-waiting:after, .activity.popular:after {
+        @extend .fa
+        content: "\f111"; // font awesome circle
+        position: absolute;
+        font-size: 0.5rem;
+        top: 2px;
+        right: 2px;
+        z-index: 1000;
+    }
+
+    .activity.player-waiting:after {
+        themed color success
+    }
+    .activity.popular:after {
+        themed color shade1
+    }
 }
+
 
 @media (max-width: hamburger-cutoff) {
     #QuickMatch {

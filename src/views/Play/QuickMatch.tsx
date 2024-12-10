@@ -199,6 +199,13 @@ const select_styles = {
 export function QuickMatch(): JSX.Element {
     const user = useUser();
     const refresh = useRefresh();
+    const available_human_matches_list = React.useRef<{ [uuid: string]: any }>({});
+    const [recent_matches, setRecentMatches] = React.useState<{
+        [size: string]: { [speed: string]: { [system: string]: number } };
+    }>({});
+    const [recent_matches_count, setRecentMatchesCount] = React.useState<{
+        [size: string]: number;
+    }>({});
     const [board_size, setBoardSize] = preferences.usePreference("automatch.size");
     const [game_speed, setGameSpeed] = preferences.usePreference("automatch.speed");
     const [handicaps, setHandicaps] = preferences.usePreference("automatch.handicaps");
@@ -238,6 +245,54 @@ export function QuickMatch(): JSX.Element {
             bot_event_emitter.off("updated", refresh);
         };
     }, []);
+
+    React.useEffect(() => {
+        socket.send("automatch/available/subscribe", undefined);
+
+        function onAdd(entry: any) {
+            available_human_matches_list.current[entry.uuid] = entry;
+            refresh();
+        }
+
+        function onRemove(uuid: string) {
+            delete available_human_matches_list.current[uuid];
+            refresh();
+        }
+
+        socket.on("automatch/available/add", onAdd);
+        socket.on("automatch/available/remove", onRemove);
+
+        return () => {
+            socket.send("automatch/available/unsubscribe", undefined);
+            socket.off("automatch/available/add", onAdd);
+            socket.off("automatch/available/remove", onRemove);
+        };
+    }, []);
+
+    React.useEffect(() => {
+        const ranks = [];
+        for (let i = user.ranking - lower_rank_diff; i <= user.ranking + upper_rank_diff; i++) {
+            ranks.push(i);
+        }
+        fetch(`/termination-api/automatch-stats?ranks=${ranks.join(",")}`)
+            .then((obj) => obj.json())
+            .then((obj) => {
+                const recent_matches_count: { [size: string]: number } = {};
+
+                for (const size in obj) {
+                    recent_matches_count[size] = 0;
+                    for (const speed in obj[size]) {
+                        for (const system in obj[size][speed]) {
+                            recent_matches_count[size] += obj[size][speed][system];
+                        }
+                    }
+                }
+
+                setRecentMatches(obj);
+                setRecentMatchesCount(recent_matches_count);
+            })
+            .catch((err) => console.error(err));
+    }, [user.ranking, lower_rank_diff, upper_rank_diff]);
 
     const anon = user.anonymous;
     const warned = user.has_active_warning_flag;
@@ -635,6 +690,88 @@ export function QuickMatch(): JSX.Element {
 
     const selected_bot_value = available_bots.find((b) => b.id === selected_bot) || undefined;
 
+    /* Filter available quick matches to the applicable ones for button highlighting  */
+    const available_human_match_count_by_size: { [size: string]: number } = {
+        "9x9": 0,
+        "13x13": 0,
+        "19x19": 0,
+    };
+    const available_human_matches: {
+        [size: string]: { [speed: string]: { [system: string]: number } };
+    } = {};
+    for (const size of ["9x9", "13x13", "19x19"]) {
+        available_human_matches[size] = {};
+        for (const speed of ["blitz", "rapid", "live"]) {
+            available_human_matches[size][speed] = {};
+            for (const system of ["fischer", "byoyomi"]) {
+                available_human_matches[size][speed][system] = 0;
+            }
+        }
+    }
+    try {
+        Object.values(available_human_matches_list.current).filter((entry) => {
+            if (
+                (user.anonymous ||
+                    (entry.player.id !== user.id &&
+                        entry.player.bounded_rank >= user.ranking - lower_rank_diff &&
+                        entry.player.bounded_rank <= user.ranking + upper_rank_diff &&
+                        user.ranking >=
+                            entry.player.bounded_rank - entry.preferences.lower_rank_diff &&
+                        user.ranking <=
+                            entry.player.bounded_rank + entry.preferences.upper_rank_diff)) &&
+                entry.preferences.size_speed_options[0].speed !== "correspondence"
+            ) {
+                available_human_matches[entry.preferences.size_speed_options[0].size][
+                    entry.preferences.size_speed_options[0].speed
+                ][entry.preferences.size_speed_options[0].system]++;
+                available_human_match_count_by_size[entry.preferences.size_speed_options[0].size]++;
+            }
+        });
+    } catch (e) {
+        console.error(e);
+    }
+
+    /* Returns the CSS class for the activity effect based on the number of recent and available matches for a button */
+    function getActivityClass(size: string, speed?: string, system?: string): string {
+        if (!speed || !system) {
+            if (available_human_match_count_by_size[size] > 0) {
+                return " activity player-waiting ";
+            }
+            const total =
+                (recent_matches_count?.["9x9"] || 0) +
+                (recent_matches_count?.["13x13"] || 0) +
+                (recent_matches_count?.["19x19"] || 0);
+            if (total > 0) {
+                return ` activity ${
+                    (recent_matches_count?.[size] || 0) / total > 0.33 ? "popular" : "un-popular"
+                } `;
+            }
+
+            return " activity ";
+        }
+
+        if (speed && system) {
+            if (available_human_matches?.[size]?.[speed]?.[system] > 0) {
+                return ` activity player-waiting `;
+            }
+
+            let total = 0;
+            for (const speed of ["blitz", "rapid", "live"]) {
+                for (const system of ["fischer", "byoyomi"]) {
+                    total += recent_matches?.[size]?.[speed]?.[system] || 0;
+                }
+            }
+            return ` activity ${
+                (recent_matches?.[size]?.[speed]?.[system] || 0) / total > 0.2
+                    ? "popular"
+                    : "un-popular"
+            } `;
+        }
+
+        // should be unreachable in practice
+        return " activity ";
+    }
+
     return (
         <>
             <div id="QuickMatch">
@@ -647,7 +784,11 @@ export function QuickMatch(): JSX.Element {
                     <div style={{ textAlign: "center" }}>
                         {(["9x9", "13x13", "19x19"] as Size[]).map((s) => (
                             <button
-                                className={"btn" + (isSizeActive(s) ? " active" : "")}
+                                className={
+                                    "btn size-button " +
+                                    (isSizeActive(s) ? "active " : "") +
+                                    getActivityClass(s)
+                                }
                                 key={s}
                                 disabled={search_active}
                                 onClick={() => {
@@ -746,7 +887,8 @@ export function QuickMatch(): JSX.Element {
                                                 "time-control-button" +
                                                 (isSpeedSystemActive(speed, "fischer")
                                                     ? " active"
-                                                    : "")
+                                                    : "") +
+                                                getActivityClass(board_size, speed, "fischer")
                                             }
                                             disabled={
                                                 search_active ||
@@ -788,7 +930,12 @@ export function QuickMatch(): JSX.Element {
                                                         "time-control-button" +
                                                         (isSpeedSystemActive(speed, "byoyomi")
                                                             ? " active"
-                                                            : "")
+                                                            : "") +
+                                                        getActivityClass(
+                                                            board_size,
+                                                            speed,
+                                                            "byoyomi",
+                                                        )
                                                     }
                                                     onClick={() => {
                                                         toggleSpeedSystem(speed, "byoyomi");
