@@ -28,7 +28,7 @@ interface FlagProperties {
 export function Flag(props: FlagProperties): JSX.Element {
     if (props.language && props.user_country) {
         return (
-            <span style={{ display: "inline-flex", height: "fit-content" }}>
+            <span style={{ display: "inline-flex" }}>
                 <span
                     className={props.big ? "f32" : "f32 flag-small"}
                     title={cc_to_country_name(props.country)}
@@ -44,7 +44,7 @@ export function Flag(props: FlagProperties): JSX.Element {
         );
     } else {
         return (
-            <span style={{ display: "inline-flex", height: "fit-content" }}>
+            <span style={{ display: "inline-flex" }}>
                 <span
                     className={props.big ? "f32" : "f32 flag-small"}
                     title={cc_to_country_name(props.country)}
