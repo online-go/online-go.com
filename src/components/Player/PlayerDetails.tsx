@@ -297,7 +297,9 @@ export class PlayerDetails extends React.PureComponent<
                                 'url("' + icon_size_url(this.state.icon || "", 64) + '")',
                         }}
                     >
-                        <Flag country={this.state.country || ""} />
+                        <span style={{ position: "absolute", bottom: -4, right: 0 }}>
+                            <Flag country={this.state.country || ""} />
+                        </span>
                     </div>
                     <div className="player-info">
                         <div>
