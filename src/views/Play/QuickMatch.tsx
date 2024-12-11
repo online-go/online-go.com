@@ -763,21 +763,51 @@ export function QuickMatch(): JSX.Element {
         }
 
         if (speed && system) {
-            if (available_human_matches?.[size]?.[speed]?.[system] > 0) {
-                return ` activity player-waiting `;
-            }
-
-            let total = 0;
-            for (const speed of ["blitz", "rapid", "live"]) {
-                for (const system of ["fischer", "byoyomi"]) {
-                    total += recent_matches?.[size]?.[speed]?.[system] || 0;
+            if (game_clock === "multiple") {
+                // anybody waiting on any of the sizes?
+                for (const multi_size in multiple_sizes) {
+                    if (multiple_sizes[multi_size as keyof typeof multiple_sizes]) {
+                        if (available_human_matches?.[multi_size]?.[speed]?.[system] > 0) {
+                            return ` activity player-waiting `;
+                        }
+                    }
                 }
+
+                // is there a popular setting on any of the sizes?
+                for (const multi_size in multiple_sizes) {
+                    if (multiple_sizes[multi_size as keyof typeof multiple_sizes]) {
+                        let total = 0;
+                        for (const speed of ["blitz", "rapid", "live"]) {
+                            for (const system of ["fischer", "byoyomi"]) {
+                                total += recent_matches?.[multi_size]?.[speed]?.[system] || 0;
+                            }
+                        }
+                        if ((recent_matches?.[multi_size]?.[speed]?.[system] || 0) / total > 0.2) {
+                            return ` activity popular `;
+                        }
+                    }
+                }
+
+                return ` activity un-popular `;
+            } else {
+                // any waiting on this size?
+                if (available_human_matches?.[size]?.[speed]?.[system] > 0) {
+                    return ` activity player-waiting `;
+                }
+
+                // is there a popular setting on this size?
+                let total = 0;
+                for (const speed of ["blitz", "rapid", "live"]) {
+                    for (const system of ["fischer", "byoyomi"]) {
+                        total += recent_matches?.[size]?.[speed]?.[system] || 0;
+                    }
+                }
+                return ` activity ${
+                    (recent_matches?.[size]?.[speed]?.[system] || 0) / total > 0.2
+                        ? "popular"
+                        : "un-popular"
+                } `;
             }
-            return ` activity ${
-                (recent_matches?.[size]?.[speed]?.[system] || 0) / total > 0.2
-                    ? "popular"
-                    : "un-popular"
-            } `;
         }
 
         // should be unreachable in practice
