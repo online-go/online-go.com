@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 .Play {
     // here
     max-width: 1110px;
@@ -24,7 +23,7 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        //justify-content: center;
+        // justify-content: center;
     }
 
     .seek-graph-container {
@@ -50,11 +49,9 @@
         }
 
         .organizer {
-
         }
 
         .size {
-
         }
     }
 
@@ -64,22 +61,22 @@
         width: 10rem;
         padding-right: 1rem;
         vertical-align: baseline; // attempting to line up with rest of cell rows
-        .btn {
-            padding-bottom: 0;  // override default that makes these look bottom heavy
-        }
 
+        .btn {
+            padding-bottom: 0; // override default that makes these look bottom heavy
+        }
     }
 
     .rengo-management-list-item {
         colspan: 0;
         margin: auto;
         width: 60%;
-        padding: 1.0rem;
+        padding: 1rem;
         display: flex;
         flex-direction: column;
         align-items: stretch;
     }
-    
+
     @media (max-width: hamburger-cutoff) {
         .Matchmaking-header {
             display: none;
@@ -87,24 +84,24 @@
 
         .rengo-management-list-item {
             margin: inherit; // override the `auto` directive so this goes to the left on narrow screens.
-            width: 40%;  // try to fit the whole pane nicely on narrow phones
+            width: 40%; // try to fit the whole pane nicely on narrow phones
         }
 
         // long specifier to make sure this specific column is not overriden
         #challenge-list .challenge-row .cell.rengo-list-buttons {
-            display: flex;  // t enable the buttons to wrap to the next line on narrow screens
+            display: flex; // t enable the buttons to wrap to the next line on narrow screens
             justify-content: flex-end;
         }
 
         .RengoTeamManagementPane {
-            flex-direction: column; //put the chat below the team management function in narrow screens
+            flex-direction: column; // put the chat below the team management function in narrow screens
         }
     }
 
     .rengo-management-header {
         font-size: 1.3rem;
         display: flex;
-        justify-content: space-between;  // push the dismiss icon out to the right
+        justify-content: space-between; // push the dismiss icon out to the right
         align-items: center;
 
         span {
@@ -131,17 +128,17 @@
     #rengo-table {
         width: 100%;
     }
-    
+
     .MiniGoban {
         .small.board {
             cursor: default !important;
         }
     }
-    
+
     button.active {
-        themed-important border-color primary
+        themed-important: border-color primary;
     }
-    
+
     .tab-head {
         display: flex;
         flex-wrap: wrap;
@@ -152,6 +149,7 @@
     .tabs-container {
         text-align: center;
     }
+
     .tab {
         cursor: pointer;
         margin-left: 0.5rem;
@@ -162,27 +160,14 @@
         display: inline-block;
 
         &:hover {
-            themed border-color shade2
+            themed: border-color shade2;
         }
+
         &.active {
-            themed border-color shade1
+            themed: border-color shade1;
         }
-
-    }
-
-    .custom-games-toggle-container {
-        margin-top: 2rem;
-        text-align: center;
-        margin-bottom: 8rem;
-        &.showing-custom-games {
-            margin-bottom: 1rem;
-        }
-    }
-    .custom-games-toggle {
-        font-size: 1.3rem;
     }
 }
-
 
 #challenge-list-container {
     width: 100%;
@@ -206,24 +191,23 @@
     font-size: 1.3rem;
     align-items: center;
     justify-content: space-between;
-    
-    button {
 
+    button {
     }
 }
 
 #challenge-list {
     display: table;
     width: 100%;
+
     .ineligible {
-        themed color shade3
+        themed: color shade3;
         font-size: 0.9em;
         vertical-align: middle;
         cursor: help;
     }
 
     // Flex to escape from the containing table formats
-
     .challenge-row {
         padding-top: 0.2em;
         padding-bottom: 0.2em;
@@ -238,8 +222,9 @@
             font-weight: bold;
             font-size: 0.8em;
         }
+
         .head.time-control-header {
-            //padding-left: 4em;
+            // padding-left: 4em;
             text-align: left;
         }
 
@@ -252,6 +237,7 @@
 
         .suspect-challenge {
             position: relative;
+
             i {
                 position: absolute;
                 top: 0.2rem;
@@ -262,7 +248,7 @@
             color: chocolate;
             cursor: help;
             top: 50%;
-            margin-left: .5em;
+            margin-left: 0.5em;
         }
 
         .cell .cheat-alert-tooltip-text {
@@ -271,14 +257,11 @@
             color: #fff;
             text-align: center;
             border-radius: 6px;
-            padding: 5px;
-
-            /* Position the tooltip */
+            padding: 5px; /* Position the tooltip */
             position: absolute;
             z-index: 1;
             bottom: 1em;
             left: 75%;
-
             width: 10em;
             white-space: normal;
         }
@@ -299,16 +282,16 @@
 
         // automatch condition stylings
         .no-preference {
-            themed color shade2;
+            themed: color shade2;
         }
+
         .required {
             font-weight: bold;
         }
-        .preferred {
 
+        .preferred {
         }
     }
-
 
     .automatch-challenge-row {
         .cell {
@@ -319,5 +302,4 @@
     .fa-times-circle-o {
         cursor: pointer;
     }
-
 }

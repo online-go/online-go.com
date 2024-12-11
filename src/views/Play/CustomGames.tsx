@@ -124,6 +124,13 @@ export function CustomGames(): JSX.Element {
         return live_list.find((c) => c.user_challenge);
     }, [live_list]);
 
+    const [show_custom_games, setShowCustomGames] = preferences.usePreference(
+        "automatch.show-custom-games",
+    );
+    const toggleCustomGames = React.useCallback(() => {
+        setShowCustomGames(!show_custom_games);
+    }, [show_custom_games]);
+
     /*
     const ownRengoChallengesPending = React.useCallback((): Challenge[] => {
         // multiple correspondence are possible, plus one live
@@ -397,6 +404,18 @@ export function CustomGames(): JSX.Element {
         automatch_manager.active_live_automatcher
     );
 
+    if (!show_custom_games) {
+        return (
+            <div>
+                <div className="CustomGames--toggle-container">
+                    <button className="custom-games-toggle" onClick={toggleCustomGames}>
+                        {_("Explore custom games")}
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <PlayContext.Provider
             value={{
@@ -409,6 +428,37 @@ export function CustomGames(): JSX.Element {
                 unfreezeChallenges,
             }}
         >
+            <div>
+                <div className="CustomGames--toggle-container showing-custom-games">
+                    <button
+                        className="primary"
+                        disabled={disable_challenge_buttons}
+                        onClick={() => {
+                            challenge(undefined, undefined, undefined, undefined, undefined);
+                        }}
+                    >
+                        {_("Create a custom game")}
+                    </button>
+                    <button
+                        disabled={disable_challenge_buttons}
+                        className="custom-games-toggle"
+                        onClick={toggleCustomGames}
+                    >
+                        {_("Hide custom games")}
+                    </button>
+
+                    <button
+                        className="primary"
+                        disabled={disable_challenge_buttons}
+                        onClick={() => {
+                            challenge(undefined, undefined, true, undefined, undefined);
+                        }}
+                    >
+                        {_("Play a custom computer game")}
+                    </button>
+                </div>
+            </div>
+
             <div id="CustomGames">
                 {liveOwnChallengePending() ? (
                     <Card>
@@ -493,27 +543,6 @@ export function CustomGames(): JSX.Element {
                         showIcons={true}
                         toggleHandler={toggleFilterHandler}
                     ></SeekGraphLegend>
-
-                    <div className="create-custom-games-buttons">
-                        <button
-                            className="primary"
-                            disabled={disable_challenge_buttons}
-                            onClick={() => {
-                                challenge(undefined, undefined, undefined, undefined, undefined);
-                            }}
-                        >
-                            {_("Create a custom game")}
-                        </button>
-                        <button
-                            className="primary"
-                            disabled={disable_challenge_buttons}
-                            onClick={() => {
-                                challenge(undefined, undefined, true, undefined, undefined);
-                            }}
-                        >
-                            {_("Play a custom computer game")}
-                        </button>
-                    </div>
                 </div>
 
                 <div id="challenge-list-container">
