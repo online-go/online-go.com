@@ -50,6 +50,7 @@ import { RengoManagementPane } from "@/components/RengoManagementPane";
 import { RengoTeamManagementPane } from "@/components/RengoTeamManagementPane";
 import { PlayContext } from "./PlayContext";
 import { challenge } from "@/components/ChallengeModal";
+import { active_challenges_emitter, useHaveActiveGameSearch } from "./hooks";
 
 const CHALLENGE_LIST_FREEZE_PERIOD = 1000; // Freeze challenge list for this period while they move their mouse on it
 
@@ -74,6 +75,8 @@ export function CustomGames(): JSX.Element {
     const ref_container: React.RefObject<HTMLDivElement> = React.createRef();
     const canvas: HTMLCanvasElement = React.useMemo(() => allocateCanvasOrError(), []);
     const seekgraph = React.useRef<SeekGraph>();
+
+    const disable_challenge_buttons = useHaveActiveGameSearch();
 
     const [seekGraphVisible, setSeekGraphVisible] = usePreference("show-seek-graph");
 
@@ -363,6 +366,9 @@ export function CustomGames(): JSX.Element {
             filter: default_filter as ChallengeFilter,
         });
         seekgraph.current.on("challenges", updateChallenges);
+        seekgraph.current.on("challenges", (args) => {
+            active_challenges_emitter.emit("challenges", args);
+        });
 
         const [match, id] = window.location.hash.match(/#rengo:(\d+)/) || [];
         if (match) {
@@ -371,6 +377,7 @@ export function CustomGames(): JSX.Element {
 
         return () => {
             seekgraph.current?.destroy();
+            active_challenges_emitter.emit("clear");
             if (list_freeze_timeout.current) {
                 clearTimeout(list_freeze_timeout.current);
                 list_freeze_timeout.current = undefined;
@@ -397,12 +404,6 @@ export function CustomGames(): JSX.Element {
             }
         });
     }, [live_list, cancelOpenChallenge]);
-
-    const disable_challenge_buttons = !!(
-        liveOwnChallengePending() ||
-        live_rengo_challenge_to_show ||
-        automatch_manager.active_live_automatcher
-    );
 
     if (!show_custom_games) {
         return (

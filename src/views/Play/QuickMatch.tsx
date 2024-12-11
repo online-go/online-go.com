@@ -51,6 +51,7 @@ import { Link } from "react-router-dom";
 import Select, { components } from "react-select";
 import { SPEED_OPTIONS } from "./SPEED_OPTIONS";
 import { PlayerIcon } from "@/components/PlayerIcon";
+import { useHaveActiveGameSearch } from "./hooks";
 
 moment.relativeTimeThreshold("m", 56);
 export interface SelectOption {
@@ -225,6 +226,7 @@ export function QuickMatch(): JSX.Element {
     const [bot_spinner, setBotSpinner] = React.useState(false);
     const cancel_bot_game = React.useRef<() => void>(() => {});
     const [game_clock, setGameClock] = preferences.usePreference("automatch.game-clock");
+    const have_active_game_search = useHaveActiveGameSearch();
 
     const [multiple_sizes, setMultipleSizes] = preferences.usePreference(
         "automatch.multiple-sizes",
@@ -568,7 +570,7 @@ export function QuickMatch(): JSX.Element {
     }, []);
     */
 
-    const search_active =
+    const automatch_search_active =
         !!automatch_manager.active_live_automatcher || correspondence_spinner || bot_spinner;
 
     function isSizeActive(size: Size) {
@@ -832,7 +834,7 @@ export function QuickMatch(): JSX.Element {
                                     getActivityClass(s)
                                 }
                                 key={s}
-                                disabled={search_active}
+                                disabled={automatch_search_active}
                                 onClick={() => {
                                     toggleSize(s);
                                 }}
@@ -933,7 +935,7 @@ export function QuickMatch(): JSX.Element {
                                                 getActivityClass(board_size, speed, "fischer")
                                             }
                                             disabled={
-                                                search_active ||
+                                                automatch_search_active ||
                                                 (game_clock === "multiple" &&
                                                     speed === "correspondence")
                                             }
@@ -982,7 +984,7 @@ export function QuickMatch(): JSX.Element {
                                                     onClick={() => {
                                                         toggleSpeedSystem(speed, "byoyomi");
                                                     }}
-                                                    disabled={search_active}
+                                                    disabled={automatch_search_active}
                                                 >
                                                     {selected_size_count > 1 &&
                                                     speed !== "correspondence"
@@ -1023,10 +1025,10 @@ export function QuickMatch(): JSX.Element {
                             className={
                                 "opponent-option-container " +
                                 (opponent === "human" ? "active" : "") +
-                                (search_active ? " disabled" : "")
+                                (automatch_search_active ? " disabled" : "")
                             }
                             onClick={() => {
-                                if (search_active) {
+                                if (automatch_search_active) {
                                     return;
                                 }
                                 setOpponent("human");
@@ -1039,7 +1041,7 @@ export function QuickMatch(): JSX.Element {
                                 <select
                                     value={lower_rank_diff}
                                     onChange={(ev) => setLowerRankDiff(parseInt(ev.target.value))}
-                                    disabled={search_active}
+                                    disabled={automatch_search_active}
                                 >
                                     {user.anonymous ? (
                                         <option>{"30k"}</option>
@@ -1055,7 +1057,7 @@ export function QuickMatch(): JSX.Element {
                                 <select
                                     value={upper_rank_diff}
                                     onChange={(ev) => setUpperRankDiff(parseInt(ev.target.value))}
-                                    disabled={search_active}
+                                    disabled={automatch_search_active}
                                 >
                                     {user.anonymous ? (
                                         <option>{"9d"}</option>
@@ -1074,10 +1076,12 @@ export function QuickMatch(): JSX.Element {
                             className={
                                 "opponent-option-container " +
                                 (opponent === "bot" ? "active" : "") +
-                                (search_active || game_clock === "multiple" ? " disabled" : "")
+                                (automatch_search_active || game_clock === "multiple"
+                                    ? " disabled"
+                                    : "")
                             }
                             onClick={() => {
-                                if (search_active || game_clock === "multiple") {
+                                if (automatch_search_active || game_clock === "multiple") {
                                     return;
                                 }
                                 setOpponent("bot");
@@ -1106,7 +1110,7 @@ export function QuickMatch(): JSX.Element {
                                     minMenuHeight={400}
                                     maxMenuHeight={400}
                                     menuPlacement="auto"
-                                    isDisabled={search_active}
+                                    isDisabled={automatch_search_active}
                                     onChange={(opt) => {
                                         if (opt) {
                                             setSelectedBot(opt.id);
@@ -1142,7 +1146,7 @@ export function QuickMatch(): JSX.Element {
                             minMenuHeight={400}
                             maxMenuHeight={400}
                             menuPlacement="auto"
-                            isDisabled={search_active}
+                            isDisabled={automatch_search_active}
                             onChange={(opt) => {
                                 if (opt) {
                                     setHandicaps(opt.value as "enabled" | "standard" | "disabled");
@@ -1225,11 +1229,11 @@ export function QuickMatch(): JSX.Element {
                             </div>
                         )}
 
-                        {!search_active && !user.anonymous && (
+                        {!automatch_search_active && !user.anonymous && (
                             <button
                                 className="primary play-button"
                                 onClick={play}
-                                disabled={anon || warned}
+                                disabled={anon || warned || have_active_game_search}
                             >
                                 {_("Play")}
                             </button>
