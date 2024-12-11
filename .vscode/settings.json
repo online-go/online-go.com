@@ -1,5 +1,5 @@
 {
-    "stylusSupremacy.ignoreFiles": [
-        "[\"src/ogs.styl\"]"
-    ]
+    "stylusSupremacy.ignoreFiles": ["src/ogs.styl"],
+    "stylusSupremacy.tabStopChar": "    ",
+    "stylusSupremacy.alwaysUseExtends": true
 }
