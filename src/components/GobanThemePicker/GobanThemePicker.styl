@@ -14,8 +14,6 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-
 .GobanThemePicker {
     display: inline-flex;
     flex-direction: column;
@@ -50,22 +48,23 @@
         }
 
         .selector:hover, .selector.active {
-            themed border-color primary
+            themed: border-color primary;
             border-width: 2px;
-            opacity: 1.0;
+            opacity: 1;
         }
 
         input[type=color] {
             width: 1.5rem;
             height: 1.5rem;
-            margin-left: 1.0rem;
+            margin-left: 1rem;
             border: 0;
         }
 
-        .board-color-selectors{
+        .board-color-selectors {
             display: flex;
             flex-direction: row;
         }
+
         .color-reset {
             vertical-align: top;
             margin-top: 0.4rem;
@@ -73,6 +72,7 @@
             margin-right: 0;
             padding-right: 0;
             padding-left: 0;
+
             .fa-undo {
                 margin-left: 0 !important;
                 margin-right: 0 !important;
@@ -92,7 +92,6 @@
                 border: 1px solid;
                 margin-top: 3px;
             }
-
         }
     }
 
@@ -101,11 +100,11 @@
         display: flex;
         justify-content: center;
         margin: 0.5rem;
+
         .show-customize-toggle {
             margin-left: 0.3rem;
         }
     }
-    
 }
 
 .LineText.customize {

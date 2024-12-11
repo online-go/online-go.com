@@ -14,19 +14,17 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-
 .TooltipContainer {
     position: relative;
 
     .Tooltip {
         display: none;
-        themed background-color toast-bg;
+        themed: background-color toast-bg;
         width: 200px;
         border-radius: 2px;
-        position: absolute; 
+        position: absolute;
         left: -220px;
-        top: 50%;  
+        top: 50%;
         transform: translateY(-50%);
         box-sizing: border-box;
         padding: 0.5em;
@@ -36,18 +34,18 @@
             opacity: 0;
         }
 
-            .title {
-                font-weight: bolder;
-                margin: 0;
-                themed color toast-fg;
-                font-size: 0.9em;
-            } 
-            
-            .text {
-                margin: 0;
-                font-size: 0.9em;
-                themed color toast-fg;
-            } 
+        .title {
+            font-weight: bolder;
+            margin: 0;
+            themed: color toast-fg;
+            font-size: 0.9em;
+        }
+
+        .text {
+            margin: 0;
+            font-size: 0.9em;
+            themed: color toast-fg;
+        }
     }
 }
 
@@ -65,24 +63,24 @@
     transform: translateX(-50%) translateY(-50%) rotate(45deg);
     margin-left: -2px;
     border-color: transparent;
-    themed border-top-color toast-bg;
-    themed border-right-color toast-bg;
+    themed: border-top-color toast-bg;
+    themed: border-right-color toast-bg;
     border-width: 7px;
     border-style: solid;
 }
 
 @media only screen and (max-width: 600px) {
-  .TooltipContainer:hover {
-    .Tooltip {
-        display: none;
+    .TooltipContainer:hover {
+        .Tooltip {
+            display: none;
+        }
     }
-  }
 }
 
 @media only screen and (max-height: 500px) {
-  .TooltipContainer:hover {
-    .Tooltip {
-        display: none;
+    .TooltipContainer:hover {
+        .Tooltip {
+            display: none;
+        }
     }
-  }
 }

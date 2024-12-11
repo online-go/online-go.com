@@ -14,10 +14,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 .Group {
     .banner {
         text-align: center;
+
         img {
             max-width: 100vw;
             max-height: 20vh;
@@ -25,17 +25,19 @@
 
         .fa-picture-o {
             font-size: 15vh;
-            themed color shade3
+            themed: color shade3;
         }
+
         .fa-picture-o:hover {
-            themed color shade2
+            themed: color shade2;
         }
     }
+
     .admins {
         margin-bottom: 1rem;
 
         >b, >span {
-            margin-right:1rem;
+            margin-right: 1rem;
         }
     }
 
@@ -51,14 +53,16 @@
         cursor: pointer;
         border: 2px dashed #888;
     }
+
     .Dropzone-128 {
         height: 128px;
         width: 128px;
     }
 
     .Player {
-        margin-right:0.5em;
-        &.online, &.offline{
+        margin-right: 0.5em;
+
+        &.online, &.offline {
             &:before {
                 top: 0;
             }
@@ -78,6 +82,7 @@
 
     .new-news {
         margin: 0.5rem;
+
         input {
             width: 100%;
         }
@@ -91,7 +96,6 @@
         overflow-x: auto;
     }
 
-
     .EmbeddedChatCard {
         flex-shrink: 0;
         flex-grow: 1;
@@ -99,6 +103,7 @@
         flex-basis: 15rem;
         height: 40rem;
         overflow: hidden;
+
         .Chat {
         }
     }
@@ -114,11 +119,13 @@
         table {
             width: 100%;
         }
+
         th {
             text-align: right;
             padding: 0.2rem;
             width: 50%;
         }
+
         td {
             text-align: left;
             padding: 0.2rem;
@@ -135,15 +142,16 @@
             margin-left: 0.2rem;
             margin-right: 0.2rem;
             border-radius: 0.1rem;
-            themed color colored-background-fg
+            themed: color colored-background-fg;
             cursor: pointer;
         }
+
         .fa-times {
-            themed background-color reject
+            themed: background-color reject;
         }
+
         .fa-check {
-            themed background-color success
+            themed: background-color success;
         }
     }
 }
-

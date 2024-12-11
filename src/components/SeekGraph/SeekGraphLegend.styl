@@ -14,12 +14,11 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
- .seek-graph-legend {
+.seek-graph-legend {
     margin: 1rem 0;
     // display: flex;
     width: 100%;
-    
+
     canvas {
         margin-right: 2px;
         width: 20px;
@@ -38,25 +37,23 @@
         white-space: nowrap;
     }
 
-    @media (max-width:720px) {
+    @media (max-width: 720px) {
         .legend-group {
             width: 50%;
         }
     }
 
-     @media (min-width:720px) {
+    @media (min-width: 720px) {
         .legend-group {
             width: 100%;
         }
     }
-    
+
     .grid {
         display: grid;
-        grid-template-columns: repeat( auto-fit, minmax(125px, 1fr) );
+        grid-template-columns: repeat(auto-fit, minmax(125px, 1fr));
         // display: flex;
         // flex-wrap: wrap;
         // align-items: center;
-        
     }
-    
 }

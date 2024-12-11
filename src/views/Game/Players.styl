@@ -14,13 +14,13 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 @keyframes pulsate-paused-clock {
-    50% { color: #888; }
+    50% {
+        color: #888;
+    }
 }
 
 // used in Game and GameInfoModal
-
 .rengo-header-block {
     margin-top: 0.7rem;
     display: flex;
@@ -40,11 +40,10 @@
     border-radius: 0.4em;
     padding: 0.3rem;
     margin-bottom: 0.25rem;
-    themed background-color shade4;
+    themed: background-color shade4;
 }
 
 .MainGobanView .players {
-
     .rengo-team-members {
         display: flex;
         flex-direction: column;
@@ -56,16 +55,15 @@
             border-radius: 0.4em;
             padding: 0.3rem;
             padding-bottom: 0.1rem;
-            width: 100%
+            width: 100%;
             box-sizing: border-box;
             text-align: left;
-            themed background-color other-player-background
+            themed: background-color other-player-background;
         }
     }
-
 }
 
-.MainGobanView .player-icons
+.MainGobanView .player-icons {
     flex-shrink: 0;
     flex-grow: 0;
     display: flex;
@@ -82,30 +80,32 @@
         display: flex;
         flex-direction: column;
         width: 49%;
-
         box-sizing: border-box;
-
         border-radius: 0.3em;
         text-align: center;
         padding: 0.2em;
         margin-top: 0.2em;
-        /*border: 1px solid transparent;*/
+
+        /* border: 1px solid transparent; */
         .komi {
             flex-grow: 0;
             text-align: right;
             font-weight: bold;
         }
+
         .rules {
             flex-grow: 0;
             text-align: right;
             font-weight: bold;
         }
+
         .captures, .points {
             font-weight: bold;
             position: relative;
             background-image: none;
             font-size: 1.1rem;
         }
+
         .hidden {
             visibility: hidden;
         }
@@ -113,23 +113,25 @@
         .auto-resign-overlay {
             opacity: 0.9;
             z-index: z.goban.score-details;
-            background-color #555;
-            color #fff;
+            background-color: #555;
+            color: #fff;
             display: flex;
             flex-direction: column;
             align-items: center;
             align-content: center;
             justify-content: center;
             font-size: font-size-big;
+
             .fa-bolt {
                 font-size: 150%;
             }
+
             padding-left: 2px;
-            min-width: inherit;  // make sure we are as wide as the player avatar that contains us
+            min-width: inherit; // make sure we are as wide as the player avatar that contains us
         }
     }
 
-    .player-icon-clock-row{
+    .player-icon-clock-row {
         display: flex;
         align-items: stretch;
         width: 100%;
@@ -143,7 +145,7 @@
         flex-direction: row;
         justify-content: center;
         align-items: center;
-        //width: 100%;
+        // width: 100%;
         background-repeat: no-repeat;
         background-size: contain;
         min-height: 4rem;
@@ -154,6 +156,7 @@
         .player-icon-container {
             min-height: 2rem;
             min-width: 2rem;
+
             .player-flag {
                 top: 1rem;
                 left: 1rem;
@@ -162,45 +165,45 @@
         }
     }
 
-
     .white.player-container {
-        box-shadow: 0 2px 5px rgba(50,50,50,.51);
-        themed background player-white-background
-        themed color player-white-fg
+        box-shadow: 0 2px 5px rgba(50, 50, 50, 0.51);
+        themed: background player-white-background;
+        themed: color player-white-fg;
 
         .paused-correspondence {
-            themed color player-white-paused-clock
+            themed: color player-white-paused-clock;
         }
 
         // Use the light mode color for names in the white player box
         .Player {
-            color light.user
-        }
-        for color-attr, class-attr in special-player-type-priority {
-            .Player.{class-attr} {
-                color: light[color-attr]!important
-            }
+            color: light.user;
         }
 
+        for color-attr, class-attr in special-player-type-priority {
+            .Player.{class-attr} {
+                color: light[color-attr] !important;
+            }
+        }
     }
 
     .black.player-container {
-        themed background player-black-background
-        themed color player-black-fg
+        themed: background player-black-background;
+        themed: color player-black-fg;
         border-top: 1px solid #202020;
-        box-shadow: 0 2px 5px rgba(20,20,20,.71);
+        box-shadow: 0 2px 5px rgba(20, 20, 20, 0.71);
 
         .paused-correspondence {
-            themed color player-black-paused-clock
+            themed: color player-black-paused-clock;
         }
 
         // Use the dark mode color for names in the black player box
         .Player {
-            color: dark.user ;
+            color: dark.user;
         }
+
         for color-attr, class-attr in special-player-type-priority {
             .Player.{class-attr} {
-                color: dark[color-attr]!important
+                color: dark[color-attr] !important;
             }
         }
     }
@@ -227,13 +230,11 @@
         }
     }
 
-
     .black.player-container .flag, .white.player-container .flag {
-        margin-top: .1em;
-        margin-right: .4em;
-        margin-left: .4em;
+        margin-top: 0.1em;
+        margin-right: 0.4em;
+        margin-left: 0.4em;
     }
-
 
     .player-name-container {
         overflow: hidden;
@@ -252,12 +253,12 @@
         display: inline-block;
         left: 0.25em;
         top: 0.25em;
-        font-size: 0.50em !important;
+        font-size: 0.5em !important;
         vertical-align: text-top;
 
         &.online {
-            themed color indicate-online
-            themed text-shadow indicate-online-shadow
+            themed: color indicate-online;
+            themed: text-shadow indicate-online-shadow;
         }
     }
 
@@ -266,28 +267,31 @@
     .white.player-container {
         .online-status-indicator.online {
             // color: #00ff00;
-            color: pink;  /// flush it out if it is being used
+            color: pink; // / flush it out if it is being used
         }
     }
 
-    #game-black-clock{
-        themed color player-black-clock
+    #game-black-clock {
+        themed: color player-black-clock;
     }
 
-    #game-white-clock{
-        themed color player-white-clock
+    #game-white-clock {
+        themed: color player-white-clock;
     }
 
     #game-black-clock .out_of_time, #game-white-clock .out_of_time {
         color: #f44;
     }
+
     #game-black-clock .plenty_of_time, #game-white-clock .plenty_of_time {
         color: #000;
     }
+
     #game-black-clock .time_suffix {
         color: #aaa;
         font-size: 0.7em;
     }
+
     #game-white-clock .time_suffix {
         color: #111;
         font-size: 0.7em;
@@ -301,7 +305,6 @@
     #black_score, #white_score, .clock-container {
         font-weight: bold;
     }
-
 
     .score-container {
         margin-top: 0.5em;
@@ -319,8 +322,8 @@
             top: 1.2rem;
             min-width: 100%;
             border: 1px solid #999;
-            themed background-color shade4
-            themed color fg
+            themed: background-color shade4;
+            themed: color fg;
             box-shadow: 2px 2px 1px #888888;
             border-radius: 2px;
             visibility: hidden;
@@ -334,9 +337,9 @@
     }
 
     .score_breakdown {
-        font-size: .8em;
+        font-size: 0.8em;
         text-align: right;
-        padding-right: .3em;
+        padding-right: 0.3em;
     }
 
     .score_breakdown .summary {
@@ -357,10 +360,9 @@
     .Clock {
         .main-time {
             font-size: 14pt;
-
         }
     }
-
+}
 
 .MainGobanView.portrait .player-icons {
     .player-icon-container {
@@ -368,6 +370,7 @@
         min-height: 1.5rem;
         min-width: 4rem; // need this width to accomodate disconnect timer
         position: relative;
+
         .player-flag {
             position: absolute;
             left: unset;
@@ -376,24 +379,30 @@
             bottom: -0.2rem;
             transform-origin: 40px bottom;
         }
+
         .auto-resign-overlay {
             flex-direction: row;
             font-size: inherit;
+
             .fa-bolt {
                 font-size: inherit;
                 margin-right: 2px;
             }
         }
     }
+
     .player-name-container {
         font-size: font-size-small;
     }
+
     .player-container {
         .captures, .points, .komi, .rules {
             font-size: font-size-small;
         }
+
         padding-bottom: 0;
     }
+
     .score-container {
         margin-top: 0;
     }
@@ -401,13 +410,13 @@
     .Clock {
         .main-time {
             font-size: 1.2em;
+
             &.small {
                 font-size: font-size-small;
             }
         }
-        .byo-yomi-container,
-        .canadian-container
-        {
+
+        .byo-yomi-container, .canadian-container {
             font-size: 0.8 * 1.2em;
         }
     }
@@ -421,8 +430,8 @@ body.dark .MainGobanView.zen .player-icons {
             color: #DDD;
         }
     }
-    #game-white-clock,
-    .white .score-container {
+
+    #game-white-clock, .white .score-container {
         color: #DDD;
     }
 
@@ -435,54 +444,54 @@ body.dark .MainGobanView.zen .player-icons {
             color: #BBB;
         }
     }
-    #game-black-clock,
-    .black .score-container {
+
+    #game-black-clock, .black .score-container {
         color: #BBB;
     }
 }
 
 body.accessible .MainGobanView.zen .player-icons {
-	.white {
-		&.player-container {
-			background: linear-gradient(#2C2C2C 0%, #383838 100%);
-			border: 1px solid #181818;
-			color: #DDD;
-		}
-	}
-	#game-white-clock,
-	.white .score-container {
-		color: #DDD;
-	}
+    .white {
+        &.player-container {
+            background: linear-gradient(#2C2C2C 0%, #383838 100%);
+            border: 1px solid #181818;
+            color: #DDD;
+        }
+    }
 
-	.black {
-		&.player-container {
-			background: linear-gradient(#111111 0%, #1A1A1A 100%);
-			// background: none;
-			background-color: #111111;
-			border: 1px solid #181818;
-			color: #BBB;
-		}
-	}
-	#game-black-clock,
-	.black .score-container {
-		color: #BBB;
-	}
+    #game-white-clock, .white .score-container {
+        color: #DDD;
+    }
+
+    .black {
+        &.player-container {
+            background: linear-gradient(#111111 0%, #1A1A1A 100%);
+            // background: none;
+            background-color: #111111;
+            border: 1px solid #181818;
+            color: #BBB;
+        }
+    }
+
+    #game-black-clock, .black .score-container {
+        color: #BBB;
+    }
 }
+
 body.light .MainGobanView.zen .player-icons {
     .black.player-container {
         background: linear-gradient(#666 0%, #181818 100%);
     }
 }
-.MainGobanView.zen .play-controls{
+
+.MainGobanView.zen .play-controls {
     .game-state {
         display: none;
     }
 }
-.MainGobanView.zen {
 
-    .rengo-header,
-    .rengo-teams-header,
-    .rengo-team-members-container  {
+.MainGobanView.zen {
+    .rengo-header, .rengo-teams-header, .rengo-team-members-container {
         display: none;
     }
 
@@ -490,71 +499,75 @@ body.light .MainGobanView.zen .player-icons {
         .black.player-container {
             border-top: none;
         }
+
         .player-container {
             justify-content: center;
             min-width: 150px;
         }
+
         .player-icon-clock-row {
             width: auto;
             flex-grow: 1;
         }
+
         .Clock {
             min-height: 80px;
+
             .pause-text {
                 display: none;
             }
-            .main-time,
-            .period-time {
+
+            .main-time, .period-time {
                 line-height: 50px;
                 font-size: 26pt;
                 text-align: center;
             }
-            .byo-yomi-container,
-            .canadian-clock-container {
+
+            .byo-yomi-container, .canadian-clock-container {
                 display: block;
-                font-size: font-size-mid
+                font-size: font-size-mid;
                 flex-grow: 1;
             }
         }
+
         .Clock:not(.in-overtime) {
-            .byo-yomi-container,
-            .canadian-clock-container {
+            .byo-yomi-container, .canadian-clock-container {
                 display: none;
             }
         }
+
         .captures {
             display: flex;
             justify-content: center;
             flex-basis: 70%;
         }
+
         .score-container {
             margin: 0px;
             justify-content: center;
             flex-grow: 0;
         }
+
         .num-captures-container {
             display: flex;
             align-items: center;
             justify-content: center;
             flex-direction: row;
             flex-grow: 1;
+
             .stone-image {
                 width: 14px;
                 height: 14px;
             }
+
             .num-captures-stone {
                 margin-left: 3px;
                 margin-right: 3px;
             }
         }
-        .player-icon-container,
-        .player-name-container,
-        .player-name-plain,
-        .score-details,
-        .rules,
-        .komi {
+
+        .player-icon-container, .player-name-container, .player-name-plain, .score-details, .rules, .komi {
             display: none;
         }
     }
 }
-

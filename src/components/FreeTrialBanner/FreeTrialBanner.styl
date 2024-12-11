@@ -19,7 +19,7 @@
     justify-content: center;
     margin: 2rem 1rem;
 
-    @media screen and (max-width: 850px){
+    @media screen and (max-width: 850px) {
         margin: 2rem 0;
     }
 }
@@ -33,8 +33,8 @@
     max-width: calc(min(100%, 100vw));
     min-height: 12rem;
     overflow: hidden;
-    
-    @media screen and (max-width: 850px){
+
+    @media screen and (max-width: 850px) {
         flex-direction: column;
         height: 30rem;
         align-items: stretch;
@@ -42,20 +42,17 @@
         justify-content: stretch;
         width: 100%;
     }
-    
 
     .free-trial-left {
         flex: 1;
         flex-grow: 1;
         flex-basis: 15rem;
-        //width: 15rem;
-        
+        // width: 15rem;
         display: flex;
         flex-direction: column;
         justify-content: stretch;
         align-content: stretch;
         align-items: stretch;
-
 
         .trial-board, .trial-graph {
             background-size: cover;
@@ -80,19 +77,20 @@
             height: 35%;
             transform: scaleX(-1);
         }
-        
-        
-        @media screen and (max-width: 850px){
+
+        @media screen and (max-width: 850px) {
             flex-basis: 18rem;
+
             .trial-board, .trial-graph {
                 width: 100%;
-
             }
+
             .trial-board {
                 flex: 2.5;
                 min-height: 8rem;
                 border-bottom-right-radius: 0;
             }
+
             .trial-graph {
                 min-height: 4rem;
                 border-bottom-right-radius: 0;
@@ -110,21 +108,21 @@
         padding-left: 1rem;
         padding-right: 1rem;
         justify-content: space-between;
-        //height: 100%;
+        // height: 100%;
         align-content: space-between;
 
         h3, h4 {
             text-align: center;
-            //margin: 0.5rem;
+            // margin: 0.5rem;
             display: flex;
             justify-content: center;
             align-items: center;
         }
-        
+
         h3 {
             margin-top: 0.5rem;
         }
-        
+
         h4 {
             margin-top: 0;
             flex-grow: 1;
@@ -137,17 +135,15 @@
             margin: 0.5rem;
         }
 
-        @media screen and (max-width: 850px){
+        @media screen and (max-width: 850px) {
             width: 100%;
             max-width: 100%;
             padding-left: 0;
             padding-right: 0;
-            
+
             h3, h4 {
                 margin-bottom: 0;
-
             }
-        
         }
     }
 }

@@ -14,26 +14,25 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 .Settings {
     // here
     user-select: none;
 
     .dev-tools {
         color: black;
-        themed background-color shade0
+        themed: background-color shade0;
         border: 1px solid red;
         border-radius: 10px;
         padding: 0 20px 20px 20px;
         margin-bottom: 20px;
 
-        input{
+        input {
             color: red;
             background-color: white;
         }
     }
 
-    .normal-preferences.normal-preferences.hidden{
+    .normal-preferences.normal-preferences.hidden {
         display: none;
     }
 
@@ -83,27 +82,22 @@
             }
         }
 
-
         span {
             margin-right: 0.2rem;
             margin-left: 0.2rem;
         }
     }
-    
 
-    
-
-    .PreferenceDropdown
-    {
+    .PreferenceDropdown {
         min-width: 10rem;
+
         .PreferenceDropdown-value-container {
             padding-left: 0.5rem;
             padding-right: 0.5rem;
         }
     }
 
-    .ProfanityDropdown
-    {
+    .ProfanityDropdown {
         min-width: 10rem;
     }
 
@@ -136,12 +130,10 @@
 
     .volume-icon {
         cursor: pointer;
-        width: 1.0rem;
+        width: 1rem;
         font-size: 1.4rem;
         margin-right: 0.5rem;
     }
-
-
 
     .notification-option {
         padding: 0.5rem;
@@ -163,6 +155,7 @@
                 flex-basis: 10rem;
                 margin-right: 2rem;
             }
+
             > h5 {
                 display: inline-block;
                 padding-left: 2rem;
@@ -193,8 +186,8 @@
                 display: flex;
                 flex-direction: row;
                 align-items: center;
-                margin-top: 1.0rem;
-                margin-bottom: 1.0rem;
+                margin-top: 1rem;
+                margin-bottom: 1rem;
 
                 input {
                     flex: 1;
@@ -211,9 +204,10 @@
     }
 
     dt {
-        margin-top: 2.0rem;
+        margin-top: 2rem;
         font-weight: bold;
     }
+
     dd {
         margin-bottom: 0rem;
     }
@@ -225,8 +219,8 @@
     }
 
     .awaiting-validation-text {
-        themed background-color info;
-        //themed color colored-background-fg;
+        themed: background-color info;
+        // themed color colored-background-fg;
         padding: 0.5rem;
         border-radius: 0.3rem;
         margin-top: 0.5rem;
@@ -239,7 +233,6 @@
         display: flex;
         align-items: center;
         max-width: 95vw;
-
 
         label {
             flex: 1;
@@ -267,7 +260,7 @@
 
         .SoundToggle-voice-label {
             flex: 1;
-            //flex-grow: 1;
+            // flex-grow: 1;
         }
     }
 
@@ -286,7 +279,6 @@
                 width: 14rem;
                 flex-basis: 14rem;
             }
-
         }
 
         .Toggle {
@@ -298,6 +290,7 @@
     .EmailNotificationToggle {
         margin-top: 1rem;
         margin-left: 1rem;
+
         label {
             .preference-toggle-name {
                 width: 20rem;
@@ -307,14 +300,12 @@
     }
 
     .sound-sample-left-column {
-
     }
 
     .col {
         display: flex;
         flex-direction: column;
         align-items: center;
-
     }
 
     .LogoutButtons {
@@ -340,25 +331,26 @@
             margin-bottom: 5rem;
         }
 
-
         .PreferenceLine {
             .PreferenceLineTitle {
                 width: 15rem;
                 min-width: 15rem;
-                select {
-                width: 14rem;
-                min-width: 14rem;
 
+                select {
+                    width: 14rem;
+                    min-width: 14rem;
                 }
             }
+
             .PreferenceLineBody {
                 width: 20rem;
                 min-width: 20rem;
 
-                input[type="number"] {
+                input[type='number'] {
                     width: 7rem;
                 }
-                input[type="text"] {
+
+                input[type='text'] {
                     width: 7rem;
                 }
 
@@ -367,7 +359,6 @@
                 }
             }
         }
-
     }
 
     #BlockedPlayers, #AnnouncementPreferences {
@@ -375,6 +366,7 @@
             display: flex;
             margin-bottom: 0.5rem;
             flex-wrap: wrap;
+
             .blocked-player {
                 width: 20rem;
                 max-width: 100vw;
@@ -392,25 +384,24 @@
     display: flex;
     flex-direction: row;
     justify-content: flex-start;
-    //align-items: stretch;
+    // align-items: stretch;
     align-items: flex-start;
 }
 
 #SettingsGroupSelector {
     border: 1px solid black;
-    themed border-color shade3
+    themed: border-color shade3;
 
     .SettingsGroup {
         cursor: pointer;
         padding: 0.7rem;
-
         display: flex;
         justify-content: space-between;
         align-items: center;
 
         &.selected {
-            themed background-color primary
-            themed color colored-background-fg
+            themed: background-color primary;
+            themed: color colored-background-fg;
         }
 
         .spacer {
@@ -421,7 +412,6 @@
         i {
             display: inline-block;
             width: 1rem;
-
         }
     }
 }
@@ -431,7 +421,7 @@
     display: flex;
 
     .help-details-greyed {
-        themed color shade4
+        themed: color shade4;
     }
 }
 
@@ -440,13 +430,14 @@
     #SettingsGroupSelector {
         display: none;
     }
+
     #SettingsContainer {
         flex-direction: column;
     }
+
     #SelectedSettingsContainer {
         padding-top: 1rem;
     }
-
 
     #SettingsGroupDropdown {
         .settings-group-container {
@@ -454,6 +445,7 @@
             padding-right: 1rem;
         }
     }
+
     #SettingsContainer {
         align-items: stretch;
     }
@@ -464,6 +456,7 @@
     #SettingsGroupDropdown {
         display: none;
     }
+
     #SelectedSettingsContainer {
         padding-left: 1rem;
         padding-right: 1rem;
@@ -476,9 +469,11 @@
     td, th {
         padding-right: 0.4rem;
     }
+
     .announcement-time {
         white-space: nowrap;
     }
+
     .announcement-message, .announcement-link {
         width: 17rem;
     }
@@ -488,6 +483,7 @@
     display: inline-flex;
     flex-direction: row;
     align-items: center;
+
     button {
         margin-left: 2rem;
     }

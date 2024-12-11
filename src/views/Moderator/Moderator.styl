@@ -14,13 +14,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-
 .Moderator {
     // here
-
     td.timestamp {
-        @extend .monospace
+        @extends .monospace;
         white-space: nowrap;
         font-size: font-size-smaller;
         width: 7rem;
@@ -31,7 +28,7 @@
         display: flex;
         flex-wrap: wrap;
 
-        > div,span {
+        > div, span {
             display: inline-block;
             margin-left: 0.5rem;
             margin-right: 0.5rem;
@@ -52,7 +49,7 @@
     }
 
     .userlog {
-        th,td {
+        th, td {
             text-align: left;
         }
     }
@@ -71,5 +68,4 @@
     .user {
         max-width: 10rem;
     }
-
 }

@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 .LineText {
     display: flex;
     align-items: center;
@@ -23,15 +22,18 @@
     .left, .right {
         flex: 1;
         border-bottom: 1px solid #888;
-        themed border-color shade3
+        themed: border-color shade3;
         margin-top: 0.25em;
     }
+
     .left {
         margin-right: 0.5rem;
     }
+
     .right {
         margin-left: 0.5rem;
     }
+
     .contents {
     }
 }
@@ -39,9 +41,10 @@
 @keyframes pulsate-reject {
     0%, 100% {
     }
+
     50% {
         box-shadow: 0px 5px 10px 0px rgba(0, 0, 0, 0.35);
-        background-color: lighten(themes["light"]["reject"], 15%);
+        background-color: lighten(themes['light']['reject'], 15%);
     }
 }
 
@@ -64,12 +67,13 @@
 .flex.center-vertically {
     align-items: center;
 }
+
 .flex.center-both {
     align-items: center;
     justify-content: center;
 }
 
-.flex.stretch{
+.flex.stretch {
     align-items: stretch;
 }
 
@@ -80,7 +84,7 @@
         position: absolute;
         bottom: 0.2em;
         left: 0.4rem;
-        themed color shade2
+        themed: color shade2;
     }
 
     input {
@@ -92,7 +96,7 @@
     min-height: 4rem;
 }
 
-/* Tooltip  */
+/* Tooltip */
 .ogs-tooltip {
     position: absolute;
     border: 1px solid transparent;
@@ -100,60 +104,60 @@
     padding-bottom: 0.3rem;
     padding-left: 0.5rem;
     padding-right: 0.5rem;
-    themed background-color bg
-    themed color fg
-    themed border-color shade3
+    themed: background-color bg;
+    themed: color fg;
+    themed: border-color shade3;
 }
 
-
-
-/** Spinner from http://tobiasahlin.com/spinkit/   **/
+/* * Spinner from http://tobiasahlin.com/spinkit/   * */
 .spinner {
-  width: 40px;
-  height: 40px;
-
-  position: relative;
-  margin: 100px auto;
+    width: 40px;
+    height: 40px;
+    position: relative;
+    margin: 100px auto;
 }
 
 .double-bounce1, .double-bounce2 {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  themed background-color toast-bg;
-  opacity: 0.6;
-  position: absolute;
-  top: 0;
-  left: 0;
-
-  -webkit-animation: sk-bounce 2.0s infinite ease-in-out;
-  animation: sk-bounce 2.0s infinite ease-in-out;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    themed: background-color toast-bg;
+    opacity: 0.6;
+    position: absolute;
+    top: 0;
+    left: 0;
+    -webkit-animation: sk-bounce 2s infinite ease-in-out;
+    animation: sk-bounce 2s infinite ease-in-out;
 }
 
 .double-bounce2 {
-  -webkit-animation-delay: -1.0s;
-  animation-delay: -1.0s;
-}
-
-@-webkit-keyframes sk-bounce {
-  0%, 100% { -webkit-transform: scale(0.0) }
-  50% { -webkit-transform: scale(1.0) }
+    -webkit-animation-delay: -1s;
+    animation-delay: -1s;
 }
 
 @keyframes sk-bounce {
-  0%, 100% {
-    transform: scale(0.0);
-    -webkit-transform: scale(0.0);
-  } 50% {
-    transform: scale(1.0);
-    -webkit-transform: scale(1.0);
-  }
+    0%, 100% {
+        -webkit-transform: scale(0);
+    }
+
+    50% {
+        -webkit-transform: scale(1);
+    }
 }
 
+@keyframes sk-bounce {
+    0%, 100% {
+        transform: scale(0);
+        -webkit-transform: scale(0);
+    }
 
+    50% {
+        transform: scale(1);
+        -webkit-transform: scale(1);
+    }
+}
 
-
-/** Ribbon / Ribboned **/
+/* * Ribbon / Ribboned * */
 .Ribboned {
     position: relative;
 }
@@ -171,9 +175,9 @@
         position: relative;
         font-weight: bold;
         padding: 0.4rem;
-        top: 1.0rem;
-        left: -1.0rem;
-        width: 10.0rem;
+        top: 1rem;
+        left: -1rem;
+        width: 10rem;
         text-align: center;
         transform: rotate(45deg);
         box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.15);
@@ -183,10 +187,12 @@
             themed-lighten(background-color, primary, 40%);
             themed(color, colored-background-fg);
         }
+
         &.reject {
             themed-lighten(background-color, reject, 40%);
             themed(color, colored-background-fg);
         }
+
         &.success {
             themed-lighten(background-color, primary, 40%);
             themed(color, colored-background-fg);
@@ -194,15 +200,13 @@
     }
 }
 
-
-
 .next {
     .Ribbon {
         themed-lighten(background-color, primary, 40%);
         themed(color, colored-background-fg);
     }
-
 }
+
 .done {
     .Ribbon {
         themed-lighten(background-color, success, 40%);
@@ -210,18 +214,25 @@
     }
 }
 
-
 @keyframes slowstrobe-keyframes {
-    0%   { opacity: 0.5; }
-    50%  { opacity: 1.0; }
-    100% { opacity: 0.5; }
+    0% {
+        opacity: 0.5;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0.5;
+    }
 }
 
 .slowstrobe {
     animation-name: slowstrobe-keyframes;
     animation-duration: 3s;
     animation-timing-function: ease-in-out;
-    animation-iteration-count: infinite
+    animation-iteration-count: infinite;
 }
 
 .flex-row {

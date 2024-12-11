@@ -136,41 +136,42 @@
 
     .stalling-score-estimate {
         margin: 0.5rem;
-        font-size: 1.0rem;
+        font-size: 1rem;
         font-style: italic;
         text-wrap: balance;
         text-wrap-mode: balance;
     }
 
     .needs-sealing {
-        margin: 1.0rem;
-        padding: 1.0rem;
+        margin: 1rem;
+        padding: 1rem;
         font-weight: bold;
         border-radius: 0.2rem;
         font-size: 1.1rem;
-        themed background-color warning-bg
-        themed color warning-fg
+        themed: background-color warning-bg;
+        themed: color warning-fg;
 
         .needs-sealing-coordinates {
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 1.0rem;
+            margin: 1rem;
             font-weight: bold;
-            themed background-color warning-bg
-            themed color warning-fg
+            themed: background-color warning-bg;
+            themed: color warning-fg;
 
             .needs-sealing-box {
                 flex-grow: 0;
                 flex-shrink: 0;
-                flex-basis: 1.0rem;
+                flex-basis: 1rem;
                 display: inline-block;
-                width: 1.0rem;
-                height: 1.0rem;
+                width: 1rem;
+                height: 1rem;
                 background-color: red;
                 border: 0.2rem solid #E079CE;
                 margin-right: 0.5rem;
             }
+
             div {
                 flex: 1;
             }
@@ -192,6 +193,7 @@
             background-color: black;
             border-color: #555;
         }
+
         &.white {
             background-color: white;
             border-color: #AAA;

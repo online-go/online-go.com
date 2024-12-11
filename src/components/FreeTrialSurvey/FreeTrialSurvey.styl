@@ -19,7 +19,7 @@
     justify-content: center;
     margin: 2rem 1rem;
 
-    @media screen and (max-width: 850px){
+    @media screen and (max-width: 850px) {
         margin: 2rem 0;
     }
 }
@@ -34,9 +34,8 @@
     min-height: 12rem;
     overflow: scroll;
     padding: 1rem;
-    
-    
-    @media screen and (max-width: 850px){
+
+    @media screen and (max-width: 850px) {
         flex-direction: column;
         height: 30rem;
         align-items: stretch;
@@ -44,39 +43,37 @@
         justify-content: stretch;
         width: 100%;
     }
-    
+
     hr {
         margin: 1rem 0;
     }
-    
-    
+
     .other {
         display: flex;
         flex-direction: column;
     }
-    
+
     .indent {
         margin-left: 2rem;
     }
-    
+
     /* The markdown auto-linkifies our online-go.com text, which isn't
-     * important in this context and is just distracting */ 
+                         * important in this context and is just distracting */
     a {
-        themed color fg
+        themed: color fg;
     }
-    
+
     textarea {
         height: 10rem;
     }
-    
 
     .buttons {
         display: flex;
         flex-direction: row;
         justify-content: space-around;
         margin: 0.5rem;
-        
-        .translation-original, .language-map { 
+
+        .translation-original, .language-map {
             display: none;
         }
     }

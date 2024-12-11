@@ -14,8 +14,6 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-
 .Firewall {
     max-width: 70rem;
     margin-left: auto;
@@ -29,12 +27,12 @@
 
         .notes {
             flex-grow: 2; // ensure the notes have as much room as possible
-            margin-right: 5rem;  // A slightly hacky way to stop it bumping into the owner in an ugly way
+            margin-right: 5rem; // A slightly hacky way to stop it bumping into the owner in an ugly way
         }
     }
 
     .new-rule {
-        themed background-color shade5
+        themed: background-color shade5;
         margin-top: 2rem;
         padding: 0.5rem;
         margin-bottom: 4rem;
@@ -48,28 +46,27 @@
 
     .RuleEditor {
         padding-left: 2rem;
-        //display: flex;
-        //flex-direction: column;
-        //justify-content: stretch;
 
+        // display: flex;
+        // flex-direction: column;
+        // justify-content: stretch;
         select {
             margin: 0.5rem;
 
             &.field {
-                themed background-color primary
+                themed: background-color primary;
             }
 
             &.operator {
-                themed background-color success
+                themed: background-color success;
             }
-
-
         }
 
-        input[type="number"] {
+        input[type='number'] {
             width: 7rem;
         }
-        input[type="text"] {
+
+        input[type='text'] {
             width: 40rem;
         }
 
@@ -91,12 +88,13 @@
         align-items: center;
         justify-content: center;
     }
-    .TestResultRow  {
+
+    .TestResultRow {
         display: inline-block;
         width: 50rem;
         max-width: 90vw;
 
-        > span { 
+        > span {
             margin-left: 1rem;
         }
     }
@@ -116,8 +114,6 @@
             span {
                 margin-left: 1rem;
             }
-
         }
     }
-
 }

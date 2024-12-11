@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 .private-chat-window {
     position: fixed;
     display: inline-block;
@@ -30,22 +29,22 @@
     &.system {
         &.open {
             .body {
-                themed background-color warning-bg
-                themed color colored-background-fg
+                themed: background-color warning-bg;
+                themed: color colored-background-fg;
             }
         }
+
         input {
             display: none !important;
         }
     }
 
-
     .title {
-        themed background-color shade4
+        themed: background-color shade4;
         border-bottom: 1px solid #aaaaaa;
         padding-left: 0.1em;
         padding-right: 0.1em;
-        padding: 0.0em;
+        padding: 0em;
         border-top-left-radius: 4px;
         border-top-right-radius: 4px;
         user-select: none;
@@ -57,43 +56,45 @@
         .Player {
             flex: 1;
             padding-left: 1em;
-            themed color private-chat-user
+            themed: color private-chat-user;
             cursor: move;
             overflow: hidden;
         }
+
         .Player::before {
             font-size: 0.8em; // a nice big presence indicator looks good here.
             padding-right: 0.6rem;
         }
 
-        //  These are vertically aligned with each other by flex's align-centre, so top/bottom margin/padding should not be required.
+        // These are vertically aligned with each other by flex's align-centre, so top/bottom margin/padding should not be required.
         // (Also, I think that ideally these icons would be in their own div, pushed to the right and flex-spaced within that.  But right now they are
-        //  horizontally spaced manually ... a job for another day maybe.)
+        // horizontally spaced manually ... a job for another day maybe.)
         .fa, .ogs-goban {
             flex: 0;
             color: #666;
             border: 1px solid transparent;
             cursor: pointer;
-            themed color shade1
+            themed: color shade1;
         }
 
         .fa:hover, .ogs-goban:hover {
-            //color: #000;
-            themed color shade0
+            // color: #000;
+            themed: color shade0;
         }
 
         .fa-bullhorn {
-            margin-right: 1.00em;
-            font-size: 1.0em;
+            margin-right: 1em;
+            font-size: 1em;
             margin-left: 0.5em;
         }
+
         .fa-bullhorn.enabled {
             color: #f55 !important;
         }
 
         .fa-clipboard {
             margin-right: 0.75em;
-            font-size: 1.0em;
+            font-size: 1em;
         }
 
         .fa-exclamation-triangle {
@@ -103,24 +104,24 @@
 
         .ogs-goban {
             margin-right: 0.75em;
-            font-size: 1.0em;
+            font-size: 1em;
         }
 
         .fa-info-circle {
             margin-right: 0.75em;
-            font-size: 1.0em;
+            font-size: 1em;
         }
 
         .fa-minus {
             // can you believe that fa-minus icon is not vertically centered within its bounding box!?  It's true!
-            padding-top: .17em;  // compensates for fa-minus being placed high in it's bounding box.
+            padding-top: 0.17em; // compensates for fa-minus being placed high in it's bounding box.
             margin-right: 0.75em;
             font-size: 1.1em;
         }
+
         .fa-times {
             margin-right: 0.5em;
             font-size: 1.2em;
-
         }
     }
 }
@@ -134,8 +135,8 @@
 }
 
 .private-chat-window.open {
-    //background-color: @ogs-private-chat-bg;
-    themed background-color card-background-color
+    // background-color: @ogs-private-chat-bg;
+    themed: background-color card-background-color;
 
     .title {
         position: relative;
@@ -145,8 +146,8 @@
     .banner {
         padding-bottom: 0.1em;
         text-align: center;
-        themed color fg
-        themed background-color card-background-color
+        themed: color fg;
+        themed: background-color card-background-color;
     }
 
     .banner-inactive {
@@ -154,7 +155,7 @@
     }
 
     .megaphone-banner {
-        themed color danger
+        themed: color danger;
     }
 
     .banner-text {
@@ -163,27 +164,27 @@
     }
 
     .body {
-        //padding-left: 0.3em;
-        //padding-right: 0.3em;
+        // padding-left: 0.3em;
+        // padding-right: 0.3em;
         display: block;
         height: 20em;
         width: 100%;
-        themed background-color card-background-color
-        themed color fg
+        themed: background-color card-background-color;
+        themed: color fg;
         border-bottom: 1px solid #aab;
-        //margin-bottom: -.4em;
+        // margin-bottom: -.4em;
         border-radius: 0;
         overflow-y: auto;
         word-wrap: break-word;
     }
 
     .chat-line {
-        //border-bottom: 1px solid #aaa;
+        // border-bottom: 1px solid #aaa;
         padding-right: 0.3em;
     }
 
     .date, .timestamp {
-        @extend .monospace
+        @extends .monospace;
         font-size: 0.8rem;
     }
 
@@ -193,7 +194,7 @@
         padding: 0;
         margin: 0;
         border: 0;
-        //background-color: @body-bg;
+        // background-color: @body-bg;
     }
 }
 
@@ -207,7 +208,7 @@
     }
 
     .title:hover {
-        themed background-color shade5
+        themed: background-color shade5;
         cursor: pointer;
     }
 }
@@ -219,10 +220,8 @@
     }
 }
 */
-
-
 .chat-line .username .player-name {
-    //color: @text-color;
+    // color: @text-color;
     font-size: small;
 }
 
@@ -235,24 +234,24 @@
 }
 
 .chat-line.current-player {
-    //color: mix(@text-color, #0088cc, 75%);
-   .username .player-name {
-        //color: mix(@text-color, #0088cc, 75%);
-        //color: mix(#888888, @text-color, 20%);
-        //color: #444444;
-   }
-   .body{
-        //color: #444444;
-   }
+    .username .player-name {
+        // color: mix(@text-color, #0088cc, 75%);
+        // color: mix(#888888, @text-color, 20%);
+        // color: #444444;
+    }
+
+    .body {
+        // color: #444444;
+    }
 }
+
 .chat-line.system {
-    //color: mix(@text-color, #00ff00, 75%);
+    // color: mix(@text-color, #00ff00, 75%);
 }
 
 .chat-line.name-mentioned .body {
     color: #E41B1B !important;
 }
-
 
 .private-chat-window.superchat {
     z-index: z.superchat !important;
@@ -268,10 +267,12 @@
     .fa-minus {
         display: none !important;
     }
+
     .fa-times {
         display: none !important;
     }
 }
+
 .superchat-modal {
     z-index: z.superchat-modal;
     position: fixed;
@@ -284,8 +285,6 @@
 }
 
 .date {
-	text-align: center;
-	margin: 5px 0 5px;
-
+    text-align: center;
+    margin: 5px 0 5px;
 }
-

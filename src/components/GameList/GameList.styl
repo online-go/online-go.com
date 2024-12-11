@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 .GameList {
     max-width: 100vw;
     overflow-x: auto;
@@ -22,6 +21,7 @@
 
     .GobanLineSummaryContainerHeader {
         user-select: none;
+
         > div {
             white-space: nowrap;
         }
@@ -30,6 +30,7 @@
     .sortable {
         cursor: pointer;
     }
+
     .sortable:after {
         display: inline-block;
         width: 0.8rem;
@@ -37,7 +38,7 @@
         margin-left: 0.2rem;
         margin-bottom: 0.2rem;
         font-family: 'FontAwesome';
-        content: " ";
+        content: ' ';
     }
 
     .sortable.sorted-asc:after {
@@ -49,11 +50,11 @@
     }
 
     .current-users-move {
-        themed background-color miniboard-to-move
+        themed: background-color miniboard-to-move;
     }
 
     .viewed-users-move {
-        themed background-color miniboard-viewed-to-move
+        themed: background-color miniboard-viewed-to-move;
     }
 
     .goban-with-names {
@@ -63,6 +64,7 @@
         flex-direciton: row;
         align-items: center;
         justify-content: right;
+
         .names {
             text-align: right;
             flex: 1;

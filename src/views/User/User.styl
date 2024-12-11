@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 .User {
     padding-top: 3rem;
 
@@ -28,10 +27,12 @@
 
     h4 {
         margin-top: 0.3rem;
+
         img {
             margin-right: 0.5rem;
             margin-left: 0.5rem;
         }
+
         .fa {
             margin-right: 0.4rem;
             margin-left: 0.4rem;
@@ -44,6 +45,7 @@
             align-items: flex-end;
             margin-right: 0.5rem;
         }
+
         textarea {
             width: 100%;
         }
@@ -80,6 +82,7 @@
         font-size: font-size-big;
         max-width: stretch;
     }
+
     .ratings-title {
         font-size: font-size-big;
         display: inline-flex;
@@ -87,7 +90,6 @@
         align-items: center;
 
         .Toggle {
-
         }
     }
 
@@ -98,7 +100,7 @@
     }
 
     .trophies {
-        //height: 24px;
+        // height: 24px;
         a {
             height: 24px;
         }
@@ -127,6 +129,7 @@
 
     .profile-card {
         position: relative;
+
         .row {
             flex-wrap: nowrap;
         }
@@ -149,18 +152,18 @@
         text-align: center;
     }
 
-
     td.browser_id {
-        @extend .monospace
+        @extends .monospace;
         width: 7em;
         text-align: left;
         padding-right: 1em;
         font-size: 0.7rem;
-        //display: inline-block;
+        // display: inline-block;
     }
 
     table {
         width: 100%;
+
         th {
             text-align: left;
         }
@@ -169,6 +172,7 @@
     .won {
         color: #5CB85C;
     }
+
     .loss {
         color: #D9534F;
     }
@@ -176,19 +180,21 @@
     .rating_details {
         height: 1rem;
         margin-right: 1em;
-        themed color shade2
+        themed: color shade2;
         font-size: 0.9em;
         display: flex;
         align-items: center;
     }
+
     .text-color {
-        themed color fg
+        themed: color fg;
     }
 
     i.ogs-turtle {
         position: relative;
         width: 1.5rem;
     }
+
     i.ogs-turtle:before {
         bottom: -0.15em;
         position: relative;
@@ -215,39 +221,41 @@
         position: relative;
         left: 100%;
         padding-left: 0.5rem;
-        themed color shade2
+        themed: color shade2;
     }
 
     .progress-bar.right span {
         position: relative;
         padding-right: 0.5rem;
-        themed color colored-background-fg
+        themed: color colored-background-fg;
     }
 
     .games-won {
-        themed background-color win
-        themed color colored-background-fg
+        themed: background-color win;
+        themed: color colored-background-fg;
     }
+
     .games-lost {
-        themed background-color loss
-        themed color colored-background-fg
+        themed: background-color loss;
+        themed: color colored-background-fg;
     }
 
     .fa-circle-o, .fa-bolt, .fa-clock-o, .ogs-turtle:before {
         width: 1.5em;
         text-align: center;
     }
+
     .ogs-turtle:before {
         bottom: -0.12em;
         position: relative;
     }
 
-
     .library-won-result {
-        @extend .result-won
+        @extends .result-won;
     }
+
     .library-lost-result {
-        @extend .result-lost
+        @extends .result-lost;
     }
 
     .Dropzone {
@@ -265,6 +273,7 @@
         dd {
             display: block !important;
         }
+
         .icon {
             max-width: 15px;
             max-height: 15px;
@@ -292,6 +301,7 @@
         justify-content: space-around;
         align-items: stretch;
     }
+
     .avatar-container {
         display: flex;
         flex-direction: column;
@@ -302,6 +312,7 @@
         padding-right: 0.5rem;
         justify-content: center;
     }
+
     .ratings-container {
         display: flex;
         flex-direction: column;
@@ -328,6 +339,7 @@
     .about-markdown {
         flex: 1;
         overflow-y: auto;
+
         > div :first-child {
             margin-top: 0;
             padding-top: 0;
@@ -337,8 +349,10 @@
     .ratings-grid {
         display: table;
         margin-right: 1rem;
+
         .speed {
             display: table-row;
+
             .cell {
                 display: table-cell;
                 padding: 0.3rem;
@@ -346,9 +360,9 @@
                 vertical-align: middle;
             }
         }
+
         .title-row {
             display: table-row;
-
         }
 
         .title {
@@ -357,6 +371,7 @@
             text-align: center;
             vertical-align: middle;
         }
+
         .speed-icon {
             width: 1.5rem !important;
             text-align: center;
@@ -365,25 +380,25 @@
         .rating-entry {
             white-space: nowrap;
             cursor: pointer;
-
             border: 1px solid transparent;
             border-radius: 0.3rem;
 
             &.unset {
-                themed color shade3;
+                themed: color shade3;
             }
 
             &.active {
-                themed background-color chart-area;
-                themed border-color chart-line;
+                themed: background-color chart-area;
+                themed: border-color chart-line;
             }
 
             &:hover {
-                themed background-color chart-area;
+                themed: background-color chart-area;
             }
 
             .rating {
             }
+
             .ranking {
                 font-size: font-size-small;
             }
@@ -393,10 +408,12 @@
                 margin: 0;
                 padding: 0;
             }
+
             .left {
                 width: 3rem;
                 padding-right: 0.3rem;
             }
+
             .right {
                 width: 3rem;
                 padding-left: 0.3rem;
@@ -418,13 +435,13 @@
         }
 
         .graph-type-toggle {
-            position: absolute
-            top: -5px;  // manually align with first label row in chart
+            position: absolute;
+            top: -5px; // manually align with first label row in chart
         }
     }
 
     .website-url {
-        //width: 100%;
+        // width: 100%;
         max-width: 100%;
         overflow: hidden;
         white-space: nowrap;
@@ -451,36 +468,36 @@
             white-space: nowrap;
         }
 
-         .library-lost-result, .library-won-result, .library-tie-result, .library-lost-result-vs-weaker, .library-lost-result-vs-stronger, .library-won-result-vs-stronger, .library-won-result-vs-weaker, .library-won-result-unranked, .library-lost-result-unranked, .library-hidden-result {
+        .library-lost-result, .library-won-result, .library-tie-result, .library-lost-result-vs-weaker, .library-lost-result-vs-stronger, .library-won-result-vs-stronger, .library-won-result-vs-weaker, .library-won-result-unranked, .library-lost-result-unranked, .library-hidden-result {
             overflow: hidden;
         }
 
         .library-lost-result-vs-weaker {
-          themed background-color weak-loss
-          themed color weak-l-text
+            themed: background-color weak-loss;
+            themed: color weak-l-text;
         }
 
         .library-lost-result-vs-stronger {
-          themed background-color strong-loss
-          themed color strong-l-text
+            themed: background-color strong-loss;
+            themed: color strong-l-text;
         }
 
         .library-won-result-vs-stronger {
-          themed background-color strong-win
-          themed color strong-w-text
+            themed: background-color strong-win;
+            themed: color strong-w-text;
         }
 
         .library-won-result-vs-weaker {
-          themed background-color weak-win
-          themed color weak-w-text
+            themed: background-color weak-win;
+            themed: color weak-w-text;
         }
 
         .library-won-result-unranked {
-          themed color strong-win
+            themed: color strong-win;
         }
 
         .library-lost-result-unranked {
-          themed color strong-loss
+            themed: color strong-loss;
         }
 
         .board_size {
@@ -495,6 +512,7 @@
             a {
                 color: unset;
             }
+
             max-width: 15rem;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -510,26 +528,25 @@
             vertical-align: middle;
         }
 
-        .user_info  {
+        .user_info {
             white-space: nowrap;
         }
 
         .winner_marker {
-            themed color winner-trophy;
+            themed: color winner-trophy;
             padding-left: 4px;
             vertical-align: middle;
             padding-right: 4px;
         }
 
         .annulled {
-            themed opacity annul-opacity;
+            themed: opacity annul-opacity;
         }
 
         th {
             padding-right: 0.5em;
         }
     }
-
 
     button.toggle-ratings {
         display: block;
@@ -545,6 +562,7 @@
         text-align: center;
         max-width: 100%;
     }
+
     .Dolphin-trophy {
         img {
             width: 300px;
@@ -554,7 +572,6 @@
         text-align: center;
         max-width: 100%;
     }
-
 
     .SelfReportedAccountLinkages {
         .association-link, .server-link {
@@ -568,23 +585,27 @@
                 width: 10rem;
                 overflow: hidden;
             }
+
             .id {
                 display: inline-block;
                 margin-left: 0.5rem;
                 width: 5rem;
                 overflow: hidden;
             }
+
             .rank {
                 margin-left: 0.5rem;
                 display: inline-block;
                 width: 2rem;
             }
         }
+
         .server-link {
             .name {
                 margin-left: 1.5rem;
                 width: 7rem;
             }
+
             .id {
                 width: 8rem;
             }
@@ -595,4 +616,3 @@
         color: #ff8B00;
     }
 }
-
