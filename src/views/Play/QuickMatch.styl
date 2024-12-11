@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 .automatch-container {
     flex: 1;
     display: flex;
@@ -43,7 +42,6 @@
     }
 }
 
-
 #QuickMatch {
     margin-top: 1rem;
     margin-right: 2rem;
@@ -53,7 +51,7 @@
     grid-template-columns: 1fr 1fr;
     user-select: none;
     column-gap: 4rem;
-    
+
     .GameOption-cell {
         display: flex;
         flex-direction: column;
@@ -69,23 +67,23 @@
         align-items: center;
         justify-content: center;
     }
-    
-    
+
     .toggle-container {
         display: flex;
         align-items: center;
     }
+
     .toggle-label {
         cursor: pointer;
         font-size: 0.9rem;
-        themed color shade3
+        themed: color shade3;
         margin-right: 0.5rem;
     }
 
     .finding-game-container {
-        //flex-shrink: 0;
-        //flex-grow: 0;
-        //flex-basis: 2.5rem;
+        // flex-shrink: 0;
+        // flex-grow: 0;
+        // flex-basis: 2.5rem;
         font-size: 1.3rem;
         width: 100%;
         height: 100%;
@@ -93,11 +91,9 @@
         flex-direction: row;
         justify-content: space-around;
         align-items: center;
-        //align-content: center;
+        // align-content: center;
         padding-bottom: 2.5rem;
         padding-top: 1rem;
-        
-        
 
         .spinner {
             margin: 0;
@@ -106,6 +102,7 @@
             margin-left: 1rem;
             margin-right: 1rem;
         }
+
         button {
             margin-left: 2rem;
             font-size: 1.1rem;
@@ -115,7 +112,7 @@
     .automatch-row {
         display: flex;
         justify-content: space-around;
-        align-content: stretch
+        align-content: stretch;
         width: 100%;
         flex-wrap: wrap;
 
@@ -137,7 +134,6 @@
                 position: relative;
                 height: 1.5rem;
 
-
                 .time-per-move {
                     position: absolute;
                     bottom: -1.2rem;
@@ -153,8 +149,9 @@
 
             .ogs-turtle {
                 position: relative;
-                width: 1.0rem;
+                width: 1rem;
             }
+
             .ogs-turtle::before {
                 position: absolute;
                 top: -0.5rem;
@@ -166,8 +163,7 @@
             }
         }
     }
-    
-    
+
     .automatch-settings {
         font-size: 1rem;
         flex: 0;
@@ -187,14 +183,14 @@
         flex: 0;
         text-align: justify;
         font-size: 1rem;
-        padding: .5rem;
+        padding: 0.5rem;
         padding-left: 3rem;
     }
 
     .custom-game-row {
         display: flex;
         justify-content: space-around;
-        align-content: stretch
+        align-content: stretch;
         width: 100%;
 
         button {
@@ -215,7 +211,7 @@
     .custom-game-header {
         display: flex;
         justify-content: space-around;
-        align-content: stretch
+        align-content: stretch;
         width: 100%;
         justify-content: space-between;
         align-items: left;
@@ -223,33 +219,32 @@
         margin-top: 1rem;
     }
 
-    
     .GameOption {
         margin-bottom: 1rem;
         display: flex;
         justify-content: space-between;
-        align-content: stretch
+        align-content: stretch;
         align-items: center;
         width: 100%;
         flex-wrap: wrap;
         font-weight: bold;
         font-size: 1.3rem;
-        
+
         .dropdown {
             display: inline-flex;
             justify-content: space-between;
             min-width: 15rem;
             align-items: center;
-            themed background-color shade5
+            themed: background-color shade5;
             border-radius: 0.2rem;
             padding-left: 1rem;
             padding-right: 1rem;
             cursor: pointer;
 
             &:hover {
-                themed background-color shade4
+                themed: background-color shade4;
             }
-            
+
             .DownCarret {
                 display: inline-block;
                 float: right;
@@ -258,136 +253,78 @@
                 margin: 0.5rem;
             }
         }
-        
-        
-        
     }
+
     .MiniGoban {
         width: 22rem !important;
         height: 22rem !important;
     }
+
     .subtext {
         font-size: 0.9rem;
     }
-    
+
     .PlayButton-container {
         width: 100%;
     }
+
     .play-button {
-        //margin-top: 3rem;
+        // margin-top: 3rem;
         width: 100%;
         height: 6rem;
         font-size: 1.5rem;
         line-height: 1.5rem;
         text-align: center;
         margin-bottom: 0;
-
     }
-    
+
     .game-speed-option-container {
-        //margin-top: 1rem;
+        // margin-top: 1rem;
         margin-bottom: 2rem;
         border-radius: 0.5rem;
         cursor: pointer;
     }
-    .game-speed-option {
-        display: flex;
-        align-items: center;
-        justify-content: space-around;
-        flex-wrap: wrap;
-        
-        .game-speed-button {
-            border-width: 0.15rem !important;
-            font-size: 1.3rem;
-            
-        }
-        &.active .game-speed-button {
-            themed-important border-color primary
-        }
-        
 
-        .game-speed-option-toggle {
-            display: inline-flex;
-            align-items: center;
-            
-            .TogglePreferRequired {
-                margin-left: 1rem;
-                margin-right: 1rem;
-
-            }
-        }
-
-        .time-control-button {
-            border-width: 0.15rem !important;
-            text-align: center;
-            height: 3rem;
-            min-width: 8rem;
-        }
-        
-        &.active {
-            .prefer .time-control-button,
-            .indifferent .time-control-button,
-            .require .time-control-button {
-                themed-important border-color primary
-            }
-        }
-        .exclude .time-control-button {
-            //themed-important border-color danger
-            themed-desaturate background-color default-button button-disabled-desaturate-amount
-            themed color shade2
-            themed-desaturate border-color default-button button-disabled-desaturate-amount
-            box-shadow: none;
-        }
-        
-        
-        .time-control {
-            font-weight: bold;
-        }
-        
-
-    }
-    
     .game-speed-title {
         font-size: 1.2rem;
         display: flex;
         align-items: center;
         justify-content: space-between;
 
-
         .description {
-            //padding-left: 1rem;
-            //padding-right: 1rem;
+            // padding-left: 1rem;
+            // padding-right: 1rem;
             font-style: italic;
             font-size: 0.9rem;
         }
     }
-    
+
     .game-speed-buttons {
-        //padding-bottom: 0.5rem;
+        // padding-bottom: 0.5rem;
         display: flex;
         justify-content: space-around;
         align-items: center;
-        //border-bottom: 0.15rem solid transparent;
-        
+
+        // border-bottom: 0.15rem solid transparent;
         &.flexible-active {
-            //themed-important border-color shade3
+            // themed-important border-color shade3
         }
 
         .time-control-button {
             min-width: 10rem;
         }
-        
+
         .or {
             display: inline-block;
             min-width: 2rem;
             text-align: center;
         }
     }
-    
+
     .speed-options {
-        //margin-bottom: 2rem;
+        // margin-bottom: 2rem;
     }
-    
+
     .opponent-options {
         display: flex;
         flex-wrap: wrap;
@@ -395,9 +332,8 @@
         align-items: stretch;
         align-content: stretch;
         flex-grow: 1;
-
         margin-top: 1rem;
-        
+
         .opponent-option-container {
             display: inline-flex;
             flex-direction: column;
@@ -411,36 +347,35 @@
             border-radius: 0.3rem;
             padding-left: 0.6em;
             padding-right: 0.6em;
-            //padding-top: 0.6em;
-            //padding-bottom: 0.6em;
+            // padding-top: 0.6em;
+            // padding-bottom: 0.6em;
             min-width: 12rem;
             cursor: pointer;
-            themed background-color default-button
-            themed color default-button-color
+            themed: background-color default-button;
+            themed: color default-button-color;
 
             &:hover, &:focus {
                 text-decoration: none;
-
-                themed-lighten background-color default-button button-highlight-brighten-amount
-                themed-darken border-color default-button button-border-highlight-darken-amount
+                themed-lighten: background-color default-button button-highlight-brighten-amount;
+                themed-darken: border-color default-button button-border-highlight-darken-amount;
             }
+
             &:active, &.active {
                 text-decoration: none;
-
-                themed-darken background-color default-button button-highlight-brighten-amount
-                themed-important border-color primary
+                themed-darken: background-color default-button button-highlight-brighten-amount;
+                themed-important: border-color primary;
             }
-            
+
             &.disabled {
-                themed-desaturate background-color default-button button-disabled-desaturate-amount
-                themed color shade2
-                themed-desaturate border-color default-button button-disabled-desaturate-amount
+                themed-desaturate: background-color default-button button-disabled-desaturate-amount;
+                themed: color shade2;
+                themed-desaturate: border-color default-button button-disabled-desaturate-amount;
                 box-shadow: none;
                 cursor: default;
                 cursor: not-allowed;
-                
+
                 select {
-                    themed color shade2
+                    themed: color shade2;
                 }
             }
 
@@ -450,11 +385,12 @@
                 padding-bottom: 0.5rem;
                 padding-top: 0.5rem;
             }
-            
+
             .opponent-rank-range {
-                //display: flex;
+                // display: flex;
                 text-align: center;
-                //justify-content: space-around;
+
+                // justify-content: space-around;
                 select {
                     text-align: center;
                     margin-left: 0.5rem;
@@ -464,7 +400,7 @@
 
             .opponent-rank-range-description {
                 font-size: 0.9rem;
-                themed color shade1
+                themed: color shade1;
                 text-align: center;
                 padding-right: 0.5rem;
                 padding-left: 0.5rem;
@@ -476,8 +412,7 @@
                 align-items: center;
                 justify-content: space-between;
                 flex-wrap: wrap;
-                
-                
+
                 select {
                     flex-grow: 1;
                     min-width: 10rem;
@@ -485,14 +420,14 @@
                     width: 10rem;
                     overflow: hidden;
                 }
-                
+
                 .fa {
                     padding-left: 1rem;
                 }
             }
         }
     }
-    
+
     .anonymous-container {
         display: flex;
         flex-direction: column;
@@ -501,19 +436,21 @@
         margin-top: 2rem;
         margin-bottom: 2rem;
         font-size: 1.3rem;
+
         .Link {
             margin-left: 0.5rem;
             margin-right: 0.5rem;
         }
     }
-    
+
     .ogs-react-select__control {
-        //min-height: 2rem;
-        //height: 2rem;
-        themed color shade1
+        // min-height: 2rem;
+        // height: 2rem;
+        themed: color shade1;
     }
+
     .ogs-react-select__control, .ogs-react-select__menu {
-        font-size: 1.0rem;
+        font-size: 1rem;
         font-weight: normal;
     }
 
@@ -521,23 +458,25 @@
         right: 0;
         width: 20rem;
         max-width: 90vw;
-        
+
         .ogs-react-select__group-heading {
             text-transform: none;
             font-size: 0.9rem;
         }
-        
+
         .option {
             padding-top: 0.5rem;
             padding-bottom: 0.5rem;
-            
+
             &.focused {
-                themed-important background-color shade3
+                themed-important: background-color shade3;
             }
+
             &.selected {
-                themed-important background-color shade3
+                themed-important: background-color shade3;
             }
-            themed color fg
+
+            themed: color fg;
         }
 
         .option-label {
@@ -545,18 +484,16 @@
             padding-right: 0.5rem;
             padding-left: 0.5rem;
         }
+
         .option-description {
             font-size: 0.9rem;
             font-style: italic;
-            themed color shade1
+            themed: color shade1;
             padding-right: 0.5rem;
             padding-left: 0.5rem;
         }
-        
-        
-        
     }
-    
+
     .option-label, .ogs-react-select__single-value {
         display: flex !important;
         align-items: center;
@@ -566,15 +503,15 @@
     .multiple-options-description {
         font-size: 0.9rem;
         font-style: italic;
-        themed color shade1
+        themed: color shade1;
         padding-right: 0.5rem;
         padding-left: 0.5rem;
         margin-bottom: 0.5rem;
     }
-    
+
     .computer-select {
         .disabled .option-label {
-            themed color shade2
+            themed: color shade2;
         }
 
         .option-label {
@@ -593,24 +530,25 @@
             width: 100%;
             max-width: 12rem;
         }
+
         &.error {
             border: 1px solid red;
         }
     }
-    
 
     .size-button {
         margin-right: 0.2rem;
         margin-left: 0.2rem;
         width: 5.5rem;
     }
-    
+
     .activity {
         position: relative;
     }
+
     .activity.player-waiting:after, .activity.popular:after {
-        @extend .fa
-        content: "\f111"; // font awesome circle
+        @extends .fa;
+        content: '\f111'; // font awesome circle
         position: absolute;
         font-size: 0.5rem;
         top: 2px;
@@ -618,13 +556,13 @@
     }
 
     .activity.player-waiting:after {
-        themed color success
+        themed: color, quickmatch-player-waiting;
     }
+
     .activity.popular:after {
-        themed color shade1
+        themed: color, shade1;
     }
 }
-
 
 @media (max-width: hamburger-cutoff) {
     #QuickMatch {
@@ -638,7 +576,7 @@
         .speed-options {
             margin-bottom: 0;
         }
-        
+
         .computer-select {
             select {
                 min-width: calc(100vw - 6rem) !important;
@@ -647,10 +585,11 @@
             }
         }
     }
-    
+
     .BoardSize-header {
         display: none;
     }
+
     .PlayButton-container {
         position: fixed;
         bottom: 0;
@@ -658,12 +597,13 @@
         left: 0;
         right: 0;
         z-index: z.dock;
-        themed background-color bg
+        themed: background-color, bg;
+
         .play-button {
             margin: 0;
         }
     }
-    
+
     .GameOption-cell {
         display: flex;
         flex-direction: column;
@@ -671,7 +611,7 @@
         justify-content: space-between;
         margin-top: 1rem;
     }
-    
+
     .tab-head {
         display: flex;
         flex-direction: column;
@@ -685,11 +625,11 @@
             margin-bottom: 1rem;
         }
     }
-    
+
     .game-speed-buttons {
         padding-left: 1rem !important;
         padding-right: 1rem !important;
-        
+
         button.time-control-button {
             min-width: 8rem !important;
         }
@@ -703,16 +643,17 @@
         .Card {
             margin: 0;
         }
+
         .game-speed-option {
             .time-control-button {
                 min-width: 4rem !important;
             }
         }
     }
+
     .computer-select {
         > div {
             max-width: auto;
         }
     }
-    
 }

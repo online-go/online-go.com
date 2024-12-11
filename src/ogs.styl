@@ -48,7 +48,7 @@ body.v6 {
 }
 
 
-/* z indicies */
+/* z indices */
 z = {
     goban: {
         shadow-layer   : 10,
@@ -88,7 +88,7 @@ z = {
     swal               : 10000,
     challenge-link     : 10010,  // We have to say "Challenge Link Copied" over the top of "Challenge Created"
 
-    dynamic-help       : 20000,  // Help popups would like to go on top of everthing
+    dynamic-help       : 20000,  // Help popups would like to go on top of everything
 
     account-warning    : 50003,
     network-warning    : 50004,
@@ -278,6 +278,7 @@ light.player-black-clock                = lighten(light.player-black-fg, 50%)
 light.player-white-clock                = light.player-white-fg
 light.player-black-paused-clock         = #ABA8AD;
 light.player-white-paused-clock         = #928A99;
+light.quickmatch-player-waiting         = darken(light.success, 10%)
 
 /************/
 /*** DARK ***/
@@ -422,6 +423,7 @@ dark.player-white-paused-clock          = #5F4A71;
 dark.player-black-paused-clock          = #928A99;
 
 dark.joseki-ideal                       = #DBAF00;
+dark.quickmatch-player-waiting          = dark.success
 
 /******************/
 /*** ACCESSIBLE ***/
@@ -453,6 +455,8 @@ accessible.strong-loss                        = accessible.loss
 
 accessible.weak-win                           = darken(accessible.win, 35%)
 accessible.weak-loss                          = darken(accessible.loss, 35%)
+
+accessible.quickmatch-player-waiting          = accessible.indicate-online
 
 
 :root {

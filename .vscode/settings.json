@@ -1,2 +1,5 @@
 {
+    "stylusSupremacy.ignoreFiles": [
+        "[\"src/ogs.styl\"]"
+    ]
 }

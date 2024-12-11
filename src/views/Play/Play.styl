@@ -136,7 +136,9 @@
     }
 
     button.active {
-        themed-important: border-color primary;
+        themed-important(border-color, primary);
+        border-width: 2px !important;
+        border-style: ridge;
     }
 
     .tab-head {
@@ -160,11 +162,11 @@
         display: inline-block;
 
         &:hover {
-            themed: border-color shade2;
+            themed(border-color, shade2);
         }
 
         &.active {
-            themed: border-color shade1;
+            themed(border-color, shade1);
         }
     }
 }
@@ -201,7 +203,7 @@
     width: 100%;
 
     .ineligible {
-        themed: color shade3;
+        themed(color, shade3);
         font-size: 0.9em;
         vertical-align: middle;
         cursor: help;
@@ -282,7 +284,7 @@
 
         // automatch condition stylings
         .no-preference {
-            themed: color shade2;
+            themed(color, shade2);
         }
 
         .required {

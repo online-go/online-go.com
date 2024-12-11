@@ -68,6 +68,7 @@
         "icontains",
         "iframes",
         "inet",
+        "infoball",
         "istartswith",
         "JGOF",
         "JGOFAI",
@@ -114,8 +115,10 @@
         "pluralidx",
         "pofile",
         "postback",
+        "quickmatch",
         "rengo",
         "replot",
+        "rgba",
         "rollups",
         "roundrobin",
         "rrule",
@@ -164,6 +167,7 @@
         "yesno",
         "yike",
         "yomi",
+        "zenmode",
         "zoomable"
     ],
     "language": "en,en-GB"
