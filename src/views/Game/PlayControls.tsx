@@ -1085,7 +1085,7 @@ export function copyBranch(
         if (!window.getSelection()?.isCollapsed) {
             return;
         }
-    } catch (e) {
+    } catch {
         // ignore error
     }
 
@@ -1106,7 +1106,7 @@ export function pasteBranch(
         if (!window.getSelection()?.isCollapsed) {
             return;
         }
-    } catch (e) {
+    } catch {
         // ignore error
     }
 
@@ -1130,7 +1130,7 @@ export function pasteBranch(
 
         try {
             paste(goban.engine.cur_move, copied_node.current);
-        } catch (e) {
+        } catch {
             errorAlerter(_("A move conflict has been detected"));
         }
         goban.syncReviewMove();
@@ -1149,7 +1149,7 @@ export function deleteBranch(goban: GobanRenderer, mode: GobanModes) {
         if (!window.getSelection()?.isCollapsed) {
             return;
         }
-    } catch (e) {
+    } catch {
         // ignore error
     }
 

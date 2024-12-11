@@ -170,7 +170,7 @@ export function AccountSettings(props: SettingGroupPageProps): JSX.Element {
                     .then(() => {
                         try {
                             localStorage.clear();
-                        } catch (e) {
+                        } catch {
                             // ignore error
                         }
 

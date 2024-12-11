@@ -72,14 +72,14 @@ export interface PaginatedTableRef {
 }
 
 export const PaginatedTable = React.forwardRef<PaginatedTableRef, PaginatedTableProperties<any>>(
-    _PaginatedTable,
+    PaginatedTableImpl,
 ) as <RawEntryT = any, GroomedEntryT = RawEntryT>(
     props: PaginatedTableProperties<RawEntryT, GroomedEntryT> & {
         ref?: React.ForwardedRef<PaginatedTableRef>;
     },
-) => ReturnType<typeof _PaginatedTable>;
+) => ReturnType<typeof PaginatedTableImpl>;
 
-function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(
+function PaginatedTableImpl<RawEntryT = any, GroomedEntryT = RawEntryT>(
     props: PaginatedTableProperties<RawEntryT, GroomedEntryT>,
     ref: React.ForwardedRef<PaginatedTableRef>,
 ): JSX.Element {

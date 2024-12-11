@@ -43,9 +43,9 @@ interface SuggestionEntry {
 export const PlayerAutocomplete = React.forwardRef<
     PlayerAutocompleteRef,
     PlayerAutocompleteProperties
->(_PlayerAutocomplete);
+>(PlayerAutocompleteImpl);
 
-function _PlayerAutocomplete(
+function PlayerAutocompleteImpl(
     props: PlayerAutocompleteProperties,
     ref: React.ForwardedRef<PlayerAutocompleteRef>,
 ): JSX.Element {

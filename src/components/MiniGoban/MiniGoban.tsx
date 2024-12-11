@@ -182,7 +182,7 @@ export function MiniGoban(props: MiniGobanProps): JSX.Element {
                         .catch(() => {
                             console.log("Couldn't work out black rank");
                         });
-                } catch (e) {
+                } catch {
                     console.log("Couldn't work out who played black");
                 }
             }
@@ -203,7 +203,7 @@ export function MiniGoban(props: MiniGobanProps): JSX.Element {
                         .catch(() => {
                             console.log("Couldn't work out white rank");
                         });
-                } catch (e) {
+                } catch {
                     console.log("Couldn't work out who played black");
                 }
             }

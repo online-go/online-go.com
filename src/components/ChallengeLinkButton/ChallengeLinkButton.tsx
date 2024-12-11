@@ -79,7 +79,7 @@ export function copyChallengeLinkURL(ack_target: HTMLElement, uuid: string): voi
                 // ... give them the whole thing to copy...
                 showChallengeLink(challenge_link, ack_target),
             );
-    } catch (e) {
+    } catch {
         // Their browser doesn't even know about navigator.clipboard?
         showChallengeLink(challenge_link, ack_target);
     }

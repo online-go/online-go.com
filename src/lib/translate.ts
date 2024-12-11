@@ -39,7 +39,7 @@ export const sorted_locale_countries: { cc: string; name: string }[] = [];
 let catalog: { [key: string]: string[] };
 try {
     catalog = locales[current_language] || {};
-} catch (e) {
+} catch {
     catalog = {};
 }
 

@@ -90,7 +90,7 @@ export function emitNotification(title: string, body: string, cb?: () => void) {
                                             emitNotification(title, body, cb);
                                         })
                                         .catch((err: any) => console.error(err));
-                                } catch (e) {
+                                } catch {
                                     /* deprecated usage, but only way supported on safari currently */
                                     void Notification.requestPermission(() => {
                                         emitNotification(title, body, cb);
@@ -493,7 +493,7 @@ export class NotificationManager {
                         }
                         emitNotification(title, body);
                     }
-                } catch (e) {
+                } catch {
                     // ignore error
                 }
             }

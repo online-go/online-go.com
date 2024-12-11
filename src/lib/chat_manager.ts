@@ -89,8 +89,8 @@ export interface UnreadChanged {
     channel: string;
     unread_ct: number;
     unread_delta: number;
-    mentioned: Boolean;
-    previous_mentioned: Boolean;
+    mentioned: boolean;
+    previous_mentioned: boolean;
 }
 
 const channel_information_cache: { [channel: string]: ChannelInformation } = {};

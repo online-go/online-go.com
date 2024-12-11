@@ -686,10 +686,10 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
         const new_marks: { [k: string]: string } = {};
         current_marks.forEach((mark: { [k: string]: string }) => {
             const label = mark["label"];
-            (new_marks[label] = this.goban.encodeMove(
+            new_marks[label] = this.goban.encodeMove(
                 this.goban.decodePrettyCoordinates(mark["position"]),
-            )),
-                this.goban.setMarks(new_marks);
+            );
+            this.goban.setMarks(new_marks);
         });
         this.goban.redraw(true); // stop it optimizing away color changes when mark doesn't change.
     };

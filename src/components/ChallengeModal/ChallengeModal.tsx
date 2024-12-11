@@ -561,7 +561,7 @@ export class ChallengeModalBody extends React.Component<
                 $("#challenge-goban-height").focus();
                 return false;
             }
-        } catch (e) {
+        } catch {
             return false;
         }
         return true;

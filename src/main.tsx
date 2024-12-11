@@ -122,7 +122,7 @@ import * as preferences from "@/lib/preferences";
 try {
     // default_theme is set in index.html based on looking at the OS theme
     data.setDefault("theme", window.default_theme);
-} catch (e) {
+} catch {
     data.setDefault("theme", "light");
 }
 
@@ -231,7 +231,7 @@ console.log("initial user", user);
  */
 try {
     localStorage.setItem("localstorage-test", "true");
-} catch (e) {
+} catch {
     toast(
         <div>
             {_(

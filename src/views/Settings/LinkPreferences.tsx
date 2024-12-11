@@ -244,7 +244,7 @@ function AssociationSelect({
                 user_countries.push(data.get("user").country);
             }
         }
-    } catch (err) {
+    } catch {
         // pass
     }
 

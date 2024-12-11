@@ -10,6 +10,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import js from "@eslint/js";
 import { FlatCompat } from "@eslint/eslintrc";
+import stylistic from "@stylistic/eslint-plugin";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -31,6 +32,7 @@ export default [
             prettier,
             "react-hooks": fixupPluginRules(reactHooks),
             "@typescript-eslint": typescriptEslint,
+            "@stylistic": stylistic,
         },
 
         languageOptions: {
@@ -63,8 +65,9 @@ export default [
             "react-hooks/exhaustive-deps": "off",
             "@typescript-eslint/adjacent-overload-signatures": "error",
             "@typescript-eslint/consistent-type-assertions": "error",
-            "@typescript-eslint/member-delimiter-style": "error",
+            "@stylistic/member-delimiter-style": "error",
             "@typescript-eslint/no-floating-promises": "error",
+            "@typescript-eslint/no-empty-object-type": "off",
 
             "@typescript-eslint/no-inferrable-types": [
                 "error",
@@ -84,8 +87,8 @@ export default [
 
             "@typescript-eslint/no-var-requires": "error",
             "@typescript-eslint/prefer-namespace-keyword": "error",
-            "@typescript-eslint/semi": "error",
-            "@typescript-eslint/type-annotation-spacing": "error",
+            "@stylistic/semi": "error",
+            "@stylistic/type-annotation-spacing": "error",
             "computed-property-spacing": ["error", "never"],
             curly: "error",
             "eol-last": "error",

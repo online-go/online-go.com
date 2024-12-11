@@ -273,7 +273,7 @@ export function getPrintableError(err: any): string | undefined {
         console.error(obj);
         try {
             obj = JSON.parse(err.responseText);
-        } catch (e) {
+        } catch {
             // ignore error
         }
         if (!obj) {
@@ -284,7 +284,7 @@ export function getPrintableError(err: any): string | undefined {
             );
             try {
                 console.error(new Error().stack);
-            } catch (e) {
+            } catch {
                 // ignore error
             }
             return "An unknown error has occurred!";
@@ -304,7 +304,7 @@ export function getPrintableError(err: any): string | undefined {
             if ("responseText" in obj) {
                 try {
                     obj = JSON.parse(obj.responseText);
-                } catch (e) {
+                } catch {
                     obj = obj.responseText;
                 }
             } else if ("errcode" in obj) {
@@ -352,11 +352,11 @@ export function errorAlerter(...args: any[]) {
             if ("responseText" in err_object) {
                 try {
                     err_object = JSON.parse(err_object.responseText);
-                } catch (e) {
+                } catch {
                     err_object = err_object.responseText;
                 }
             }
-        } catch (e) {
+        } catch {
             // ignore error
         }
         errcodeAlerter(err_object);
@@ -611,7 +611,7 @@ try {
     $(window).focus(() => {
         try {
             localStorage.setItem("focused_window", focus_window_id);
-        } catch (e) {
+        } catch {
             // Ignored, safari in private mode errors out when setItem is called
         }
     });
@@ -620,14 +620,14 @@ try {
             if (localStorage.getItem("focused_window") === focus_window_id) {
                 localStorage.removeItem("focused_window");
             }
-        } catch (e) {
+        } catch {
             // ignore error
         }
     });
     if (document.hasFocus()) {
         try {
             localStorage.setItem("focused_window", focus_window_id);
-        } catch (e) {
+        } catch {
             // ignore error
         }
     }

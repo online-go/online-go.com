@@ -467,7 +467,7 @@ function ChatLines({
             setTimeout(() => {
                 try {
                     div.scrollTop = div.scrollHeight;
-                } catch (e) {
+                } catch {
                     // ignore error
                 }
             }, 100);

@@ -45,7 +45,7 @@ export class MerchantLog extends React.PureComponent<{}, any> {
                             render: (X) => {
                                 try {
                                     return JSON.parse(X.request_body).type;
-                                } catch (e) {
+                                } catch {
                                     // ignore error
                                 }
                                 return "";
@@ -85,7 +85,7 @@ function clean_body(str: string): string {
     try {
         obj = JSON.parse(str);
         console.log(obj);
-    } catch (e) {
+    } catch {
         // ignore error
     }
 
@@ -93,13 +93,13 @@ function clean_body(str: string): string {
         if (typeof obj === "string") {
             obj = parseQuery(str);
         }
-    } catch (e) {
+    } catch {
         // ignore error
     }
 
     try {
         return orderedJsonStringify(obj);
-    } catch (e) {
+    } catch {
         // ignore error
     }
 
