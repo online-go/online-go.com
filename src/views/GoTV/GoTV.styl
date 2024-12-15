@@ -14,395 +14,461 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#gotv-container {
+    display: flex;
+    flex-direction: column;
+    height: calc(100dvh - var(--navbar-height) - 4px);
+    width: 100vw;
+    overflow: hidden;
 
-#gotv-container
-    display: flex
-    flex-direction: column
-    height: calc(100dvh - var(--navbar-height) - 4px)
-    width: 100vw
-    overflow: hidden
+    div {
+        box-sizing: border-box;
+    }
 
-    div
-        box-sizing: border-box
+    .gotv-layout {
+        display: flex;
+        height: 100%;
+        width: 100%;
+        position: relative;
+        overflow: hidden;
 
-    .gotv-layout
-        display: flex
-        height: 100%
-        width: 100%
-        position: relative
-        overflow: hidden
+        .list-pane {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            width: 340px;
+            height: 100%;
+            border-right: 1px solid transparent;
+            themed: border-right-color shade4;
+            overflow-y: auto;
+            themed: background-color bg;
+            transition: transform 0.3s ease-in-out;
+            padding: 0 10px 0 10px;
+            z-index: 2;
+        }
 
-        .list-pane
-            position: absolute
-            top: 0
-            bottom: 0
-            left: 0
-            width: 340px
-            height: 100%
-            border-right: 1px solid transparent
-            themed border-right-color shade4
-            overflow-y: auto
-            themed background-color bg
-            transition: transform 0.3s ease-in-out
-            padding: 0 10px 0 10px
-            z-index: 2
+        .list-pane.collapsed {
+            transform: translateX(-340px);
+        }
 
-        .list-pane.collapsed
-            transform: translateX(-340px)
+        .list-pane.expanded {
+            transform: translateX(0);
+        }
 
-        .list-pane.expanded
-            transform: translateX(0)
+        .streams-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            themed: background-color bg;
 
-        .streams-header
-            display: flex
-            align-items: center
-            justify-content: space-between
-            padding: 10px
-            themed background-color bg
+            .preference-toggle {
+                position: absolute;
+                right: 15px;
+                top: 15px;
+            }
+        }
 
-            .preference-toggle
-                position absolute
-                right 15px
-                top 15px
+        .language-select {
+            flex: 1;
+            margin-left: 10px;
+        }
 
-        .language-select
-            flex: 1
-            margin-left: 10px
+        .stream-pane {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            themed: background-color bg;
+            overflow: hidden;
+            position: relative;
+            transition: margin-left 0.3s ease-in-out;
 
-        .stream-pane
-            flex: 1
-            display: flex
-            justify-content: center
-            align-items: center
-            themed background-color bg
-            overflow: hidden
-            position: relative
-            transition: margin-left 0.3s ease-in-out
+            #twitch-embed {
+                height: 100%;
+                width: 100%;
+            }
+        }
 
-            #twitch-embed
-                height: 100%
-                width: 100%
+        .stream-pane.expanded {
+            margin-left: 0;
+        }
 
-        .stream-pane.expanded
-            margin-left: 0
+        .stream-pane.shrunk {
+            margin-left: 340px;
+        }
 
-        .stream-pane.shrunk
-            margin-left: 340px
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
 
-        iframe
-            width: 100%
-            height: 100%
-            border: none
+        .list-pane-control {
+            position: absolute;
+            top: 50%;
+            left: 340px;
+            transform: translateY(-50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            background: linear-gradient(135deg, #2480FF, #005580);
+            color: #FFFFFF;
+            border: none;
+            height: 100px;
+            width: 20px;
+            cursor: pointer;
+            transition: background 0.3s ease-in-out, left 0.3s ease-in-out, transform 0.3s ease-in-out;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            font-size: 1rem;
+            font-weight: normal;
+            border-radius: 0 10px 10px 0;
 
-        .list-pane-control
-            position: absolute
-            top: 50%
-            left: 340px
-            transform: translateY(-50%)
-            display: flex
-            align-items: center
-            justify-content: center
-            z-index: 10
-            background: linear-gradient(135deg, #2480FF, #005580)
-            color: #FFFFFF
-            border: none
-            height: 100px 
-            width: 20px 
-            cursor: pointer
-            transition: background 0.3s ease-in-out, left 0.3s ease-in-out, transform 0.3s ease-in-out
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2)
-            font-size: 1rem 
-            font-weight: normal
-            border-radius: 0 10px 10px 0
+            &::after {
+                font-family: 'FontAwesome';
+                content: '\f053'; // FontAwesome left arrow
+                display: inline-block;
+                transition: content 0.3s ease-in-out;
+            }
+        }
 
-            &::after
-                font-family: "FontAwesome"
-                content: "\f053" // FontAwesome left arrow
-                display: inline-block
-                transition: content 0.3s ease-in-out
+        .list-pane-control.collapsed {
+            left: 0;
 
-        .list-pane-control.collapsed
-            left: 0
-            &::after
-                content: "\f0c9" // FontAwesome list icon
+            &::after {
+                content: '\f0c9'; // FontAwesome list icon
+            }
 
-            &:hover
-                &::after
-                    content: "\f054" // FontAwesome right arrow on hover
+            &:hover {
+                &::after {
+                    content: '\f054'; // FontAwesome right arrow on hover
+                }
+            }
+        }
 
-        .chat-pane-control
-            position: absolute
-            top: 50%
-            right: 320px
-            transform: translateY(-50%)
-            display: flex
-            align-items: center
-            justify-content: center
-            z-index: 10
-            background: linear-gradient(135deg, #2480FF, #005580)
-            color: #FFFFFF
-            border: none
-            height: 100px 
-            width: 20px 
-            cursor: pointer
-            transition: background 0.3s ease-in-out, right 0.3s ease-in-out, transform 0.3s ease-in-out
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2)
-            font-size: 1rem 
-            font-weight: normal 
-            border-radius: 10px 0 0 10px
+        .chat-pane-control {
+            position: absolute;
+            top: 50%;
+            right: 320px;
+            transform: translateY(-50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            background: linear-gradient(135deg, #2480FF, #005580);
+            color: #FFFFFF;
+            border: none;
+            height: 100px;
+            width: 20px;
+            cursor: pointer;
+            transition: background 0.3s ease-in-out, right 0.3s ease-in-out, transform 0.3s ease-in-out;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            font-size: 1rem;
+            font-weight: normal;
+            border-radius: 10px 0 0 10px;
 
-            &::after
-                font-family: "FontAwesome"
-                content: "\f054" // FontAwesome right arrow
-                display: inline-block
-                transition: content 0.3s ease-in-out
+            &::after {
+                font-family: 'FontAwesome';
+                content: '\f054'; // FontAwesome right arrow
+                display: inline-block;
+                transition: content 0.3s ease-in-out;
+            }
+        }
 
-        .chat-pane-control.collapsed
-            right: 0
-            &::after
-                content: "\f086" // FontAwesome chat icon
+        .chat-pane-control.collapsed {
+            right: 0;
 
-            &:hover
-                &::after
-                    content: "\f053" // FontAwesome left arrow on hover
+            &::after {
+                content: '\f086'; // FontAwesome chat icon
+            }
 
-        .chat-pane
-            flex: 0 0 320px
-            height: 100%
-            padding: 0
-            border-left: 1px solid transparent
-            themed border-left-color shade4
-            overflow: hidden
-            themed background-color bg
-            position: relative
-            transition: flex 0.3s ease-in-out, transform 0.3s ease-in-out
+            &:hover {
+                &::after {
+                    content: '\f053'; // FontAwesome left arrow on hover
+                }
+            }
+        }
 
-        .chat-pane.collapsed
-            flex: 0 0 0
-            transform: translateX(320px)
+        .chat-pane {
+            flex: 0 0 320px;
+            height: 100%;
+            padding: 0;
+            border-left: 1px solid transparent;
+            themed: border-left-color shade4;
+            overflow: hidden;
+            themed: background-color bg;
+            position: relative;
+            transition: flex 0.3s ease-in-out, transform 0.3s ease-in-out;
+        }
 
-        .chat-pane.expanded
-            flex: 0 0 320px
-            transform: translateX(0)
+        .chat-pane.collapsed {
+            flex: 0 0 0%;
+            transform: translateX(320px);
+        }
 
-        .EmbeddedChatCard
-            min-width: 100%
-            margin: 0
-            height: 100%
-            overflow: hidden
+        .chat-pane.expanded {
+            flex: 0 0 320px;
+            transform: translateX(0);
+        }
 
-        .chat-tabs
-            display: flex
-            justify-content: center
-            height: 45px
-            themed background-color bg
-            border-bottom: 1px solid transparent
-            themed border-bottom-color shade4
+        .EmbeddedChatCard {
+            min-width: 100%;
+            margin: 0;
+            height: 100%;
+            overflow: hidden;
+        }
 
-        .chat-tab
-            flex: 1
-            cursor: pointer
-            border-bottom: 2px solid transparent
-            transition: background-color 0.3s ease-in-out, border-bottom 0.3s ease-in-out
-            display: flex
-            justify-content: center
-            align-items: center
+        .chat-tabs {
+            display: flex;
+            justify-content: center;
+            height: 45px;
+            themed: background-color bg;
+            border-bottom: 1px solid transparent;
+            themed: border-bottom-color shade4;
+        }
 
-            .ogs-chat-tab-logo
-                background-image: svg-load("../assets/ogslogo.svg")
-                background-size: contain
-                background-repeat: no-repeat
-                height: 30px
-                width: 30px
-                filter: drop-shadow(0 0 25px rgba(255, 255, 255, 0.3))
+        .chat-tab {
+            flex: 1;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: background-color 0.3s ease-in-out, border-bottom 0.3s ease-in-out;
+            display: flex;
+            justify-content: center;
+            align-items: center;
 
-            .twitch-chat-tab-logo
-                background-image: svg-load("../assets/glitch_flat_purple.svg")
-                background-size: contain
-                background-repeat: no-repeat
-                width: 30px
-                height: 30px
-                filter: drop-shadow(0 0 25px rgba(255, 255, 255, 0.3))
+            .ogs-chat-tab-logo {
+                background-image: svg-load('../assets/ogslogo.svg');
+                background-size: contain;
+                background-repeat: no-repeat;
+                height: 30px;
+                width: 30px;
+                filter: drop-shadow(0 0 25px rgba(255, 255, 255, 0.3));
+            }
 
-        .chat-tab.active
-            border-bottom: 2px solid transparent
-            themed border-bottom-color primary
-            themed background-color card-background-color
+            .twitch-chat-tab-logo {
+                background-image: svg-load('../assets/glitch_flat_purple.svg');
+                background-size: contain;
+                background-repeat: no-repeat;
+                width: 30px;
+                height: 30px;
+                filter: drop-shadow(0 0 25px rgba(255, 255, 255, 0.3));
+            }
+        }
 
-        .chat-tab:not(.active):hover
-            themed background-color card-background-color
-            border-bottom: 2px solid transparent
-            themed border-bottom-color primary
+        .chat-tab.active {
+            border-bottom: 2px solid transparent;
+            themed: border-bottom-color primary;
+            themed: background-color card-background-color;
+        }
 
-        .chat-content
-            position: relative
-            height: 100%
+        .chat-tab:not(.active):hover {
+            themed: background-color card-background-color;
+            border-bottom: 2px solid transparent;
+            themed: border-bottom-color primary;
+        }
 
-        .chat-section
-            position: absolute
-            top: 0
-            left: 0
-            width: 100%
-            height: 100%
-            display: none
+        .chat-content {
+            position: relative;
+            height: 100%;
+        }
 
-        .chat-section.active
-            display: block
+        .chat-section {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+        }
 
-        .chat-section.hidden
-            display: none
+        .chat-section.active {
+            display: block;
+        }
 
-        .no-streams-message
-            text-align: center
-            margin: 20px 0
-            font-size: 1.2rem
-            themed color fg
+        .chat-section.hidden {
+            display: none;
+        }
 
-        .no-streams-available-message 
-            width: 50%
-            margin: 20px auto
-            font-size: 1.2rem
-            themed color fg 
-            padding: 20px
-            border: 1px solid transparent 
-            themed border-color shade4
-            border-radius: 10px
-            themed background-color card-background-color
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1)
-            text-align: left
+        .no-streams-message {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 1.2rem;
+            themed: color fg;
+        }
 
-            h2 
-                text-align: center
-                margin-bottom: 10px
-                font-size: 1.5rem
+        .no-streams-available-message {
+            width: 50%;
+            margin: 20px auto;
+            font-size: 1.2rem;
+            themed: color fg;
+            padding: 20px;
+            border: 1px solid transparent;
+            themed: border-color shade4;
+            border-radius: 10px;
+            themed: background-color card-background-color;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: left;
 
-            p 
-                margin: 10px 0
+            h2 {
+                text-align: center;
+                margin-bottom: 10px;
+                font-size: 1.5rem;
+            }
 
-@media only screen and (max-width: 900px)
-    #gotv-container .gotv-layout
-        flex-direction: column
+            p {
+                margin: 10px 0;
+            }
+        }
+    }
+}
 
-        div
-            box-sizing: border-box
+@media only screen and (max-width: 900px) {
+    #gotv-container .gotv-layout {
+        flex-direction: column;
 
-    #gotv-container .gotv-layout .list-pane
-        display: flex
-        flex-wrap: wrap
-        justify-content: center
-        align-content: flex-start
-        width: 100vw
-        height: 100%
-        position: absolute
-        top: 0
-        left: 0
-        z-index: 100
-        transform: translateY(0)
-        transition: transform 0.3s ease-in-out
-        padding: 10px
+        div {
+            box-sizing: border-box;
+        }
+    }
 
-    #gotv-container .gotv-layout .list-pane.collapsed
-        transform: translateY(-100%)
+    #gotv-container .gotv-layout .list-pane {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-content: flex-start;
+        width: 100vw;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 100;
+        transform: translateY(0);
+        transition: transform 0.3s ease-in-out;
+        padding: 10px;
+    }
 
-    #gotv-container .gotv-layout .list-pane.expanded
-        transform: translateY(0)
-        width: 100vw 
-        height: 100%
+    #gotv-container .gotv-layout .list-pane.collapsed {
+        transform: translateY(-100%);
+    }
 
-    #gotv-container .gotv-layout .list-pane .streams-header
-        display: flex
-        justify-content: space-between
-        align-items: center
-        width: 100%
-        padding: 10px
-        background: #f0f0f0
+    #gotv-container .gotv-layout .list-pane.expanded {
+        transform: translateY(0);
+        width: 100vw;
+        height: 100%;
+    }
 
-    #gotv-container .gotv-layout .list-pane .back-button
-        background: none
-        border: none
-        font-size: 1.5rem
-        cursor: pointer
-        box-shadow: none
+    #gotv-container .gotv-layout .list-pane .streams-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        padding: 10px;
+        background: #f0f0f0;
+    }
 
-    #gotv-container .gotv-layout .list-pane-control
-        position: absolute
-        top: 0
-        left: 0
-        width: 100%
-        height: 50px
-        display: flex
-        align-items: center
-        justify-content: center
-        color: #FFFFFF
-        cursor: pointer
-        z-index: 110
-        background: transparent
-        border-radius: 0
-        transform: translateY(0)
-        themed background-color card-background-color
-        border: 1px solid transparent
-        themed border-color shade4 
-        themed color fg
-        font-size: 1.5rem
-        font-weight: bold
+    #gotv-container .gotv-layout .list-pane .back-button {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        box-shadow: none;
+    }
 
-        &::after
-            font-family: "FontAwesome"
-            content: "\f0c9" // FontAwesome list icon
-            display: inline-block
-            margin-left: 10px
-        
-        &.collapsed:hover::after            
-            content: "\f0c9"; // FontAwesome list icon
+    #gotv-container .gotv-layout .list-pane-control {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #FFFFFF;
+        cursor: pointer;
+        z-index: 110;
+        background: transparent;
+        border-radius: 0;
+        transform: translateY(0);
+        themed: background-color card-background-color;
+        border: 1px solid transparent;
+        themed: border-color shade4;
+        themed: color fg;
+        font-size: 1.5rem;
+        font-weight: bold;
 
-    #gotv-container .gotv-layout .chat-pane-control
-        display: none
+        &::after {
+            font-family: 'FontAwesome';
+            content: '\f0c9'; // FontAwesome list icon
+            display: inline-block;
+            margin-left: 10px;
+        }
 
-    #gotv-container .gotv-layout .list-pane.expanded ~ .list-pane-control
-        z-index: 0
-        opacity: 0
+        &.collapsed:hover::after {
+            content: '\f0c9'; // FontAwesome list icon
+        }
+    }
 
-    #gotv-container .gotv-layout .stream-pane
-        width: 100vw
-        margin-top: 50px
-        flex: none
-        height: calc(100vw * 9 / 16)
-        border-bottom: 1px solid transparent
-        themed border-bottom-color shade4
+    #gotv-container .gotv-layout .chat-pane-control {
+        display: none;
+    }
 
-        &.shrunk
-            margin-left: 0
+    #gotv-container .gotv-layout .list-pane.expanded ~ .list-pane-control {
+        z-index: 0;
+        opacity: 0;
+    }
 
-    #gotv-container .gotv-layout .chat-pane
-        width: 100vw
-        flex: 1 1 auto
-        overflow: hidden
-        themed background-color bg
-        transition: transform 0.3s ease-in-out
-        transform: translateY(0)
-        border: none
+    #gotv-container .gotv-layout .stream-pane {
+        width: 100vw;
+        margin-top: 50px;
+        flex: none;
+        height: calc((100vw * 9 / 16));
+        border-bottom: 1px solid transparent;
+        themed: border-bottom-color shade4;
 
-        &.collapsed
-            flex: 1 1 auto
-            transform: translateX(0)
+        &.shrunk {
+            margin-left: 0;
+        }
+    }
 
-        &.expanded
-            flex: 1 1 auto
-            transform: translateX(0)
+    #gotv-container .gotv-layout .chat-pane {
+        width: 100vw;
+        flex: 1 1 auto;
+        overflow: hidden;
+        themed: background-color bg;
+        transition: transform 0.3s ease-in-out;
+        transform: translateY(0);
+        border: none;
 
-    #gotv-container .gotv-layout .no-streams-available-message 
-        width: 100%
-        max-width: 600px
-        themed background-color bg
-        border: none
-        margin: 0 auto
-        padding: 10px
-        box-shadow: none
+        &.collapsed {
+            flex: 1 1 auto;
+            transform: translateX(0);
+        }
 
-        h2 
-            margin: 0
-            font-size: 0.9rem
+        &.expanded {
+            flex: 1 1 auto;
+            transform: translateX(0);
+        }
+    }
 
-        p 
-            font-size: 0.8rem
-            margin: 5px
+    #gotv-container .gotv-layout .no-streams-available-message {
+        width: 100%;
+        max-width: 600px;
+        themed: background-color bg;
+        border: none;
+        margin: 0 auto;
+        padding: 10px;
+        box-shadow: none;
+
+        h2 {
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
+        p {
+            font-size: 0.8rem;
+            margin: 5px;
+        }
+    }
+}

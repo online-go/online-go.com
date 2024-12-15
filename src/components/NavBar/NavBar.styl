@@ -14,8 +14,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-navbar-width= 18rem;
+navbar-width = 18rem;
 submenu-min-height = 9rem;
 hamburger-cutoff = 900px;
 
@@ -28,21 +27,22 @@ header.NavBar {
     margin-bottom: 0.2rem;
     height: navbar-height;
     user-select: none;
-    themed background-color navbar-background-color
+    themed: background-color navbar-background-color;
     box-shadow: 2px 2px 2px 0px rgba(0, 0, 0, 0.16);
     justify-content: space-between;
     max-width: 100vw;
 
-
     .fa-star {
-        //themed color supporter-gold
+        // themed color supporter-gold
         color: supporter-gold;
     }
+
     .left, .right {
         flex: 1rem;
         flex-grow: 0;
         flex-shrink: 0;
     }
+
     .center {
         flex: 1rem;
         flex-grow: 1;
@@ -62,7 +62,6 @@ header.NavBar {
 
     /* desktop / wide screens */
     @media (min-width: (hamburger-cutoff + 1px)) {
-
         .Menu {
             display: block;
             margin-left: 0.5rem;
@@ -75,31 +74,32 @@ header.NavBar {
                 left: 0;
                 top: navbar-height;
                 min-width: navbar-width;
-                themed background-color navbar-background-color
-                //border-left: 0.2rem solid transparent;
+                themed: background-color navbar-background-color;
+                // border-left: 0.2rem solid transparent;
                 box-shadow: 2px 4px 3px 0px rgba(0, 0, 0, 0.16);
                 z-index: z.nav-menu.menu;
-
             }
 
             .fakelink:hover, a:hover {
-                themed background-color shade4
+                themed: background-color shade4;
             }
 
             &:hover, &.active {
-                themed background-color navbar-highlight-background-color
-                themed border-color primary
+                themed: background-color navbar-highlight-background-color;
+                themed: border-color primary;
+
                 .Menu-children {
                     display: inline-flex;
                     flex-direction: column;
-                    themed border-color primary
-                    themed background-color navbar-highlight-background-color
+                    themed: border-color primary;
+                    themed: background-color navbar-highlight-background-color;
                 }
             }
 
             .submenu {
                 display: none;
             }
+
             .submenu-container:hover .submenu {
                 display: inline-flex;
                 flex-direction: column;
@@ -107,9 +107,10 @@ header.NavBar {
                 top: 0;
                 min-height: submenu-min-height;
                 left: navbar-width;
-                themed background-color shade4
+                themed: background-color shade4;
                 min-width: navbar-width;
                 box-shadow: 2px 4px 3px 0px rgba(0, 0, 0, 0.16);
+
                 > a {
                     display: inline-flex;
                     align-items: center;
@@ -130,6 +131,7 @@ header.NavBar {
                     display: flex;
                     justify-content: space-around;
                 }
+
                 .settings-and-logout {
                     margin-top: 0.5rem;
                     margin-bottom: 0.5rem;
@@ -139,8 +141,9 @@ header.NavBar {
                 }
 
                 &:hover, &.active {
-                    themed background-color navbar-highlight-background-color
-                    themed border-color primary
+                    themed: background-color navbar-highlight-background-color;
+                    themed: border-color primary;
+
                     .Menu-children {
                         display: inline-flex;
                         flex-direction: column;
@@ -195,7 +198,6 @@ header.NavBar {
         }
     }
 
-
     /* mobile */
     @media only screen and (max-width: hamburger-cutoff) {
         .left {
@@ -220,27 +222,33 @@ header.NavBar {
 
         .icon-container {
             padding-right: 0 !important;
+
             img.PlayerIcon {
                 margin-right: 0 !important;
             }
+
             .username {
                 display: none;
             }
         }
+
         .ogs-nav-logo {
             height: 1.5rem;
-            width: 4.0rem !important;
+            width: 4rem !important;
             margin-right: 0 !important;
         }
+
         .OmniSearch-container {
-            //display: none !important;
+            // display: none !important;
             display: inline-flex !important;
-            min-width: 2.0rem;
+            min-width: 2rem;
+
             &:focus-within {
                 width: calc(100vw - 5rem) !important;
-                //min-width: calc(100vw - 10rem) !important;
+                // min-width: calc(100vw - 10rem) !important;
                 max-width: auto;
                 margin-right: 0.5rem;
+
                 .OmniSearch-input-container {
                     max-width: 100%;
                 }
@@ -250,34 +258,42 @@ header.NavBar {
                 font-size: 1.2rem;
             }
         }
+
         .right {
             flex: 0rem;
+
             &.search-focused {
                 display: none;
+
                 @media only screen {
                     display: inline-flex;
                 }
             }
         }
+
         .center {
             flex: 0rem;
         }
+
         .spacer {
             flex: 1;
             flex-basis: 2rem;
         }
+
         .TournamentIndicator.hidden-on-mobile {
             display: none;
         }
 
         &.hamburger-expanded {
-            .OmniSearch-container  {
+            .OmniSearch-container {
                 display: inline-flex !important;
             }
+
             .ogs-nav-logo {
                 display: none;
             }
-             .right {
+
+            .right {
                 display: none;
             }
         }
@@ -285,15 +301,15 @@ header.NavBar {
         &.hamburger-expanded .left {
             display: inline-flex !important;
             flex-direction: column;
-            themed background-color navbar-background-color
+            themed: background-color navbar-background-color;
             position: absolute;
-            top: navbar-height
+            top: navbar-height;
             bottom: 0;
             left: 0;
             padding: 0;
             align-items: flex-start;
-            //max-height: "calc(100vh - %s)" % navbar-height;
-            //overflow-y: auto;
+            // max-height: "calc(100vh - %s)" % navbar-height;
+            // overflow-y: auto;
             z-index: z.nav-menu.menu;
 
             .ogs-nav-logo {
@@ -306,12 +322,11 @@ header.NavBar {
                 display: flex;
                 flex-direction: column;
                 height: auto;
-                themed-important background-color navbar-background-color
-
+                themed-important: background-color navbar-background-color;
             }
 
             .Menu-title {
-                font-size: font-size-big
+                font-size: font-size-big;
                 white-space: nowrap;
             }
 
@@ -323,9 +338,8 @@ header.NavBar {
                 flex-direction: column;
                 box-shadow: none;
                 flex-shrink: 0;
-                themed-important background-color navbar-background-color
+                themed-important: background-color navbar-background-color;
                 padding-left: 2rem;
-
             }
 
             .submenu-container {
@@ -339,7 +353,7 @@ header.NavBar {
                     position: static;
                     box-shadow: none;
                     min-height: auto !important;
-                    themed-important background-color navbar-background-color
+                    themed-important: background-color navbar-background-color;
                     padding-left: 2rem;
                 }
             }
@@ -357,6 +371,7 @@ header.NavBar {
     .hamburger {
         display: none;
         cursor: pointer;
+
         @media only screen and (max-width: hamburger-cutoff) {
             font-size: 1.7rem;
             display: inline-flex;
@@ -387,6 +402,7 @@ header.NavBar {
                 font-weight: 400;
                 margin-left: 0.5rem;
                 margin-right: 0.5rem;
+
                 &.fa-graduation-cap {
                     font-size: 14px;
                 }
@@ -394,14 +410,12 @@ header.NavBar {
         }
     }
 
-
     a, .clickable, .fakelink {
-        themed color text-color
+        themed: color text-color;
     }
 
-
-    a:active, a:hover, .clickable:hover, .fakelink:hover  {
-        themed color text-color-active
+    a:active, a:hover, .clickable:hover, .fakelink:hover {
+        themed: color text-color-active;
     }
 
     .ogs-nav-logo {
@@ -413,7 +427,7 @@ header.NavBar {
     .left {
         display: flex;
         align-items: center;
-        //padding-left: 1rem;
+        // padding-left: 1rem;
     }
 
     .left, .Menu {
@@ -434,7 +448,6 @@ header.NavBar {
         }
     }
 
-
     .right {
         flex-shrink: 0;
         display: flex;
@@ -452,15 +465,14 @@ header.NavBar {
                 white-space: nowrap;
             }
 
-
             .notification-indicator {
                 left: 0.5rem;
                 width: navbar-height;
             }
 
             img.PlayerIcon {
-                //height: navbar-height;
-                //width: navbar-height;
+                // height: navbar-height;
+                // width: navbar-height;
                 height: 2rem;
                 width: 2rem;
                 pointer-events: none;
@@ -468,13 +480,14 @@ header.NavBar {
             }
 
             .fa, .ogs-goban {
-                font-size: 1.0rem;
+                font-size: 1rem;
                 font-weight: 400;
                 margin-left: 0.5rem;
-                themed color shade1
+                themed: color shade1;
             }
+
             &:hover .fa {
-                themed color fg
+                themed: color fg;
             }
         }
     }
@@ -495,10 +508,9 @@ header.NavBar {
     }
 
     .sign-in {
-        padding-right: 1.0rem;
+        padding-right: 1rem;
         white-space: nowrap;
     }
-
 
     .nav-menu-modal-backdrop {
         display: none;
@@ -509,15 +521,13 @@ header.NavBar {
         left: 0;
         right: 0;
 
-        //transition: background-color 0.4s ease;
-        //background-color: transparent;
-
+        // transition: background-color 0.4s ease;
+        // background-color: transparent;
         &.active {
             display: inline-block;
-            //background-color: rgba(128,128,128,0.2);
+            // background-color: rgba(128,128,128,0.2);
         }
     }
-
 
     .RightNav {
         display: inline-flex;
@@ -527,8 +537,8 @@ header.NavBar {
         top: navbar-height;
         width: navbar-width;
         max-width: 100vw;
-        max-height: "calc(100vh - %s)" % navbar-height;
-        themed background-color navbar-background-color;
+        max-height: 'calc(100vh - %s)' % navbar-height;
+        themed: background-color navbar-background-color;
         overflow-y: auto;
         user-select: none;
         z-index: z.nav-menu.menu;
@@ -544,6 +554,7 @@ header.NavBar {
             display: flex;
             justify-content: space-around;
         }
+
         .settings-and-logout {
             margin-top: 0.5rem;
             margin-bottom: 0.5rem;
@@ -556,6 +567,7 @@ header.NavBar {
             margin: 0.5rem;
             display: inline-flex;
             align-items: center;
+
             img, i {
                 margin: 0.2rem;
                 margin-right: 0.5rem;
@@ -563,25 +575,23 @@ header.NavBar {
         }
     }
 
-
     .NotificationList {
         position: absolute;
         right: 0;
         top: navbar-height;
         width: navbar-width;
-        themed background-color navbar-background-color
-        max-height: "calc(100vh - %s)" % navbar-height;
+        themed: background-color navbar-background-color;
+        max-height: 'calc(100vh - %s)' % navbar-height;
         overflow-y: auto;
         padding: 0.5rem;
         z-index: z.nav-menu.menu;
         box-shadow: -2px 2px 1px 0px rgba(0, 0, 0, 0.16);
     }
 
-
     .FriendList {
         top: navbar-height;
-        max-height: "calc(100vh - %s)" % navbar-height;
-        themed background-color navbar-background-color
+        max-height: 'calc(100vh - %s)' % navbar-height;
+        themed: background-color navbar-background-color;
     }
 
     .FriendIndicator, .IncidentReportIndicator, .TournamentIndicator, .TurnIndicator, .NotificationIndicator, .ChatIndicator, .GoTVIndicator {
@@ -597,6 +607,7 @@ header.NavBar {
         display: inline-flex;
         align-self: center;
         line-height: 1rem;
+
         .navbar-icon {
             margin-bottom: 0px !important;
         }
@@ -609,16 +620,17 @@ header.NavBar {
         }
     }
 
-
     .ChatList {
-        themed background-color navbar-highlight-background-color
+        themed: background-color navbar-highlight-background-color;
         padding: 0.5rem;
-        height: "calc(100vh - %s)" % navbar-height;
-        max-height: "calc(100vh - %s)" % navbar-height;
+        height: 'calc(100vh - %s)' % navbar-height;
+        max-height: 'calc(100vh - %s)' % navbar-height;
         width: 15rem;
+
         .channels {
             margin-top: 0.5rem;
         }
+
         .channel {
             padding-top: 0.25rem;
             padding-bottom: 0.25rem;
@@ -628,13 +640,13 @@ header.NavBar {
                 display: inline-flex;
                 align-items: center;
                 align-content: center;
+
                 .fa-trophy, .icon {
                     margin-right: 0.5rem;
                 }
             }
         }
     }
-
 }
 
 .OmniSearch-container {
@@ -642,7 +654,7 @@ header.NavBar {
     height: navbar-height;
     display: inline-flex;
     align-items: center;
-    //justify-content: center;
+    // justify-content: center;
     padding-left: 0.5rem;
     padding-bottom: 0;
     flex-grow: 1;
@@ -674,41 +686,42 @@ header.NavBar {
 
     .OmniSearch {
         position: absolute;
-        //top: navbar-height;
-        //top: -0.15rem;
-        //top: 0;
+        // top: navbar-height;
+        // top: -0.15rem;
+        // top: 0;
         top: navbar-height;
-        //left: navbar-width;
-
+        // left: navbar-width;
         width: navbar-width;
-        themed background-color navbar-highlight-background-color
+        themed: background-color navbar-highlight-background-color;
         box-shadow: 2px 2px 1px 0px rgba(0, 0, 0, 0.16);
         z-index: z.nav-menu.menu;
-        max-height: "calc(100vh - %s)" % navbar-height;
+        max-height: 'calc(100vh - %s)' % navbar-height;
     }
 }
 
-
 button.theme-button {
     cursor: pointer;
-    inactive-button()
+    inactive-button();
     border: 1px solid transparent;
     padding: 0.3rem;
-    padding-right: 1.0rem;
-    padding-left: 1.0rem;
+    padding-right: 1rem;
+    padding-left: 1rem;
     font-size: 1.2rem;
 }
 
 body.light header.NavBar button.theme-button.light {
-    background-color: light.primary
-    border-color: darken(light.primary, 8%)
+    background-color: light.primary;
+    border-color: darken(light.primary, 8%);
+
     i.fa.fa-sun-o {
         color: #fff;
     }
 }
+
 body.dark header.NavBar button.theme-button.dark {
-    background-color: dark.primary
-    border-color: darken(dark.primary, 8%)
+    background-color: dark.primary;
+    border-color: darken(dark.primary, 8%);
+
     i.fa.fa-moon-o {
         color: #fff;
     }
@@ -716,29 +729,31 @@ body.dark header.NavBar button.theme-button.dark {
 
 // do for accessible what we do for dark...
 body.accessible header.NavBar button.theme-button.accessible {
-    background-color: accessible.primary
-    border-color: darken(accessible.primary, 8%)
+    background-color: accessible.primary;
+    border-color: darken(accessible.primary, 8%);
+
     i.fa.fa-eye {
         color: #fff;
     }
 }
 
-
 .BanIndicator {
     position: fixed;
     right: 0;
     top: navbar-height;
-    themed background-color reject
+    themed: background-color reject;
     z-index: z.banned-banner;
     width: 15rem;
-    themed color colored-background-fg
+    themed: color colored-background-fg;
     padding: 1rem;
-     > div {
-         font-size: 1.2rem;
-         text-align: center;
-         padding-top: 1.0rem;
-         a {
-             themed color link-color
-         }
-     }
+
+    > div {
+        font-size: 1.2rem;
+        text-align: center;
+        padding-top: 1rem;
+
+        a {
+            themed: color link-color;
+        }
+    }
 }

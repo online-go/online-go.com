@@ -14,9 +14,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 /* This dock-inline-height needs to match the 'squashed' threshold in Game.tsx:goban_view_squashed() */
-dock-inline-height=500px
+dock-inline-height = 500px;
 
 .Dock {
     user-select: none;
@@ -24,23 +23,19 @@ dock-inline-height=500px
     top: below-navbar;
     right: dock-collapsed-width - dock-width;
     width: dock-width;
-    themed background-color bg
+    themed: background-color bg;
     border-radius: 0.5rem;
     border-bottom-right-radius: 0;
     border-top-right-radius: 0;
-
     padding-top: 1rem;
     padding-bottom: 1rem;
     z-index: z.dock;
-
     // note that transition speed is controlled dynamically by javascript based on preferences
     box-shadow: 0px 2px 5px 0px rgba(0, 0, 0, 0.26);
 
     &:hover {
         right: 0;
         box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.26);
-
-        // note that transition speed is controlled dynamically by javascript based on preferences
     }
 
     div.line-item {
@@ -49,6 +44,7 @@ dock-inline-height=500px
         cursor: pointer;
         text-align: left;
     }
+
     a {
         padding-left: 0.5rem;
         display: block;
@@ -56,11 +52,13 @@ dock-inline-height=500px
         text-align: left;
         display: flex;
         align-items: center;
-        themed color text-color;
+        themed: color text-color;
     }
+
     a:hover {
         text-decoration: none;
     }
+
     i.fa, i.ogs-coordinates, i.ogs-zen-mode, i.ogs-goban {
         font-size: 1.3rem;
         width: 1.3rem;
@@ -72,32 +70,29 @@ dock-inline-height=500px
     }
 
     ul {
-        list-style:none;
-        padding-left:0;
+        list-style: none;
+        padding-left: 0;
     }
+
     li {
         list-style-type: none;
     }
 
     .greyed {
-        themed color shade3;
+        themed: color shade3;
         padding-left: 0.5rem;
     }
 }
 
-
 // This is mobile layout...
-
 .Dock.inline {
     position: relative;
     right: 0;
     width: 100%;
     display: flex;
     box-shadow: none;
-    themed background-color clear
-
+    themed: background-color clear;
     flex-wrap: wrap;
-
 
     // The immediate children need to be laid out this way
     > * {
@@ -105,6 +100,7 @@ dock-inline-height=500px
         flex-shrink: 0;
         flex-basis: 30%;
     }
+
     // And the links within them this way...
     * a {
         text-align: left;
@@ -112,8 +108,9 @@ dock-inline-height=500px
         min-width: 7rem;
         align-items: center;
         font-size: 0.7rem;
+
         i {
-            font-size: 1.0rem;
+            font-size: 1rem;
         }
     }
 
@@ -130,6 +127,7 @@ dock-inline-height=500px
         display: inline-block;
         padding-right: 1rem;
     }
+
     &:hover {
         box-shadow: none;
     }
@@ -143,8 +141,7 @@ dock-inline-height=500px
         width: 100%;
         display: flex;
         box-shadow: none;
-        themed background-color clear
-
+        themed: background-color clear;
         flex-wrap: wrap;
 
         // The immediate children need to be laid out this way
@@ -153,6 +150,7 @@ dock-inline-height=500px
             flex-shrink: 0;
             flex-basis: 30%;
         }
+
         // And the links within them this way...
         * a {
             text-align: left;
@@ -160,8 +158,9 @@ dock-inline-height=500px
             min-width: 7rem;
             align-items: center;
             font-size: 0.7rem;
+
             i {
-                font-size: 1.0rem;
+                font-size: 1rem;
             }
         }
 
@@ -178,12 +177,9 @@ dock-inline-height=500px
             display: inline-block;
             padding-right: 1rem;
         }
+
         &:hover {
             box-shadow: none;
         }
     }
 }
-
-
-
-

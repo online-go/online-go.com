@@ -14,11 +14,9 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-
 .DismissableNotification {
-    themed-desaturate-and-lighten-darken background-color info 80% 70%
-    themed-darken border-color info 00%
+    themed-desaturate-and-lighten-darken: background-color info 80% 70%;
+    themed-darken: border-color info 0%;
     border: 1px solid #000;
     text-align: center;
     margin: 0.5rem;
@@ -26,13 +24,12 @@
     border-radius: 0.5rem;
 
     .fa-times {
-        themed color shade2;
+        themed: color shade2;
         float: right;
         cursor: pointer;
 
         &:hover {
-            themed color shade1;
+            themed: color shade1;
         }
-
     }
 }

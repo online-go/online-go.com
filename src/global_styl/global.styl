@@ -14,8 +14,6 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-
 #loading-svg-container {
     position: absolute;
     left: 0;
@@ -29,15 +27,16 @@
 html, body, #main-content {
     height: 100%;
     font-size: font-size-normal;
-    -webkit-backface-visibility:  hidden;
-    -webkit-tap-highlight-color:  transparent;
+    -webkit-backface-visibility: hidden;
+    -webkit-tap-highlight-color: transparent;
 }
+
 html, body, #main-content, #main-content > div {
     margin: 0;
     padding: 0;
     min-height: 100%;
-    themed background-color background-color;
-    themed color text-color;
+    themed: background-color background-color;
+    themed: color text-color;
 }
 
 .monospace {
@@ -47,9 +46,11 @@ html, body, #main-content, #main-content > div {
 .text-align-center {
     text-align: center;
 }
+
 .text-align-right {
     text-align: right;
 }
+
 .text-align-left {
     text-align: left;
 }
@@ -62,38 +63,33 @@ html, body, #main-content, #main-content > div {
 #main-content > div > div:first-child {
     flex: 0 0 auto;
 }
+
 #main-content > div > div:nth-child(2) {
     flex: 1 0 auto;
 }
 
 a, .clickable, .fakelink {
     text-decoration: none;
-    themed color link-color
+    themed: color link-color;
     cursor: pointer;
 }
 
-
-a:active, a:hover, .clickable:hover, .fakelink:hover  {
-    text-decoration: underline
-    themed color link-color-active
+a:active, a:hover, .clickable:hover, .fakelink:hover {
+    text-decoration: underline;
+    themed: color link-color-active;
 }
-
-
 
 a.primary, .primary.clickable, .primary.fakelink {
-    themed color primary
-    themed background-color clear
+    themed: color primary;
+    themed: background-color clear;
 }
 
-a.primary:active, a.primary:hover, .primary.clickable:hover, .primary.fakelink:hover  {
-    themed-lighten color primary 10%
+a.primary:active, a.primary:hover, .primary.clickable:hover, .primary.fakelink:hover {
+    themed-lighten: color primary 10%;
 }
-
-
-
 
 .ogs-nav-logo {
-    themed background-image logo-svg no-repeat center center fixed;
+    themed: background-image logo-svg no-repeat center center fixed;
     background-size: contain;
     background-position: 50% 50%;
     background-repeat: no-repeat;
@@ -103,17 +99,18 @@ a.primary:active, a.primary:hover, .primary.clickable:hover, .primary.fakelink:h
     display: inline-block;
 }
 
-
 #main-content {
-    themed color text-color
+    themed: color text-color;
 }
 
 .page-title {
     width: 100%;
+
     > i {
         margin-right: 0.5em;
     }
 }
+
 .page-width {
     align-self: center;
     align-content: left;
@@ -123,13 +120,13 @@ a.primary:active, a.primary:hover, .primary.clickable:hover, .primary.fakelink:h
     padding-bottom: 0.7rem;
 }
 
-.page-nav{
+.page-nav {
     display: flex;
     justify-content: space-between;
     margin-bottom: 2rem;
     width: 100%;
 
-    .fa-search{
+    .fa-search {
         margin-bottom: 2px;
     }
 
@@ -140,6 +137,7 @@ a.primary:active, a.primary:hover, .primary.clickable:hover, .primary.fakelink:h
 
     > div {
         padding-top: 1.2rem;
+
         > a {
             margin: 0 1rem;
         }
@@ -147,61 +145,68 @@ a.primary:active, a.primary:hover, .primary.clickable:hover, .primary.fakelink:h
 }
 
 .fg-shade0 {
-    themed color shade0
+    themed: color shade0;
 }
+
 .fg-shade1 {
-    themed color shade1
+    themed: color shade1;
 }
+
 .fg-shade2 {
-    themed color shade2
+    themed: color shade2;
 }
+
 .fg-shade3 {
-    themed color shade3
+    themed: color shade3;
 }
+
 .fg-shade4 {
-    themed color shade4
+    themed: color shade4;
 }
+
 .fg-shade5 {
-    themed color shade5
+    themed: color shade5;
 }
 
 .bg-shade0 {
-    themed background-color shade0
+    themed: background-color shade0;
 }
+
 .bg-shade1 {
-    themed background-color shade1
+    themed: background-color shade1;
 }
+
 .bg-shade2 {
-    themed background-color shade2
+    themed: background-color shade2;
 }
+
 .bg-shade3 {
-    themed background-color shade3
+    themed: background-color shade3;
 }
+
 .bg-shade4 {
-    themed background-color shade4
+    themed: background-color shade4;
 }
+
 .bg-shade5 {
-    themed background-color shade5
+    themed: background-color shade5;
 }
 
-
-/*** Error stuff ***/
-
+/* ** Error stuff ** */
 .error-message {
     border: 1px solid transparent;
     border-radius: 3px;
-    themed border-color reject
-    themed-desaturate-and-lighten-darken  background-color reject 80% 80%
+    themed: border-color reject;
+    themed-desaturate-and-lighten-darken: background-color reject 80% 80%;
 }
+
 input.boxed.validation-error, input.validation-error {
-    box-shadow: 0px 0px 5px rgba(255,128,128,0.2);
-    themed border-color reject
-    themed-desaturate-and-lighten-darken  background-color reject 80% 80%
+    box-shadow: 0px 0px 5px rgba(255, 128, 128, 0.2);
+    themed: border-color reject;
+    themed-desaturate-and-lighten-darken: background-color reject 80% 80%;
 }
 
-
-/*** INPUT ***/
-
+/* ** INPUT ** */
 input, select, textarea {
     font-size: font-size-normal;
     padding-top: 0.2rem;
@@ -211,10 +216,9 @@ input, select, textarea {
     box-sizing: border-box;
     border: none;
     border-bottom: 1px solid transparent;
-
-    background-color transparent;
-    themed border-color input-border
-    themed color input-fg
+    background-color: transparent;
+    themed: border-color input-border;
+    themed: color input-fg;
 }
 
 textarea {
@@ -226,59 +230,67 @@ input.boxed, select.boxed, textarea.boxed {
     padding: 0.5rem 0.5rem;
     box-sizing: border-box;
     border: 1px solid transparent;
-
-    themed background-color input-bg
-    themed border-color input-border
-    themed color input-fg
+    themed: background-color input-bg;
+    themed: border-color input-border;
+    themed: color input-fg;
 }
 
 input.fill, textarea.fill {
     width: 100%;
 }
+
 .big {
     font-size: font-size-big;
 }
+
 .mid {
     font-size: font-size-mid;
 }
+
 .normal {
     font-size: font-size-normal;
 }
+
 .small {
     font-size: font-size-small;
 }
+
 .smaller {
     font-size: font-size-smaller;
 }
+
 .extra-small {
     font-size: font-size-extra-small;
 }
 
-
-input.search{
-    themed background-color clear
+input.search {
+    themed: background-color clear;
     border: 0;
     border-bottom: 1px solid transparent;
 }
 
-
 .input-group {
     width: 100%;
     display: flex;
+
     input {
         flex: 1;
     }
+
     button {
         margin: 0;
     }
+
     input, button, select {
         &:not(:first-child):not(:last-child) {
             border-radius: 0;
         }
+
         &:first-child {
             border-top-right-radius: 0;
             border-bottom-right-radius: 0;
         }
+
         &:last-child {
             border-top-left-radius: 0;
             border-bottom-left-radius: 0;
@@ -287,20 +299,16 @@ input.search{
 }
 
 select {
-    themed background-color background-color;
-    themed color text-color;
+    themed: background-color background-color;
+    themed: color text-color;
 }
 
-
-
-
-/*** MISC ***/
-
+/* ** MISC ** */
 hr {
     height: 0;
     border: 0;
     border-bottom: 1px solid transparent;
-    themed border-color shade3;
+    themed: border-color shade3;
 }
 
 .noselect {
@@ -315,20 +323,21 @@ hr {
     font-style: italic;
 }
 
-border-darken-amount = 15%
-for cls in primary success info danger reject
+border-darken-amount = 15%;
+
+for cls in primary success info danger reject {
     .{cls}, a.btn.{cls}, .btn.{cls}, button.{cls} {
-        themed background-color cls
-        themed-darken border-color cls border-darken-amount
-        themed color colored-background-fg
+        themed: background-color cls;
+        themed-darken: border-color cls border-darken-amount;
+        themed: color colored-background-fg;
     }
+
     .{cls}-text {
-        themed color cls
+        themed: color cls;
     }
+}
 
-
-/*** LISTS ***/
-
+/* ** LISTS ** */
 dl.horizontal {
     display: flex;
     flex-direction: row;
@@ -345,7 +354,7 @@ dl.horizontal {
         text-align: right;
         box-sizing: border-box;
         vertical-align: middle;
-        line-height: font-size-normal*2;
+        line-height: font-size-normal * 2;
     }
 
     dd {
@@ -357,7 +366,7 @@ dl.horizontal {
         padding-left: 1rem;
         box-sizing: border-box;
         vertical-align: middle;
-        line-height: font-size-normal*2;
+        line-height: font-size-normal * 2;
     }
 }
 
@@ -366,17 +375,14 @@ dl.horizontal {
     align-items: center;
 }
 
-
-
-/*** PROGRESS BARS **/
-
+/* ** PROGRESS BARS * */
 .progress {
     display: flex;
     width: 100%;
     align-items: left;
-    themed background-color shade4
+    themed: background-color shade4;
     border: 1px solid transparent;
-    themed border-color shade2
+    themed: border-color shade2;
     border-radius: 0.2rem;
     box-sizing: border-box;
     margin: 0;
@@ -390,38 +396,34 @@ dl.horizontal {
     }
 
     .default {
-        themed color fg;
+        themed: color fg;
     }
-
 }
 
 .black-background {
-    themed background player-black-background
-    themed color player-black-fg
+    themed: background player-black-background;
+    themed: color player-black-fg;
 }
 
 .white-background {
-    themed background player-white-background
-    themed color player-white-fg
+    themed: background player-white-background;
+    themed: color player-white-fg;
 }
 
-
-/*** BUTTON ***/
-
-button-highlight-brighten-amount = 15%
-button-border-highlight-darken-amount= 5%
-button-disabled-desaturate-amount=70%
+/* ** BUTTON ** */
+button-highlight-brighten-amount = 15%;
+button-border-highlight-darken-amount = 5%;
+button-disabled-desaturate-amount = 70%;
 
 button, a.btn, .btn {
     display: inline-block;
     margin: 0.15em;
     user-select: none;
-
     text-align: center;
     font-size: font-size-normal;
     cursor: pointer;
     border: 1px solid transparent;
-    //border-bottom: 3px solid transparent;
+    // border-bottom: 3px solid transparent;
     box-shadow: 0px 2px 5px 0px rgba(0, 0, 0, 0.15);
     padding-left: 0.7em;
     padding-right: 0.7em;
@@ -432,10 +434,8 @@ button, a.btn, .btn {
     vertical-align: middle;
     box-sizing: border-box;
     line-height: font-size-normal;
-
-    themed background-color default-button
-    themed color default-button-color
-
+    themed: background-color default-button;
+    themed: color default-button-color;
     transition: background-color 0.3s ease;
 
     &.no-shadow {
@@ -443,39 +443,40 @@ button, a.btn, .btn {
     }
 
     &:before {
-      content: '';
-      display: inline-block;
-      vertical-align: middle;
-      //height: 100%;
+        content: '';
+        display: inline-block;
+        vertical-align: middle;
+        // height: 100%;
     }
+
     &:hover, &:focus {
         text-decoration: none;
-
-        themed-lighten background-color default-button button-highlight-brighten-amount
-        themed-darken border-color default-button button-border-highlight-darken-amount
+        themed-lighten: background-color default-button button-highlight-brighten-amount;
+        themed-darken: border-color default-button button-border-highlight-darken-amount;
     }
+
     &:active, &.active {
         text-decoration: none;
-
-        themed-darken background-color default-button button-highlight-brighten-amount
-        themed-darken border-color default-button button-border-highlight-darken-amount
+        themed-darken: background-color default-button button-highlight-brighten-amount;
+        themed-darken: border-color default-button button-border-highlight-darken-amount;
     }
+
     &.xs {
         font-size: font-size-extra-small;
         line-height: font-size-normal;
         text-shadow: none !important;
     }
+
     &.sm {
         font-size: font-size-small;
         line-height: font-size-normal;
         text-shadow: none !important;
     }
 
-
     &:disabled {
-        themed-desaturate background-color default-button button-disabled-desaturate-amount
-        themed color shade2
-        themed-desaturate border-color default-button button-disabled-desaturate-amount
+        themed-desaturate: background-color default-button button-disabled-desaturate-amount;
+        themed: color shade2;
+        themed-desaturate: border-color default-button button-disabled-desaturate-amount;
         box-shadow: none;
         cursor: default;
         cursor: not-allowed;
@@ -496,55 +497,63 @@ a.btn {
     vertical-align: middle;
 }
 
-for cls in primary info success danger reject
+for cls in primary info success danger reject {
     button.{cls}, a.btn.{cls}, .btn.{cls} {
-        themed color colored-background-fg
+        themed: color colored-background-fg;
+
         &:hover, &:focus {
-            themed-lighten background-color cls button-highlight-brighten-amount
-            themed-darken border-color cls button-border-highlight-darken-amount
+            themed-lighten: background-color cls button-highlight-brighten-amount;
+            themed-darken: border-color cls button-border-highlight-darken-amount;
         }
+
         &:active, &.active {
-            themed-darken background-color cls button-highlight-brighten-amount
-            themed-darken border-color cls button-border-highlight-darken-amount
+            themed-darken: background-color cls button-highlight-brighten-amount;
+            themed-darken: border-color cls button-border-highlight-darken-amount;
         }
     }
+
     .btn-group {
         button.{cls}, a.btn.{cls}, .btn.{cls} {
-            themed color colored-background-fg
+            themed: color colored-background-fg;
+
             &:hover, &:focus {
-                themed-lighten background-color cls button-highlight-brighten-amount
-                themed-darken border-color cls button-border-highlight-darken-amount
+                themed-lighten: background-color cls button-highlight-brighten-amount;
+                themed-darken: border-color cls button-border-highlight-darken-amount;
             }
+
             &:active, &.active {
-                themed-darken background-color cls button-highlight-brighten-amount
-                themed-darken border-color cls button-border-highlight-darken-amount
+                themed-darken: background-color cls button-highlight-brighten-amount;
+                themed-darken: border-color cls button-border-highlight-darken-amount;
             }
         }
     }
+
     .fab.{cls} {
-        themed background-color cls
+        themed: background-color cls;
+
         &:hover {
-            themed-lighten background-color cls button-highlight-brighten-amount
+            themed-lighten: background-color cls button-highlight-brighten-amount;
         }
     }
+
     button.{cls}:disabled, a.btn.{cls}:disabled .btn.{cls}:disabled {
-        themed-desaturate background-color cls button-disabled-desaturate-amount
-        themed color shade3
-        themed-desaturate border-color cls button-disabled-desaturate-amount
+        themed-desaturate: background-color cls button-disabled-desaturate-amount;
+        themed: color shade3;
+        themed-desaturate: border-color cls button-disabled-desaturate-amount;
         box-shadow: none;
     }
+}
 
-for cls in primary danger info reject
+for cls in primary danger info reject {
     button.{cls}, a.btn{cls}, .btn.{cls} {
-        text-shadow: 0 1px 0 rgba(0,0,0,0.25);
+        text-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
     }
-
-
-
+}
 
 .btn-group {
-display: inline-block;
+    display: inline-block;
     margin: 0.15em;
+
     button, a.btn, .btn {
         border-radius: 0;
         margin: 0;
@@ -553,14 +562,15 @@ display: inline-block;
             border-bottom-left-radius: 0.2rem;
             border-top-left-radius: 0.2rem;
         }
+
         &:last-child {
             border-bottom-right-radius: 0.2rem;
             border-top-right-radius: 0.2rem;
         }
 
         &.active {
-            themed background-color shade2
-            themed border-color shade2
+            themed: background-color shade2;
+            themed: border-color shade2;
         }
     }
 }
@@ -572,20 +582,23 @@ display: inline-block;
         display: flex;
         flex-wrap: wrap;
         justify-content: space-around;
-        .btn-group{
+
+        .btn-group {
             margin-left: 0;
             margin-right: 0;
         }
     }
 
-    .btn-group{
+    .btn-group {
         margin-left: 0.5em;
         margin-right: 0.5em;
     }
+
     .btn-group:first-child {
         margin-left: 0;
         margin-right: 0.5em;
     }
+
     .btn-group:last-child {
         margin-right: 0;
     }
@@ -595,21 +608,23 @@ display: inline-block;
     direction: rtl;
 }
 
-
 .result-won {
-    themed-desaturate-and-lighten-darken background-color win 55% 30%
+    themed-desaturate-and-lighten-darken: background-color win 55% 30%;
 }
+
 .result-tie {
-    themed-desaturate-and-lighten-darken background-color tie 55% 30%
+    themed-desaturate-and-lighten-darken: background-color tie 55% 30%;
 }
+
 .result-lost {
-    themed-desaturate-and-lighten-darken background-color loss 55% 30%
+    themed-desaturate-and-lighten-darken: background-color loss 55% 30%;
 }
 
 .space-around {
     display: flex;
     justify-content: space-around;
 }
+
 .space-between {
     display: flex;
     justify-content: space-between;

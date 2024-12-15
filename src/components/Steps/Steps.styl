@@ -14,9 +14,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-step-bg=#0068F7
-step-fg=#fff
+step-bg = #0068F7;
+step-fg = #fff;
 
 .Steps {
     display: flex;
@@ -38,19 +37,20 @@ step-fg=#fff
         .title-left, .title-right {
             flex: 1;
             border-top: 0.2rem solid transparent;
-            themed border-color shade3
+            themed: border-color shade3;
         }
+
         .title-text {
             flex-shrink: 0;
             flex-grow: 0;
             font-size: 0.7em;
             padding: 0.3rem;
-            border-radius: 1.0rem;
-            min-width: 1rem
-            min-height: 1rem
+            border-radius: 1rem;
+            min-width: 1rem;
+            min-height: 1rem;
             text-align: center;
             border: 2px solid transparent; /* for selected, color overridden down below */
-            themed background-color shade3
+            themed: background-color shade3;
             user-select: none;
 
             &.clickable {
@@ -63,18 +63,18 @@ step-fg=#fff
         font-size: smaller;
         text-align: center;
     }
-
 }
 
 .CompletedStepContainer {
     .title-row {
         .title-text {
-            //themed background-color primary
-            themed border-color primary
-            themed color colored-background-fg
+            // themed background-color primary
+            themed: border-color primary;
+            themed: color colored-background-fg;
         }
+
         .title-left, .title-right {
-            themed border-color primary
+            themed: border-color primary;
         }
     }
 }
@@ -82,11 +82,12 @@ step-fg=#fff
 .LastCompletedStepContainer {
     .title-row {
         .title-text {
-            themed background-color primary
-            themed color colored-background-fg
+            themed: background-color primary;
+            themed: color colored-background-fg;
         }
+
         .title-right {
-            themed border-color shade3
+            themed: border-color shade3;
         }
     }
 }
@@ -94,8 +95,8 @@ step-fg=#fff
 .SelectedStepContainer {
     .title-row {
         .title-text {
-            themed-darken border-color  primary 30%
-            themed-lighten background-color primary 30%
+            themed-darken: border-color primary 30%;
+            themed-lighten: background-color primary 30%;
         }
     }
 }

@@ -14,19 +14,18 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 .Card {
     margin: 0.5rem;
     padding: 0.5rem;
     display: block;
-
     border: 1px solid transparent;
-    themed background-color card-background-color
-    themed border-color shade3
+    themed: background-color card-background-color;
+    themed: border-color shade3;
     box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.16), 0px 2px 5px 0px rgba(0, 0, 0, 0.15);
 
     &.next {
         background-color: #3EA2FF !important;
+
         &:hover {
             background-color: #3893e8 !important;
             transition: background-color 0.3s ease;
@@ -35,6 +34,7 @@
 
     &.todo {
         background-color: #F29E47 !important;
+
         &:hover {
             background-color: #f57c00 !important;
             transition: background-color 0.3s ease;
@@ -43,16 +43,13 @@
 
     &.done {
         background-color: #56C75B !important;
+
         &:hover {
             background-color: #4CAF50 !important;
             transition: background-color 0.3s ease;
         }
-
     }
 }
-
-
-
 
 .fab {
     border-radius: 50%;
@@ -62,16 +59,13 @@
     display: inline-block;
     user-select: none;
     box-sizing: border-box;
-
     width: 40px;
     height: 40px;
     padding: 8px;
     font-size: 16px;
     margin: 5px;
     cursor: pointer;
-
-    box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.16),  0px 2px 5px 0px rgba(0, 0, 0, 0.26);
-
+    box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.16), 0px 2px 5px 0px rgba(0, 0, 0, 0.26);
     transition: background-color 0.3s ease, box-shadow 0.3s ease;
 
     &:hover {
@@ -79,7 +73,7 @@
     }
 
     svg {
-        themed fill colored-background-fg
+        themed: fill colored-background-fg;
     }
 
     &.large {

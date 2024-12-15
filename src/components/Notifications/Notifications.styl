@@ -14,9 +14,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-
-indiciator-size=1.5rem
+indiciator-size = 1.5rem;
 
 .notification-indicator {
     position: absolute;
@@ -24,18 +22,16 @@ indiciator-size=1.5rem
     right: 0;
     left: 0;
     display: none;
-    themed background-color primary
-    //border-radius: 50%;
+    themed: background-color primary;
+    // border-radius: 50%;
     border: 0;
-    //width: 0.5rem;
-    //height: 0.5rem;
+    // width: 0.5rem;
+    // height: 0.5rem;
     height: 3px;
-
 
     &.active {
         display: inline-block;
     }
-
 }
 
 .notification-indicator-count {
@@ -44,26 +40,23 @@ indiciator-size=1.5rem
     left: 24px;
     display: none;
     font-size: 0.7rem;
-    width: 1.0rem;
+    width: 1rem;
     border-radius: 50%;
     text-align: center;
     padding-bottom: 0.1rem;
-
-    themed color colored-background-fg
-    themed background-color primary
+    themed: color colored-background-fg;
+    themed: background-color primary;
 
     &.active {
         display: inline-block;
     }
 }
 
-
-
-notification-list-height=14rem
+notification-list-height = 14rem;
 
 .NotificationList {
     display: block;
-    height: notification-list-height
+    height: notification-list-height;
 
     .no-notifications {
         display: flex;
@@ -91,23 +84,25 @@ notification-list-height=14rem
         }
     }
 
-
-    .notification{
+    .notification {
         min-height: 3rem;
         border-bottom: 1px solid transparent;
-        themed border-bottom-color shade3
+        themed: border-bottom-color shade3;
         padding: 0.3rem;
 
         .buttons {
             text-align: right;
+
             .fab.reject {
                 margin-right: 2rem;
             }
         }
     }
+
     .notification.clickable:hover {
-        themed background-color shade5
+        themed: background-color shade5;
     }
+
     .notification.challenge {
         .description {
             font-style: italic;
@@ -119,20 +114,19 @@ notification-list-height=14rem
     }
 
     .late-notification a {
-            themed color link-color;  // this is overriden by a mix-in for some reason :(
-            text-decoration: underline;
-        }
-
-
+        themed: color link-color; // this is overriden by a mix-in for some reason :(
+        text-decoration: underline;
+    }
 
     .fa-times-circle {
         float: right;
         font-size: 1.3rem;
-        themed color shade3
+        themed: color shade3;
     }
+
     .fa-times-circle:hover {
         cursor: pointer;
-        themed color fg
+        themed: color fg;
     }
 
     .moderation-offer {
@@ -140,6 +134,3 @@ notification-list-height=14rem
         flex-direction: column;
     }
 }
-
-
-

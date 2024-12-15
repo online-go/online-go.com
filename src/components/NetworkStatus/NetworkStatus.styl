@@ -7,7 +7,6 @@
 // superimposed on each other at their centres by using flex `center`,
 // and has the "wifi" element flashing for extra attention grabbing
 // coolness.
-
 .NetworkStatus {
     display: inline-flex;
     position: absolute;
@@ -17,8 +16,8 @@
     min-width: 10rem;
     height: 2.5rem;
     white-space: nowrap;
-    themed background-color reject
-    themed color colored-background-fg
+    themed: background-color reject;
+    themed: color colored-background-fg;
     align-items: center;
     justify-content: center;
     font-weight: bold;
@@ -30,10 +29,11 @@
     &.non-game {
         transform: scale(0.5);
         top: -0.75rem; // its peculiar why 0 doesn't work - something about scaling after positioning?
-        themed color reject
+        themed: color reject;
         background-color: transparent !important; // important needed to override "theme" specifier
         min-width: 0;
         padding-right: 0;
+
         .icon {
             margin-right: 0;
         }
@@ -53,17 +53,28 @@
     }
 
     @keyframes fadeInOut {
-        0% { opacity: 1; }
-        50% { opacity: 0.5; }
-        100% { opacity: 1; }
+        0% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.5;
+        }
+
+        100% {
+            opacity: 1;
+        }
     }
+
     i {
         position: absolute;
     }
+
     i.fa-2x {
         opacity: 0.6;
     }
-    i.fa-wifi{
-        animation: fadeInOut 2.0s infinite;
+
+    i.fa-wifi {
+        animation: fadeInOut 2s infinite;
     }
 }

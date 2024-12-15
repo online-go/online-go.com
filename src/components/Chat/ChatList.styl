@@ -14,15 +14,15 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-channel-utils-height=8.4rem;
-channel-width=20%;
-channel-max-width=25rem;
-channel-min-width=12rem;
+channel-utils-height = 8.4rem;
+channel-width = 20%;
+channel-max-width = 25rem;
+channel-min-width = 12rem;
 
 .ChatList {
     display: flex;
     flex-direction: column;
-    height: "calc(100vh - %s - %s)" % (navbar-height channel-utils-height);
+    height: 'calc(100vh - %s - %s)' % (navbar-height channel-utils-height);
     overflow-y: auto;
     width: channel-width;
     max-width: channel-max-width;
@@ -35,20 +35,20 @@ channel-min-width=12rem;
         width: channel-width;
         max-width: channel-max-width;
         min-width: channel-min-width;
-
         border-right: 1px solid transparent;
-        themed border-right-color shade3
+        themed: border-right-color shade3;
         display: flex;
         flex-direction: column;
         user-select: none;
     }
+
     .channels {
         flex-grow: 0;
         flex-shrink: 0;
         overflow-x: hidden;
 
         .channel-header {
-            margin-top: 1.0rem;
+            margin-top: 1rem;
             text-transform: uppercase;
             font-weight: bold;
             font-size: font-size-smaller;
@@ -61,9 +61,9 @@ channel-min-width=12rem;
                 padding: 0.2rem;
                 padding-right: 0.5rem;
                 cursor: pointer;
-
             }
         }
+
         .channel-header:first-child {
             margin-top: 0;
         }
@@ -75,24 +75,29 @@ channel-min-width=12rem;
             align-items: center;
 
             &.active {
-                themed background-color primary
-                themed color colored-background-fg
+                themed: background-color primary;
+                themed: color colored-background-fg;
             }
+
             &.unjoined {
-                themed color shade2
+                themed: color shade2;
             }
+
             &.unread {
-                themed color primary
+                themed: color primary;
             }
+
             &.mentioned {
-                themed color chat-mentions
+                themed: color chat-mentions;
             }
         }
+
         &.hide-unjoined {
             .unjoined {
                 display: none;
             }
         }
+
         &.hide-read {
             .read {
                 display: none;
@@ -109,52 +114,58 @@ channel-min-width=12rem;
 
         .unread-count {
             flex-shrink: 0;
-            @extend .monospace
+            @extends .monospace;
             font-size: 0.8rem;
             font-style: normal !important;
             float: right;
             padding-left: 0.5rem;
-            padding-top: 0.10rem;
+            padding-top: 0.1rem;
 
             &:before {
                 content: attr(data-count);
             }
         }
+
         .channel:hover .unread-count:before {
             cursor: pointer;
             content: attr(data-menu);
-            border: 1px solid transparent
+            border: 1px solid transparent;
             border-radius: 0.2rem;
-            themed background-color shade4
-            themed border-color shade3
+            themed: background-color shade4;
+            themed: border-color shade3;
             padding-left: 0.3rem;
             padding-right: 0.3rem;
-            themed color fg
+            themed: color fg;
         }
+
         .channel:hover .unread-count:hover:before {
-            themed background-color shade5
-            themed border-color shade4
-            themed color fg
+            themed: background-color shade5;
+            themed: border-color shade4;
+            themed: color fg;
         }
     }
+
     &.hide-unjoined {
         .unjoined {
             display: none;
         }
     }
+
     &.hide-read {
         .read {
             display: none;
         }
     }
+
     &.hide-unscubscribed {
         .chat-unsubscribed {
             display: none;
         }
     }
+
     .channel-buttons {
         display: flex;
-        //justify-content: space-between;
+        // justify-content: space-between;
     }
 
     .icon {

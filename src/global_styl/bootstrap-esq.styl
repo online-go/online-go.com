@@ -14,9 +14,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-/*** Minimal Bootstrap3'esq classes we were using ***/
-
+/* ** Minimal Bootstrap3'esq classes we were using ** */
 .container {
     width: 100%;
     max-width: 1200px;
@@ -28,7 +26,6 @@
     box-sizing: border-box;
 }
 
-
 .alert-block {
     padding: 1rem;
 }
@@ -36,8 +33,8 @@
 .well {
     border: 1px solid transparent;
     border-radius: 0.5rem;
-    themed border-color shade4
-    themed background-color shade5
+    themed: border-color shade4;
+    themed: background-color shade5;
     padding: 1rem;
 }
 
@@ -47,38 +44,40 @@
 }
 
 grid-breaks = {
-    xs: 0px
-    sm: 576px
-    md: 720px
-    lg: 940px
+    xs: 0px,
+    sm: 576px,
+    md: 720px,
+    lg: 940px,
     xl: 1140px
-}
-
+};
 grid-breaks = {
-    xs: 575px
-    sm: 719px
-    md: 939px
+    xs: 575px,
+    sm: 719px,
+    md: 939px,
     lg: 1139px
-}
+};
 
-for name in grid-breaks
-    @media only screen and (min-width: grid-breaks[name])
-        for i in 1 2 3 4 5 6 7 8 9 10 11 12
-            .row .col-{name}-{i}
+for name in grid-breaks {
+    @media only screen and (min-width: grid-breaks[name]) {
+        for i in 1 2 3 4 5 6 7 8 9 10 11 12 {
+            .row .col-{name}-{i} {
                 display: inline-block;
-                width: (i*8.333333333)%;
+                width: (i * 8.333333333) %;
+            }
+        }
+    }
 
-    @media only screen and (max-width: grid-breaks[name])
-        for i in 1 2 3 4 5 6 7 8 9 10 11 12
-            .row .col-{name}-{i}
+    @media only screen and (max-width: grid-breaks[name]) {
+        for i in 1 2 3 4 5 6 7 8 9 10 11 12 {
+            .row .col-{name}-{i} {
                 display: inline-block;
                 width: 100%;
+            }
+        }
+    }
+}
 
-
-
-
-/** Form stuff **/
-
+/* * Form stuff * */
 fieldset {
     border: 0;
 }
@@ -86,10 +85,10 @@ fieldset {
 .inline-form {
 }
 
-.form-horizontal{
+.form-horizontal {
 }
 
-.form-group{
+.form-group {
     display: flex;
     width: 100%;
     line-height: 2rem;
@@ -100,13 +99,10 @@ fieldset {
         text-align: right;
         font-weight: bold;
         padding-right: 0.5rem;
-
     }
+
     .controls {
         flex-grow: 1;
         display: flex;
-
     }
 }
-
-

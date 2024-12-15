@@ -1,13 +1,12 @@
-reports_center_content_width=56rem
+reports_center_content_width = 56rem;
 
 .ReportsCenter {
     display: flex;
     flex-direction: column;
 
-
     .ModTools {
         margin: 0;
-        themed background bg
+        themed: background bg;
         border: 0;
         box-shadow: none;
         max-width: reports_center_content_width;
@@ -20,34 +19,34 @@ reports_center_content_width=56rem
         }
     }
 
-    #ReportsCenterSelectReport  {
+    #ReportsCenterSelectReport {
         display: inline-block;
         width: 6rem;
+
         .reports-center-selected-report-container {
             display: inline-flex;
             align-items: center;
         }
+
         margin-right: 0.5rem;
     }
 
-    #ReportsCenterSelectModerator  {
+    #ReportsCenterSelectModerator {
         display: inline-block;
         width: 10rem;
+
         .reports-center-assigned-moderator-container {
             display: inline-flex;
             align-items: center;
-
         }
     }
-
 
     .ModerationActionSelector {
         display: flex;
         flex-direction: column;
-
         padding-bottom: 0.5rem; // intended to create margin for rdh highlighter
 
-        .no-report-actions-note,  .disabled-actions-note {
+        .no-report-actions-note, .disabled-actions-note {
             padding: 0 1rem 1rem 1rem;
         }
 
@@ -113,7 +112,7 @@ reports_center_content_width=56rem
     }
 
     .progress-bar.empty {
-        themed background-color shade5
+        themed: background-color shade5;
     }
 }
 
@@ -121,13 +120,13 @@ reports_center_content_width=56rem
     display: flex;
     flex-direction: row;
     justify-content: flex-start;
-    //align-items: stretch;
+    // align-items: stretch;
     align-items: flex-start;
 }
 
 #ReportsCenterCategoryList {
     border: 1px solid black;
-    themed border-color shade3
+    themed: border-color shade3;
     flex-basis: 15rem;
     min-width: 15rem;
     max-width: 15rem;
@@ -135,18 +134,17 @@ reports_center_content_width=56rem
     .Category {
         cursor: pointer;
         padding: 0.7rem;
-
         display: flex;
         justify-content: space-between;
         align-items: center;
 
         &:hover {
-            themed background-color shade5
+            themed: background-color shade5;
         }
 
         &.selected {
-            themed background-color primary
-            themed color colored-background-fg
+            themed: background-color primary;
+            themed: color colored-background-fg;
         }
 
         .spacer {
@@ -157,7 +155,6 @@ reports_center_content_width=56rem
         i {
             display: inline-block;
             width: 1rem;
-
         }
     }
 }
@@ -166,7 +163,7 @@ reports_center_content_width=56rem
     flex: 1;
 
     .help-details-greyed {
-        themed color shade4
+        themed: color shade4;
     }
 }
 
@@ -175,13 +172,14 @@ reports_center_content_width=56rem
     #ReportsCenterCategoryList {
         display: none;
     }
+
     #ReportsCenterContainer {
         flex-direction: column;
     }
+
     #ViewReport {
         padding-top: 1rem;
     }
-
 
     #ReportsCenterCategoryDropdown {
         .reports-center-category-container {
@@ -189,6 +187,7 @@ reports_center_content_width=56rem
             padding-right: 1rem;
         }
     }
+
     #ReportsCenterContainer {
         align-items: stretch;
     }
@@ -199,6 +198,7 @@ reports_center_content_width=56rem
     #ReportsCenterCategoryDropdown {
         display: none;
     }
+
     #ViewReport {
         padding-left: 1rem;
         padding-right: 1rem;

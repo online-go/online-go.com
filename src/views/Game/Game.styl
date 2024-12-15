@@ -14,8 +14,6 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-
 .Game {
     position: absolute;
     top: below-navbar;
@@ -26,17 +24,16 @@
     left: 0;
 
     .hidden, .hidden.active, .hidden:focus, .hidden:hover {
-        themed background-color hidden-bg
+        themed: background-color hidden-bg;
     }
 
     .malkovich, .malkovich.active, .malkovich:focus, .malkovich:hover {
-        themed background-color malkovich-bg
+        themed: background-color malkovich-bg;
     }
 
     .personal, .personal.active, .personal:focus, .personal:hover {
-        themed background-color personal-bg
+        themed: background-color personal-bg;
     }
-
 
     .submit-button {
         white-space: nowrap;
@@ -52,6 +49,7 @@
     div {
         flex-grow: 1;
     }
+
     .condensed-game-rules {
         text-align: right;
     }
@@ -65,25 +63,22 @@
     overflow-y: scroll;
 }
 
-
 .Game.zen {
     top: 0;
 }
 
-
-
-//goban-view-bar-width=15rem
-goban-view-bar-width=400px
+// goban-view-bar-width=15rem
+goban-view-bar-width = 400px;
 
 .MainGobanView {
     display: flex;
     flex-direction: row;
     align-items: stretch;
-    //align-content: stretch;
-    //justify-content: stretch;
+
+    // align-content: stretch;
+    // justify-content: stretch;
 
     // .players is handled in Players.styl
-
     .game-state {
         font-size: 1.3rem;
         font-weight: 700;
@@ -95,11 +90,9 @@ goban-view-bar-width=400px
         font-size: smaller;
     }
 
-
     .black.player-container.their-turn, .white.player-container.their-turn {
-        box-shadow: 0 3px 5px 1px rgba(50,50,50,0.51) !important;
+        box-shadow: 0 3px 5px 1px rgba(50, 50, 50, 0.51) !important;
     }
-
 
     .filler {
         flex-grow: 1;
@@ -117,18 +110,19 @@ goban-view-bar-width=400px
         .PlayControls {
             flex-grow: 1;
             flex-shrink: 0;
-            //justify-content: center;
+            // justify-content: center;
         }
     }
 
     // See if we can make folk who want wider chat happy
     &.wide .right-col.experimental {
-        flex-grow: 1 !important
+        flex-grow: 1 !important;
         margin-left: 2rem;
     }
 
     .conditional-move-planner {
         text-align: center;
+
         .buttons {
             display: flex;
             justify-content: space-between;
@@ -140,8 +134,6 @@ goban-view-bar-width=400px
         }
     }
 
-
-
     .game-analyze-button-bar {
         display: flex;
         align-items: center;
@@ -152,27 +144,27 @@ goban-view-bar-width=400px
         .stone-button {
             line-height: 2rem;
         }
+
         img {
             width: 1rem;
             height: 1rem;
         }
+
         input {
-            width: 2.0rem;
-            height: 2.0rem;
+            width: 2rem;
+            height: 2rem;
             line-height: 1rem;
             padding: 0;
             margin: 0;
             border: 0;
         }
-
     }
-
-
 
     .chat-container {
         flex-shrink: 1;
         flex-grow: 1;
     }
+
     .center-col {
         .chat-container {
             flex-grow: 1;
@@ -184,12 +176,11 @@ goban-view-bar-width=400px
         .chat-container {
             flex-grow: 1;
             flex-basis: 250px;
-            //margin-bottom: 2rem;
+            // margin-bottom: 2rem;
         }
     }
 
-    /* }}}*/
-
+    /* }}} */
     input.volume-slider {
         width: 8rem;
         max-width: 70%;
@@ -201,6 +192,7 @@ goban-view-bar-width=400px
             padding-top: 0.3rem;
         }
     }
+
     .center-col {
         .ad-container {
             padding-top: 0.3rem;
@@ -223,6 +215,7 @@ goban-view-bar-width=400px
         align-items: center;
         justify-content: center;
         position: relative;
+
         .Goban {
             position: absolute;
             top: 0;
@@ -233,28 +226,30 @@ goban-view-bar-width=400px
     .action-bar {
         display: flex;
         min-height: 2rem;
-        //justify-content: space-between;
+        // justify-content: space-between;
         justify-content: center;
         align-items: center;
         user-select: none;
-        themed color shade0
+        themed: color shade0;
 
         .move-number, .icons {
             flex-shrink: 0;
             flex-grow: 1;
             white-space: nowrap;
         }
+
         .move-number {
             flex-basis: 1rem;
             text-align: right;
         }
 
         .fa-trophy, .fa-lock {
-            themed color shade0
+            themed: color shade0;
             margin-left: 0.2rem;
         }
+
         .fa-trophy:hover, .fa-lock:hover {
-            themed color fg
+            themed: color fg;
         }
 
         .controls {
@@ -269,21 +264,21 @@ goban-view-bar-width=400px
                 cursor: pointer;
                 text-align: center;
             }
-            .move-control:hover, .move-number:hover, .icons:hover {
-                themed color fg
-            }
 
+            .move-control:hover, .move-number:hover, .icons:hover {
+                themed: color fg;
+            }
         }
     }
 
     &.portrait .action-bar {
         .icons {
-            //padding-left: 1.0rem;
+            // padding-left: 1.0rem;
         }
+
         .move-number {
         }
     }
-
 
     .tab-icon {
         position: fixed;
@@ -291,14 +286,14 @@ goban-view-bar-width=400px
         bottom: 0;
         font-size: 1.2rem;
         cursor: pointer;
-        themed color shade2
+        themed: color shade2;
         z-index: z.goban.tab-icon;
         padding: 0.5rem;
     }
-    .tab-icon:hover {
-        themed color fg
-    }
 
+    .tab-icon:hover {
+        themed: color fg;
+    }
 
     .leave-zen-mode-button {
         display: none;
@@ -306,12 +301,13 @@ goban-view-bar-width=400px
         top: 0.5rem;
         right: 0.5rem;
         font-size: 2rem;
-        themed color shade3
+        themed: color shade3;
         z-index: z.goban.exit-zenmode;
         cursor: pointer;
     }
+
     .leave-zen-mode-button:hover {
-        themed color fg
+        themed: color fg;
     }
 
     .center-col {
@@ -323,6 +319,7 @@ goban-view-bar-width=400px
         align-items: stretch;
         width: 100%;
     }
+
     &.portrait .center-col {
         .cancel-button {
             align-self: center;
@@ -332,27 +329,27 @@ goban-view-bar-width=400px
         }
     }
 
-
-
     .left-col, .right-col {
         display: flex;
-        width: goban-view-bar-width
+        width: goban-view-bar-width;
         overflow-y: auto;
         overflow-x: hidden;
         min-height: auto;
         flex-direction: column;
-        //align-content: stretch;
-        //align-items: stretch;
+        // align-content: stretch;
+        // align-items: stretch;
         justify-content: space-between;
     }
+
     .left-col {
-        flex-basis: 0;
+        flex-basis: 0%;
         flex-shrink: 1;
         align-content: center;
         justify-content: center;
         padding-right: 0.3rem;
         min-width: 0px;
     }
+
     .right-col {
         flex-basis: 25%;
         padding-left: 0.3rem;
@@ -362,44 +359,45 @@ goban-view-bar-width=400px
     }
 
     &.wide {
-        //background-color: red;
+        // background-color: red;
         .right-col {
             .player {
                 display: none;
             }
         }
     }
+
     &.square {
-        //background-color: blue;
+        // background-color: blue;
         .left-col {
             display: none;
         }
     }
+
     &.squashed {
         .right-col {
             padding-right: 0;
             margin-right: 0;
         }
     }
-    &.portrait {
-        //background-color: green;
 
+    &.portrait {
+        // background-color: green;
         .left-col {
             display: none;
         }
+
         .right-col {
             display: none;
         }
     }
 
-
-
-    &.portrait { /* .Dock  */
+    &.portrait { /* .Dock */
         .Dock {
-            //flex: 1;
+            // flex: 1;
             flex-shrink: 0;
             flex-grow: 1;
-            @extend .Dock.inline;
+            @extends .Dock.inline;
             margin-bottom: 3rem;
         }
     }
@@ -413,66 +411,77 @@ goban-view-bar-width=400px
     }
 
     &.zen {
-        themed background-color bg
+        themed: background-color bg;
+
         .left-col, .right-col {
-			padding: 0px;
+            padding: 0px;
         }
 
         .leave-zen-mode-button {
             display: inline-block;
         }
 
-		.Dock, .action-bar {
+        .Dock, .action-bar {
             display: none;
         }
-		.right-col {
-			.chat-container,
-			.game-analyze-button-bar,
-			#move-tree-container {
-				display: none;
-			}
-			.PlayControls {
-				flex-grow: 0;
+
+        .right-col {
+            .chat-container, .game-analyze-button-bar, #move-tree-container {
+                display: none;
+            }
+
+            .PlayControls {
+                flex-grow: 0;
                 /*
                 .accept-undo-button {
                     display: none
                 }
                 */
-			}
-			justify-content: center;
-			width: auto;
-			flex-grow: 0;
+            }
+
+            justify-content: center;
+            width: auto;
+            flex-grow: 0;
+
             .players {
                 flex-direction: column;
+
                 .player-container {
                     width: 100%;
                 }
             }
-            min-width 170px;
-		}
-		.center-col {
-			.goban-container {
-				flex-grow: 0;
-			}
-            flex-basis: 100vh
-			justify-content: flex-start;
-			flex-grow: 0;
-		}
+
+            min-width: 170px;
+        }
+
+        .center-col {
+            .goban-container {
+                flex-grow: 0;
+            }
+
+            flex-basis: 100vh;
+            justify-content: flex-start;
+            flex-grow: 0;
+        }
+
         &.portrait {
             .center-col {
-                flex-basis: 100%
-            }}
-		.align-row-start, .align-col-start {
-			align-self: flex-start;
-		}
-		.align-row-end, .align-col-end {
-			align-self: flex-end;
-		}
-		.align-row-start, .align-row-end {
-			flex-grow: 1;
-		}
-    }
+                flex-basis: 100%;
+            }
+        }
 
+        .align-row-start, .align-col-start {
+            align-self: flex-start;
+        }
+
+        .align-row-end, .align-col-end {
+            align-self: flex-end;
+        }
+
+        .align-row-start, .align-row-end {
+            flex-grow: 1;
+        }
+    }
 
     .review-list {
         text-align: center;
@@ -489,7 +498,7 @@ goban-view-bar-width=400px
 
     .Dock {
         a.disabled {
-            themed color shade2
+            themed: color shade2;
         }
 
         .unannulable {
@@ -498,20 +507,16 @@ goban-view-bar-width=400px
     }
 }
 
-
 .chat-container {
     /* Prevent silly Firefox from collapsing empty editable lines */
-    .qc-option[contenteditable=true]{
+    .qc-option[contenteditable=true] {
         min-height: 1 em;
     }
 }
 
-
-/*****************************/
-/*** Conditional Move tree ***/
-/*****************************/
-
-
+/* *************************** */
+/* ** Conditional Move tree ** */
+/* *************************** */
 .ctrl-conditional-tree {
     text-align: left;
     padding-left: 0.5em;
@@ -524,8 +529,8 @@ goban-view-bar-width=400px
     text-align: left;
     padding-top: 0.3rem;
 
-    ul.tree,  ul.tree ul {
-        background: embedurl("tree-vline.png") repeat-y;
+    ul.tree, ul.tree ul {
+        background: embedurl('tree-vline.png') repeat-y;
     }
 
     ul.tree {
@@ -544,13 +549,13 @@ goban-view-bar-width=400px
             margin: 0;
             padding: 0 12px;
             line-height: 20px;
-            //color: #369;
+            // color: #369;
             font-weight: bold;
-            background: embedurl("tree-node.png") no-repeat;
+            background: embedurl('tree-node.png') no-repeat;
         }
 
         li.last, li:last-child {
-            background: embedurl("tree-lastnode.png") no-repeat;
+            background: embedurl('tree-lastnode.png') no-repeat;
         }
     }
 
@@ -569,10 +574,12 @@ goban-view-bar-width=400px
             margin-left: 0.5em;
             margin-right: 0.5em;
         }
+
         .white.stone {
             background-color: #fff;
             border-color: #000;
         }
+
         .black.stone {
             background-color: #000;
             border-color: #999;
@@ -585,21 +592,23 @@ goban-view-bar-width=400px
             display: inline-flex;
             align-items: center;
         }
+
         .entry:hover {
-            themed background-color shade4
+            themed: background-color shade4;
             border: 1px solid transparent;
-            themed border-color primary
+            themed: border-color primary;
         }
 
         .entry.selected, &.selected {
-            themed background-color shade4
+            themed: background-color shade4;
             border: 1px solid transparent;
-            themed border-color primary
+            themed: border-color primary;
         }
+
         .entry.selected:hover, &.selected:hover {
-            themed background-color shade3
+            themed: background-color shade3;
             border: 1px solid transparent;
-            themed border-color primary
+            themed: border-color primary;
         }
     }
 
@@ -611,5 +620,3 @@ goban-view-bar-width=400px
         cursor: pointer;
     }
 }
-
-

@@ -14,8 +14,6 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-
 .Clock {
     & {
         flex: 1;
@@ -34,13 +32,14 @@
             animation-name: pulsate-paused-clock;
             animation-duration: 1s;
             animation-timing-function: step-end;
-            animation-iteration-count: infinite
+            animation-iteration-count: infinite;
         }
 
         .overtime-container {
             flex-grow: 1;
             display: inline-block;
         }
+
         .periods-container {
             display: flex;
             justify-content: center;
@@ -48,7 +47,7 @@
             align-content: stretch;
 
             div {
-                //margin: auto;
+                // margin: auto;
                 margin-left: 0.5em;
                 margin-right: 0.5em;
             }
@@ -57,9 +56,11 @@
         .period-moves {
             display: inline-block;
         }
+
         .period-time {
             display: inline-block;
         }
+
         .byo-yomi-periods {
             display: inline-block;
             margin-left: 0.5rem;
@@ -68,6 +69,7 @@
                 color: red;
             }
         }
+
         .overtime {
             font-size: 6pt;
             text-align: center;
@@ -82,13 +84,13 @@
             .pause-text {
                 margin-left: 0.5rem;
             }
+
             .transmitting {
                 margin-right: 0.5rem;
                 width: 0.8rem;
                 display: inline-block;
             }
         }
-
 
         .boxed {
             text-align: right;
@@ -99,6 +101,7 @@
         &.black {
             color: #63A7FF !important;
         }
+
         &.white {
             color: #147AFF !important;
         }
@@ -109,10 +112,10 @@
             font-weight: bold;
             color: #a55 !important;
         }
+
         .boxed {
             border-color: #a55 !important;
         }
-
     }
 
     &.mini-goban {
@@ -125,6 +128,7 @@
         &.paused {
             color: #888;
         }
+
         &.in-overtime {
             .periods, .period-time, .byo-yomi-periods {
                 font-size: font-size-small;
@@ -133,13 +137,10 @@
     }
 }
 
-
-
 .MainGobanView {
     .byo-yomi-container, .canadian-container {
         font-size: font-size-mid;
     }
-
 }
 
 .MiniGoban {
@@ -151,6 +152,7 @@
         .pause-text {
             margin-left: 0;
         }
+
         .transmitting {
             margin-left: 0;
             width: 0;

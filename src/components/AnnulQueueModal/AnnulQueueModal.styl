@@ -28,11 +28,10 @@
         left: 0px;
         bottom: 0px;
         border-right: 1px solid transparent;
-        themed border-color shade3;
+        themed: border-color shade3;
         overflow-y: scroll;
         overflow-x: hidden;
         overscroll-behavior: contain;
-
         -ms-overflow-style: none; /* Internet Explorer 10+ */
         scrollbar-width: none; /* Firefox */
     }
@@ -44,14 +43,12 @@
     .game-container {
         width: 85%;
         height: 90%;
-
         float: right;
         position: absolute;
         top: 0px;
         right: 0px;
         overflow-y: scroll;
-
-         -ms-overflow-style: none; /* Internet Explorer 10+ */
+        -ms-overflow-style: none; /* Internet Explorer 10+ */
         scrollbar-width: none; /* Firefox */
     }
 
@@ -101,12 +98,12 @@
     }
 
     .modal-actions, .close {
-        margin: 0 0px;     
+        margin: 0 0px;
     }
 
     .strikethrough {
         text-decoration: line-through;
-        color: #444; 
+        color: #444;
     }
 
     ul {
@@ -142,7 +139,6 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        
     }
 
     .icon-button {
@@ -160,20 +156,17 @@
         box-shadow: none;
     }
 
-    .nav-arrow:hover i,
-    .nav-arrow:focus i {
+    .nav-arrow:hover i, .nav-arrow:focus i {
         transform: scale(1.3);
         color: #2196f3;
     }
 
-
-    .nav-arrow:hover,
-    .nav-arrow:focus {
+    .nav-arrow:hover, .nav-arrow:focus {
         background: none;
         border: none;
         box-shadow: none;
     }
-    
+
     .nav-arrow.left {
         margin-right: 5px;
     }
@@ -186,11 +179,11 @@
         outline: none;
     }
 
-
     .nav-wrapper {
         display: flex;
         align-items: center;
         justify-content: center;
+
         span {
             font-size: 1.1rem;
         }
@@ -205,10 +198,9 @@
     }
 
     .gamelist-nav .fa:hover {
-        transform: scale(1.3); 
+        transform: scale(1.3);
         color: #2196f3;
     }
-
 
     .AnnulOverlay {
         min-height: 100%;
@@ -222,7 +214,7 @@
         align-items: center;
         width: 100%;
         height: 100%;
-        themed background-color bg
+        themed: background-color bg;
     }
 
     .spinner-container {
@@ -238,6 +230,7 @@
         0% {
             transform: rotate(0deg);
         }
+
         100% {
             transform: rotate(360deg);
         }
@@ -255,11 +248,11 @@
 }
 
 .bg-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.6);
-  z-index: 1;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 1;
 }

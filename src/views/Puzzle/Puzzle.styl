@@ -14,10 +14,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-
-
-puzzle-controls-width=400px
+puzzle-controls-width = 400px;
 
 .Puzzle {
     display: flex;
@@ -36,7 +33,6 @@ puzzle-controls-width=400px
     .left-col {
     }
 
-
     .center-col {
         flex-grow: 1;
         flex-shrink: 1;
@@ -47,21 +43,23 @@ puzzle-controls-width=400px
         overflow: hidden;
         z-index: 1;
     }
+
     &.portrait .center-col {
         height: 100vw;
-        min-height: 100vw;  // firefox needs this
-        max-height: 100vw;  // firefox needs this
+        min-height: 100vw; // firefox needs this
+        max-height: 100vw; // firefox needs this
         flex-basis: 99%;
     }
 
     .left-col, .right-col {
-        max-width: puzzle-controls-width
+        max-width: puzzle-controls-width;
         overflow-y: auto;
         overflow-x: hidden;
         min-height: auto;
         padding: 0.5rem;
         z-index: 2;
     }
+
     &.portrait .right-col {
         overflow-y: visible;
         overflow-x: visible;
@@ -75,12 +73,13 @@ puzzle-controls-width=400px
 
     .goban-container {
         flex-grow: 1;
-        //flex-shrink: 1;
+        // flex-shrink: 1;
         flex-basis: 100%;
         display: flex;
         align-items: center;
         justify-content: center;
         position: relative;
+
         .Goban {
             position: absolute;
             top: 0;
@@ -88,9 +87,9 @@ puzzle-controls-width=400px
         }
     }
 
-
     .horizontal {
         overflow-x: hidden;
+
         dt, dd {
             width: 45%;
         }
@@ -106,7 +105,7 @@ puzzle-controls-width=400px
 
     .puzzle-node-content {
         border: 1px solid transparent;
-        themed border-color shade4
+        themed: border-color shade4;
         margin-top: 1rem;
 
         .actions {
@@ -125,15 +124,17 @@ puzzle-controls-width=400px
             padding: 1rem;
             font-weight: bold;
         }
+
         .success {
-            themed background-color success
-            themed color colored-background-fg
+            themed: background-color success;
+            themed: color colored-background-fg;
             display: block;
             text-decoration: none;
         }
+
         .incorrect {
-            themed background-color reject
-            themed color colored-background-fg
+            themed: background-color reject;
+            themed: color colored-background-fg;
         }
     }
 }

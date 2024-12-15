@@ -14,15 +14,14 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 .ChatPresenceIndicator {
     // This is the not-present version of the indicator in the avatars on the game page
-    themed color chat-offline
-    themed text-shadow chat-offline-shadow
+    themed: color chat-offline;
+    themed: text-shadow chat-offline-shadow;
 
     // This does not appear to be used, because of the version in Players.styl
     &.online {
-        color pink; // flush out if it gets used somewhere with this pink and the below black
-        text-shadow: -1px -1px 0 #000,  1px -1px 0 #8c8, -1px 1px 0 #8c8, 1px 1px 0 #6a6;
+        color: pink; // flush out if it gets used somewhere with this pink and the below black
+        text-shadow: -1px -1px 0 #000, 1px -1px 0 #8c8, -1px 1px 0 #8c8, 1px 1px 0 #6a6;
     }
 }

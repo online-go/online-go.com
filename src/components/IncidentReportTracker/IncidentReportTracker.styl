@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 .IncidentReportIndicator {
     display: inline-flex;
     flex-direction: column;
@@ -23,29 +22,32 @@
     align-items: center;
     font-size: 0.9rem;
     cursor: pointer;
-    themed color shade3
+    themed: color shade3;
 
     .fa-exclamation-triangle.active {
-        themed color primary
+        themed: color primary;
     }
+
     &:hover {
         .fa-exclamation-triangle {
-            themed color shade2
+            themed: color shade2;
         }
+
         .fa-exclamation-triangle.active {
-            themed-lighten color primary 30%
+            themed-lighten: color primary 30%;
         }
     }
+
     .count {
         font-size: font-size-smaller;
+
         &.active {
-            themed color fg
+            themed: color fg;
         }
     }
 }
 
 .IncidentReportTracker {
-
     .report-header {
         display: flex;
         flex-direction: row;
@@ -56,15 +58,18 @@
             display: flex;
             margin-top: auto;
             padding-right: 1 em;
+
             // this is just for appearance, it no longer has a function
             button {
                 cursor: default;
                 pointer-events: none;
             }
         }
+
         .unclaimed {
             font-style: italic;
         }
+
         .Player, button {
             margin-left: auto;
         }
@@ -79,17 +84,17 @@
     #conversation {
         font-weight: bold;
 
-        &:hover{
+        &:hover {
             cursor: pointer;
             text-decoration: underline;
         }
     }
 
     .incident {
-        padding-bottom: 1.0rem;
+        padding-bottom: 1rem;
         margin-bottom: 1rem;
         border-bottom: 1px solid transparent;
-        themed border-color shade3
+        themed: border-color shade3;
 
         h4.notes {
             margin: 0.5em 0 0 0;
@@ -109,18 +114,18 @@
         }
     }
 }
+
 .IncidentReportList-backdrop {
     position: fixed;
     display: flex;
-    //min-height: 100%;
-    //height: 100%;
+    // min-height: 100%;
+    // height: 100%;
     max-height: 100vh;
     top: navbar-height;
     left: 0;
     right: 0;
     bottom: 0;
     z-index: z.incident-list;
-
     align-items: flex-start;
     align-content: stretch;
     justify-content: center;
@@ -132,13 +137,12 @@
     padding: 0.5rem;
     width: 20rem;
     max-width: 100vw;
-    max-height: "calc(100vh - %s)" % navbar-height;
+    max-height: 'calc(100vh - %s)' % navbar-height;
     display: inline-block;
     z-index: z.incident-list;
     right: 0;
     top: navbar-height;
     box-shadow: -2px 2px 1px 0px rgba(0, 0, 0, 0.16);
-    themed background-color bg
-    themed border-color shade2
-
+    themed: background-color bg;
+    themed: border-color shade2;
 }

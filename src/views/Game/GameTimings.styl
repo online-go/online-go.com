@@ -14,8 +14,6 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-
 .Dock i.fa-clock-o {
     // make it less imposing, it looks crap full-size
     font-size: 1.1rem;
@@ -24,27 +22,28 @@
 .GameTimings {
     display: grid;
     grid-template-columns: auto auto auto auto;
-
     padding-left: 1rem;
     margin-bottom: 0.75rem;
     font-size: smaller;
 
     .timings-header {
-        grid-column: 1 /span 4;
+        grid-column: 1 / span 4;
         text-align: center;
         padding-bottom: 0.3em;
     }
 
     .timing-slow-live {
-        themed background-color shade4;
+        themed: background-color shade4;
     }
 
     .span-2 {
         grid-column: span 2;
     }
+
     .span-3 {
         grid-column: span 3;
     }
+
     .span-4 {
         grid-column: span 4;
     }

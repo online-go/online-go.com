@@ -14,25 +14,21 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-
-channel-utils-height=8.4rem;
-channel-width=20%;
-channel-max-width=25rem;
-channel-min-width=12rem;
+channel-utils-height = 8.4rem;
+channel-width = 20%;
+channel-max-width = 25rem;
+channel-min-width = 12rem;
 
 .ChatView {
     position: fixed;
-    top: "calc(%s + 0.2rem)" % navbar-height;
+    top: 'calc(%s + 0.2rem)' % navbar-height;
     bottom: 0;
     left: 0;
     right: 0;
-
     display: flex;
     width: 100vw;
     max-width: 100vw;
     flex-direction: row;
-
 
     .ChatChannelList, .ChatUsersList {
         flex-basis: channel-width;
@@ -41,19 +37,16 @@ channel-min-width=12rem;
         width: channel-width;
         max-width: channel-max-width;
         min-width: channel-min-width;
-        //overflow-y: scroll;
-
+        // overflow-y: scroll;
         display: flex;
         flex-direction: column;
         user-select: none;
-
         flex-grow: 0;
         flex-shrink: 0;
         overflow-x: hidden;
-
         box-sizing: border-box;
         padding: 1rem;
-        themed background card-background-color;
+        themed: background card-background-color;
     }
 
     .ChatChannelList {
@@ -68,19 +61,18 @@ channel-min-width=12rem;
 
     .ChatLog {
         flex: 1;
-
         position: relative;
         border-right: 1px solid transparent;
         border-left: 1px solid transparent;
         border-top: 1px solid transparent;
         word-wrap: break-word;
         overflow-x: hidden;
+
         .input-container {
             border-bottom: 1px solid transparent;
         }
     }
 }
-
 
 .ChatHeader {
     .fa-list, .fa-users {
@@ -92,6 +84,7 @@ channel-min-width=12rem;
     .ChatChannelList {
         display: none !important;
     }
+
     .ChatUsersList {
         display: none !important;
     }
@@ -135,6 +128,7 @@ channel-min-width=12rem;
 
 .EmbeddedChatCard {
     display: flex;
+
     .ChatLog {
         flex: 1;
     }

@@ -14,8 +14,6 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-
 #LearningHub-container {
     display: flex;
     justify-content: center;
@@ -33,11 +31,11 @@
         color: #FFA100;
         text-shadow: 0 0 2px #FFF300;
     }
+
     .MiniGoban {
         height: 64px;
         width: 64px;
         margin: 0.5rem;
-
     }
 }
 
@@ -51,14 +49,12 @@
         color: #fff;
     }
 
-
     #LearningHub-list {
         text-align: center;
         display: flex;
         flex-direction: column;
         justify-content: center;
         margin-bottom: 4rem;
-
 
         .section {
             margin-top: 3rem;
@@ -77,7 +73,7 @@
                 padding-right: 3rem;
             }
 
-            > .contents  {
+            > .contents {
                 flex: 1;
                 min-width: 24rem;
                 display: flex;
@@ -86,7 +82,7 @@
             }
 
             .under-construction {
-                background-image: repeating-linear-gradient( -45deg, darken(#FFCC00, 30%), darken(#FFCC00, 10%) 10px, #000 10px, #000 20px);
+                background-image: repeating-linear-gradient(-45deg, darken(#FFCC00, 30%), darken(#FFCC00, 10%) 10px, #000 10px, #000 20px);
             }
 
             .Card {
@@ -96,14 +92,14 @@
                 width: 23rem;
                 height: 5rem;
                 color: #f9f9f9;
-                border-radius: .3rem;
+                border-radius: 0.3rem;
                 text-align: left;
 
-                i.fa-thumbs-up , i.fa-desktop , i.fa-puzzle-piece , i.ogs-goban, img {
+                i.fa-thumbs-up, i.fa-desktop, i.fa-puzzle-piece, i.ogs-goban, img {
                     width: 4rem;
                     height: 4rem;
-                    margin: 1.0rem
-                    margin-left: 0.5rem
+                    margin: 1rem;
+                    margin-left: 0.5rem;
                 }
 
                 i.fa-thumbs-up {
@@ -111,18 +107,21 @@
                     margin-left: 0.7rem;
                     margin-right: 0.8rem;
                 }
+
                 i.fa-desktop {
                     margin-top: 1.2rem;
                     margin-bottom: 0.8rem;
                     font-size: 4rem;
                 }
+
                 i.fa-puzzle-piece {
                     margin-top: 1.2rem;
                     margin-bottom: 0.8rem;
-                    margin-left: 1.0rem;
+                    margin-left: 1rem;
                     margin-right: 0.5rem;
                     font-size: 4rem;
                 }
+
                 i.ogs-goban {
                     font-size: 4rem;
                     margin-left: 0.7rem;
@@ -137,9 +136,7 @@
             }
         }
     }
-
 }
-
 
 .LearningHub-section-nav {
     display: flex;
@@ -163,6 +160,7 @@
         padding-left: 0;
         text-wrap: nowrap;
         themed(color, shade2);
+
         &:hover {
             themed(color, shade0);
         }
@@ -174,10 +172,12 @@
     .section {
         display: flex;
         flex-direction: column;
+
         a {
             padding: 0.5rem;
             themed(color, shade1);
             text-decoration: none;
+
             &:hover {
                 themed(color, shade0);
             }
@@ -187,7 +187,6 @@
                 themed(color, colored-background-fg);
             }
         }
-
     }
 
     .reset-progress {
@@ -202,21 +201,15 @@
     }
 }
 
-
 .LearningPage {
     flex: 1;
     padding-top: 4rem;
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
-
     justify-content: center;
     align-items: center;
-
 }
-
-
-
 
 .LearningPage-pages {
     margin-left: 1rem;
@@ -224,13 +217,12 @@
     width: 15rem;
     border: 1px solid #0f0;
     themed(border-color, shade4);
-
     display: flex;
     flex-direction: column;
 
     .header {
         text-align: center;
-        themed-darken(background-color, primary, 00%);
+        themed-darken(background-color, primary, 0%);
         themed(color, colored-background-fg);
     }
 
@@ -242,6 +234,7 @@
         align-content: center;
         justify-content: center;
         text-align: center;
+
         > div {
             flex: 1;
             padding: 1rem;
@@ -252,7 +245,7 @@
             themed(color, colored-background-fg);
 
             .reject {
-                animation: pulsate-reject  2.0s infinite ease-in-out;
+                animation: pulsate-reject 2s infinite ease-in-out;
             }
         }
 
@@ -260,7 +253,6 @@
             themed(background-color, success);
             themed(color, colored-background-fg);
         }
-
     }
 
     .pages {
@@ -280,6 +272,7 @@
             &.active {
                 themed(background-color, primary);
                 themed(color, colored-background-fg);
+
                 &:hover {
                     themed-lighten(background-color, primary, 20%);
                     themed(color, colored-background-fg);
@@ -296,13 +289,10 @@
                 themed(background-color, shade4);
             }
         }
-
     }
 }
 
-
 @media (max-width: 40rem) {
-
     .LearningPage {
         padding-top: 0rem;
     }
@@ -310,6 +300,7 @@
     .LearningPage-pages {
         width: 95%;
     }
+
     .LearningHub-section-nav {
         width: 95%;
     }
