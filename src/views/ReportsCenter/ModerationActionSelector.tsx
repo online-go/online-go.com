@@ -36,7 +36,7 @@ interface ModerationActionSelectorProps {
 // Don't forget to update rest_api.warnings.WarningMessageId as needed: new actions usually mean new messages.
 const ACTION_PROMPTS = {
     annul_escaped: llm_pgettext(
-        "Label for a moderator to select this option",
+        "Label for a moderator to select this option.  Be completely unambiguous with regards to the meaning of the word annul.",
         "Wrong result due to escape - annul game, warn the escaper.",
     ),
     warn_escaper: llm_pgettext(
