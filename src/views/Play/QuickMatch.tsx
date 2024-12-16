@@ -844,16 +844,52 @@ export function QuickMatch(): JSX.Element {
                         ))}
                     </div>
 
-                    <MiniGoban
-                        width={parseInt(board_size)}
-                        height={parseInt(board_size)}
-                        labels_positioning="all"
-                        noLink={true}
-                        json={{
-                            width: parseInt(board_size),
-                            height: parseInt(board_size),
-                        }}
-                    />
+                    {game_clock === "multiple" ? (
+                        selected_size_count > 1 ? (
+                            <span className="Multi-MiniGoban-container">
+                                {["19x19", "13x13", "9x9"].map(
+                                    (s) =>
+                                        multiple_sizes[s as keyof typeof multiple_sizes] && (
+                                            <span key={s}>
+                                                <MiniGoban
+                                                    width={parseInt(s)}
+                                                    height={parseInt(s)}
+                                                    displayWidth={150}
+                                                    labels_positioning="all"
+                                                    noLink={true}
+                                                    json={{
+                                                        width: parseInt(s),
+                                                        height: parseInt(s),
+                                                    }}
+                                                />
+                                            </span>
+                                        ),
+                                )}
+                            </span>
+                        ) : (
+                            <MiniGoban
+                                width={parseInt(min_selected_size)}
+                                height={parseInt(min_selected_size)}
+                                labels_positioning="all"
+                                noLink={true}
+                                json={{
+                                    width: parseInt(min_selected_size),
+                                    height: parseInt(min_selected_size),
+                                }}
+                            />
+                        )
+                    ) : (
+                        <MiniGoban
+                            width={parseInt(board_size)}
+                            height={parseInt(board_size)}
+                            labels_positioning="all"
+                            noLink={true}
+                            json={{
+                                width: parseInt(board_size),
+                                height: parseInt(board_size),
+                            }}
+                        />
+                    )}
                 </div>
 
                 {/* Game Speed */}
