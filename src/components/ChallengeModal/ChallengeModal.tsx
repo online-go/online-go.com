@@ -61,7 +61,6 @@ import {
     saveTimeControlSettings,
     updateSystem,
 } from "@/components/TimeControl/TimeControlUpdates";
-import { Link } from "react-router-dom";
 
 export type ChallengeDetails = rest_api.ChallengeDetails;
 
@@ -1814,9 +1813,9 @@ export class ChallengeModalBody extends React.Component<
                         <div className="anonymous-container">
                             {_("Please sign in to play")}
                             <div>
-                                <Link to="/register#/play">{_("Register for Free")}</Link>
+                                <a href="/register#/play">{_("Register for Free")}</a>
                                 {" | "}
-                                <Link to="/sign-in#/play">{_("Sign in")}</Link>
+                                <a href="/sign-in#/play">{_("Sign in")}</a>
                             </div>
                         </div>
                     )}
