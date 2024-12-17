@@ -632,7 +632,7 @@ export const time_options: TimeOptionsMap = {
     blitz: {
         fischer: {
             initial_time: gen(5, 60),
-            time_increment: gen(1, 4),
+            time_increment: gen(1, 5),
             max_time: gen(5, 900),
         },
         simple: {
@@ -653,7 +653,7 @@ export const time_options: TimeOptionsMap = {
     rapid: {
         fischer: {
             initial_time: gen(30, 300),
-            time_increment: gen(4, 10),
+            time_increment: gen(6, 10),
             max_time: gen(30, 3600),
         },
         simple: {
@@ -721,7 +721,7 @@ export const default_time_settings: DefaultTimeSettingsMap = {
     blitz: {
         fischer: {
             initial_time: 30,
-            time_increment: 10,
+            time_increment: 5,
             max_time: 300,
             pause_on_weekends: false,
         },
@@ -756,7 +756,7 @@ export const default_time_settings: DefaultTimeSettingsMap = {
     rapid: {
         fischer: {
             initial_time: 300,
-            time_increment: 5,
+            time_increment: 7,
             max_time: 3600,
             pause_on_weekends: false,
         },
