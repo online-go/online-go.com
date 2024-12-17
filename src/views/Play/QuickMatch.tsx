@@ -84,8 +84,8 @@ const game_clock_options: OptionWithDescription[] = [
         value: "multiple",
         label: _("Multiple"),
         description: pgettext(
-            "Game Clock option description for being able to choose between multiple time settings",
-            "Pick multiple acceptable time settings",
+            "Game Clock option description for being able to choose between multiple time and board size settings",
+            "Pick multiple acceptable time and board size settings",
         ),
     },
 ];

@@ -44,7 +44,7 @@ export const SPEED_OPTIONS: GameSpeedOptions = {
             time_estimate: "\u223c " + moment.duration(5, "minutes").humanize(),
             fischer: {
                 initial_time: 30,
-                time_increment: 3,
+                time_increment: 5,
                 //time_estimate: "~ 4-" + moment.duration(6, "minutes").humanize(),
                 time_estimate: "\u223c 4\u2212" + moment.duration(6, "minutes").humanize(),
                 max_time: 300,
@@ -61,7 +61,7 @@ export const SPEED_OPTIONS: GameSpeedOptions = {
             time_estimate: "\u223c " + moment.duration(10, "minutes").humanize(),
             fischer: {
                 initial_time: 120,
-                time_increment: 5,
+                time_increment: 7,
                 time_estimate: "\u223c 7\u2212" + moment.duration(9, "minutes").humanize(),
                 max_time: 1200,
             },
@@ -104,7 +104,7 @@ export const SPEED_OPTIONS: GameSpeedOptions = {
             time_estimate: "\u223c " + moment.duration(10, "minutes").humanize(),
             fischer: {
                 initial_time: 30,
-                time_increment: 3,
+                time_increment: 5,
                 time_estimate: "\u223c 8\u2212" + moment.duration(15, "minutes").humanize(),
                 max_time: 300,
             },
@@ -120,7 +120,7 @@ export const SPEED_OPTIONS: GameSpeedOptions = {
             time_estimate: "\u223c " + moment.duration(20, "minutes").humanize(),
             fischer: {
                 initial_time: 180,
-                time_increment: 5,
+                time_increment: 7,
                 time_estimate: "\u223c 16\u2212" + moment.duration(20, "minutes").humanize(),
                 max_time: 1800,
             },
@@ -163,7 +163,7 @@ export const SPEED_OPTIONS: GameSpeedOptions = {
             time_estimate: "\u223c " + moment.duration(15, "minutes").humanize(),
             fischer: {
                 initial_time: 30,
-                time_increment: 3,
+                time_increment: 5,
                 time_estimate: "\u223c 10\u2212" + moment.duration(15, "minutes").humanize(),
                 max_time: 300,
             },
@@ -179,7 +179,7 @@ export const SPEED_OPTIONS: GameSpeedOptions = {
             time_estimate: "\u223c " + moment.duration(25, "minutes").humanize(),
             fischer: {
                 initial_time: 300,
-                time_increment: 5,
+                time_increment: 7,
                 time_estimate: "\u223c 21\u2212" + moment.duration(31, "minutes").humanize(),
                 max_time: 3000,
             },
