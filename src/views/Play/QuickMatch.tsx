@@ -421,7 +421,6 @@ export function QuickMatch(): JSX.Element {
                 height: board_size === "9x9" ? 9 : board_size === "13x13" ? 13 : 19,
                 handicap: handicaps === "disabled" ? 0 : -1,
                 komi_auto: "automatic",
-                komi: 0,
                 disable_analysis: false,
                 initial_state: null,
                 private: false,

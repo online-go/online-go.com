@@ -97,7 +97,7 @@ declare namespace rest_api {
             height: number;
             handicap: number;
             komi_auto: KomiOption;
-            komi: number;
+            komi?: number;
             disable_analysis: boolean;
             initial_state: any; // TBD
             private: boolean;
