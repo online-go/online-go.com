@@ -132,37 +132,53 @@
         align-items: middle;
     }
 
-    .ogs-react-select__menu {
-        right: 0;
-        width: 20rem;
-        max-width: 90vw;
-
-        .ogs-react-select__group-heading {
-            text-transform: none;
-            font-size: 0.9rem;
-        }
-
-        .option {
-            padding-top: 0.5rem;
-            padding-bottom: 0.5rem;
-
-            &.focused {
-                themed-important: background-color shade3;
+    /*
+        .ogs-react-select__menu {
+            right: 0;
+            width: 20rem;
+            max-width: 90vw;
+    
+            .ogs-react-select__group-heading {
+                text-transform: none;
+                font-size: 0.9rem;
             }
-
-            &.selected {
-                themed-important: background-color shade3;
+    
+            .option {
+                padding-top: 0.5rem;
+                padding-bottom: 0.5rem;
+    
+                &.focused {
+                    themed-important: background-color shade3;
+                }
+    
+                &.selected {
+                    themed-important: background-color shade3;
+                }
+    
+                themed: color fg;
             }
-
-            themed: color fg;
+    
+            .option-label {
+                font-weight: bold;
+                padding-right: 0.5rem;
+                padding-left: 0.5rem;
+            }
+    
+            .option-description {
+                font-size: 0.9rem;
+                font-style: italic;
+                themed: color shade1;
+                padding-right: 0.5rem;
+                padding-left: 0.5rem;
+            }
         }
-
+    
         .option-label {
             font-weight: bold;
             padding-right: 0.5rem;
             padding-left: 0.5rem;
         }
-
+    
         .option-description {
             font-size: 0.9rem;
             font-style: italic;
@@ -170,25 +186,47 @@
             padding-right: 0.5rem;
             padding-left: 0.5rem;
         }
+    
+        .option-label, .ogs-react-select__single-value, .option-label > span {
+            display: flex !important;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        */
+    .computer-opponents {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
     }
 
-    .option-label {
-        font-weight: bold;
-        padding-right: 0.5rem;
-        padding-left: 0.5rem;
+    .bot-options {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        width: 100%;
+        justify-content: space-around;
     }
 
-    .option-description {
-        font-size: 0.9rem;
-        font-style: italic;
-        themed: color shade1;
-        padding-right: 0.5rem;
-        padding-left: 0.5rem;
-    }
-
-    .option-label, .ogs-react-select__single-value, .option-label > span {
-        display: flex !important;
+    .bot-option {
+        display: flex;
         align-items: center;
         gap: 0.5rem;
+        cursor: pointer;
+        border-radius: 0.75rem;
+        padding-right: 0.5rem;
+        gap: 1rem;
+
+        &:hover {
+            themed: background-color shade4;
+        }
+
+        .PlayerIcon {
+            border-radius: 0.75rem;
+        }
+
+        &.selected {
+            themed: background-color shade2;
+        }
     }
 }
