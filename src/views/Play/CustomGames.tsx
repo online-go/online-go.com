@@ -432,6 +432,13 @@ export function CustomGames(): JSX.Element {
             <div>
                 <div className="CustomGames--toggle-container showing-custom-games">
                     <button
+                        disabled={disable_challenge_buttons}
+                        className="custom-games-toggle"
+                        onClick={toggleCustomGames}
+                    >
+                        {_("Hide custom games")}
+                    </button>
+                    <button
                         className="primary"
                         disabled={disable_challenge_buttons}
                         onClick={() => {
@@ -439,23 +446,6 @@ export function CustomGames(): JSX.Element {
                         }}
                     >
                         {_("Create a custom game")}
-                    </button>
-                    <button
-                        disabled={disable_challenge_buttons}
-                        className="custom-games-toggle"
-                        onClick={toggleCustomGames}
-                    >
-                        {_("Hide custom games")}
-                    </button>
-
-                    <button
-                        className="primary"
-                        disabled={disable_challenge_buttons}
-                        onClick={() => {
-                            challenge(undefined, undefined, true, undefined, undefined);
-                        }}
-                    >
-                        {_("Play a custom computer game")}
                     </button>
                 </div>
             </div>

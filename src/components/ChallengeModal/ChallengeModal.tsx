@@ -19,13 +19,14 @@ import * as React from "react";
 import * as data from "@/lib/data";
 import * as player_cache from "@/lib/player_cache";
 
+import Select, { components } from "react-select";
 import { OgsResizeDetector } from "@/components/OgsResizeDetector";
 import { browserHistory } from "@/lib/ogsHistory";
-import { _, pgettext, interpolate } from "@/lib/translate";
+import { _, pgettext, interpolate, llm_pgettext } from "@/lib/translate";
 import { post, del } from "@/lib/requests";
 import { Modal, openModal } from "@/components/Modal";
 import { socket } from "@/lib/sockets";
-import { rankString, getUserRating, amateurRanks, allRanks } from "@/lib/rank_utils";
+import { rankString, amateurRanks, allRanks } from "@/lib/rank_utils";
 import { CreatedChallengeInfo, RuleSet } from "@/lib/types";
 import { errorLogger, errorAlerter, rulesText, dup } from "@/lib/misc";
 import { PlayerIcon } from "@/components/PlayerIcon";
@@ -41,7 +42,7 @@ import {
     notification_manager,
     NotificationManagerEvents,
 } from "@/components/Notifications/NotificationManager";
-import { one_bot, bot_count, bots_list } from "@/lib/bots";
+import { Bot, one_bot, bot_count, bots_list, getAcceptableTimeSetting } from "@/lib/bots";
 import { goban_view_mode } from "@/views/Game/util";
 import {
     GobanRenderer,
@@ -61,6 +62,7 @@ import {
     saveTimeControlSettings,
     updateSystem,
 } from "@/components/TimeControl/TimeControlUpdates";
+import { SPEED_OPTIONS } from "@/views/Play/SPEED_OPTIONS";
 
 export type ChallengeDetails = rest_api.ChallengeDetails;
 
@@ -984,6 +986,59 @@ export class ChallengeModalBody extends React.Component<
 
     // game name and privacy
     basicSettings = () => {
+        const user = data.get("user");
+        let available_bots = bots_list().filter((b) => b.id > 0);
+        const board_size = `${this.state.challenge.game.width}x${this.state.challenge.game.height}`;
+        console.log(board_size, this.state.challenge.game.speed, this.state.time_control.system);
+        console.log(this.state.challenge.game.speed);
+
+        available_bots = available_bots.filter((b) => {
+            console.log(
+                this.state,
+                this.state.challenge.game.width,
+                this.state.challenge.game.height,
+                this.state.time_control.speed,
+                this.state.time_control.system,
+            );
+
+            const settings = {
+                rank: user.ranking,
+                width: this.state.challenge.game.width,
+                height: this.state.challenge.game.height,
+                ranked: true,
+                handicap: this.state.challenge.game.handicap,
+                system: this.state.time_control.system,
+                speed: this.state.time_control.speed,
+                [this.state.time_control.system]: (SPEED_OPTIONS as any)[board_size][
+                    this.state.time_control.speed
+                ][this.state.time_control.system],
+            };
+            const [options, message] = getAcceptableTimeSetting(b, settings);
+            if (!options) {
+                b.disabled = message || undefined;
+            } else if (options && options._config_version && options._config_version === 0) {
+                b.disabled = llm_pgettext(
+                    "Bot is not configured correctly",
+                    "Bot is not configured correctly",
+                );
+            } else {
+                b.disabled = undefined;
+            }
+
+            return true;
+        });
+
+        available_bots.sort((a, b) => {
+            if (a.disabled && !b.disabled) {
+                return 1;
+            }
+            if (b.disabled && !a.disabled) {
+                return -1;
+            }
+            return (a.ranking || 0) - (b.ranking || 0);
+        });
+        const selected_bot_value = available_bots.find((b) => b.id === this.state.conf.bot_id);
+
         const mode = this.props.mode;
         return (
             <div
@@ -998,26 +1053,37 @@ export class ChallengeModalBody extends React.Component<
                         </label>
                         <div>
                             <div className="controls">
-                                <select
-                                    id="challenge-ai"
-                                    value={this.state.conf.bot_id}
-                                    onChange={this.update_conf_bot_id}
-                                    required={true}
-                                >
-                                    {bots_list().map((bot, idx) => (
-                                        <option key={idx} value={bot.id}>
-                                            {bot.username} ({rankString(getUserRating(bot).rank)})
-                                        </option>
-                                    ))}
-                                </select>
-                                &nbsp;
-                                <a
-                                    href={`/user/view/${this.state.conf.bot_id}`}
-                                    target="_blank"
-                                    title={_("Selected AI profile")}
-                                >
-                                    <i className="fa fa-external-link" />
-                                </a>
+                                <Select
+                                    classNamePrefix="ogs-react-select"
+                                    styles={{
+                                        menu: ({ ...css }) => ({
+                                            ...css,
+                                            width: "20rem",
+                                        }),
+                                    }}
+                                    value={selected_bot_value}
+                                    isSearchable={false}
+                                    minMenuHeight={400}
+                                    maxMenuHeight={400}
+                                    menuPlacement="auto"
+                                    onChange={(opt) => {
+                                        if (opt) {
+                                            this.upstate("conf.bot_id", opt.id);
+                                        }
+                                    }}
+                                    isOptionDisabled={(option) => {
+                                        return option.disabled !== undefined;
+                                    }}
+                                    options={[
+                                        {
+                                            options: available_bots,
+                                        },
+                                    ]}
+                                    components={{
+                                        Option: RenderBotOption,
+                                        SingleValue: RenderBotValue,
+                                    }}
+                                />
                             </div>
                         </div>
                     </div>
@@ -1973,8 +2039,9 @@ export function createDemoBoard(
         />,
     );
 }
-export function challengeComputer() {
-    return challenge(undefined, null, true);
+
+export function challengeComputer(settings?: ChallengeModalConfig) {
+    return challenge(undefined, null, true, settings);
 }
 export function challengeRematch(
     goban: GobanRenderer,
@@ -2096,7 +2163,7 @@ function isStandardBoardSize(board_size: string): boolean {
     return board_size in standard_board_sizes;
 }
 
-interface ChallengeModalConfig {
+export interface ChallengeModalConfig {
     challenge: {
         min_ranking?: number;
         max_ranking?: number;
@@ -2225,3 +2292,54 @@ export function rejectionDetailsToMessage(details: RejectionDetails): string | u
             return undefined;
     }
 }
+
+const RenderBotOption = (props: {
+    data: Bot & { disabled?: string };
+    innerProps: any;
+    innerRef: any;
+    isFocused: boolean;
+    isSelected: boolean;
+}) => {
+    const opt = props.data;
+    //console.log(opt.username, props.isSelected);
+    return (
+        <div
+            ref={props.innerRef}
+            {...props.innerProps}
+            className={
+                "option" +
+                (props.isFocused ? " focused" : "") +
+                (props.data.disabled ? " disabled" : "")
+            }
+        >
+            <div className="option-label">
+                <span>
+                    <PlayerIcon user={opt} size={32} style={{ width: "32px", height: "32px" }} />
+                    {opt.username} ({rankString(opt.ranking || 0)})
+                </span>
+                <span>
+                    <a
+                        target="_blank"
+                        href={`/user/view/${opt.id}`}
+                        title={_("Selected AI profile")}
+                    >
+                        <i className="fa fa-external-link" />
+                    </a>
+                </span>
+            </div>
+            <div className="option-description">
+                {props.data.disabled ? props.data.disabled : ""}
+            </div>
+        </div>
+    );
+};
+
+const RenderBotValue = (props: any) => {
+    const opt = props.data;
+    return (
+        <components.SingleValue {...props}>
+            <PlayerIcon user={opt} size={32} style={{ width: "32px", height: "32px" }} />
+            {opt.username} ({rankString(opt.ranking || 0)})
+        </components.SingleValue>
+    );
+};

@@ -80,35 +80,6 @@
         margin-right: 0.5rem;
     }
 
-    .finding-game-container {
-        // flex-shrink: 0;
-        // flex-grow: 0;
-        // flex-basis: 2.5rem;
-        font-size: 1.3rem;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        flex-direction: row;
-        justify-content: space-around;
-        align-items: center;
-        // align-content: center;
-        padding-bottom: 2.5rem;
-        padding-top: 1rem;
-
-        .spinner {
-            margin: 0;
-            height: 20px;
-            width: 20px;
-            margin-left: 1rem;
-            margin-right: 1rem;
-        }
-
-        button {
-            margin-left: 2rem;
-            font-size: 1.1rem;
-        }
-    }
-
     .automatch-row {
         display: flex;
         justify-content: space-around;
@@ -177,14 +148,6 @@
         i {
             padding-right: 0.25rem;
         }
-    }
-
-    .automatch-settings-corr {
-        flex: 0;
-        text-align: justify;
-        font-size: 1rem;
-        padding: 0.5rem;
-        padding-left: 3rem;
     }
 
     .custom-game-row {
@@ -277,20 +240,6 @@
 
     .subtext {
         font-size: 0.9rem;
-    }
-
-    .PlayButton-container {
-        width: 100%;
-    }
-
-    .play-button {
-        // margin-top: 3rem;
-        width: 100%;
-        height: 6rem;
-        font-size: 1.5rem;
-        line-height: 1.5rem;
-        text-align: center;
-        margin-bottom: 0;
     }
 
     .game-speed-option-container {
@@ -401,18 +350,6 @@
                 padding-top: 0.5rem;
             }
 
-            .opponent-rank-range {
-                // display: flex;
-                text-align: center;
-
-                // justify-content: space-around;
-                select {
-                    text-align: center;
-                    margin-left: 0.5rem;
-                    margin-right: 0.5rem;
-                }
-            }
-
             .opponent-rank-range-description {
                 font-size: 0.9rem;
                 themed: color shade1;
@@ -420,25 +357,6 @@
                 padding-right: 0.5rem;
                 padding-left: 0.5rem;
                 margin-bottom: 0.5rem;
-            }
-
-            .computer-select {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                flex-wrap: wrap;
-
-                select {
-                    flex-grow: 1;
-                    min-width: 10rem;
-                    max-width: 10rem;
-                    width: 10rem;
-                    overflow: hidden;
-                }
-
-                .fa {
-                    padding-left: 1rem;
-                }
             }
         }
     }
@@ -524,33 +442,6 @@
         margin-bottom: 0.5rem;
     }
 
-    .computer-select {
-        .disabled .option-label {
-            themed: color shade2;
-        }
-
-        .option-label {
-            display: flex;
-            justify-content: space-between;
-            gap: 0.5rem;
-
-            > span {
-                display: flex;
-                align-items: center;
-                gap: 0.5rem;
-            }
-        }
-
-        > div {
-            width: 100%;
-            max-width: 12rem;
-        }
-
-        &.error {
-            border: 1px solid red;
-        }
-    }
-
     .size-button {
         margin-right: 0.2rem;
         margin-left: 0.2rem;
@@ -577,6 +468,66 @@
     .activity.popular:after {
         themed: color, shade1;
     }
+
+    .opponent-rank-range {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        gap: 0.5rem;
+    }
+}
+
+.PlayButton-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 2rem;
+
+    .play-button {
+        // margin-top: 3rem;
+        width: 100%;
+        height: 6rem;
+        font-size: 1.5rem;
+        line-height: 1.5rem;
+        text-align: center;
+        margin-bottom: 0;
+    }
+
+    .finding-game-container {
+        // flex-shrink: 0;
+        // flex-grow: 0;
+        // flex-basis: 2.5rem;
+        font-size: 1.3rem;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around;
+        align-items: center;
+        // align-content: center;
+        padding-bottom: 2.5rem;
+        padding-top: 1rem;
+
+        .spinner {
+            margin: 0;
+            height: 20px;
+            width: 20px;
+            margin-left: 1rem;
+            margin-right: 1rem;
+        }
+
+        button {
+            margin-left: 2rem;
+            font-size: 1.1rem;
+        }
+    }
+
+    .automatch-settings-corr {
+        flex: 0;
+        text-align: justify;
+        font-size: 1rem;
+        padding: 0.5rem;
+        padding-left: 3rem;
+    }
 }
 
 @media (max-width: hamburger-cutoff) {
@@ -590,14 +541,6 @@
 
         .speed-options {
             margin-bottom: 0;
-        }
-
-        .computer-select {
-            select {
-                min-width: calc(100vw - 6rem) !important;
-                max-width: calc(100vw - 6rem) !important;
-                width: calc(100vw - 6rem) !important;
-            }
         }
     }
 
@@ -613,6 +556,7 @@
         right: 0;
         z-index: z.dock;
         themed: background-color, bg;
+        gap: 1rem;
 
         .play-button {
             margin: 0;
@@ -663,12 +607,6 @@
             .time-control-button {
                 min-width: 4rem !important;
             }
-        }
-    }
-
-    .computer-select {
-        > div {
-            max-width: auto;
         }
     }
 }

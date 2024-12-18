@@ -22,6 +22,7 @@ import moment from "moment";
 
 import {
     AutomatchPreferences,
+    JGOFTimeControl,
     JGOFTimeControlSpeed,
     shortDurationString,
     Size,
@@ -34,23 +35,13 @@ import { alert } from "@/lib/swal_config";
 import { useRefresh, useUser } from "@/lib/hooks";
 //import { Toggle } from "@/components/Toggle";
 import { MiniGoban } from "@/components/MiniGoban";
-import { rankString } from "@/lib/rank_utils";
-import { errorAlerter, uuid } from "@/lib/misc";
+import { uuid } from "@/lib/misc";
 import { LoadingButton } from "@/components/LoadingButton";
-import { post } from "@/lib/requests";
-import { browserHistory } from "@/lib/ogsHistory";
-import {
-    ChallengeDetails,
-    RejectionDetails,
-    rejectionDetailsToMessage,
-} from "@/components/ChallengeModal";
-import { notification_manager, NotificationManagerEvents } from "@/components/Notifications";
+import { challengeComputer, ChallengeModalConfig } from "@/components/ChallengeModal";
 import { socket } from "@/lib/sockets";
-import { sfx } from "@/lib/sfx";
 import { Link } from "react-router-dom";
-import Select, { components } from "react-select";
+import Select from "react-select";
 import { SPEED_OPTIONS } from "./SPEED_OPTIONS";
-import { PlayerIcon } from "@/components/PlayerIcon";
 import { useHaveActiveGameSearch } from "./hooks";
 
 moment.relativeTimeThreshold("m", 56);
@@ -139,57 +130,6 @@ const RenderOptionWithDescription = (props: {
     );
 };
 
-const RenderBotOption = (props: {
-    data: Bot & { disabled?: string };
-    innerProps: any;
-    innerRef: any;
-    isFocused: boolean;
-    isSelected: boolean;
-}) => {
-    const opt = props.data;
-    //console.log(opt.username, props.isSelected);
-    return (
-        <div
-            ref={props.innerRef}
-            {...props.innerProps}
-            className={
-                "option" +
-                (props.isFocused ? " focused" : "") +
-                (props.data.disabled ? " disabled" : "")
-            }
-        >
-            <div className="option-label">
-                <span>
-                    <PlayerIcon user={opt} size={32} style={{ width: "32px", height: "32px" }} />
-                    {opt.username} ({rankString(opt.ranking || 0)})
-                </span>
-                <span>
-                    <a
-                        target="_blank"
-                        href={`/user/view/${opt.id}`}
-                        title={_("Selected AI profile")}
-                    >
-                        <i className="fa fa-external-link" />
-                    </a>
-                </span>
-            </div>
-            <div className="option-description">
-                {props.data.disabled ? props.data.disabled : ""}
-            </div>
-        </div>
-    );
-};
-
-const RenderBotValue = (props: any) => {
-    const opt = props.data;
-    return (
-        <components.SingleValue {...props}>
-            <PlayerIcon user={opt} size={32} style={{ width: "32px", height: "32px" }} />
-            {opt.username} ({rankString(opt.ranking || 0)})
-        </components.SingleValue>
-    );
-};
-
 const select_styles = {
     menu: ({ ...css }) => ({
         ...css,
@@ -214,7 +154,6 @@ export function QuickMatch(): JSX.Element {
     const [time_control_system, setTimeControlSystem] =
         preferences.usePreference("automatch.time-control");
     const [opponent, setOpponent] = preferences.usePreference("automatch.opponent");
-    const [selected_bot, setSelectedBot] = preferences.usePreference("automatch.bot");
     const [lower_rank_diff, setLowerRankDiff] = preferences.usePreference(
         "automatch.lower-rank-diff",
     );
@@ -223,8 +162,6 @@ export function QuickMatch(): JSX.Element {
     );
 
     const [correspondence_spinner, setCorrespondenceSpinner] = React.useState(false);
-    const [bot_spinner, setBotSpinner] = React.useState(false);
-    const cancel_bot_game = React.useRef<() => void>(() => {});
     const [game_clock, setGameClock] = preferences.usePreference("automatch.game-clock");
     const have_active_game_search = useHaveActiveGameSearch();
 
@@ -389,158 +326,64 @@ export function QuickMatch(): JSX.Element {
         multiple_speeds,
     ]);
 
-    const playComputer = React.useCallback(() => {
-        const settings = {
-            rank: user.ranking,
-            width: parseInt(board_size),
-            height: parseInt(board_size),
-            ranked: true,
-            handicap: handicaps === "disabled" ? false : true,
-            system: time_control_system,
-            speed: game_speed,
-            [time_control_system]: SPEED_OPTIONS[board_size][game_speed][time_control_system],
-        };
-        const [options, message] = getAcceptableTimeSetting(selected_bot, settings);
-        if (!options) {
-            console.error("Failed to find acceptable time setting", message);
-            void alert.fire(_("Please select a bot"));
-            return;
+    const time_control: JGOFTimeControl =
+        time_control_system === "fischer"
+            ? {
+                  system: "fischer",
+                  speed: game_speed,
+                  initial_time: SPEED_OPTIONS[board_size][game_speed].fischer.initial_time,
+                  time_increment: SPEED_OPTIONS[board_size][game_speed].fischer.time_increment,
+                  max_time: SPEED_OPTIONS[board_size][game_speed].fischer.initial_time * 10,
+                  pause_on_weekends: false,
+              }
+            : {
+                  system: "byoyomi",
+                  speed: game_speed,
+                  main_time: SPEED_OPTIONS[board_size][game_speed].byoyomi!.main_time,
+                  period_time: SPEED_OPTIONS[board_size][game_speed].byoyomi!.period_time,
+                  periods: SPEED_OPTIONS[board_size][game_speed].byoyomi!.periods,
+                  pause_on_weekends: false,
+              };
+
+    const playComputerX = React.useCallback(() => {
+        // Try to guess whether the player wants a ranked game or not by looking at
+        // the past challenges.
+        let ranked = data.get(`challenge.challenge.${game_speed}`)?.game?.ranked;
+        if (ranked === undefined) {
+            ranked =
+                data.get(`challenge.challenge.blitz`)?.game?.ranked ??
+                data.get(`challenge.challenge.rapid`)?.game?.ranked ??
+                data.get(`challenge.challenge.live`)?.game?.ranked ??
+                true;
         }
 
-        const challenge: ChallengeDetails = {
-            initialized: false,
-            min_ranking: -99,
-            max_ranking: 99,
-            challenger_color: "automatic",
-            rengo_auto_start: 0,
-            game: {
-                name: _("Quick Match"),
-                rules: "chinese",
-                ranked: true,
-                width: board_size === "9x9" ? 9 : board_size === "13x13" ? 13 : 19,
-                height: board_size === "9x9" ? 9 : board_size === "13x13" ? 13 : 19,
-                handicap: handicaps === "disabled" ? 0 : -1,
-                komi_auto: "automatic",
-                disable_analysis: false,
-                initial_state: null,
-                private: false,
-                rengo: false,
-                rengo_casual_mode: false,
-                pause_on_weekends: true,
-                time_control: time_control_system,
-                time_control_parameters:
-                    time_control_system === "fischer"
-                        ? {
-                              system: "fischer",
-                              speed: game_speed,
-                              initial_time:
-                                  SPEED_OPTIONS[board_size as any][game_speed].fischer.initial_time,
-                              time_increment:
-                                  SPEED_OPTIONS[board_size as any][game_speed].fischer
-                                      .time_increment,
-                              max_time:
-                                  SPEED_OPTIONS[board_size as any][game_speed].fischer
-                                      .initial_time * 10,
-                              pause_on_weekends: true,
-                          }
-                        : {
-                              system: "byoyomi",
-                              speed: game_speed,
-                              main_time:
-                                  SPEED_OPTIONS[board_size as any][game_speed].byoyomi!.main_time,
-                              periods:
-                                  SPEED_OPTIONS[board_size as any][game_speed].byoyomi!.periods,
-                              period_time:
-                                  SPEED_OPTIONS[board_size as any][game_speed].byoyomi!.period_time,
-                              periods_min:
-                                  SPEED_OPTIONS[board_size as any][game_speed].byoyomi!.periods,
-                              periods_max:
-                                  SPEED_OPTIONS[board_size as any][game_speed].byoyomi!.periods,
-                              pause_on_weekends: true,
-                          },
+        const settings: ChallengeModalConfig = {
+            challenge: {
+                challenger_color: "automatic",
+                invite_only: false,
+                game: {
+                    width: parseInt(board_size),
+                    height: parseInt(board_size),
+                    ranked,
+                    handicap: handicaps === "disabled" ? 0 : -1,
+                    time_control,
+                    rules: "japanese",
+                    komi_auto: "automatic",
+                    disable_analysis: false,
+                    initial_state: null,
+                    private: false,
+                },
             },
+            conf: {
+                restrict_rank: false,
+            },
+            time_control,
         };
 
-        const bot_id = selected_bot;
-        if (!bot_id) {
-            void alert.fire(_("Please select a bot"));
-            return;
-        }
+        console.log(settings);
 
-        setBotSpinner(true);
-        post(`players/${bot_id}/challenge`, challenge)
-            .then((res) => {
-                const challenge_id = res.challenge;
-
-                const game_id = typeof res.game === "object" ? res.game.id : res.game;
-                let keepalive_interval: ReturnType<typeof setInterval> | undefined;
-
-                const checkForReject = (
-                    notification: NotificationManagerEvents["notification"],
-                ) => {
-                    console.log("challenge rejection check notification:", notification);
-                    if (notification.type === "gameOfferRejected") {
-                        /* non checked delete to purge old notifications that
-                         * could be around after browser refreshes, connection
-                         * drops, etc. */
-                        notification_manager.deleteNotification(notification);
-                        if (notification.game_id === game_id) {
-                            onRejected(notification.message, notification.rejection_details);
-                        }
-                    }
-                };
-
-                const active_check = () => {
-                    keepalive_interval = setInterval(() => {
-                        socket.send("challenge/keepalive", {
-                            challenge_id: challenge_id,
-                            game_id: game_id,
-                        });
-                    }, 1000);
-                    socket.send("game/connect", { game_id: game_id });
-                    socket.on(`game/${game_id}/gamedata`, onGamedata);
-                };
-
-                const onGamedata = () => {
-                    off();
-                    alert.close();
-                    //sfx.play("game_accepted");
-                    sfx.play("game_started", 3000);
-                    //sfx.play("setup-bowl");
-                    browserHistory.push(`/game/${game_id}`);
-                };
-
-                const onRejected = (message?: string, details?: RejectionDetails) => {
-                    off();
-                    alert.close();
-                    void alert.fire({
-                        text:
-                            (details && rejectionDetailsToMessage(details)) ||
-                            message ||
-                            _("Game offer was rejected"),
-                    });
-                };
-
-                const off = () => {
-                    clearTimeout(keepalive_interval);
-                    socket.send("game/disconnect", { game_id: game_id });
-                    socket.off(`game/${game_id}/gamedata`, onGamedata);
-                    //socket.off(`game/${game_id}/rejected`, onRejected);
-                    notification_manager.event_emitter.off("notification", checkForReject);
-                    cancel_bot_game.current = () => {};
-                    setBotSpinner(false);
-                };
-
-                cancel_bot_game.current = off;
-
-                notification_manager.event_emitter.on("notification", checkForReject);
-                active_check();
-            })
-            .catch((err) => {
-                setBotSpinner(false);
-                errorAlerter(err);
-            });
-    }, [selected_bot, board_size, handicaps, game_speed, time_control_system, refresh]);
+        challengeComputer(settings);
+    }, [board_size, handicaps, time_control_system, game_speed]);
 
     const play = React.useCallback(() => {
         if (data.get("user").anonymous) {
@@ -548,29 +391,15 @@ export function QuickMatch(): JSX.Element {
             return;
         }
 
-        if (opponent === "bot") {
-            playComputer();
-        } else {
-            doAutomatch();
-        }
-    }, [doAutomatch, playComputer]);
+        doAutomatch();
+    }, [doAutomatch]);
 
     const dismissCorrespondenceSpinner = React.useCallback(() => {
         setCorrespondenceSpinner(false);
     }, []);
 
-    /*
-    const newComputerGame = React.useCallback(() => {
-        if (bot_count() === 0) {
-            void alert.fire(_("Sorry, all bots seem to be offline, please try again later."));
-            return;
-        }
-        challengeComputer();
-    }, []);
-    */
-
     const automatch_search_active =
-        !!automatch_manager.active_live_automatcher || correspondence_spinner || bot_spinner;
+        !!automatch_manager.active_live_automatcher || correspondence_spinner;
 
     function isSizeActive(size: Size) {
         if (game_clock === "multiple") {
@@ -689,8 +518,6 @@ export function QuickMatch(): JSX.Element {
         }
         return (a.ranking || 0) - (b.ranking || 0);
     });
-
-    const selected_bot_value = available_bots.find((b) => b.id === selected_bot) || undefined;
 
     /* Filter available quick matches to the applicable ones for button highlighting  */
     const available_human_match_count_by_size: { [size: string]: number } = {
@@ -814,6 +641,18 @@ export function QuickMatch(): JSX.Element {
         // should be unreachable in practice
         return " activity ";
     }
+
+    const lower_rank_diff_options = [9, 8, 7, 6, 5, 4, 3, 2, 1, 0].map((v) => ({
+        value: v.toString(),
+        label: v === 0 ? "0" : `- ${v}`,
+        description: v === 0 ? llm_pgettext("Player is the same rank as you", "Your rank") : "",
+    }));
+
+    const upper_rank_diff_options = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((v) => ({
+        value: v.toString(),
+        label: v === 0 ? "0" : `+ ${v}`,
+        description: v === 0 ? llm_pgettext("Player is the same rank as you", "Your rank") : "",
+    }));
 
     return (
         <>
@@ -1052,126 +891,6 @@ export function QuickMatch(): JSX.Element {
                 {/* Opponent */}
                 <div className="GameOption-cell">
                     <div className="GameOption">
-                        <span>{_("Opponent")}</span>
-                    </div>
-
-                    <div className="opponent-options">
-                        <div
-                            className={
-                                "opponent-option-container " +
-                                (opponent === "human" ? "active" : "") +
-                                (automatch_search_active ? " disabled" : "")
-                            }
-                            onClick={() => {
-                                if (automatch_search_active) {
-                                    return;
-                                }
-                                setOpponent("human");
-                            }}
-                        >
-                            <div className="opponent-title">
-                                {pgettext("Play a human opponent", "Human")}
-                            </div>
-                            <div className="opponent-rank-range">
-                                <select
-                                    value={lower_rank_diff}
-                                    onChange={(ev) => setLowerRankDiff(parseInt(ev.target.value))}
-                                    disabled={automatch_search_active}
-                                >
-                                    {user.anonymous ? (
-                                        <option>{"30k"}</option>
-                                    ) : (
-                                        [9, 8, 7, 6, 5, 4, 3, 2, 1, 0].map((v) => (
-                                            <option key={v} value={v}>
-                                                {/*rankString(user.ranking - v) */}- {v}
-                                            </option>
-                                        ))
-                                    )}
-                                </select>
-                                {" - "}
-                                <select
-                                    value={upper_rank_diff}
-                                    onChange={(ev) => setUpperRankDiff(parseInt(ev.target.value))}
-                                    disabled={automatch_search_active}
-                                >
-                                    {user.anonymous ? (
-                                        <option>{"9d"}</option>
-                                    ) : (
-                                        [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((v) => (
-                                            <option key={v} value={v}>
-                                                {/*rankString(user.ranking + v)*/}+ {v}
-                                            </option>
-                                        ))
-                                    )}
-                                </select>
-                            </div>
-                            <div className="opponent-rank-range-description">{_("Rank range")}</div>
-                        </div>
-                        <div
-                            className={
-                                "opponent-option-container " +
-                                (opponent === "bot" ? "active" : "") +
-                                (automatch_search_active || game_clock === "multiple"
-                                    ? " disabled"
-                                    : "")
-                            }
-                            onClick={() => {
-                                if (automatch_search_active || game_clock === "multiple") {
-                                    return;
-                                }
-                                setOpponent("bot");
-                            }}
-                        >
-                            <div className="opponent-title">
-                                {pgettext("Play a computer opponent", "Computer")}
-                            </div>
-                            <div
-                                className={
-                                    "computer-select " +
-                                    (available_bots.length > 0 &&
-                                    opponent === "bot" &&
-                                    (!selected_bot ||
-                                        !selected_bot_value ||
-                                        selected_bot_value.disabled)
-                                        ? "error"
-                                        : "")
-                                }
-                            >
-                                <Select
-                                    classNamePrefix="ogs-react-select"
-                                    styles={select_styles}
-                                    value={selected_bot_value}
-                                    isSearchable={false}
-                                    minMenuHeight={400}
-                                    maxMenuHeight={400}
-                                    menuPlacement="auto"
-                                    isDisabled={automatch_search_active}
-                                    onChange={(opt) => {
-                                        if (opt) {
-                                            setSelectedBot(opt.id);
-                                        }
-                                    }}
-                                    isOptionDisabled={(option) => {
-                                        return option.disabled !== undefined;
-                                    }}
-                                    options={[
-                                        {
-                                            options: available_bots,
-                                        },
-                                    ]}
-                                    components={{
-                                        Option: RenderBotOption,
-                                        SingleValue: RenderBotValue,
-                                    }}
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Play Button */}
-                <div className="GameOption-cell">
-                    <div className="GameOption">
                         <span>{_("Handicap")}</span>
                         <Select
                             classNamePrefix="ogs-react-select"
@@ -1200,81 +919,175 @@ export function QuickMatch(): JSX.Element {
                             }}
                         />
                     </div>
+                </div>
 
-                    <div className="PlayButton-container">
-                        {automatch_manager.active_live_automatcher && (
-                            <div>
-                                <div className="finding-game-container">
-                                    <LoadingButton
-                                        className="success sm"
-                                        loading={true}
-                                        onClick={cancelActiveAutomatch}
-                                    >
-                                        {pgettext("Cancel automatch", "Searching for game...")}
-                                    </LoadingButton>
-                                </div>
-                            </div>
-                        )}
+                {/* Play Button */}
+                <div className="GameOption-cell">
+                    <div className="GameOption">
+                        <span>{_("Opponent rank")}</span>
+                        <div className="opponent-rank-range">
+                            <Select
+                                classNamePrefix="ogs-react-select"
+                                value={lower_rank_diff_options.find(
+                                    (o) => o.value === lower_rank_diff.toString(),
+                                )}
+                                isSearchable={false}
+                                isDisabled={automatch_search_active}
+                                onChange={(opt) => {
+                                    if (opt) {
+                                        setLowerRankDiff(parseInt(opt.value));
+                                    }
+                                }}
+                                options={[
+                                    {
+                                        options: lower_rank_diff_options,
+                                    },
+                                ]}
+                                components={{
+                                    Option: RenderOptionWithDescription,
+                                }}
+                            />
 
-                        {bot_spinner && (
-                            <div>
-                                <div className="finding-game-container">
-                                    <LoadingButton
-                                        className="danger sm"
-                                        loading={true}
-                                        onClick={() => cancel_bot_game.current()}
-                                    >
-                                        {_("Cancel")}
-                                    </LoadingButton>
-                                </div>
-                            </div>
-                        )}
-
-                        {correspondence_spinner && (
-                            <div>
-                                <div className="automatch-header">{_("Finding you a game...")}</div>
-                                <div className="automatch-settings-corr">
-                                    {_(
-                                        'This can take several minutes. You will be notified when your match has been found. To view or cancel your automatch requests, please see the list below labeled "Your Automatch Requests".',
-                                    )}
-                                </div>
-                                <div className="automatch-row-container">
-                                    <button
-                                        className="primary"
-                                        onClick={dismissCorrespondenceSpinner}
-                                    >
-                                        {_(
-                                            pgettext(
-                                                "Dismiss the 'finding correspondence automatch' message",
-                                                "Got it",
-                                            ),
-                                        )}
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-                        {user.anonymous && (
-                            <div className="anonymous-container">
-                                {_("Please sign in to play")}
-                                <div>
-                                    <Link to="/register#/play">{_("Register for Free")}</Link>
-                                    {" | "}
-                                    <Link to="/sign-in#/play">{_("Sign in")}</Link>
-                                </div>
-                            </div>
-                        )}
-
-                        {!automatch_search_active && !user.anonymous && (
-                            <button
-                                className="primary play-button"
-                                onClick={play}
-                                disabled={anon || warned || have_active_game_search}
+                            {/*
+                            <select
+                                value={lower_rank_diff}
+                                onChange={(ev) => setLowerRankDiff(parseInt(ev.target.value))}
+                                disabled={automatch_search_active}
                             >
-                                {_("Play")}
-                            </button>
-                        )}
+                                {user.anonymous ? (
+                                    <option>{"30k"}</option>
+                                ) : (
+                                    [9, 8, 7, 6, 5, 4, 3, 2, 1, 0].map((v) => (
+                                        <option key={v} value={v}>
+                                            - {v}
+                                        </option>
+                                    ))
+                                )}
+                            </select>
+                            */}
+
+                            {" - "}
+
+                            <Select
+                                classNamePrefix="ogs-react-select"
+                                value={upper_rank_diff_options.find(
+                                    (o) => o.value === upper_rank_diff.toString(),
+                                )}
+                                isSearchable={false}
+                                isDisabled={automatch_search_active}
+                                onChange={(opt) => {
+                                    if (opt) {
+                                        setUpperRankDiff(parseInt(opt.value));
+                                    }
+                                }}
+                                options={[
+                                    {
+                                        options: upper_rank_diff_options,
+                                    },
+                                ]}
+                                components={{
+                                    Option: RenderOptionWithDescription,
+                                }}
+                            />
+
+                            {/*
+                            <select
+                                value={upper_rank_diff}
+                                onChange={(ev) => setUpperRankDiff(parseInt(ev.target.value))}
+                                disabled={automatch_search_active}
+                            >
+                                {user.anonymous ? (
+                                    <option>{"9d"}</option>
+                                ) : (
+                                    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((v) => (
+                                        <option key={v} value={v}>
+                                            + {v}
+                                        </option>
+                                    ))
+                                )}
+                            </select>
+                            */}
+                        </div>
                     </div>
                 </div>
+            </div>
+
+            <div className="PlayButton-container">
+                {/* Bot */}
+                {user.anonymous && (
+                    <div className="anonymous-container">
+                        {_("Please sign in to play")}
+                        <div>
+                            <Link to="/register#/play">{_("Register for Free")}</Link>
+                            {" | "}
+                            <Link to="/sign-in#/play">{_("Sign in")}</Link>
+                        </div>
+                    </div>
+                )}
+
+                {!automatch_search_active && !user.anonymous && (
+                    <button
+                        className="play-button"
+                        onClick={playComputerX}
+                        disabled={anon || warned || have_active_game_search}
+                    >
+                        {_("Play Computer")}
+                    </button>
+                )}
+
+                {/* Human */}
+                {automatch_manager.active_live_automatcher && (
+                    <div className="finding-game-container">
+                        <LoadingButton
+                            className="success sm"
+                            loading={true}
+                            onClick={cancelActiveAutomatch}
+                        >
+                            {pgettext("Cancel automatch", "Searching for game...")}
+                        </LoadingButton>
+                    </div>
+                )}
+
+                {correspondence_spinner && (
+                    <div>
+                        <div className="automatch-header">{_("Finding you a game...")}</div>
+                        <div className="automatch-settings-corr">
+                            {_(
+                                'This can take several minutes. You will be notified when your match has been found. To view or cancel your automatch requests, please see the list below labeled "Your Automatch Requests".',
+                            )}
+                        </div>
+                        <div className="automatch-row-container">
+                            <button className="primary" onClick={dismissCorrespondenceSpinner}>
+                                {_(
+                                    pgettext(
+                                        "Dismiss the 'finding correspondence automatch' message",
+                                        "Got it",
+                                    ),
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                )}
+                {user.anonymous && (
+                    <div className="anonymous-container">
+                        {_("Please sign in to play")}
+                        <div>
+                            <Link to="/register#/play">{_("Register for Free")}</Link>
+                            {" | "}
+                            <Link to="/sign-in#/play">{_("Sign in")}</Link>
+                        </div>
+                    </div>
+                )}
+
+                {!automatch_search_active && !user.anonymous && (
+                    <button
+                        className="primary play-button"
+                        onClick={play}
+                        disabled={anon || warned || have_active_game_search}
+                    >
+                        {_("Play Human")}
+                    </button>
+                )}
             </div>
         </>
     );
