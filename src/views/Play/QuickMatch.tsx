@@ -654,6 +654,11 @@ export function QuickMatch(): JSX.Element {
         description: v === 0 ? llm_pgettext("Player is the same rank as you", "Your rank") : "",
     }));
 
+    // ensure a valid handicap value is selected
+    if (!handicap_options.find((o) => o.value === handicaps)) {
+        setHandicaps("standard");
+    }
+
     return (
         <>
             <div id="QuickMatch">
