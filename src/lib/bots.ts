@@ -33,6 +33,7 @@ interface Events {
 }
 export interface Bot extends User {
     config: BotConfig;
+    disabled?: string; // if not undefined, the string describes why
 }
 
 export const bot_event_emitter = new EventEmitter<Events>();
@@ -369,7 +370,7 @@ export function getAcceptableTimeSetting(
             null,
             llm_pgettext(
                 "Unable to find a compatible game setting for bot",
-                "Unable to find a compatible settings",
+                "Bot cannot play at this speed",
             ),
         ];
     } catch (e) {

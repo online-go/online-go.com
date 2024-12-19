@@ -18,14 +18,15 @@ import * as React from "react";
 
 import * as data from "@/lib/data";
 import * as player_cache from "@/lib/player_cache";
+import * as preferences from "@/lib/preferences";
 
 import { OgsResizeDetector } from "@/components/OgsResizeDetector";
 import { browserHistory } from "@/lib/ogsHistory";
-import { _, pgettext, interpolate } from "@/lib/translate";
+import { _, pgettext, interpolate, llm_pgettext } from "@/lib/translate";
 import { post, del } from "@/lib/requests";
 import { Modal, openModal } from "@/components/Modal";
 import { socket } from "@/lib/sockets";
-import { rankString, getUserRating, amateurRanks, allRanks } from "@/lib/rank_utils";
+import { rankString, amateurRanks, allRanks } from "@/lib/rank_utils";
 import { CreatedChallengeInfo, RuleSet } from "@/lib/types";
 import { errorLogger, errorAlerter, rulesText, dup } from "@/lib/misc";
 import { PlayerIcon } from "@/components/PlayerIcon";
@@ -41,7 +42,7 @@ import {
     notification_manager,
     NotificationManagerEvents,
 } from "@/components/Notifications/NotificationManager";
-import { one_bot, bot_count, bots_list } from "@/lib/bots";
+import { one_bot, bot_count, bots_list, getAcceptableTimeSetting, Bot } from "@/lib/bots";
 import { goban_view_mode } from "@/views/Game/util";
 import {
     GobanRenderer,
@@ -61,6 +62,7 @@ import {
     saveTimeControlSettings,
     updateSystem,
 } from "@/components/TimeControl/TimeControlUpdates";
+import { SPEED_OPTIONS } from "@/views/Play/SPEED_OPTIONS";
 
 export type ChallengeDetails = rest_api.ChallengeDetails;
 
@@ -985,6 +987,9 @@ export class ChallengeModalBody extends React.Component<
     // game name and privacy
     basicSettings = () => {
         const mode = this.props.mode;
+        const bots = bots_list();
+        const selected_bot = bots.find((bot) => bot.id === this.state.conf.bot_id);
+
         return (
             <div
                 id="challenge-basic-settings"
@@ -996,29 +1001,27 @@ export class ChallengeModalBody extends React.Component<
                         <label className="control-label" htmlFor="engine">
                             {pgettext("Computer opponent", "AI Player")}
                         </label>
-                        <div>
-                            <div className="controls">
-                                <select
-                                    id="challenge-ai"
-                                    value={this.state.conf.bot_id}
-                                    onChange={this.update_conf_bot_id}
-                                    required={true}
-                                >
-                                    {bots_list().map((bot, idx) => (
-                                        <option key={idx} value={bot.id}>
-                                            {bot.username} ({rankString(getUserRating(bot).rank)})
-                                        </option>
-                                    ))}
-                                </select>
-                                &nbsp;
-                                <a
-                                    href={`/user/view/${this.state.conf.bot_id}`}
-                                    target="_blank"
-                                    title={_("Selected AI profile")}
-                                >
-                                    <i className="fa fa-external-link" />
+                        <div
+                            style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                width: "10rem",
+                            }}
+                        >
+                            <span
+                                style={{
+                                    display: "inline-block",
+                                    width: "8rem",
+                                    overflow: "hidden",
+                                }}
+                            >
+                                {selected_bot ? selected_bot.username : ""}
+                            </span>
+                            {selected_bot && (
+                                <a href={`/player/${selected_bot?.id}`}>
+                                    <i className="fa fa-external-link"></i>
                                 </a>
-                            </div>
+                            )}
                         </div>
                     </div>
                 )}
@@ -1740,6 +1743,176 @@ export class ChallengeModalBody extends React.Component<
         );
     };
 
+    renderComputerOpponents() {
+        interface Category {
+            sort_index: number;
+            label: string;
+            lower_bound: number;
+            upper_bound: number;
+        }
+
+        const user = data.get("user");
+        let available_bots: (Bot & { category?: Category })[] = bots_list().filter((b) => b.id > 0);
+        const board_size = `${this.state.challenge.game.width}x${this.state.challenge.game.height}`;
+        console.log(board_size, this.state.challenge.game.speed, this.state.time_control.system);
+        console.log(this.state.challenge.game.speed);
+
+        const categories = [
+            {
+                sort_index: 1,
+                label: pgettext("Bot strength category", "Beginner"),
+                lower_bound: -99,
+                upper_bound: 10,
+            },
+            {
+                sort_index: 2,
+                label: pgettext("Bot strength category", "Intermediate"),
+                lower_bound: 11,
+                upper_bound: 25,
+            },
+            {
+                sort_index: 2,
+                label: pgettext("Bot strength category", "Advanced"),
+                lower_bound: 26,
+                upper_bound: 99,
+            },
+        ];
+        available_bots = available_bots.filter((b) => {
+            const speed_settings = (SPEED_OPTIONS as any)?.[board_size]?.[
+                this.state.time_control.speed
+            ]?.[this.state.time_control.system];
+            if (!speed_settings) {
+                return false;
+            }
+
+            const settings = {
+                rank: user.ranking,
+                width: this.state.challenge.game.width,
+                height: this.state.challenge.game.height,
+                ranked: true,
+                handicap: this.state.challenge.game.handicap,
+                system: this.state.time_control.system,
+                speed: this.state.time_control.speed,
+                [this.state.time_control.system]: speed_settings,
+            };
+            const [options, message] = getAcceptableTimeSetting(b, settings);
+            if (!options) {
+                b.disabled = message || undefined;
+            } else if (options && options._config_version && options._config_version === 0) {
+                b.disabled = llm_pgettext(
+                    "Bot is not configured correctly",
+                    "Bot is not configured correctly",
+                );
+            } else {
+                b.disabled = undefined;
+            }
+
+            for (const category of categories) {
+                if (
+                    b.ranking &&
+                    b.ranking >= category.lower_bound &&
+                    b.ranking <= category.upper_bound
+                ) {
+                    b.category = category;
+                    break;
+                }
+            }
+
+            return true;
+        });
+
+        // testing
+        //available_bots = [...available_bots, ...available_bots];
+        //available_bots = [...available_bots, ...available_bots];
+        //available_bots = [...available_bots, ...available_bots];
+
+        available_bots.sort((a, b) => {
+            if (a.category!.sort_index !== b.category!.sort_index) {
+                return a.category!.sort_index - b.category!.sort_index;
+            }
+
+            if (a.disabled && !b.disabled) {
+                return 1;
+            }
+            if (b.disabled && !a.disabled) {
+                return -1;
+            }
+
+            return (a.ranking || 0) - (b.ranking || 0);
+        });
+
+        const selected_bot_value = available_bots.find((b) => b.id === this.state.conf.bot_id);
+        if (selected_bot_value?.disabled) {
+            this.upstate("conf.bot_id", 0);
+        }
+
+        return available_bots.length <= 0 ? (
+            <div className="no-available-bots">
+                {_("No bots available that can play with the selected settings")}
+            </div>
+        ) : (
+            <div className="bot-categories">
+                {categories.map((category) => {
+                    return (
+                        <div key={category.upper_bound} className="bot-category">
+                            <h1>{category.label}</h1>
+
+                            <div key={category.upper_bound} className="bot-options">
+                                {available_bots
+                                    //.filter((bot) => !bot.disabled)
+                                    .filter(
+                                        (bot) => bot.ranking && bot.ranking >= category.lower_bound,
+                                    )
+                                    .filter(
+                                        (bot) => bot.ranking && bot.ranking <= category.upper_bound,
+                                    )
+                                    .map((bot) => {
+                                        return (
+                                            <div
+                                                key={bot.id}
+                                                className={
+                                                    "bot-option" +
+                                                    (bot.id === selected_bot_value?.id
+                                                        ? " selected"
+                                                        : "") +
+                                                    (bot.disabled ? " disabled" : "")
+                                                }
+                                                onClick={() => {
+                                                    if (!bot.disabled) {
+                                                        this.upstate("conf.bot_id", bot.id);
+                                                    }
+                                                }}
+                                            >
+                                                <PlayerIcon
+                                                    user={bot}
+                                                    size={64}
+                                                    style={{ width: "48px", height: "48px" }}
+                                                />
+                                                <span className="username-rank">
+                                                    <span className="username">{bot.username}</span>
+                                                    {!preferences.get("hide-ranks") && (
+                                                        <span className="rank">
+                                                            ({rankString(bot.ranking || 0)})
+                                                        </span>
+                                                    )}
+                                                </span>
+
+                                                {bot.disabled && (
+                                                    <span className="disabled-reason">
+                                                        {bot.disabled}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        );
+    }
+
     render() {
         const user = data.get("user");
         const mode = this.props.mode;
@@ -1762,46 +1935,53 @@ export class ChallengeModalBody extends React.Component<
 
         return (
             <div className="Modal ChallengeModal">
-                <div className="header">
-                    <h2>
-                        {mode === "open" && <span>{_("Custom Game")}</span>}
-                        {mode === "demo" && (
-                            <span>
-                                {this.props.game_record_mode
-                                    ? pgettext("Game record from real life game", "Game Record")
-                                    : _("Demo Board")}
-                                ?
-                            </span>
-                        )}
-                        {mode === "player" && (
-                            <span className="header-with-icon">
-                                <PlayerIcon id={player_id} size={32} />
-                                &nbsp; {player_username}
-                            </span>
-                        )}
-                        {mode === "computer" && <span>{_("Computer")}</span>}
-                    </h2>
-                </div>
-                <div className="body">
-                    <div className="challenge  form-inline">
-                        <div className="challenge-pane-container">
-                            {this.basicSettings()}
-                            {!this.state.initial_state && this.additionalSettings()}
+                <div
+                    className={
+                        "header" +
+                        (mode === "computer" && this.state.show_computer_settings
+                            ? " computer-settings-expanded"
+                            : "")
+                    }
+                >
+                    {mode !== "computer" ? (
+                        <h2>
+                            {mode === "open" && <span>{_("Custom Game")}</span>}
+                            {mode === "demo" && (
+                                <span>
+                                    {this.props.game_record_mode
+                                        ? pgettext("Game record from real life game", "Game Record")
+                                        : _("Demo Board")}
+                                    ?
+                                </span>
+                            )}
+                            {mode === "player" && (
+                                <span className="header-with-icon">
+                                    <PlayerIcon id={player_id} size={32} />
+                                    &nbsp; {player_username}
+                                </span>
+                            )}
+                        </h2>
+                    ) : (
+                        <div className="computer-opponents">
+                            <h2>{_("Pick your computer opponent")}:</h2>
+                            <div>{this.renderComputerOpponents()}</div>
                         </div>
-
-                        <hr />
-                        {mode !== "demo" && this.advancedSettings()}
-                        {mode === "demo" && this.advancedDemoSettings()}
-                    </div>
+                    )}
                 </div>
-                {/* {speed_warning && (
-                    <div className="speed-warning">
-                        <span>
-                            <i className="fa fa-w fa-exclamation-triangle"></i>
-                            {speed_warning}
-                        </span>
+                {(mode !== "computer" || this.state.show_computer_settings) && (
+                    <div className="body">
+                        <div className="challenge  form-inline">
+                            <div className="challenge-pane-container">
+                                {this.basicSettings()}
+                                {!this.state.initial_state && this.additionalSettings()}
+                            </div>
+
+                            <hr />
+                            {mode !== "demo" && this.advancedSettings()}
+                            {mode === "demo" && this.advancedDemoSettings()}
+                        </div>
                     </div>
-                )} */}
+                )}
                 <div className="buttons">
                     {this.props.modal.close ? (
                         <button onClick={this.props.modal.close}>{_("Close")}</button>
@@ -1827,8 +2007,21 @@ export class ChallengeModalBody extends React.Component<
                                 : _("Create Demo")}
                         </button>
                     )}
+
+                    {mode === "computer" && (
+                        <button onClick={this.toggleComputerSettings}>
+                            {this.state.show_computer_settings
+                                ? _("Hide Custom Settings")
+                                : _("Show Custom Settings")}
+                        </button>
+                    )}
+
                     {!user?.anonymous && mode === "computer" && (
-                        <button onClick={this.createChallenge} className="primary">
+                        <button
+                            onClick={this.createChallenge}
+                            className={"primary"}
+                            disabled={!this.state.conf.bot_id}
+                        >
                             {_("Play")}
                         </button>
                     )}
@@ -1847,7 +2040,9 @@ export class ChallengeModalBody extends React.Component<
                         </button>
                     )}
                 </div>
-                {mode !== "demo" && this.preferredGameSettings()}
+                {(mode !== "computer" || this.state.show_computer_settings) &&
+                    mode !== "demo" &&
+                    this.preferredGameSettings()}
             </div>
         );
     }
@@ -1906,6 +2101,12 @@ export class ChallengeModalBody extends React.Component<
         }
         return this.bulkUpstate([[key, event_or_value]]);
     }
+
+    toggleComputerSettings = () => {
+        this.setState({
+            show_computer_settings: !this.state.show_computer_settings,
+        });
+    };
 }
 
 export function challenge(
@@ -1973,8 +2174,9 @@ export function createDemoBoard(
         />,
     );
 }
-export function challengeComputer() {
-    return challenge(undefined, null, true);
+
+export function challengeComputer(settings?: ChallengeModalConfig) {
+    return challenge(undefined, null, true, settings);
 }
 export function challengeRematch(
     goban: GobanRenderer,
@@ -2096,7 +2298,7 @@ function isStandardBoardSize(board_size: string): boolean {
     return board_size in standard_board_sizes;
 }
 
-interface ChallengeModalConfig {
+export interface ChallengeModalConfig {
     challenge: {
         min_ranking?: number;
         max_ranking?: number;
