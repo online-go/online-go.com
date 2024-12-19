@@ -27,7 +27,7 @@ import { LineText } from "@/components/misc-ui";
 import { createDemoBoard } from "@/components/ChallengeModal";
 import { LanguagePicker } from "@/components/LanguagePicker";
 import { GobanThemePicker } from "@/components/GobanThemePicker";
-import { IncidentReportTracker } from "@/components/IncidentReportTracker";
+import { IncidentReportIndicator } from "@/components/IncidentReportTracker";
 import { KBShortcut } from "@/components/KBShortcut";
 import { NotificationList, notification_manager } from "@/components/Notifications";
 import { TurnIndicator } from "@/components/TurnIndicator";
@@ -400,7 +400,7 @@ export function NavBar(): JSX.Element {
                 ) : (
                     <>
                         <div className="spacer" />
-                        <IncidentReportTracker />
+                        <IncidentReportIndicator />
                         <ChatIndicator />
                         <TournamentIndicator />
                         <FriendIndicator />
