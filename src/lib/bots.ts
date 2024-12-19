@@ -370,7 +370,7 @@ export function getAcceptableTimeSetting(
             null,
             llm_pgettext(
                 "Unable to find a compatible game setting for bot",
-                "Unable to find a compatible settings",
+                "Bot cannot play at this speed",
             ),
         ];
     } catch (e) {

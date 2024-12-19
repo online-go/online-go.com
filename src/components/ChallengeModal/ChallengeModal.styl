@@ -132,72 +132,37 @@
         align-items: middle;
     }
 
-    /*
-        .ogs-react-select__menu {
-            right: 0;
-            width: 20rem;
-            max-width: 90vw;
-    
-            .ogs-react-select__group-heading {
-                text-transform: none;
-                font-size: 0.9rem;
-            }
-    
-            .option {
-                padding-top: 0.5rem;
-                padding-bottom: 0.5rem;
-    
-                &.focused {
-                    themed-important: background-color shade3;
-                }
-    
-                &.selected {
-                    themed-important: background-color shade3;
-                }
-    
-                themed: color fg;
-            }
-    
-            .option-label {
-                font-weight: bold;
-                padding-right: 0.5rem;
-                padding-left: 0.5rem;
-            }
-    
-            .option-description {
-                font-size: 0.9rem;
-                font-style: italic;
-                themed: color shade1;
-                padding-right: 0.5rem;
-                padding-left: 0.5rem;
-            }
-        }
-    
-        .option-label {
-            font-weight: bold;
-            padding-right: 0.5rem;
-            padding-left: 0.5rem;
-        }
-    
-        .option-description {
-            font-size: 0.9rem;
-            font-style: italic;
-            themed: color shade1;
-            padding-right: 0.5rem;
-            padding-left: 0.5rem;
-        }
-    
-        .option-label, .ogs-react-select__single-value, .option-label > span {
-            display: flex !important;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        */
     .computer-opponents {
         width: 100%;
         display: flex;
         flex-direction: column;
         gap: 0.5rem;
+        max-height: 60vh;
+        overflow: auto;
+    }
+
+    .header.computer-settings-expanded {
+        .computer-opponents {
+            max-height: 20vh;
+        }
+    }
+
+    .bot-categories {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+
+        h1 {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            themed: color shade1;
+            font-weight: bold !important;
+            padding-bottom: 0.5rem;
+        }
+
+        .bot-category {
+            margin-top: 1rem;
+        }
     }
 
     .bot-options {
@@ -205,7 +170,8 @@
         gap: 0.5rem;
         flex-wrap: wrap;
         width: 100%;
-        justify-content: space-around;
+        align-items: flex-start;
+        // justify-content: space-around;
     }
 
     .bot-option {
@@ -213,20 +179,60 @@
         align-items: center;
         gap: 0.5rem;
         cursor: pointer;
-        border-radius: 0.75rem;
+        border-radius: 0.25rem;
         padding-right: 0.5rem;
+        padding: 0.2rem;
         gap: 1rem;
+        border: 2px solid transparent;
+        overflow: hidden;
+        flex-wrap: wrap;
+        width: 13rem;
 
         &:hover {
             themed: background-color shade4;
         }
 
+        &.disabled {
+            opacity: 0.5;
+            background-color: transparent !important;
+            cursor: not-allowed;
+        }
+
+        .disabled-reason {
+            flex-grow: 1;
+            font-size: 0.8rem;
+            themed: color shade1;
+            display: inline-block;
+            width: 12rem;
+        }
+
+        .username-rank {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .username {
+            display: inline-block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 6rem;
+        }
+
+        .rank {
+            display: inline-block;
+            white-space: nowrap;
+            max-width: 2rem;
+        }
+
         .PlayerIcon {
-            border-radius: 0.75rem;
+            border-radius: 0.3rem;
+            themed: background-color shade5;
         }
 
         &.selected {
-            themed: background-color shade2;
+            themed: border-color, primary;
         }
     }
 }
