@@ -15,4 +15,5 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export * from "./IncidentReportTracker";
+export * from "./IncidentReportList";
+export * from "./IncidentReportIndicator";
