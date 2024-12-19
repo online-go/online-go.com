@@ -28,9 +28,13 @@ import { IncidentReportCard } from "./IncidentReportCard";
 // Define a type for the props
 type IncidentReportListProps = {
     reports: Report[];
+    modal?: boolean;
 };
 
-export function IncidentReportList({ reports }: IncidentReportListProps): JSX.Element | null {
+export function IncidentReportList({
+    reports,
+    modal = true,
+}: IncidentReportListProps): JSX.Element | null {
     function hideList() {
         data.set("ui-state.show_incident_list", false);
     }
@@ -116,8 +120,8 @@ export function IncidentReportList({ reports }: IncidentReportListProps): JSX.El
 
     return (
         <div className="IncidentReportList">
-            <div className="IncidentReportList-backdrop" onClick={hideList}></div>
-            <div className="IncidentReportList-results">
+            {modal && <div className="IncidentReportList-backdrop" onClick={hideList}></div>}
+            <div className={modal ? "IncidentReportList-modal" : "IncidentReportList-plain"}>
                 {reports.map((report: Report, index) => (
                     <IncidentReportCard key={index} report={report} />
                 ))}
