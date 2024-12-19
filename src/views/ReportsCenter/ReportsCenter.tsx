@@ -30,6 +30,7 @@ import { ReportsCenterSettings } from "./ReportsCenterSettings";
 import { ReportsCenterHistory } from "./ReportsCenterHistory";
 import { ReportsCenterCMDashboard } from "./ReportsCenterCMDashboard";
 import { ReportsCenterCMHistory } from "./ReportsCenterCMHistory";
+import { IncidentReportList } from "@/components/IncidentReportTracker";
 
 interface OtherView {
     special: string;
@@ -56,6 +57,7 @@ const categories: (ReportDescription | OtherView)[] = [
         { special: "hr", title: "", show_cm: true },
         { special: "history", title: "History", show_cm: true },
         { special: "cm", title: "Community Moderation", show_cm: true },
+        { special: "my_reports", title: "My Own Reports", show_cm: true },
         { special: "settings", title: "Settings", show_cm: false },
     ]);
 
@@ -151,6 +153,10 @@ export function ReportsCenter(): JSX.Element | null {
                       community_mod_has_power(user.moderator_powers, category.type)),
           );
 
+    const my_reports = report_manager
+        .getEligibleReports()
+        .filter((report) => report.reporting_user.id === user.id);
+
     return (
         <div className="ReportsCenter container">
             <h2 className="page-title">
@@ -229,6 +235,7 @@ export function ReportsCenter(): JSX.Element | null {
                                 case "settings":
                                 case "history":
                                 case "cm":
+                                case "my_reports":
                                     return (
                                         <div
                                             key={report_type.special}
@@ -310,6 +317,8 @@ export function ReportsCenter(): JSX.Element | null {
                     )
                 ) : category === "cm" ? (
                     <ReportsCenterCMDashboard />
+                ) : category === "my_reports" ? (
+                    <IncidentReportList reports={my_reports} modal={false} />
                 ) : category === "hr" ? null : (
                     <ViewReport
                         reports={
