@@ -1807,6 +1807,7 @@ export class ChallengeModalBody extends React.Component<
                 b.disabled = undefined;
             }
 
+            b.category = categories[0];
             for (const category of categories) {
                 if (
                     b.ranking &&
