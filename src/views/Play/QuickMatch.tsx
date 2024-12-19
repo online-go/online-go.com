@@ -782,7 +782,6 @@ export function QuickMatch(): JSX.Element {
                                         "game-speed-option-container" +
                                         (game_speed === speed ? " active" : "")
                                     }
-                                    onClick={() => setGameSpeed(speed)}
                                     key={speed}
                                 >
                                     <div className="game-speed-title">
