@@ -927,7 +927,7 @@ export function QuickMatch(): JSX.Element {
 
                 {/* Play Button */}
                 <div className="GameOption-cell">
-                    <div className="GameOption">
+                    <div className="GameOption opponent-rank-container">
                         <span>{_("Opponent rank")}</span>
                         <div className="opponent-rank-range">
                             <Select
@@ -935,8 +935,15 @@ export function QuickMatch(): JSX.Element {
                                 value={lower_rank_diff_options.find(
                                     (o) => o.value === lower_rank_diff.toString(),
                                 )}
+                                styles={{
+                                    menu: (base) => ({
+                                        ...base,
+                                        width: "120",
+                                    }),
+                                }}
                                 isSearchable={false}
                                 isDisabled={automatch_search_active}
+                                menuPlacement="auto"
                                 onChange={(opt) => {
                                     if (opt) {
                                         setLowerRankDiff(parseInt(opt.value));
@@ -952,24 +959,6 @@ export function QuickMatch(): JSX.Element {
                                 }}
                             />
 
-                            {/*
-                            <select
-                                value={lower_rank_diff}
-                                onChange={(ev) => setLowerRankDiff(parseInt(ev.target.value))}
-                                disabled={automatch_search_active}
-                            >
-                                {user.anonymous ? (
-                                    <option>{"30k"}</option>
-                                ) : (
-                                    [9, 8, 7, 6, 5, 4, 3, 2, 1, 0].map((v) => (
-                                        <option key={v} value={v}>
-                                            - {v}
-                                        </option>
-                                    ))
-                                )}
-                            </select>
-                            */}
-
                             {" - "}
 
                             <Select
@@ -979,6 +968,7 @@ export function QuickMatch(): JSX.Element {
                                 )}
                                 isSearchable={false}
                                 isDisabled={automatch_search_active}
+                                menuPlacement="auto"
                                 onChange={(opt) => {
                                     if (opt) {
                                         setUpperRankDiff(parseInt(opt.value));
@@ -993,24 +983,6 @@ export function QuickMatch(): JSX.Element {
                                     Option: RenderOptionWithDescription,
                                 }}
                             />
-
-                            {/*
-                            <select
-                                value={upper_rank_diff}
-                                onChange={(ev) => setUpperRankDiff(parseInt(ev.target.value))}
-                                disabled={automatch_search_active}
-                            >
-                                {user.anonymous ? (
-                                    <option>{"9d"}</option>
-                                ) : (
-                                    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((v) => (
-                                        <option key={v} value={v}>
-                                            + {v}
-                                        </option>
-                                    ))
-                                )}
-                            </select>
-                            */}
                         </div>
                     </div>
                 </div>
