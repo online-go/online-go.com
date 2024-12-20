@@ -167,7 +167,10 @@ class ReportManager extends EventEmitter<Events> {
         const quota = preferences.get("moderator.report-quota");
         return !quota || this.getHandledTodayCount() < preferences.get("moderator.report-quota")
             ? this.getAvailableReports()
-            : [];
+            : // Always show the user their own reports
+              this.getAvailableReports().filter(
+                  (report) => report.reporting_user.id === data.get("user").id,
+              );
     }
 
     // Clients should use getEligibleReports
