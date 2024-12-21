@@ -39,8 +39,8 @@ export function IncidentReportList({
         data.set("ui-state.show_incident_list", false);
     }
 
-    const attachActions = (report: Report) => {
-        // Most of these may no longer be needed, since we're using the new ReportsCenter view.
+    // Attach appropriate actions to each report
+    reports.forEach((report) => {
         if (report.state !== "resolved") {
             report.unclaim = () => {
                 post(`moderation/incident/${report.id}`, { id: report.id, action: "unclaim" })
@@ -112,11 +112,7 @@ export function IncidentReportList({
                     });
             };
         }
-    };
-
-    React.useEffect(() => {
-        reports.forEach(attachActions);
-    }, [reports]);
+    });
 
     return (
         <div className="IncidentReportList">
