@@ -16,34 +16,26 @@
  */
 
 import React, { useEffect } from "react";
-import { format, subDays, startOfWeek as startOfWeekDateFns } from "date-fns";
 
 import { get } from "@/lib/requests";
 
-import * as data from "@/lib/data";
-
-import { ResponsiveLine } from "@nivo/line";
 import { useUser } from "@/lib/hooks";
 import { PaginatedTable } from "@/components/PaginatedTable";
 import { Player } from "@/components/Player";
 import { Tab, TabList, TabPanel, Tabs } from "react-tabs";
-import { llm_pgettext, pgettext } from "@/lib/translate";
+import { llm_pgettext, pgettext, _ } from "@/lib/translate";
 import { UserVoteActivityGraph } from "@/views/User";
-import { dropCurrentPeriod } from "@/lib/misc";
+
 import { CMPieCharts } from "@/views/User";
+import {
+    CMVoteCountGraph,
+    CMVotingGroupGraph,
+    ReportAlignmentCount,
+    ReportCount,
+} from "@/components/CMVotingGroupGraph";
 
-interface ReportCount {
-    date: string;
-    escalated: number;
-    consensus: number;
-    non_consensus: number;
-}
-
-interface ReportAlignmentCount {
-    date: string;
-    escalated: number;
-    unanimous: number;
-    non_unanimous: number;
+interface SystemPerformanceData {
+    [reportType: string]: string;
 }
 
 interface CMVotingOutcomeData {
@@ -58,460 +50,13 @@ interface IndividualCMVotingOutcomeData {
     user_id: number;
     vote_data: CMVotingOutcomeData;
 }
-
-function startOfWeek(the_date: Date): Date {
-    const date = new Date(the_date);
-    const day = date.getDay(); // Get current day of week (0 is Sunday)
-    const diff = date.getDate() - day; // Calculate difference to the start of the week
-
-    return new Date(date.setDate(diff));
-}
-
-// Hardcoding the vertical axis of all "report count" graphs as the total number helps convey
-// the relative number of types of reports.
-
-// TBD: it might be nice if this number was dynamically provided by the server, but
-// we are already possibly hitting it hard for these rollups
-
-const EXPECTED_MAX_WEEKLY_CM_REPORTS = 200;
-const Y_STEP_SIZE = 40; // must divide nicely into EXPECTED_MAX_WEEKLY_CM_REPORTS
-
-interface CMVoteCountGraphProps {
-    vote_data: ReportCount[];
-    period: number;
-}
-
-const CMVoteCountGraph = ({ vote_data, period }: CMVoteCountGraphProps): JSX.Element => {
-    if (!vote_data) {
-        vote_data = [];
-    }
-
-    const aggregateDataByWeek = React.useMemo(() => {
-        const aggregated: {
-            [key: string]: {
-                escalated: number;
-                consensus: number;
-                non_consensus: number;
-                total: number;
-            };
-        } = {};
-
-        vote_data.forEach(({ date, escalated, consensus, non_consensus }) => {
-            const weekStart = startOfWeek(new Date(date)).toISOString().slice(0, 10); // Get week start and convert to ISO string for key
-
-            if (!aggregated[weekStart]) {
-                aggregated[weekStart] = { escalated: 0, consensus: 0, non_consensus: 0, total: 0 };
-            }
-            aggregated[weekStart].escalated += escalated;
-            aggregated[weekStart].consensus += consensus;
-            aggregated[weekStart].non_consensus += non_consensus;
-            aggregated[weekStart].total += escalated + consensus + non_consensus;
-        });
-
-        return Object.entries(aggregated).map(([date, counts]) => ({
-            date,
-            ...counts,
-        }));
-    }, [vote_data]);
-
-    const totals_data = React.useMemo(() => {
-        return [
-            {
-                id: "consensus",
-                data: dropCurrentPeriod(
-                    aggregateDataByWeek.map((week) => ({
-                        x: week.date,
-                        y: week.consensus,
-                    })),
-                ),
-            },
-            {
-                id: "escalated",
-                data: dropCurrentPeriod(
-                    aggregateDataByWeek.map((week) => ({
-                        x: week.date,
-                        y: week.escalated,
-                    })),
-                ),
-            },
-            {
-                id: "non-consensus",
-                data: dropCurrentPeriod(
-                    aggregateDataByWeek.map((week) => ({
-                        x: week.date,
-                        y: week.non_consensus,
-                    })),
-                ),
-            },
-        ];
-    }, [aggregateDataByWeek]);
-
-    const percent_data = React.useMemo(
-        () => [
-            {
-                id: "consensus",
-                data: aggregateDataByWeek.map((week) => ({
-                    x: week.date,
-                    y: week.consensus / week.total,
-                })),
-            },
-            {
-                id: "escalated",
-                data: aggregateDataByWeek.map((week) => ({
-                    x: week.date,
-                    y: week.escalated / week.total,
-                })),
-            },
-            {
-                id: "non-consensus",
-                data: aggregateDataByWeek.map((week) => ({
-                    x: week.date,
-                    y: week.non_consensus / week.total,
-                })),
-            },
-        ],
-        [aggregateDataByWeek],
-    );
-
-    const chart_theme =
-        data.get("theme") === "light" // (Accessible theme TBD - this assumes accessible is dark for now)
-            ? {
-                  /* nivo defaults work well with our light theme */
-              }
-            : {
-                  text: { fill: "#FFFFFF" },
-                  tooltip: { container: { color: "#111111" } },
-                  grid: { line: { stroke: "#444444" } },
-              };
-
-    const line_colors = {
-        consensus: "rgba(0, 128, 0, 1)", // green
-        escalated: "rgba(255, 165, 0, 1)", // orange
-        "non-consensus": "rgba(255, 0, 0, 1)", // red
-    };
-
-    const percent_line_colours = {
-        consensus: "rgba(0, 128, 0, 0.4)",
-        escalated: "rgba(255, 165, 0, 0.4)",
-        "non-consensus": "rgba(255, 0, 0, 0.4)",
-    };
-
-    if (!totals_data[0].data.length) {
-        return <div className="aggregate-vote-activity-graph">No activity yet</div>;
-    }
-
-    return (
-        <div className="aggregate-vote-activity-graph">
-            <div className="totals-graph">
-                <ResponsiveLine
-                    data={totals_data}
-                    colors={({ id }) => line_colors[id as keyof typeof line_colors]}
-                    animate
-                    curve="monotoneX"
-                    enablePoints={false}
-                    enableSlices="x"
-                    axisBottom={{
-                        format: "%d %b %g",
-                        tickValues: "every week",
-                    }}
-                    xFormat="time:%Y-%m-%d"
-                    xScale={{
-                        type: "time",
-                        min: format(
-                            startOfWeekDateFns(subDays(new Date(), period), { weekStartsOn: 1 }),
-                            "yyyy-MM-dd",
-                        ),
-                        format: "%Y-%m-%d",
-                        useUTC: false,
-                        precision: "day",
-                    }}
-                    axisLeft={{
-                        tickValues: Array.from(
-                            { length: EXPECTED_MAX_WEEKLY_CM_REPORTS / Y_STEP_SIZE + 1 },
-                            (_, i) => i * Y_STEP_SIZE,
-                        ),
-                    }}
-                    yScale={{
-                        stacked: false,
-                        type: "linear",
-                        min: 0,
-                        max: EXPECTED_MAX_WEEKLY_CM_REPORTS,
-                    }}
-                    margin={{
-                        bottom: 40,
-                        left: 60,
-                        right: 40,
-                        top: 5,
-                    }}
-                    theme={chart_theme}
-                />
-            </div>
-            <div className="percent-graph">
-                <ResponsiveLine
-                    areaOpacity={1}
-                    enableArea
-                    data={percent_data}
-                    colors={({ id }) =>
-                        percent_line_colours[id as keyof typeof percent_line_colours]
-                    }
-                    animate
-                    curve="monotoneX"
-                    enablePoints={false}
-                    enableSlices="x"
-                    axisBottom={{
-                        format: "%d %b %g",
-                        tickValues: "every week",
-                    }}
-                    xFormat="time:%Y-%m-%d"
-                    xScale={{
-                        type: "time",
-                        min: format(
-                            startOfWeekDateFns(subDays(new Date(), period), { weekStartsOn: 1 }),
-                            "yyyy-MM-dd",
-                        ),
-                        format: "%Y-%m-%d",
-                        useUTC: false,
-                        precision: "day",
-                    }}
-                    axisLeft={{
-                        format: (d) => `${Math.round(d * 100)}%`, // Format ticks as percentages
-                        tickValues: 6,
-                    }}
-                    yFormat=" >-.0p"
-                    yScale={{
-                        stacked: true,
-                        type: "linear",
-                    }}
-                    margin={{
-                        bottom: 40,
-                        left: 60,
-                        right: 40,
-                        top: 5,
-                    }}
-                    theme={chart_theme}
-                />
-            </div>
-        </div>
-    );
-};
-
-interface CMVotingGroupGraphProps {
-    vote_data: ReportAlignmentCount[];
-    period: number;
-}
-
-const CMVotingGroupGraph = ({ vote_data, period }: CMVotingGroupGraphProps): JSX.Element => {
-    if (!vote_data) {
-        vote_data = [];
-    }
-
-    const aggregateDataByWeek = React.useMemo(() => {
-        const aggregated: {
-            [key: string]: {
-                escalated: number;
-                unanimous: number;
-                non_unanimous: number;
-                total: number;
-            };
-        } = {};
-
-        vote_data.forEach(({ date, escalated, unanimous, non_unanimous }) => {
-            const weekStart = startOfWeek(new Date(date)).toISOString().slice(0, 10); // Get week start and convert to ISO string for key
-
-            if (!aggregated[weekStart]) {
-                aggregated[weekStart] = { escalated: 0, unanimous: 0, non_unanimous: 0, total: 0 };
-            }
-            aggregated[weekStart].escalated += escalated;
-            aggregated[weekStart].unanimous += unanimous;
-            aggregated[weekStart].non_unanimous += non_unanimous;
-            aggregated[weekStart].total += unanimous + non_unanimous;
-        });
-
-        return Object.entries(aggregated).map(([date, counts]) => ({
-            date,
-            ...counts,
-        }));
-    }, [vote_data]);
-
-    const totals_data = React.useMemo(() => {
-        return [
-            {
-                id: "unanimous",
-                data: dropCurrentPeriod(
-                    aggregateDataByWeek.map((week) => ({
-                        x: week.date,
-                        y: week.unanimous,
-                    })),
-                ),
-            },
-            {
-                id: "escalated",
-                data: dropCurrentPeriod(
-                    aggregateDataByWeek.map((week) => ({
-                        x: week.date,
-                        y: week.escalated,
-                    })),
-                ),
-            },
-            {
-                id: "non-unanimous",
-                data: dropCurrentPeriod(
-                    aggregateDataByWeek.map((week) => ({
-                        x: week.date,
-                        y: week.non_unanimous,
-                    })),
-                ),
-            },
-        ];
-    }, [aggregateDataByWeek]);
-
-    const percent_data = React.useMemo(
-        () => [
-            {
-                id: "unanimous",
-                data: aggregateDataByWeek.map((week) => ({
-                    x: week.date,
-                    y: week.unanimous / week.total,
-                })),
-            },
-            {
-                id: "escalated",
-                data: aggregateDataByWeek.map((week) => ({
-                    x: week.date,
-                    y: week.escalated / week.total,
-                })),
-            },
-            {
-                id: "non-unanimous",
-                data: aggregateDataByWeek.map((week) => ({
-                    x: week.date,
-                    y: week.non_unanimous / week.total,
-                })),
-            },
-        ],
-        [aggregateDataByWeek],
-    );
-
-    const chart_theme =
-        data.get("theme") === "light" // (Accessible theme TBD - this assumes accessible is dark for now)
-            ? {
-                  /* nivo defaults work well with our light theme */
-              }
-            : {
-                  text: { fill: "#FFFFFF" },
-                  tooltip: { container: { color: "#111111" } },
-                  grid: { line: { stroke: "#444444" } },
-              };
-
-    const line_colors = {
-        unanimous: "rgba(0, 128, 0, 1)", // green
-        escalated: "rgba(255, 165, 0, 1)", // orange
-        "non-unanimous": "rgba(255, 0, 0, 1)", // red
-    };
-
-    if (!totals_data[0].data.length) {
-        return <div className="aggregate-vote-activity-graph">No activity yet</div>;
-    }
-
-    return (
-        <div className="aggregate-vote-activity-graph">
-            <div className="totals-graph">
-                <ResponsiveLine
-                    data={totals_data}
-                    colors={({ id }) => line_colors[id as keyof typeof line_colors]}
-                    animate
-                    curve="monotoneX"
-                    enablePoints={false}
-                    enableSlices="x"
-                    axisBottom={{
-                        format: "%d %b %g",
-                        tickValues: "every week",
-                    }}
-                    xFormat="time:%Y-%m-%d"
-                    xScale={{
-                        type: "time",
-                        min: format(
-                            startOfWeekDateFns(subDays(new Date(), period), { weekStartsOn: 1 }),
-                            "yyyy-MM-dd",
-                        ),
-                        format: "%Y-%m-%d",
-                        useUTC: false,
-                        precision: "day",
-                    }}
-                    axisLeft={{
-                        tickValues: Array.from(
-                            { length: EXPECTED_MAX_WEEKLY_CM_REPORTS / Y_STEP_SIZE + 1 },
-                            (_, i) => i * Y_STEP_SIZE,
-                        ),
-                    }}
-                    yScale={{
-                        stacked: false,
-                        type: "linear",
-                        min: 0,
-                        max: EXPECTED_MAX_WEEKLY_CM_REPORTS,
-                    }}
-                    margin={{
-                        bottom: 40,
-                        left: 60,
-                        right: 40,
-                        top: 5,
-                    }}
-                    theme={chart_theme}
-                />
-            </div>
-            <div className="totals-graph">
-                <ResponsiveLine
-                    data={percent_data}
-                    colors={({ id }) => line_colors[id as keyof typeof line_colors]}
-                    animate
-                    curve="monotoneX"
-                    enablePoints={false}
-                    enableSlices="x"
-                    axisBottom={{
-                        format: "%d %b %g",
-                        tickValues: "every week",
-                    }}
-                    xFormat="time:%Y-%m-%d"
-                    xScale={{
-                        type: "time",
-                        min: format(
-                            startOfWeekDateFns(subDays(new Date(), period), { weekStartsOn: 1 }),
-                            "yyyy-MM-dd",
-                        ),
-                        format: "%Y-%m-%d",
-                        useUTC: false,
-                        precision: "day",
-                    }}
-                    axisLeft={{
-                        format: (d) => `${Math.round(d * 100)}%`, // Format ticks as percentages
-                        tickValues: 6,
-                    }}
-                    yFormat=" >-.0p"
-                    yScale={{
-                        stacked: false,
-                        type: "linear",
-                        max: 1,
-                    }}
-                    margin={{
-                        bottom: 40,
-                        left: 60,
-                        right: 40,
-                        top: 5,
-                    }}
-                    theme={chart_theme}
-                />
-            </div>
-        </div>
-    );
-};
-
 export function ReportsCenterCMDashboard(): JSX.Element {
     const user = useUser();
     const [selectedTabIndex, setSelectedTabIndex] = React.useState(user.moderator_powers ? 0 : 1);
     const [vote_data, setVoteData] = React.useState<CMGroupVotingAlignmentData | null>(null);
     const [users_data, setUsersData] = React.useState<CMVotingOutcomeData | null>(null);
+    const [system_data, setSystemData] = React.useState<SystemPerformanceData | null>(null);
 
-    // `Tabs` isn't expecting the possibility that the initial tab is not zero.
     useEffect(() => {
         handleTabSelect(selectedTabIndex);
     }, []);
@@ -524,6 +69,8 @@ export function ReportsCenterCMDashboard(): JSX.Element {
             fetchVoteData();
         } else if (index === 3 && !users_data) {
             fetchUsersData();
+        } else if (index === 4 && !system_data) {
+            fetchSystemData();
         }
     };
 
@@ -549,6 +96,28 @@ export function ReportsCenterCMDashboard(): JSX.Element {
             });
     };
 
+    const fetchSystemData = () => {
+        get(`moderation/system_performance`)
+            .then((response) => {
+                const fetchedData: SystemPerformanceData = response;
+                const currentDate = new Date();
+
+                const performanceAsAge: SystemPerformanceData = Object.fromEntries(
+                    Object.entries(fetchedData).map(([reportType, dateString]) => {
+                        const date = new Date(dateString);
+                        const age = Math.floor(
+                            (currentDate.getTime() - date.getTime()) / (1000 * 60 * 60),
+                        ); // age in hours
+                        return [reportType, age.toString()];
+                    }),
+                );
+                setSystemData(performanceAsAge);
+            })
+            .catch((err) => {
+                console.error(err);
+            });
+    };
+
     return (
         <Tabs
             className="ReportsCenterCMInfo"
@@ -556,13 +125,36 @@ export function ReportsCenterCMDashboard(): JSX.Element {
             onSelect={handleTabSelect}
         >
             <TabList>
-                <Tab disabled={!user.moderator_powers}>My Summary</Tab>
-                <Tab>Group Outcomes</Tab>
-                <Tab disabled={!user.is_moderator}>Individual Votes</Tab>
-                <Tab disabled={!user.moderator_powers}>My Votes</Tab>
+                <Tab disabled={!user.moderator_powers}>
+                    {pgettext("This is a title of a page showing summary graphs", "My Summary")}
+                </Tab>
+                <Tab>
+                    {pgettext(
+                        "This is a title of a page showing graphs of Community Moderation outcomes",
+                        "Group Outcomes",
+                    )}
+                </Tab>
+                <Tab disabled={!user.is_moderator}>
+                    {pgettext(
+                        "This is a title of a page showing graphs of individual Community Moderators' votes",
+                        "Individual Votes",
+                    )}
+                </Tab>
+                <Tab disabled={!user.moderator_powers}>
+                    {pgettext(
+                        "This is a title of a page showing a Community Moderator how their votes turned out",
+                        "My Votes",
+                    )}
+                </Tab>
+                <Tab>
+                    {pgettext(
+                        "This is a title of a page showing graphs how the report system is performing",
+                        "System Performance",
+                    )}
+                </Tab>
             </TabList>
 
-            {/* A CM's Summary Pie Charts */}
+            {/* My Summary: A CM's Summary Pie Charts */}
             <TabPanel>
                 <div className="mod-graph-header">
                     {pgettext(
@@ -583,26 +175,28 @@ export function ReportsCenterCMDashboard(): JSX.Element {
                 <CMPieCharts user_id={user.id} user_moderator_powers={user.moderator_powers} />
             </TabPanel>
 
-            {/* The overall CM voting outcomes */}
+            {/* Group Outcomes: The overall CM voting outcomes */}
             <TabPanel>
-                {vote_data
-                    ? ["overall", "escaping", "stalling", "score_cheating"].map((report_type) => (
-                          <div key={report_type}>
-                              <h3>{report_type}</h3>
-                              {vote_data[report_type] ? (
-                                  <CMVotingGroupGraph
-                                      vote_data={vote_data[report_type]}
-                                      period={60}
-                                  />
-                              ) : (
-                                  "no data"
-                              )}
-                          </div>
-                      ))
-                    : "loading..."}
+                {vote_data ? (
+                    ["overall", "escaping", "stalling", "score_cheating"].map((report_type) => (
+                        <div key={report_type}>
+                            <h3>{report_type}</h3>
+                            {vote_data[report_type] ? (
+                                <CMVotingGroupGraph
+                                    vote_data={vote_data[report_type]}
+                                    period={60}
+                                />
+                            ) : (
+                                "no data"
+                            )}
+                        </div>
+                    ))
+                ) : (
+                    <p>{_("loading...")}</p>
+                )}
             </TabPanel>
 
-            {/* Moderator view of each CM's vote categories */}
+            {/* Individual Votes: Moderator view of each CM's vote categories */}
             <TabPanel>
                 <PaginatedTable
                     pageSize={4} /* Limit aggregation compute load */
@@ -627,23 +221,56 @@ export function ReportsCenterCMDashboard(): JSX.Element {
                 />
             </TabPanel>
 
-            {/* A CM's individual vote categories (My Votes) */}
+            {/* My Votes: A CM's individual vote categories */}
             <TabPanel>
-                {users_data
-                    ? ["overall", "escaping", "stalling", "score_cheating"].map((report_type) => (
-                          <div key={report_type}>
-                              <h3>{report_type}</h3>
-                              {users_data[report_type] ? (
-                                  <CMVoteCountGraph
-                                      vote_data={users_data[report_type]}
-                                      period={120}
-                                  />
-                              ) : (
-                                  "no data"
-                              )}
-                          </div>
-                      ))
-                    : "loading..."}
+                {users_data ? (
+                    ["overall", "escaping", "stalling", "score_cheating"].map((report_type) => (
+                        <div key={report_type}>
+                            <h3>{report_type}</h3>
+                            {users_data[report_type] ? (
+                                <CMVoteCountGraph
+                                    vote_data={users_data[report_type]}
+                                    period={120}
+                                />
+                            ) : (
+                                "no data"
+                            )}
+                        </div>
+                    ))
+                ) : (
+                    <p>{_("loading...")}</p>
+                )}
+            </TabPanel>
+
+            {/* System Performance: Info about how the report system is performing */}
+            <TabPanel>
+                <h3>{_("System Performance - oldest open reports")}</h3>
+                {system_data ? (
+                    <ul>
+                        {Object.entries(system_data).map(([reportType, age]) => {
+                            // Cursor came up with this, there's probably a library or something we already have that can do this
+                            const ageInHours = parseInt(age, 10);
+                            let displayAge;
+                            if (ageInHours < 24) {
+                                displayAge = `${ageInHours} hour${ageInHours !== 1 ? "s" : ""}`;
+                            } else {
+                                const days = Math.floor(ageInHours / 24);
+                                const hours = ageInHours % 24;
+                                displayAge = `${days} day${days !== 1 ? "s" : ""}`;
+                                if (hours > 0) {
+                                    displayAge += ` and ${hours} hour${hours !== 1 ? "s" : ""}`;
+                                }
+                            }
+                            return (
+                                <li key={reportType}>
+                                    {reportType}: {displayAge}
+                                </li>
+                            );
+                        })}
+                    </ul>
+                ) : (
+                    <p>{_("loading...")}</p>
+                )}
             </TabPanel>
         </Tabs>
     );
