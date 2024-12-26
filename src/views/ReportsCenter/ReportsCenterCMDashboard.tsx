@@ -60,11 +60,7 @@ interface IndividualCMVotingOutcomeData {
 }
 
 function startOfWeek(the_date: Date): Date {
-    const date = new Date(the_date);
-    const day = date.getDay(); // Get current day of week (0 is Sunday)
-    const diff = date.getDate() - day; // Calculate difference to the start of the week
-
-    return new Date(date.setDate(diff));
+    return startOfWeekDateFns(the_date, { weekStartsOn: 1 }); // 1 = Monday
 }
 
 // Hardcoding the vertical axis of all "report count" graphs as the total number helps convey
@@ -562,7 +558,7 @@ export function ReportsCenterCMDashboard(): JSX.Element {
                 <Tab disabled={!user.moderator_powers}>My Votes</Tab>
             </TabList>
 
-            {/* A CM's Summary Pie Charts */}
+            {/* My Summary: A CM's Summary Pie Charts */}
             <TabPanel>
                 <div className="mod-graph-header">
                     {pgettext(
@@ -583,7 +579,7 @@ export function ReportsCenterCMDashboard(): JSX.Element {
                 <CMPieCharts user_id={user.id} user_moderator_powers={user.moderator_powers} />
             </TabPanel>
 
-            {/* The overall CM voting outcomes */}
+            {/* Group Outcomes: The overall CM voting outcomes */}
             <TabPanel>
                 {vote_data
                     ? ["overall", "escaping", "stalling", "score_cheating"].map((report_type) => (
@@ -602,7 +598,7 @@ export function ReportsCenterCMDashboard(): JSX.Element {
                     : "loading..."}
             </TabPanel>
 
-            {/* Moderator view of each CM's vote categories */}
+            {/* Individual Votes: Moderator view of each CM's vote categories */}
             <TabPanel>
                 <PaginatedTable
                     pageSize={4} /* Limit aggregation compute load */
@@ -627,7 +623,7 @@ export function ReportsCenterCMDashboard(): JSX.Element {
                 />
             </TabPanel>
 
-            {/* A CM's individual vote categories (My Votes) */}
+            {/* My Votes: A CM's individual vote categories */}
             <TabPanel>
                 {users_data
                     ? ["overall", "escaping", "stalling", "score_cheating"].map((report_type) => (
