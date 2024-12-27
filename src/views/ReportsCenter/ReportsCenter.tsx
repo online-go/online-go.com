@@ -36,6 +36,7 @@ interface OtherView {
     special: string;
     title: string;
     show_cm: boolean;
+    show_all: boolean;
 }
 
 const categories: (ReportDescription | OtherView)[] = [
@@ -54,11 +55,11 @@ const categories: (ReportDescription | OtherView)[] = [
         },
     ])
     .concat([
-        { special: "hr", title: "", show_cm: true },
-        { special: "history", title: "History", show_cm: true },
-        { special: "cm", title: "Community Moderation", show_cm: true },
-        { special: "my_reports", title: "My Own Reports", show_cm: true },
-        { special: "settings", title: "Settings", show_cm: false },
+        { special: "hr", title: "", show_cm: true, show_all: false },
+        { special: "history", title: "History", show_cm: true, show_all: false },
+        { special: "cm", title: "Community Moderation", show_cm: true, show_all: true },
+        { special: "my_reports", title: "My Own Reports", show_cm: true, show_all: true },
+        { special: "settings", title: "Settings", show_cm: false, show_all: false },
     ]);
 
 const category_priorities: { [type: string]: number } = {};
@@ -131,10 +132,6 @@ export function ReportsCenter(): JSX.Element | null {
         navigateTo(`/reports-center/${category}`);
     }, []);
 
-    if (!user.is_moderator && !user.moderator_powers) {
-        return null;
-    }
-
     const selectReport = (report_id: number) => {
         if (report_id) {
             navigateTo(`/reports-center/${category}/${report_id}`);
@@ -145,13 +142,15 @@ export function ReportsCenter(): JSX.Element | null {
 
     const visible_categories = user.is_moderator
         ? categories
-        : // community moderators supported report types
-          categories.filter(
-              (category) =>
-                  ("special" in category && category.show_cm) ||
-                  (!("special" in category) &&
-                      community_mod_has_power(user.moderator_powers, category.type)),
-          );
+        : user.moderator_powers
+          ? // community moderators supported report types
+            categories.filter(
+                (category) =>
+                    ("special" in category && category.show_cm) ||
+                    (!("special" in category) &&
+                        community_mod_has_power(user.moderator_powers, category.type)),
+            )
+          : categories.filter((category) => "special" in category && category.show_all);
 
     const my_reports = report_manager
         .getEligibleReports()
