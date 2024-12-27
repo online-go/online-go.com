@@ -631,7 +631,7 @@ export function getDefaultTimeControl<T extends TimeControlSystem>(
 export const time_options: TimeOptionsMap = {
     blitz: {
         fischer: {
-            initial_time: gen(5, 60),
+            initial_time: gen(5, 180),
             time_increment: gen(1, 5),
             max_time: gen(5, 900),
         },
