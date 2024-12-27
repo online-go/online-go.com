@@ -75,7 +75,10 @@ export function ReportsCenter(): JSX.Element | null {
     const report_id = parseInt(params["report_id"] || "0");
     const category = params["category"] || "all";
 
-    const [report_quota] = usePreference("moderator.report-quota");
+    let [report_quota] = usePreference("moderator.report-quota");
+    if (!user.is_moderator && !user.moderator_powers) {
+        report_quota = 0;
+    }
 
     const reports = report_manager.getEligibleReports();
 
