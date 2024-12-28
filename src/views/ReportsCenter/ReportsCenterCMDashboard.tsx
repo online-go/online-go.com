@@ -33,9 +33,13 @@ import {
     ReportAlignmentCount,
     ReportCount,
 } from "@/components/CMVotingGroupGraph";
+import { useNavigate } from "react-router-dom";
 
 interface SystemPerformanceData {
-    [reportType: string]: string;
+    [reportType: string]: {
+        created: string;
+        report_id?: number; // Optional since regular users won't have this
+    };
 }
 
 interface CMVotingOutcomeData {
@@ -52,6 +56,7 @@ interface IndividualCMVotingOutcomeData {
 }
 export function ReportsCenterCMDashboard(): JSX.Element {
     const user = useUser();
+    const navigateTo = useNavigate();
     const [selectedTabIndex, setSelectedTabIndex] = React.useState(user.moderator_powers ? 0 : 1);
     const [vote_data, setVoteData] = React.useState<CMGroupVotingAlignmentData | null>(null);
     const [users_data, setUsersData] = React.useState<CMVotingOutcomeData | null>(null);
@@ -103,12 +108,18 @@ export function ReportsCenterCMDashboard(): JSX.Element {
                 const currentDate = new Date();
 
                 const performanceAsAge: SystemPerformanceData = Object.fromEntries(
-                    Object.entries(fetchedData).map(([reportType, dateString]) => {
-                        const date = new Date(dateString);
+                    Object.entries(fetchedData).map(([reportType, data]) => {
+                        const date = new Date(data.created);
                         const age = Math.floor(
                             (currentDate.getTime() - date.getTime()) / (1000 * 60 * 60),
                         ); // age in hours
-                        return [reportType, age.toString()];
+                        return [
+                            reportType,
+                            {
+                                created: age.toString(),
+                                ...(data.report_id && { report_id: data.report_id }),
+                            },
+                        ];
                     }),
                 );
                 setSystemData(performanceAsAge);
@@ -247,9 +258,8 @@ export function ReportsCenterCMDashboard(): JSX.Element {
                 <h3>{_("System Performance - oldest open reports")}</h3>
                 {system_data ? (
                     <ul>
-                        {Object.entries(system_data).map(([reportType, age]) => {
-                            // Cursor came up with this, there's probably a library or something we already have that can do this
-                            const ageInHours = parseInt(age, 10);
+                        {Object.entries(system_data).map(([reportType, data]) => {
+                            const ageInHours = parseInt(data.created, 10);
                             let displayAge;
                             if (ageInHours < 24) {
                                 displayAge = `${ageInHours} hour${ageInHours !== 1 ? "s" : ""}`;
@@ -264,6 +274,16 @@ export function ReportsCenterCMDashboard(): JSX.Element {
                             return (
                                 <li key={reportType}>
                                     {reportType}: {displayAge}
+                                    {data.report_id && (
+                                        <button
+                                            onClick={() =>
+                                                navigateTo(`/reports-center/all/${data.report_id}`)
+                                            }
+                                            className="small"
+                                        >
+                                            {`R${data.report_id.toString().slice(-3)}`}
+                                        </button>
+                                    )}
                                 </li>
                             );
                         })}
