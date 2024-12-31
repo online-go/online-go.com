@@ -990,16 +990,6 @@ export function QuickMatch(): JSX.Element {
 
             <div className="PlayButton-container">
                 {/* Bot */}
-                {user.anonymous && (
-                    <div className="anonymous-container">
-                        {_("Please sign in to play")}
-                        <div>
-                            <Link to="/register#/play">{_("Register for Free")}</Link>
-                            {" | "}
-                            <Link to="/sign-in#/play">{_("Sign in")}</Link>
-                        </div>
-                    </div>
-                )}
 
                 {!automatch_search_active && !user.anonymous && (
                     <button

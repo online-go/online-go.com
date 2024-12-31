@@ -76,7 +76,7 @@ export function CustomGames(): JSX.Element {
     const canvas: HTMLCanvasElement = React.useMemo(() => allocateCanvasOrError(), []);
     const seekgraph = React.useRef<SeekGraph>();
 
-    const disable_challenge_buttons = useHaveActiveGameSearch();
+    const disable_challenge_buttons = useHaveActiveGameSearch() || user.anonymous;
 
     const [seekGraphVisible, setSeekGraphVisible] = usePreference("show-seek-graph");
 
@@ -431,11 +431,7 @@ export function CustomGames(): JSX.Element {
         >
             <div>
                 <div className="CustomGames--toggle-container showing-custom-games">
-                    <button
-                        disabled={disable_challenge_buttons}
-                        className="custom-games-toggle"
-                        onClick={toggleCustomGames}
-                    >
+                    <button className="custom-games-toggle" onClick={toggleCustomGames}>
                         {_("Hide custom games")}
                     </button>
                     <button
