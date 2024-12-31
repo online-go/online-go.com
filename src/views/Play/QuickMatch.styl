@@ -432,27 +432,6 @@
         width: 5.5rem;
     }
 
-    .activity {
-        position: relative;
-    }
-
-    .activity.player-waiting:after, .activity.popular:after {
-        @extends .fa;
-        content: '\f111'; // font awesome circle
-        position: absolute;
-        font-size: 0.5rem;
-        top: 2px;
-        right: 2px;
-    }
-
-    .activity.player-waiting:after {
-        themed: color, quickmatch-player-waiting;
-    }
-
-    .activity.popular:after {
-        themed: color, shade1;
-    }
-
     .opponent-rank-range {
         display: flex;
         justify-content: space-around;
@@ -616,5 +595,35 @@
                 min-width: 4rem !important;
             }
         }
+    }
+}
+
+.play-page-help-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+#QuickMatch, .PlayPageHelp {
+    .activity {
+        position: relative;
+    }
+
+    .activity.player-waiting:after, .activity.popular:after {
+        @extends .fa;
+        content: '\f111'; // font awesome circle
+        position: absolute;
+        font-size: 0.5rem;
+        top: 2px;
+        right: 2px;
+    }
+
+    .activity.player-waiting:after {
+        themed: color, quickmatch-player-waiting;
+    }
+
+    .activity.popular:after {
+        themed: color, shade1;
     }
 }

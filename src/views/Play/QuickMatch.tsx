@@ -43,6 +43,7 @@ import { Link } from "react-router-dom";
 import Select from "react-select";
 import { SPEED_OPTIONS } from "./SPEED_OPTIONS";
 import { useHaveActiveGameSearch } from "./hooks";
+import { openPlayPageHelp } from "./PlayPageHelp";
 
 moment.relativeTimeThreshold("m", 56);
 export interface SelectOption {
@@ -928,7 +929,7 @@ export function QuickMatch(): JSX.Element {
                 {/* Play Button */}
                 <div className="GameOption-cell">
                     <div className="GameOption opponent-rank-container">
-                        <span>{_("Opponent rank")}</span>
+                        <span>{_("Opponent Rank")}</span>
                         <div className="opponent-rank-range">
                             <Select
                                 classNamePrefix="ogs-react-select"
@@ -1054,6 +1055,12 @@ export function QuickMatch(): JSX.Element {
                         {_("Play Human")}
                     </button>
                 )}
+            </div>
+
+            <div className="play-page-help-container">
+                <span className="fakelink" onClick={openPlayPageHelp}>
+                    {_("Help?")}
+                </span>
             </div>
         </>
     );
