@@ -63,6 +63,7 @@ import {
     updateSystem,
 } from "@/components/TimeControl/TimeControlUpdates";
 import { SPEED_OPTIONS } from "@/views/Play/SPEED_OPTIONS";
+import Select from "react-select";
 
 export type ChallengeDetails = rest_api.ChallengeDetails;
 
@@ -114,6 +115,13 @@ export interface RejectionDetails {
     details: {
         [key: string]: any;
     };
+}
+
+// Add this type definition
+interface PreferredSettingOption {
+    value: number; // index of the setting
+    label: string; // challenge text description
+    setting: ChallengeDetails;
 }
 
 /* Constants  */
@@ -1691,54 +1699,75 @@ export class ChallengeModalBody extends React.Component<
         }
     };
 
+    handlePreferredSettingChange = (option: PreferredSettingOption | null) => {
+        if (option) {
+            this.usePreferredSetting(option.value);
+        }
+    };
+
     preferredGameSettings = () => {
+        const options: PreferredSettingOption[] = this.state.preferred_settings.map(
+            (setting: ChallengeDetails, index: number) => ({
+                value: index,
+                label: challenge_text_description(setting),
+                setting: setting,
+            }),
+        );
+
+        const selected =
+            options.find(
+                (opt: PreferredSettingOption) =>
+                    opt.setting.game.rules === this.state.challenge.game.rules &&
+                    opt.setting.game.width === this.state.challenge.game.width &&
+                    opt.setting.game.height === this.state.challenge.game.height &&
+                    opt.setting.game.handicap === this.state.challenge.game.handicap &&
+                    JSON.stringify(opt.setting.game.time_control_parameters) ===
+                        JSON.stringify(this.state.time_control),
+            ) || null;
+
         return (
-            <div style={{ padding: "0.5em" }} ref={this.ref}>
+            <div
+                className="preferred-settings-container"
+                style={{ padding: "0.5em" }}
+                ref={this.ref}
+            >
                 <OgsResizeDetector onResize={this.onResize} targetRef={this.ref} />
                 <hr />
-                <div>
-                    <span onClick={this.togglePreferredSettings}>
-                        <strong>
-                            {interpolate(_("Preferred settings ({{preferred_settings_count}})"), {
-                                preferred_settings_count: this.state.preferred_settings.length,
-                            })}
-                        </strong>
-                        {this.state.view_mode === "portrait" && (
-                            <i className="fa fa-caret-down" style={{ marginLeft: "0.5em" }} />
-                        )}
-                    </span>
-                    <button onClick={this.addToPreferredSettings} className="pull-right sm success">
-                        {_("Add current setting")}
-                    </button>
-                </div>
-                {(this.state.view_mode !== "portrait" ||
-                    !this.state.hide_preferred_settings_on_portrait) && (
-                    <div style={{ padding: "0.5em", marginTop: "0.1em" }}>
-                        {this.state.preferred_settings.map(
-                            (setting: ChallengeDetails, index: number) => {
-                                return (
-                                    <div key={index} style={{ marginBottom: "0.5em" }}>
-                                        <button
-                                            onClick={this.usePreferredSetting.bind(this, index)}
-                                            className="xs primary"
-                                        >
-                                            {_("Use")}
-                                        </button>
-                                        <button
-                                            onClick={this.deletePreferredSetting.bind(this, index)}
-                                            className="xs reject"
-                                        >
-                                            {_("Delete")}
-                                        </button>
-                                        <span style={{ marginLeft: "0.5em" }}>
-                                            {challenge_text_description(setting)}
-                                        </span>
-                                    </div>
-                                );
-                            },
+                <div className="preferred-settings-container">
+                    <div style={{ display: "flex", gap: "1em", alignItems: "center" }}>
+                        <div style={{ flex: 1 }}>
+                            <Select
+                                classNamePrefix="ogs-react-select"
+                                value={selected}
+                                onChange={this.handlePreferredSettingChange}
+                                options={options}
+                                isClearable={false}
+                                isSearchable={false}
+                                menuPlacement="auto"
+                                placeholder={interpolate(
+                                    _("Preferred settings ({{preferred_settings_count}})"),
+                                    {
+                                        preferred_settings_count:
+                                            this.state.preferred_settings.length,
+                                    },
+                                )}
+                            />
+                        </div>
+                        {selected ? (
+                            <button
+                                onClick={() => this.deletePreferredSetting(selected.value)}
+                                className="xs reject"
+                                style={{ flexShrink: 0 }}
+                            >
+                                {_("Delete")}
+                            </button>
+                        ) : (
+                            <button onClick={this.addToPreferredSettings} className="sm success">
+                                {_("Add current setting")}
+                            </button>
                         )}
                     </div>
-                )}
+                </div>
             </div>
         );
     };

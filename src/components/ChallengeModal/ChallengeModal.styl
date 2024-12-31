@@ -132,19 +132,16 @@
         align-items: middle;
     }
 
+    .header {
+        overflow: auto;
+        max-height: 80vh;
+    }
+
     .computer-opponents {
         width: 100%;
         display: flex;
         flex-direction: column;
         gap: 0.5rem;
-        max-height: 60vh;
-        overflow: auto;
-    }
-
-    .header.computer-settings-expanded {
-        .computer-opponents {
-            max-height: 20vh;
-        }
     }
 
     .bot-categories {
