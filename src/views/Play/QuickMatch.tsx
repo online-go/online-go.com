@@ -44,6 +44,7 @@ import Select from "react-select";
 import { SPEED_OPTIONS } from "./SPEED_OPTIONS";
 import { useHaveActiveGameSearch } from "./hooks";
 import { openPlayPageHelp } from "./PlayPageHelp";
+import { notification_manager, Notification } from "@/components/Notifications/NotificationManager";
 
 moment.relativeTimeThreshold("m", 56);
 export interface SelectOption {
@@ -179,11 +180,21 @@ export function QuickMatch(): JSX.Element {
         automatch_manager.on("cancel", refresh);
         bot_event_emitter.on("updated", refresh);
 
+        function onGameStarted(game?: Notification) {
+            console.log("game-started", game);
+            if (game?.speed !== "correspondence" && automatch_manager.active_live_automatcher) {
+                automatch_manager.cancel(automatch_manager.active_live_automatcher?.uuid);
+            }
+        }
+
+        notification_manager.event_emitter.on("game-started", onGameStarted);
+
         return () => {
             automatch_manager.off("entry", refresh);
             automatch_manager.off("start", refresh);
             automatch_manager.off("cancel", refresh);
             bot_event_emitter.off("updated", refresh);
+            notification_manager.event_emitter.off("game-started", onGameStarted);
         };
     }, []);
 
@@ -747,6 +758,7 @@ export function QuickMatch(): JSX.Element {
                             styles={select_styles}
                             isSearchable={false}
                             value={game_clock_options.find((o) => o.value === game_clock)}
+                            menuPlacement="auto"
                             onChange={(opt) => {
                                 if (opt) {
                                     setGameClock(opt.value as "flexible" | "exact" | "multiple");

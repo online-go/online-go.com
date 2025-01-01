@@ -618,7 +618,12 @@ export function CustomGames(): JSX.Element {
                             <div style={{ marginTop: "2em" }}></div>
 
                             <div className="challenge-row" style={{ marginTop: "1em" }}>
-                                <span className="cell break">{_("Long Games")}</span>
+                                <span className="cell break">
+                                    {pgettext(
+                                        "Game speed: multi-day games",
+                                        "Daily Correspondence",
+                                    )}
+                                </span>
                                 <CellBreaks width={8} />
                             </div>
 
