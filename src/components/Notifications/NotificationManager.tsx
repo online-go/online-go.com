@@ -191,8 +191,8 @@ export class NotificationManager {
     notifications: { [k: string]: Notification };
     ordered_notifications: Notification[];
     unread_notification_count: number = 0;
-    boards_to_move_on: { [k: string]: any };
-    active_boards: { [k: string]: any };
+    boards_to_move_on: { [k: string]: GameListEntry };
+    active_boards: { [k: string]: GameListEntry };
     advances: number = 0;
     auth: string | undefined;
     event_emitter: TypedEventEmitter<NotificationManagerEvents>;
@@ -239,8 +239,8 @@ export class NotificationManager {
         for (const k in this.boards_to_move_on) {
             const board = this.boards_to_move_on[k];
             target_boards.push({
-                id: parseInt(board.id),
-                expiration: parseInt(board.clock_expiration),
+                id: Number(board.id),
+                expiration: Number(board.clock_expiration),
             });
         }
 
@@ -249,8 +249,8 @@ export class NotificationManager {
             for (const k in this.active_boards) {
                 const board = this.active_boards[k];
                 target_boards.push({
-                    id: parseInt(board.id),
-                    expiration: parseInt(board.clock_expiration),
+                    id: Number(board.id),
+                    expiration: Number(board.clock_expiration),
                 });
             }
         } else {
@@ -289,7 +289,7 @@ export class NotificationManager {
         // the we go to the most urgent.
         if (
             we_have_moves_to_play &&
-            (!looking_at_game_id || (!click_event && looking_at_game_details.time_to_move < 3600))
+            (!looking_at_game_id || (!click_event && looking_at_game_details.time_per_move < 3600))
         ) {
             this.advances = 1; // reset to the most urgent board
         }
