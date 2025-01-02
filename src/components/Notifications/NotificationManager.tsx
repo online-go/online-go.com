@@ -46,6 +46,7 @@ export interface NotificationManagerEvents {
     notification: any;
     "notification-list-updated": never;
     "notification-count": number;
+    "game-started": Notification;
 }
 
 const boot_time = Date.now();
@@ -456,6 +457,10 @@ export class NotificationManager {
                     _("Friend Request Declined"),
                     _("Your friend request has been declined"),
                 );
+            }
+
+            if (notification.type === "gameStarted") {
+                this.event_emitter.emit("game-started", notification);
             }
 
             if (
