@@ -4,6 +4,9 @@ PATH:=node_modules/.bin/:$(PATH)
 dev: node_modules .husky
 	npm run dev
 
+local-dev: node_modules .husky
+	export OGS_BACKEND=LOCAL && npm run dev
+
 .husky: 
 	npx husky install
 

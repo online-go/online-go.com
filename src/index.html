@@ -462,8 +462,10 @@
             src="https://cdn.online-go.com/lib/es6-shim/0.35.3/es6-shim{{MIN}}.js"
         ></script>
         <script defer src="https://cdn.online-go.com/lib/jquery/3.1.1/jquery{{MIN}}.js"></script>
+        <!--
         <script defer src="{{GOBAN_JS}}"></script>
         <script defer src="{{CDN_SERVICE}}/{{RELEASE}}/vendor.{{VENDOR_HASH_DOTJS}}"></script>
+        -->
 
         <script type="text/javascript">
             var supported_languages = {{SUPPORTED_LANGUAGES}};
@@ -591,7 +593,17 @@
             } catch (e) {
                 console.error(e);
             }
-            document.write('<script defer src="' + ogs_script_path + '"><' + "/script>");
+
+            if ("{{RELEASE}}" === "" && "{{OGS_VERSION_HASH_DOTJS}}" === "js") {
+                console.debug("Development mode detected, loading from vite");
+                // Load from dev server
+                document.write('<script defer type="module" src="/main.tsx"><' + "/script>");
+            } else {
+                console.debug("Production mode detected, loading from", ogs_script_path);
+                document.write(
+                    '<script defer type="module" src="' + ogs_script_path + '"><' + "/script>",
+                );
+            }
         </script>
 
         <script>
