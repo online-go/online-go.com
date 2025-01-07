@@ -6,11 +6,12 @@ import inline_svg from "postcss-inline-svg";
 import autoprefixer from "autoprefixer";
 import cssnano from "cssnano";
 
+console.log("");
+console.log("Re-compiling css because vite can't generate production sourcemaps still");
+
 const style = stylus(fs.readFileSync("src/ogs.styl", "utf8"))
     .set("filename", "src/ogs.styl")
-    .set("sourcemap", {
-        comment: true,
-    });
+    .set("sourcemap", {});
 
 style.render((err, css) => {
     if (err) {
@@ -20,10 +21,11 @@ style.render((err, css) => {
 
     postcss([atImport(), inline_svg(), autoprefixer(), cssnano()])
         .process(css, {
-            from: "src/ogs.styl",
+            from: "dist/ogs.css",
             to: "dist/ogs.min.css",
             map: {
                 inline: false,
+                prev: style.sourcemap,
             },
         })
         .then((result) => {
@@ -33,3 +35,5 @@ style.render((err, css) => {
             }
         });
 });
+
+console.log("Done");
