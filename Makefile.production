@@ -95,14 +95,14 @@ audit-translations:
 jsonify-po-files:
 	cd i18n; node jsonify-po-files.js
 
-prepare-cdn-files: purge-cdn-files dist/ogs.js dist/ogs.$(VERSION).css
+prepare-cdn-files: purge-cdn-files dist/ogs.js dist/ogs.css
 	echo "Language version: $(LANGUAGE_VERSION)"
 	mkdir -p deployment-staging-area/$(RELEASE)/
 	mkdir -p deployment-staging-area/$(RELEASE)/locale
 	cat dist/ogs.js | sed 's/ogs.js.map/ogs.$(OGS_VERSION_HASH).js.map/' > deployment-staging-area/$(RELEASE)/ogs.$(OGS_VERSION_HASH).js
 	cp -p dist/ogs.js.map deployment-staging-area/$(RELEASE)/ogs.$(OGS_VERSION_HASH).js.map
-	cp -p dist/ogs.$(VERSION).css deployment-staging-area/$(RELEASE)/
-	cp -p dist/ogs.$(VERSION).css.map deployment-staging-area/$(RELEASE)/
+	cp -p dist/ogs.css deployment-staging-area/$(RELEASE)/ogs.$(VERSION).css
+	cp -p dist/ogs.css.map deployment-staging-area/$(RELEASE)/ogs.$(VERSION).css.map
 	cp -Rp assets/img deployment-staging-area/$(RELEASE)/
 	cp -Rp assets/sound deployment-staging-area/$(RELEASE)/
 	ls i18n/locale/*.js | sed 's@i18n/locale/\([^\.]\+\).js@\1@' | xargs -n1 -I {} cp i18n/locale/{}.js deployment-staging-area/$(RELEASE)/locale/{}.$(LANGUAGE_VERSION).js
