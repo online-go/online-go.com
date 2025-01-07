@@ -34,114 +34,112 @@ interface ModerationActionSelectorProps {
 // The set of keys (choices) here is determined by the server's VotableActions class.
 //
 // Don't forget to update rest_api.warnings.WarningMessageId as needed: new actions usually mean new messages.
+
+const ACTION_PROMPT_LLM_CONTEXT =
+    "\
+This phrase to be translated is the label of an option for a moderator of an online Go game server to select: an action to apply to a report about a game of Go.\
+\
+In the phrase you are asked to translate, 'no cheating' is a conclusion meaning the moderator concluded cheating did not occur, \
+rather than an instruction meaning the reader should not cheat.\
+\
+Be completely unambiguous with regards to the meaning of the word annul: choose a translation that means that the result of the game is not valid.";
+
 const ACTION_PROMPTS = {
     annul_escaped: llm_pgettext(
-        "Label for a moderator to select this option.  Be completely unambiguous with regards to the meaning of the word annul.",
+        ACTION_PROMPT_LLM_CONTEXT,
         "Wrong result due to escape - annul game, warn the escaper.",
     ),
-    warn_escaper: llm_pgettext(
-        "Label for a moderator to select this option",
-        "The accused escaped - warn them.",
-    ),
+    warn_escaper: llm_pgettext(ACTION_PROMPT_LLM_CONTEXT, "The accused escaped - warn them."),
     call_escaped_game_for_black: llm_pgettext(
-        "Label for a moderator to select this option",
+        ACTION_PROMPT_LLM_CONTEXT,
         "White escaped - call the game for black, and warn white.",
     ),
     call_escaped_game_for_white: llm_pgettext(
-        "Label for a moderator to select this option",
+        ACTION_PROMPT_LLM_CONTEXT,
         "Black escaped - call the game for white, and warn black.",
     ),
     no_escaping: llm_pgettext(
-        "Label for a moderator to select this option",
+        ACTION_PROMPT_LLM_CONTEXT,
         "No escaping evident - inform the reporter.",
     ),
     not_escaping_cancel: llm_pgettext(
-        "Label for a moderator to select this option",
+        ACTION_PROMPT_LLM_CONTEXT,
         "Not escaping, they used 'cancel'.",
     ),
     annul_stalled: llm_pgettext(
-        "Label for a moderator to select this option",
+        ACTION_PROMPT_LLM_CONTEXT,
         "Wrong result due to stalling - annul game, warn the staller.",
     ),
-    warn_staller: llm_pgettext(
-        "Label for a moderator to select this option",
-        "The accused stalled - warn them.",
-    ),
+    warn_staller: llm_pgettext(ACTION_PROMPT_LLM_CONTEXT, "The accused stalled - warn them."),
     call_stalled_game_for_black: llm_pgettext(
-        "Label for a moderator to select this option",
+        ACTION_PROMPT_LLM_CONTEXT,
         "White stalled - call the game for black, and warn white.",
     ),
     call_stalled_game_for_white: llm_pgettext(
-        "Label for a moderator to select this option",
+        ACTION_PROMPT_LLM_CONTEXT,
         "Black stalled - call the game for white, and warn black.",
     ),
     no_stalling: llm_pgettext(
-        "Label for a moderator to select this option",
+        ACTION_PROMPT_LLM_CONTEXT,
         "No stalling evident - inform the reporter.",
     ),
     annul_score_cheat: llm_pgettext(
-        "Label for a moderator to select this option",
+        ACTION_PROMPT_LLM_CONTEXT,
         "Annul the game and warn the cheater.",
     ),
     warn_score_cheat: llm_pgettext(
-        "Label for a moderator to select this option",
+        ACTION_PROMPT_LLM_CONTEXT,
         "The accused tried to cheat - warn the cheater.",
     ),
-    no_score_cheat: llm_pgettext(
-        "Label for a moderator to select this option",
-        "No cheating - inform the reporter.",
-    ),
+    no_score_cheat: llm_pgettext(ACTION_PROMPT_LLM_CONTEXT, "No cheating - inform the reporter."),
     call_score_cheat_for_black: llm_pgettext(
-        "Label for a moderator to select this option",
+        ACTION_PROMPT_LLM_CONTEXT,
         "White is cheating - call the game for black, and warn white.",
     ),
     call_score_cheat_for_white: llm_pgettext(
-        "Label for a moderator to select this option",
+        ACTION_PROMPT_LLM_CONTEXT,
         "Black is cheating - call the game for white, and warn black.",
     ),
     annul_no_warning: llm_pgettext(
-        "Label for a moderator to select this option",
+        ACTION_PROMPT_LLM_CONTEXT,
         "Annul the game, but issue no warnings.",
     ),
     final_warning_escaping: llm_pgettext(
-        "Label for a moderator to select this option",
+        ACTION_PROMPT_LLM_CONTEXT,
         "Final warning: the accused escaped.",
     ),
     final_warning_stalling: llm_pgettext(
-        "Label for a moderator to select this option",
+        ACTION_PROMPT_LLM_CONTEXT,
         "Final warning: the accused stalled.",
     ),
     final_warning_score_cheating: llm_pgettext(
-        "Label for a moderator to select this option",
+        ACTION_PROMPT_LLM_CONTEXT,
         "Final warning: the accused tried to cheat.",
     ),
     final_warning_escaping_and_annul: llm_pgettext(
-        "Label for a moderator to select this option",
+        ACTION_PROMPT_LLM_CONTEXT,
         "Final warning: the accused escaped - annul game.",
     ),
     final_warning_stalling_and_annul: llm_pgettext(
-        "Label for a moderator to select this option",
+        ACTION_PROMPT_LLM_CONTEXT,
         "Final warning: the accused stalled - annul game.",
     ),
     final_warning_score_cheating_and_annul: llm_pgettext(
-        "Label for a moderator to select this option",
+        ACTION_PROMPT_LLM_CONTEXT,
         "Final warning: the accused tried to cheat - annul game.",
     ),
     warn_duplicate_reporter: llm_pgettext(
-        "Label for a moderator to select this option",
-        "Duplicate report - ask them not to do that.",
+        ACTION_PROMPT_LLM_CONTEXT,
+        "Duplicate report - ask the reporter not to do that.",
     ),
 
-    suspend_user: llm_pgettext("Label for a moderator to select this option", "Suspend the user."),
+    suspend_user: llm_pgettext(ACTION_PROMPT_LLM_CONTEXT, "Suspend the user."),
 
-    suspend_user_and_annul: llm_pgettext(
-        "Label for a moderator to select this option",
-        "Suspend user and annul game.",
-    ),
+    suspend_user_and_annul: llm_pgettext(ACTION_PROMPT_LLM_CONTEXT, "Suspend user and annul game."),
 
     // Note: keep this last, so it's positioned above the "escalation note" input field
     escalate: llm_pgettext(
-        "A label for a community moderator to select this option",
+        ACTION_PROMPT_LLM_CONTEXT,
         "Escalate: report needs final warning or suspension, or other unusual action.",
     ),
 };

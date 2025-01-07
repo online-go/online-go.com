@@ -432,7 +432,8 @@ async function llm_translate(key, entry, lang, language) {
                 content:
                     "You are translating user interface strings from English to " +
                     language +
-                    ". Only include the translation in your response.",
+                    ". " +
+                    "Only include the translation in your response.",
             },
             {
                 role: "system",
