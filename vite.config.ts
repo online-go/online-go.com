@@ -105,13 +105,10 @@ export default defineConfig({
         react(),
         // checker relative directory is src/
         checker({
-            // We can't currently enable the typescript checker because tsc is
-            // crashing when checking the entire project. - anoek 2025-01-05
-            /*
             typescript: {
-                tsconfigPath: "../tsconfig.json",
+                tsconfigPath:
+                    process.env.NODE_ENV === "production" ? "tsconfig.json" : "../tsconfig.json",
             },
-            */
             eslint: {
                 useFlatConfig: true,
                 lintCommand: "eslint .",

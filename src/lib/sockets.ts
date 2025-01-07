@@ -73,8 +73,6 @@ export const ai_socket = new GobanSocket<protocol.ClientToAIServer, protocol.AIS
 
 ai_socket.options.ping_interval = 20000;
 
-const _x: string = 1;
-
 let last_clock_drift = 0.0;
 let last_latency = 0.0;
 let connect_time: number | null = null;

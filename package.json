@@ -12,6 +12,7 @@
         "dev": "vite",
         "vite": "vite",
         "build": "vite build",
+        "type-check": "tsc --skipLibCheck --noEmit",
         "prettier": "prettier --write \"src/**/*.{ts,tsx}\"",
         "prettier:check": "prettier --check \"src/**/*.{ts,tsx}\"",
         "lint": "eslint src/",

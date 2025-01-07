@@ -30,7 +30,8 @@
         "noImplicitThis": false,
 
         "sourceMap": true,
-        "jsx": "react"
+        "jsx": "react",
+        "skipLibCheck": true
     },
     "files": [
         "./src/main.tsx",
