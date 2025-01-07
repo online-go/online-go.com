@@ -25,6 +25,7 @@ import http from "http";
 import checker from "vite-plugin-checker";
 import autoprefixer from "autoprefixer";
 import atImport from "postcss-import";
+import inline_svg from "postcss-inline-svg";
 
 let OGS_BACKEND = process.env.OGS_BACKEND || "BETA";
 OGS_BACKEND = OGS_BACKEND.toUpperCase();
@@ -109,7 +110,7 @@ export default defineConfig({
     },
     css: {
         postcss: {
-            plugins: [atImport(), autoprefixer()],
+            plugins: [atImport(), autoprefixer(), inline_svg()],
         },
         devSourcemap: true,
     },

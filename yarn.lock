@@ -2525,6 +2525,13 @@
   dependencies:
     postcss "^8.0.0"
 
+"@types/postcss-inline-svg@^5.0.4":
+  version "5.0.4"
+  resolved "https://registry.yarnpkg.com/@types/postcss-inline-svg/-/postcss-inline-svg-5.0.4.tgz#ea5ccac7783f02fb58ea96e4e412499d72d0dba4"
+  integrity sha512-LGjTIbRsuKXhw1Y41EVyUUSewBrl2H16hKHV3BIWyo90Mx9UYQnLgHbfNoVRYKACjXB7PWE4yy12rtmLZxticA==
+  dependencies:
+    postcss "^8.1.4"
+
 "@types/prop-types@*", "@types/prop-types@^15.7.2":
   version "15.7.11"
   resolved "https://registry.yarnpkg.com/@types/prop-types/-/prop-types-15.7.11.tgz#2596fb352ee96a1379c657734d4b913a613ad563"
@@ -8338,7 +8345,7 @@ postcss-value-parser@^4.0.0, postcss-value-parser@^4.2.0:
   resolved "https://registry.yarnpkg.com/postcss-value-parser/-/postcss-value-parser-4.2.0.tgz#723c09920836ba6d3e5af019f92bc0971c02e514"
   integrity sha512-1NNCs6uurfkVbeXG4S8JFT9t19m45ICnif8zWLd5oPSZ50QnwMfK+H3jv408d4jw/7Bttv5axS5IiHoLaVNHeQ==
 
-postcss@^8.0.0, postcss@^8.4.49:
+postcss@^8.0.0, postcss@^8.1.4, postcss@^8.4.49:
   version "8.4.49"
   resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.4.49.tgz#4ea479048ab059ab3ae61d082190fabfd994fe19"
   integrity sha512-OCVPnIObs4N29kxTjzLfUryOkvZEq+pf8jTF0lg8E7uETuWHA+v7j3c/xJmiqpX450191LlmZfUKkXxkTry7nA==

@@ -54,6 +54,7 @@
         "@types/react-virtualized": "^9.21.21",
         "@types/sanitize-html": "^2.13.0",
         "@types/postcss-import": "^14.0.3",
+        "@types/postcss-inline-svg": "^5.0.4",
         "@typescript-eslint/eslint-plugin": "^8.18.0",
         "@typescript-eslint/parser": "^8.18.0",
         "@stylistic/eslint-plugin": "^2.12.0",
