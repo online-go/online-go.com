@@ -113,6 +113,9 @@ export default defineConfig({
         },
         devSourcemap: true,
     },
+    define: {
+        "process.env.NODE_ENV": JSON.stringify(process.env.NODE_ENV),
+    },
     plugins: [
         ogs_vite_middleware(),
         react(),
