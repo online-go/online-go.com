@@ -60,10 +60,3 @@ jobs:
             - uses: streetsidesoftware/cspell-action@v6
               with:
                   files: src/**/*.{ts,tsx}
-
-            # Log compressed output size
-            - name: Compressed sizes
-              run: |
-                  gzip -9 dist/ogs.min.js | wc -c
-                  gzip -9 dist/vendor.min.js | wc -c
-                  gzip -9 dist/ogs.min.css | wc -c
