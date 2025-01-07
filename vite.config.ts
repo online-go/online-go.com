@@ -108,6 +108,13 @@ export default defineConfig({
             },
         },
     },
+    /*
+     * NOTE: We don't use vite css processing for our production builds because
+     * it doesn't support generating sourcemaps in production as of 2025-01-07
+     *
+     * For production, see compile-css.js, which should always kept in sync
+     * with this config.
+     */
     css: {
         postcss: {
             plugins: [atImport(), inline_svg(), autoprefixer()],

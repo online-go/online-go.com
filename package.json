@@ -11,7 +11,7 @@
     "scripts": {
         "dev": "vite",
         "vite": "vite",
-        "build": "vite build",
+        "build": "vite build --emptyOutDir && node compile-css.js",
         "type-check": "tsc --skipLibCheck --noEmit",
         "prettier": "prettier --write \"src/**/*.{ts,tsx}\"",
         "prettier:check": "prettier --check \"src/**/*.{ts,tsx}\"",
@@ -63,6 +63,7 @@
         "autoprefixer": "^10.4.20",
         "body-parser": "^1.20.2",
         "cspell": "^8.3.2",
+        "cssnano": "^7.0.6",
         "dependency-cruiser": "^16.8.0",
         "deepl-node": "^1.10.1",
         "esbuild-plugin-react-virtualized": "^1.0.4",
