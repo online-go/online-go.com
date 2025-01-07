@@ -11,7 +11,10 @@ console.log("Re-compiling css because vite can't generate production sourcemaps 
 
 const style = stylus(fs.readFileSync("src/ogs.styl", "utf8"))
     .set("filename", "src/ogs.styl")
-    .set("sourcemap", {});
+    .set("sourcemap", {
+        comment: true,
+        inline: true,
+    });
 
 style.render((err, css) => {
     if (err) {
