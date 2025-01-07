@@ -15,6 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+@require '../node_modules/sweetalert2/dist/sweetalert2.css';
+@require '../node_modules/react-table/react-table.css';
+@require '../node_modules/react-dynamic-help/dist/DynamicHelp.css';
+
 font-size-big = 16pt
 font-size-mid = 14pt
 font-size-normal = 12pt
@@ -498,8 +502,6 @@ nowrap()
     white-space: nowrap;
 
 
-/* Sweetalert2 */
-@require '../node_modules/sweetalert2/dist/sweetalert2.css';
 
 .swal2-footer {
     border: none !important; // default solid border is ugly
@@ -531,11 +533,7 @@ nowrap()
 @require "./views/[A-Z]*/*.styl";
 @require "./views/docs/*.styl";
 
-@require '../node_modules/react-table/react-table.css';
-@require '../node_modules/react-dynamic-help/dist/DynamicHelp.css';
 
-// @require '../node_modules/react-tabs/style/react-tabs.css';
-//
 // Put our theming into react-tabs css: copied from them and modified
 
 .react-tabs {

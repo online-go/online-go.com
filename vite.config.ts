@@ -23,6 +23,8 @@ import { promises as fs } from "fs";
 import { IncomingMessage } from "http";
 import http from "http";
 import checker from "vite-plugin-checker";
+import autoprefixer from "autoprefixer";
+import atImport from "postcss-import";
 
 let OGS_BACKEND = process.env.OGS_BACKEND || "BETA";
 OGS_BACKEND = OGS_BACKEND.toUpperCase();
@@ -99,6 +101,17 @@ export default defineConfig({
                 return `ogs.js`;
             },
         },
+        rollupOptions: {
+            output: {
+                assetFileNames: "ogs.[ext]",
+            },
+        },
+    },
+    css: {
+        postcss: {
+            plugins: [atImport(), autoprefixer()],
+        },
+        devSourcemap: true,
     },
     plugins: [
         ogs_vite_middleware(),
