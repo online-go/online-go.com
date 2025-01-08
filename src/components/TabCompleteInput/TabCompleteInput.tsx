@@ -60,7 +60,7 @@ function matchName(input: string, nicknames: string[]): MatchResult {
         for (let i = 0; i < matches[0].length - length; i++) {
             const letter = matches[0].toLowerCase().substr(length + i, 1);
             const allMatch = matches.every(
-                (value) => value.toLowerCase().substr(length + i, 1) === letter
+                (value) => value.toLowerCase().substr(length + i, 1) === letter,
             );
             if (allMatch) {
                 letters += letter;
@@ -91,7 +91,7 @@ function matchFullName(input: string, nicknames: string[]): MatchResult {
         for (let i = 0; i < matches[0].length - length; i++) {
             const letter = matches[0].toLowerCase().substr(length + i, 1);
             const allMatch = matches.every(
-                (value) => value.toLowerCase().substr(length + i, 1) === letter
+                (value) => value.toLowerCase().substr(length + i, 1) === letter,
             );
             if (allMatch) {
                 letters += letter;
@@ -110,7 +110,8 @@ function setCaretPosition(input: HTMLInputElement, position: number) {
 
 export const TabCompleteInput = React.forwardRef<HTMLInputElement, TabCompleteInputProperties>(
     (props: TabCompleteInputProperties, ref): JSX.Element => {
-        const inputRef = (ref as React.RefObject<HTMLInputElement>) || React.useRef<HTMLInputElement>(null);
+        const inputRef =
+            (ref as React.RefObject<HTMLInputElement>) || React.useRef<HTMLInputElement>(null);
         const [lastKey, setLastKey] = React.useState<number>(0);
 
         const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -136,11 +137,12 @@ export const TabCompleteInput = React.forwardRef<HTMLInputElement, TabCompleteIn
                             matchResult.matches.length > 1 || (last.length && last[0] === " ")
                                 ? ""
                                 : first.trim().length === 0
-                                ? ": "
-                                : " ";
+                                  ? ": "
+                                  : " ";
 
                         const newValue = first + matchResult.value + space + last;
-                        const newPosition = start - match[1].length + matchResult.value.length + space.length;
+                        const newPosition =
+                            start - match[1].length + matchResult.value.length + space.length;
 
                         input.value = newValue;
                         setCaretPosition(input, newPosition);
@@ -155,12 +157,21 @@ export const TabCompleteInput = React.forwardRef<HTMLInputElement, TabCompleteIn
                     const matchResult = matchFullName(textWithoutSpace, player_cache.nicknames);
 
                     if (matchResult.value) {
-                        const first = value.substr(0, start - matchResult.value.length - space.length);
+                        const first = value.substr(
+                            0,
+                            start - matchResult.value.length - space.length,
+                        );
                         const last = value.substr(start);
-                        const playerId = player_cache.lookup_by_username(matchResult.value)?.id ?? 0;
+                        const playerId =
+                            player_cache.lookup_by_username(matchResult.value)?.id ?? 0;
 
-                        const newValue = first + '@"' + matchResult.value + "/" + playerId + '"' + space + last;
-                        const newPosition = start - matchResult.value.length + matchResult.value.length + space.length;
+                        const newValue =
+                            first + '@"' + matchResult.value + "/" + playerId + '"' + space + last;
+                        const newPosition =
+                            start -
+                            matchResult.value.length +
+                            matchResult.value.length +
+                            space.length;
 
                         input.value = newValue;
                         setCaretPosition(input, newPosition);
@@ -194,5 +205,5 @@ export const TabCompleteInput = React.forwardRef<HTMLInputElement, TabCompleteIn
                 onBlur={handleBlur}
             />
         );
-    }
+    },
 );
