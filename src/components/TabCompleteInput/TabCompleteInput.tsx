@@ -110,15 +110,17 @@ function setCaretPosition(input: HTMLInputElement, position: number) {
 
 export const TabCompleteInput = React.forwardRef<HTMLInputElement, TabCompleteInputProperties>(
     (props: TabCompleteInputProperties, ref): JSX.Element => {
-        const inputRef =
-            (ref as React.RefObject<HTMLInputElement>) || React.useRef<HTMLInputElement>(null);
+        const defaultRef = React.useRef<HTMLInputElement>(null);
+        const inputRef = (ref as React.RefObject<HTMLInputElement>) || defaultRef;
         const [lastKey, setLastKey] = React.useState<number>(0);
 
         const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
             if (e.key === "Tab") {
                 e.preventDefault();
                 const input = inputRef.current;
-                if (!input) return;
+                if (!input) {
+                    return;
+                }
 
                 const value = input.value;
                 const start = input.selectionStart || 0;
@@ -127,7 +129,9 @@ export const TabCompleteInput = React.forwardRef<HTMLInputElement, TabCompleteIn
 
                 if (nickMatch.test(text)) {
                     const match = text.match(nickMatch);
-                    if (!match) return;
+                    if (!match) {
+                        return;
+                    }
 
                     const matchResult = matchName(match[1], player_cache.nicknames);
                     if (matchResult.value) {
@@ -150,7 +154,9 @@ export const TabCompleteInput = React.forwardRef<HTMLInputElement, TabCompleteIn
                     }
                 } else if (/( |: )$/.test(text)) {
                     const spaceMatch = text.match(/( |: )$/);
-                    if (!spaceMatch) return;
+                    if (!spaceMatch) {
+                        return;
+                    }
 
                     const space = spaceMatch[1];
                     const textWithoutSpace = text.substring(0, text.length - space.length);
