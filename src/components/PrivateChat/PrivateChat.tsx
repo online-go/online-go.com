@@ -15,13 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import * as React from "react";
 import { socket } from "@/lib/sockets";
 import { challenge } from "@/components/ChallengeModal";
 import { createModeratorNote } from "@/components/ModNoteModal";
 import { _, pgettext, interpolate } from "@/lib/translate";
 import * as data from "@/lib/data";
-import ITC from "@/lib/ITC";
-import { splitOnBytes, unicodeFilter } from "@/lib/misc";
+import { unicodeFilter, splitOnBytes } from "@/lib/misc";
 import { profanity_filter } from "@/lib/profanity_filter";
 import { player_is_ignored } from "@/components/BlockPlayer";
 import { emitNotification } from "@/components/Notifications/NotificationManager";
@@ -30,833 +30,553 @@ import * as player_cache from "@/lib/player_cache";
 import online_status from "@/lib/online_status";
 import { openReport } from "@/components/Report";
 import { alert } from "@/lib/swal_config";
+import ITC from "@/lib/ITC";
+import { TabCompleteInput } from "@/components/TabCompleteInput";
 
 let last_id = 0;
 
-const private_chats: any[] = [];
-const instances: { [k: string]: any } = {};
+const private_chats: PrivateChat[] = [];
+const instances: { [k: string]: PrivateChat } = {};
 
-const date_format: Intl.DateTimeFormatOptions = {
+const DATE_FORMAT: Intl.DateTimeFormatOptions = {
     month: "long",
     day: "numeric",
     year: "numeric",
 };
 
-class PrivateChat {
-    id: number = ++last_id;
+interface PrivateChatProps {
     user_id: number;
-    dom!: JQuery;
-    lines: any[] = [];
-    received_messages: { [k: string]: any } = {};
-    last_uid?: string;
-    last_date = new Date(Date.now() - 864e5).toLocaleDateString(undefined, date_format);
-    floating = false;
-    superchat_enabled = false;
-    banner?: JQuery;
-    body?: JQuery | null;
-    input?: JQuery;
-    superchat_modal?: JQuery | null;
-    player_is_ignored = false;
-    pc?: PrivateChat;
-    opening: boolean = false;
-    player_dom: JQuery;
+    username: string;
+}
+
+interface PrivateChatState {
+    isOpen: boolean;
+    isMinimized: boolean;
+    isFloating: boolean;
+    isSuperchatEnabled: boolean;
+    isHighlighted: boolean;
+    lines: JSX.Element[];
+    playerStatus: "online" | "offline" | "unknown";
     player: PlayerCacheEntry;
+}
 
-    /* for generating uids */
-    chat_base = Math.floor(Math.random() * 100000).toString(36);
-    chat_num = 0;
+export function getPrivateChat(user_id: number, username?: string): PrivateChat {
+    const key = `${user_id}`;
+    if (instances[key]) {
+        return instances[key];
+    }
+    const chat = new PrivateChat({ user_id, username: username || "<unknown>" });
+    instances[key] = chat;
+    return chat;
+}
 
-    display_state = "closed";
+export class PrivateChat extends React.Component<PrivateChatProps, PrivateChatState> {
+    private id: number;
+    private chatRef = React.createRef<HTMLDivElement>();
+    private bodyRef = React.createRef<HTMLDivElement>();
+    private inputRef = React.createRef<HTMLInputElement>();
+    private bannerRef = React.createRef<HTMLDivElement>();
+    private chat_base = Math.floor(Math.random() * 100000).toString(36);
+    private chat_num = 0;
+    private received_messages: { [k: string]: boolean } = {};
+    private last_date: string = new Date(Date.now() - 864e5).toLocaleDateString(
+        undefined,
+        DATE_FORMAT,
+    );
+    private last_uid: string = "";
 
-    constructor(user_id: number, username: string) {
-        this.user_id = user_id;
-        socket.send("chat/pm/load", { player_id: user_id });
+    constructor(props: PrivateChatProps) {
+        super(props);
+        this.id = ++last_id;
 
-        this.player_dom = $("<span class='user Player nolink'>...</span>");
+        this.state = {
+            isOpen: false,
+            isMinimized: false,
+            isFloating: false,
+            isSuperchatEnabled: false,
+            isHighlighted: false,
+            lines: [],
+            playerStatus: "unknown",
+            player: {
+                id: props.user_id,
+                username: props.username || "...",
+                ui_class: "",
+            },
+        };
 
-        if (user_id) {
-            online_status.subscribe(user_id, (_, tf) => {
-                if (tf) {
-                    this.player_dom.removeClass("offline").addClass("online");
-                } else {
-                    this.player_dom.addClass("offline").removeClass("online");
-                }
+        socket.send("chat/pm/load", { player_id: props.user_id });
+
+        if (props.user_id) {
+            online_status.subscribe(props.user_id, (_, isOnline) => {
+                this.setState({ playerStatus: isOnline ? "online" : "offline" });
             });
         }
 
-        this.player = {
-            id: user_id,
-            username: "...",
-            ui_class: "",
-        };
-
-        if (username) {
-            this.player_dom.text(unicodeFilter(username));
-            this.player.username = username;
-        }
-
-        if (this.user_id) {
+        if (props.user_id) {
             player_cache
-                .fetch(this.user_id, ["username", "ui_class"])
+                .fetch(props.user_id, ["username", "ui_class"])
                 .then((player) => {
-                    this.player = player;
-                    this.player_dom.text(unicodeFilter(player.username || ""));
-                    this.player_dom.addClass(player.ui_class ?? "");
+                    this.setState({ player });
                     if (player.ui_class?.match(/moderator/)) {
-                        // inter mod chat? don't open
                         if (!data.get("user").is_moderator) {
                             this.open();
                         }
                     }
-                    this.updateInputPlaceholder();
-                    if (this.banner) {
-                        this.updateModeratorBanner();
-                    }
                 })
                 .catch((err) => {
                     console.error(err);
-                    this.player_dom.text("[error]");
                 });
-        } else {
-            this.player_dom.text("system");
         }
     }
 
-    open(send_itc?: boolean) {
-        if (this.display_state === "open") {
-            return;
-        }
-        if (this.display_state !== "closed") {
-            this.close(false, true);
-        }
-        private_chats.push(this);
-
-        this.dom = $("<div>").addClass("private-chat-window").addClass("open");
-        this.dom.append($("<div class='paper-shadow top z2'>"));
-        this.dom.append($("<div class='paper-shadow bottom z2'>"));
-
-        if (!this.user_id) {
-            this.dom.addClass("system");
-        }
-
-        const title = $("<div>").addClass("title").append(this.player_dom);
-        if (data.get("user").is_moderator) {
-            const superchat = $("<i>")
-                .addClass("fa fa-bullhorn")
-                .click(() => {
-                    this.superchat_enabled = !this.superchat_enabled;
-                    if (this.superchat_enabled) {
-                        superchat.addClass("enabled");
-                        this.dom?.addClass("superchat");
-
-                        socket.send("chat/pm/superchat", {
-                            player_id: this.user_id,
-                            username: this.player.username || "<error>",
-                            enable: true,
-                        });
-                    } else {
-                        superchat.removeClass("enabled");
-                        this.dom?.removeClass("superchat");
-                        socket.send("chat/pm/superchat", {
-                            player_id: this.user_id,
-                            username: this.player.username || "<error>",
-                            enable: false,
-                        });
-                    }
-                });
-            if (this.superchat_enabled) {
-                superchat.addClass("enabled");
-            }
-            title.append(superchat);
-
-            title.append(
-                $("<i>")
-                    .addClass("fa fa-clipboard")
-                    .click(() => {
-                        this.createModNote();
-                    }),
-            );
-        } else {
-            if (this.user_id) {
-                title.append(
-                    $("<i>")
-                        .addClass("fa fa-exclamation-triangle")
-                        .click(() => {
-                            this.report();
-                        }),
-                );
-
-                title.append(
-                    $("<i>")
-                        .addClass("ogs-goban")
-                        .click(() => {
-                            challenge(this.user_id);
-                        }),
-                );
-            }
-        }
-
-        if (this.user_id) {
-            title.append(
-                $("<i>")
-                    .addClass("fa fa-info-circle")
-                    .click(() => {
-                        window.open(
-                            "/user/view/" +
-                                this.user_id +
-                                "/" +
-                                encodeURIComponent(unicodeFilter(this.player.username || "")),
-                            "_blank",
-                        );
-                    }),
-            );
-        }
-        title.append(
-            $("<i>")
-                .addClass("fa fa-minus")
-                .click(() => {
-                    this.minimize(true);
-                }),
-        );
-        title.append(
-            $("<i>")
-                .addClass("fa fa-times")
-                .click(() => {
-                    this.close(true);
-                }),
-        );
-
-        this.dom.append(title);
-
-        const handle = title;
-        const start_drag = (ev: MouseEvent) => {
-            if (!$(ev.target as any).hasClass("title") && !$(ev.target as any).hasClass("user")) {
-                return;
-            }
-
-            const body = $("body");
-
-            if (!this.dom) {
-                return;
-            }
-
-            body.append(this.dom); /* brings the chat to the front of other chats */
-            const offset = this.dom.offset();
-            let ox = offset?.left || 0;
-            let oy = offset?.top || 0;
-            const sx = ev.clientX;
-            const sy = ev.clientY;
-            let lx = sx;
-            let ly = sy;
-            let moving = false;
-
-            let last_rox = 0;
-            let last_roy = 0;
-
-            const move = (ev: MouseEvent) => {
-                const cx = ev.clientX;
-                const cy = ev.clientY;
-                if (moving || Math.abs(cx - lx) + Math.abs(cy - ly) > 5) {
-                    moving = true;
-                    if (!this.floating) {
-                        this.startFloating();
-                    }
-                    ox += cx - lx;
-                    oy += cy - ly;
-                    lx = cx;
-                    ly = cy;
-
-                    const rox = Math.round(ox);
-                    const roy = Math.round(oy);
-
-                    if (last_rox !== rox || last_roy !== roy) {
-                        last_rox = rox;
-                        last_roy = roy;
-                        this.dom?.css({ right: "auto", bottom: "auto", left: rox, top: roy });
-                        if (this.body) {
-                            this.body[0].scrollTop = this.body[0].scrollHeight;
-                        }
-                    }
-                }
-
-                return false;
-            };
-
-            const release = () => {
-                //handle.off('mousedown touchstart', start_drag);
-                body.off("mousemove touchmove", move as any);
-                body.off("mouseup touchend", release);
-
-                return false;
-            };
-            body.on("mouseup touchend", release);
-            body.on("mousemove touchmove", move as any);
-
-            return true;
-        };
-
-        handle.on("mousedown touchstart", start_drag as any);
-
-        const raise_to_top = () => {
-            const body = $("body");
-            if (body[0].childNodes[body[0].childNodes.length - 1] !== this.dom[0]) {
-                body.append(this.dom); /* brings the chat to the front of other chats */
-                this.body![0].scrollTop = this.body![0].scrollHeight;
-            }
-        };
-
-        const banner = (this.banner = $("<div>").addClass("banner banner-inactive"));
-        this.dom.append(banner);
-        this.updateModeratorBanner();
-
-        const body = (this.body = $("<div>").addClass("body"));
-        this.dom.append(body);
-        body.on("mousedown touchstart", raise_to_top);
-
-        for (let i = 0; i < this.lines.length; ++i) {
-            body.append(this.lines[i]);
-        }
-
-        const input = (this.input = $("<input>")
-            .attr("type", "text")
-            .keypress((ev): boolean | void => {
-                if (
-                    !data.get("user").email_validated &&
-                    (this.player.ui_class?.indexOf("moderator") || 0) < 0 &&
-                    this.lines.length === 0
-                ) {
-                    return;
-                }
-
-                if (ev.keyCode === 13) {
-                    if (input.val().trim() === "") {
-                        return false;
-                    }
-                    this.sendChat(input.val());
-                    return false;
-                }
-            }));
-
-        this.updateInputPlaceholder();
-
-        (input as any).nicknameTabComplete();
-        this.dom.append(input);
-
-        $(document.body).append(this.dom);
-
-        body[0].scrollTop = body[0].scrollHeight;
-        input.focus();
-
-        this.display_state = "open";
-        update_chat_layout();
-
-        if (send_itc) {
-            //ITC.send("private-chat-open", {"user_id": this.user_id, "username": this.player.username});
-            data.set(`pm.read-${this.user_id}`, this.last_uid);
-        }
-    }
-    updateModeratorBanner() {
-        if (this.player.ui_class?.match(/moderator/)) {
-            // surely would be better to use player.is_moderator, but not available!
-            if (this.banner) {
-                this.banner.removeClass("banner-inactive");
-                this.banner.empty();
-            }
-            const line = $("<div>").addClass("banner-text");
-            if (this.superchat_enabled) {
-                line.addClass("megaphone-banner");
-                line.text(_("OGS Moderator official message: please respond"));
-            } else {
-                line.text(_("(You are talking with an OGS Moderator)"));
-            }
-            if (this.banner) {
-                this.banner.append(line);
-            }
-        }
+    componentDidMount() {
+        socket.on("private-message", this.handlePrivateMessage);
+        socket.on("private-superchat", this.handleSuperchat);
     }
 
-    updateInputPlaceholder() {
-        if (!this.input) {
-            return;
-        }
-        if (
-            !data.get("user").email_validated &&
-            (this.player.ui_class?.indexOf("moderator") || 0) < 0 &&
-            this.lines.length === 0
-        ) {
-            this.input.attr(
-                "placeholder",
-                _("Chat will be enabled once your email address has been validated"),
-            );
-            this.input.attr("disabled", "disabled");
-        } else {
-            if (this.user_id) {
-                this.input.attr(
-                    "placeholder",
-                    interpolate(
-                        pgettext(
-                            "This is the placeholder text for the chat input field in games, chat channels, and private messages",
-                            "Message {{who}}",
-                        ),
-                        { who: this.player.username },
-                    ),
-                );
-                this.input.removeAttr("disabled");
-            } else {
-                this.input.attr("disabled", "disabled");
-            }
-        }
+    componentWillUnmount() {
+        socket.off("private-message", this.handlePrivateMessage);
+        socket.off("private-superchat", this.handleSuperchat);
     }
 
-    minimize(send_itc?: boolean) {
-        if (this.superchat_enabled) {
-            return;
-        }
-        if (this.display_state === "minimized") {
-            return;
-        }
-        if (this.display_state !== "closed") {
-            this.close(false, true);
-        }
-        private_chats.push(this);
-
-        this.dom = $("<div>").addClass("private-chat-window").addClass("minimized");
-
-        const title = $("<div>")
-            .addClass("title")
-            .click(() => {
-                this.open(true);
-            });
-        title.append(this.player_dom);
-        title.append(
-            $("<i>")
-                .addClass("ogs-goban")
-                .click(() => {
-                    challenge(this.user_id);
-                }),
-        );
-        title.append(
-            $("<i>")
-                .addClass("fa fa-info-circle")
-                .click(() => {
-                    window.open(
-                        "/user/view/" +
-                            this.user_id +
-                            "/" +
-                            encodeURIComponent(this.player.username || ""),
-                        "_blank",
-                    );
-                }),
-        );
-        title.append(
-            $("<i>")
-                .addClass("fa fa-times")
-                .click(() => {
-                    this.close(true);
-                }),
-        );
-
-        this.dom.append(title);
-
-        $(document.body).append(this.dom);
-
-        this.display_state = "minimized";
-
-        if (this.floating) {
-            this.dock();
-        } else {
-            update_chat_layout();
-        }
-
-        if (send_itc) {
-            ITC.send("private-chat-minimize", {
-                user_id: this.user_id,
-                username: this.player.username,
-            });
-        }
-    }
-    close(send_itc: boolean, dont_send_pm_close?: boolean) {
-        this.display_state = "closed";
-        for (let i = 0; i < private_chats.length; ++i) {
-            if (private_chats[i].id === this.id) {
-                private_chats.splice(i, 1);
-                break;
-            }
-        }
-
-        if (this.dom) {
-            this.dom.remove();
-        }
-        this.dom = null as any;
-        this.body = null;
-        update_chat_layout();
-        if (send_itc) {
-            ITC.send("private-chat-close", {
-                user_id: this.user_id,
-                username: this.player.username,
-            });
-            data.set(`pm.close-${this.user_id}`, this.last_uid);
-        }
-        if (socket && !dont_send_pm_close) {
-            socket.send("chat/pm/close", { player_id: this.user_id });
-        }
-    }
-    addChat(from: string, txt: string, user_id: number, timestamp: number) {
-        from = unicodeFilter(from);
-
-        const line = $("<div>").addClass("chat-line");
-        line.addClass("chat-user-" + user_id);
-
-        if (timestamp) {
-            const ts = new Date(timestamp * 1000);
-            if (this.last_date !== ts.toLocaleDateString(undefined, date_format)) {
-                this.last_date = ts.toLocaleDateString(undefined, date_format);
-                line.append(
-                    $("<div>").addClass("date").text(ts.toLocaleDateString(undefined, date_format)),
-                );
-            }
-
-            line.append(
-                $("<span class='timestamp'>").text(
-                    "[" +
-                        ts.getHours() +
-                        ":" +
-                        (ts.getMinutes() < 10 ? "0" : "") +
-                        ts.getMinutes() +
-                        "] ",
-                ),
-            );
-        }
-
-        if (typeof txt === "string" && txt.substr(0, 4) === "/me ") {
-            line.append("<span> ** </span>");
-            line.append($("<span>").addClass("username").text(from)).append("<span> </span>");
-            txt = txt.substr(4);
-        } else {
-            line.append($("<span>").addClass("username").text(from)).append("<span>: </span>");
-        }
-        line.append($("<span>").html(chat_markup(profanity_filter(txt)) || ""));
-
-        this.lines.push(line);
-        if (this.body) {
-            const body = this.body[0];
-            let scroll = false;
-            const cur = body.scrollTop;
-            body.scrollTop = body.scrollHeight;
-            if (body.scrollTop === cur) {
-                scroll = true;
-            }
-
-            this.body.append(line);
-            if (scroll) {
-                body.scrollTop = body.scrollHeight;
-            }
-        }
-        this.updateInputPlaceholder();
-        this.updateModeratorBanner();
-    }
-    addSystem(message: { message: string }) {
-        const line = $("<div>").addClass("chat-line system");
-        line.text(message.message);
-        this.lines.push(line);
-        if (this.body) {
-            const body = this.body[0];
-            let scroll = false;
-            const cur = body.scrollTop;
-            body.scrollTop = body.scrollHeight;
-            if (body.scrollTop === cur) {
-                scroll = true;
-            }
-
-            this.body.append(line);
-            if (scroll) {
-                body.scrollTop = body.scrollHeight;
-            }
-        }
-    }
-
-    getConversation(): Array<string> {
-        return this.lines.map((line) => line.text());
-    }
-
-    createModNote = () => {
-        createModeratorNote(this.user_id, this.getConversation().join("\n"));
-    };
-
-    report = () => {
-        openReport({
-            reported_user_id: this.user_id,
-            reported_game_id: 0,
-            reported_review_id: 0,
-            report_type: "harassment",
-            reported_conversation: {
-                username: this.player.username || "<error>",
-                content: this.getConversation(),
-            },
-        });
-    };
-
-    highlight() {
-        if (this.dom) {
-            this.dom.addClass("highlighted");
-        }
-    }
-    removeHighlight() {
-        if (this.dom) {
-            this.dom.removeClass("highlighted");
-        }
-    }
-    handleChat(line: any) {
-        if (!this.user_id) {
+    private handlePrivateMessage = (line: any) => {
+        if (!this.props.user_id) {
             // system message
             this.open();
-        }
-        if (this.player.ui_class?.match(/moderator/)) {
-            // Open the chat window if a moderator is messaging (unless we are a moderator ourselves)
-            if (!data.get("user").is_moderator) {
-                this.open();
-            }
+            const systemLine = (
+                <div key={this.chat_num++} className="chat-line system">
+                    {line.message.message}
+                </div>
+            );
+            this.setState((state) => ({ lines: [...state.lines, systemLine] }));
+            return;
         }
 
         if (line.message.i) {
-            if (
-                line.message.i + " " + line.message.t + " " + line.from.username in
-                this.received_messages
-            ) {
+            const msgKey = `${line.message.i} ${line.message.t} ${line.from.username}`;
+            if (this.received_messages[msgKey]) {
                 return;
             }
-            this.received_messages[
-                line.message.i + " " + line.message.t + " " + line.from.username
-            ] = true;
+            this.received_messages[msgKey] = true;
+            this.last_uid = line.message.i + " " + line.message.t;
         }
 
-        //if (line.message.to) {
-        //this.addChat(data.get('user').username, line.message.m, 0, line.message.t);
-        //} else {
-        line.message.m = profanity_filter(line.message.m);
-        this.addChat(line.from.username, line.message.m, line.from.id, line.message.t);
-        if (line.from.id !== data.get("user").id) {
-            /* don't open if we were the ones who sent this (from another tab for instance) */
-            if (this.display_state === "closed") {
-                //this.opening = true;
-                //setTimeout(()=>{
-                //    if (this.opening) {
-                this.minimize();
-                this.highlight();
-                //    }
-                //}, 100);
-            } else if (this.display_state === "minimized") {
-                this.highlight();
+        const { user_id, username, message, type } = line;
+        if (player_is_ignored(user_id)) {
+            return;
+        }
+
+        if (!this.state.isOpen && !this.state.isMinimized && !player_is_ignored(line.from.id)) {
+            emitNotification(username, message, () => {
+                this.open();
+            });
+        }
+
+        const lines: JSX.Element[] = [];
+        const timestamp = line.message.t ? new Date(line.message.t * 1000) : new Date();
+        const dateStr = timestamp.toLocaleDateString(undefined, DATE_FORMAT);
+
+        if (dateStr !== this.last_date) {
+            this.last_date = dateStr;
+            lines.push(
+                <div key={`date-${this.chat_num++}`} className="date">
+                    {dateStr}
+                </div>,
+            );
+        }
+
+        const chatLine = (
+            <div key={this.chat_num++} className={`chat-line chat-user-${user_id}`}>
+                {line.message.t && (
+                    <span className="timestamp">
+                        [{timestamp.getHours()}:{timestamp.getMinutes() < 10 ? "0" : ""}
+                        {timestamp.getMinutes()}]
+                    </span>
+                )}
+                <span className="username">{username}</span>
+                {type === "system" || message.startsWith("/me ") ? " ** " : ": "}
+                <span
+                    dangerouslySetInnerHTML={{
+                        __html: this.chat_markup(
+                            message.startsWith("/me ") ? message.slice(4) : message,
+                        ),
+                    }}
+                />
+            </div>
+        );
+        lines.push(chatLine);
+        this.setState(
+            (state) => ({ lines: [...state.lines, ...lines] }),
+            () => {
+                if (this.bodyRef.current) {
+                    const body = this.bodyRef.current;
+                    let scroll = false;
+                    const cur = body.scrollTop;
+                    body.scrollTop = body.scrollHeight;
+                    if (body.scrollTop === cur) {
+                        scroll = true;
+                    }
+                    if (scroll) {
+                        body.scrollTop = body.scrollHeight;
+                    }
+                }
+            },
+        );
+    };
+
+    private handleSuperchat = (config: any) => {
+        this.setState({ isSuperchatEnabled: config.enable });
+    };
+
+    private handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (!this.inputRef.current) return;
+
+        if (
+            !data.get("user").email_validated &&
+            (this.state.player.ui_class?.indexOf("moderator") || 0) < 0 &&
+            this.state.lines.length === 0
+        ) {
+            return;
+        }
+
+        if (e.key === "Enter") {
+            const value = this.inputRef.current.value.trim();
+            if (value === "") {
+                return;
             }
-            if (!player_is_ignored(line.from.id)) {
-                emitNotification(
-                    "Private Message",
-                    line.from.username + " sent you a message:\n" + line.message.m,
-                );
-            } else {
-                console.log("Ignoring private chat from ", line.from.username);
-            }
+            this.sendChat(value);
+            this.inputRef.current.value = "";
         }
-        //}
+    };
 
-        this.last_uid = line.message.i + " " + line.message.t;
-
-        if (this.last_uid === data.get(`pm.read-${this.user_id}`, "-")) {
-            this.removeHighlight();
-        }
-    }
-    sendChat(msg: any, as_system?: true) {
+    public sendChat = (text: string, isSystem?: boolean) => {
         if (data.get("appeals.banned_user_id")) {
             void alert.fire(_("Your account is suspended - you cannot send messages."));
             return;
         }
 
-        while (msg.length) {
-            const arr = splitOnBytes(msg, 500);
-            const line = arr[0];
-            msg = arr[1];
+        const lines = splitOnBytes(text, 500);
+        for (const line of lines) {
+            const chatLine = (
+                <div key={this.chat_num} className={`chat-line chat-user-${this.props.user_id}`}>
+                    <span className="username">{data.get("user").username}</span>
+                    {": "}
+                    <span dangerouslySetInnerHTML={{ __html: this.chat_markup(line) }} />
+                </div>
+            );
+            this.setState((state) => ({ lines: [...state.lines, chatLine] }));
 
-            this.addChat(data.get("user").username, line, this.user_id, Date.now() / 1000);
-            socket.send(
-                "chat/pm",
-                {
-                    player_id: this.user_id,
-                    username: this.player.username || "<error>",
-                    uid: this.chat_base + "." + (++this.chat_num).toString(36),
-                    message: line,
-                    as_system,
-                },
-                (line) => {
-                    if (line) {
-                        /* we're gonna get these echoed back to us in various cases */
-                        this.received_messages[
-                            line.message.i + " " + line.message.t + " " + line.from.username
-                        ] = true;
-                    }
-                },
+            socket.send("chat/pm", {
+                player_id: this.props.user_id,
+                username: this.state.player.username || "",
+                message: line,
+                uid: `${this.chat_base}-${this.chat_num++}`,
+                as_system: isSystem ? true : undefined,
+            });
+        }
+    };
+
+    private startDrag = (e: React.MouseEvent<HTMLDivElement>) => {
+        if (!this.chatRef.current) return;
+
+        const target = e.target as HTMLElement;
+        if (!target.classList.contains("title") && !target.classList.contains("user")) {
+            return;
+        }
+
+        const chatElement = this.chatRef.current;
+        const offset = chatElement.getBoundingClientRect();
+        let ox = offset.left;
+        let oy = offset.top;
+        const sx = e.clientX;
+        const sy = e.clientY;
+        let lx = sx;
+        let ly = sy;
+        let moving = false;
+
+        const move = (e: MouseEvent) => {
+            const cx = e.clientX;
+            const cy = e.clientY;
+            if (moving || Math.abs(cx - lx) + Math.abs(cy - ly) > 5) {
+                moving = true;
+                if (!this.state.isFloating) {
+                    this.setState({ isFloating: true });
+                }
+                ox += cx - lx;
+                oy += cy - ly;
+                lx = cx;
+                ly = cy;
+
+                chatElement.style.right = "auto";
+                chatElement.style.bottom = "auto";
+                chatElement.style.left = `${Math.round(ox)}px`;
+                chatElement.style.top = `${Math.round(oy)}px`;
+
+                if (this.bodyRef.current) {
+                    this.bodyRef.current.scrollTop = this.bodyRef.current.scrollHeight;
+                }
+            }
+        };
+
+        const release = () => {
+            document.removeEventListener("mousemove", move);
+            document.removeEventListener("mouseup", release);
+        };
+
+        document.addEventListener("mousemove", move);
+        document.addEventListener("mouseup", release);
+    };
+
+    public open = () => {
+        if (this.state.isOpen) return;
+        this.setState({ isOpen: true, isMinimized: false });
+        private_chats.push(this);
+        this.updateLayout();
+        data.set(`pm.read-${this.props.user_id}`, this.last_uid);
+        ITC.send("private-chat-open", {
+            user_id: this.props.user_id,
+            username: this.state.player.username,
+        });
+    };
+
+    private minimize = (sendItc?: boolean) => {
+        if (this.state.isSuperchatEnabled) return;
+        if (this.state.isMinimized) return;
+        this.setState({ isMinimized: true, isOpen: false });
+        private_chats.push(this);
+        this.updateLayout();
+        if (sendItc) {
+            ITC.send("private-chat-minimize", {
+                user_id: this.props.user_id,
+                username: this.state.player.username,
+            });
+        }
+    };
+
+    private close = (sendItc: boolean) => {
+        this.setState({ isOpen: false, isMinimized: false });
+        const idx = private_chats.findIndex((chat) => chat.id === this.id);
+        if (idx !== -1) {
+            private_chats.splice(idx, 1);
+        }
+        this.updateLayout();
+        if (sendItc) {
+            ITC.send("private-chat-close", {
+                user_id: this.props.user_id,
+                username: this.state.player.username,
+            });
+            data.set(`pm.close-${this.props.user_id}`, this.last_uid);
+        }
+    };
+
+    private toggleSuperchat = () => {
+        const newState = !this.state.isSuperchatEnabled;
+        this.setState({ isSuperchatEnabled: newState });
+        socket.send("chat/pm/superchat", {
+            player_id: this.props.user_id,
+            username: this.state.player.username || "",
+            enable: newState,
+        });
+    };
+
+    private createModNote = () => {
+        createModeratorNote(this.props.user_id, "");
+    };
+
+    private report = () => {
+        openReport({
+            reported_user_id: this.props.user_id,
+        });
+    };
+
+    private raiseToTop = () => {
+        if (this.chatRef.current) {
+            document.body.appendChild(this.chatRef.current);
+            if (this.bodyRef.current) {
+                this.bodyRef.current.scrollTop = this.bodyRef.current.scrollHeight;
+            }
+        }
+    };
+
+    private updateLayout = () => {
+        if (this.state.isFloating) return;
+
+        const docked = private_chats.filter((chat) => !chat.state.isFloating);
+        const windowWidth = window.innerWidth;
+        const maxWidth = Math.min(500, windowWidth - 50);
+        let pos = 50;
+
+        docked.forEach((chat) => {
+            if (chat.chatRef.current) {
+                chat.chatRef.current.style.right = `${pos}px`;
+                chat.chatRef.current.style.maxWidth = `${maxWidth}px`;
+                pos += chat.chatRef.current.offsetWidth + 3;
+            }
+        });
+    };
+
+    render() {
+        const {
+            isOpen,
+            isMinimized,
+            isFloating,
+            isSuperchatEnabled,
+            isHighlighted,
+            player,
+            playerStatus,
+        } = this.state;
+
+        if (!isOpen && !isMinimized) return null;
+
+        const playerClass = `user Player nolink ${playerStatus} ${player.ui_class || ""}`;
+        const windowClass = `private-chat-window ${isOpen ? "open" : ""} ${
+            isMinimized ? "minimized" : ""
+        } ${isFloating ? "floating" : ""} ${isSuperchatEnabled ? "superchat" : ""} ${
+            isHighlighted ? "highlighted" : ""
+        } ${!this.props.user_id ? "system" : ""}`;
+
+        return (
+            <div ref={this.chatRef} className={windowClass}>
+                <div className="paper-shadow top z2" />
+                <div className="paper-shadow bottom z2" />
+
+                <div className="title" onMouseDown={this.startDrag}>
+                    <span className={playerClass}>{unicodeFilter(player.username || "")}</span>
+                    {data.get("user").is_moderator && (
+                        <>
+                            <i
+                                className={`fa fa-bullhorn ${isSuperchatEnabled ? "enabled" : ""}`}
+                                onClick={this.toggleSuperchat}
+                            />
+                            <i className="fa fa-clipboard" onClick={this.createModNote} />
+                        </>
+                    )}
+                    {!data.get("user").is_moderator && this.props.user_id && (
+                        <>
+                            <i className="fa fa-exclamation-triangle" onClick={this.report} />
+                            <i
+                                className="ogs-goban"
+                                onClick={() => challenge(this.props.user_id)}
+                            />
+                        </>
+                    )}
+                    {this.props.user_id && (
+                        <i
+                            className="fa fa-info-circle"
+                            onClick={() =>
+                                window.open(
+                                    `/user/view/${this.props.user_id}/${encodeURIComponent(
+                                        player.username || "",
+                                    )}`,
+                                    "_blank",
+                                )
+                            }
+                        />
+                    )}
+                    <i className="fa fa-minus" onClick={() => this.minimize(true)} />
+                    <i className="fa fa-times" onClick={() => this.close(true)} />
+                </div>
+
+                {this.renderBanner()}
+
+                <div ref={this.bodyRef} className="body" onMouseDown={this.raiseToTop}>
+                    {this.state.lines}
+                </div>
+
+                <TabCompleteInput
+                    ref={this.inputRef}
+                    disabled={!this.canChat()}
+                    placeholder={this.getInputPlaceholder()}
+                    onKeyPress={this.handleKeyPress}
+                    autoFocus
+                />
+            </div>
+        );
+    }
+
+    private canChat = () => {
+        return (
+            data.get("user").email_validated ||
+            (this.state.player.ui_class?.indexOf("moderator") || 0) >= 0 ||
+            this.state.lines.length > 0
+        );
+    };
+
+    private getInputPlaceholder = () => {
+        if (!this.canChat()) {
+            return _("Chat will be enabled once your email address has been validated");
+        }
+        if (this.props.user_id) {
+            return interpolate(
+                pgettext(
+                    "This is the placeholder text for the chat input field in games, chat channels, and private messages",
+                    "Message {{who}}",
+                ),
+                { who: this.state.player.username },
             );
         }
-        this.input?.val("");
-    }
+        return "";
+    };
 
-    startFloating() {
-        if (!this.floating) {
-            this.dom.addClass("floating");
-            this.floating = true;
-            update_chat_layout();
+    private chat_markup = (body: string): string => {
+        if (typeof body !== "string") {
+            console.log("Attempted to markup non-text object: ", body);
+            return "";
         }
-    }
-    dock() {
-        if (this.floating) {
-            this.floating = false;
-            this.dom.removeClass("floating");
-            update_chat_layout();
-        }
-    }
-    superchat(enable: boolean) {
-        this.superchat_enabled = enable;
-        if (enable) {
-            this.open();
-            this.dom.addClass("superchat");
-            if (!this.superchat_modal) {
-                this.superchat_modal = $("<div>").addClass("superchat-modal");
-                $("body").append(this.superchat_modal);
-                const check = setInterval(() => {
-                    if (!this.superchat_enabled) {
-                        clearInterval(check);
-                        return;
-                    }
 
-                    if (!this.superchat_modal![0].parentNode) {
-                        $("body").append(this.superchat_modal as any);
-                    }
-                }, 100);
-            }
-        } else {
-            this.dom.removeClass("superchat");
-            if (this.superchat_modal) {
-                this.superchat_modal.remove();
-                this.superchat_modal = null;
-            }
-        }
-    }
-}
+        body = profanity_filter(body);
+        let ret = body.replace(/[<>]/g, (m) => ({ "<": "&lt;", ">": "&gt;" })[m] || m);
 
-function update_chat_layout() {
-    let pos = $("#em10").width() / 2.5;
-    let max_width = "20rem";
-
-    const window_width = $(window).width();
-    if (window_width < 640) {
-        pos = 0;
-        max_width = "100vw";
-    }
-
-    const docked_chats: any[] = [];
-    for (let i = 0; i < private_chats.length; ++i) {
-        if (!private_chats[i].floating) {
-            docked_chats.push(private_chats[i]);
-        }
-    }
-
-    docked_chats.sort((a, b) => {
-        return a.id - b.id;
-    });
-
-    for (let i = 0; i < docked_chats.length; ++i) {
-        //docked_chats[i].dom.css({"right": pos, "z-index": 50000});
-        docked_chats[i].dom.css({ right: pos, maxWidth: max_width });
-        pos += docked_chats[i].dom.width() + 3;
-    }
-}
-
-export function getPrivateChat(user_id: number, username?: string): PrivateChat {
-    if (user_id in instances) {
-        return instances[user_id];
-    }
-
-    return (instances[user_id] = new PrivateChat(user_id, username ?? "<unknown>"));
-}
-socket.on("private-message", (line) => {
-    let pc;
-    if (line.from.id === data.get("user").id) {
-        pc = getPrivateChat(line.to.id);
-    } else if (line.to.id === data.get("user").id) {
-        pc = getPrivateChat(line.from.id);
-    }
-
-    if (pc && !pc.superchat_enabled) {
-        if (line.from.id === data.get("user").id && player_is_ignored(line.to.id)) {
-            pc = null;
-        } else if (line.to.id === data.get("user").id && player_is_ignored(line.from.id)) {
-            pc = null;
-        }
-    }
-
-    if (pc) {
-        pc.handleChat(line);
-    }
-});
-socket.on("private-superchat", (config) => {
-    let pc;
-    if (config.moderator_id !== data.get("user").id) {
-        pc = getPrivateChat(config.moderator_id, config.moderator_username);
-        if (pc) {
-            pc.open();
-            if (!data.get("user").is_superuser) {
-                pc.superchat(config.enable);
-            } else {
-                pc.addSystem({
-                    message:
-                        config.moderator_username +
-                        " just tried to superchat you, but being a super user we decided to ignore it.",
-                });
-            }
-        }
-    } else {
-        //pc = getPrivateChat(config.player_id, config.player_username);
-        pc = getPrivateChat(config.player_id, config.player_username);
-        if (pc) {
-            pc.superchat_enabled = true;
-            pc.open();
-        }
-    }
-});
-ITC.register("private-chat-close", (data) => {
-    const pc = getPrivateChat(data.user_id);
-    if (pc.display_state === "minimized") {
-        pc.close(false);
-    }
-});
-function chat_markup(body: string): string | undefined {
-    if (typeof body === "string") {
-        let ret = $("<div>").text(body).html();
-        // Some link urls can have an @-sign in. Be careful not to cause the link_matcher
-        // and email_matcher to overlap! See for example
-        // https://www.google.co.uk/maps/place/Platform+9%C2%BE/@51.5321578,-0.1261661
-        const link_matcher = /(((ftp|http)(s)?:\/\/)([^<> ]+))/gi;
+        // Links
         ret = ret.replace(
-            link_matcher,
-            (match) =>
-                "<a target='_blank' href='" +
-                match.replace("@", "%40") +
-                "'>" +
-                match.replace("@", "&commat;") +
-                "</a>",
+            /(((ftp|http)(s)?:\/\/)([^<> ]+))/gi,
+            "<a target='_blank' href='$1'>$1</a>",
         );
-        const email_matcher = /([^<> ]+[@][^<> ]+[.][^<> ]+)/gi;
-        ret = ret.replace(email_matcher, "<a target='_blank' href='mailto:$1'>$1</a>");
-        const review_matcher = /(^##([0-9]{3,})|([ ])##([0-9]{3,}))/gi;
-        ret = ret.replace(review_matcher, "<a target='_blank' href='/review/$2$4'>$3##$2$4</a>");
-        const game_matcher = /(^#([0-9]{3,})|([ ])#([0-9]{3,}))/gi;
-        ret = ret.replace(game_matcher, "<a target='_blank' href='/game/$2$4'>$3#$2$4</a>");
-        const player_matcher = /(player ([0-9]+))/gi;
-        ret = ret.replace(player_matcher, "<a target='_blank' href='/user/view/$2'>$1</a>");
-        const group_matcher = /(#group-([0-9]+))/gi;
-        ret = ret.replace(group_matcher, "<a target='_blank' href='/group/$2'>$1</a>");
+
+        // Email
+        ret = ret.replace(
+            /([^<> ]+[@][^<> ]+[.][^<> ]+)/gi,
+            "<a target='_blank' href='mailto:$1'>$1</a>",
+        );
+
+        // Review references
+        ret = ret.replace(
+            /(^##([0-9]{3,})|([ ])##([0-9]{3,}))/gi,
+            "<a target='_blank' href='/review/$2$4'>$3##$2$4</a>",
+        );
+
+        // Game references
+        ret = ret.replace(
+            /(^#([0-9]{3,})|([ ])#([0-9]{3,}))/gi,
+            "<a target='_blank' href='/game/$2$4'>$3#$2$4</a>",
+        );
+
+        // Player references
+        ret = ret.replace(/(player ([0-9]+))/gi, "<a target='_blank' href='/user/view/$2'>$1</a>");
+
+        // Group references
+        ret = ret.replace(/(#group-([0-9]+))/gi, "<a target='_blank' href='/group/$2'>$1</a>");
+
         return ret;
-    } else {
-        console.log("Attempted to markup non-text object: ", body);
-    }
-    return;
+    };
+
+    private renderBanner = () => {
+        if (!this.state.player.ui_class?.match(/moderator/)) {
+            return null;
+        }
+
+        return (
+            <div ref={this.bannerRef} className="banner">
+                <div
+                    className={`banner-text ${
+                        this.state.isSuperchatEnabled ? "megaphone-banner" : ""
+                    }`}
+                >
+                    {this.state.isSuperchatEnabled
+                        ? _("OGS Moderator official message: please respond")
+                        : _("(You are talking with an OGS Moderator)")}
+                </div>
+            </div>
+        );
+    };
 }
