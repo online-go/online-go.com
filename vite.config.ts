@@ -148,10 +148,16 @@ export default defineConfig({
         }),
     ],
     resolve: {
-        alias: {
-            "@": path.resolve(__dirname, "src"),
-            "source-map-js": "source-map",
-        },
+        alias: Object.assign(
+            {
+                "@": path.resolve(__dirname, "src"),
+            },
+            process.env.NODE_ENV !== "production"
+                ? {
+                      "source-map-js": "source-map",
+                  }
+                : ({} as any),
+        ),
     },
     optimizeDeps: {
         esbuildOptions: {
