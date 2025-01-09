@@ -85,7 +85,16 @@ export const PrivateChat = React.forwardRef<any, PrivateChatProps>((props, ref) 
     const [lastDate, setLastDate] = useState(
         new Date(Date.now() - 864e5).toLocaleDateString(undefined, date_format),
     );
-    const [floating] = useState(false);
+    const [floating, setFloating] = useState(false);
+    const [position, setPosition] = useState<{
+        left?: number;
+        top?: number;
+        right?: string;
+        bottom?: string;
+    }>({
+        right: "0",
+        bottom: "0",
+    });
     const [receivedMessages, setReceivedMessages] = useState<{ [key: string]: boolean }>({});
     const [lastUid, setLastUid] = useState<string>();
     const [isIgnored, setIsIgnored] = useState(false);
@@ -296,6 +305,72 @@ export const PrivateChat = React.forwardRef<any, PrivateChatProps>((props, ref) 
         socket.send("chat/pm/close", { player_id: user_id });
     }, [lastUid, onClose, player.username, user_id]);
 
+    const startDrag = React.useCallback(
+        (ev: React.MouseEvent) => {
+            // Only allow dragging from the title bar or username
+            if (
+                !(
+                    (ev.target as HTMLElement).classList.contains("title") ||
+                    (ev.target as HTMLElement).classList.contains("user")
+                )
+            ) {
+                return;
+            }
+
+            const body = document.body;
+            if (!containerRef.current) {
+                return;
+            }
+
+            // Bring the chat window to the front
+            body.appendChild(containerRef.current);
+
+            const offset = containerRef.current.getBoundingClientRect();
+            const ox = offset.left;
+            const oy = offset.top;
+            const sx = ev.clientX;
+            const sy = ev.clientY;
+            let lx = sx;
+            let ly = sy;
+            let moving = false;
+
+            const move = (ev: MouseEvent) => {
+                const cx = ev.clientX;
+                const cy = ev.clientY;
+                if (moving || Math.abs(cx - lx) + Math.abs(cy - ly) > 5) {
+                    moving = true;
+                    if (!floating) {
+                        setFloating(true);
+                    }
+                    const newLeft = ox + cx - lx;
+                    const newTop = oy + cy - ly;
+                    lx = cx;
+                    ly = cy;
+
+                    setPosition({
+                        left: Math.round(newLeft),
+                        top: Math.round(newTop),
+                        right: undefined,
+                        bottom: undefined,
+                    });
+
+                    if (bodyRef.current) {
+                        bodyRef.current.scrollTop = bodyRef.current.scrollHeight;
+                    }
+                }
+            };
+
+            const up = () => {
+                document.removeEventListener("mousemove", move);
+                document.removeEventListener("mouseup", up);
+            };
+
+            document.addEventListener("mousemove", move);
+            document.addEventListener("mouseup", up);
+        },
+        [floating, setFloating],
+    );
+
     const handleMinimize = React.useCallback(() => {
         if (superchatEnabled) {
             return;
@@ -377,10 +452,25 @@ export const PrivateChat = React.forwardRef<any, PrivateChatProps>((props, ref) 
     }
 
     return (
-        <div ref={containerRef} className={windowClasses.join(" ")}>
+        <div
+            ref={containerRef}
+            className={windowClasses.join(" ")}
+            style={{
+                ...(floating
+                    ? {
+                          position: "fixed",
+                          left: position.left,
+                          top: position.top,
+                          right: position.right,
+                          bottom: position.bottom,
+                          zIndex: 50000,
+                      }
+                    : {}),
+            }}
+        >
             <div className="paper-shadow top z2" />
             <div className="paper-shadow bottom z2" />
-            <div className="title">
+            <div className="title" onMouseDown={startDrag}>
                 <span className={`user Player nolink ${player.ui_class || ""}`}>
                     {player.username || username || "..."}
                 </span>
