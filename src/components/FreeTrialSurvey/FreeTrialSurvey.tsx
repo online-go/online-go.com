@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/*
 import * as React from "react";
 import * as data from "@/lib/data";
 import { _, current_language } from "@/lib/translate";
@@ -45,10 +46,12 @@ Thank you!
 
     - anoek
 `;
+*/
 
 export function FreeTrialSurvey(): JSX.Element | null {
     return null;
 
+    /*
     const user = useUser();
     const [surveySubmitted] = useData("free-trial-survey-submitted-timestamp", 0);
 
@@ -152,4 +155,5 @@ export function FreeTrialSurvey(): JSX.Element | null {
             </div>
         </div>
     );
+    */
 }
