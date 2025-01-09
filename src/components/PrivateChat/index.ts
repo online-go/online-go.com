@@ -18,6 +18,8 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom/client";
 import { PrivateChat } from "./PrivateChat";
+import { socket } from "@/lib/sockets";
+import * as data from "@/lib/data";
 
 interface PrivateChatInstance {
     user_id: number;
@@ -134,3 +136,24 @@ export function getPrivateChat(user_id: number, username: string = "") {
     private_chats.push(instance);
     return instance;
 }
+
+// Handle incoming private messages
+socket.on("private-message", (line) => {
+    const user = data.get("user");
+    if (!user) {
+        return;
+    }
+
+    let chat_instance;
+    if (line.from.id === user.id) {
+        chat_instance = getPrivateChat(line.to.id, line.to.username);
+    } else if (line.to.id === user.id) {
+        chat_instance = getPrivateChat(line.from.id, line.from.username);
+        // Open the chat window for incoming messages
+        chat_instance.open();
+    }
+
+    if (chat_instance) {
+        chat_instance.sendChat(line.message, line.system);
+    }
+});
