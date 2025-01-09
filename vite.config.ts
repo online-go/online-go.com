@@ -129,7 +129,8 @@ export default defineConfig({
     plugins: [
         ogs_vite_middleware(),
         react(),
-        nodePolyfills(),
+
+        process.env.NODE_ENV !== "production" ? nodePolyfills() : null,
         // checker relative directory is src/
         checker({
             typescript: {
