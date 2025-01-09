@@ -96,24 +96,39 @@ export const PrivateChat = React.forwardRef<any, PrivateChatProps>((props, ref) 
     const bodyRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
+    const onlineStatusCallback = React.useCallback((_: number, isOnline: boolean) => {
+        const playerDom = containerRef.current?.querySelector(".user.Player") as HTMLElement;
+        if (playerDom) {
+            if (isOnline) {
+                playerDom.classList.remove("offline");
+                playerDom.classList.add("online");
+            } else {
+                playerDom.classList.add("offline");
+                playerDom.classList.remove("online");
+            }
+        }
+    }, []);
+
+    const handleSuperchat = React.useCallback(
+        (config: { player_id: number; enable: boolean }) => {
+            if (config.player_id === user_id) {
+                setSuperchatEnabled(config.enable);
+                if (config.enable) {
+                    setDisplayState("open");
+                }
+            }
+        },
+        [user_id, setSuperchatEnabled, setDisplayState],
+    );
+
     useEffect(() => {
         socket.send("chat/pm/load", { player_id: user_id });
 
+        // Listen for superchat events
+        socket.on("private-superchat", handleSuperchat);
+
         if (user_id) {
-            online_status.subscribe(user_id, (_, isOnline) => {
-                const playerDom = containerRef.current?.querySelector(
-                    ".user.Player",
-                ) as HTMLElement;
-                if (playerDom) {
-                    if (isOnline) {
-                        playerDom.classList.remove("offline");
-                        playerDom.classList.add("online");
-                    } else {
-                        playerDom.classList.add("offline");
-                        playerDom.classList.remove("online");
-                    }
-                }
-            });
+            online_status.subscribe(user_id, onlineStatusCallback);
 
             player_cache
                 .fetch(user_id, ["username", "ui_class"])
@@ -130,6 +145,14 @@ export const PrivateChat = React.forwardRef<any, PrivateChatProps>((props, ref) 
             // Check if player is ignored
             setIsIgnored(player_is_ignored(user_id));
         }
+
+        // Cleanup
+        return () => {
+            socket.off("private-superchat", handleSuperchat);
+            if (user_id) {
+                online_status.unsubscribe(user_id, onlineStatusCallback);
+            }
+        };
     }, [user_id]);
 
     const addChat = React.useCallback(
