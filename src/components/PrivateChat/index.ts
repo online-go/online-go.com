@@ -43,9 +43,9 @@ function createPrivateChat(user_id: number, username: string): PrivateChatInstan
     const container = document.createElement("div");
     ensureChatContainer().appendChild(container);
 
-    let componentRef: { current: any } = { current: null };
+    const componentRef: { current: any } = { current: null };
     let displayState: "open" | "minimized" | "closed" = "closed";
-    let root: ReactDOM.Root;
+    const root: ReactDOM.Root = ReactDOM.createRoot(container);
 
     const instance: PrivateChatInstance = {
         user_id,
@@ -111,7 +111,6 @@ function createPrivateChat(user_id: number, username: string): PrivateChatInstan
         });
     });
 
-    root = ReactDOM.createRoot(container);
     root.render(
         React.createElement(PrivateChatWrapper, {
             ref: (ref: any) => {
