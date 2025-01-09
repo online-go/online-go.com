@@ -47,7 +47,7 @@ function createPrivateChat(user_id: number, username: string): PrivateChatInstan
 
     const componentRef: { current: any } = { current: null };
     let displayState: "open" | "minimized" | "closed" = "open";
-    const root: ReactDOM.Root;
+    let root: ReactDOM.Root | null = null;
 
     const instance: PrivateChatInstance = {
         user_id,
@@ -71,7 +71,9 @@ function createPrivateChat(user_id: number, username: string): PrivateChatInstan
                 componentRef.current.handleClose();
             }
             displayState = "closed";
-            root.unmount();
+            if (root) {
+                root.unmount();
+            }
             container.remove();
             private_chats = private_chats.filter((pc) => pc.user_id !== user_id);
         },
@@ -153,7 +155,7 @@ socket.on("private-message", (line) => {
         chat_instance.open();
     }
 
-    if (chat_instance) {
-        chat_instance.sendChat(line.message, line.system);
+    if (chat_instance && typeof line.message.m === "string") {
+        chat_instance.sendChat(line.message.m);
     }
 });
