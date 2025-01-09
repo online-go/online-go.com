@@ -15,4 +15,122 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export * from "./PrivateChat";
+import * as React from "react";
+import * as ReactDOM from "react-dom/client";
+import { PrivateChat } from "./PrivateChat";
+
+interface PrivateChatInstance {
+    user_id: number;
+    username: string;
+    open: () => void;
+    sendChat: (text: string, as_system?: true) => void;
+    close: () => void;
+}
+
+let private_chats: PrivateChatInstance[] = [];
+let chat_container: HTMLDivElement | null = null;
+
+function ensureChatContainer() {
+    if (!chat_container) {
+        chat_container = document.createElement("div");
+        chat_container.className = "private-chats-container";
+        document.body.appendChild(chat_container);
+    }
+    return chat_container;
+}
+
+function createPrivateChat(user_id: number, username: string): PrivateChatInstance {
+    const container = document.createElement("div");
+    ensureChatContainer().appendChild(container);
+
+    let componentRef: { current: any } = { current: null };
+    let displayState: "open" | "minimized" | "closed" = "closed";
+    let root: ReactDOM.Root;
+
+    const instance: PrivateChatInstance = {
+        user_id,
+        username,
+        open: () => {
+            if (displayState === "closed") {
+                displayState = "open";
+                ensureChatContainer().appendChild(container);
+            }
+            if (componentRef.current?.setDisplayState) {
+                componentRef.current.setDisplayState("open");
+            }
+        },
+        sendChat: (text: string, as_system?: true) => {
+            if (componentRef.current?.sendChat) {
+                componentRef.current.sendChat(text, as_system);
+            }
+        },
+        close: () => {
+            if (componentRef.current?.handleClose) {
+                componentRef.current.handleClose();
+            }
+            displayState = "closed";
+            root.unmount();
+            container.remove();
+            private_chats = private_chats.filter((pc) => pc.user_id !== user_id);
+        },
+    };
+
+    // Create a functional component with hooks
+    const PrivateChatWrapper = React.forwardRef<any, any>((_, ref) => {
+        const [displayState, setDisplayState] = React.useState<"open" | "minimized" | "closed">(
+            "open",
+        );
+        const privateChatRef = React.useRef<any>(null);
+
+        React.useImperativeHandle(
+            ref,
+            () => ({
+                setDisplayState,
+                sendChat: (text: string, as_system?: true) => {
+                    if (privateChatRef.current?.sendChat) {
+                        privateChatRef.current.sendChat(text, as_system);
+                    }
+                },
+                handleClose: () => {
+                    setDisplayState("closed");
+                    instance.close();
+                },
+            }),
+            [],
+        );
+
+        return React.createElement(PrivateChat, {
+            ref: privateChatRef,
+            user_id,
+            username,
+            displayState,
+            onClose: () => {
+                setDisplayState("closed");
+                instance.close();
+            },
+        });
+    });
+
+    root = ReactDOM.createRoot(container);
+    root.render(
+        React.createElement(PrivateChatWrapper, {
+            ref: (ref: any) => {
+                componentRef.current = ref;
+            },
+        }),
+    );
+
+    return instance;
+}
+
+export function getPrivateChat(user_id: number, username: string = "") {
+    for (let i = 0; i < private_chats.length; ++i) {
+        if (private_chats[i].user_id === user_id) {
+            return private_chats[i];
+        }
+    }
+
+    const instance = createPrivateChat(user_id, username);
+    private_chats.push(instance);
+    return instance;
+}
