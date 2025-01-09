@@ -26,6 +26,7 @@ import checker from "vite-plugin-checker";
 import atImport from "postcss-import";
 import inline_svg from "postcss-inline-svg";
 import autoprefixer from "autoprefixer";
+import { nodePolyfills } from "vite-plugin-node-polyfills";
 
 let OGS_BACKEND = process.env.OGS_BACKEND || "BETA";
 OGS_BACKEND = OGS_BACKEND.toUpperCase();
@@ -128,6 +129,7 @@ export default defineConfig({
     plugins: [
         ogs_vite_middleware(),
         react(),
+        nodePolyfills(),
         // checker relative directory is src/
         checker({
             typescript: {

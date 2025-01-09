@@ -103,6 +103,7 @@
         "xgettext-js": "^3.0.0",
         "vite": "^6.0.7",
         "vite-plugin-checker": "^0.8.0",
+        "vite-plugin-node-polyfills": "^0.22.0",
         "yarn": "^1.22.19"
     },
     "dependencies": {
