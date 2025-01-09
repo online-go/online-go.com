@@ -2605,10 +2605,10 @@
   dependencies:
     "@types/react" "*"
 
-"@types/react-virtualized@^9.21.21":
-  version "9.21.29"
-  resolved "https://registry.yarnpkg.com/@types/react-virtualized/-/react-virtualized-9.21.29.tgz#480b647f43a42f8e414d1af49a0ccd9b16537655"
-  integrity sha512-+ODVQ+AyKngenj4OPpg43Hz4B9Rdjuz1Naxu9ypNc3Cjo0WVZTYhqXfF/Nm38i8PV/YXECRIl4mTAZK5hq2B+g==
+"@types/react-virtualized@^9.22.0":
+  version "9.22.0"
+  resolved "https://registry.yarnpkg.com/@types/react-virtualized/-/react-virtualized-9.22.0.tgz#2ff9b3692fa04a429df24ffc7d181d9f33b3831d"
+  integrity sha512-JL/YCCFZ123za//cj10Apk54F0UGFMrjOE0QHTuXt1KBMFrzLOGv9/x6Uc/pZ0Gaf4o6w61Fostvlw0DwuPXig==
   dependencies:
     "@types/prop-types" "*"
     "@types/react" "*"
@@ -9354,7 +9354,7 @@ react-transition-group@^4.3.0:
     loose-envify "^1.4.0"
     prop-types "^15.6.2"
 
-react-virtualized@^9.22.3:
+react-virtualized@^9.22.5:
   version "9.22.5"
   resolved "https://registry.yarnpkg.com/react-virtualized/-/react-virtualized-9.22.5.tgz#bfb96fed519de378b50d8c0064b92994b3b91620"
   integrity sha512-YqQMRzlVANBv1L/7r63OHa2b0ZsAaDp1UhVNEdUaXI8A5u6hTpA5NYtUueLH2rFuY/27mTGIBl7ZhqFKzw18YQ==
