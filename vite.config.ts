@@ -150,6 +150,7 @@ export default defineConfig({
     resolve: {
         alias: {
             "@": path.resolve(__dirname, "src"),
+            "source-map-js": "source-map",
         },
     },
     optimizeDeps: {
