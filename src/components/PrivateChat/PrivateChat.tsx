@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import * as ReactDOM from "react-dom";
 import { socket } from "@/lib/sockets";
 import { challenge } from "@/components/ChallengeModal";
 import { createModeratorNote } from "@/components/ModNoteModal";
@@ -65,8 +66,16 @@ export function getPrivateChat(user_id: number, username?: string): PrivateChat 
     if (instances[key]) {
         return instances[key];
     }
+
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+
     const chat = new PrivateChat({ user_id, username: username || "<unknown>" });
     instances[key] = chat;
+
+    // Mount the React component
+    ReactDOM.render(React.createElement(PrivateChat, { user_id, username: username || "<unknown>" }), container);
+
     return chat;
 }
 
@@ -137,6 +146,18 @@ export class PrivateChat extends React.Component<PrivateChatProps, PrivateChatSt
     componentWillUnmount() {
         socket.off("private-message", this.handlePrivateMessage);
         socket.off("private-superchat", this.handleSuperchat);
+
+        // Clean up instance
+        const key = `${this.props.user_id}`;
+        if (instances[key] === this) {
+            delete instances[key];
+        }
+
+        // Remove from private_chats array
+        const idx = private_chats.findIndex((chat) => chat.id === this.id);
+        if (idx !== -1) {
+            private_chats.splice(idx, 1);
+        }
     }
 
     private handlePrivateMessage = (line: any) => {
@@ -376,6 +397,12 @@ export class PrivateChat extends React.Component<PrivateChatProps, PrivateChatSt
                 username: this.state.player.username,
             });
             data.set(`pm.close-${this.props.user_id}`, this.last_uid);
+        }
+
+        // Unmount the React component
+        if (this.chatRef.current?.parentElement) {
+            ReactDOM.unmountComponentAtNode(this.chatRef.current.parentElement);
+            this.chatRef.current.parentElement.remove();
         }
     };
 
