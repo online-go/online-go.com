@@ -47,7 +47,7 @@ function createPrivateChat(user_id: number, username: string): PrivateChatInstan
 
     const componentRef: { current: any } = { current: null };
     let displayState: "open" | "minimized" | "closed" = "open";
-    let root: ReactDOM.Root;
+    const root: ReactDOM.Root;
 
     const instance: PrivateChatInstance = {
         user_id,
