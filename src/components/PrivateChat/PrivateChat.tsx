@@ -229,7 +229,9 @@ export class PrivateChat extends React.Component<PrivateChatProps, PrivateChatSt
     };
 
     private handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (!this.inputRef.current) return;
+        if (!this.inputRef.current) {
+            return;
+        }
 
         if (
             !data.get("user").email_validated &&
@@ -277,7 +279,9 @@ export class PrivateChat extends React.Component<PrivateChatProps, PrivateChatSt
     };
 
     private startDrag = (e: React.MouseEvent<HTMLDivElement>) => {
-        if (!this.chatRef.current) return;
+        if (!this.chatRef.current) {
+            return;
+        }
 
         const target = e.target as HTMLElement;
         if (!target.classList.contains("title") && !target.classList.contains("user")) {
@@ -328,7 +332,9 @@ export class PrivateChat extends React.Component<PrivateChatProps, PrivateChatSt
     };
 
     public open = () => {
-        if (this.state.isOpen) return;
+        if (this.state.isOpen) {
+            return;
+        }
         this.setState({ isOpen: true, isMinimized: false });
         private_chats.push(this);
         this.updateLayout();
@@ -340,8 +346,12 @@ export class PrivateChat extends React.Component<PrivateChatProps, PrivateChatSt
     };
 
     private minimize = (sendItc?: boolean) => {
-        if (this.state.isSuperchatEnabled) return;
-        if (this.state.isMinimized) return;
+        if (this.state.isSuperchatEnabled) {
+            return;
+        }
+        if (this.state.isMinimized) {
+            return;
+        }
         this.setState({ isMinimized: true, isOpen: false });
         private_chats.push(this);
         this.updateLayout();
@@ -399,7 +409,9 @@ export class PrivateChat extends React.Component<PrivateChatProps, PrivateChatSt
     };
 
     private updateLayout = () => {
-        if (this.state.isFloating) return;
+        if (this.state.isFloating) {
+            return;
+        }
 
         const docked = private_chats.filter((chat) => !chat.state.isFloating);
         const windowWidth = window.innerWidth;
@@ -426,7 +438,9 @@ export class PrivateChat extends React.Component<PrivateChatProps, PrivateChatSt
             playerStatus,
         } = this.state;
 
-        if (!isOpen && !isMinimized) return null;
+        if (!isOpen && !isMinimized) {
+            return null;
+        }
 
         const playerClass = `user Player nolink ${playerStatus} ${player.ui_class || ""}`;
         const windowClass = `private-chat-window ${isOpen ? "open" : ""} ${
