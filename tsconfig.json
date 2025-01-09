@@ -4,7 +4,7 @@
     "compilerOptions": {
         "outDir": "./dist/",
         "target": "es2015",
-        "moduleResolution": "bundler",
+        "moduleResolution": "node",
         "isolatedModules": true,
         "esModuleInterop": true,
         "removeComments": false,
@@ -30,13 +30,15 @@
         "noImplicitThis": false,
 
         "sourceMap": true,
-        "jsx": "react"
+        "jsx": "react",
+        "skipLibCheck": true
     },
     "files": [
         "./src/main.tsx",
         "typings_manual/index.d.ts",
         "node_modules/@types/jquery/index.d.ts",
-        "node_modules/jest-chain/types/index.d.ts"
+        "node_modules/jest-chain/types/index.d.ts",
+        "./vite.config.ts",
     ],
     "include": ["src"],
     "exclude": ["node_modules", "dist"]

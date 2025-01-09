@@ -1,24 +1,22 @@
 -include Makefile.passwords
 
+#cspell: words gocom maint
+
+
 RELEASE=$(shell git describe --long | sed 's@\([0-9.]\{1,\}\).*@\1@')
 VERSION=$(shell git describe --long)
-OGS_HASH=$(shell md5sum dist/ogs.min.js | awk '{print $$1}')
-VENDOR_HASH=$(shell md5sum dist/vendor.min.js | awk '{print $$1}')
+OGS_HASH=$(shell md5sum dist/ogs.js | awk '{print $$1}')
 OGS_VERSION_HASH=$(VERSION)-$(OGS_HASH)
 SLACK_WEBHOOK=$(shell cat ../ogs/.slack-webhook)
 
 
-stats:
-	npm run webpack -- --mode production --optimization-minimize --devtool=source-map --output-filename 'ogs.min.js' --json > webpack-stats.json
-	cat webpack-stats.json
-
 todo:
 	cd src; grep -r 'TODO: Implement' views components lib | grep -v gen.py | sort | grep --color -E '^[^:]*:'
 	cd src; grep -r 'TODO: Implement' views components lib | grep -v gen.py | wc -l
+
 todo-all:
 	cd src; grep -r TODO views components lib | grep --color -E '^[^:]*:'
 	cd src; grep -r TODO views components lib | wc -l
-
 
 
 
@@ -36,20 +34,24 @@ BASE_INDEX_HEADERS=-H "Content-Type: text/plain" \
 DEV_INDEX_HEADERS=$(BASE_INDEX_HEADERS) -H "X-OGS-Index-Auth: $(DEV_INDEX_AUTH)"
 BETA_INDEX_HEADERS=$(BASE_INDEX_HEADERS) -H "X-OGS-Index-Auth: $(BETA_INDEX_AUTH)"
 PROD_INDEX_HEADERS=$(BASE_INDEX_HEADERS) -H "X-OGS-Index-Auth: $(PROD_INDEX_AUTH)"
+	
+minify-index:	
+	@echo "Testing index minification"
+	OGS_VERSION_HASH=$(OGS_VERSION_HASH)  npm run minify-index --silent | wc -c
 
 #dev-put: push-cdn
 dev-put:
-	OGS_VERSION_HASH=$(OGS_VERSION_HASH) VENDOR_HASH=$(VENDOR_HASH) npm run minify-index --silent | curl -X PUT $(DEV_INDEX_HEADERS) -d @- http://localhost:1080/_index
+	OGS_VERSION_HASH=$(OGS_VERSION_HASH) npm run minify-index --silent | curl -X PUT $(DEV_INDEX_HEADERS) -d @- http://localhost:1080/_index
 
 dev-del:
 	curl -X DELETE $(BETA_INDEX_HEADERS)  http://localhost:1080/_index
 
 beta-put: sync-translations create-unified-pot audit-translations jsonify-po-files push-cdn upload-sentry-source-maps
-	OGS_VERSION_HASH=$(OGS_VERSION_HASH) VENDOR_HASH=$(VENDOR_HASH) npm run minify-index --silent | curl -X PUT $(BETA_INDEX_HEADERS) -d @- https://beta.online-go.com/_index
+	OGS_VERSION_HASH=$(OGS_VERSION_HASH) npm run minify-index --silent | curl -X PUT $(BETA_INDEX_HEADERS) -d @- https://beta.online-go.com/_index
 	make beta-notify-slack
 
 live-put: confirm-go-live push-cdn
-	OGS_VERSION_HASH=$(OGS_VERSION_HASH) VENDOR_HASH=$(VENDOR_HASH) npm run minify-index --silent | curl -X PUT $(PROD_INDEX_HEADERS) -d @- https://online-go.com/_index
+	OGS_VERSION_HASH=$(OGS_VERSION_HASH) npm run minify-index --silent | curl -X PUT $(PROD_INDEX_HEADERS) -d @- https://online-go.com/_index
 	make live-notify-slack
 
 live-maint: confirm-go-live 
@@ -93,16 +95,14 @@ audit-translations:
 jsonify-po-files:
 	cd i18n; node jsonify-po-files.js
 
-prepare-cdn-files: purge-cdn-files dist/ogs.min.js dist/vendor.min.js dist/ogs.$(VERSION).css
+prepare-cdn-files: purge-cdn-files dist/ogs.js dist/ogs.min.css
 	echo "Language version: $(LANGUAGE_VERSION)"
 	mkdir -p deployment-staging-area/$(RELEASE)/
 	mkdir -p deployment-staging-area/$(RELEASE)/locale
-	cat dist/ogs.min.js | sed 's/ogs.min.js.map/ogs.$(OGS_VERSION_HASH).js.map/' > deployment-staging-area/$(RELEASE)/ogs.$(OGS_VERSION_HASH).js
-	cat dist/vendor.min.js | sed 's/vendor.min.js.map/vendor.$(VENDOR_HASH).js.map/' > deployment-staging-area/$(RELEASE)/vendor.$(VENDOR_HASH).js
-	cp -p dist/ogs.min.js.map deployment-staging-area/$(RELEASE)/ogs.$(OGS_VERSION_HASH).js.map
-	cp -p dist/vendor.min.js.map deployment-staging-area/$(RELEASE)/vendor.$(VENDOR_HASH).js.map
-	cp -p dist/ogs.$(VERSION).css deployment-staging-area/$(RELEASE)/
-	cp -p dist/ogs.$(VERSION).css.map deployment-staging-area/$(RELEASE)/
+	cat dist/ogs.js | sed 's/ogs.js.map/ogs.$(OGS_VERSION_HASH).js.map/' > deployment-staging-area/$(RELEASE)/ogs.$(OGS_VERSION_HASH).js
+	cp -p dist/ogs.js.map deployment-staging-area/$(RELEASE)/ogs.$(OGS_VERSION_HASH).js.map
+	cat dist/ogs.min.css | sed 's/ogs.min.css.map/ogs.min.$(VERSION).css.map/' > deployment-staging-area/$(RELEASE)/ogs.$(VERSION).css
+	cp -p dist/ogs.min.css.map deployment-staging-area/$(RELEASE)/ogs.min.$(VERSION).css.map
 	cp -Rp assets/img deployment-staging-area/$(RELEASE)/
 	cp -Rp assets/sound deployment-staging-area/$(RELEASE)/
 	ls i18n/locale/*.js | sed 's@i18n/locale/\([^\.]\+\).js@\1@' | xargs -n1 -I {} cp i18n/locale/{}.js deployment-staging-area/$(RELEASE)/locale/{}.$(LANGUAGE_VERSION).js
@@ -122,17 +122,12 @@ upload-sentry-source-maps:
 purge-cdn-files:
 	rm -Rf deployment-staging-area
 
-dist/ogs.min.js: dist/ogs.js
-	npm run webpack -- --mode=production --optimization-minimize --devtool=source-map
-
-dist/vendor.min.js: 
-	npm run webpack -- --mode=production --optimization-minimize --devtool=source-map
-
-dist/ogs.$(VERSION).css: 
-	npm run gulp min_styl
+dist/ogs.$(VERSION).css: dist/ogs.min.css
+	cp $< $@ 
+	cp $<.map $@.map
 
 
 
 
-.PHONY: dev stats todo update install default min server dist push-cdn sync-translations
+.PHONY: dev stats todo update install default server dist push-cdn sync-translations
 

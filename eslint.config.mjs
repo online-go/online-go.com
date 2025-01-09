@@ -22,7 +22,19 @@ const compat = new FlatCompat({
 
 export default [
     {
-        ignores: ["**/node_modules", "**/dist", "**/i18n", "**/typings_manual", "**/.github"],
+        ignores: [
+            "**/node_modules",
+            "**/dist",
+            "**/i18n",
+            "**/typings_manual",
+            "**/.github",
+            "**/doc",
+            "**/*.js",
+            "**/deployment-staging-area/",
+            ".dependency-cruiser.cjs",
+            ".dependency-cruiser.mjs",
+            "eslint.config.mjs",
+        ],
     },
     ...compat.extends("eslint:recommended", "plugin:@typescript-eslint/recommended", "prettier"),
     {
