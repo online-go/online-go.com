@@ -621,7 +621,6 @@ class PrivateChat {
 
             const uid = this.chat_base + "." + (++this.chat_num).toString(36);
             const timestamp = Date.now() / 1000;
-            this.last_uid = uid + " " + timestamp;
             this.addChat(data.get("user").username, line, data.get("user").id, timestamp);
             socket.send(
                 "chat/pm",
@@ -635,9 +634,9 @@ class PrivateChat {
                 (line) => {
                     if (line) {
                         /* we're gonna get these echoed back to us in various cases */
-                        const msgId = line.message.i + " " + line.message.t;
+                        const msgId = line.message.i + " " + line.message.t + " " + line.from.username;
                         this.received_messages[msgId] = true;
-                        this.last_uid = msgId;
+                        this.last_uid = line.message.i + " " + line.message.t;
                     }
                 },
             );
@@ -701,11 +700,10 @@ export function privateMessage(obj: any) {
     }
 
     if (instances[obj.from]) {
-        const msgId = obj.uid + " " + obj.timestamp;
+        const msgId = obj.uid + " " + obj.timestamp + " " + obj.username;
         if (!instances[obj.from].received_messages[msgId]) {
-
             instances[obj.from].received_messages[msgId] = true;
-            instances[obj.from].last_uid = msgId;
+            instances[obj.from].last_uid = obj.uid + " " + obj.timestamp;
             instances[obj.from].addChat(obj.username, obj.message, obj.from, obj.timestamp);
             if (instances[obj.from].display_state === "closed") {
                 instances[obj.from].opening = true;
@@ -723,9 +721,9 @@ export function privateMessage(obj: any) {
     } else {
         const pc = new PrivateChat(obj.from, obj.username);
         instances[obj.from] = pc;
-        const msgId = obj.uid + " " + obj.timestamp;
+        const msgId = obj.uid + " " + obj.timestamp + " " + obj.username;
         pc.received_messages[msgId] = true;
-        pc.last_uid = msgId;
+        pc.last_uid = obj.uid + " " + obj.timestamp;
         pc.addChat(obj.username, obj.message, obj.from, obj.timestamp);
         pc.minimize();
         pc.highlight();
