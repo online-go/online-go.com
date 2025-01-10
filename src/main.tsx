@@ -165,7 +165,6 @@ import { errorAlerter } from "@/lib/misc";
 import { close_all_popovers } from "@/lib/popover";
 import * as sockets from "@/lib/sockets";
 import { _, setCurrentLanguage } from "@/lib/translate";
-import { init_tab_complete } from "@/lib/tab_complete";
 import * as player_cache from "@/lib/player_cache";
 import { toast } from "@/lib/toast";
 import cached from "@/lib/cached";
@@ -313,7 +312,6 @@ browserHistory.listen(({ action /*, location */ }) => {
 });
 
 /*** Some finial initializations ***/
-init_tab_complete();
 
 //  don't inherit old rdh values
 if (user.anonymous) {
