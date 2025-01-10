@@ -635,9 +635,9 @@ class PrivateChat {
                 (line) => {
                     if (line) {
                         /* we're gonna get these echoed back to us in various cases */
-                        this.received_messages[
-                            line.message.i + " " + line.message.t + " " + line.from.username
-                        ] = true;
+                        const msgId = line.message.i + " " + line.message.t;
+                        this.received_messages[msgId] = true;
+                        this.last_uid = msgId;
                     }
                 },
             );
@@ -701,9 +701,11 @@ export function privateMessage(obj: any) {
     }
 
     if (instances[obj.from]) {
-        if (!instances[obj.from].received_messages[obj.uid]) {
-            instances[obj.from].received_messages[obj.uid] = true;
-            instances[obj.from].last_uid = obj.uid + " " + obj.timestamp;
+        const msgId = obj.uid + " " + obj.timestamp;
+        if (!instances[obj.from].received_messages[msgId]) {
+
+            instances[obj.from].received_messages[msgId] = true;
+            instances[obj.from].last_uid = msgId;
             instances[obj.from].addChat(obj.username, obj.message, obj.from, obj.timestamp);
             if (instances[obj.from].display_state === "closed") {
                 instances[obj.from].opening = true;
@@ -721,8 +723,9 @@ export function privateMessage(obj: any) {
     } else {
         const pc = new PrivateChat(obj.from, obj.username);
         instances[obj.from] = pc;
-        pc.received_messages[obj.uid] = true;
-        pc.last_uid = obj.uid + " " + obj.timestamp;
+        const msgId = obj.uid + " " + obj.timestamp;
+        pc.received_messages[msgId] = true;
+        pc.last_uid = msgId;
         pc.addChat(obj.username, obj.message, obj.from, obj.timestamp);
         pc.minimize();
         pc.highlight();
