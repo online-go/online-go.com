@@ -634,7 +634,8 @@ class PrivateChat {
                 (line) => {
                     if (line) {
                         /* we're gonna get these echoed back to us in various cases */
-                        const msgId = line.message.i + " " + line.message.t + " " + line.from.username;
+                        const msgId =
+                            line.message.i + " " + line.message.t + " " + line.from.username;
                         this.received_messages[msgId] = true;
                         this.last_uid = line.message.i + " " + line.message.t;
                     }
