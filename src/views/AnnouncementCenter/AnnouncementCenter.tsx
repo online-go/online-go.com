@@ -101,7 +101,6 @@ export function AnnouncementCenter(): JSX.Element {
     const refresh = () => {
         get("announcements")
             .then((list) => {
-                console.log(list);
                 setAnnouncements(list);
             })
             .catch(errorAlerter);
@@ -111,11 +110,25 @@ export function AnnouncementCenter(): JSX.Element {
     };
 
     let can_create = true;
+    let invalid_url = false;
 
     can_create &&= !!text;
 
     if (link && link.toLowerCase().indexOf("twitch.tv") > 0) {
         can_create = false;
+    }
+
+    // check if link is a valid url
+    try {
+        new URL(link);
+    } catch {
+        can_create = false;
+        invalid_url = true;
+    }
+
+    if (user.is_moderator) {
+        can_create = true;
+        invalid_url = false;
     }
 
     return (
@@ -202,6 +215,7 @@ export function AnnouncementCenter(): JSX.Element {
                         <input
                             type="text"
                             value={link}
+                            className={invalid_url ? "invalid" : ""}
                             onChange={(ev) => setLink(ev.target.value)}
                         />
                     </dd>
