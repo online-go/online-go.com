@@ -30,6 +30,7 @@ import * as player_cache from "@/lib/player_cache";
 import online_status from "@/lib/online_status";
 import { openReport } from "@/components/Report";
 import { alert } from "@/lib/swal_config";
+import { nicknameTabComplete } from "./tab_complete";
 
 let last_id = 0;
 
@@ -339,7 +340,10 @@ class PrivateChat {
 
         this.updateInputPlaceholder();
 
-        (input as any).nicknameTabComplete();
+        nicknameTabComplete(input[0] as HTMLInputElement, {
+            nicknames: () => player_cache.nicknames,
+            nick_match: /([-_a-z0-9]+)$/i,
+        });
         this.dom.append(input);
 
         $(document.body).append(this.dom);
