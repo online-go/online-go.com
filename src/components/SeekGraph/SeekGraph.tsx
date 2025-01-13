@@ -65,7 +65,7 @@ interface Point {
 }
 
 interface SeekGraphModal {
-    modal: JQuery;
+    modal: HTMLDivElement;
     binding: Binding;
 }
 
@@ -189,23 +189,17 @@ export class SeekGraph extends TypedEventEmitter<Events> {
     ];
 
     canvas: HTMLCanvasElement;
-    $canvas: JQuery;
-    // show_live_games: boolean;
     connected: boolean = false;
-    // This is treated as an array later because that is what TypedEventEmitter expects.
-    // Perhaps this should be changed to an array as well.
     challenges: { [id: number]: AnchoredChallenge } = {};
     challengeFilter: ChallengeFilter;
-    // live_games: any = {};
     list_hits: Array<AnchoredChallenge> = [];
-    // challenge_points: any = {};
     square_size = 8;
     text_size = 10;
     padding = 14;
     legend_size = 25;
     list_locked: boolean = false;
     modal?: SeekGraphModal;
-    $list!: JQuery;
+    list: HTMLDivElement | null = null;
     list_open: boolean = false;
     width!: number;
     height!: number;
@@ -214,8 +208,6 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         super();
 
         this.canvas = config.canvas;
-        this.$canvas = $(config.canvas);
-        // this.show_live_games = config.show_live_games;
         this.list_hits = [];
         this.challengeFilter = config.filter;
         this.redraw();
@@ -226,12 +218,13 @@ export class SeekGraph extends TypedEventEmitter<Events> {
 
         socket.on("connect", this.onConnect);
         socket.on("seekgraph/global", this.onSeekgraphGlobal);
-        this.$canvas.on("mousemove", this.onPointerMove);
-        this.$canvas.on("mouseout", this.onPointerOut);
-        this.$canvas.on("click", this.onPointerDown);
+        this.canvas.addEventListener("mousemove", this.onPointerMove);
+        this.canvas.addEventListener("mouseout", this.onPointerOut);
+        this.canvas.addEventListener("click", this.onPointerDown);
 
-        $(document).on("touchend", this.onTouchEnd);
-        $(document).on("touchstart touchmove", this.onTouchStartMove);
+        document.addEventListener("touchend", this.onTouchEnd);
+        document.addEventListener("touchstart", this.onTouchStartMove);
+        document.addEventListener("touchmove", this.onTouchStartMove);
 
         data.watch("theme", () => {
             this.redraw();
@@ -284,10 +277,11 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                     const uid = this.challenges[entry.challenge_id].system_message_id;
                     delete this.challenges[entry.challenge_id];
                     if (uid) {
-                        //console.log("#line-" + (uid.replace(".", "\\.")));
-                        $("#line-" + uid.replace(".", "\\."))
-                            .find("button")
-                            .remove();
+                        const lineElement = document.getElementById(`line-${uid}`);
+                        if (lineElement) {
+                            const button = lineElement.querySelector("button");
+                            button?.remove();
+                        }
                     }
                 }
             } else {
@@ -327,20 +321,18 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         this.emit("challenges", this.challenges);
     };
 
-    onTouchEnd = (ev: JQueryEventObject) => {
+    onTouchEnd = (ev: TouchEvent) => {
         if (ev.target === this.canvas) {
             this.onPointerDown(ev);
         }
     };
-    onTouchStartMove = (ev: JQueryEventObject) => {
+    onTouchStartMove = (ev: TouchEvent) => {
         if (ev.target === this.canvas) {
             this.onPointerMove(ev);
             ev.preventDefault();
-            return false;
         }
-        return;
     };
-    onPointerMove = (ev: JQueryEventObject) => {
+    onPointerMove = (ev: MouseEvent | TouchEvent) => {
         const new_list = this.getHits(ev);
         new_list.sort(priority_sort);
         if (!lists_are_equal(new_list, this.list_hits)) {
@@ -353,7 +345,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
             this.closeChallengeList();
         }
     };
-    onPointerDown = (ev: JQueryEventObject) => {
+    onPointerDown = (ev: MouseEvent | TouchEvent) => {
         const new_list = this.getHits(ev);
         new_list.sort(priority_sort);
         if (!lists_are_equal(new_list, this.list_hits)) {
@@ -367,12 +359,10 @@ export class SeekGraph extends TypedEventEmitter<Events> {
             this.moveChallengeList(ev);
             this.list_locked = true;
             this.modal = createModal(() => {
-                //console.log("Closing modal");
                 this.modal = undefined;
                 this.list_locked = false;
                 this.closeChallengeList();
             }, 49);
-            //console.log("modal: ",this.modal);
         } else {
             this.list_locked = false;
             this.closeChallengeList();
@@ -384,25 +374,9 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         }
     };
 
-    // connectToLiveGameList() {
-    //     socket.send("gamelist/subscribe", { gamelist: "gamelist/global" });
-    // }
-    // setShowLiveGames(tf) {
-    //     const changed = tf !== this.show_live_games;
-    //     this.show_live_games = tf;
-    //     if (changed) {
-    //         if (tf) {
-    //             this.connectToLiveGameList();
-    //         } else {
-    //             socket.send("gamelist/unsubscribe", {});
-    //         }
-    //         this.redraw();
-    //     }
-    // }
     destroy() {
         this.list_locked = false;
         this.closeChallengeList();
-        // this.setShowLiveGames(false);
         if (this.connected) {
             socket.send("seek_graph/disconnect", { channel: "global" });
         }
@@ -410,11 +384,15 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         socket.off("connect", this.onConnect);
         socket.off("seekgraph/global", this.onSeekgraphGlobal);
 
-        $(document).off("touchend", this.onTouchEnd);
-        $(document).off("touchstart touchmove", this.onTouchStartMove);
+        document.removeEventListener("touchend", this.onTouchEnd);
+        document.removeEventListener("touchstart", this.onTouchStartMove);
+        document.removeEventListener("touchmove", this.onTouchStartMove);
+        this.canvas.removeEventListener("mousemove", this.onPointerMove);
+        this.canvas.removeEventListener("mouseout", this.onPointerOut);
+        this.canvas.removeEventListener("click", this.onPointerDown);
     }
 
-    getHits(ev: JQueryEventObject) {
+    getHits(ev: MouseEvent | TouchEvent) {
         const pos = getRelativeEventPosition(ev);
 
         if (!pos) {
@@ -680,9 +658,9 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         return metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
     }
 
-    moveChallengeList(ev: JQueryEventObject) {
+    moveChallengeList(ev: MouseEvent | TouchEvent) {
         this.popupChallengeList(ev);
-        if (this.list_locked) {
+        if (this.list_locked || !this.list) {
             return;
         }
 
@@ -697,17 +675,17 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         const pointerPos: Point = getRelativeEventPosition(ev) || { x: 0, y: 0 };
         const listAnchor: Point = Object.assign({}, pointerPos);
 
-        const offset = $(ev.target).offset() || { left: 0, top: 0 };
-        listAnchor.x += offset.left + 10;
-        listAnchor.y += offset.top + 5;
+        const rect = (ev.target as HTMLElement).getBoundingClientRect();
+        listAnchor.x += rect.left + 10;
+        listAnchor.y += rect.top + 5;
 
         const win_top = window.scrollY || document.documentElement.scrollTop;
         const win_left = window.scrollX || document.documentElement.scrollLeft;
-        const win_right = $(window).width() + win_left;
-        const win_bottom = $(window).height() + win_top;
+        const win_right = window.innerWidth + win_left;
+        const win_bottom = window.innerHeight + win_top;
 
-        const list_width = this.$list.width();
-        const list_height = this.$list.height();
+        const list_width = this.list.offsetWidth;
+        const list_height = this.list.offsetHeight;
 
         if (listAnchor.x + list_width > win_right) {
             listAnchor.x -= list_width + 20;
@@ -718,9 +696,10 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         }
 
         listAnchor.x = Math.max(0, listAnchor.x);
-        this.$list.css({ left: listAnchor.x, top: listAnchor.y });
+        this.list.style.left = `${listAnchor.x}px`;
+        this.list.style.top = `${listAnchor.y}px`;
     }
-    popupChallengeList(ev: JQueryEventObject) {
+    popupChallengeList(ev: MouseEvent | TouchEvent) {
         if (this.list_open) {
             return;
         }
@@ -730,36 +709,43 @@ export class SeekGraph extends TypedEventEmitter<Events> {
             return;
         }
 
-        const list = (this.$list = $("<div>").addClass("SeekGraph-challenge-list"));
+        const list = document.createElement("div");
+        list.className = "SeekGraph-challenge-list";
+        this.list = list;
 
         const first_hit = this.list_hits[0];
-        const header = $("<div>").addClass("header");
-        header.append(
-            $("<span>").html(rankString({ ranking: first_hit.rank, pro: Boolean(first_hit.pro) })),
-        );
-        header.append(
-            $("<i>")
-                .addClass("fa fa-times pull-right")
-                .click(() => {
-                    this.list_locked = false;
-                    this.closeChallengeList();
-                }),
-        );
+        const header = document.createElement("div");
+        header.className = "header";
+
+        const rankSpan = document.createElement("span");
+        rankSpan.innerHTML = rankString({ ranking: first_hit.rank, pro: Boolean(first_hit.pro) });
+        header.appendChild(rankSpan);
+
+        const closeIcon = document.createElement("i");
+        closeIcon.className = "fa fa-times pull-right";
+        closeIcon.onclick = () => {
+            this.list_locked = false;
+            this.closeChallengeList();
+        };
+        header.appendChild(closeIcon);
+
         if (first_hit.time_per_move) {
             const tpm = computeAverageMoveTime(
                 first_hit.time_control_parameters,
                 first_hit.width,
                 first_hit.height,
             );
-            header.append(
-                $("<span>")
-                    .addClass("pull-right")
-                    .html("~" + shortDurationString(tpm).replace(/ /g, "") + "/move"),
-            );
+            const timeSpan = document.createElement("span");
+            timeSpan.className = "pull-right";
+            timeSpan.innerHTML = "~" + shortDurationString(tpm).replace(/ /g, "") + "/move";
+            header.appendChild(timeSpan);
         } else {
-            header.append($("<span>").addClass("pull-right").html(_("No time limit")));
+            const noTimeSpan = document.createElement("span");
+            noTimeSpan.className = "pull-right";
+            noTimeSpan.innerHTML = _("No time limit");
+            header.appendChild(noTimeSpan);
         }
-        list.append(header);
+        list.appendChild(header);
 
         for (let i = 0; i < this.list_hits.length; ++i) {
             const C = this.list_hits[i];
@@ -767,106 +753,61 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                 continue;
             }
 
-            /* process hit */
-            const e = $("<div>").addClass("challenge");
+            const e = document.createElement("div");
+            e.className = "challenge";
             if (C.eligible) {
-                e.addClass("eligible");
+                e.classList.add("eligible");
             }
-            if (!C.eligible /* && !C.live_game */) {
-                e.addClass("ineligible");
+            if (!C.eligible) {
+                e.classList.add("ineligible");
             }
-            // if (C.live_game) {
-            //     e.addClass("live-game");
-            // }
             if (!C.user_challenge) {
-                e.addClass("user-challenge");
+                e.classList.add("user-challenge");
             }
 
-            // if (C.live_game) {
-            //     const anchor = $("<span>")
-            //         .addClass("fakelink")
-            //         .click(() => {
-            //             console.log("Should be closing challenge list");
-            //             this.list_locked = false;
-            //             this.closeChallengeList();
-            //             browserHistory.push("/game/" + C.game_id);
-            //         })
-            //         .append($("<i>").addClass("fa fa-eye").attr("title", _("View Game")));
-            //     e.append(anchor);
-            // } else
             if (C.eligible && !C.rengo) {
-                e.append(
-                    $("<i>")
-                        .addClass("fa fa-check-circle")
-                        .attr("title", _("Accept game"))
-                        .click(() => {
-                            openGameAcceptModal(C)
-                                .then(() => {
-                                    this.list_locked = false;
-                                    this.closeChallengeList();
-                                    browserHistory.push("/game/" + C.game_id);
-
-                                    /*
-                        let anchor = $("<span>").addClass("fakelink").click((ev) => {
-                            browserHistory.push("/game/" + C.game_id);
-                        }).text(_("Game started, click to continue"));
-                        e.empty().append(anchor);
-                        */
-                                })
-                                .catch(errorAlerter);
-                        }),
-                );
-            } else if (C.eligible && C.rengo && !C.joined_rengo) {
-                e.append(
-                    $("<i>")
-                        .addClass("fa fa-check-circle")
-                        .attr("title", _("Join rengo game"))
-                        .click(() => {
-                            nominateForRengoChallenge(C).catch(errorAlerter);
+                const acceptIcon = document.createElement("i");
+                acceptIcon.className = "fa fa-check-circle";
+                acceptIcon.title = _("Accept game");
+                acceptIcon.onclick = () => {
+                    openGameAcceptModal(C)
+                        .then(() => {
                             this.list_locked = false;
                             this.closeChallengeList();
-                        }),
-                );
+                            browserHistory.push("/game/" + C.game_id);
+                        })
+                        .catch(errorAlerter);
+                };
+                e.appendChild(acceptIcon);
+            } else if (C.eligible && C.rengo && !C.joined_rengo) {
+                const joinIcon = document.createElement("i");
+                joinIcon.className = "fa fa-check-circle";
+                joinIcon.title = _("Join rengo game");
+                joinIcon.onclick = () => {
+                    nominateForRengoChallenge(C).catch(errorAlerter);
+                    this.list_locked = false;
+                    this.closeChallengeList();
+                };
+                e.appendChild(joinIcon);
             } else if (C.user_challenge) {
-                e.append(
-                    $("<i>")
-                        .addClass("fa fa-trash-o")
-                        .attr("title", _("Remove challenge"))
-                        .click(() => {
-                            //console.log("Remove");
-                            del(`challenges/${C.challenge_id}`)
-                                .then(() => e.html(_("Challenge removed")))
-                                .catch(() => alert.fire(_("Error removing challenge")));
-                        }),
-                );
+                const removeIcon = document.createElement("i");
+                removeIcon.className = "fa fa-trash-o";
+                removeIcon.title = _("Remove challenge");
+                removeIcon.onclick = () => {
+                    del(`challenges/${C.challenge_id}`)
+                        .then(() => (e.innerHTML = _("Challenge removed")))
+                        .catch(() => alert.fire(_("Error removing challenge")));
+                };
+                e.appendChild(removeIcon);
             } else {
-                e.append($("<i>").addClass("fa fa-circle"));
+                const circleIcon = document.createElement("i");
+                circleIcon.className = "fa fa-circle";
+                e.appendChild(circleIcon);
             }
 
-            // if (C.live_game) {
-            //     /* I don't think this is used anymore, I think this was for showing ongoing live games */
-            //     const container = document.createElement("span");
-            //     const root = ReactDOM.createRoot(container);
-            //     e.append($(container));
-            //     root.render(
-            //         <React.StrictMode>
-            //             <Player
-            //                 user={{ id: 0, ranking: C.black_rank, username: C.black_username }}
-            //                 rank
-            //                 nolink
-            //             />
-            //             {" " + _("vs.") + " "}
-            //             <Player
-            //                 user={{ id: 0, ranking: C.white_rank, username: C.white_username }}
-            //                 rank
-            //                 nolink
-            //             />
-            //         </React.StrictMode>,
-            //     );
-            // } else {
             const container = document.createElement("span");
             const root = ReactDOM.createRoot(container);
-            e.append($(container));
+            e.appendChild(container);
             const U = player_cache.lookup(C.user_id) || {
                 user_id: C.user_id,
                 ranking: C.rank,
@@ -893,6 +834,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                       : interpolate(_(", %s handicap"), [C.handicap])) +
                 (C.komi === null ? "" : ", " + C.komi + " " + _("komi")) +
                 (C.disable_analysis ? ", " + _("analysis disabled") : "");
+
             if (C.challenger_color !== "automatic") {
                 let your_color = "";
                 if (C.challenger_color === "black") {
@@ -925,7 +867,9 @@ export class SeekGraph extends TypedEventEmitter<Events> {
             }
 
             if (C.name.length > 3) {
-                details_html += ', "' + $("<div>").text(C.name).html() + '"';
+                const div = document.createElement("div");
+                div.textContent = C.name;
+                details_html += ', "' + div.innerHTML + '"';
             }
 
             if (!data.get("user").anonymous) {
@@ -942,13 +886,15 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                 }
             }
 
-            //console.log(C.ranked, Math.abs(this.userRank() - C.rank));
-            e.append($("<span>").addClass("details").html(details_html));
+            const detailsSpan = document.createElement("span");
+            detailsSpan.className = "details";
+            detailsSpan.innerHTML = details_html;
+            e.appendChild(detailsSpan);
 
-            list.append(e);
+            list.appendChild(e);
         }
 
-        $(document.body).append(list);
+        document.body.appendChild(list);
         this.moveChallengeList(ev);
     }
     closeChallengeList() {
@@ -964,28 +910,32 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         }
 
         this.list_open = false;
-        this.$list.remove();
+        this.list?.remove();
+        this.list = null;
     }
 }
 
 /* Modal stuff  */
 function createModal(close_callback: () => void, priority: number): SeekGraphModal {
-    let modal: any = null;
+    let modal: SeekGraphModal | null = null;
     function onClose() {
         close_callback();
-        removeModal(modal);
+        if (modal) {
+            removeModal(modal);
+        }
     }
 
     if (!priority) {
         priority = 900; /* matches default modal z-index */
     }
 
-    const elt = $("<div>").addClass("ogs-modal");
-    elt.click(onClose);
+    const elt = document.createElement("div");
+    elt.className = "ogs-modal";
+    elt.onclick = onClose;
     const binding = kb_bind("escape", onClose, priority);
     modal = { modal: elt, binding: binding };
-    elt.css("zIndex", priority);
-    $(document.body).append(elt);
+    elt.style.zIndex = priority.toString();
+    document.body.appendChild(elt);
     return modal;
 }
 
@@ -993,31 +943,3 @@ function removeModal(modal: SeekGraphModal) {
     kb_unbind(modal.binding);
     modal.modal.remove();
 }
-
-/*
-$(document).on('keydown', function(event) {
-    if (event.keyCode === 27) {
-        var arr = [];
-        $(".ogs-modal").each(function(_, e) {
-            e = $(e);
-            arr.push([e.zIndex(), e]);
-        });
-        if (arr.length > 0) {
-            arr.sort(function(a,b) { return a[0] - b[0]; });
-            var last = arr[arr.length-1];
-            var cb = last[1].data('modal-close-callback');
-            if (!cb) throw new Error("Modal was missing close callback");
-            cb();
-
-            if (event.stopPropagation) {
-                event.stopPropagation();
-            }
-            if (event.preventDefault) {
-                event.preventDefault();
-            }
-            return false;
-        }
-    }
-    return true;
-});
-*/
