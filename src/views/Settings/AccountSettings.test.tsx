@@ -4,7 +4,8 @@
  */
 import { AccountSettings } from "./AccountSettings";
 import * as React from "react";
-import { act, render, screen } from "@testing-library/react";
+import { act, render } from "@testing-library/react";
+import { screen } from "@testing-library/dom";
 import * as requests from "@/lib/requests";
 import * as ogs_hooks from "@/lib/hooks";
 import { OgsHelpProvider } from "@/components/OgsHelpProvider";

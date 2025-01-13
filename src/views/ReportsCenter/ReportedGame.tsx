@@ -51,7 +51,7 @@ export function ReportedGame({
     game_id: number;
     reported_at: number | undefined;
     reported_by: number;
-}): JSX.Element | null {
+}): React.ReactElement | null {
     const [goban, setGoban] = React.useState<GobanRenderer | null>(null);
     const [selectedChatLog, setSelectedChatLog] = React.useState<ChatMode>("main");
     const refresh = useRefresh();
@@ -129,7 +129,11 @@ export function ReportedGame({
                             <Resizable
                                 id="move-tree-container"
                                 className="vertically-resizable"
-                                ref={(ref) => ref?.div && goban.setMoveTreeContainer(ref.div)}
+                                ref={(ref) => {
+                                    if (ref?.div) {
+                                        goban.setMoveTreeContainer(ref.div);
+                                    }
+                                }}
                             />
 
                             <div className="reported-game-timing">
@@ -232,7 +236,7 @@ function ModeratorReportedGameActions({
     game_id,
     goban,
     annulled,
-}: ModeratorReportedGameActionsProps): JSX.Element {
+}: ModeratorReportedGameActionsProps): React.ReactElement {
     const user = useUser();
 
     const decide = React.useCallback(
@@ -321,7 +325,7 @@ function GameOutcomeSummary({
     reported_by,
     annulled,
     scoringAbandoned,
-}: GameOutcomeSummaryProps): JSX.Element {
+}: GameOutcomeSummaryProps): React.ReactElement {
     const goban = useGoban();
     return (
         <div className="GameSummary">

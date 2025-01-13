@@ -48,7 +48,7 @@ import { notification_manager, Notification } from "@/components/Notifications/N
 
 moment.relativeTimeThreshold("m", 56);
 export interface SelectOption {
-    break?: JSX.Element;
+    break?: React.ReactElement;
     value: string;
     label: string;
 }
@@ -139,7 +139,7 @@ const select_styles = {
     }),
 };
 
-export function QuickMatch(): JSX.Element {
+export function QuickMatch(): React.ReactElement {
     const user = useUser();
     const refresh = useRefresh();
     const available_human_matches_list = React.useRef<{ [uuid: string]: any }>({});

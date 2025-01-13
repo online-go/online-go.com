@@ -21,6 +21,8 @@ import Select, { SingleValue, components } from "react-select";
 
 import { ReportType } from "@/components/Report";
 
+const DropdownIndicator = components.DropdownIndicator as any;
+
 const REPORT_TYPE_SELECTIONS: ReportTypeSelection[] = [
     { value: "escaping", label: "Stopped Playing" },
     { value: "stalling", label: "Stalling" },
@@ -75,11 +77,11 @@ export function ReportTypeSelector(props: ReportTypeSelectorProps) {
                 ),
                 DropdownIndicator: props.lock
                     ? (props) => (
-                          <components.DropdownIndicator {...props}>
+                          <DropdownIndicator {...props}>
                               <i className="fa fa-lock" style={{ color: "gray" }}></i>
-                          </components.DropdownIndicator>
+                          </DropdownIndicator>
                       )
-                    : components.DropdownIndicator,
+                    : DropdownIndicator,
             }}
         />
     );

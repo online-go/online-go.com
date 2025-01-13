@@ -38,7 +38,7 @@ export function AIDemoReview({
 }: {
     goban: GobanRenderer;
     controller: number;
-}): JSX.Element | null {
+}): React.ReactElement | null {
     const user = useUser();
     const is_controller = user?.id === controller;
     const [engine, setEngine] = React.useState(goban?.engine);

@@ -223,7 +223,7 @@ describe("CancelButton", () => {
     */
 });
 
-function WrapTest(props: { goban: GobanRenderer; children: any }): JSX.Element {
+function WrapTest(props: { goban: GobanRenderer; children: any }): React.ReactElement {
     return (
         <OgsHelpProvider>
             <GobanContext.Provider value={props.goban}>{props.children}</GobanContext.Provider>

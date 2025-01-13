@@ -92,7 +92,7 @@ function auto_join_channels() {
     data.set("chat.joined", joined_channels);
 }
 
-export function ChatChannelList({ channel }: ChatChannelListProperties): JSX.Element {
+export function ChatChannelList({ channel }: ChatChannelListProperties): React.ReactElement {
     auto_join_channels();
 
     const joined_channels = data.get("chat.joined", {});
@@ -132,7 +132,7 @@ export function ChatChannelList({ channel }: ChatChannelListProperties): JSX.Ele
         };
     }, [channel]);
 
-    let more_channels: JSX.Element;
+    let more_channels: React.ReactElement;
 
     function chanSearch(chan: { name: string }): boolean {
         const s = search.toLowerCase().trim();
@@ -285,7 +285,7 @@ export function ChatChannel({
     language,
     icon,
     joined,
-}: ChatChannelProperties): JSX.Element {
+}: ChatChannelProperties): React.ReactElement {
     const user = data.get("user");
     const user_country = user?.country || "un";
 
@@ -353,7 +353,7 @@ export function ChatChannel({
         }
     }, [active, proxy]);
 
-    let icon_element: JSX.Element | null = null;
+    let icon_element: React.ReactElement | null = null;
 
     if (channel.indexOf("tournament") === 0) {
         icon_element = <i className="fa fa-trophy" />;
@@ -366,7 +366,7 @@ export function ChatChannel({
     }
 
     const mentioned = proxy?.channel.mentioned;
-    let unread: JSX.Element | null = null;
+    let unread: React.ReactElement | null = null;
 
     if (unread_ct) {
         unread = <span className="unread-count" data-count={`(${unread_ct})`} />;

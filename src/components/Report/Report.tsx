@@ -188,7 +188,7 @@ export const report_categories: ReportDescription[] = [
     },
 ];
 
-export function Report(props: ReportProperties): JSX.Element {
+export function Report(props: ReportProperties): React.ReactElement {
     const {
         reported_user_id,
         onClose,

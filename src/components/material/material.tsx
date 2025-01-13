@@ -15,10 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as React from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 
-export const Card = (props: JSX.IntrinsicElements["div"]) => (
+export const Card = (props: React.HTMLProps<HTMLDivElement>) => (
     <div {...props} className={"Card " + (props.className || "")}>
         {props.children}
     </div>
@@ -30,7 +30,7 @@ export const CardLink = (props: any) => (
     </Link>
 );
 
-export const FabCheck = (props: JSX.IntrinsicElements["div"]) => (
+export const FabCheck = (props: React.HTMLProps<HTMLDivElement>) => (
     <div {...props} className="fab primary raiser">
         <svg
             viewBox="0 0 24 24"
@@ -46,7 +46,7 @@ export const FabCheck = (props: JSX.IntrinsicElements["div"]) => (
     </div>
 );
 
-export const FabX = (props: JSX.IntrinsicElements["div"]) => (
+export const FabX = (props: React.HTMLProps<HTMLDivElement>) => (
     <div {...props} className="fab reject raiser">
         <svg
             viewBox="0 0 24 24"
@@ -62,7 +62,7 @@ export const FabX = (props: JSX.IntrinsicElements["div"]) => (
     </div>
 );
 
-export const FabAdd = (props: JSX.IntrinsicElements["div"]) => (
+export const FabAdd = (props: React.HTMLProps<HTMLDivElement>) => (
     <div {...props} className="fab info raiser">
         <svg
             viewBox="0 0 24 24"

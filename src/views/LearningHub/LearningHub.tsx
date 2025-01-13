@@ -32,7 +32,7 @@ interface LearningHubParams {
     page: string;
 }
 
-export function LearningHub(): JSX.Element {
+export function LearningHub(): React.ReactElement {
     const params = useParams<keyof LearningHubParams>();
 
     React.useEffect(() => {

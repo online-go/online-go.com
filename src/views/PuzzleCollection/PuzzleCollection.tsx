@@ -25,7 +25,7 @@ import { openACLModal } from "@/components/ACLModal";
 import { alert } from "@/lib/swal_config";
 import { useParams } from "react-router-dom";
 
-export function PuzzleCollection(): JSX.Element | null {
+export function PuzzleCollection(): React.ReactElement | null {
     const { collection_id } = useParams();
 
     const [collection, setCollection] = React.useState(null);

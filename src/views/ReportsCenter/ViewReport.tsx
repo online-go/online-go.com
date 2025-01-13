@@ -56,7 +56,7 @@ let report_note_id = 0;
 let report_note_text = "";
 let report_note_update_timeout: ReturnType<typeof setTimeout> | null = null;
 
-export function ViewReport({ report_id, reports, onChange }: ViewReportProps): JSX.Element {
+export function ViewReport({ report_id, reports, onChange }: ViewReportProps): React.ReactElement {
     const user = useUser();
     const [moderatorNote, setModeratorNote] = React.useState("");
     const [moderators, setModerators] = React.useState(cached_moderators);

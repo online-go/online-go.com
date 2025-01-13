@@ -24,7 +24,7 @@ import { SettingGroupPageProps, PreferenceLine } from "@/lib/SettingsCommon";
 import { ReportsCenterSettings } from "@/views/ReportsCenter";
 import * as preferences from "@/lib/preferences";
 
-export function ModeratorPreferences(_props: SettingGroupPageProps): JSX.Element | null {
+export function ModeratorPreferences(_props: SettingGroupPageProps): React.ReactElement | null {
     const [incident_report_notifications, setIncidentReportNotifications] = usePreference(
         "notify-on-incident-report",
     );

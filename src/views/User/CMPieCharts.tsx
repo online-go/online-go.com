@@ -26,7 +26,10 @@ interface CMPieChartsProps {
     user_moderator_powers: number;
 }
 
-export function CMPieCharts({ user_id, user_moderator_powers }: CMPieChartsProps): JSX.Element {
+export function CMPieCharts({
+    user_id,
+    user_moderator_powers,
+}: CMPieChartsProps): React.ReactElement {
     return (
         <div className="CMPieCharts">
             <div className="mod-graph-header">

@@ -60,7 +60,7 @@ if (process.env.NODE_ENV === "development") {
     all_duration_options.unshift(5);
 }
 
-export function AnnouncementCenter(): JSX.Element {
+export function AnnouncementCenter(): React.ReactElement {
     const user = useUser();
     const [announcementType, setAnnouncementType] = React.useState(
         user.is_superuser ? "system" : data.get("announcement.last-type", "stream"),

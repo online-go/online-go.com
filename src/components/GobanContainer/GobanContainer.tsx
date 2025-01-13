@@ -43,7 +43,7 @@ export function GobanContainer({
     onResize: onResizeCb,
     onWheel,
     extra_props,
-}: GobanContainerProps): JSX.Element {
+}: GobanContainerProps): React.ReactElement {
     const ref_goban_container = React.useRef<HTMLDivElement>(null);
     const resize_debounce = React.useRef<NodeJS.Timeout | null>(null);
     const [last_move_opacity] = usePreference("last-move-opacity");

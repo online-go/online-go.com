@@ -24,7 +24,7 @@ import { _, pgettext } from "@/lib/translate";
  * A help flow shown when you first press the undo button
  */
 
-export function UndoRequestedIntro(): JSX.Element {
+export function UndoRequestedIntro(): React.ReactElement {
     return (
         <HelpFlow
             id="undo-requested-intro"
@@ -49,7 +49,7 @@ export function UndoRequestedIntro(): JSX.Element {
  * A help flow shown when you first get asked for undo
  */
 
-export function UndoRequestReceivedIntro(): JSX.Element {
+export function UndoRequestReceivedIntro(): React.ReactElement {
     return (
         <HelpFlow
             id="undo-request-received-intro"

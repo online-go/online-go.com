@@ -28,7 +28,7 @@ import * as React from "react";
 
  */
 
-export function SvgBouncer(): JSX.Element {
+export function SvgBouncer(): React.ReactElement {
     return (
         <div id="loading-svg-container">
             <div id="svg-bouncer">

@@ -65,11 +65,9 @@ export class PuzzleList extends React.PureComponent<{}, PuzzleListState> {
 
                                 <SearchInput
                                     placeholder={_("Search")}
-                                    onChange={(event) => {
+                                    onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                                         this.setState({
-                                            name_contains_filter: (
-                                                event.target as HTMLInputElement
-                                            ).value.trim(),
+                                            name_contains_filter: event.target.value.trim(),
                                         });
                                     }}
                                 />

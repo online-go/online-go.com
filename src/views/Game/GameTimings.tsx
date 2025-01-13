@@ -35,7 +35,7 @@ interface GameTimingProperties {
     onFinalActionCalculated?: (final_action_timing: moment.Duration) => void;
 }
 
-export function GameTimings(props: GameTimingProperties): JSX.Element {
+export function GameTimings(props: GameTimingProperties): React.ReactElement {
     const user = useUser();
 
     const show_seconds_nicely = (duration: moment.Duration) =>

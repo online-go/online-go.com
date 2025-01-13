@@ -30,7 +30,7 @@ interface NewUserRankChooserProps {
 export function NewUserRankChooser({
     show_skip = true,
     onChosen = () => {},
-}: NewUserRankChooserProps): JSX.Element {
+}: NewUserRankChooserProps): React.ReactElement {
     const user = useUser();
 
     const variants = [NewUserRankChooserA, NewUserRankChooserB, NewUserRankChooserC];
@@ -45,7 +45,7 @@ export function NewUserRankChooser({
 function NewUserRankChooserA({
     show_skip = true,
     onChosen = () => {},
-}: NewUserRankChooserProps): JSX.Element {
+}: NewUserRankChooserProps): React.ReactElement {
     const sendRankChoice = (choice: string): void => {
         put(`me/starting_rank`, { choice: choice })
             .then(() => {
@@ -64,7 +64,7 @@ function NewUserRankChooserA({
         label,
         choice,
         explainer,
-    }: NewRankChooserButtonProps): JSX.Element {
+    }: NewRankChooserButtonProps): React.ReactElement {
         return (
             <div className="rank-chooser-button">
                 <button className={"primary"} onClick={() => sendRankChoice(choice)}>
@@ -134,7 +134,7 @@ function NewUserRankChooserA({
 function NewUserRankChooserB({
     show_skip = true,
     onChosen = () => {},
-}: NewUserRankChooserProps): JSX.Element {
+}: NewUserRankChooserProps): React.ReactElement {
     const sendRankChoice = (choice: string): void => {
         put(`me/starting_rank`, { choice: choice })
             .then(() => {
@@ -153,7 +153,7 @@ function NewUserRankChooserB({
         label,
         choice,
         explainer,
-    }: NewRankChooserButtonProps): JSX.Element {
+    }: NewRankChooserButtonProps): React.ReactElement {
         return (
             <div className="rank-chooser-button">
                 <button className={"primary"} onClick={() => sendRankChoice(choice)}>
@@ -226,7 +226,7 @@ function NewUserRankChooserB({
 function NewUserRankChooserC({
     show_skip = true,
     onChosen = () => {},
-}: NewUserRankChooserProps): JSX.Element {
+}: NewUserRankChooserProps): React.ReactElement {
     const sendRankChoice = (choice: string): void => {
         put(`me/starting_rank`, { choice: choice })
             .then(() => {
@@ -245,7 +245,7 @@ function NewUserRankChooserC({
         label,
         choice,
         explainer,
-    }: NewRankChooserButtonProps): JSX.Element {
+    }: NewRankChooserButtonProps): React.ReactElement {
         return (
             <div className="rank-chooser-button">
                 <button className={"primary"} onClick={() => sendRankChoice(choice)}>

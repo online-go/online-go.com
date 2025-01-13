@@ -76,7 +76,7 @@ import { disableTouchAction, enableTouchAction } from "./touch_actions";
 import { BotDetectionResults } from "./BotDetectionResults";
 import { ActiveTournament } from "@/lib/types";
 
-export function Game(): JSX.Element | null {
+export function Game(): React.ReactElement | null {
     const params = useParams<"game_id" | "review_id" | "move_number">();
     const location = useLocation();
     const [searchParams] = useSearchParams();
@@ -87,18 +87,18 @@ export function Game(): JSX.Element | null {
     const return_url = return_param && is_valid_url(return_param) ? return_param : null;
 
     /* Refs */
-    const ref_move_tree_container = React.useRef<HTMLElement>();
-    const ladder_id = React.useRef<number>();
-    const tournament_id = React.useRef<number>();
-    const goban_div = React.useRef<HTMLDivElement | null>();
-    const resize_debounce = React.useRef<any>();
-    const autoplay_timer = React.useRef<any>();
-    const chat_proxy = React.useRef<ChatChannelProxy>();
-    const last_analysis_sent = React.useRef<any>();
+    const ref_move_tree_container = React.useRef<HTMLElement | undefined>(undefined);
+    const ladder_id = React.useRef<number | undefined>(undefined);
+    const tournament_id = React.useRef<number | undefined>(undefined);
+    const goban_div = React.useRef<HTMLDivElement | undefined>(undefined);
+    const resize_debounce = React.useRef<any | undefined>(undefined);
+    const autoplay_timer = React.useRef<any | undefined>(undefined);
+    const chat_proxy = React.useRef<ChatChannelProxy | undefined>(undefined);
+    const last_analysis_sent = React.useRef<any | undefined>(undefined);
     const on_refocus_title = React.useRef<string>("OGS");
     const last_move_viewed = React.useRef<number>(0);
-    const stashed_conditional_moves = React.useRef<ConditionalMoveTree>();
-    const copied_node = React.useRef<MoveTree>();
+    const stashed_conditional_moves = React.useRef<ConditionalMoveTree | undefined>(undefined);
+    const copied_node = React.useRef<MoveTree | undefined>(undefined);
     const white_username = React.useRef<string>("White");
     const black_username = React.useRef<string>("Black");
     const goban = React.useRef<GobanRenderer | null>(null);
@@ -974,7 +974,7 @@ export function Game(): JSX.Element | null {
         return null;
     };
 
-    const frag_bot_detection_results = (): JSX.Element | null => {
+    const frag_bot_detection_results = (): React.ReactElement | null => {
         if (bot_detection_results?.ai_suspected.length > 0) {
             return (
                 <BotDetectionResults

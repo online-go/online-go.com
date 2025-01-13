@@ -102,7 +102,7 @@ interface FirewallRule {
     networks: Network[];
 }
 
-export function Firewall(): JSX.Element | null {
+export function Firewall(): React.ReactElement | null {
     const user = data.get("user");
 
     const table_ref = React.useRef<any>(null);
@@ -177,7 +177,7 @@ function FirewallRuleRow({
 }: {
     firewall_rule: FirewallRule;
     table_refresh: () => void;
-}): JSX.Element {
+}): React.ReactElement {
     const user = data.get("user");
 
     const [active, setActive] = React.useState(firewall_rule.active);
@@ -347,7 +347,7 @@ function FirewallRuleRow({
     );
 }
 
-function TestResultRow({ result }: { result: TestResult }): JSX.Element {
+function TestResultRow({ result }: { result: TestResult }): React.ReactElement {
     return (
         <div className="TestResultRow">
             <span>{result.action || "<no action>"}</span>
@@ -365,7 +365,7 @@ interface RuleEditorProps {
     refresh: () => void;
 }
 
-function RuleEditor({ rule, parent, refresh }: RuleEditorProps): JSX.Element | null {
+function RuleEditor({ rule, parent, refresh }: RuleEditorProps): React.ReactElement | null {
     const [field, setField] = React.useState(rule.field);
     const [value, setValue]: [string | number | boolean, (tf: string | number | boolean) => void] =
         React.useState(rule.value as string | number | boolean);
@@ -481,7 +481,7 @@ interface NetworkEditorProps {
     refresh: () => void;
 }
 
-function NetworkEditor({ firewall_rule, refresh }: NetworkEditorProps): JSX.Element {
+function NetworkEditor({ firewall_rule, refresh }: NetworkEditorProps): React.ReactElement {
     function add() {
         firewall_rule.networks.push({
             id: new_id(),
@@ -519,7 +519,7 @@ function NetworkEditorRow({
     network: Network;
     firewall_rule: FirewallRule;
     refresh: () => void;
-}): JSX.Element {
+}): React.ReactElement {
     const [asn, setAsn] = React.useState(network.asn);
     const [inet, setInet] = React.useState(network.inet);
     const [notes, setNotes] = React.useState(network.notes);
@@ -579,7 +579,7 @@ interface MatchHistoryEntry {
 }
 */
 
-function RecentMatches({ firewall_rule }: { firewall_rule: FirewallRule }): JSX.Element {
+function RecentMatches({ firewall_rule }: { firewall_rule: FirewallRule }): React.ReactElement {
     return (
         <>
             <h3>Matches: {firewall_rule.num_matches}</h3>

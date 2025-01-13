@@ -175,7 +175,7 @@ export class ChallengeModalBody extends React.Component<
     },
     any
 > {
-    ref: React.RefObject<HTMLDivElement> = React.createRef();
+    ref: React.RefObject<HTMLDivElement | null> = React.createRef();
 
     constructor(
         props: ChallengeModalProperties & {

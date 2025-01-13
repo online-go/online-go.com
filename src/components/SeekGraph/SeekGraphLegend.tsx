@@ -36,7 +36,7 @@ interface SeekGraphLegendProps {
     toggleHandler: (key: ChallengeFilterKey) => void;
 }
 
-export function SeekGraphLegend(props: SeekGraphLegendProps): JSX.Element {
+export function SeekGraphLegend(props: SeekGraphLegendProps): React.ReactElement {
     const [currentPalette, setCurrentPalette] = React.useState<SeekGraphColorPalette>(
         SeekGraphPalettes.DARK,
     );
@@ -52,9 +52,9 @@ export function SeekGraphLegend(props: SeekGraphLegendProps): JSX.Element {
 
     const legendItem = (
         text: string,
-        iconCreator: () => JSX.Element,
+        iconCreator: () => React.ReactElement,
         filterKey: ChallengeFilterKey,
-    ): JSX.Element => {
+    ): React.ReactElement => {
         return (
             <div key={text} className="legend-item">
                 {props.showIcons && iconCreator()}
@@ -154,7 +154,7 @@ const ICON_HEIGHT = 10;
 const ICON_CENTER = { x: ICON_WIDTH / 2, y: ICON_HEIGHT / 2 };
 const ICON_SCALE = 2;
 
-function LegendIcon(draw: (ctx: CanvasRenderingContext2D) => void): JSX.Element {
+function LegendIcon(draw: (ctx: CanvasRenderingContext2D) => void): React.ReactElement {
     const canvas = React.useRef<HTMLCanvasElement>(null);
     React.useEffect(() => {
         const ctx: CanvasRenderingContext2D | undefined | null = canvas?.current?.getContext("2d");

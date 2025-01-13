@@ -17,7 +17,7 @@ jest.mock("profanity_filter", () => ({
     profanity_filter: jest.fn((x) => x),
 }));
 
-function expect_singular_markup(input: string, output: JSX.Element) {
+function expect_singular_markup(input: string, output: React.ReactElement) {
     expect(chat_markup(input)).toEqual([output]);
 }
 

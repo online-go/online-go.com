@@ -32,7 +32,7 @@ import { Toggle } from "@/components/Toggle";
 
 import { PreferenceLine } from "@/lib/SettingsCommon";
 
-export function AnnouncementPreferences(): JSX.Element {
+export function AnnouncementPreferences(): React.ReactElement {
     const [blocked_players, setBlockedPlayers]: [
         Array<any> | null,
         (x: Array<any> | null) => void,

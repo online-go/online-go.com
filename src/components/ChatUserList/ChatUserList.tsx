@@ -30,12 +30,12 @@ interface ChatUserCountProperties extends ChatUserListProperties {
     active: boolean;
 }
 
-export function ChatUserList(props: ChatUserListProperties): JSX.Element {
+export function ChatUserList(props: ChatUserListProperties): React.ReactElement {
     const [user_sort_order, set_user_sort_order] = React.useState<"alpha" | "rank">(
         preferences.get("chat.user-sort-order") === "rank" ? "alpha" : "rank",
     );
     const [, refresh] = React.useState<number>(0);
-    const proxy = React.useRef<ChatChannelProxy>();
+    const proxy = React.useRef<ChatChannelProxy | undefined>(undefined);
 
     React.useEffect(() => {
         proxy.current = chat_manager.join(props.channel);
@@ -86,9 +86,9 @@ export function ChatUserList(props: ChatUserListProperties): JSX.Element {
     );
 }
 
-export function ChatUserCount(props: ChatUserCountProperties): JSX.Element {
+export function ChatUserCount(props: ChatUserCountProperties): React.ReactElement {
     const [num_users, set_num_users] = React.useState<number>(0);
-    const proxy = React.useRef<ChatChannelProxy>();
+    const proxy = React.useRef<ChatChannelProxy | undefined>(undefined);
 
     React.useEffect(() => {
         proxy.current = chat_manager.join(props.channel);

@@ -24,7 +24,7 @@ interface InfoBallProps {
     className?: string;
 }
 
-export function InfoBall({ children, className }: InfoBallProps): JSX.Element {
+export function InfoBall({ children, className }: InfoBallProps): React.ReactElement {
     /* The force hide system is to prevent the info box being held open on a
      * mobile device when the details popup is clicked. The expected behavior
      * is to close, and while show does set to close, because the users input

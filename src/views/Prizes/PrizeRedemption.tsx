@@ -188,7 +188,9 @@ export const PrizeRedemption: React.FC = () => {
                                 onChange={(event) => handleCodeChange(event, index)}
                                 onKeyDown={(event) => handleKeyDown(event, index)}
                                 onPaste={handlePaste}
-                                ref={(ref) => (inputRefs.current[index] = ref)}
+                                ref={(ref) => {
+                                    inputRefs.current[index] = ref;
+                                }}
                             />
                         ))}
                     </div>

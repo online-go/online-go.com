@@ -23,6 +23,6 @@ export interface VariantProps {
     children: React.ReactElement[] | React.ReactElement;
 }
 
-export function Variant({ children }: VariantProps): JSX.Element {
+export function Variant({ children }: VariantProps): React.ReactElement {
     return <React.Fragment>{children}</React.Fragment>;
 }

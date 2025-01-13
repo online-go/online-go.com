@@ -38,7 +38,7 @@ import { EmbeddedChatCard } from "@/components/Chat";
 
 // They get to chat to each other here, in a dedicated channel, and mutually agree when to start.
 
-export function OnlineLeaguePlayerLanding(): JSX.Element {
+export function OnlineLeaguePlayerLanding(): React.ReactElement {
     const { search: url_params } = useLocation();
 
     /* State */

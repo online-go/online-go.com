@@ -30,7 +30,7 @@ import cached from "@/lib/cached";
 import { SocialLoginButtons } from "@/components/SocialLoginButtons";
 import { LoadingButton } from "@/components/LoadingButton";
 
-export function Register(): JSX.Element {
+export function Register(): React.ReactElement {
     const navigate = useNavigate();
     const user = useUser();
     const ref_username = React.useRef<HTMLInputElement>(null);

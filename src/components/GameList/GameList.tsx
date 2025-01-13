@@ -430,7 +430,7 @@ function LineSummaryTable({
     currentSort,
     onSort,
     onGobanCreated,
-}: LineSummaryTableProps): JSX.Element {
+}: LineSummaryTableProps): React.ReactElement {
     const getHeaderClassName = (sortOrder: SortOrder) => {
         const sortable = disableSort && player ? "" : "sortable";
         let currentlySorting = "";
@@ -442,7 +442,7 @@ function LineSummaryTable({
         return sortable + currentlySorting;
     };
 
-    const renderHeader = (): JSX.Element => {
+    const renderHeader = (): React.ReactElement => {
         if (lineSummaryMode === "both-players") {
             return (
                 <div className="GobanLineSummaryContainerHeader">
@@ -526,7 +526,7 @@ function MiniGobanList(
     onGobanCreated: (game: GameType, goban: GobanRenderer) => void,
     player?: { id: number },
     miniGobanProps?: MiniGobanProps,
-): JSX.Element {
+): React.ReactElement {
     return (
         <div className="GameList">
             {games.map((game) => {

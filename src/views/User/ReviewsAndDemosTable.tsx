@@ -29,7 +29,7 @@ interface ReviewsAndDemosProps {
     user_id: number;
 }
 
-export function ReviewsAndDemosTable(props: ReviewsAndDemosProps): JSX.Element {
+export function ReviewsAndDemosTable(props: ReviewsAndDemosProps): React.ReactElement {
     const [alt_player, setAltPlayer] = React.useState<number>();
 
     const review_history_groomer = (results: any) => {

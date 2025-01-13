@@ -26,7 +26,7 @@ interface TooltipProps {
     tooltipRequired?: boolean;
 }
 
-export function Tooltip(props: TooltipProps): JSX.Element {
+export function Tooltip(props: TooltipProps): React.ReactElement {
     return (
         <div className={props.position ? `TooltipContainer ${props.position}` : "TooltipContainer"}>
             <div className={props.tooltipRequired ? "Tooltip" : "Tooltip disabled"}>

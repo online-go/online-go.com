@@ -22,7 +22,7 @@ type SocialLoginButtonsProps = {
     next_url?: string;
 };
 
-export function SocialLoginButtons(props: SocialLoginButtonsProps): JSX.Element {
+export function SocialLoginButtons(props: SocialLoginButtonsProps): React.ReactElement {
     const next = props.next_url ? `?next=${props.next_url}` : "";
 
     return (

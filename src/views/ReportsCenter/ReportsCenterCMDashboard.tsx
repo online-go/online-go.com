@@ -54,7 +54,7 @@ interface IndividualCMVotingOutcomeData {
     user_id: number;
     vote_data: CMVotingOutcomeData;
 }
-export function ReportsCenterCMDashboard(): JSX.Element {
+export function ReportsCenterCMDashboard(): React.ReactElement {
     const user = useUser();
     const navigateTo = useNavigate();
     const [selectedTabIndex, setSelectedTabIndex] = React.useState(user.moderator_powers ? 0 : 1);

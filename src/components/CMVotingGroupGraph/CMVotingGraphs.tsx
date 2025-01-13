@@ -55,7 +55,10 @@ interface CMVoteCountGraphProps {
     period: number;
 }
 
-export const CMVoteCountGraph = ({ vote_data, period }: CMVoteCountGraphProps): JSX.Element => {
+export const CMVoteCountGraph = ({
+    vote_data,
+    period,
+}: CMVoteCountGraphProps): React.ReactElement => {
     if (!vote_data) {
         vote_data = [];
     }
@@ -274,7 +277,10 @@ interface CMVotingGroupGraphProps {
     period: number;
 }
 
-export const CMVotingGroupGraph = ({ vote_data, period }: CMVotingGroupGraphProps): JSX.Element => {
+export const CMVotingGroupGraph = ({
+    vote_data,
+    period,
+}: CMVotingGroupGraphProps): React.ReactElement => {
     if (!vote_data) {
         vote_data = [];
     }

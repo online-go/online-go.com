@@ -52,7 +52,7 @@ export function ChallengeList({
     filter,
     list,
     is_live_list,
-}: ChallengeListProps): (JSX.Element | null)[] | JSX.Element {
+}: ChallengeListProps): (React.ReactElement | null)[] | React.ReactElement {
     const ctx = React.useContext(PlayContext);
     const user = useUser();
 
@@ -161,15 +161,15 @@ export function ChallengeList({
     );
 }
 
-export function CellBreaks({ width }: { width: number }): JSX.Element[] {
-    const result: JSX.Element[] = [];
+export function CellBreaks({ width }: { width: number }): React.ReactElement[] {
+    const result: React.ReactElement[] = [];
     for (let i = 0; i < width; ++i) {
         result.push(<span key={i} className="cell break"></span>);
     }
     return result;
 }
 
-export function ChallengeListHeaders(): JSX.Element {
+export function ChallengeListHeaders(): React.ReactElement {
     return (
         <div className="challenge-row">
             <span className="head">{/* buttons */}</span>
@@ -191,7 +191,7 @@ export function ChallengeListHeaders(): JSX.Element {
     );
 }
 
-export function RengoListHeaders(): JSX.Element {
+export function RengoListHeaders(): React.ReactElement {
     return (
         <>
             <tr className="challenge-row">
@@ -218,7 +218,7 @@ export function RengoListHeaders(): JSX.Element {
     );
 }
 
-export function RengoList(props: RengoComponentProps): JSX.Element {
+export function RengoList(props: RengoComponentProps): React.ReactElement {
     const filter = props.filter;
     const list = props.list;
 
@@ -266,7 +266,7 @@ export function RengoList(props: RengoComponentProps): JSX.Element {
     );
 }
 
-function RengoChallengeManagementList(props: RengoComponentProps): JSX.Element {
+function RengoChallengeManagementList(props: RengoComponentProps): React.ReactElement {
     const filter = props.filter;
     const list = props.list;
 
@@ -302,7 +302,7 @@ function RengoChallengeManagementList(props: RengoComponentProps): JSX.Element {
     );
 }
 
-function RengoManageListItem(props: RengoComponentProps): JSX.Element {
+function RengoManageListItem(props: RengoComponentProps): React.ReactElement {
     const challenge = props.challenge;
     const user = useUser();
     const ctx = React.useContext(PlayContext);
@@ -359,7 +359,7 @@ function RengoManageListItem(props: RengoComponentProps): JSX.Element {
     );
 }
 
-function RengoListItem(props: RengoComponentProps): JSX.Element {
+function RengoListItem(props: RengoComponentProps): React.ReactElement {
     const ctx = React.useContext(PlayContext);
     const challenge = props.challenge;
     const user = useUser();
@@ -478,7 +478,7 @@ function extractUser(challenge: Challenge) {
     };
 }
 
-function SuspectChallengeIcon({ challenge }: { challenge: Challenge }): JSX.Element | null {
+function SuspectChallengeIcon({ challenge }: { challenge: Challenge }): React.ReactElement | null {
     /* Mark eligible suspect games with a warning icon and warning explanation popup.
            We do let users see the warning for their own challenges. */
     const C = challenge;

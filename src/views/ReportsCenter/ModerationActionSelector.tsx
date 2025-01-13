@@ -150,7 +150,7 @@ export function ModerationActionSelector({
     enable,
     report,
     submit,
-}: ModerationActionSelectorProps): JSX.Element {
+}: ModerationActionSelectorProps): React.ReactElement {
     const user = useUser();
     const reportedBySelf = user.id === report.reporting_user.id;
 

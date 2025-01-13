@@ -24,7 +24,7 @@ interface PersistentElementProps {
     extra_props?: React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>;
 }
 
-export function PersistentElement(props: PersistentElementProps): JSX.Element {
+export function PersistentElement(props: PersistentElementProps): React.ReactElement {
     const container = React.useRef<HTMLDivElement>(null);
 
     React.useEffect((): (() => void) | void => {

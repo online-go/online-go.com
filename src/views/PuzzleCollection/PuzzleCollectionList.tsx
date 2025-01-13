@@ -28,7 +28,7 @@ import { MiniGoban } from "@/components/MiniGoban";
 import { alert } from "@/lib/swal_config";
 import { useParams } from "react-router";
 
-export function PuzzleCollectionList(): JSX.Element {
+export function PuzzleCollectionList(): React.ReactElement {
     const { player_id } = useParams();
 
     return (

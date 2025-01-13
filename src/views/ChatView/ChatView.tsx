@@ -21,7 +21,7 @@ import { useState, useEffect, useCallback } from "react";
 import { ChatChannelList, ChatLog, ChatUsersList } from "@/components/Chat";
 import { useParams } from "react-router";
 
-export function ChatView(): JSX.Element | null {
+export function ChatView(): React.ReactElement | null {
     const { channel } = useParams();
 
     data.set("chat.active_channel", channel);

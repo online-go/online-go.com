@@ -27,7 +27,7 @@ interface ModLogProps {
     warnings_only?: boolean;
 }
 
-export function ModLog(props: ModLogProps): JSX.Element {
+export function ModLog(props: ModLogProps): React.ReactElement {
     const groomFunction = (data: any[]) => data.filter((X) => !X.action.includes("ack"));
 
     return (
@@ -106,7 +106,7 @@ export function ModLog(props: ModLogProps): JSX.Element {
     );
 }
 
-function highlight_cm_action(text: string): JSX.Element | string {
+function highlight_cm_action(text: string): React.ReactElement | string {
     const match = text.match(/Actioned by community vote: (\w+)/);
     if (match) {
         const [prefix, action] = text.split(/Actioned by community vote: /);

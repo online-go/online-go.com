@@ -30,7 +30,7 @@ type ChallengeLinkButtonProps = {
  *  Render a button that generates a "Challenge Link" URL, and tries to copy it to the clipboard, or display it.
  */
 
-export function ChallengeLinkButton(props: ChallengeLinkButtonProps): JSX.Element {
+export function ChallengeLinkButton(props: ChallengeLinkButtonProps): React.ReactElement {
     const full_class = "btn xs" + (props.class_extension ? ` ${props.class_extension}` : "");
 
     /* render */

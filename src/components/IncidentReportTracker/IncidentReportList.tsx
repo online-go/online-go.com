@@ -34,7 +34,7 @@ type IncidentReportListProps = {
 export function IncidentReportList({
     reports,
     modal = true,
-}: IncidentReportListProps): JSX.Element | null {
+}: IncidentReportListProps): React.ReactElement | null {
     function hideList() {
         data.set("ui-state.show_incident_list", false);
     }

@@ -30,7 +30,7 @@ interface ChatUsersListProperties {
 
 let deferred_users_update: Timeout | null = null;
 
-export function ChatUsersList({ channel }: ChatUsersListProperties): JSX.Element {
+export function ChatUsersList({ channel }: ChatUsersListProperties): React.ReactElement {
     const [, refresh]: [number, (n: number) => void] = useState(0);
     const [proxy, setProxy]: [ChatChannelProxy | null, (x: ChatChannelProxy) => void] =
         useState<ChatChannelProxy | null>(null);
