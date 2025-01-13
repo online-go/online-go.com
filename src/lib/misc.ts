@@ -137,7 +137,7 @@ export function getRelativeEventPosition(
         return;
     }
 
-    if (event.originalEvent.touches && event.originalEvent.touches.length) {
+    if (event.originalEvent?.touches && event.originalEvent?.touches.length) {
         x = event.originalEvent.touches[0].pageX - offset.left;
         y = event.originalEvent.touches[0].pageY - offset.top;
     } else if (event.touches && event.touches.length) {
