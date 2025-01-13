@@ -676,11 +676,11 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         const listAnchor: Point = Object.assign({}, pointerPos);
 
         const rect = (ev.target as HTMLElement).getBoundingClientRect();
-        listAnchor.x += rect.left + 10;
-        listAnchor.y += rect.top + 5;
-
         const win_top = window.scrollY || document.documentElement.scrollTop;
         const win_left = window.scrollX || document.documentElement.scrollLeft;
+        listAnchor.x += rect.left + win_left + 10;
+        listAnchor.y += rect.top + win_top + 5;
+
         const win_right = window.innerWidth + win_left;
         const win_bottom = window.innerHeight + win_top;
 
