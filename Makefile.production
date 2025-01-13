@@ -22,7 +22,7 @@ todo-all:
 
 LANGUAGE_VERSION=`md5sum i18n/locale/*.js | sort | md5sum | awk '{print $$1}'`
 SUPPORTED_LANGUAGES=`python -c 'import json; print(json.dumps(json.loads(open("i18n/languages.json", "r").read())))'`
-GOBAN_VERSION=`python -c 'import json; print(json.loads(open("package.json", "r").read())["devDependencies"]["goban"][1:])'`
+GOBAN_VERSION=`python -c 'import json; print(json.loads(open("package.json", "r").read())["dependencies"]["goban"][1:])'`
 
 BASE_INDEX_HEADERS=-H "Content-Type: text/plain" \
 	-H "X-OGS-Index-Release: $(RELEASE)"  \
