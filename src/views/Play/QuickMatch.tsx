@@ -18,7 +18,6 @@
 import * as React from "react";
 import * as data from "@/lib/data";
 import * as preferences from "@/lib/preferences";
-import moment from "moment";
 
 import {
     AutomatchPreferences,
@@ -46,7 +45,6 @@ import { useHaveActiveGameSearch } from "./hooks";
 import { openPlayPageHelp } from "./PlayPageHelp";
 import { notification_manager, Notification } from "@/components/Notifications/NotificationManager";
 
-moment.relativeTimeThreshold("m", 56);
 export interface SelectOption {
     break?: React.ReactElement;
     value: string;

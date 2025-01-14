@@ -19,7 +19,7 @@ import * as React from "react";
 import { Link } from "react-router-dom";
 import { Player } from "@/components/Player";
 import { _ } from "@/lib/translate";
-import moment from "moment";
+import { format, formatDistanceToNow } from "date-fns";
 import { PaginatedTable } from "@/components/PaginatedTable";
 import * as data from "@/lib/data";
 //import { alert } from "@/lib/swal_config";
@@ -56,7 +56,7 @@ export function AppealsCenter(): React.ReactElement | null {
                     {
                         header: _("Updated"),
                         className: () => "updated",
-                        render: (X) => moment(new Date(X.updated)).format("YYYY-MM-DD HH:mm"),
+                        render: (X) => format(new Date(X.updated), "yyyy-MM-dd HH:mm"),
                     },
                     {
                         header: _("Player"),
@@ -76,7 +76,9 @@ export function AppealsCenter(): React.ReactElement | null {
                     {
                         header: _("Ban Expiration"),
                         className: () => "ban_expiration",
-                        render: (X) => X.ban_expiration && moment(X.ban_expiration).fromNow(),
+                        render: (X) =>
+                            X.ban_expiration &&
+                            formatDistanceToNow(new Date(X.ban_expiration), { addSuffix: true }),
                     },
                     {
                         header: _(""),

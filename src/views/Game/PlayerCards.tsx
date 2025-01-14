@@ -369,7 +369,12 @@ export function PlayerCard({
                                 {flag === "blur_rate"
                                     ? `${Math.round((flags[flag] as number) * 100.0)}%`
                                     : flag === "slow_moving"
-                                      ? formatDuration(intervalToDuration({ start: 0, end: flags[flag] as number }))
+                                      ? formatDuration(
+                                            intervalToDuration({
+                                                start: 0,
+                                                end: flags[flag] as number,
+                                            }),
+                                        )
                                       : flags[flag]}
                             </div>
                         ))}

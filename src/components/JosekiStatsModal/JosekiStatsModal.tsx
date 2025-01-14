@@ -119,7 +119,10 @@ export class JosekiStatsModal extends Modal<Events, JosekiStatsModalProperties, 
         const today = startOfDay(new Date());
 
         const daily_page_visits = this.props.daily_page_visits
-            .filter((day) => isAfter(new Date(day.date), start_graph) && isBefore(new Date(day.date), today))
+            .filter(
+                (day) =>
+                    isAfter(new Date(day.date), start_graph) && isBefore(new Date(day.date), today),
+            )
             // strip out tiny days, which theoretically shouldn't be there in the first place
             // (I think they get there when two people simultaneously click on a position in the first visit of a day)
             .filter((day) => day.pageVisits > 2);

@@ -26,7 +26,7 @@ import { errorAlerter } from "@/lib/misc";
 import { shortShortTimeControl } from "@/components/TimeControl";
 import { computeAverageMoveTime } from "goban";
 import { PaginatedTable, Filter } from "@/components/PaginatedTable";
-import moment from "moment";
+import { format, formatDistanceToNow, addSeconds } from "date-fns";
 import { TOURNAMENT_TYPE_NAMES, shortRankRestrictionText } from "@/views/Tournament";
 import tooltip from "@/lib/tooltip";
 import { Toggle } from "@/components/Toggle";
@@ -429,7 +429,7 @@ function timeIcon(time_per_move: number) {
 }
 
 function rrule_description(entry: any): string {
-    const m = moment(new Date(entry.next_run)).add(entry.lead_time_seconds, "seconds");
+    const m = addSeconds(new Date(entry.next_run), entry.lead_time_seconds);
 
     const rrule = entry.rrule;
     let interval = 1;
@@ -463,15 +463,15 @@ function rrule_description(entry: any): string {
     if (interval === 1) {
         switch (unit) {
             case "hourly":
-                return m.format("m") !== "0"
-                    ? interpolate(_("Occurs %s minutes past the hour every hour"), [m.format("m")])
+                return format(m, "m") !== "0"
+                    ? interpolate(_("Occurs %s minutes past the hour every hour"), [format(m, "m")])
                     : _("Occurs every hour on the hour");
             case "daily":
-                return interpolate(_("Occurs daily at %s"), [m.format("LT")]);
+                return interpolate(_("Occurs daily at %s"), [format(m, "h:mm aa")]);
             case "weekly":
                 return interpolate(
                     pgettext("Every <day of week> at <time>", "Occurs every %s at %s"),
-                    [m.format("dddd"), m.format("LT")],
+                    [format(m, "EEEE"), format(m, "h:mm aa")],
                 );
             case "monthly":
                 return interpolate(
@@ -479,7 +479,7 @@ function rrule_description(entry: any): string {
                         "The <day of month> at <time>",
                         "Occurs on the %s of every month at %s",
                     ),
-                    [m.format("Do"), m.format("LT")],
+                    [format(m, "do"), format(m, "h:mm aa")],
                 );
             case "yearly":
                 return interpolate(
@@ -487,7 +487,7 @@ function rrule_description(entry: any): string {
                         "<day of year> of every year at <time>",
                         "Occurs %s of every year at %s",
                     ),
-                    [m.format("MMMM Do"), m.format("LT")],
+                    [format(m, "MMMM do"), format(m, "h:mm aa")],
                 );
         }
     } else {
@@ -495,19 +495,22 @@ function rrule_description(entry: any): string {
             case "minutely":
                 return interpolate(_("Occurs every %s minutes"), [interval]);
             case "hourly":
-                return m.format("m") !== "0"
+                return format(m, "m") !== "0"
                     ? interpolate(_("Occurs %s minutes past the hour every %s hours"), [
-                          m.format("m"),
+                          format(m, "m"),
                           interval,
                       ])
                     : interpolate(_("Occurs every %s hours on the hour"), [interval]);
             case "daily":
-                return interpolate(_("Occurs every %s days at %s"), [interval, m.format("LT")]);
+                return interpolate(_("Occurs every %s days at %s"), [
+                    interval,
+                    format(m, "h:mm aa"),
+                ]);
             case "weekly":
                 return interpolate(_("Occurs every %s weeks on %s at %s"), [
                     interval,
-                    m.format("dddd"),
-                    m.format("LT"),
+                    format(m, "EEEE"),
+                    format(m, "h:mm aa"),
                 ]);
             case "monthly":
                 return interpolate(
@@ -515,7 +518,7 @@ function rrule_description(entry: any): string {
                         "The <day of month> every <n> months at <time>",
                         "Occurs on the %s every %s months at %s",
                     ),
-                    [m.format("Do"), interval, m.format("LT")],
+                    [format(m, "do"), interval, format(m, "h:mm aa")],
                 );
         }
     }
@@ -529,13 +532,13 @@ function dateFmt(d: number, offset?: number) {
     if (!offset) {
         offset = 0;
     }
-    return moment(new Date(d)).add(offset, "seconds").format("llll");
+    return format(addSeconds(new Date(d), offset), "EEEE, MMMM d, yyyy h:mm aa");
 }
 function fromNow(d: number, offset?: number) {
     if (!offset) {
         offset = 0;
     }
-    return moment(new Date(d)).add(offset, "seconds").fromNow();
+    return formatDistanceToNow(addSeconds(new Date(d), offset), { addSuffix: true });
 }
 function when(t: number | string) {
     if (t) {
@@ -544,9 +547,9 @@ function when(t: number | string) {
 
         //if (Math.abs(diff) > 7*86400) {
         if (diff > 7 * 86400) {
-            return moment(d).format("ddd MMM Do, LT");
+            return format(d, "EEE MMM do, h:mm aa");
         } else {
-            return moment(d).calendar();
+            return formatDistanceToNow(d, { addSuffix: true });
         }
     } else {
         return "";

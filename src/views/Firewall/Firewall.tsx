@@ -20,10 +20,10 @@ import * as React from "react";
 import * as data from "@/lib/data";
 import { post, put, del } from "@/lib/requests";
 import { deepCompare, errorAlerter } from "@/lib/misc";
+import { formatDistanceToNow } from "date-fns";
 import { PaginatedTable } from "@/components/PaginatedTable";
 import { Player } from "@/components/Player";
 import { alert } from "@/lib/swal_config";
-
 
 type Operator = "EQUALS" | "GREATER_THAN" | "LESS_THAN" | "REGEX_MATCHES" | "OR" | "AND";
 const OPERATORS: Array<Operator> = [
@@ -592,7 +592,9 @@ function RecentMatches({ firewall_rule }: { firewall_rule: FirewallRule }): Reac
                             2,
                         )}
                     >
-                        <span className="timestamp">{formatDistanceToNow(new Date(match.timestamp), { addSuffix: true })}</span>
+                        <span className="timestamp">
+                            {formatDistanceToNow(new Date(match.timestamp), { addSuffix: true })}
+                        </span>
                         <span className="asn">{match.asn}</span>
                         <span className="inet">{match.inet}</span>
                         <span className="action">{match.action}</span>

@@ -21,7 +21,7 @@ import { get } from "@/lib/requests";
 import { UIPush } from "@/components/UIPush";
 import { TypedEventEmitter } from "@/lib/TypedEventEmitter";
 import { errorLogger } from "@/lib/misc";
-import { parseISO } from "date-fns";
+
 import ITC from "@/lib/ITC";
 import * as data from "@/lib/data";
 import { getBlocks } from "../BlockPlayer";
@@ -127,10 +127,10 @@ export class Announcements extends React.PureComponent<{}, AnnouncementsState> {
                     this.clearAnnouncement(announcement.id, true);
                     delete active_announcements[announcement.id];
                 },
-                parseISO(announcement.expiration).getTime() - Date.now(),
+                new Date(announcement.expiration).getTime() - Date.now(),
             );
         } else {
-            const t = parseISO(announcement.expiration).getTime() - Date.now();
+            const t = new Date(announcement.expiration).getTime() - Date.now();
             // Tournaments are announced 30 minutes prior, but allow
             // up to 5 minutes of clock skew.
             if (t > 0 && t < 35 * 60 * 1000) {

@@ -33,7 +33,7 @@ import { close_all_popovers } from "@/lib/popover";
 import * as player_cache from "@/lib/player_cache";
 import Dropzone from "react-dropzone";
 import { image_resizer } from "@/lib/image_resizer";
-import moment from "moment";
+import { format } from "date-fns";
 import { PlayerAutocomplete } from "@/components/PlayerAutocomplete";
 import { EmbeddedChatCard } from "@/components/Chat";
 import { localize_time_strings } from "@/lib/localize-time";
@@ -1101,8 +1101,11 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
                                                         </h2>
                                                     )}
                                                     <i>
-                                                        {moment(entry.posted).format("llll")} -{" "}
-                                                        <Player icon user={entry.author} />
+                                                        {format(
+                                                            new Date(entry.posted),
+                                                            "EEEE, MMMM d, yyyy h:mm aa",
+                                                        )}{" "}
+                                                        - <Player icon user={entry.author} />
                                                     </i>
                                                     {this.state.is_admin && (
                                                         <div>
@@ -1231,8 +1234,9 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
                                                 className: "created",
                                                 render: (record) => (
                                                     <div>
-                                                        {moment(new Date(record.created)).format(
-                                                            "l",
+                                                        {format(
+                                                            new Date(record.created),
+                                                            "MMMM d, yyyy",
                                                         )}
                                                     </div>
                                                 ),

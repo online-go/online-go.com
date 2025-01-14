@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import { PaginatedTable } from "@/components/PaginatedTable";
-import moment from "moment";
+import { format } from "date-fns";
 import { Player } from "@/components/Player";
 import { Link } from "react-router-dom";
 import { chat_markup } from "@/components/Chat";
@@ -45,7 +45,7 @@ export function ModLog(props: ModLogProps): React.ReactElement {
                 {
                     header: "",
                     className: "date",
-                    render: (X) => moment(X.timestamp).format("YYYY-MM-DD HH:mm:ss"),
+                    render: (X) => format(new Date(X.timestamp), "yyyy-MM-dd HH:mm:ss"),
                 },
                 {
                     header: "",

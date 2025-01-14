@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import { format, formatDistanceToNow, endOfDay, addDays, setDay } from "date-fns";
-import { utcToZonedTime } from "date-fns-tz";
+import { toZonedTime } from "date-fns-tz";
 import { _, interpolate } from "@/lib/translate";
 
 interface ServerTimeState {
@@ -52,9 +52,7 @@ export class ServerTimeDisplay extends React.Component<{}, ServerTimeState> {
 
         if (day === 6 || day === 0) {
             /* Saturday or Sunday */
-            const midnight_sunday = endOfDay(
-                day === 6 ? addDays(new Date(), 1) : new Date()
-            );
+            const midnight_sunday = endOfDay(day === 6 ? addDays(new Date(), 1) : new Date());
             return interpolate(_("Weekend ends {{time_from_now}}"), {
                 time_from_now: formatDistanceToNow(midnight_sunday, { addSuffix: true }),
             });
@@ -67,7 +65,7 @@ export class ServerTimeDisplay extends React.Component<{}, ServerTimeState> {
     }
 
     render() {
-        const zonedTime = utcToZonedTime(this.state.time, "UTC");
+        const zonedTime = toZonedTime(this.state.time, "UTC");
         return (
             <div className="server-time-display">
                 <div>

@@ -456,9 +456,7 @@ export function GameChatLine(props: GameChatLineProperties): React.ReactElement 
                 !last_line ||
                 !isSameDay(new Date(line.date * 1000), new Date(last_line.date * 1000))
             ) {
-                show_date = (
-                    <div className="date">{format(new Date(line.date * 1000), "PPP")}</div>
-                );
+                show_date = <div className="date">{format(new Date(line.date * 1000), "PPP")}</div>;
             }
         }
     }

@@ -18,7 +18,7 @@
 import * as React from "react";
 import { PaginatedTable } from "@/components/PaginatedTable";
 import { Card } from "@/components/material";
-import moment from "moment";
+import { format } from "date-fns";
 import { Player } from "@/components/Player";
 import { openModal } from "@/components/Modal";
 import { NotesModal } from "@/components/NotesModal";
@@ -107,12 +107,12 @@ export function ModTools(props: ModToolsProps): React.ReactElement | null {
                             {
                                 header: "Registered",
                                 className: "date",
-                                render: (X) => moment(X.registration_date).format("YYYY-MM-DD"),
+                                render: (X) => format(new Date(X.registration_date), "yyyy-MM-dd"),
                             },
                             {
                                 header: "Last Login",
                                 className: "date",
-                                render: (X) => moment(X.last_login).format("YYYY-MM-DD"),
+                                render: (X) => format(new Date(X.last_login), "yyyy-MM-dd"),
                             },
                             {
                                 header: "Browser ID",

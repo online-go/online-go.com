@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import * as data from "@/lib/data";
-import moment from "moment";
+import { format } from "date-fns";
 import { Card } from "@/components/material";
 import { post, get, patch } from "@/lib/requests";
 import { _, pgettext, interpolate } from "@/lib/translate";
@@ -111,7 +111,7 @@ export function Appeal(props: { player_id?: number }): React.ReactElement | null
                             "Suspension expires: {{expiration}}",
                         ),
                         {
-                            expiration: moment(ban_expiration).format("LLL"),
+                            expiration: format(new Date(ban_expiration), "MMMM d, yyyy h:mm aa"),
                         },
                     )}
                 </h2>
@@ -242,7 +242,9 @@ function Message({ message, mod }: { message: AppealMessage; mod: boolean }) {
             }`}
         >
             <div className="header">
-                <span className="timestamp">{moment(message.timestamp).format("llll")}</span>
+                <span className="timestamp">
+                    {format(new Date(message.timestamp), "EEEE, MMMM d, yyyy h:mm aa")}
+                </span>
                 {message.moderator_id && <Player user={message.moderator_id} />}
                 {((!message.moderator_id && message.moderator_message) || null) && _("Moderator")}
             </div>

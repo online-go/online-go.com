@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import moment from "moment";
+import { format, intervalToDuration } from "date-fns";
 
 import { _, pgettext } from "@/lib/translate";
 
@@ -83,15 +83,16 @@ export function AnnouncementPreferences(): React.ReactElement {
                     {
                         header: "Time",
                         className: "announcement-time ",
-                        render: (a) => moment(a.timestamp).format("YYYY-MM-DD LTS"),
+                        render: (a) => format(new Date(a.timestamp), "yyyy-MM-dd HH:mm:ss"),
                     },
                     {
                         header: "Duration",
                         className: "",
                         render: (a) => {
-                            const ms = moment(a.expiration).diff(moment(a.timestamp));
-                            const d = moment.duration(ms);
-                            return Math.floor(d.asHours()) + moment.utc(ms).format(":mm");
+                            const start = new Date(a.timestamp);
+                            const end = new Date(a.expiration);
+                            const duration = intervalToDuration({ start, end });
+                            return `${duration.hours}:${String(duration.minutes).padStart(2, "0")}`;
                             //.format('HH:mm')
                         },
                     },

@@ -17,13 +17,13 @@
 
 import { Card } from "@/components/material";
 import { interpolate } from "@/lib/translate";
-import moment from "moment";
+import { format } from "date-fns";
 import * as React from "react";
 
 type VersusCardProps = rest_api.FullPlayerDetail["vs"] & { username: string };
 
 function toPrettyDate(date: string) {
-    return moment(new Date(date)).format("ll");
+    return format(new Date(date), "MMM d, yyyy");
 }
 
 export function VersusCard(props: VersusCardProps) {

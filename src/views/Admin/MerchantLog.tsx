@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import { PaginatedTable } from "@/components/PaginatedTable";
-import moment from "moment";
+import { format } from "date-fns";
 
 export class MerchantLog extends React.PureComponent<{}, any> {
     constructor(props: {}) {
@@ -36,7 +36,7 @@ export class MerchantLog extends React.PureComponent<{}, any> {
                         {
                             header: "Time",
                             className: () => "timestamp",
-                            render: (X) => moment(new Date(X.timestamp)).format("YYYY-MM-DD HH:mm"),
+                            render: (X) => format(new Date(X.timestamp), "yyyy-MM-dd HH:mm"),
                         },
 
                         { header: "System", render: (X) => X.system },

@@ -24,12 +24,10 @@ import { Card } from "@/components/material";
 import { UIPush } from "@/components/UIPush";
 import { errorAlerter } from "@/lib/misc";
 import { Player } from "@/components/Player";
-import moment from "moment";
+import { format, formatDistanceToNow, intervalToDuration } from "date-fns";
 //import { Announcement } from "@/components/Announcements";
 import { useUser } from "@/lib/hooks";
 import { Announcement } from "@/components/Announcements";
-
-moment.relativeTimeThreshold("m", 59);
 
 const all_duration_options = [
     900,
@@ -81,7 +79,7 @@ export function AnnouncementCenter(): React.ReactElement {
 
     const create = () => {
         const duration = all_duration_options[duration_idx] * 1000 + 1000;
-        const expiration = moment.utc(Date.now() + duration).format("YYYY-MM-DD HH:mm:ss Z");
+        const expiration = format(new Date(Date.now() + duration), "yyyy-MM-dd HH:mm:ss xxx");
         data.set("announcement.last-type", announcementType);
         data.set("announcement.last-duration", duration_idx);
 
@@ -194,9 +192,12 @@ export function AnnouncementCenter(): React.ReactElement {
                                     ? interpolate(_("%s hours"), [
                                           (duration_options[duration_idx] / 3600).toFixed(1),
                                       ])
-                                    : moment
-                                          .duration(duration_options[duration_idx], "seconds")
-                                          .humanize(false, { h: 24, m: 59, s: 59 })}
+                                    : formatDistanceToNow(
+                                          new Date(
+                                              Date.now() + duration_options[duration_idx] * 1000,
+                                          ),
+                                          { addSuffix: false },
+                                      )}
                             </span>
                         </div>
                     </dd>
@@ -264,7 +265,10 @@ export function AnnouncementCenter(): React.ReactElement {
                                 </a>
                             </div>
                             <div className="cell">
-                                expires {moment(announcement.expiration).fromNow()}
+                                expires{" "}
+                                {formatDistanceToNow(new Date(announcement.expiration), {
+                                    addSuffix: true,
+                                })}
                             </div>
                         </div>
                     ))}
@@ -282,15 +286,19 @@ export function AnnouncementCenter(): React.ReactElement {
                         {
                             header: "Time",
                             className: "",
-                            render: (a) => moment(a.timestamp).format("YYYY-MM-DD LTS"),
+                            render: (a) => format(new Date(a.timestamp), "yyyy-MM-dd HH:mm:ss"),
                         },
                         {
                             header: "Duration",
                             className: "",
                             render: (a) => {
-                                const ms = moment(a.expiration).diff(moment(a.timestamp));
-                                const d = moment.duration(ms);
-                                return Math.floor(d.asHours()) + moment.utc(ms).format(":mm");
+                                const start = new Date(a.timestamp);
+                                const end = new Date(a.expiration);
+                                const duration = intervalToDuration({ start, end });
+                                return `${duration.hours}:${String(duration.minutes).padStart(
+                                    2,
+                                    "0",
+                                )}`;
                                 //.format('HH:mm')
                             },
                         },

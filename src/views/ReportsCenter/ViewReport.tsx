@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import moment from "moment";
+import { formatDistanceToNow } from "date-fns";
 import * as ReactSelect from "react-select";
 import Select from "react-select";
 import { useUser } from "@/lib/hooks";
@@ -486,7 +486,11 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): R
                                 ) : (
                                     "System"
                                 )}
-                                <span className="when">{moment(report.created).fromNow()}</span>
+                                <span className="when">
+                                    {formatDistanceToNow(new Date(report.created), {
+                                        addSuffix: true,
+                                    })}
+                                </span>
                             </span>
                         </div>
                     </h3>

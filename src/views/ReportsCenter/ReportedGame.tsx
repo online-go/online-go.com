@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import moment from "moment";
+
 import { useRefresh } from "@/lib/hooks";
 import { shortTimeControl } from "@/components/TimeControl";
 import { _, pgettext } from "@/lib/translate";
@@ -62,7 +62,7 @@ export function ReportedGame({
     const [game, setGame] = React.useState<rest_api.GameDetails | null>(null);
     const [_aiReviewUuid, setAiReviewUuid] = React.useState<string | null>(null);
     const [annulled, setAnnulled] = React.useState<boolean>(false);
-    const [finalActionTime, setFinalActionTime] = React.useState<moment.Duration | null>(null);
+    const [finalActionTime, setFinalActionTime] = React.useState<number | null>(null);
     const [timedOutPlayer, setTimedOutPlayer] = React.useState<number | null>(null);
     const [scoringAbandoned, setScoringAbandoned] = React.useState<boolean>(false);
 
@@ -311,7 +311,7 @@ function ModeratorReportedGameActions({
 
 interface GameOutcomeSummaryProps {
     winner: string;
-    finalActionTime: moment.Duration | null;
+    finalActionTime: number | null;
     timedOutPlayer: number | null;
     reported_by: number;
     annulled: boolean;

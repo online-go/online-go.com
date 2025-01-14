@@ -680,7 +680,7 @@ export function showSecondsResolution(duration: number | null): string {
         return `${(duration / 1000).toFixed(1)}s`;
     } else {
         const dur = intervalToDuration({ start: 0, end: duration });
-        return formatDuration(dur, { format: ['days', 'hours', 'minutes', 'seconds'] });
+        return formatDuration(dur, { format: ["days", "hours", "minutes", "seconds"] });
     }
 }
 

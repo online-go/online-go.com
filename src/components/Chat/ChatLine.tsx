@@ -62,7 +62,7 @@ export function ChatLine(props: ChatLineInterface): React.ReactElement {
 
     if (!last_line || (ts && ts_ll)) {
         if (ts) {
-            if (!last_line || !isSameDay(ts, ts_ll)) {
+            if (!last_line || !ts_ll || !isSameDay(ts, ts_ll)) {
                 show_date = <div className="date">{format(ts, "PPP")}</div>;
             }
         }

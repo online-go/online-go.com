@@ -18,7 +18,7 @@
 /* spell-checker: disable */
 
 import * as React from "react";
-import moment from "moment";
+import { format } from "date-fns";
 import * as data from "@/lib/data";
 import { Link } from "react-router-dom";
 import { _ } from "@/lib/translate";
@@ -241,9 +241,7 @@ export class Moderator extends React.PureComponent<{}, ModeratorState> {
                                 header: _("Time"),
                                 className: () => "timestamp",
                                 render: (X) =>
-                                    moment(new Date(X.registration_date)).format(
-                                        "YYYY-MM-DD HH:mm",
-                                    ),
+                                    format(new Date(X.registration_date), "yyyy-MM-dd HH:mm"),
                             },
 
                             {
@@ -378,8 +376,7 @@ export class Moderator extends React.PureComponent<{}, ModeratorState> {
                             {
                                 header: _("Time"),
                                 className: () => "timestamp ",
-                                render: (X) =>
-                                    moment(new Date(X.timestamp)).format("YYYY-MM-DD HH:mm"),
+                                render: (X) => format(new Date(X.timestamp), "yyyy-MM-dd HH:mm"),
                             },
 
                             {

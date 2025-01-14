@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { intervalToDuration, formatDuration } from "date-fns";
+import { intervalToDuration } from "date-fns";
 
 import { AdHocPackedMove, GobanMovesArray } from "goban";
 import { useUser } from "@/lib/hooks";
@@ -25,7 +25,7 @@ import { showSecondsResolution } from "@/lib/misc";
 function formatDurationCustom(ms: number): string {
     const duration = intervalToDuration({ start: 0, end: ms });
     const format = Object.entries(duration)
-        .filter(([_, value]) => value !== 0)
+        .filter(([_key, value]) => value !== 0)
         .map(([unit, value]) => `${value}${unit[0]}`)
         .join(" ");
     return format || "0s";
@@ -47,9 +47,7 @@ export function GameTimings(props: GameTimingProperties): React.ReactElement {
 
     const show_seconds_nicely = (duration: number) =>
         duration < 60 * 1000 ? (
-            <span className="timing-seconds">
-                {(duration / 1000).toFixed(1)}
-            </span>
+            <span className="timing-seconds">{(duration / 1000).toFixed(1)}</span>
         ) : duration < 60 * 60 * 1000 ? (
             <span className="timing-slow-live">{formatDurationCustom(duration)}</span>
         ) : (
@@ -65,7 +63,7 @@ export function GameTimings(props: GameTimingProperties): React.ReactElement {
     React.useEffect(() => {
         if (props.end_time && props.onFinalActionCalculated) {
             props.onFinalActionCalculated(
-                (props.end_time - props.start_time) * 1000 - game_elapsed.value
+                (props.end_time - props.start_time) * 1000 - game_elapsed.value,
             );
         }
     }, [props.start_time, props.end_time, props.onFinalActionCalculated]);
@@ -252,7 +250,7 @@ export function GameTimings(props: GameTimingProperties): React.ReactElement {
             <div className="final-action-row">
                 {props.end_time &&
                     showSecondsResolution(
-                        (props.end_time - props.start_time) * 1000 - game_elapsed.value
+                        (props.end_time - props.start_time) * 1000 - game_elapsed.value,
                     )}
             </div>
         </div>

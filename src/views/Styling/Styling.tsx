@@ -29,7 +29,7 @@ import { GroupAutocomplete } from "@/components/GroupAutocomplete";
 import { Markdown } from "@/components/Markdown";
 import { Steps } from "@/components/Steps";
 import { errcodeAlerter } from "@/components/ErrcodeModal";
-import moment from "moment";
+import { parse } from "date-fns";
 import { alert } from "@/lib/swal_config";
 import { PlayerCacheEntry } from "@/lib/player_cache";
 
@@ -46,9 +46,9 @@ export class Styling extends React.PureComponent<{}, any> {
             slider_num_value: 50,
             slider_num_min: 0,
             slider_num_max: 200,
-            slider_date_value: moment("20180601", "YYYYMMDD").toDate(),
-            slider_date_min: moment("20180101", "YYYYMMDD").toDate(),
-            slider_date_max: moment("20190101", "YYYYMMDD").toDate(),
+            slider_date_value: parse("20180601", "yyyyMMdd", new Date()),
+            slider_date_min: parse("20180101", "yyyyMMdd", new Date()),
+            slider_date_max: parse("20190101", "yyyyMMdd", new Date()),
         };
     }
 

@@ -22,6 +22,7 @@ function formatDuration(minutes: number): string {
     const now = new Date();
     const future = new Date(now.getTime() + minutes * 60 * 1000);
     return formatDistanceStrict(future, now);
+}
 
 export interface GameSpeedOptions {
     [size: string]: {

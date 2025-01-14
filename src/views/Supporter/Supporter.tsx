@@ -19,7 +19,7 @@
 
 import * as React from "react";
 import * as data from "@/lib/data";
-import moment from "moment";
+import { format } from "date-fns";
 import { FreeTrialBanner } from "@/components/FreeTrialBanner";
 import { useParams, useSearchParams } from "react-router-dom";
 import { get, post, put } from "@/lib/requests";
@@ -563,7 +563,7 @@ export function Supporter(props: SupporterProperties): React.ReactElement {
                                     <div key={idx} className="Payment">
                                         <span className="date">
                                             {p.updated
-                                                ? moment(p.updated).format("lll")
+                                                ? format(new Date(p.updated), "MMM d, yyyy h:mm aa")
                                                 : _("Pending")}
                                         </span>
                                         <span className="amount">
@@ -774,7 +774,7 @@ export function PriceBox({
                                 "Sign up before {{date}} to lock in your price before the prices increase",
                             ),
                             {
-                                date: moment("2022-01-31").format("ll"),
+                                date: format(new Date("2022-01-31"), "MMM d, yyyy"),
                             },
                         )}
                     </div>

@@ -21,7 +21,7 @@ import { _, pgettext } from "@/lib/translate";
 import { get, put } from "@/lib/requests";
 import { parse } from "query-string";
 import * as data from "@/lib/data";
-import moment from "moment";
+import { format } from "date-fns";
 
 import * as preferences from "@/lib/preferences";
 import * as player_cache from "@/lib/player_cache";
@@ -570,8 +570,9 @@ export function User(props: { user_id?: number }): React.ReactElement {
                                                         )}
                                                     </div>
                                                     <div>
-                                                        {moment("2020-07-20T14:38:37").format(
-                                                            "LLLL",
+                                                        {format(
+                                                            new Date("2020-07-20T14:38:37"),
+                                                            "PPPP",
                                                         )}
                                                     </div>
                                                 </div>
@@ -591,17 +592,19 @@ export function User(props: { user_id?: number }): React.ReactElement {
                                                         <div>
                                                             1513 simultaneous correspondence games
                                                             <div>
-                                                                {moment(
-                                                                    "2021-11-21T00:00:00",
-                                                                ).format("LL")}
+                                                                {format(
+                                                                    new Date("2021-11-21T00:00:00"),
+                                                                    "MMMM d, yyyy",
+                                                                )}
                                                             </div>
                                                         </div>
                                                         <div>
                                                             50,000 games played
                                                             <div>
-                                                                {moment(
-                                                                    "2023-03-25T00:00:00",
-                                                                ).format("LL")}
+                                                                {format(
+                                                                    new Date("2023-03-25T00:00:00"),
+                                                                    "MMMM d, yyyy",
+                                                                )}
                                                             </div>
                                                         </div>
                                                     </div>

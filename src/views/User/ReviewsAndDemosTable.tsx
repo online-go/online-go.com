@@ -22,7 +22,7 @@ import { _ } from "@/lib/translate";
 import { Card } from "@/components/material";
 import { Link } from "react-router-dom";
 import { openUrlIfALinkWasNotClicked } from "./common";
-import moment from "moment";
+import { format } from "date-fns";
 import { Player } from "@/components/Player";
 
 interface ReviewsAndDemosProps {
@@ -109,7 +109,7 @@ export function ReviewsAndDemosTable(props: ReviewsAndDemosProps): React.ReactEl
                             {
                                 header: _("Date"),
                                 className: () => "date",
-                                render: (X) => moment(X.date).format("YYYY-MM-DD"),
+                                render: (X) => format(new Date(X.date), "yyyy-MM-dd"),
                             },
                             {
                                 header: _("Name"),

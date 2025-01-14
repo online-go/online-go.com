@@ -23,7 +23,7 @@ import { PaginatedTable } from "@/components/PaginatedTable";
 import { effective_outcome } from "@/lib/rank_utils";
 import { capitalize, getGameResultText } from "@/lib/misc";
 import { openUrlIfALinkWasNotClicked, maskedRank } from "./common";
-import moment from "moment";
+import { format } from "date-fns";
 import { rankString } from "@/lib/rank_utils";
 import { Player } from "@/components/Player";
 import { Link } from "react-router-dom";
@@ -388,7 +388,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
                             {
                                 header: _("Date"),
                                 className: (X) => "date" + (X && X.annulled ? " annulled" : ""),
-                                render: (X) => moment(X.date).format("YYYY-MM-DD"),
+                                render: (X) => format(X.date, "yyyy-MM-dd"),
                             },
                             {
                                 header: _("Opponent"),
