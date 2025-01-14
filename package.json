@@ -24,6 +24,7 @@
         "spellcheck": "cspell \"src/**/*.{ts,tsx}\"",
         "minify-index": "node minify-index.js",
         "dependency-cruiser": "dependency-cruiser src",
+        "bundle-visualizer": "vite-bundle-visualizer -c vite.config.ts",
         "yarn": "yarn"
     },
     "browserslist": [
@@ -100,6 +101,7 @@
         "vite": "^6.0.7",
         "vite-plugin-checker": "^0.8.0",
         "vite-plugin-node-polyfills": "^0.22.0",
+        "vite-bundle-visualizer": "^1.2.1",
         "yarn": "^1.22.22"
     },
     "dependencies": {
