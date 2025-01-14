@@ -67,7 +67,7 @@ class PrivateChat {
     chat_base = Math.floor(Math.random() * 100000).toString(36);
     chat_num = 0;
 
-    display_state = "closed";
+    display_state: "open" | "minimized" | "closed" = "closed";
 
     constructor(user_id: number, username: string) {
         this.user_id = user_id;
@@ -107,7 +107,9 @@ class PrivateChat {
                     this.player = player;
                     this.player_dom.textContent = unicodeFilter(player.username || "");
                     if (player.ui_class) {
-                        this.player_dom.classList.add(player.ui_class);
+                        player.ui_class.split(" ").forEach((c) => {
+                            this.player_dom.classList.add(c);
+                        });
                     }
                     if (player.ui_class?.match(/moderator/)) {
                         // inter mod chat? don't open
@@ -463,8 +465,10 @@ class PrivateChat {
 
         const title = document.createElement("div");
         title.classList.add("title");
-        title.addEventListener("click", () => {
+        title.addEventListener("click", (event) => {
+            event.stopPropagation();
             this.open(true);
+            return false;
         });
         title.appendChild(this.player_dom);
 
@@ -487,8 +491,10 @@ class PrivateChat {
 
         const close = document.createElement("i");
         close.classList.add("fa", "fa-times");
-        close.addEventListener("click", () => {
+        close.addEventListener("click", (event) => {
+            event.stopPropagation();
             this.close(true);
+            return false;
         });
         title.appendChild(close);
 
@@ -513,20 +519,20 @@ class PrivateChat {
     }
 
     close(send_itc: boolean, dont_send_pm_close?: boolean) {
-        if (this.display_state === "closed") {
-            return;
-        }
-
-        const idx = private_chats.indexOf(this);
-        if (idx >= 0) {
-            private_chats.splice(idx, 1);
+        this.display_state = "closed";
+        for (let i = 0; i < private_chats.length; ++i) {
+            if (private_chats[i].id === this.id) {
+                private_chats.splice(i, 1);
+                break;
+            }
         }
 
         if (this.dom) {
             this.dom.remove();
         }
 
-        this.display_state = "closed";
+        this.dom = null as unknown as HTMLDivElement;
+        this.body = null;
         update_chat_layout();
 
         if (send_itc) {
@@ -534,9 +540,9 @@ class PrivateChat {
                 user_id: this.user_id,
                 username: this.player.username,
             });
+            data.set(`pm.close-${this.user_id}`, this.last_uid);
         }
-
-        if (!dont_send_pm_close) {
+        if (socket && !dont_send_pm_close) {
             socket.send("chat/pm/close", { player_id: this.user_id });
         }
     }
@@ -592,15 +598,10 @@ class PrivateChat {
         this.lines.push(line);
 
         if (this.body) {
-            const cur = this.body.scrollTop;
-            this.body.scrollTop = this.body.scrollHeight;
-            if (this.body.scrollTop === cur) {
-                // we didn't scroll, meaning the user has scrolled up to read something
-                // so let's highlight the title to let them know there are new messages
-                this.dom?.classList.add("highlighted");
-            }
+            const atBottom =
+                this.body.scrollHeight - this.body.scrollTop <= this.body.clientHeight + 1;
             this.body.appendChild(line);
-            if (this.body.scrollTop !== cur) {
+            if (atBottom) {
                 this.body.scrollTop = this.body.scrollHeight;
             }
         }
@@ -715,7 +716,7 @@ class PrivateChat {
         return this.lines.map((line) => line.textContent);
     }
 
-    sendChat(msg: string, _as_system?: true) {
+    sendChat(msg: string, as_system?: true) {
         if (data.get("appeals.banned_user_id")) {
             void alert.fire(_("Your account is suspended - you cannot send messages."));
             return;
@@ -730,12 +731,26 @@ class PrivateChat {
             const line = arr[0];
             msg = arr[1];
 
-            socket.send("chat/pm", {
-                player_id: this.user_id,
-                username: this.player.username || "<e>",
-                uid: this.chat_base + "." + (++this.chat_num).toString(36),
-                message: line,
-            });
+            this.addChat(data.get("user").username, line, this.user_id, new Date());
+            socket.send(
+                "chat/pm",
+                {
+                    player_id: this.user_id,
+                    username: this.player.username || "<error>",
+                    uid: this.chat_base + "." + (++this.chat_num).toString(36),
+                    message: line,
+                    as_system,
+                },
+
+                (line) => {
+                    if (line) {
+                        /* we're gonna get these echoed back to us in various cases */
+                        this.received_messages[
+                            line.message.i + " " + line.message.t + " " + line.from.username
+                        ] = true;
+                    }
+                },
+            );
         }
 
         if (this.input) {
@@ -805,8 +820,6 @@ function update_chat_layout() {
     if (window_width < 640) {
         pos = 0;
         max_width = "100vw";
-    } else {
-        max_width = Math.min(500, window_width - pos - 50) + "px";
     }
 
     // Sort chats by id to maintain consistent ordering
@@ -828,9 +841,9 @@ socket.on(
     }) => {
         let pc;
         if (line.from.id === data.get("user").id) {
-            pc = getOrCreatePrivateChat(line.to.id, line.to.username);
+            pc = getPrivateChat(line.to.id, line.to.username);
         } else if (line.to.id === data.get("user").id) {
-            pc = getOrCreatePrivateChat(line.from.id, line.from.username);
+            pc = getPrivateChat(line.from.id, line.from.username);
         }
 
         if (pc && !pc.superchat_enabled) {
@@ -852,7 +865,7 @@ socket.on(
 socket.on("private-superchat", (config) => {
     let pc;
     if (config.moderator_id !== data.get("user").id) {
-        pc = getOrCreatePrivateChat(config.moderator_id, config.moderator_username);
+        pc = getPrivateChat(config.moderator_id, config.moderator_username);
         if (pc) {
             pc.open();
             if (!data.get("user").is_superuser) {
@@ -870,7 +883,7 @@ socket.on("private-superchat", (config) => {
             }
         }
     } else {
-        pc = getOrCreatePrivateChat(config.player_id, config.player_username);
+        pc = getPrivateChat(config.player_id, config.player_username);
         if (pc) {
             pc.superchat_enabled = true;
             pc.open();
@@ -878,14 +891,7 @@ socket.on("private-superchat", (config) => {
     }
 });
 
-ITC.register("private-chat-open", (data) => {
-    let pc = instances[data.user_id];
-    if (!pc) {
-        pc = instances[data.user_id] = new PrivateChat(data.user_id, data.username);
-    }
-    pc.open();
-});
-
+/*
 ITC.register("private-chat-minimize", (data) => {
     let pc = instances[data.user_id];
     if (!pc) {
@@ -893,51 +899,21 @@ ITC.register("private-chat-minimize", (data) => {
     }
     pc.minimize();
 });
+*/
 
 ITC.register("private-chat-close", (data) => {
-    let pc = instances[data.user_id];
-    if (!pc) {
-        pc = instances[data.user_id] = new PrivateChat(data.user_id, data.username);
+    const pc = getPrivateChat(data.user_id);
+    if (pc.display_state === "minimized") {
+        pc.close(false);
     }
-    pc.close(false);
 });
 
-export function openPrivateChat(user_id: number, username: string) {
+export function getPrivateChat(user_id: number, username?: string) {
     let pc = instances[user_id];
     if (!pc) {
-        pc = instances[user_id] = new PrivateChat(user_id, username);
-    }
-    pc.open(true);
-}
-
-export function closePrivateChat(user_id: number) {
-    const pc = instances[user_id];
-    if (pc) {
-        pc.close(true);
-    }
-}
-
-export function minimizePrivateChat(user_id: number) {
-    const pc = instances[user_id];
-    if (pc) {
-        pc.minimize(true);
-    }
-}
-
-export function getOrCreatePrivateChat(user_id: number, username: string) {
-    let pc = instances[user_id];
-    if (!pc) {
-        pc = instances[user_id] = new PrivateChat(user_id, username);
+        pc = instances[user_id] = new PrivateChat(user_id, username ?? "<unknown>");
     }
     return pc;
-}
-
-export function getPrivateChat(user_id: number, username?: string): PrivateChat {
-    if (user_id in instances) {
-        return instances[user_id];
-    }
-
-    return (instances[user_id] = new PrivateChat(user_id, username ?? "<unknown>"));
 }
 
 function chat_markup(body: string): string | undefined {
