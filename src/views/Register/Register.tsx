@@ -121,7 +121,7 @@ export function Register(): React.ReactElement {
         }
 
         if (/@/.test(ref_username.current.value)) {
-            $(ref_username.current).addClass("validation-error");
+            ref_username.current.classList.add("validation-error");
             setError(
                 _(
                     "Your username will be publicly visible, please do not use your email address here.",
@@ -130,8 +130,8 @@ export function Register(): React.ReactElement {
             ref_username.current.focus();
             return false;
         } else {
-            if ($(ref_username.current).hasClass("validation-error")) {
-                $(ref_username.current).removeClass("validation-error");
+            if (ref_username.current.classList.contains("validation-error")) {
+                ref_username.current.classList.remove("validation-error");
                 setError(undefined);
             }
         }

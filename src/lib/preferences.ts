@@ -266,7 +266,6 @@ export function dump(): void {
 }
 
 export function getSelectedThemes(): GobanSelectedThemes {
-    //let default_plain = $.browser.mobile || ($(window).width() * (window.devicePixelRatio || 1)) <= 768;
     let default_plain = getWindowWidth() * (window.devicePixelRatio || 1) <= 768;
     if (data.get("user").anonymous || data.get("user").id > 1618000) {
         default_plain = true;

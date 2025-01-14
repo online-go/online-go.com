@@ -289,7 +289,7 @@ export function PlayControls({
 
     const rematch = () => {
         try {
-            $(document.activeElement as any).blur();
+            (document.activeElement as HTMLElement)?.blur();
         } catch (e) {
             console.error(e);
         }

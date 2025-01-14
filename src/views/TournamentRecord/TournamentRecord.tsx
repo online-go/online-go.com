@@ -164,7 +164,7 @@ export function TournamentRecord(): React.ReactElement {
 
     const addRound = () => {
         if (new_round_name.trim().length < 2) {
-            $(".round-name-editor").focus();
+            (document.querySelector(".round-name-editor") as HTMLElement)?.focus();
             return;
         }
 
@@ -186,7 +186,7 @@ export function TournamentRecord(): React.ReactElement {
         const rank = new_player_rank;
 
         if (name.trim().length < 2) {
-            $(".new-player-name").focus();
+            (document.querySelector(".new-player-name") as HTMLElement)?.focus();
             return;
         }
 

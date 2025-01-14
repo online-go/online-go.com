@@ -54,15 +54,16 @@ let notification_timeout: ReturnType<typeof setTimeout> | null = null;
 const sent: { [k: string]: boolean } = {};
 const game_turn_notifications_sent: { [k: string]: boolean } = {};
 
-$(window).on("storage", (event) => {
+window.addEventListener("storage", (event) => {
     //console.log(event);
-    const ev: any = event.originalEvent;
-    if (ev.key === "lastNotificationSent") {
-        const key = ev.newValue;
-        sent[key] = true;
-        setTimeout(() => {
-            delete sent[key];
-        }, 5000); /* duplicate looking messages are possible so we don't want to possibly block them for very long */
+    if (event.key === "lastNotificationSent") {
+        const key = event.newValue;
+        if (key) {
+            sent[key] = true;
+            setTimeout(() => {
+                delete sent[key];
+            }, 5000); /* duplicate looking messages are possible so we don't want to possibly block them for very long */
+        }
     }
 });
 

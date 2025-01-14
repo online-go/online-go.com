@@ -117,12 +117,26 @@ export function openBlockPlayerControls(
     ev: { target: HTMLElement } | React.MouseEvent<HTMLElement>,
     user_id: number,
 ): PopOver {
-    const elt = $(ev.target);
-    const offset = elt.offset();
+    const elt = ev.target;
+    if (!(elt instanceof HTMLElement)) {
+        return popover({
+            elt: <BlockPlayerModal playerId={user_id} />,
+            at: { x: 0, y: 0 },
+            minWidth: 300,
+            minHeight: 50,
+        });
+    }
+    const rect = elt.getBoundingClientRect();
+    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const offset = {
+        left: rect.left + scrollLeft,
+        top: rect.top + scrollTop,
+    };
 
     return popover({
         elt: <BlockPlayerModal playerId={user_id} />,
-        at: { x: offset?.left || 0, y: (offset?.top || 0) + elt.height() },
+        at: { x: offset.left, y: offset.top + elt.offsetHeight },
         minWidth: 300,
         minHeight: 50,
     });

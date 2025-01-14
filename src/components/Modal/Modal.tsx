@@ -71,11 +71,11 @@ export class Modal<Events, P, S> extends TypedEventEmitterPureComponent<
             //container.remove();
             backdrop.parentNode?.removeChild(backdrop);
             this.off("close", on_close);
-            $(document.body).off("keydown", on_escape as any);
+            document.body.removeEventListener("keydown", on_escape as any);
         };
 
         this.on("close", on_close);
-        $(document.body).on("keydown", on_escape as any);
+        document.body.addEventListener("keydown", on_escape as any);
 
         this.emit("open");
     };

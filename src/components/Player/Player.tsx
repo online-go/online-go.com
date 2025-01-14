@@ -228,14 +228,14 @@ export function Player(props: PlayerProperties): React.ReactElement {
         } else {
             let chat_id: string | null = null;
             try {
-                let cur = $(elt_ref.current as HTMLElement);
+                let cur = elt_ref.current as HTMLElement;
 
-                while (cur && cur[0].nodeName !== "BODY") {
-                    chat_id = cur.attr("data-chat-id");
+                while (cur && cur.nodeName !== "BODY") {
+                    chat_id = cur.getAttribute("data-chat-id") || null;
                     if (chat_id) {
                         break;
                     }
-                    cur = cur.parent();
+                    cur = cur.parentElement as HTMLElement;
                 }
             } catch (e) {
                 console.error(e);

@@ -114,7 +114,8 @@ class NotificationEntry extends React.Component<NotificationEntryProps, any> {
     }
 
     open = (ev: any) => {
-        if (!$(ev.target).hasClass("fab") && !$(ev.target).hasClass("fa")) {
+        const target = ev.target as HTMLElement;
+        if (!target.classList.contains("fab") && !target.classList.contains("fa")) {
             const url = this.getOpenUrl();
             if (url) {
                 browserHistory.push(url);

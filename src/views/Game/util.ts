@@ -17,8 +17,6 @@
 
 import { socket } from "@/lib/sockets";
 
-const win = $(window);
-
 export type ViewMode = "portrait" | "wide" | "square";
 
 export function goban_view_mode(bar_width?: number): ViewMode {
@@ -26,8 +24,8 @@ export function goban_view_mode(bar_width?: number): ViewMode {
         bar_width = 300;
     }
 
-    const h = win.height() || 1;
-    const w = win.width() || 1;
+    const h = window.innerHeight || 1;
+    const w = window.innerWidth || 1;
     const aspect_ratio = w / h;
 
     if ((aspect_ratio <= 0.8 || w < bar_width * 2) && w < 1280) {
@@ -40,9 +38,10 @@ export function goban_view_mode(bar_width?: number): ViewMode {
 
     return "wide";
 }
+
 export function goban_view_squashed(): boolean {
     /* This value needs to match the "dock-inline-height" found in Dock.styl */
-    return win.height() <= 500;
+    return window.innerHeight <= 500;
 }
 
 export const shared_ip_with_player_map: { [game_id: number]: boolean } = {};

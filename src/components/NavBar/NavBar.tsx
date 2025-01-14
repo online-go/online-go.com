@@ -41,18 +41,18 @@ import { logout } from "@/lib/auth";
 import { useUser, useData } from "@/lib/hooks";
 import { OmniSearch } from "./OmniSearch";
 
-const body = $(document.body);
+const body = document.body;
 
 function _update_theme(theme?: string) {
     if (!theme) {
         return;
     }
 
-    if (body.hasClass(theme)) {
+    if (body.classList.contains(theme)) {
         return;
     }
-    body.removeClass("light dark accessible");
-    body.addClass(theme);
+    body.classList.remove("light", "dark", "accessible");
+    body.classList.add(theme);
 }
 
 function setTheme(theme: string) {
