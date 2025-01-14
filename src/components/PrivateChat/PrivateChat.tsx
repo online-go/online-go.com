@@ -312,7 +312,9 @@ class PrivateChat {
             body.addEventListener("mouseup", release);
             body.addEventListener("touchend", release);
             body.addEventListener("mousemove", move as unknown as EventListener);
-            body.addEventListener("touchmove", move as unknown as EventListener, { passive: false });
+            body.addEventListener("touchmove", move as unknown as EventListener, {
+                passive: false,
+            });
 
             return true;
         };
