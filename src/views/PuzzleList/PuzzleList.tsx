@@ -26,7 +26,7 @@ import { StarRating } from "@/components/StarRating";
 import { longRankString, rankString } from "@/lib/rank_utils";
 import { navigateTo, unitify } from "@/lib/misc";
 import * as data from "@/lib/data";
-import moment from "moment";
+import { format } from "date-fns";
 
 interface PuzzleListState {
     name_contains_filter: string; // string to be used for filtering search results by name
@@ -177,7 +177,7 @@ export class PuzzleList extends React.PureComponent<{}, PuzzleListState> {
                                 {
                                     header: _("Created"),
                                     className: () => "date center",
-                                    render: (X) => moment(new Date(X.created)).format("l"),
+                                    render: (X) => format(new Date(X.created), "P"),
                                     orderBy: ["-created"],
                                 },
                             ]}

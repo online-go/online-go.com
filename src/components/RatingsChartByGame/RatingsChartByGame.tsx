@@ -22,7 +22,7 @@
 /* (Which is why it's structure is the same) */
 
 import * as d3 from "d3";
-import moment from "moment";
+import { format } from "date-fns";
 import * as React from "react";
 import { OgsResizeDetector } from "@/components/OgsResizeDetector";
 import { _, pgettext, interpolate } from "@/lib/translate";
@@ -73,7 +73,7 @@ const show_hovered_game_delay = 250; // milliseconds till game info of hovered d
 
 const pie_restore_delay = 1500; // long enough to go click on the minigoban if you want to, not so long as to come as a surprise later.
 
-const format_date = (d: Date) => moment(d).format("ll");
+const format_date = (d: Date) => format(d, "PP");
 
 export class RatingsChartByGame extends React.Component<RatingsChartProperties, RatingsChartState> {
     container = React.createRef<HTMLDivElement>();

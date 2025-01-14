@@ -29,7 +29,7 @@ import { handicapText } from "@/components/GameAcceptModal";
 import { TimeControl, timeControlDescription } from "@/components/TimeControl";
 import { Markdown } from "@/components/Markdown";
 import { Player, setExtraActionCallback } from "@/components/Player";
-import moment from "moment";
+import { addHours, addMinutes, startOfHour, format, formatDistanceToNow } from "date-fns";
 import Datetime from "react-datetime";
 import { UIPush } from "@/components/UIPush";
 import { Card } from "@/components/material";
@@ -163,7 +163,7 @@ export function Tournament(): React.ReactElement {
         name: "",
         // TODO: replace {} with something that makes type sense. -bpj
         director: tournament_id === 0 ? user : ({} as any),
-        time_start: moment(new Date()).add(1, "hour").startOf("hour").format(),
+        time_start: startOfHour(addHours(new Date(), 1)).toISOString(),
 
         board_size: 19,
         rules: "japanese",
@@ -203,7 +203,7 @@ export function Tournament(): React.ReactElement {
             ? {
                   ...user_default_tournament,
                   name: "Culture: join 4",
-                  time_start: moment(new Date()).add(1, "minute").format(),
+                  time_start: addMinutes(new Date(), 1).toISOString(),
                   rules: "japanese",
                   description:
                       /* cspell: disable-next-line */
@@ -554,7 +554,7 @@ export function Tournament(): React.ReactElement {
             return;
         }
 
-        clean_tournament.time_start = moment(new Date(clean_tournament.time_start)).utc().format();
+        clean_tournament.time_start = new Date(clean_tournament.time_start).toISOString();
         clean_tournament.group = new_tournament_group_id || (group && group.id);
         if (!clean_tournament.group) {
             delete clean_tournament.group;
@@ -856,7 +856,7 @@ export function Tournament(): React.ReactElement {
 
     let tournament_time_start_text = "";
     if (tournament.time_start) {
-        tournament_time_start_text = moment(new Date(tournament.time_start)).format("LLLL");
+        tournament_time_start_text = format(new Date(tournament.time_start), "PPPPp");
         if (tournament.auto_start_on_max) {
             tournament_time_start_text = interpolate(
                 _(
@@ -3060,7 +3060,7 @@ function fromNow(t: number | string) {
     if (d - Date.now() < 0) {
         return pgettext("Tournament begins very shortly", "very shortly");
     }
-    return moment(d).fromNow();
+    return formatDistanceToNow(new Date(d), { addSuffix: true });
 }
 
 function nthPlace(n: number): string | null {

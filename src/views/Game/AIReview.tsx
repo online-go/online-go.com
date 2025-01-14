@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import moment from "moment";
+import { format } from "date-fns";
 import * as React from "react";
 import * as data from "@/lib/data";
 import * as preferences from "@/lib/preferences";
@@ -1396,7 +1396,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                                 )}
                                             </div>
                                             <div className="date">
-                                                {moment(new Date(data.date)).format("lll")}
+                                                {format(new Date(data.date), "PPp")}
                                             </div>
                                         </div>
                                     </div>

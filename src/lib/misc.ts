@@ -21,7 +21,7 @@ import { browserHistory } from "@/lib/ogsHistory";
 import * as preferences from "@/lib/preferences";
 import { alert } from "@/lib/swal_config";
 import React from "react";
-import moment from "moment";
+import { intervalToDuration, formatDuration } from "date-fns";
 
 export type Timeout = ReturnType<typeof setTimeout>;
 
@@ -671,15 +671,16 @@ export function dropCurrentPeriod(data: { x: string; y: number | null }[]) {
 }
 
 // needed because Game end_time and start_time are only to the nearest second
-export function showSecondsResolution(duration: moment.Duration | null): string {
+export function showSecondsResolution(duration: number | null): string {
     if (!duration) {
         return "-";
-    } else if (duration < moment.duration(1000)) {
-        return `${moment.duration(duration).asSeconds().toFixed(2)}s`;
-    } else if (duration < moment.duration(60000)) {
-        return `${moment.duration(duration).asSeconds().toFixed(1)}s`;
+    } else if (duration < 1000) {
+        return `${(duration / 1000).toFixed(2)}s`;
+    } else if (duration < 60000) {
+        return `${(duration / 1000).toFixed(1)}s`;
     } else {
-        return moment.duration(duration).format("d:h:m:s");
+        const dur = intervalToDuration({ start: 0, end: duration });
+        return formatDuration(dur, { format: ['days', 'hours', 'minutes', 'seconds'] });
     }
 }
 

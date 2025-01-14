@@ -18,7 +18,7 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 import * as data from "@/lib/data";
-import moment from "moment";
+import { parseISO } from "date-fns";
 import { usePreference } from "@/lib/preferences";
 
 export function TournamentIndicator(): React.ReactElement | null {
@@ -45,7 +45,7 @@ export function TournamentIndicator(): React.ReactElement | null {
     React.useEffect((): (() => void) | void => {
         if (tournament && enabled) {
             const update = () => {
-                const t = (moment(tournament.expiration).toDate().getTime() - Date.now()) / 1000;
+                const t = (parseISO(tournament.expiration).getTime() - Date.now()) / 1000;
                 if (t < 0) {
                     data.set("active-tournament", undefined);
                 } else {

@@ -22,7 +22,7 @@
 
 import * as React from "react";
 
-import moment from "moment";
+import { formatDistanceToNow } from "date-fns";
 import { post } from "@/lib/requests";
 
 import { Link } from "react-router-dom";
@@ -228,7 +228,7 @@ export function IncidentReportCard({ report }: IncidentReportCardProps): React.R
                 ) : (
                     <span>{_("System")}</span>
                 )}
-                <i>{moment(report.created).fromNow()}</i>
+                <i>{formatDistanceToNow(new Date(report.created), { addSuffix: true })}</i>
             </div>
         </div>
     );

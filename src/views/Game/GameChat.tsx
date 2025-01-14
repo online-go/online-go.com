@@ -18,7 +18,7 @@
 import * as data from "@/lib/data";
 import * as preferences from "@/lib/preferences";
 import * as React from "react";
-import moment from "moment";
+import { format, isSameDay } from "date-fns";
 import { LineText } from "@/components/misc-ui";
 import { Link } from "react-router-dom";
 import { _, pgettext, interpolate, current_language } from "@/lib/translate";
@@ -454,11 +454,10 @@ export function GameChatLine(props: GameChatLineProperties): React.ReactElement 
         if (line.date) {
             if (
                 !last_line ||
-                moment(new Date(line.date * 1000)).format("YYYY-MM-DD") !==
-                    moment(new Date(last_line.date * 1000)).format("YYYY-MM-DD")
+                !isSameDay(new Date(line.date * 1000), new Date(last_line.date * 1000))
             ) {
                 show_date = (
-                    <div className="date">{moment(new Date(line.date * 1000)).format("LL")}</div>
+                    <div className="date">{format(new Date(line.date * 1000), "PPP")}</div>
                 );
             }
         }

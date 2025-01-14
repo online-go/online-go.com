@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 import * as React from "react";
-import moment from "moment";
+import { format } from "date-fns";
 
 import { _, llm_pgettext, pgettext } from "@/lib/translate";
 import * as DynamicHelp from "react-dynamic-help";
@@ -133,7 +133,7 @@ export function GameLog({
                                         }
                                     >
                                         <td className="timestamp">
-                                            {moment(entry.timestamp).format("L LTS")}
+                                            {format(new Date(entry.timestamp), "Pp")}
                                         </td>
                                         <td className="event">{decodeLogEvent(entry.event)}</td>
                                         <td className="data">

@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import * as data from "@/lib/data";
-import moment from "moment";
+import { format } from "date-fns";
 import Linkify from "react-linkify";
 import Split from "react-split";
 import { Card } from "@/components/material";
@@ -221,7 +221,7 @@ function ChannelTopic({
 
         function getTitleHover(topic: TopicMessage | null): string {
             if (topic && topic.username && topic.timestamp) {
-                return topic.username + " - " + moment(new Date(topic.timestamp)).format("LL");
+                return topic.username + " - " + format(new Date(topic.timestamp), "PPP");
             }
 
             return "";

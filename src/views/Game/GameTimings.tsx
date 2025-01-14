@@ -15,14 +15,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import moment from "moment";
-import "moment-duration-format";
-
 import * as React from "react";
+import { intervalToDuration, formatDuration } from "date-fns";
 
 import { AdHocPackedMove, GobanMovesArray } from "goban";
 import { useUser } from "@/lib/hooks";
 import { showSecondsResolution } from "@/lib/misc";
+
+function formatDurationCustom(ms: number): string {
+    const duration = intervalToDuration({ start: 0, end: ms });
+    const format = Object.entries(duration)
+        .filter(([_, value]) => value !== 0)
+        .map(([unit, value]) => `${value}${unit[0]}`)
+        .join(" ");
+    return format || "0s";
+}
 
 interface GameTimingProperties {
     moves: GobanMovesArray;
@@ -32,35 +39,33 @@ interface GameTimingProperties {
     handicap: number;
     black_id: number;
     white_id: number;
-    onFinalActionCalculated?: (final_action_timing: moment.Duration) => void;
+    onFinalActionCalculated?: (final_action_timing: number) => void;
 }
 
 export function GameTimings(props: GameTimingProperties): React.ReactElement {
     const user = useUser();
 
-    const show_seconds_nicely = (duration: moment.Duration) =>
-        duration < moment.duration(60 * 1000) ? (
+    const show_seconds_nicely = (duration: number) =>
+        duration < 60 * 1000 ? (
             <span className="timing-seconds">
-                {moment.duration(duration).asSeconds().toFixed(1)}
+                {(duration / 1000).toFixed(1)}
             </span>
-        ) : duration < moment.duration(60 * 60 * 1000) ? (
-            <span className="timing-slow-live">{moment.duration(duration).format()}</span>
+        ) : duration < 60 * 60 * 1000 ? (
+            <span className="timing-slow-live">{formatDurationCustom(duration)}</span>
         ) : (
-            <span className="timing-slow">{moment.duration(duration).format()}</span>
+            <span className="timing-slow">{formatDurationCustom(duration)}</span>
         );
 
-    const game_elapsed: ReturnType<typeof moment.duration> = moment.duration(0); // running total
-    const black_elapsed: ReturnType<typeof moment.duration> = moment.duration(0);
-    const white_elapsed: ReturnType<typeof moment.duration> = moment.duration(0);
-    const move_elapsed: Array<ReturnType<typeof moment.duration>> = []; // the time elapsed up to each move
+    const game_elapsed = { value: 0 }; // running total
+    const black_elapsed = { value: 0 };
+    const white_elapsed = { value: 0 };
+    const move_elapsed: number[] = []; // the time elapsed up to each move
 
     // Publish final action timing after game_elapsed is calculated (during render!)
     React.useEffect(() => {
         if (props.end_time && props.onFinalActionCalculated) {
             props.onFinalActionCalculated(
-                moment
-                    .duration(props.end_time - props.start_time, "seconds")
-                    .subtract(game_elapsed),
+                (props.end_time - props.start_time) * 1000 - game_elapsed.value
             );
         }
     }, [props.start_time, props.end_time, props.onFinalActionCalculated]);
@@ -86,16 +91,16 @@ export function GameTimings(props: GameTimingProperties): React.ReactElement {
             const first_move = non_handicap_moves.shift();
             handicap_move_offset = 1;
             const elapsed = (first_move as AdHocPackedMove)?.[2];
-            game_elapsed.add(elapsed);
-            move_elapsed.push(game_elapsed.clone());
-            white_elapsed.add(elapsed);
-            const move_string = show_seconds_nicely(elapsed as any);
+            game_elapsed.value += elapsed as number;
+            move_elapsed.push(game_elapsed.value);
+            white_elapsed.value += elapsed as number;
+            const move_string = show_seconds_nicely(elapsed as number);
             first_row = (
                 <React.Fragment>
                     <div>0</div>
                     <div>-</div>
                     <div>{move_string}</div>
-                    <div>{`${move_elapsed[0].format()}`}</div>
+                    <div>{formatDurationCustom(move_elapsed[0])}</div>
                 </React.Fragment>
             );
         }
@@ -117,16 +122,16 @@ export function GameTimings(props: GameTimingProperties): React.ReactElement {
                 // first display free handicap moves...
                 handicap_moves.map((move, move_num) => {
                     const elapsed = move[2];
-                    game_elapsed.add(elapsed);
-                    move_elapsed.push(game_elapsed.clone());
-                    black_elapsed.add(elapsed);
+                    game_elapsed.value += elapsed;
+                    move_elapsed.push(game_elapsed.value);
+                    black_elapsed.value += elapsed;
                     const move_string = show_seconds_nicely(elapsed);
                     return (
                         <React.Fragment key={move_num}>
                             <div>{move_num + 1}</div>
                             <div>{move_string}</div>
                             <div>-</div>
-                            <div>{`${move_elapsed[move_num].format()}`}</div>
+                            <div>{formatDurationCustom(move_elapsed[move_num])}</div>
                         </React.Fragment>
                     );
                 })
@@ -137,14 +142,14 @@ export function GameTimings(props: GameTimingProperties): React.ReactElement {
                     .map((move, move_num) => {
                         const blacks_turn: boolean = move_num % 2 === 0;
                         const elapsed = (move as AdHocPackedMove)[2];
-                        game_elapsed.add(elapsed);
-                        move_elapsed.push(game_elapsed.clone());
+                        game_elapsed.value += elapsed as number;
+                        move_elapsed.push(game_elapsed.value);
                         if (blacks_turn) {
-                            black_elapsed.add(elapsed);
+                            black_elapsed.value += elapsed as number;
                         } else {
-                            white_elapsed.add(elapsed);
+                            white_elapsed.value += elapsed as number;
                         }
-                        return show_seconds_nicely(elapsed as any);
+                        return show_seconds_nicely(elapsed as number);
                     })
                     // pair them up into black and white move pairs, along with the elapsed time to that point
                     .reduce((acc, value, index, orig) => {
@@ -229,7 +234,7 @@ export function GameTimings(props: GameTimingProperties): React.ReactElement {
                                     {white_download_sgf ? <i className="fa fa-download" /> : null}
                                 </div>
                                 <div>
-                                    {`${total_elapsed.format()}`}
+                                    {formatDurationCustom(total_elapsed)}
                                     {other_download_sgf ? <i className="fa fa-download" /> : null}
                                 </div>
                             </React.Fragment>
@@ -240,16 +245,14 @@ export function GameTimings(props: GameTimingProperties): React.ReactElement {
                 <hr />
             </div>
             <div>Totals:</div>
-            <div>{moment.duration(black_elapsed).format()}</div>
-            <div>{moment.duration(white_elapsed).format()}</div>
-            <div>{moment.duration(game_elapsed).format()}</div>
+            <div>{formatDurationCustom(black_elapsed.value)}</div>
+            <div>{formatDurationCustom(white_elapsed.value)}</div>
+            <div>{formatDurationCustom(game_elapsed.value)}</div>
             <div className="span-3 final-action-row">Final action:</div>
             <div className="final-action-row">
                 {props.end_time &&
                     showSecondsResolution(
-                        moment
-                            .duration(props.end_time - props.start_time, "seconds")
-                            .subtract(game_elapsed),
+                        (props.end_time - props.start_time) * 1000 - game_elapsed.value
                     )}
             </div>
         </div>
@@ -265,5 +268,5 @@ function blurDurationFormat(blur_ms: number | undefined): string | null {
         return " (" + (blur_ms / 1000).toFixed(1) + "s" + ")";
     }
 
-    return " (" + moment.duration(blur_ms).format() + ")";
+    return " (" + formatDurationCustom(blur_ms) + ")";
 }

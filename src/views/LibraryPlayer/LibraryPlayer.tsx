@@ -27,7 +27,7 @@ import { Player } from "@/components/Player";
 import { Card } from "@/components/material";
 import Dropzone from "react-dropzone";
 import { DropzoneRef } from "react-dropzone";
-import moment from "moment";
+import { format } from "date-fns";
 import { IdType } from "@/lib/types";
 import { openSGFPasteModal } from "@/components/SGFPasteModal";
 import * as preferences from "@/lib/preferences";
@@ -633,7 +633,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                                                     </span>
                                                 )}
                                                 <span className="date-column">
-                                                    {moment(game.started).format("ll")}
+                                                    {format(new Date(game.started), "P")}
                                                 </span>
                                                 <span className="name-column">
                                                     <Link to={`/game/${game.game_id}`}>
@@ -656,7 +656,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                                                     {outcome_formatter(game)}
                                                 </span>
                                                 <span className="date-column">
-                                                    {moment(game.created).format("ll")}
+                                                    {format(new Date(game.created), "P")}
                                                 </span>
                                             </div>
                                         ))}

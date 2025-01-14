@@ -16,11 +16,12 @@
  */
 
 import * as React from "react";
-import moment from "moment";
+import { format, formatDistanceToNow, endOfDay, addDays, setDay } from "date-fns";
+import { utcToZonedTime } from "date-fns-tz";
 import { _, interpolate } from "@/lib/translate";
 
 interface ServerTimeState {
-    time: moment.Moment;
+    time: Date;
 }
 export class ServerTimeDisplay extends React.Component<{}, ServerTimeState> {
     interval?: ReturnType<typeof setInterval>;
@@ -28,7 +29,7 @@ export class ServerTimeDisplay extends React.Component<{}, ServerTimeState> {
     constructor(props: {}) {
         super(props);
         this.state = {
-            time: moment().utcOffset(0),
+            time: new Date(),
         };
     }
 
@@ -42,7 +43,7 @@ export class ServerTimeDisplay extends React.Component<{}, ServerTimeState> {
 
     tick() {
         this.setState({
-            time: moment().utcOffset(0),
+            time: new Date(),
         });
     }
 
@@ -51,26 +52,27 @@ export class ServerTimeDisplay extends React.Component<{}, ServerTimeState> {
 
         if (day === 6 || day === 0) {
             /* Saturday or Sunday */
-            const midnight_sunday =
-                day === 6
-                    ? moment().utcOffset(0).add(1, "day").endOf("day")
-                    : moment().utcOffset(0).endOf("day");
+            const midnight_sunday = endOfDay(
+                day === 6 ? addDays(new Date(), 1) : new Date()
+            );
             return interpolate(_("Weekend ends {{time_from_now}}"), {
-                time_from_now: midnight_sunday.fromNow(),
+                time_from_now: formatDistanceToNow(midnight_sunday, { addSuffix: true }),
             });
         } else {
+            const fridayEnd = endOfDay(setDay(new Date(), 5));
             return interpolate(_("Weekend starts {{time_from_now}}"), {
-                time_from_now: moment().utcOffset(0).isoWeekday(5).endOf("day").fromNow(),
+                time_from_now: formatDistanceToNow(fridayEnd, { addSuffix: true }),
             });
         }
     }
 
     render() {
+        const zonedTime = utcToZonedTime(this.state.time, "UTC");
         return (
             <div className="server-time-display">
                 <div>
                     {interpolate(_("Server Time: {{time}}"), {
-                        time: this.state.time.format("dddd LTS z"),
+                        time: format(zonedTime, "EEEE p zzz"),
                     })}
                 </div>
                 <div>{this.weekendTransitionText()}</div>

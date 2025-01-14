@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import moment from "moment";
+import { parseISO, startOfDay, isAfter, isBefore } from "date-fns";
 import { ResponsiveLine } from "@nivo/line";
 import * as data from "@/lib/data";
 import { _ } from "@/lib/translate";
@@ -115,11 +115,11 @@ function StatsChart(props: JosekiStatsModalProperties) {
 
 export class JosekiStatsModal extends Modal<Events, JosekiStatsModalProperties, any> {
     render() {
-        const start_graph = moment("2020-01-15"); // before this time the data is dodgy
-        const today = moment().startOf("day");
+        const start_graph = parseISO("2020-01-15"); // before this time the data is dodgy
+        const today = startOfDay(new Date());
 
         const daily_page_visits = this.props.daily_page_visits
-            .filter((day) => moment(day.date) > start_graph && moment(day.date) < today)
+            .filter((day) => isAfter(new Date(day.date), start_graph) && isBefore(new Date(day.date), today))
             // strip out tiny days, which theoretically shouldn't be there in the first place
             // (I think they get there when two people simultaneously click on a position in the first visit of a day)
             .filter((day) => day.pageVisits > 2);

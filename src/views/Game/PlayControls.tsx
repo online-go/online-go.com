@@ -63,7 +63,7 @@ import { ConditionalMoveTreeDisplay } from "./ConditionalMoveTreeDisplay";
 import { useUser } from "@/lib/hooks";
 import { AntiGrief } from "./AntiGrief";
 
-import moment from "moment";
+import { isBefore, parseISO } from "date-fns";
 
 const MAX_SEALING_LOCATIONS_TO_LIST = 5;
 
@@ -252,7 +252,7 @@ export function PlayControls({
     const this_users_turn = usePlayerToMove(goban) === user.id;
 
     React.useEffect(() => {
-        if (show_undo_requested && moment(user.registration_date).isBefore(moment("2023-06-14"))) {
+        if (show_undo_requested && isBefore(new Date(user.registration_date), parseISO("2023-06-14"))) {
             // This condition protects against established users seeing this message introduced 2023-6-14
             // Could be removed once all the "regulars" have done this
             signalUsed("undo-requested-message"); // stops the following "triggerFlow" from doing anything.

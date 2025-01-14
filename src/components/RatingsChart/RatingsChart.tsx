@@ -19,7 +19,7 @@
  * is a d3.js v4 port of https://github.com/arnauddri/d3-stock */
 
 import * as d3 from "d3";
-import moment from "moment";
+import { format } from "date-fns";
 import * as React from "react";
 import { OgsResizeDetector } from "@/components/OgsResizeDetector";
 import { _, pgettext, interpolate } from "@/lib/translate";
@@ -56,8 +56,8 @@ interface RatingsChartState {
 const date_bisector = d3.bisector((d: RatingEntry) => {
     return d.ended;
 }).left;
-const format_date = (d: Date) => moment(d).format("ll");
-const format_month = (d: Date) => moment(d).format("MMM YYYY");
+const format_date = (d: Date) => format(d, "PP");
+const format_month = (d: Date) => format(d, "MMM yyyy");
 const margin = { top: 30, right: 20, bottom: 100, left: 20 }; // Margins around the rating chart - but win/loss bars are inside this at the bottom!
 const margin2 = { top: 210, right: 20, bottom: 20, left: 20 }; // Margins around the 'timeline' chart with respect to the whole space
 const chart_min_width = 64;

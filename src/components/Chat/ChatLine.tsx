@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import moment from "moment";
+import { format, isSameDay } from "date-fns";
 import * as data from "@/lib/data";
 import { Player } from "@/components/Player";
 import { chat_markup } from "./chat_markup";
@@ -62,11 +62,8 @@ export function ChatLine(props: ChatLineInterface): React.ReactElement {
 
     if (!last_line || (ts && ts_ll)) {
         if (ts) {
-            if (
-                !last_line ||
-                moment(ts).format("YYYY-MM-DD") !== moment(ts_ll).format("YYYY-MM-DD")
-            ) {
-                show_date = <div className="date">{moment(ts).format("LL")}</div>;
+            if (!last_line || !isSameDay(ts, ts_ll)) {
+                show_date = <div className="date">{format(ts, "PPP")}</div>;
             }
         }
     }

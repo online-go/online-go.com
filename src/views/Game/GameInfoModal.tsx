@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import moment from "moment";
+import { format } from "date-fns";
 import * as data from "@/lib/data";
 import { _ } from "@/lib/translate";
 import { post, patch, del } from "@/lib/requests";
@@ -319,10 +319,10 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, GameIn
                         <dt>{_("Time")}</dt>
                         <dd>
                             {config.start_time
-                                ? moment(new Date(config.start_time * 1000)).format("LLL")
+                                ? format(new Date(config.start_time * 1000), "PPp")
                                 : ""}
                             {config.end_time
-                                ? " - " + moment(new Date(config.end_time * 1000)).format("LLL")
+                                ? " - " + format(new Date(config.end_time * 1000), "PPp")
                                 : ""}
                         </dd>
                         <dt>{_("Rules")}</dt>

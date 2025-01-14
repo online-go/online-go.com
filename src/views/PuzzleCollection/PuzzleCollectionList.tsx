@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import moment from "moment";
+import { format } from "date-fns";
 import { _ } from "@/lib/translate";
 import { post } from "@/lib/requests";
 import { errorAlerter, navigateTo, unitify } from "@/lib/misc";
@@ -134,7 +134,7 @@ export function PuzzleCollectionList(): React.ReactElement {
                             {
                                 header: _("Created"),
                                 className: () => "date center",
-                                render: (X) => moment(new Date(X.created)).format("l"),
+                                render: (X) => format(new Date(X.created), "P"),
                                 orderBy: ["-created"],
                             },
                             {

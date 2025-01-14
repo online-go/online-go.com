@@ -18,7 +18,7 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 import { npgettext, interpolate } from "@/lib/translate";
-import moment from "moment";
+import { format } from "date-fns";
 import * as preferences from "@/lib/preferences";
 import { GobanRenderer, JGOFMove, createGoban } from "goban";
 import * as data from "@/lib/data";
@@ -215,7 +215,7 @@ export function MiniGoban(props: MiniGobanProps): React.ReactElement {
                 setGameName(engine.config.game_name || "");
                 setGameDate(
                     goban.current?.config.end_time
-                        ? moment(new Date(goban.current.config.end_time * 1000)).format("LLL")
+                        ? format(new Date(goban.current.config.end_time * 1000), "PPp")
                         : "",
                 );
                 setGameResult(result_string);
