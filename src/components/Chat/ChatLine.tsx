@@ -44,7 +44,7 @@ interface ChatLineInterface {
     lastLine?: ChatMessage;
 }
 
-export function ChatLine(props: ChatLineInterface): JSX.Element {
+export function ChatLine(props: ChatLineInterface): React.ReactElement {
     const line = props.line;
     const last_line = props.lastLine;
     const user = line;
@@ -58,7 +58,7 @@ export function ChatLine(props: ChatLineInterface): JSX.Element {
     const ts = message.t ? new Date(message.t * 1000) : null;
     let third_person = false;
     let body = message.m;
-    let show_date: JSX.Element | null = null;
+    let show_date: React.ReactElement | null = null;
 
     if (!last_line || (ts && ts_ll)) {
         if (ts) {

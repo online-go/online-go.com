@@ -21,7 +21,7 @@ import { _ } from "@/lib/translate";
 import { QuickMatch } from "./QuickMatch";
 import { CustomGames } from "./CustomGames";
 
-export function Play(): JSX.Element {
+export function Play(): React.ReactElement {
     React.useEffect(() => {
         window.document.title = _("Play");
     }, []);

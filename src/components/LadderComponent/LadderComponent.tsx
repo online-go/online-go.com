@@ -25,7 +25,7 @@ interface LadderComponentProperties {
     ladderId: number;
 }
 
-export function LadderComponent({ ladderId }: LadderComponentProperties): JSX.Element {
+export function LadderComponent({ ladderId }: LadderComponentProperties): React.ReactElement {
     const { ref } = useResizeDetector();
 
     return (

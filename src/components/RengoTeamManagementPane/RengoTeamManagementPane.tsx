@@ -63,7 +63,7 @@ export function RengoTeamManagementPane({
     balanceTeams = rengo_balancer.balanceTeams,
     setTeams = rengo_utils.setTeams,
     lock,
-}: RengoTeamManagementPaneProps): JSX.Element {
+}: RengoTeamManagementPaneProps): React.ReactElement {
     const user = useUser();
     const [assignment_pending, setAssignmentPending] = React.useState(false);
     const [ordering_players, setOrderingPlayers] = React.useState(false);

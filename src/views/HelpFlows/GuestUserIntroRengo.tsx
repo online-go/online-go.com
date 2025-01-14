@@ -26,7 +26,7 @@ import { _, pgettext } from "@/lib/translate";
  *
  */
 
-export function GuestUserIntroRengo(): JSX.Element {
+export function GuestUserIntroRengo(): React.ReactElement {
     return (
         <HelpFlow
             id="guest-user-intro-rengo"

@@ -275,7 +275,7 @@ function stripNamePrefix(name: string, prefix: string): string | null {
     return name.startsWith(prefix) ? name.substr(prefix.length) : null;
 }
 
-export function GameNameForList(props: { original_name: string }): JSX.Element {
+export function GameNameForList(props: { original_name: string }): React.ReactElement {
     const name = props.original_name;
     const spans = {
         "Tournament Game:": "fa fa-trophy",

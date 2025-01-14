@@ -24,7 +24,7 @@ import { SearchInput } from "@/components/misc-ui";
 import { navigateTo } from "@/lib/misc";
 import { useUser } from "@/lib/hooks";
 
-export function GroupList(): JSX.Element {
+export function GroupList(): React.ReactElement {
     const user = useUser();
     const [name_contains_filter, setNameContainsFilter] = React.useState("");
 
@@ -52,7 +52,7 @@ export function GroupList(): JSX.Element {
 
                         <SearchInput
                             placeholder={_("Search")}
-                            onChange={(event) => {
+                            onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                                 setNameContainsFilter(event.target.value.trim());
                             }}
                         />

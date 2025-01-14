@@ -66,15 +66,15 @@ const filterPreferenceMapping: Map<ChallengeFilterKey, preferences.ValidPreferen
     ["showHandicap", "show-handicap-challenges"],
 ]);
 
-export function CustomGames(): JSX.Element {
+export function CustomGames(): React.ReactElement {
     const user = useUser();
     //const anon = user.anonymous;
     //const warned = user.has_active_warning_flag;
 
     const list_freeze_timeout = React.useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-    const ref_container: React.RefObject<HTMLDivElement> = React.createRef();
+    const ref_container: React.RefObject<HTMLDivElement | null> = React.createRef();
     const canvas: HTMLCanvasElement = React.useMemo(() => allocateCanvasOrError(), []);
-    const seekgraph = React.useRef<SeekGraph>();
+    const seekgraph = React.useRef<SeekGraph | null>(null);
 
     const disable_challenge_buttons = useHaveActiveGameSearch() || user.anonymous;
 

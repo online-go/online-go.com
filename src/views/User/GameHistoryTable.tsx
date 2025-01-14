@@ -66,7 +66,7 @@ interface GroomedGame {
     black: PlayerCacheEntry;
     white: PlayerCacheEntry;
     result_class: ResultClass;
-    result: JSX.Element;
+    result: React.ReactElement;
     flags?: { [flag_key: string]: number | string | boolean };
     rengo_vs_text?: `${number} vs. ${number}`;
     handicap: string;

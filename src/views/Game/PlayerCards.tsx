@@ -60,7 +60,7 @@ export function PlayerCards({
     white_flags,
     black_ai_suspected,
     white_ai_suspected,
-}: PlayerCardsProps): JSX.Element {
+}: PlayerCardsProps): React.ReactElement {
     const goban = useGoban();
 
     const orig_marks = React.useRef<string | null>(null);
@@ -389,7 +389,7 @@ export function PlayerCard({
     );
 }
 
-function PlayerFlag({ player_id }: { player_id: number }): JSX.Element | null {
+function PlayerFlag({ player_id }: { player_id: number }): React.ReactElement | null {
     const [country, setCountry] = React.useState<string | undefined>(lookup(player_id)?.country);
 
     React.useEffect(() => {

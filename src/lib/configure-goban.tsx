@@ -179,7 +179,7 @@ export function configure_goban() {
         },
 
         toast: (message_id: string, duration: number) => {
-            let message: JSX.Element | null = null;
+            let message: React.ReactElement | null = null;
             switch (message_id) {
                 case "refusing_to_remove_group_is_alive":
                     message = (

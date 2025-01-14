@@ -32,7 +32,7 @@ import { allRanks, IRankInfo } from "@/lib/rank_utils";
 
 let update_link_preferences_debounce: Timeout | undefined;
 
-export function LinkPreferences(props: SettingGroupPageProps): JSX.Element {
+export function LinkPreferences(props: SettingGroupPageProps): React.ReactElement {
     const link = props.state.self_reported_account_linkages || {};
 
     function set(key: string): (value: any) => void {
@@ -212,7 +212,7 @@ function RankSelect({
 }: {
     value: number;
     onChange: (value: number) => void;
-}): JSX.Element {
+}): React.ReactElement {
     return (
         <select
             className="RankSelect"
@@ -235,7 +235,7 @@ function AssociationSelect({
 }: {
     value: string;
     onChange: (value: string) => void;
-}): JSX.Element {
+}): React.ReactElement {
     let user_countries: string[] = [];
     try {
         if (data.get("user").country) {

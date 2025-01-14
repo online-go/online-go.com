@@ -20,7 +20,6 @@
 
 import React from "react";
 import { useDroppable, UniqueIdentifier } from "@dnd-kit/core";
-import classNames from "classnames";
 
 import { droppable } from "./droppable-svg";
 
@@ -38,12 +37,9 @@ export function Droppable({ children, id, dragging }: Props) {
     return (
         <div
             ref={setNodeRef}
-            className={classNames(
-                "Droppable",
-                isOver && "over",
-                dragging && "dragging",
-                children && "dropped",
-            )}
+            className={`Droppable ${isOver ? "over" : ""} ${dragging ? "dragging" : ""} ${
+                children ? "dropped" : ""
+            }`}
             aria-label="Droppable region"
         >
             {children}

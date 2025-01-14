@@ -25,7 +25,7 @@ import { llm_pgettext } from "@/lib/translate";
  * A help flow intended for moderators and CMs wondering about mysterious auto score entries
  */
 
-export function GameLogHelp(): JSX.Element {
+export function GameLogHelp(): React.ReactElement {
     return (
         <HelpFlow
             id="game-log-help"

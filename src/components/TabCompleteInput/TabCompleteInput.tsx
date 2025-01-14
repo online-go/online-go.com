@@ -109,7 +109,7 @@ function setCaretPosition(input: HTMLInputElement, position: number) {
 }
 
 export const TabCompleteInput = React.forwardRef<HTMLInputElement, TabCompleteInputProperties>(
-    (props: TabCompleteInputProperties, ref): JSX.Element => {
+    (props: TabCompleteInputProperties, ref): React.ReactElement => {
         const defaultRef = React.useRef<HTMLInputElement>(null);
         const inputRef = (ref as React.RefObject<HTMLInputElement>) || defaultRef;
         const [lastKey, setLastKey] = React.useState<number>(0);

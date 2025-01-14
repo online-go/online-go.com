@@ -230,7 +230,7 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
     }
 
     render() {
-        const links: JSX.Element[] = [];
+        const links: React.ReactElement[] = [];
         for (let i = 0; i < this.props.nPages; ++i) {
             if (i === this.props.curPage) {
                 links.push(

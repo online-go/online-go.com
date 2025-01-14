@@ -92,7 +92,9 @@ export class Resizable extends React.Component<ResizableProperties, {}> {
         }
     }
 
-    set_div_ref = (el: HTMLDivElement) => (this.div = el);
+    set_div_ref = (el: HTMLDivElement) => {
+        this.div = el;
+    };
 
     render() {
         return (

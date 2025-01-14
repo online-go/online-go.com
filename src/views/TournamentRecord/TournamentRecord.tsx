@@ -57,7 +57,7 @@ interface RoundEntry {
     [k: string]: any;
 }
 
-export function TournamentRecord(): JSX.Element {
+export function TournamentRecord(): React.ReactElement {
     const params = useParams<"tournament_record_id">();
     const tournament_record_id = parseInt(params.tournament_record_id ?? "0");
 

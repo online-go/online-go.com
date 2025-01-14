@@ -48,7 +48,7 @@ export const PlayerAutocomplete = React.forwardRef<
 function PlayerAutocompleteImpl(
     props: PlayerAutocompleteProperties,
     ref: React.ForwardedRef<PlayerAutocompleteRef>,
-): JSX.Element {
+): React.ReactElement {
     const [value, setValue]: [string, (x: string) => void] = React.useState(
         player_cache.lookup(props.playerId || 0)?.username || "",
     );
@@ -208,6 +208,6 @@ function getSuggestionValue(suggestion: SuggestionEntry): string {
     return suggestion.username;
 }
 
-function renderSuggestion(suggestion: SuggestionEntry): JSX.Element {
+function renderSuggestion(suggestion: SuggestionEntry): React.ReactElement {
     return <div>{suggestion.username}</div>;
 }

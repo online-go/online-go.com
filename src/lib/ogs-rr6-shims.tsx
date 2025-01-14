@@ -38,7 +38,7 @@ export interface RouteComponentProps<Params extends Partial<Record<keyof Params,
     match: match<Params>;
 }
 
-export function rr6ClassShim(Class: React.ComponentType<any>): (props: any) => JSX.Element {
+export function rr6ClassShim(Class: React.ComponentType<any>): (props: any) => React.ReactElement {
     return (props) => {
         const location = useLocation();
         const params = useParams();

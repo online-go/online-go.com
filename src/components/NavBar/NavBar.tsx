@@ -72,7 +72,7 @@ const setThemeLight = setTheme.bind(null, "light");
 const setThemeDark = setTheme.bind(null, "dark");
 const setThemeAccessible = setTheme.bind(null, "accessible");
 
-export function NavBar(): JSX.Element {
+export function NavBar(): React.ReactElement {
     const user = useUser();
     const location = useLocation();
 
@@ -448,13 +448,13 @@ export function NavBar(): JSX.Element {
 }
 
 interface MenuProps {
-    title: string | JSX.Element;
+    title: string | React.ReactElement;
     to?: string;
     children: React.ReactNode;
     className?: string;
 }
 
-function Menu({ title, to, children, className }: MenuProps): JSX.Element {
+function Menu({ title, to, children, className }: MenuProps): React.ReactElement {
     return (
         <section className={"Menu " + (className || "")}>
             {to ? (
@@ -469,7 +469,11 @@ function Menu({ title, to, children, className }: MenuProps): JSX.Element {
     );
 }
 
-function ProfileAndQuickSettingsBits({ settingsNavLink }: { settingsNavLink: any }): JSX.Element {
+function ProfileAndQuickSettingsBits({
+    settingsNavLink,
+}: {
+    settingsNavLink: any;
+}): React.ReactElement {
     const user = useUser();
 
     return (
@@ -509,7 +513,7 @@ function ProfileAndQuickSettingsBits({ settingsNavLink }: { settingsNavLink: any
     );
 }
 
-function BanIndicator(): JSX.Element {
+function BanIndicator(): React.ReactElement {
     return (
         <div className="BanIndicator">
             <h3>{_("Your account has been suspended")}</h3>

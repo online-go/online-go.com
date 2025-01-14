@@ -81,7 +81,7 @@ type ShowPlayersInReportContextType = {
 export const ShowPlayersInReportContext =
     React.createContext<ShowPlayersInReportContextType | null>(null);
 
-export function Player(props: PlayerProperties): JSX.Element {
+export function Player(props: PlayerProperties): React.ReactElement {
     const user = data.get("user");
     const player_id: number =
         (typeof props.user !== "object" ? props.user : props.user?.id || props.user?.player_id) ||
@@ -97,7 +97,7 @@ export function Player(props: PlayerProperties): JSX.Element {
         (player?.id && user?.id && !!data.get(`player-notes.${user?.id}.${player?.id}`)) || false,
     );
 
-    const elt_ref = React.useRef<HTMLSpanElement | HTMLAnchorElement>();
+    const elt_ref = React.useRef<HTMLSpanElement | HTMLAnchorElement | undefined>(undefined);
     const player_id_ref = React.useRef<number>(player_id);
     const username_ref = React.useRef<string | null | undefined>(null);
 
@@ -278,7 +278,7 @@ export function Player(props: PlayerProperties): JSX.Element {
     }
 
     const nolink = !!props.nolink;
-    let rank: JSX.Element | null = null;
+    let rank: React.ReactElement | null = null;
 
     const main_attrs: any = {
         className: "Player",

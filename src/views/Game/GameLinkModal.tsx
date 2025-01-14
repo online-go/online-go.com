@@ -97,7 +97,7 @@ export class GameLinkModal extends Modal<Events, GameLinkModalProperties, {}> {
     }
 }
 
-function AnimatedPngCreator({ goban }: { goban: GobanRenderer }): JSX.Element {
+function AnimatedPngCreator({ goban }: { goban: GobanRenderer }): React.ReactElement {
     const engine = goban.engine;
     const MAX_MOVES = 30;
     const NUM_MOVES = engine?.last_official_move.move_number || 1;

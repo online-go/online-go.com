@@ -25,7 +25,7 @@ import { pgettext } from "@/lib/translate";
  * A help flow intended for spectators who arrived on an OOL Game Link
  */
 
-export function OOLSpectatorIntro(): JSX.Element {
+export function OOLSpectatorIntro(): React.ReactElement {
     return (
         <HelpFlow
             id="ool-spectator-intro"

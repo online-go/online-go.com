@@ -90,15 +90,15 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
 
     ref_move_tree_container?: HTMLElement;
 
-    ref_transform_x_button: React.RefObject<HTMLButtonElement>;
-    ref_transform_h_button: React.RefObject<HTMLButtonElement>;
-    ref_transform_v_button: React.RefObject<HTMLButtonElement>;
-    ref_transform_color_button: React.RefObject<HTMLButtonElement>;
-    ref_transform_zoom_button: React.RefObject<HTMLButtonElement>;
-    ref_settings_button: React.RefObject<HTMLButtonElement>;
-    ref_edit_button: React.RefObject<HTMLButtonElement>;
-    ref_hint_button: React.RefObject<HTMLButtonElement>;
-    ref_toggle_coordinates_button?: React.RefObject<HTMLButtonElement>;
+    ref_transform_x_button: React.RefObject<HTMLButtonElement | null>;
+    ref_transform_h_button: React.RefObject<HTMLButtonElement | null>;
+    ref_transform_v_button: React.RefObject<HTMLButtonElement | null>;
+    ref_transform_color_button: React.RefObject<HTMLButtonElement | null>;
+    ref_transform_zoom_button: React.RefObject<HTMLButtonElement | null>;
+    ref_settings_button: React.RefObject<HTMLButtonElement | null>;
+    ref_edit_button: React.RefObject<HTMLButtonElement | null>;
+    ref_hint_button: React.RefObject<HTMLButtonElement | null>;
+    ref_toggle_coordinates_button?: React.RefObject<HTMLButtonElement | null>;
 
     goban!: GobanRenderer;
     goban_div: HTMLDivElement;
@@ -109,7 +109,7 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
     transform = new PuzzleTransform(new TransformSettings());
     navigation = new PuzzleNavigation();
     editor: PuzzleEditor;
-    next_link: React.RefObject<HTMLAnchorElement>;
+    next_link: React.RefObject<HTMLAnchorElement | null>;
 
     set_analyze_tool: any = {};
 
@@ -142,14 +142,14 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
             label_positioning: preferences.get("label-positioning-puzzles"),
         };
 
-        this.ref_transform_x_button = React.createRef<HTMLButtonElement>();
-        this.ref_transform_h_button = React.createRef<HTMLButtonElement>();
-        this.ref_transform_v_button = React.createRef<HTMLButtonElement>();
-        this.ref_transform_color_button = React.createRef<HTMLButtonElement>();
-        this.ref_transform_zoom_button = React.createRef<HTMLButtonElement>();
-        this.ref_settings_button = React.createRef<HTMLButtonElement>();
-        this.ref_edit_button = React.createRef<HTMLButtonElement>();
-        this.ref_hint_button = React.createRef<HTMLButtonElement>();
+        this.ref_transform_x_button = React.createRef<HTMLButtonElement | null>();
+        this.ref_transform_h_button = React.createRef<HTMLButtonElement | null>();
+        this.ref_transform_v_button = React.createRef<HTMLButtonElement | null>();
+        this.ref_transform_color_button = React.createRef<HTMLButtonElement | null>();
+        this.ref_transform_zoom_button = React.createRef<HTMLButtonElement | null>();
+        this.ref_settings_button = React.createRef<HTMLButtonElement | null>();
+        this.ref_edit_button = React.createRef<HTMLButtonElement | null>();
+        this.ref_hint_button = React.createRef<HTMLButtonElement | null>();
 
         this.goban_div = document.createElement("div");
         this.goban_div.className = "Goban";

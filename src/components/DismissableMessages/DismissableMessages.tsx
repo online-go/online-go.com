@@ -22,7 +22,7 @@ import { DismissableMessagesSchema } from "@/lib/data_schema";
 import { AutoTranslate } from "@/components/AutoTranslate";
 import { UIPush } from "@/components/UIPush";
 
-export function DismissableMessages(): JSX.Element | null {
+export function DismissableMessages(): React.ReactElement | null {
     const [messages, setMessages] = React.useState<DismissableMessagesSchema | undefined>(
         data.get("config.dismissable_messages"),
     );

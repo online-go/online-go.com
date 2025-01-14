@@ -45,7 +45,7 @@ export function getReportSettings(): { [key: string]: { priority: number; visibl
     return ret;
 }
 
-export function ReportsCenterSettings(): JSX.Element {
+export function ReportsCenterSettings(): React.ReactElement {
     const [state, setState] = React.useState(getReportSettings());
     const [sortOrder, setSortOrder] = usePreference("moderator.report-sort-order");
 

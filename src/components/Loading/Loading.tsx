@@ -25,7 +25,7 @@ interface LoadingProps {
 
 // This shenanigans is to allow the caller to select classes via props.
 // if there's a better way, please do tell :)
-export function Loading(props: LoadingProps): JSX.Element {
+export function Loading(props: LoadingProps): React.ReactElement {
     return (
         <span
             className={
@@ -40,7 +40,7 @@ export function Loading(props: LoadingProps): JSX.Element {
     );
 }
 
-export function LoadingPage(props: LoadingProps): JSX.Element {
+export function LoadingPage(props: LoadingProps): React.ReactElement {
     return (
         <span className="LoadingPage">
             <Loading {...props} />

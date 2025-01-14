@@ -26,7 +26,7 @@ export function UserHistory({
     target_user: target_user,
 }: {
     target_user: any;
-}): JSX.Element | null {
+}): React.ReactElement | null {
     const user = useUser();
 
     if (!target_user) {

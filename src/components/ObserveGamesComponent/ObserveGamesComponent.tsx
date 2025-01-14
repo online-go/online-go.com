@@ -409,7 +409,7 @@ export class ObserveGamesComponent extends React.PureComponent<
         );
     }
 
-    private filterOption(filter_field: keyof GameListWhere, name: string): JSX.Element {
+    private filterOption(filter_field: keyof GameListWhere, name: string): React.ReactElement {
         const self = this;
 
         function toggle() {
@@ -450,7 +450,7 @@ export class ObserveGamesComponent extends React.PureComponent<
         );
     }
 
-    private renderFilters(): JSX.Element {
+    private renderFilters(): React.ReactElement {
         return (
             <div className="filters">
                 <div className="filter-group">

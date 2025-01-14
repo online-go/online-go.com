@@ -131,7 +131,7 @@ export class EXV6Overview extends React.Component<{}, OverviewState> {
         data.unwatch("config.user", this.updateUser);
     }
 
-    noActiveGames(): JSX.Element {
+    noActiveGames(): React.ReactElement {
         return (
             <div className="no-active-games">
                 <div style={{ marginBottom: "1rem" }}>

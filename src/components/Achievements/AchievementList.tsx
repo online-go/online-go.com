@@ -30,11 +30,11 @@ interface AchievementListProps {
     list: Array<AchievementEntry>;
 }
 
-export function AchievementList({ list }: AchievementListProps): JSX.Element {
+export function AchievementList({ list }: AchievementListProps): React.ReactElement {
     return <div className="AchievementList">{list.map(render_achievement_entry)}</div>;
 }
 
-function render_achievement_entry(entry: AchievementEntry): JSX.Element {
+function render_achievement_entry(entry: AchievementEntry): React.ReactElement {
     let title = "";
     let description = "";
 

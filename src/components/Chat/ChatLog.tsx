@@ -75,7 +75,7 @@ function saveSplitSizes(sizes: Array<number>): void {
     data.set("chat.split-sizes", sizes);
 }
 
-export function ChatLog(props: ChatLogProperties): JSX.Element {
+export function ChatLog(props: ChatLogProperties): React.ReactElement {
     let [showing_games, set_showing_games]: [boolean, (tf: boolean) => void] = useState(
         data.get("chat.show-games", true) as boolean,
     );
@@ -172,7 +172,7 @@ function ChannelTopic({
     showingUsers,
     showingGames,
     canShowGames,
-}: InternalChatLogProperties): JSX.Element | null {
+}: InternalChatLogProperties): React.ReactElement | null {
     const user = useUser();
 
     const [editing, set_editing]: [boolean, (tf: boolean) => void] = useState(false as boolean);
@@ -366,7 +366,7 @@ function ChatLines({
     updateTitle,
     onShowChannels,
     onShowUsers,
-}: InternalChatLogProperties): JSX.Element {
+}: InternalChatLogProperties): React.ReactElement {
     const rtl_mode = !!global_channels_by_id[channel]?.rtl;
     const chat_log_div = useRef<HTMLDivElement>(null);
     const [, refresh]: [number, (n: number) => void] = useState(0);
@@ -498,7 +498,7 @@ function ChatInput({
     channel,
     autoFocus,
     inputPlaceholderText,
-}: InternalChatLogProperties): JSX.Element {
+}: InternalChatLogProperties): React.ReactElement {
     const user = useUser();
     const rtl_mode = !!global_channels_by_id[channel]?.rtl;
     const input = useRef(null);
@@ -572,7 +572,7 @@ function ChatInput({
     );
 }
 
-export function EmbeddedChatCard(props: ChatLogProperties): JSX.Element {
+export function EmbeddedChatCard(props: ChatLogProperties): React.ReactElement {
     return (
         <Card className="Card EmbeddedChatCard">
             <ChatLog key={props.channel} {...props} hideTopic={true} forceShowGames={true} />

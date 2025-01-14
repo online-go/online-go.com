@@ -38,7 +38,7 @@ interface RengoManagementPaneProperties {
  * picked out of a supplied list of challenges
  * */
 
-export function RengoManagementPane(props: RengoManagementPaneProperties): JSX.Element {
+export function RengoManagementPane(props: RengoManagementPaneProperties): React.ReactElement {
     const user = useUser();
     const { registerTargetItem } = React.useContext(DynamicHelp.Api);
 

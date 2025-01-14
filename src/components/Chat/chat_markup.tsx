@@ -24,7 +24,7 @@ import { profanity_filter } from "@/lib/profanity_filter";
 export interface TextReplacement {
     split: RegExp;
     pattern: RegExp;
-    replacement: (m: RegExpExecArray, idx: number) => JSX.Element;
+    replacement: (m: RegExpExecArray, idx: number) => React.ReactElement;
 }
 
 const global_replacements: TextReplacement[] = [
@@ -386,7 +386,7 @@ export function chat_markup(
     body: string,
     extra_pattern_replacements?: Array<TextReplacement>,
     lengthLimit?: number,
-): Array<JSX.Element> {
+): Array<React.ReactElement> {
     let replacements = global_replacements;
 
     if (!lengthLimit) {

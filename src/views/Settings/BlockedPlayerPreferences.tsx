@@ -22,7 +22,7 @@ import { errorAlerter } from "@/lib/misc";
 
 import { BlockPlayerModal, getAllBlocksWithUsernames } from "@/components/BlockPlayer";
 
-export function BlockedPlayerPreferences(): JSX.Element {
+export function BlockedPlayerPreferences(): React.ReactElement {
     const [blocked_players, setBlockedPlayers]: [
         Array<any> | null,
         (x: Array<any> | null) => void,

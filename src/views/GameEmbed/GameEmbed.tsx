@@ -28,7 +28,7 @@ import { MiniGoban } from "@/components/MiniGoban";
 // the right and left.
 const PADDING = 36;
 
-export function GameEmbed(): JSX.Element {
+export function GameEmbed(): React.ReactElement {
     const params = useParams<{ game_id?: string; review_id?: string }>();
     const [searchParams] = useSearchParams();
     // Suppressing unused var lint error - we'll use this soon!

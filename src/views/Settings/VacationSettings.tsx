@@ -25,7 +25,7 @@ import { durationString } from "@/components/TimeControl";
 
 import { SettingGroupPageProps } from "@/lib/SettingsCommon";
 
-export function VacationSettings(props: SettingGroupPageProps): JSX.Element {
+export function VacationSettings(props: SettingGroupPageProps): React.ReactElement {
     const [vacation_left, set_vacation_left]: [number, (x: number) => void] = React.useState(
         props.state.profile.vacation_left - (Date.now() - props.vacation_base_time) / 1000,
     );

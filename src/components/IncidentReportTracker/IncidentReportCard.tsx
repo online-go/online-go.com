@@ -52,7 +52,7 @@ interface IncidentReportCardProps {
     report: Report;
 }
 
-export function IncidentReportCard({ report }: IncidentReportCardProps): JSX.Element {
+export function IncidentReportCard({ report }: IncidentReportCardProps): React.ReactElement {
     const user = useUser();
     const [reporterNote, setReporterNote] = React.useState(report.reporter_note || "");
     const [isEditing, setIsEditing] = React.useState(false);
