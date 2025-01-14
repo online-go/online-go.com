@@ -131,11 +131,14 @@ export function getRelativeEventPosition(
 ): { x: number; y: number } | undefined {
     let x;
     let y;
-    const offset = $(event.target).offset();
-
-    if (!offset) {
-        return;
-    }
+    const target = event.target as HTMLElement;
+    const rect = target.getBoundingClientRect();
+    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const offset = {
+        left: rect.left + scrollLeft,
+        top: rect.top + scrollTop,
+    };
 
     if (event.originalEvent?.touches && event.originalEvent?.touches.length) {
         x = event.originalEvent.touches[0].pageX - offset.left;
@@ -608,14 +611,14 @@ export function deepCompare(x: any, y: any) {
 /*** OGS Focus detection ***/
 const focus_window_id = "" + Math.random();
 try {
-    $(window).focus(() => {
+    window.addEventListener("focus", () => {
         try {
             localStorage.setItem("focused_window", focus_window_id);
         } catch {
             // Ignored, safari in private mode errors out when setItem is called
         }
     });
-    $(window).blur(() => {
+    window.addEventListener("blur", () => {
         try {
             if (localStorage.getItem("focused_window") === focus_window_id) {
                 localStorage.removeItem("focused_window");

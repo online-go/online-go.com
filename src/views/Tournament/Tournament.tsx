@@ -3247,11 +3247,17 @@ function createEliminationNodes(rounds: Round[]) {
     return { all_objects: all_objects, last_cur_bucket: last_cur_bucket };
 }
 function eliminationMouseOver(id: number) {
-    $(".elimination-player-hover").removeClass("elimination-player-hover");
-    $(".elimination-player-" + id).addClass("elimination-player-hover");
+    document
+        .querySelectorAll(".elimination-player-hover")
+        .forEach((el) => el.classList.remove("elimination-player-hover"));
+    document
+        .querySelectorAll(`.elimination-player-${id}`)
+        .forEach((el) => el.classList.add("elimination-player-hover"));
 }
 function eliminationMouseOut() {
-    $(".elimination-player-hover").removeClass("elimination-player-hover");
+    document
+        .querySelectorAll(".elimination-player-hover")
+        .forEach((el) => el.classList.remove("elimination-player-hover"));
 }
 interface EliminationPlayer {
     id: number;
@@ -3541,11 +3547,12 @@ function layoutEliminationGraph(
 ) {
     const svg_extents = { x: 0, y: 0 };
 
-    const em2_5 = ($("#em10").width() * 2.5) / 10.0;
-    const name_width = ($("#em10").width() * 12.0) / 10.0;
-    const min_space = ($("#em10").width() * 0.5) / 10.0;
+    const em10_width = document.getElementById("em10")?.offsetWidth ?? 0;
+    const em2_5 = (em10_width * 2.5) / 10.0;
+    const name_width = (em10_width * 12.0) / 10.0;
+    const min_space = (em10_width * 0.5) / 10.0;
     const h = em2_5 + min_space;
-    const w = name_width + ($("#em10").width() * 4.0) / 10.0;
+    const w = name_width + (em10_width * 4.0) / 10.0;
     let last_visit_order = 0;
     const computeVisitOrder = (obj: any) => {
         if (obj.visit_order) {

@@ -432,8 +432,8 @@ export function Game(): React.ReactElement | null {
             return false;
         }
         if (checkAndEnterAnalysis()) {
-            $("#game-analyze-button-bar .active").removeClass("active");
-            $("#game-analyze-" + tool + "-tool").addClass("active");
+            document.querySelector("#game-analyze-button-bar .active")?.classList.remove("active");
+            document.querySelector(`#game-analyze-${tool}-tool`)?.classList.add("active");
             enableTouchAction();
             switch (tool) {
                 case "draw":
@@ -1117,7 +1117,7 @@ export function Game(): React.ReactElement | null {
         game_control.on("stopEstimatingScore", stopEstimatingScore);
         game_control.on("gotoMove", nav_goto_move);
 
-        $(window).on("focus", onFocus);
+        window.addEventListener("focus", onFocus);
 
         /*** BEGIN initialize ***/
         chat_proxy.current = game_id
@@ -1640,7 +1640,7 @@ export function Game(): React.ReactElement | null {
             window.global_goban = null;
 
             setExtraActionCallback(null as any);
-            $(window).off("focus", onFocus);
+            window.removeEventListener("focus", onFocus);
             window.document.title = "OGS";
             const body = document.getElementsByTagName("body")[0];
             body.classList.remove("zen"); //remove the class

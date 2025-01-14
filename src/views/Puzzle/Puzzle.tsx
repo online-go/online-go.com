@@ -220,8 +220,8 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
 
     setAnalyzeTool(tool: string, subtool: string | null | undefined) {
         if (this.navigation.checkAndEnterAnalysis()) {
-            $("#game-analyze-button-bar .active").removeClass("active");
-            $("#game-analyze-" + tool + "-tool").addClass("active");
+            document.querySelector("#game-analyze-button-bar .active")?.classList.remove("active");
+            document.querySelector(`#game-analyze-${tool}-tool`)?.classList.add("active");
             switch (tool) {
                 case "draw":
                     this.goban.setAnalyzeTool(tool, this.state.analyze_pencil_color as string);
@@ -351,9 +351,9 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
             show_wrong: false,
         });
         setTimeout(() => {
-            const position = $(window).scrollTop();
-            $(this.next_link.current as any).focus();
-            $(window).scrollTop(position);
+            const position = window.pageYOffset;
+            (this.next_link.current as HTMLElement)?.focus();
+            window.scrollTo(0, position);
         }, 1);
     };
     jumpToPuzzle = (ev: React.ChangeEvent<HTMLSelectElement>) => {
@@ -1376,8 +1376,22 @@ import { PopOver, popover } from "@/lib/popover";
 import { PuzzleSettingsModal } from "./PuzzleSettingsModal";
 
 export function openPuzzleSettingsControls(ev: React.MouseEvent): PopOver {
-    const elt = $(ev.target);
-    const offset = elt.offset();
+    const elt = ev.target;
+    if (!(elt instanceof HTMLElement)) {
+        return popover({
+            elt: <PuzzleSettingsModal />,
+            at: { x: 0, y: 0 },
+            minWidth: 300,
+            minHeight: 50,
+        });
+    }
+    const rect = elt.getBoundingClientRect();
+    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const offset = {
+        left: rect.left + scrollLeft,
+        top: rect.top + scrollTop,
+    };
 
     if (!offset) {
         throw new Error("No offset");
@@ -1385,7 +1399,7 @@ export function openPuzzleSettingsControls(ev: React.MouseEvent): PopOver {
 
     return popover({
         elt: <PuzzleSettingsModal />,
-        at: { x: offset.left, y: offset.top + elt.height() },
+        at: { x: offset.left, y: offset.top + elt.offsetHeight },
         minWidth: 300,
         minHeight: 50,
     });

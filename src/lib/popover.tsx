@@ -54,8 +54,8 @@ export class PopOver extends TypedEventEmitter<Events> {
         this.config = config;
         this.container = container;
         this.backdrop = backdrop;
-        $(backdrop).click(this.close);
-        $(container).click(this.close);
+        this.backdrop.addEventListener("click", this.close);
+        this.container.addEventListener("click", this.close);
         open_popovers[this.id] = this;
         if (this.config.closeAfter) {
             setTimeout(this.fadeout, this.config.closeAfter);
@@ -67,11 +67,10 @@ export class PopOver extends TypedEventEmitter<Events> {
         setTimeout(this.close, 500); // matches css transition-duration
     };
 
-    close = (ev?: React.MouseEvent) => {
+    close = (ev?: React.MouseEvent | Event) => {
         if (!ev || ev.target === this.backdrop || ev.target === this.container) {
-            //ReactDOM.unmountComponentAtNode(this.container);
-            $(this.container).remove();
-            $(this.backdrop).remove();
+            this.container.remove();
+            this.backdrop.remove();
             delete open_popovers[this.id];
 
             this.emit("close");
@@ -88,8 +87,11 @@ export function close_all_popovers(): void {
 export function popover(config: PopoverConfig): PopOver {
     const container_class = config.container_class ? ` ${config.container_class}` : "";
 
-    const backdrop = $("<div class='popover-backdrop'></div>");
-    const container = $(`<div class='popover-container${container_class}'></div>`);
+    const backdrop = document.createElement("div");
+    backdrop.className = "popover-backdrop";
+
+    const container = document.createElement("div");
+    container.className = `popover-container${container_class}`;
 
     const minWidth: number = config.minWidth || 150;
     const minHeight: number = config.minHeight || 25;
@@ -111,9 +113,13 @@ export function popover(config: PopoverConfig): PopOver {
         x = Math.min(x, bounds.x - minWidth);
 
         if (y < bounds.y - minHeight) {
-            container.css({ minWidth: minWidth, top: y, left: x });
+            container.style.minWidth = `${minWidth}px`;
+            container.style.top = `${y}px`;
+            container.style.left = `${x}px`;
         } else {
-            container.css({ minWidth: minWidth, bottom: $(window).height() - y, left: x });
+            container.style.minWidth = `${minWidth}px`;
+            container.style.bottom = `${window.innerHeight - y}px`;
+            container.style.left = `${x}px`;
         }
     } else if (config.below) {
         const rectangle = config.below.getBoundingClientRect();
@@ -124,23 +130,23 @@ export function popover(config: PopoverConfig): PopOver {
         y = rectangle.bottom + window.scrollY;
 
         if (y < bounds.y - minHeight) {
-            container.css({ minWidth: minWidth, top: y, left: x });
+            container.style.minWidth = `${minWidth}px`;
+            container.style.top = `${y}px`;
+            container.style.left = `${x}px`;
         } else {
             // Don't overlap the element we were supposed to be below.
             // If there is no space below, just go above it instead.
-            container.css({
-                minWidth: minWidth,
-                bottom: $(window).height() - rectangle.top - window.scrollY,
-                left: x,
-            });
+            container.style.minWidth = `${minWidth}px`;
+            container.style.bottom = `${window.innerHeight - rectangle.top - window.scrollY}px`;
+            container.style.left = `${x}px`;
         }
     }
 
-    $(document.body).append(backdrop);
-    $(document.body).append(container);
+    document.body.appendChild(backdrop);
+    document.body.appendChild(container);
 
-    const root = ReactDOM.createRoot(container[0]);
+    const root = ReactDOM.createRoot(container);
     root.render(<React.StrictMode>{config.elt}</React.StrictMode>);
 
-    return new PopOver(config, backdrop[0] as HTMLElement, container[0] as HTMLElement);
+    return new PopOver(config, backdrop, container);
 }

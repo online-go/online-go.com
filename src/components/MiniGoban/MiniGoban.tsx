@@ -63,9 +63,6 @@ export interface MiniGobanProps {
 }
 
 function computedDisplayWidth(): number {
-    //const body_width = document.body.clientWidth;
-
-    //return Math.min($("body").width() - 50, em10_width * 2);
     return Math.min(getWindowWidth(), getEm10Width() * 2);
 }
 
