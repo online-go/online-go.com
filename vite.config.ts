@@ -95,17 +95,14 @@ export default defineConfig({
         outDir: "../dist",
         sourcemap: true,
         minify: "terser",
-        lib: {
-            name: "ogs",
-            entry: "main.tsx",
-            formats: ["iife"],
-            fileName: (_format, _entryName) => {
-                return `ogs.js`;
-            },
-        },
+        chunkSizeWarningLimit: 1024 * 1024 * 1.5,
         rollupOptions: {
+            input: {
+                ogs: "src/main.tsx",
+            },
             output: {
-                assetFileNames: "ogs.[ext]",
+                assetFileNames: "[name].[ext]",
+                entryFileNames: "[name].js",
             },
         },
     },
