@@ -24,7 +24,11 @@ interface DateTimePickerProps {
     className?: string;
 }
 
-export function DateTimePicker({ value, onChange, className }: DateTimePickerProps): React.ReactElement {
+export function DateTimePicker({
+    value,
+    onChange,
+    className,
+}: DateTimePickerProps): React.ReactElement {
     const [dateStr, setDateStr] = React.useState(value ? format(value, "yyyy-MM-dd") : "");
     const [timeStr, setTimeStr] = React.useState(value ? format(value, "HH:mm") : "");
 
@@ -43,7 +47,11 @@ export function DateTimePicker({ value, onChange, className }: DateTimePickerPro
         setDateStr(newDateStr);
 
         if (newDateStr) {
-            const newDate = parse(newDateStr + " " + (timeStr || "00:00"), "yyyy-MM-dd HH:mm", new Date());
+            const newDate = parse(
+                newDateStr + " " + (timeStr || "00:00"),
+                "yyyy-MM-dd HH:mm",
+                new Date(),
+            );
             if (isValid(newDate)) {
                 onChange(newDate);
             }
@@ -57,7 +65,11 @@ export function DateTimePicker({ value, onChange, className }: DateTimePickerPro
         setTimeStr(newTimeStr);
 
         if (newTimeStr) {
-            const newDate = parse((dateStr || format(new Date(), "yyyy-MM-dd")) + " " + newTimeStr, "yyyy-MM-dd HH:mm", new Date());
+            const newDate = parse(
+                (dateStr || format(new Date(), "yyyy-MM-dd")) + " " + newTimeStr,
+                "yyyy-MM-dd HH:mm",
+                new Date(),
+            );
             if (isValid(newDate)) {
                 onChange(newDate);
             }
@@ -68,16 +80,8 @@ export function DateTimePicker({ value, onChange, className }: DateTimePickerPro
 
     return (
         <div className={`DateTimePicker ${className || ""}`}>
-            <input
-                type="date"
-                value={dateStr}
-                onChange={handleDateChange}
-            />
-            <input
-                type="time"
-                value={timeStr}
-                onChange={handleTimeChange}
-            />
+            <input type="date" value={dateStr} onChange={handleDateChange} />
+            <input type="time" value={timeStr} onChange={handleTimeChange} />
         </div>
     );
 }
