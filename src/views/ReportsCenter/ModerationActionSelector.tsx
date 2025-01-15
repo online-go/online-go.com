@@ -25,6 +25,7 @@ import { Report } from "@/lib/report_util";
 interface ModerationActionSelectorProps {
     available_actions: string[];
     vote_counts: { [action: string]: number };
+    users_vote: string | null;
     enable: boolean;
     report: Report;
     submit: (action: string, note: string, dissenter_note: string) => void;
@@ -147,6 +148,7 @@ const ACTION_PROMPTS = {
 export function ModerationActionSelector({
     available_actions,
     vote_counts,
+    users_vote,
     enable,
     report,
     submit,
@@ -155,8 +157,7 @@ export function ModerationActionSelector({
     const reportedBySelf = user.id === report.reporting_user.id;
 
     const [voted, setVoted] = React.useState(false);
-
-    const [selectedOption, setSelectedOption] = React.useState("");
+    const [selectedOption, setSelectedOption] = React.useState(users_vote || "");
     const [escalation_note, setEscalationNote] = React.useState("");
     const [dissenter_note, setDissenterNote] = React.useState("");
 
@@ -215,7 +216,8 @@ export function ModerationActionSelector({
                         <label htmlFor={a}>
                             {(ACTION_PROMPTS as any)[a]}
                             <span className="vote-count">
-                                ({(!!a && !!vote_counts && vote_counts[a]) ?? 0})
+                                ({(!!a && !!vote_counts && vote_counts[a]) ?? 0}
+                                {users_vote === a && "*"})
                             </span>
                         </label>
                     </div>
