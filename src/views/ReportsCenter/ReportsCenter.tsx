@@ -109,7 +109,9 @@ export function ReportsCenter(): React.ReactElement | null {
                 if (reports.length) {
                     for (let i = 0; i < reports.length; ++i) {
                         if (reports[i].report_type === category || category === "all") {
-                            navigateTo(`/reports-center/${category}/${reports[i].id}`);
+                            navigateTo(`/reports-center/${category}/${reports[i].id}`, {
+                                replace: true,
+                            });
                             return;
                         }
                     }
