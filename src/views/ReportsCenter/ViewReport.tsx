@@ -72,6 +72,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): R
     );
     const [availableActions, setAvailableActions] = React.useState<string[] | null>(null);
     const [voteCounts, setVoteCounts] = React.useState<{ [action: string]: number }>({});
+    const [usersVote, setUsersVote] = React.useState<string | null>(null);
 
     const related = report_manager.getRelatedReports(report_id);
 
@@ -85,6 +86,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): R
         setAnnulQueue(report?.detected_ai_games);
         setAvailableActions(report?.available_actions);
         setVoteCounts(report?.vote_counts);
+        setUsersVote(report?.voters?.find((v) => v.voter_id === user.id)?.action ?? null);
     };
 
     React.useEffect(() => {
@@ -555,6 +557,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): R
                             <ModerationActionSelector
                                 available_actions={availableActions ?? []}
                                 vote_counts={voteCounts}
+                                users_vote={usersVote}
                                 submit={(action, note, dissenter_note) => {
                                     void report_manager
                                         .vote(report.id, action, note, dissenter_note)
