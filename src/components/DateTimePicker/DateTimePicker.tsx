@@ -31,7 +31,9 @@ export function DateTimePicker({
     className,
 }: DateTimePickerProps): React.ReactElement {
     const locale = React.useMemo(() => getLocale(), []);
-    const [dateStr, setDateStr] = React.useState(value ? format(value, "yyyy-MM-dd", { locale }) : "");
+    const [dateStr, setDateStr] = React.useState(
+        value ? format(value, "yyyy-MM-dd", { locale }) : "",
+    );
     const [timeStr, setTimeStr] = React.useState(value ? format(value, "HH:mm", { locale }) : "");
 
     React.useEffect(() => {
