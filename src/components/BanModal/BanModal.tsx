@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import Datetime from "react-datetime";
+import { DateTimePicker } from "@/components/DateTimePicker";
 import { put } from "@/lib/requests";
 import { _ } from "@/lib/translate";
 import { errorAlerter } from "@/lib/misc";
@@ -112,7 +112,7 @@ function BanDetails({ onChange }: { onChange: (d: any) => void }): React.ReactEl
             />
 
             <h3>Ban expiration</h3>
-            <Datetime value={expiration} onChange={(d: any) => set_expiration(d._d)} />
+            <DateTimePicker value={expiration} onChange={set_expiration} />
         </div>
     );
 }

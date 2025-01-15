@@ -30,7 +30,7 @@ import { TimeControl, timeControlDescription } from "@/components/TimeControl";
 import { Markdown } from "@/components/Markdown";
 import { Player, setExtraActionCallback } from "@/components/Player";
 import { addHours, addMinutes, startOfHour, format, formatDistanceToNow } from "date-fns";
-import Datetime from "react-datetime";
+import { DateTimePicker } from "@/components/DateTimePicker";
 import { UIPush } from "@/components/UIPush";
 import { Card } from "@/components/material";
 import { EmbeddedChatCard } from "@/components/Chat";
@@ -1116,7 +1116,7 @@ export function Tournament(): React.ReactElement {
                             </label>
                             <div className="controls">
                                 <div className="checkbox">
-                                    <Datetime
+                                    <DateTimePicker
                                         onChange={setStartTime}
                                         value={new Date(tournament.time_start)}
                                     />
@@ -1612,11 +1612,10 @@ export function Tournament(): React.ReactElement {
                                             {interpolate(pgettext("Tournament round number. The {{num}} is placeholder text, please leave it as {{num}}", "Round {{num}}"), {num: idx + 1})}
                                         </th>
                                         <td>
-                                            <Datetime
-                                                inputProps={{
-                                                    placeholder: pgettext("Time a tournament round starts", "Round start time")
-                                                }}
-                                                onChange={(d) => setRoundStartTime(idx, d)} value={getRoundStartTime(idx)}/>
+                                            <DateTimePicker
+                                                onChange={(d) => setRoundStartTime(idx, d)}
+                                                value={getRoundStartTime(idx)}
+                                            />
                                         </td>
                                     </tr>
                                 ))}
