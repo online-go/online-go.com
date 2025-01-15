@@ -134,7 +134,9 @@ export function GameLog({
                                         }
                                     >
                                         <td className="timestamp">
-                                            {format(new Date(entry.timestamp), "Pp", { locale: getLocale() })}
+                                            {format(new Date(entry.timestamp), "Pp", {
+                                                locale: getLocale(),
+                                            })}
                                         </td>
                                         <td className="event">{decodeLogEvent(entry.event)}</td>
                                         <td className="data">

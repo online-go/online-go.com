@@ -54,12 +54,18 @@ export class ServerTimeDisplay extends React.Component<{}, ServerTimeState> {
             /* Saturday or Sunday */
             const midnight_sunday = endOfDay(day === 6 ? addDays(new Date(), 1) : new Date());
             return interpolate(_("Weekend ends {{time_from_now}}"), {
-                time_from_now: formatDistanceToNow(midnight_sunday, { addSuffix: true, locale: getLocale() }),
+                time_from_now: formatDistanceToNow(midnight_sunday, {
+                    addSuffix: true,
+                    locale: getLocale(),
+                }),
             });
         } else {
             const fridayEnd = endOfDay(setDay(new Date(), 5));
             return interpolate(_("Weekend starts {{time_from_now}}"), {
-                time_from_now: formatDistanceToNow(fridayEnd, { addSuffix: true, locale: getLocale() }),
+                time_from_now: formatDistanceToNow(fridayEnd, {
+                    addSuffix: true,
+                    locale: getLocale(),
+                }),
             });
         }
     }

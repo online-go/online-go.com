@@ -16,7 +16,10 @@
  */
 
 import { current_language } from "@/lib/translate";
+import type { Locale } from "date-fns";
 import * as dateFnsLocales from "date-fns/locale";
+
+type DateFnsLocales = { [key: string]: Locale };
 
 // Map OGS language codes to date-fns locale names
 const localeMap: { [key: string]: string } = {
@@ -46,5 +49,5 @@ const localeMap: { [key: string]: string } = {
 
 export function getLocale(): Locale {
     const localeName = localeMap[current_language] || "enUS";
-    return dateFnsLocales[localeName];
+    return (dateFnsLocales as DateFnsLocales)[localeName];
 }
