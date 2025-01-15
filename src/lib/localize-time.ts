@@ -16,7 +16,6 @@
  */
 
 import { format, parseISO } from "date-fns";
-import { toZonedTime } from "date-fns-tz";
 
 export function localize_time_strings(str: string): string {
     try {
@@ -25,8 +24,8 @@ export function localize_time_strings(str: string): string {
             /\[\s*time\s*=\s*["']([0-9a-zA-Z: -]+)["'](format\s*=\s*["']?([a-zA-Z0-9\/ _-]+)["']?)?\]/g,
             (x: string, time: string, fmt?: string) => {
                 const date = parseISO(time);
-                const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-                const zonedDate = toZonedTime(date, timeZone);
+
+                const zonedDate = date;
                 return format(zonedDate, fmt || "PPPP p zzz");
             },
         );
@@ -39,8 +38,8 @@ export function localize_time_strings(str: string): string {
                 const utcDate = new Date(
                     sourceDate.getTime() - sourceDate.getTimezoneOffset() * 60000,
                 );
-                const targetTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-                const zonedDate = toZonedTime(utcDate, targetTimeZone);
+
+                const zonedDate = utcDate;
                 return format(zonedDate, fmt || "PPPP p zzz");
             },
         );

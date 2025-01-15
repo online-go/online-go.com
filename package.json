@@ -114,7 +114,6 @@
         "classnames": "^2.5.1",
         "d3": "^7.6.1",
         "date-fns": "4.1.0",
-        "date-fns-tz": "^3.2.0",
         "eventemitter3": "^5.0.0",
         "goban": "=8.3.72",
         "howler": "^2.2.4",

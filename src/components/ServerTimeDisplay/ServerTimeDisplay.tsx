@@ -17,7 +17,6 @@
 
 import * as React from "react";
 import { format, formatDistanceToNow, endOfDay, addDays, setDay } from "date-fns";
-import { toZonedTime } from "date-fns-tz";
 import { _, interpolate } from "@/lib/translate";
 
 interface ServerTimeState {
@@ -65,7 +64,7 @@ export class ServerTimeDisplay extends React.Component<{}, ServerTimeState> {
     }
 
     render() {
-        const zonedTime = toZonedTime(this.state.time, "UTC");
+        const zonedTime = this.state.time;
         return (
             <div className="server-time-display">
                 <div>
