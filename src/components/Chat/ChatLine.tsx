@@ -17,6 +17,7 @@
 
 import * as React from "react";
 import { format, isSameDay } from "date-fns";
+import { getLocale } from "@/lib/date-fns-locale";
 import * as data from "@/lib/data";
 import { Player } from "@/components/Player";
 import { chat_markup } from "./chat_markup";
@@ -63,7 +64,7 @@ export function ChatLine(props: ChatLineInterface): React.ReactElement {
     if (!last_line || (ts && ts_ll)) {
         if (ts) {
             if (!last_line || !ts_ll || !isSameDay(ts, ts_ll)) {
-                show_date = <div className="date">{format(ts, "PPP")}</div>;
+                show_date = <div className="date">{format(ts, "PPP", { locale: getLocale() })}</div>;
             }
         }
     }
@@ -97,13 +98,7 @@ export function ChatLine(props: ChatLineInterface): React.ReactElement {
 
     let timestamp_str = "";
     if (ts) {
-        const hours = ts.getHours();
-        const minutes = ts.getMinutes();
-
-        timestamp_str =
-            (hours < 10 ? ` ${hours}` : hours.toString()) +
-            ":" +
-            (minutes < 10 ? `0${minutes}` : minutes.toString());
+        timestamp_str = format(ts, "p", { locale: getLocale() });
     }
 
     return (

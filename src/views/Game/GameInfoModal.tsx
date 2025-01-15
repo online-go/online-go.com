@@ -17,6 +17,7 @@
 
 import * as React from "react";
 import { format } from "date-fns";
+import { getLocale } from "@/lib/date-fns-locale";
 import * as data from "@/lib/data";
 import { _ } from "@/lib/translate";
 import { post, patch, del } from "@/lib/requests";
@@ -319,10 +320,10 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, GameIn
                         <dt>{_("Time")}</dt>
                         <dd>
                             {config.start_time
-                                ? format(new Date(config.start_time * 1000), "PPp")
+                                ? format(new Date(config.start_time * 1000), "PPp", { locale: getLocale() })
                                 : ""}
                             {config.end_time
-                                ? " - " + format(new Date(config.end_time * 1000), "PPp")
+                                ? " - " + format(new Date(config.end_time * 1000), "PPp", { locale: getLocale() })
                                 : ""}
                         </dd>
                         <dt>{_("Rules")}</dt>
