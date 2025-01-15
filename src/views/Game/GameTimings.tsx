@@ -16,7 +16,8 @@
  */
 
 import moment from "moment";
-import "moment-duration-format";
+import duration from "moment-duration-format";
+duration(moment as any);
 
 import * as React from "react";
 
