@@ -16,6 +16,7 @@
  */
 
 import { format, parseISO } from "date-fns";
+import { getLocale } from "@/lib/date-fns-locale";
 
 export function localize_time_strings(str: string): string {
     try {
@@ -26,7 +27,8 @@ export function localize_time_strings(str: string): string {
                 const date = parseISO(time);
 
                 const zonedDate = date;
-                return format(zonedDate, fmt || "PPPP p zzz");
+                const locale = getLocale();
+                return format(zonedDate, fmt || "PPPP p zzz", { locale });
             },
         );
 
@@ -40,7 +42,8 @@ export function localize_time_strings(str: string): string {
                 );
 
                 const zonedDate = utcDate;
-                return format(zonedDate, fmt || "PPPP p zzz");
+                const locale = getLocale();
+                return format(zonedDate, fmt || "PPPP p zzz", { locale });
             },
         );
 

@@ -17,6 +17,7 @@
 
 import * as React from "react";
 import { format, parse, isValid } from "date-fns";
+import { getLocale } from "@/lib/date-fns-locale";
 
 interface DateTimePickerProps {
     value?: Date | null;
@@ -29,13 +30,14 @@ export function DateTimePicker({
     onChange,
     className,
 }: DateTimePickerProps): React.ReactElement {
-    const [dateStr, setDateStr] = React.useState(value ? format(value, "yyyy-MM-dd") : "");
-    const [timeStr, setTimeStr] = React.useState(value ? format(value, "HH:mm") : "");
+    const locale = React.useMemo(() => getLocale(), []);
+    const [dateStr, setDateStr] = React.useState(value ? format(value, "yyyy-MM-dd", { locale }) : "");
+    const [timeStr, setTimeStr] = React.useState(value ? format(value, "HH:mm", { locale }) : "");
 
     React.useEffect(() => {
         if (value) {
-            setDateStr(format(value, "yyyy-MM-dd"));
-            setTimeStr(format(value, "HH:mm"));
+            setDateStr(format(value, "yyyy-MM-dd", { locale }));
+            setTimeStr(format(value, "HH:mm", { locale }));
         } else {
             setDateStr("");
             setTimeStr("");
@@ -51,6 +53,7 @@ export function DateTimePicker({
                 newDateStr + " " + (timeStr || "00:00"),
                 "yyyy-MM-dd HH:mm",
                 new Date(),
+                { locale },
             );
             if (isValid(newDate)) {
                 onChange(newDate);
@@ -66,9 +69,10 @@ export function DateTimePicker({
 
         if (newTimeStr) {
             const newDate = parse(
-                (dateStr || format(new Date(), "yyyy-MM-dd")) + " " + newTimeStr,
+                (dateStr || format(new Date(), "yyyy-MM-dd", { locale })) + " " + newTimeStr,
                 "yyyy-MM-dd HH:mm",
                 new Date(),
+                { locale },
             );
             if (isValid(newDate)) {
                 onChange(newDate);
