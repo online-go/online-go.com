@@ -140,6 +140,7 @@ function main() {
                 }
 
                 for (let m of parser.getMatches(source)) {
+                    console.log(m);
                     if (m.msgid == "") {
                         console.log("Skipping blank translation");
                         console.log(m);

@@ -27,6 +27,7 @@ import atImport from "postcss-import";
 import inline_svg from "postcss-inline-svg";
 import autoprefixer from "autoprefixer";
 import { nodePolyfills } from "vite-plugin-node-polyfills";
+import { splitVendorChunkPlugin } from "vite";
 
 const OGS_I18N_BUILD_MODE = (process.env.OGS_I18N_BUILD_MODE || "false").toLowerCase() === "true";
 let OGS_BACKEND = process.env.OGS_BACKEND || "BETA";
@@ -126,6 +127,11 @@ export default defineConfig({
                       format: "commonjs",
                       assetFileNames: "[name].strings.[ext]",
                       entryFileNames: "[name].strings.js",
+                      manualChunks: (id: string) => {
+                          if (id.includes("node_modules")) {
+                              return "vendor";
+                          }
+                      },
                   },
               },
           },
