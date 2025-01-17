@@ -12,6 +12,7 @@
         "dev": "vite",
         "vite": "vite",
         "build": "vite build --emptyOutDir && node compile-css.js",
+        "build:i18n": "OGS_I18N_BUILD_MODE=true vite build",
         "type-check": "tsc --skipLibCheck --noEmit",
         "prettier": "prettier --write \"src/**/*.{ts,tsx}\"",
         "prettier:check": "prettier --check \"src/**/*.{ts,tsx}\"",
