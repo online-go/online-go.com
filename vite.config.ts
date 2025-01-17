@@ -28,6 +28,7 @@ import inline_svg from "postcss-inline-svg";
 import autoprefixer from "autoprefixer";
 import { nodePolyfills } from "vite-plugin-node-polyfills";
 
+const OGS_I18N_BUILD_MODE = (process.env.OGS_I18N_BUILD_MODE || "false").toLowerCase() === "true";
 let OGS_BACKEND = process.env.OGS_BACKEND || "BETA";
 OGS_BACKEND = OGS_BACKEND.toUpperCase();
 //OGS_BACKEND = "BETA";
@@ -91,21 +92,43 @@ proxy["^/$"] = {
 
 export default defineConfig({
     root: "src",
-    build: {
-        outDir: "../dist",
-        sourcemap: true,
-        minify: "terser",
-        chunkSizeWarningLimit: 1024 * 1024 * 1.5,
-        rollupOptions: {
-            input: {
-                ogs: "src/main.tsx",
-            },
-            output: {
-                assetFileNames: "[name].[ext]",
-                entryFileNames: "[name].js",
-            },
-        },
-    },
+
+    build: !OGS_I18N_BUILD_MODE
+        ? {
+              // This is our production build
+              outDir: "../dist",
+              sourcemap: true,
+              minify: "terser",
+              chunkSizeWarningLimit: 1024 * 1024 * 1.5,
+              rollupOptions: {
+                  input: {
+                      ogs: "src/main.tsx",
+                  },
+                  output: {
+                      assetFileNames: "[name].[ext]",
+                      entryFileNames: "[name].js",
+                  },
+              },
+          }
+        : {
+              // This build section is for our i18n system which run xgettext
+              // on the non-minified bundle
+              outDir: "../i18n/build/",
+              sourcemap: true,
+              minify: false,
+              target: "es2015",
+              chunkSizeWarningLimit: 1024 * 1024 * 99,
+              rollupOptions: {
+                  input: {
+                      ogs: "src/main.tsx",
+                  },
+                  output: {
+                      format: "commonjs",
+                      assetFileNames: "[name].strings.[ext]",
+                      entryFileNames: "[name].strings.js",
+                  },
+              },
+          },
     /*
      * NOTE: We don't use vite css processing for our production builds because
      * it doesn't support generating sourcemaps in production as of 2025-01-07
@@ -129,20 +152,25 @@ export default defineConfig({
 
         process.env.NODE_ENV !== "production" ? nodePolyfills() : null,
         // checker relative directory is src/
-        checker({
-            typescript: {
-                tsconfigPath:
-                    process.env.NODE_ENV === "production" ? "tsconfig.json" : "../tsconfig.json",
-            },
-            eslint: {
-                useFlatConfig: true,
-                lintCommand: "eslint .",
-            },
-            overlay: {
-                initialIsOpen: true,
-            },
-            enableBuild: true,
-        }),
+        //
+        !OGS_I18N_BUILD_MODE
+            ? checker({
+                  typescript: {
+                      tsconfigPath:
+                          process.env.NODE_ENV === "production"
+                              ? "tsconfig.json"
+                              : "../tsconfig.json",
+                  },
+                  eslint: {
+                      useFlatConfig: true,
+                      lintCommand: "eslint .",
+                  },
+                  overlay: {
+                      initialIsOpen: true,
+                  },
+                  enableBuild: true,
+              })
+            : null,
     ],
     resolve: {
         alias: Object.assign(
