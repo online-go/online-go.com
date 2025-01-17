@@ -152,20 +152,25 @@ export default defineConfig({
 
         process.env.NODE_ENV !== "production" ? nodePolyfills() : null,
         // checker relative directory is src/
-        checker({
-            typescript: {
-                tsconfigPath:
-                    process.env.NODE_ENV === "production" ? "tsconfig.json" : "../tsconfig.json",
-            },
-            eslint: {
-                useFlatConfig: true,
-                lintCommand: "eslint .",
-            },
-            overlay: {
-                initialIsOpen: true,
-            },
-            enableBuild: true,
-        }),
+        //
+        !OGS_I18N_BUILD_MODE
+            ? checker({
+                  typescript: {
+                      tsconfigPath:
+                          process.env.NODE_ENV === "production"
+                              ? "tsconfig.json"
+                              : "../tsconfig.json",
+                  },
+                  eslint: {
+                      useFlatConfig: true,
+                      lintCommand: "eslint .",
+                  },
+                  overlay: {
+                      initialIsOpen: true,
+                  },
+                  enableBuild: true,
+              })
+            : null,
     ],
     resolve: {
         alias: Object.assign(

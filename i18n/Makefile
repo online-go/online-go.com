@@ -15,6 +15,7 @@ build/countries.json: cldr/common
 	./gen-country-lists.py
 
 dev-run-translation-scripts:
+	cd ../; npm run build:i18n
 	#cp ../dist/ogs.js build/ogs.strings.js
 	#cp ../dist/ogs.js.map build/ogs.strings.js.map
 	#sed -i 's/ogs.js.map/ogs.strings.js.map/' build/ogs.strings.js
