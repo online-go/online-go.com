@@ -351,9 +351,9 @@ export function QuickMatch(): React.ReactElement {
             : {
                   system: "byoyomi",
                   speed: game_speed,
-                  main_time: SPEED_OPTIONS[board_size][game_speed].byoyomi!.main_time,
-                  period_time: SPEED_OPTIONS[board_size][game_speed].byoyomi!.period_time,
-                  periods: SPEED_OPTIONS[board_size][game_speed].byoyomi!.periods,
+                  main_time: SPEED_OPTIONS[board_size][game_speed].byoyomi?.main_time || 0,
+                  period_time: SPEED_OPTIONS[board_size][game_speed].byoyomi?.period_time || 0,
+                  periods: SPEED_OPTIONS[board_size][game_speed].byoyomi?.periods || 0,
                   pause_on_weekends: false,
               };
 
