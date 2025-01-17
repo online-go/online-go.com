@@ -115,7 +115,6 @@ const RenderOptionWithDescription = (props: {
     isSelected: boolean;
 }) => {
     const opt = props.data;
-    console.log(props);
     return (
         <div
             ref={props.innerRef}
