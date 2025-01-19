@@ -290,6 +290,11 @@ export function NavBar(): React.ReactElement {
                         {_("Rating Calculator")}
                     </Link>
 
+                    <a href="https://translate.online-go.com/projects/ogs/" target="_blank">
+                        <i className="fa fa-globe"></i>
+                        {_("Contribute To Translation")}
+                    </a>
+
                     <Link className="admin-link" to="/reports-center">
                         <i className="fa fa-exclamation-triangle"></i>
                         {_("Reports Center")}
