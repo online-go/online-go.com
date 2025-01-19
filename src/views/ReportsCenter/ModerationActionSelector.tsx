@@ -42,8 +42,10 @@ const ACTION_PROMPTS = {
 online Go game server to select: an action to apply to a report about a game of Go. \
 In the phrase you are asked to translate, 'no cheating' is a conclusion meaning the \
 moderator concluded cheating did not occur, rather than an instruction meaning the \
-reader should not cheat. Be completely unambiguous with regards to the meaning of \
-the word annul: choose a translation that means that the result of the game is not valid.",
+reader should not cheat. 'escape' is jargon that means 'left the game without finishing it properly: \
+take care to convey this where there is any reference to escape or escaping.\
+Be completely unambiguous with regards to the meaning of the word annul: \
+choose a translation that means that the result of the game is not valid.",
         "Wrong result due to escape - annul game, warn the escaper.",
     ),
     warn_escaper: llm_pgettext(
@@ -51,8 +53,10 @@ the word annul: choose a translation that means that the result of the game is n
 online Go game server to select: an action to apply to a report about a game of Go. \
 In the phrase you are asked to translate, 'no cheating' is a conclusion meaning the \
 moderator concluded cheating did not occur, rather than an instruction meaning the \
-reader should not cheat. Be completely unambiguous with regards to the meaning of \
-the word annul: choose a translation that means that the result of the game is not valid.",
+reader should not cheat. 'escape' is jargon that means 'left the game without finishing it properly: \
+take care to convey this where there is any reference to escape or escaping.\
+Be completely unambiguous with regards to the meaning of the word annul: \
+choose a translation that means that the result of the game is not valid.",
         "The accused escaped - warn them.",
     ),
     call_escaped_game_for_black: llm_pgettext(
@@ -60,8 +64,10 @@ the word annul: choose a translation that means that the result of the game is n
 online Go game server to select: an action to apply to a report about a game of Go. \
 In the phrase you are asked to translate, 'no cheating' is a conclusion meaning the \
 moderator concluded cheating did not occur, rather than an instruction meaning the \
-reader should not cheat. Be completely unambiguous with regards to the meaning of \
-the word annul: choose a translation that means that the result of the game is not valid.",
+reader should not cheat. 'escape' is jargon that means 'left the game without finishing it properly: \
+take care to convey this where there is any reference to escape or escaping.\
+Be completely unambiguous with regards to the meaning of the word annul: \
+choose a translation that means that the result of the game is not valid.",
         "White escaped - call the game for black, and warn white.",
     ),
     call_escaped_game_for_white: llm_pgettext(
@@ -69,8 +75,10 @@ the word annul: choose a translation that means that the result of the game is n
 online Go game server to select: an action to apply to a report about a game of Go. \
 In the phrase you are asked to translate, 'no cheating' is a conclusion meaning the \
 moderator concluded cheating did not occur, rather than an instruction meaning the \
-reader should not cheat. Be completely unambiguous with regards to the meaning of \
-the word annul: choose a translation that means that the result of the game is not valid.",
+reader should not cheat. 'escape' is jargon that means 'left the game without finishing it properly: \
+take care to convey this where there is any reference to escape or escaping.\
+Be completely unambiguous with regards to the meaning of the word annul: \
+choose a translation that means that the result of the game is not valid.",
         "Black escaped - call the game for white, and warn black.",
     ),
     no_escaping: llm_pgettext(
@@ -78,8 +86,10 @@ the word annul: choose a translation that means that the result of the game is n
 online Go game server to select: an action to apply to a report about a game of Go. \
 In the phrase you are asked to translate, 'no cheating' is a conclusion meaning the \
 moderator concluded cheating did not occur, rather than an instruction meaning the \
-reader should not cheat. Be completely unambiguous with regards to the meaning of \
-the word annul: choose a translation that means that the result of the game is not valid.",
+reader should not cheat. 'escape' is jargon that means 'left the game without finishing it properly: \
+take care to convey this where there is any reference to escape or escaping.\
+Be completely unambiguous with regards to the meaning of the word annul: \
+choose a translation that means that the result of the game is not valid.",
         "No escaping evident - inform the reporter.",
     ),
     not_escaping_cancel: llm_pgettext(
@@ -87,8 +97,10 @@ the word annul: choose a translation that means that the result of the game is n
 online Go game server to select: an action to apply to a report about a game of Go. \
 In the phrase you are asked to translate, 'no cheating' is a conclusion meaning the \
 moderator concluded cheating did not occur, rather than an instruction meaning the \
-reader should not cheat. Be completely unambiguous with regards to the meaning of \
-the word annul: choose a translation that means that the result of the game is not valid.",
+reader should not cheat. 'escape' is jargon that means 'left the game without finishing it properly: \
+take care to convey this where there is any reference to escape or escaping.\
+Be completely unambiguous with regards to the meaning of the word annul: \
+choose a translation that means that the result of the game is not valid.",
         "Not escaping, they used 'cancel'.",
     ),
     annul_stalled: llm_pgettext(
@@ -195,8 +207,10 @@ the word annul: choose a translation that means that the result of the game is n
 online Go game server to select: an action to apply to a report about a game of Go. \
 In the phrase you are asked to translate, 'no cheating' is a conclusion meaning the \
 moderator concluded cheating did not occur, rather than an instruction meaning the \
-reader should not cheat. Be completely unambiguous with regards to the meaning of \
-the word annul: choose a translation that means that the result of the game is not valid.",
+reader should not cheat. 'escape' is jargon that means 'left the game without finishing it properly: \
+take care to convey this where there is any reference to escape or escaping.\
+Be completely unambiguous with regards to the meaning of the word annul: \
+choose a translation that means that the result of the game is not valid.",
         "Final warning: the accused escaped.",
     ),
     final_warning_stalling: llm_pgettext(
@@ -222,8 +236,10 @@ the word annul: choose a translation that means that the result of the game is n
 online Go game server to select: an action to apply to a report about a game of Go. \
 In the phrase you are asked to translate, 'no cheating' is a conclusion meaning the \
 moderator concluded cheating did not occur, rather than an instruction meaning the \
-reader should not cheat. Be completely unambiguous with regards to the meaning of \
-the word annul: choose a translation that means that the result of the game is not valid.",
+reader should not cheat. 'escape' is jargon that means 'left the game without finishing it properly: \
+take care to convey this where there is any reference to escape or escaping.\
+Be completely unambiguous with regards to the meaning of the word annul: \
+choose a translation that means that the result of the game is not valid.",
         "Final warning: the accused escaped - annul game.",
     ),
     final_warning_stalling_and_annul: llm_pgettext(
