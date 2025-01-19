@@ -107,9 +107,12 @@ class PrivateChat {
                     this.player = player;
                     this.player_dom.textContent = unicodeFilter(player.username || "");
                     if (player.ui_class) {
-                        player.ui_class.split(" ").forEach((c) => {
-                            this.player_dom.classList.add(c);
-                        });
+                        player.ui_class
+                            .split(" ")
+                            .filter((c) => !!c.trim())
+                            .forEach((c) => {
+                                this.player_dom.classList.add(c);
+                            });
                     }
                     if (player.ui_class?.match(/moderator/)) {
                         // inter mod chat? don't open
