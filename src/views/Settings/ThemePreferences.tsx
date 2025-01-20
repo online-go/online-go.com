@@ -81,10 +81,9 @@ export function ThemePreferences(): JSX.Element | null {
     );
     const [last_move_opacity, _setLastMoveOpacity] = usePreference("last-move-opacity");
     const [stone_font_scale, _setStoneFontScale] = usePreference("stone-font-scale");
-    /*
+
     const [variation_stone_opacity, _setVariationStoneOpacity] =
         usePreference("variation-stone-opacity");
-        */
 
     //const [show_move_numbers, _setShowMoveNumbers] = usePreference("show-move-numbers");
     const [show_variation_move_numbers, _setShowVariationMoveNumbers] = usePreference(
@@ -134,7 +133,6 @@ export function ThemePreferences(): JSX.Element | null {
         }
     }
 
-    /*
     function setVariationStoneOpacity(ev: React.ChangeEvent<HTMLInputElement>) {
         const value = parseFloat(ev.target.value);
 
@@ -142,7 +140,6 @@ export function ThemePreferences(): JSX.Element | null {
             _setVariationStoneOpacity(value);
         }
     }
-    */
 
     const [canvas_enabled, setCanvasEnabled] = useData("experiments.canvas");
     //const canvas_enabled = data.get("experiments.canvas");
@@ -425,27 +422,50 @@ export function ThemePreferences(): JSX.Element | null {
                 </div>
             </PreferenceLine>
 
-            {/*
             <PreferenceLine
                 title={_("Variation stone opacity")}
                 description={_(
                     "Choose the level of opacity for stones shown in variations. 0.0 is transparent and 1.0 is opaque.",
                 )}
             >
-                <input
-                    type="range"
-                    step="0.1"
-                    min="0.0"
-                    max="1.0"
-                    onChange={setVariationStoneOpacity}
-                    value={variation_stone_opacity}
-                />
-                <span>
-                    &nbsp;
-                    {variation_stone_opacity}
-                </span>
+                <div className="with-sample-goban">
+                    <div className="left">
+                        <input
+                            type="range"
+                            step="0.1"
+                            min="0.0"
+                            max="1.0"
+                            onChange={setVariationStoneOpacity}
+                            value={variation_stone_opacity}
+                        />
+                        <span>
+                            &nbsp;
+                            {variation_stone_opacity}
+                        </span>
+                    </div>
+
+                    <MiniGoban
+                        className="inline"
+                        key={variation_stone_opacity + "" + _refresh}
+                        json={{
+                            width: 3,
+                            height: 1,
+                            marks: {
+                                "1": "aa",
+                                black: "aa",
+                                "2": "ca",
+                                white: "ca",
+                            },
+                        }}
+                        noLink={true}
+                        width={2}
+                        height={1}
+                        displayWidth={80}
+                        labels_positioning={"none"}
+                        sampleOptions={{}}
+                    />
+                </div>
             </PreferenceLine>
-            */}
 
             <PreferenceLine
                 title={_("Visual undo request indicator")}
