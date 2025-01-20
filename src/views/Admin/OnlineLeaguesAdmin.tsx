@@ -21,7 +21,7 @@ import * as React from "react";
 import { get, post, del } from "@/lib/requests";
 import { useUser } from "@/lib/hooks";
 
-export function OnlineLeaguesAdmin(): JSX.Element {
+export function OnlineLeaguesAdmin(): React.ReactElement {
     const [leagues, set_leagues] = React.useState<any[]>([]);
     const [new_league_name, set_new_league_name] = React.useState("");
 

@@ -48,7 +48,7 @@ import { notification_manager, Notification } from "@/components/Notifications/N
 
 moment.relativeTimeThreshold("m", 56);
 export interface SelectOption {
-    break?: JSX.Element;
+    break?: React.ReactElement;
     value: string;
     label: string;
 }
@@ -115,7 +115,6 @@ const RenderOptionWithDescription = (props: {
     isSelected: boolean;
 }) => {
     const opt = props.data;
-    console.log(props);
     return (
         <div
             ref={props.innerRef}
@@ -139,7 +138,7 @@ const select_styles = {
     }),
 };
 
-export function QuickMatch(): JSX.Element {
+export function QuickMatch(): React.ReactElement {
     const user = useUser();
     const refresh = useRefresh();
     const available_human_matches_list = React.useRef<{ [uuid: string]: any }>({});
@@ -351,9 +350,9 @@ export function QuickMatch(): JSX.Element {
             : {
                   system: "byoyomi",
                   speed: game_speed,
-                  main_time: SPEED_OPTIONS[board_size][game_speed].byoyomi!.main_time,
-                  period_time: SPEED_OPTIONS[board_size][game_speed].byoyomi!.period_time,
-                  periods: SPEED_OPTIONS[board_size][game_speed].byoyomi!.periods,
+                  main_time: SPEED_OPTIONS[board_size][game_speed].byoyomi?.main_time || 0,
+                  period_time: SPEED_OPTIONS[board_size][game_speed].byoyomi?.period_time || 0,
+                  periods: SPEED_OPTIONS[board_size][game_speed].byoyomi?.periods || 0,
                   pause_on_weekends: false,
               };
 

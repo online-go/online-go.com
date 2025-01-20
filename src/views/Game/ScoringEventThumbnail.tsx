@@ -36,7 +36,7 @@ export function ScoringEventThumbnail({
             return ret;
         })(),
     );
-    const goban = React.useRef<GobanRenderer>();
+    const goban = React.useRef<GobanRenderer | null>(null);
 
     React.useEffect(() => {
         goban.current = createGoban({

@@ -20,7 +20,7 @@ import { alert } from "@/lib/swal_config";
 import { post } from "@/lib/requests";
 import { errorAlerter } from "@/lib/misc";
 
-export function BlockedVPN(): JSX.Element {
+export function BlockedVPN(): React.ReactElement {
     const [vpn, setVPN] = React.useState("");
 
     function submit() {

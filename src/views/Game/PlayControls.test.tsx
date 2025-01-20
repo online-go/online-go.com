@@ -82,7 +82,7 @@ const PLAY_CONTROLS_DEFAULTS = {
     },
 } as const;
 
-function WrapTest(props: { goban: GobanRenderer; children: any }): JSX.Element {
+function WrapTest(props: { goban: GobanRenderer; children: any }): React.ReactElement {
     return (
         <OgsHelpProvider>
             <Router>

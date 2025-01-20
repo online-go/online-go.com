@@ -59,7 +59,7 @@ data.watch(cached.friends, (friends_arr) => {
 });
 
 let extraActionCallback:
-    | ((user_id: number, user: any) => JSX.Element | null | undefined)
+    | ((user_id: number, user: any) => React.ReactElement | null | undefined)
     | null
     | undefined;
 

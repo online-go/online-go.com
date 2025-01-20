@@ -147,7 +147,7 @@ interface LoadedTournamentInterface extends TournamentInterface {
 
 type EditSaveState = "none" | "saving" | "reload";
 
-export function Tournament(): JSX.Element {
+export function Tournament(): React.ReactElement {
     const user = useUser();
     const params = useParams<{ tournament_id: string; group_id: string }>();
     const tournament_id = parseInt(params.tournament_id ?? "0");
@@ -2630,7 +2630,7 @@ function OpenGothaRoster({
 }: {
     tournament: TournamentInterface;
     players: TournamentPlayer[];
-}): JSX.Element {
+}): React.ReactElement {
     window.players = players;
     players.sort((a, b) => a.username.localeCompare(b.username));
     return (
@@ -2650,7 +2650,7 @@ function OpenGothaRoster({
     );
 }
 
-function OpenGothaStandings({ tournament }: { tournament: any }): JSX.Element {
+function OpenGothaStandings({ tournament }: { tournament: any }): React.ReactElement {
     return (
         <div className="OpenGothaStandings">
             <Markdown source={tournament.opengotha_standings} />
@@ -2669,7 +2669,7 @@ function OpenGothaTournamentRound({
     selectedRound: number;
     players: TournamentPlayer[];
     rounds: Array<any>;
-}): JSX.Element {
+}): React.ReactElement {
     //let [notes, _set_notes]:[string, (s) => void] = React.useState(tournament.settings[`notes-round-${selectedRound}`] || "");
     const [notes, _set_notes]: [string, (s: string) => void] = React.useState(roundNotes);
     const [notes_updated, set_notes_updated]: [boolean, (b: boolean) => void] =
@@ -2920,7 +2920,7 @@ function OpenGothaTournamentUploadDownload({
 }: {
     tournament: any;
     reloadCallback: () => void;
-}): JSX.Element | null {
+}): React.ReactElement | null {
     if (!tournament.can_administer) {
         return null;
     }
@@ -3247,11 +3247,17 @@ function createEliminationNodes(rounds: Round[]) {
     return { all_objects: all_objects, last_cur_bucket: last_cur_bucket };
 }
 function eliminationMouseOver(id: number) {
-    $(".elimination-player-hover").removeClass("elimination-player-hover");
-    $(".elimination-player-" + id).addClass("elimination-player-hover");
+    document
+        .querySelectorAll(".elimination-player-hover")
+        .forEach((el) => el.classList.remove("elimination-player-hover"));
+    document
+        .querySelectorAll(`.elimination-player-${id}`)
+        .forEach((el) => el.classList.add("elimination-player-hover"));
 }
 function eliminationMouseOut() {
-    $(".elimination-player-hover").removeClass("elimination-player-hover");
+    document
+        .querySelectorAll(".elimination-player-hover")
+        .forEach((el) => el.classList.remove("elimination-player-hover"));
 }
 interface EliminationPlayer {
     id: number;
@@ -3268,7 +3274,7 @@ export function EliminationTree({
 }: {
     rounds: Round[];
     players: TournamentPlayers;
-}): JSX.Element | null {
+}): React.ReactElement | null {
     const elimination_tree = React.useRef(
         document.createElementNS("http://www.w3.org/2000/svg", "svg"),
     );
@@ -3310,7 +3316,7 @@ export function EliminationNode({
     kind: EliminationNodeKind;
     result_class?: string;
     gameid?: any;
-}): JSX.Element {
+}): React.ReactElement {
     return (
         <>
             <div
@@ -3334,7 +3340,7 @@ export function EliminationBye({
 }: {
     player: EliminationPlayer;
     location: EliminationLocation;
-}): JSX.Element {
+}): React.ReactElement {
     return (
         <div className="bye-div" style={location}>
             <EliminationNode player={player} kind="bye" />
@@ -3353,7 +3359,7 @@ export function EliminationMatch({
     gameid: any;
     result: any;
     location: EliminationLocation;
-}): JSX.Element {
+}): React.ReactElement {
     let black_result: string | undefined;
     let white_result: string | undefined;
     if (result === "B+1") {
@@ -3541,11 +3547,12 @@ function layoutEliminationGraph(
 ) {
     const svg_extents = { x: 0, y: 0 };
 
-    const em2_5 = ($("#em10").width() * 2.5) / 10.0;
-    const name_width = ($("#em10").width() * 12.0) / 10.0;
-    const min_space = ($("#em10").width() * 0.5) / 10.0;
+    const em10_width = document.getElementById("em10")?.offsetWidth ?? 0;
+    const em2_5 = (em10_width * 2.5) / 10.0;
+    const name_width = (em10_width * 12.0) / 10.0;
+    const min_space = (em10_width * 0.5) / 10.0;
     const h = em2_5 + min_space;
-    const w = name_width + ($("#em10").width() * 4.0) / 10.0;
+    const w = name_width + (em10_width * 4.0) / 10.0;
     let last_visit_order = 0;
     const computeVisitOrder = (obj: any) => {
         if (obj.visit_order) {

@@ -25,7 +25,7 @@ interface FlagProperties {
     big?: boolean;
 }
 
-export function Flag(props: FlagProperties): JSX.Element {
+export function Flag(props: FlagProperties): React.ReactElement {
     if (props.language && props.user_country) {
         return (
             <span style={{ display: "inline-flex" }}>

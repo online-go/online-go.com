@@ -163,7 +163,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
             hovered_month: undefined,
             date_extents: [],
         };
-        this.chart_div = $("<div>")[0] as HTMLDivElement;
+        this.chart_div = document.createElement("div");
     }
     componentDidMount() {
         this.initialize();
@@ -636,7 +636,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
     chart_sizes(): { width: number; height: number } {
         const width = Math.max(
             chart_min_width,
-            $(this.container.current as any).width() - margin.left - margin.right,
+            (this.container.current as HTMLElement).offsetWidth - margin.left - margin.right,
         );
         return {
             width: width,

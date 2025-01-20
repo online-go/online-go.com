@@ -52,7 +52,7 @@ declare let ogs_missing_translation_count: number;
 type UserType = rest_api.UserConfig;
 type ActiveGameType = rest_api.players.full.Game;
 
-export function Overview(): JSX.Element {
+export function Overview(): React.ReactElement {
     return (
         <Experiment name="v6">
             <Variant value="enabled">
@@ -149,7 +149,7 @@ export class OldOverview extends React.Component<{}, OverviewState> {
         data.unwatch("config.user", this.updateUser);
     }
 
-    noActiveGames(): JSX.Element {
+    noActiveGames(): React.ReactElement {
         return (
             <div className="no-active-games">
                 <div style={{ marginBottom: "1rem" }}>

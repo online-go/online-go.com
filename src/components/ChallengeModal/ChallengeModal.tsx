@@ -175,7 +175,7 @@ export class ChallengeModalBody extends React.Component<
     },
     any
 > {
-    ref: React.RefObject<HTMLDivElement> = React.createRef();
+    ref: React.RefObject<HTMLDivElement | null> = React.createRef();
 
     constructor(
         props: ChallengeModalProperties & {
@@ -559,7 +559,7 @@ export class ChallengeModalBody extends React.Component<
                 this.gameStateOf(next).width < 1 ||
                 this.gameStateOf(next).width > 25
             ) {
-                $("#challenge-goban-width").focus();
+                document.getElementById("challenge-goban-width")?.focus();
                 return false;
             }
             if (
@@ -567,7 +567,7 @@ export class ChallengeModalBody extends React.Component<
                 this.gameStateOf(next).height < 1 ||
                 this.gameStateOf(next).height > 25
             ) {
-                $("#challenge-goban-height").focus();
+                document.getElementById("challenge-goban-height")?.focus();
                 return false;
             }
         } catch {

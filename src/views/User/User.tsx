@@ -58,7 +58,7 @@ import { NewUserRankChooser } from "@/components/NewUserRankChooser";
 type RatingsSpeed = "overall" | "blitz" | "live" | "correspondence";
 type RatingsSize = 0 | 9 | 13 | 19;
 
-export function User(props: { user_id?: number }): JSX.Element {
+export function User(props: { user_id?: number }): React.ReactElement {
     const params = useParams();
     const user_id =
         props.user_id ||
@@ -647,7 +647,11 @@ export function User(props: { user_id?: number }): JSX.Element {
     );
 }
 
-function SelfReportedAccountLinkages({ links }: { links: rest_api.AccountLinks }): JSX.Element {
+function SelfReportedAccountLinkages({
+    links,
+}: {
+    links: rest_api.AccountLinks;
+}): React.ReactElement {
     const has_association = links.org1 || links.org2 || links.org3;
     let has_other_server = false;
     for (const key in links) {
@@ -699,7 +703,7 @@ function AssociationLink({
     country?: string;
     id?: string;
     rank?: number;
-}): JSX.Element | null {
+}): React.ReactElement | null {
     try {
         if (!country) {
             return null;
@@ -748,7 +752,7 @@ function ServerLink({
     name: string;
     id?: string;
     rank?: number;
-}): JSX.Element | null {
+}): React.ReactElement | null {
     if (!id && !rank) {
         return null;
     }

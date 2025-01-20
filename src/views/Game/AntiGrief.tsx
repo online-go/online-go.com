@@ -91,7 +91,7 @@ browserHistory.listen((obj) => {
     checkForLeavingLiveGame(obj?.location?.pathname);
 });
 
-export function AntiGrief(): JSX.Element {
+export function AntiGrief(): React.ReactElement {
     checkForLeavingLiveGame(location?.pathname);
 
     return (
@@ -101,7 +101,7 @@ export function AntiGrief(): JSX.Element {
         </>
     );
 }
-function AntiEscaping(): JSX.Element | null {
+function AntiEscaping(): React.ReactElement | null {
     const user = useUser();
     const goban = useGoban();
     const [phase, setPhase] = React.useState(goban?.engine?.phase);
@@ -225,7 +225,7 @@ function AntiEscaping(): JSX.Element | null {
     );
 }
 
-function AntiStalling(): JSX.Element | null {
+function AntiStalling(): React.ReactElement | null {
     const user = useUser();
     const goban = useGoban();
     const [estimate, setEstimate] = React.useState<any>(null);

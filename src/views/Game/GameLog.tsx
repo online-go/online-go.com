@@ -39,7 +39,7 @@ export function GameLog({
     goban_config,
     onContainsTimeout,
     onContainsAbandonment,
-}: GameLogProps): JSX.Element {
+}: GameLogProps): React.ReactElement {
     const [log, setLog] = React.useState<LogEntry[]>([]);
     const [shouldDisplayFullLog, setShouldDisplayFullLog] = React.useState(false);
 
@@ -191,7 +191,7 @@ export function LogData({
     markCoords: (stones: string) => void;
     event: string;
     data: any;
-}): JSX.Element | null {
+}): React.ReactElement | null {
     const [markedConfig, setMarkedConfig] = React.useState<GobanEngineConfig | null>(null);
 
     React.useEffect(() => {
@@ -231,7 +231,7 @@ export function LogData({
         });
     }, [config, event, data?.removed, data?.stones]);
 
-    const ret: Array<JSX.Element> = [];
+    const ret: Array<React.ReactElement> = [];
 
     if (event === "game_created") {
         // game_created has the whole board config list of field, don't dump all those in the log.

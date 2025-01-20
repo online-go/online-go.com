@@ -23,7 +23,7 @@ import { notification_manager } from "@/components/Notifications/NotificationMan
 import { Link } from "react-router-dom";
 //import * as data from "@/lib/data";
 
-export function SupporterProblems(): JSX.Element | null {
+export function SupporterProblems(): React.ReactElement | null {
     const user = useUser();
     const notifications = useNotifications(["supporterExpired"]);
 

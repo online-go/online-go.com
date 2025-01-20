@@ -36,7 +36,7 @@ interface AvailableQuickMatchesProps {
 export function AvailableQuickMatches({
     lower_rank_diff,
     upper_rank_diff,
-}: AvailableQuickMatchesProps): JSX.Element {
+}: AvailableQuickMatchesProps): React.ReactElement {
     const available = React.useRef<{ [uuid: string]: any }>({});
     const refresh = useRefresh();
     const user = useUser();

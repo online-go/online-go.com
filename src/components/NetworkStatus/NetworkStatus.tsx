@@ -28,7 +28,7 @@ const INITIAL_CONNECTION_TIME = 6000;
 
 type NetworkStatusState = "connected" | "went-away" | "disconnected" | "timeout";
 
-export function NetworkStatus(): JSX.Element | null {
+export function NetworkStatus(): React.ReactElement | null {
     const [state, setState] = React.useState<NetworkStatusState>("connected");
     const [manually_closed, setManuallyClosed] = React.useState<boolean>(false);
     const [show_slow_internet_warning] = preferences.usePreference("show-slow-internet-warning");

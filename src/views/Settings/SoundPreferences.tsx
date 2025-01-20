@@ -36,7 +36,7 @@ import { Flag } from "@/components/Flag";
 
 import { PreferenceToggle } from "@/lib/SettingsCommon";
 
-export function SoundPreferences(): JSX.Element {
+export function SoundPreferences(): React.ReactElement {
     const [tick_tock_start, __setTickTockStart] = usePreference("sound.countdown.tick-tock.start");
     const [ten_seconds_start, __setTenSecondsStart] = usePreference(
         "sound.countdown.ten-seconds.start",
@@ -797,7 +797,11 @@ export function SoundPreferences(): JSX.Element {
     );
 }
 
-function SoundToggle(props: { name: string; sprite: ValidSound; voiceOpt?: boolean }): JSX.Element {
+function SoundToggle(props: {
+    name: string;
+    sprite: ValidSound;
+    voiceOpt?: boolean;
+}): React.ReactElement {
     const [on, __set]: [boolean, (x: boolean) => void] = React.useState(
         sfx.getSpriteEnabled(props.sprite),
     );
@@ -851,7 +855,7 @@ function SoundToggle(props: { name: string; sprite: ValidSound; voiceOpt?: boole
 function Volume(props: {
     group: ValidSoundGroup;
     sample: ValidSound | Array<ValidSound>;
-}): JSX.Element {
+}): React.ReactElement {
     const [volume, __setVolume]: [number, (x: number) => void] = React.useState(
         sfx.getVolume(props.group),
     );
@@ -903,7 +907,7 @@ function Volume(props: {
 let play_timeout: Timeout | null = null;
 const play_emitter = new EventEmitter();
 
-function PlayButton(props: { sample: ValidSound | Array<ValidSound> }): JSX.Element {
+function PlayButton(props: { sample: ValidSound | Array<ValidSound> }): React.ReactElement {
     const [playing, setPlaying]: [boolean, any] = React.useState(false);
     const samples: Array<ValidSound> =
         typeof props.sample === "string" ? [props.sample] : props.sample;
@@ -958,7 +962,7 @@ function PlayButton(props: { sample: ValidSound | Array<ValidSound> }): JSX.Elem
 function SoundPackSelect(props: {
     group: ValidSoundGroup;
     options: Array<SpritePack>;
-}): JSX.Element {
+}): React.ReactElement {
     const [pack_id, __setPackId]: [string, (x: string) => void] = React.useState(
         sfx.getPackId(props.group),
     );

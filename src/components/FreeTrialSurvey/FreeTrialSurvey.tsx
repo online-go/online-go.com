@@ -48,7 +48,7 @@ Thank you!
 `;
 */
 
-export function FreeTrialSurvey(): JSX.Element | null {
+export function FreeTrialSurvey(): React.ReactElement | null {
     return null;
 
     /*

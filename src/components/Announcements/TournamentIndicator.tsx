@@ -21,7 +21,7 @@ import * as data from "@/lib/data";
 import moment from "moment";
 import { usePreference } from "@/lib/preferences";
 
-export function TournamentIndicator(): JSX.Element | null {
+export function TournamentIndicator(): React.ReactElement | null {
     const [tournament, setTournament] = React.useState<any>(null);
     const [minutes_left, setMinutesLeft] = React.useState(0);
     const [seconds_left, setSecondsLeft] = React.useState(0);

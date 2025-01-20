@@ -31,7 +31,7 @@ import { EmbeddedChatCard } from "@/components/Chat";
 // Spectators are intended to arrive here via an online-league spectate URL that provides
 // the Online League match ID
 
-export function OnlineLeagueSpectatorLanding(): JSX.Element {
+export function OnlineLeagueSpectatorLanding(): React.ReactElement {
     const navigate = useNavigate();
     const { match_id } = useParams();
 

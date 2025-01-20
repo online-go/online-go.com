@@ -106,6 +106,6 @@ export function format_message(props: MessageProps): string {
     return message_id;
 }
 
-export function Errcode(props: MessageProps): JSX.Element {
+export function Errcode(props: MessageProps): React.ReactElement {
     return <div className="Errcode">{format_message(props)}</div>;
 }

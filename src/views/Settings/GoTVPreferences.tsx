@@ -28,7 +28,7 @@ import { useUser } from "@/lib/hooks";
 
 type LanguageCodes = typeof twitchLanguageCodes;
 
-export function GoTVPreferences(): JSX.Element {
+export function GoTVPreferences(): React.ReactElement {
     const {
         isAuthenticated,
         isTokenExpired,

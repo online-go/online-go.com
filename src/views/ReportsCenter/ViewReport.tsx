@@ -56,7 +56,7 @@ let report_note_id = 0;
 let report_note_text = "";
 let report_note_update_timeout: ReturnType<typeof setTimeout> | null = null;
 
-export function ViewReport({ report_id, reports, onChange }: ViewReportProps): JSX.Element {
+export function ViewReport({ report_id, reports, onChange }: ViewReportProps): React.ReactElement {
     const user = useUser();
     const [moderatorNote, setModeratorNote] = React.useState("");
     const [moderators, setModerators] = React.useState(cached_moderators);
@@ -72,6 +72,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
     );
     const [availableActions, setAvailableActions] = React.useState<string[] | null>(null);
     const [voteCounts, setVoteCounts] = React.useState<{ [action: string]: number }>({});
+    const [usersVote, setUsersVote] = React.useState<string | null>(null);
 
     const related = report_manager.getRelatedReports(report_id);
 
@@ -85,6 +86,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
         setAnnulQueue(report?.detected_ai_games);
         setAvailableActions(report?.available_actions);
         setVoteCounts(report?.vote_counts);
+        setUsersVote(report?.voters?.find((v) => v.voter_id === user.id)?.action ?? null);
     };
 
     React.useEffect(() => {
@@ -555,6 +557,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                             <ModerationActionSelector
                                 available_actions={availableActions ?? []}
                                 vote_counts={voteCounts}
+                                users_vote={usersVote}
                                 submit={(action, note, dissenter_note) => {
                                     void report_manager
                                         .vote(report.id, action, note, dissenter_note)

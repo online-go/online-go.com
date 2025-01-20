@@ -33,7 +33,7 @@ import { MODERATOR_POWERS, MOD_POWER_NAMES } from "@/lib/moderation";
 import { notification_manager, Notification } from "./NotificationManager";
 import { ModerationOffer } from "@/components/ModerationOffer";
 
-export function NotificationList(): JSX.Element {
+export function NotificationList(): React.ReactElement {
     const [, setCount] = React.useState<number | undefined>(
         notification_manager.ordered_notifications.length,
     );
@@ -114,7 +114,8 @@ class NotificationEntry extends React.Component<NotificationEntryProps, any> {
     }
 
     open = (ev: any) => {
-        if (!$(ev.target).hasClass("fab") && !$(ev.target).hasClass("fa")) {
+        const target = ev.target as HTMLElement;
+        if (!target.classList.contains("fab") && !target.classList.contains("fa")) {
             const url = this.getOpenUrl();
             if (url) {
                 browserHistory.push(url);
@@ -193,7 +194,7 @@ class NotificationEntry extends React.Component<NotificationEntryProps, any> {
         );
     }
 
-    renderNotification(): JSX.Element | null {
+    renderNotification(): React.ReactElement | null {
         const notification = this.props.notification;
 
         const user = data.get("user");

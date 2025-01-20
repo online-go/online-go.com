@@ -29,7 +29,7 @@ interface OmniSearchProperties {
     onMouseOut: (e: React.MouseEvent<HTMLDivElement>) => void;
 }
 
-export function OmniSearch(props: OmniSearchProperties): JSX.Element | null {
+export function OmniSearch(props: OmniSearchProperties): React.ReactElement | null {
     const { search } = props;
     const [omnisearch_string, setOmnisearchString] = React.useState("");
     const [omnisearch_loading, setOmnisearchLoading] = React.useState(false);

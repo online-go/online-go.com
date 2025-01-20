@@ -213,11 +213,9 @@ export class Moderator extends React.PureComponent<{}, ModeratorState> {
                         <h2>{_("New Users")}</h2>
                         <SearchInput
                             placeholder={_("Search")}
-                            onChange={(event) => {
+                            onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                                 this.setState({
-                                    newuserany_filter: (
-                                        event.target as HTMLInputElement
-                                    ).value.trim(),
+                                    newuserany_filter: event.target.value.trim(),
                                 });
                             }}
                         />
@@ -356,11 +354,9 @@ export class Moderator extends React.PureComponent<{}, ModeratorState> {
                         <SearchInput
                             className="pull-right"
                             placeholder={_("Search")}
-                            onChange={(event) => {
+                            onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                                 this.setState({
-                                    playerusernameistartswith_filter: (
-                                        event.target as HTMLInputElement
-                                    ).value.trim(),
+                                    playerusernameistartswith_filter: event.target.value.trim(),
                                 });
                             }}
                         />
@@ -630,7 +626,7 @@ export interface IPDetailsProperties {
     };
 }
 
-export function IPDetails({ ip, details }: IPDetailsProperties): JSX.Element {
+export function IPDetails({ ip, details }: IPDetailsProperties): React.ReactElement {
     if (!details) {
         return <span title={JSON.stringify(details, null, 4)}>{ip}</span>;
     }

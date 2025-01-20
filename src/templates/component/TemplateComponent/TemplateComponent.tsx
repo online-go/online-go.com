@@ -25,7 +25,7 @@ type TemplateComponentProps = {
     render_twice?: boolean;
 };
 
-export function TemplateComponent(props: TemplateComponentProps): JSX.Element {
+export function TemplateComponent(props: TemplateComponentProps): React.ReactElement {
     const [username, setUsername] = React.useState("");
 
     const hangs_around = React.useRef("forever");

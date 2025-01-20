@@ -67,7 +67,7 @@ for (let i = 0; i < report_categories.length; ++i) {
     category_priorities[report_categories[i].type] = i;
 }
 
-export function ReportsCenter(): JSX.Element | null {
+export function ReportsCenter(): React.ReactElement | null {
     const user = useUser();
     const navigateTo = useNavigate();
     const refresh = useRefresh();
@@ -109,7 +109,9 @@ export function ReportsCenter(): JSX.Element | null {
                 if (reports.length) {
                     for (let i = 0; i < reports.length; ++i) {
                         if (reports[i].report_type === category || category === "all") {
-                            navigateTo(`/reports-center/${category}/${reports[i].id}`);
+                            navigateTo(`/reports-center/${category}/${reports[i].id}`, {
+                                replace: true,
+                            });
                             return;
                         }
                     }
@@ -207,7 +209,7 @@ export function ReportsCenter(): JSX.Element | null {
 
             <div id="ReportsCenterContainer">
                 <div id="ReportsCenterCategoryList">
-                    {visible_categories.map((report_type, idx): JSX.Element | null => {
+                    {visible_categories.map((report_type, idx): React.ReactElement | null => {
                         if ("type" in report_type) {
                             const ct = counts[report_type.type] || 0;
                             return (

@@ -29,7 +29,7 @@ import { llm_pgettext, pgettext } from "@/lib/translate";
  *  when there's an actual report to walk them through.
  */
 
-export function CommunityModeratorIntro(): JSX.Element {
+export function CommunityModeratorIntro(): React.ReactElement {
     return (
         <>
             <HelpFlow

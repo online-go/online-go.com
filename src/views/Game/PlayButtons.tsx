@@ -32,7 +32,7 @@ interface PlayButtonsProps {
     show_cancel?: boolean;
 }
 
-export function PlayButtons({ show_cancel = true }: PlayButtonsProps): JSX.Element {
+export function PlayButtons({ show_cancel = true }: PlayButtonsProps): React.ReactElement {
     const goban = useGoban();
     const engine = goban.engine;
     const phase = engine.phase;

@@ -40,7 +40,7 @@ interface Window {
     sfx: unknown; // sfx.ts
     sprite_packs: unknown; // sfx.ts
     swal: unknown; // swal.ts
-    toast: Function; // toast.tsx
+    toast: (element: import("react").ReactElement<any>, timeout?: number) => import("../src/lib/toast").Toast; // toast.tsx
     aireview?: unknown; // AIReview.tsx
     stripe?: unknown; // Supporter.tsx
     Md5: unknown; // SignIn.tsx

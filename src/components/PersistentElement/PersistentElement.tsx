@@ -18,23 +18,22 @@
 import * as React from "react";
 
 interface PersistentElementProps {
-    elt: HTMLElement | JQuery;
+    elt: HTMLElement;
     className?: string;
     /** hash of new props to put on the element */
     extra_props?: React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>;
 }
 
-export function PersistentElement(props: PersistentElementProps): JSX.Element {
+export function PersistentElement(props: PersistentElementProps): React.ReactElement {
     const container = React.useRef<HTMLDivElement>(null);
 
     React.useEffect((): (() => void) | void => {
         if (container.current) {
-            const elt = props.elt instanceof jQuery ? (props.elt as any)[0] : props.elt;
-            if (elt) {
+            if (props.elt) {
                 const cont = container.current;
-                cont.appendChild(elt);
+                cont.appendChild(props.elt);
                 return () => {
-                    cont.removeChild(elt);
+                    cont.removeChild(props.elt);
                 };
             } else {
                 console.warn("PersistentElement: element not found", props.elt);

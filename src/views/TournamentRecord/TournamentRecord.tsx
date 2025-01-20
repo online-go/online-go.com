@@ -57,7 +57,7 @@ interface RoundEntry {
     [k: string]: any;
 }
 
-export function TournamentRecord(): JSX.Element {
+export function TournamentRecord(): React.ReactElement {
     const params = useParams<"tournament_record_id">();
     const tournament_record_id = parseInt(params.tournament_record_id ?? "0");
 
@@ -164,7 +164,7 @@ export function TournamentRecord(): JSX.Element {
 
     const addRound = () => {
         if (new_round_name.trim().length < 2) {
-            $(".round-name-editor").focus();
+            (document.querySelector(".round-name-editor") as HTMLElement)?.focus();
             return;
         }
 
@@ -186,7 +186,7 @@ export function TournamentRecord(): JSX.Element {
         const rank = new_player_rank;
 
         if (name.trim().length < 2) {
-            $(".new-player-name").focus();
+            (document.querySelector(".new-player-name") as HTMLElement)?.focus();
             return;
         }
 

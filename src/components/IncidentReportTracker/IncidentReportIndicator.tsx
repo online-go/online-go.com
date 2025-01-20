@@ -27,7 +27,7 @@ import { useRefresh, useUser } from "@/lib/hooks";
 import * as DynamicHelp from "react-dynamic-help";
 import { IncidentReportList } from "./IncidentReportList";
 
-export function IncidentReportIndicator(): JSX.Element | null {
+export function IncidentReportIndicator(): React.ReactElement | null {
     const user = useUser();
     const navigate = useNavigate();
     const [show_incident_list, setShowIncidentList] = React.useState<boolean | undefined>(false);

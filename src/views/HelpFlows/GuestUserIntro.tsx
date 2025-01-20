@@ -25,7 +25,7 @@ import { _, pgettext } from "@/lib/translate";
  * A help flow intended for guests who arrived on a Challenge Link
  */
 
-export function GuestUserIntro(): JSX.Element {
+export function GuestUserIntro(): React.ReactElement {
     return (
         <HelpFlow
             id="guest-user-intro"

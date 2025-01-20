@@ -35,7 +35,7 @@ export function Clock({
     className?: string;
     compact?: boolean;
     lineSummary?: boolean;
-}): JSX.Element | null {
+}): React.ReactElement | null {
     const [clock, setClock] = useState<JGOFClockWithTransmitting | null>(null);
     const [submitting_move, _setSubmittingMove] = useState<boolean>(false);
 
@@ -210,7 +210,7 @@ function ClockPauseReason({
 }: {
     clock: JGOFClockWithTransmitting;
     player_id: number;
-}): JSX.Element {
+}): React.ReactElement {
     let pause_text = _("Paused");
     const pause_state = clock.pause_state;
 

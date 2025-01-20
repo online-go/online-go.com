@@ -25,7 +25,7 @@ import { Toggle } from "@/components/Toggle";
 
 import { PreferenceLine } from "@/lib/SettingsCommon";
 
-export function ChatPreferences(): JSX.Element {
+export function ChatPreferences(): React.ReactElement {
     const [show_empty_chat_notification, toggleEmptyChatNotification] = usePreference(
         "show-empty-chat-notification",
     );

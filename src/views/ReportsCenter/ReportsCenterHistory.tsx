@@ -21,7 +21,7 @@ import { PaginatedTable } from "@/components/PaginatedTable";
 import { Player } from "@/components/Player";
 import { PlayerAutocomplete } from "@/components/PlayerAutocomplete";
 
-export function ReportsCenterHistory(): JSX.Element {
+export function ReportsCenterHistory(): React.ReactElement {
     const navigateTo = useNavigate();
     const [reportingUserFilter, setReportingUserFilter] = React.useState<number>();
 

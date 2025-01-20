@@ -21,6 +21,6 @@ interface DefaultProps {
     children: React.ReactElement[] | React.ReactElement;
 }
 
-export function Default({ children }: DefaultProps): JSX.Element {
+export function Default({ children }: DefaultProps): React.ReactElement {
     return <React.Fragment>{children}</React.Fragment>;
 }

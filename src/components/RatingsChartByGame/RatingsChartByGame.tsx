@@ -177,7 +177,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
             subselect_extents: [],
             hovered_game_id: undefined,
         };
-        this.chart_div = $("<div>")[0] as HTMLDivElement;
+        this.chart_div = document.createElement("div");
     }
     componentDidMount() {
         this.initialize();
@@ -558,7 +558,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
     chart_sizes() {
         const width = Math.max(
             chart_min_width,
-            $(this.container.current as any).width() - margin.left - margin.right,
+            (this.container.current as HTMLElement).offsetWidth - margin.left - margin.right,
         );
         return {
             width: width,

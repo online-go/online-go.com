@@ -36,7 +36,7 @@ import { GameLogHelp } from "./GameLogHelp";
  * When the logged-in user changes, we have to wait till we see the new state loaded, then update the help system with it
  */
 
-export function HelpFlows(): JSX.Element {
+export function HelpFlows(): React.ReactElement {
     const {
         enableHelp,
         triggerFlow,

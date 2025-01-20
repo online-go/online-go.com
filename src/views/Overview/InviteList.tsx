@@ -97,7 +97,7 @@ function challengeDtoToSeekgraphChallengeSubset(c: ChallengeDTO, user_id: number
     };
 }
 
-export function InviteList(): JSX.Element {
+export function InviteList(): React.ReactElement {
     const [invites, setInvites] = React.useState<Challenge[]>([]);
     const [show_details, setShowDetails] = React.useState<Challenge | null>(null);
     const [lock, setLock] = React.useState(false);

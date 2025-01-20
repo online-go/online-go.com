@@ -53,7 +53,7 @@ const sample_board_data: GobanEngineConfig = {
     },
 };
 
-export function ThemePreferences(): JSX.Element | null {
+export function ThemePreferences(): React.ReactElement | null {
     const [stone_removal_graphic, _setStoneRemovalGraphic] = usePreference(
         "goban-theme-removal-graphic",
     );

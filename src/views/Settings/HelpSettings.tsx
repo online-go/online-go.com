@@ -24,7 +24,7 @@ import { _, pgettext } from "@/lib/translate";
 import { PreferenceLine } from "@/lib/SettingsCommon";
 import { Toggle } from "@/components/Toggle";
 
-export function HelpSettings(): JSX.Element {
+export function HelpSettings(): React.ReactElement {
     const {
         getFlowInfo,
         enableFlow,

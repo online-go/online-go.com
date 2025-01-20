@@ -32,14 +32,14 @@ const helpPopupDictionary: HelpPopupDictionary = {
 };
 
 type OgsHelpProviderProps = {
-    children: JSX.Element | JSX.Element[]; // This has to be the app and the help flows (as per RDH HelpProvider)
+    children: React.ReactElement | React.ReactElement[]; // This has to be the app and the help flows (as per RDH HelpProvider)
 };
 
 /**
  * Implement an RDH HelpProvider that uses OGS data storage
  */
 
-export function OgsHelpProvider(props: OgsHelpProviderProps): JSX.Element {
+export function OgsHelpProvider(props: OgsHelpProviderProps): React.ReactElement {
     const [storageLoaded, setStorageLoaded] = React.useState(false);
 
     const debugDynamicHelp = data.get("debug-dynamic-help", false);

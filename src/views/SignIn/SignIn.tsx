@@ -82,7 +82,7 @@ export function get_ebi() {
     );
 }
 
-export function SignIn(): JSX.Element {
+export function SignIn(): React.ReactElement {
     const user = useUser();
     const navigate = useNavigate();
     const [search] = useSearchParams();
