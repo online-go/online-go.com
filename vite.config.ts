@@ -199,6 +199,7 @@ export default defineConfig({
         port: 8080,
         host: true,
         proxy,
+        allowedHosts: true,
         hmr: {
             path: "/__vite_hmr",
             overlay: true,
