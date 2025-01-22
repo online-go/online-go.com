@@ -50,7 +50,7 @@ beta-put: build sync-translations create-unified-pot audit-translations jsonify-
 	OGS_VERSION_HASH=$(OGS_VERSION_HASH) npm run minify-index --silent | curl -X PUT $(BETA_INDEX_HEADERS) -d @- https://beta.online-go.com/_index
 	make beta-notify-slack
 
-live-put: build confirm-go-live push-cdn
+live-put: confirm-go-live build push-cdn
 	OGS_VERSION_HASH=$(OGS_VERSION_HASH) npm run minify-index --silent | curl -X PUT $(PROD_INDEX_HEADERS) -d @- https://online-go.com/_index
 	make live-notify-slack
 
