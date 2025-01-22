@@ -19,7 +19,7 @@ import React from "react";
 import { UserVoteActionSummary } from "./UserVoteActionSummary";
 import { community_mod_has_power, COMMUNITY_MODERATION_REPORT_TYPES } from "@/lib/report_util";
 import { ReportType } from "@/components/Report";
-import { interpolate, pgettext } from "@/lib/translate";
+import { pgettext } from "@/lib/translate";
 
 interface CMPieChartsProps {
     user_id: number;
@@ -46,13 +46,7 @@ export function CMPieCharts({
                 .map(([report_type, _flag]) => (
                     <div key={report_type}>
                         <div className="mod-graph-header" key={report_type}>
-                            {interpolate(
-                                pgettext(
-                                    "header for a graph showing breakdown of moderator's vote outcomes",
-                                    "{{report_type}}",
-                                ),
-                                { report_type },
-                            )}
+                            {report_type}
                         </div>
                         <UserVoteActionSummary
                             user_id={user_id}
