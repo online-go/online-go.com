@@ -4,7 +4,7 @@
     }
 
     .date {
-        @extends .monospace;
+        @extend .monospace;
         width: 7em;
         text-align: left;
         padding-right: 1em;
@@ -16,7 +16,7 @@
     }
 
     .action {
-        @extends .monospace;
+        @extend .monospace;
         font-size: 0.8rem;
 
         a {
@@ -38,8 +38,14 @@
     }
 
     .cm-action {
-        themed: color danger;
         float: right;
+        font-size: smaller;
+
+        .cm-action-action {
+            themed: color danger;
+            font-size: medium;
+            margin-left: 1rem;
+        }
     }
 
     .warning-event {

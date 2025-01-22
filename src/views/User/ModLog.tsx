@@ -21,15 +21,13 @@ import moment from "moment";
 import { Player } from "@/components/Player";
 import { Link } from "react-router-dom";
 import { chat_markup } from "@/components/Chat";
+import { pgettext } from "@/lib/translate";
 
 interface ModLogProps {
     user_id: number;
-    warnings_only?: boolean;
 }
 
 export function ModLog(props: ModLogProps): React.ReactElement {
-    const groomFunction = (data: any[]) => data.filter((X) => !X.action.includes("ack"));
-
     return (
         <PaginatedTable
             className="moderator-log"
@@ -40,7 +38,6 @@ export function ModLog(props: ModLogProps): React.ReactElement {
                 event: `modlog-${props.user_id}-updated`,
                 channel: "moderators",
             }}
-            {...(props.warnings_only && { groom: groomFunction })}
             columns={[
                 {
                     header: "",
@@ -113,7 +110,14 @@ function highlight_cm_action(text: string): React.ReactElement | string {
         return (
             <>
                 {prefix}
-                Actioned by community vote: <span className="cm-action">{action}</span>
+                Actioned by community vote:{" "}
+                <span className="cm-action">
+                    {pgettext(
+                        "This is a log message saying what Community Moderators voted for",
+                        "CMs voted for: ",
+                    )}
+                    <span className="cm-action-action">{action}</span>
+                </span>
             </>
         );
     }
