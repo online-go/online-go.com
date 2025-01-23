@@ -51,7 +51,7 @@ export function ModLog(props: ModLogProps): React.ReactElement {
                     header: "",
                     className: "logging-user",
                     render: (X) => {
-                        return X?.moderator?.id ? <Player user={X.moderator} /> : "-";
+                        return X?.actor?.id ? <Player user={X.actor} /> : "-";
                     },
                 },
                 {
