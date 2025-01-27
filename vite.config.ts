@@ -194,8 +194,13 @@ export default defineConfig({
         esbuildOptions: {
             plugins: [fixReactVirtualized],
         },
+        exclude: ["react-dynamic-help"],
     },
+
     server: {
+        watch: {
+            ignored: ["!**/node_modules/react-dynamic-help/**"],
+        },
         port: 8080,
         host: true,
         proxy,
