@@ -22,3 +22,5 @@ i18n/data/
 i18n/import/
 i18n/prep-import.js
 npm-debug.log
+.yalc
+yalc.lock
