@@ -22,27 +22,6 @@ import { Player } from "@/components/Player";
 import { ModTools } from "@/views/User";
 import { ModLog } from "@/views/User";
 
-interface ModLogEntry {
-    timestamp: string;
-    actor?: {
-        id: number;
-    };
-    action: string;
-    incident_report?: {
-        id: number;
-        cleared_by_user?: boolean;
-        url?: string;
-        reporter_note?: string;
-        moderator_note?: string;
-        system_note?: string;
-        moderator?: any; // Player type
-    };
-    game?: {
-        id: number;
-    };
-    note?: string;
-}
-
 export function UserHistory({
     target_user: target_user,
 }: {
@@ -53,7 +32,7 @@ export function UserHistory({
     const [warningsOnly, setWarningsOnly] = usePreference("user-history.warnings-only");
 
     const groomWarningsOnly = React.useMemo(() => {
-        return (entries: ModLogEntry[]) => {
+        return (entries: rest_api.moderation.ModLogEntry[]) => {
             if (!warningsOnly) {
                 return entries;
             }
