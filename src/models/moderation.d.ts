@@ -15,10 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-//  `/moderation/annul` endpoint
-
 declare namespace rest_api {
     namespace moderation {
+        //  `/moderation/annul` endpoint
         interface AnnulList {
             games: Array<number>; // game ids.  Do we have a type for them?
             annul: boolean;
@@ -28,6 +27,28 @@ declare namespace rest_api {
         interface AnnulResult {
             done: Array<number>;
             failed: Array<number>;
+        }
+
+        //  `/moderation?player_id=123` endpoint
+        export interface ModLogEntry {
+            timestamp: string;
+            actor?: {
+                id: number;
+            };
+            action: string;
+            incident_report?: {
+                id: number;
+                cleared_by_user?: boolean;
+                url?: string;
+                reporter_note?: string;
+                moderator_note?: string;
+                system_note?: string;
+                moderator?: any; // Player type
+            };
+            game?: {
+                id: number;
+            };
+            note?: string;
         }
     }
 }

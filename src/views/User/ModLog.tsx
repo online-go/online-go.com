@@ -25,6 +25,7 @@ import { pgettext } from "@/lib/translate";
 
 interface ModLogProps {
     user_id: number;
+    groomData?: (data: rest_api.moderation.ModLogEntry[]) => rest_api.moderation.ModLogEntry[];
 }
 
 export function ModLog(props: ModLogProps): React.ReactElement {
@@ -38,6 +39,7 @@ export function ModLog(props: ModLogProps): React.ReactElement {
                 event: `modlog-${props.user_id}-updated`,
                 channel: "moderators",
             }}
+            groom={props.groomData as (data: any[]) => any[]}
             columns={[
                 {
                     header: "",
