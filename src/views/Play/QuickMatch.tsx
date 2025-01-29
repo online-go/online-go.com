@@ -40,7 +40,7 @@ import { LoadingButton } from "@/components/LoadingButton";
 import { challengeComputer, ChallengeModalConfig } from "@/components/ChallengeModal";
 import { socket } from "@/lib/sockets";
 import { Link } from "react-router-dom";
-import Select from "react-select";
+import Select, { CSSObjectWithLabel, GroupBase, StylesConfig } from "react-select";
 import { SPEED_OPTIONS } from "./SPEED_OPTIONS";
 import { useHaveActiveGameSearch } from "./hooks";
 import { openPlayPageHelp } from "./PlayPageHelp";
@@ -135,6 +135,21 @@ const select_styles = {
     menu: ({ ...css }) => ({
         ...css,
         width: "20rem",
+    }),
+    groupHeading: (base: CSSObjectWithLabel) => ({
+        ...base,
+        // ...it's not perfect: there's a small gap at the top where we see
+        // the numbers scroll past.
+        color: "var(--select-header-fg)",
+        backgroundColor: "var(--select-header-bg)",
+        fontSize: "0.9rem",
+        fontStyle: "italic",
+        padding: "0.2rem",
+        position: "sticky",
+        top: 0,
+        margin: "0rem 0rem 0.1rem 0rem",
+        // This is disguising the gap at the top
+        boxShadow: "0px -5px 20px 10px var(--select-header-bg)",
     }),
 };
 
@@ -754,7 +769,19 @@ export function QuickMatch(): React.ReactElement {
                         </span>
                         <Select
                             classNamePrefix="ogs-react-select"
-                            styles={select_styles}
+                            styles={
+                                {
+                                    ...select_styles,
+                                    menu: (base) => ({
+                                        ...base,
+                                        width: "120",
+                                    }),
+                                } as StylesConfig<
+                                    OptionWithDescription,
+                                    false,
+                                    GroupBase<OptionWithDescription>
+                                >
+                            }
                             isSearchable={false}
                             value={game_clock_options.find((o) => o.value === game_clock)}
                             menuPlacement="auto"
@@ -767,7 +794,9 @@ export function QuickMatch(): React.ReactElement {
                                 }
                             }}
                             options={game_clock_options}
-                            components={{ Option: RenderOptionWithDescription }}
+                            components={{
+                                Option: RenderOptionWithDescription,
+                            }}
                         />
                     </div>
                     <div className="speed-options">
@@ -910,7 +939,19 @@ export function QuickMatch(): React.ReactElement {
                         <span>{_("Handicap")}</span>
                         <Select
                             classNamePrefix="ogs-react-select"
-                            styles={select_styles}
+                            styles={
+                                {
+                                    ...select_styles,
+                                    menu: (base) => ({
+                                        ...base,
+                                        width: "120",
+                                    }),
+                                } as StylesConfig<
+                                    OptionWithDescription,
+                                    false,
+                                    GroupBase<OptionWithDescription>
+                                >
+                            }
                             value={handicap_options.find((o) => o.value === handicaps)}
                             isSearchable={false}
                             minMenuHeight={400}
@@ -947,12 +988,19 @@ export function QuickMatch(): React.ReactElement {
                                 value={lower_rank_diff_options.find(
                                     (o) => o.value === lower_rank_diff.toString(),
                                 )}
-                                styles={{
-                                    menu: (base) => ({
-                                        ...base,
-                                        width: "120",
-                                    }),
-                                }}
+                                styles={
+                                    {
+                                        ...select_styles,
+                                        menu: (base) => ({
+                                            ...base,
+                                            width: "120",
+                                        }),
+                                    } as StylesConfig<
+                                        OptionWithDescription,
+                                        false,
+                                        GroupBase<OptionWithDescription>
+                                    >
+                                }
                                 isSearchable={false}
                                 isDisabled={automatch_search_active}
                                 menuPlacement="auto"
@@ -963,6 +1011,10 @@ export function QuickMatch(): React.ReactElement {
                                 }}
                                 options={[
                                     {
+                                        label: pgettext(
+                                            "A word that means this is a list of ranks that are weaker than the player's rank",
+                                            "Weaker",
+                                        ),
                                         options: lower_rank_diff_options,
                                     },
                                 ]}
@@ -978,6 +1030,19 @@ export function QuickMatch(): React.ReactElement {
                                 value={upper_rank_diff_options.find(
                                     (o) => o.value === upper_rank_diff.toString(),
                                 )}
+                                styles={
+                                    {
+                                        ...select_styles,
+                                        menu: (base) => ({
+                                            ...base,
+                                            width: "120",
+                                        }),
+                                    } as StylesConfig<
+                                        OptionWithDescription,
+                                        false,
+                                        GroupBase<OptionWithDescription>
+                                    >
+                                }
                                 isSearchable={false}
                                 isDisabled={automatch_search_active}
                                 menuPlacement="auto"
@@ -988,6 +1053,10 @@ export function QuickMatch(): React.ReactElement {
                                 }}
                                 options={[
                                     {
+                                        label: pgettext(
+                                            "A word that means this is a list of ranks that are stronger than the player's rank",
+                                            "Stronger",
+                                        ),
                                         options: upper_rank_diff_options,
                                     },
                                 ]}
