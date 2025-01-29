@@ -198,6 +198,9 @@ export const defaults = {
     "gotv.user-access-token": "",
     "gotv.followed-channels": [] as FollowedChannel[],
     "gotv.notified-streams": [] as { streamId: string; timestamp: number }[],
+
+    "user-history.show-mod-log": false,
+    "user-history.warnings-only": false,
 };
 
 defaults["profanity-filter"][current_language] = true;

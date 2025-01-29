@@ -17,10 +17,31 @@
 
 import * as React from "react";
 import { useUser } from "@/lib/hooks";
-
+import { usePreference } from "@/lib/preferences";
 import { Player } from "@/components/Player";
 import { ModTools } from "@/views/User";
 import { ModLog } from "@/views/User";
+
+interface ModLogEntry {
+    timestamp: string;
+    actor?: {
+        id: number;
+    };
+    action: string;
+    incident_report?: {
+        id: number;
+        cleared_by_user?: boolean;
+        url?: string;
+        reporter_note?: string;
+        moderator_note?: string;
+        system_note?: string;
+        moderator?: any; // Player type
+    };
+    game?: {
+        id: number;
+    };
+    note?: string;
+}
 
 export function UserHistory({
     target_user: target_user,
@@ -28,6 +49,22 @@ export function UserHistory({
     target_user: any;
 }): React.ReactElement | null {
     const user = useUser();
+    const [showModLog, setShowModLog] = usePreference("user-history.show-mod-log");
+    const [warningsOnly, setWarningsOnly] = usePreference("user-history.warnings-only");
+
+    const groomWarningsOnly = React.useMemo(() => {
+        return (entries: ModLogEntry[]) => {
+            if (!warningsOnly) {
+                return entries;
+            }
+            return entries.filter(
+                (entry) =>
+                    entry.incident_report?.system_note
+                        ?.toLowerCase()
+                        .includes("actioned by community vote"),
+            );
+        };
+    }, [warningsOnly]);
 
     if (!target_user) {
         return null;
@@ -35,13 +72,36 @@ export function UserHistory({
 
     return (
         <>
-            <h3>
+            <h3 style={{ marginBottom: "0" }}>
                 History for <Player user={target_user} />
+                {!user.is_moderator && !!user.moderator_powers && (
+                    <i
+                        className={`fa fa-caret-${showModLog ? "down" : "right"} clickable`}
+                        onClick={() => setShowModLog(!showModLog)}
+                        style={{ margin: "0.5rem", padding: "0.5rem" } /* make it easy to click */}
+                    />
+                )}
             </h3>
+            {!user.is_moderator && !!user.moderator_powers && showModLog && (
+                <>
+                    <label style={{ display: "block", marginBottom: "1rem" }}>
+                        <input
+                            type="checkbox"
+                            checked={warningsOnly}
+                            onChange={(e) => setWarningsOnly(e.target.checked)}
+                        />
+                        {" Show warnings only"}
+                    </label>
+                    <ModLog
+                        user_id={target_user.id}
+                        groomData={groomWarningsOnly}
+                        key={warningsOnly ? "warnings" : "all"}
+                    />
+                </>
+            )}
             {user.is_moderator && (
                 <ModTools user_id={target_user.id} show_mod_log={true} collapse_same_users={true} />
             )}
-            {!user.is_moderator && !!user.moderator_powers && <ModLog user_id={target_user.id} />}
         </>
     );
 }

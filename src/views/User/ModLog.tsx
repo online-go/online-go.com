@@ -23,8 +23,30 @@ import { Link } from "react-router-dom";
 import { chat_markup } from "@/components/Chat";
 import { pgettext } from "@/lib/translate";
 
+interface ModLogEntry {
+    timestamp: string;
+    actor?: {
+        id: number;
+    };
+    action: string;
+    incident_report?: {
+        id: number;
+        cleared_by_user?: boolean;
+        url?: string;
+        reporter_note?: string;
+        moderator_note?: string;
+        system_note?: string;
+        moderator?: any; // Player type
+    };
+    game?: {
+        id: number;
+    };
+    note?: string;
+}
+
 interface ModLogProps {
     user_id: number;
+    groomData?: (data: ModLogEntry[]) => ModLogEntry[];
 }
 
 export function ModLog(props: ModLogProps): React.ReactElement {
@@ -38,6 +60,7 @@ export function ModLog(props: ModLogProps): React.ReactElement {
                 event: `modlog-${props.user_id}-updated`,
                 channel: "moderators",
             }}
+            groom={props.groomData as (data: any[]) => any[]}
             columns={[
                 {
                     header: "",
