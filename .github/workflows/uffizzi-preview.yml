@@ -29,7 +29,7 @@ jobs:
                          run_id: context.payload.workflow_run.id,
                       });
                       let matchArtifact = allArtifacts.data.artifacts.filter((artifact) => {
-                        return artifact.name == "preview-spec"
+                        return artifact.name == "docker-compose" || artifact.name == "event-path"
                       })[0];
                       if (matchArtifact === undefined) {
                         throw TypeError('Build Artifact not found!');

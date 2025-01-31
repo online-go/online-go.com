@@ -48,7 +48,7 @@ jobs:
             compose-file-cache-key: ${{ steps.hash.outputs.hash }}
         steps:
             - name: Checkout git repo
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
             - name: Render Compose File
               run: |
                   ONLINE_GO_IMAGE=${{ needs.build-online-go.outputs.tags }}
@@ -56,15 +56,15 @@ jobs:
                   envsubst '${ONLINE_GO_IMAGE}' < ./.github/uffizzi/docker-compose.uffizzi.yml > docker-compose.rendered.yml
                   cat docker-compose.rendered.yml
             - name: Upload Rendered Compose File as Artifact
-              uses: actions/upload-artifact@v3
+              uses: actions/upload-artifact@v4
               with:
-                  name: preview-spec
+                  name: docker-compose
                   path: docker-compose.rendered.yml
                   retention-days: 2
             - name: Upload PR Event as Artifact
-              uses: actions/upload-artifact@v3
+              uses: actions/upload-artifact@v4
               with:
-                  name: preview-spec
+                  name: event-path
                   path: ${{ github.event_path }}
                   retention-days: 2
 
@@ -75,8 +75,8 @@ jobs:
         steps:
             # If this PR is closing, we will not render a compose file nor pass it to the next workflow.
             - name: Upload PR Event as Artifact
-              uses: actions/upload-artifact@v3
+              uses: actions/upload-artifact@v4
               with:
-                  name: preview-spec
+                  name: event-path
                   path: ${{ github.event_path }}
                   retention-days: 2
