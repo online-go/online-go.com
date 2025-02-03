@@ -47,17 +47,23 @@ export function ReportedGame({
     game_id,
     reported_at,
     reported_by,
+    onGobanCreated,
 }: {
     game_id: number;
     reported_at: number | undefined;
     reported_by: number;
+    onGobanCreated?: (goban: GobanRenderer) => void;
 }): React.ReactElement | null {
     const [goban, setGoban] = React.useState<GobanRenderer | null>(null);
     const [selectedChatLog, setSelectedChatLog] = React.useState<ChatMode>("main");
     const refresh = useRefresh();
-    const onGobanCreated = React.useCallback((goban: GobanRenderer) => {
-        setGoban(goban);
-    }, []);
+    const handleGobanCreated = React.useCallback(
+        (goban: GobanRenderer) => {
+            setGoban(goban);
+            onGobanCreated?.(goban);
+        },
+        [onGobanCreated],
+    );
     const cur_move = useCurrentMove(goban);
     const [game, setGame] = React.useState<rest_api.GameDetails | null>(null);
     const [_aiReviewUuid, setAiReviewUuid] = React.useState<string | null>(null);
@@ -121,7 +127,7 @@ export function ReportedGame({
                         className="reported-game-mini-goban"
                         game_id={game_id}
                         noLink={true}
-                        onGobanCreated={onGobanCreated}
+                        onGobanCreated={handleGobanCreated}
                         chat={true}
                     />
                     {goban && goban.engine && (
