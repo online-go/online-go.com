@@ -42,6 +42,8 @@ import { alert } from "@/lib/swal_config";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import * as DynamicHelp from "react-dynamic-help";
 import { MODERATOR_POWERS } from "@/lib/moderation";
+import { KBShortcut } from "@/components/KBShortcut";
+import { GobanRenderer } from "goban";
 
 interface ViewReportProps {
     reports: Report[];
@@ -73,6 +75,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): R
     const [availableActions, setAvailableActions] = React.useState<string[] | null>(null);
     const [voteCounts, setVoteCounts] = React.useState<{ [action: string]: number }>({});
     const [usersVote, setUsersVote] = React.useState<string | null>(null);
+    const [currentGoban, setCurrentGoban] = React.useState<GobanRenderer | null>(null);
 
     const related = report_manager.getRelatedReports(report_id);
 
@@ -220,6 +223,22 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): R
         }
     };
 
+    const nav_prev = React.useCallback(() => {
+        if (!currentGoban) {
+            return;
+        }
+        currentGoban.showPrevious();
+        currentGoban.syncReviewMove();
+    }, [currentGoban]);
+
+    const nav_next = React.useCallback(() => {
+        if (!currentGoban) {
+            return;
+        }
+        currentGoban.showNext();
+        currentGoban.syncReviewMove();
+    }, [currentGoban]);
+
     if (!report || report_id === 0) {
         return (
             <div id="ViewReport">
@@ -306,78 +325,38 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): R
     };
 
     return (
-        <ShowPlayersInReportContext.Provider
-            value={{ reporter: report.reporting_user, reported: report.reported_user }}
-        >
-            <div id="ViewReport" className="show-players-in-report">
-                {isAnnulQueueModalOpen && (
-                    <AnnulQueueModal
-                        annulQueue={annulQueue ?? []}
-                        setAnnulQueue={setAnnulQueue}
-                        onClose={handleCloseAnnulQueueModal}
-                        forDetectedAI={true}
-                        player={report.reported_user}
-                    />
-                )}
-                <div className="view-report-header">
-                    {report_in_reports ? (
-                        <Select
-                            id="ReportsCenterSelectReport"
-                            className="reports-center-category-option-select"
-                            classNamePrefix="ogs-react-select"
-                            value={reports.filter((r) => r.id === report.id)[0]}
-                            getOptionValue={(r) => r.id.toString()}
-                            onChange={(r: ReactSelect.SingleValue<Report>) => r && onChange(r.id)}
-                            options={reports}
-                            isClearable={false}
-                            isSearchable={false}
-                            blurInputOnSelect={true}
-                            components={{
-                                Option: ({ innerRef, innerProps, isFocused, isSelected, data }) => (
-                                    <div
-                                        ref={innerRef}
-                                        {...innerProps}
-                                        className={
-                                            "reports-center-selected-report" +
-                                            (isFocused ? "focused " : "") +
-                                            (isSelected ? "selected" : "")
-                                        }
-                                    >
-                                        {R(data.id)}
-                                    </div>
-                                ),
-                                SingleValue: ({ innerProps, data }) => (
-                                    <span
-                                        {...innerProps}
-                                        className="reports-center-selected-report"
-                                    >
-                                        {R(data.id)}
-                                    </span>
-                                ),
-                                ValueContainer: ({ children }) => (
-                                    <div className="reports-center-selected-report-container">
-                                        {children}
-                                    </div>
-                                ),
-                            }}
+        <div>
+            <KBShortcut shortcut="left" action={nav_prev} />
+            <KBShortcut shortcut="right" action={nav_next} />
+
+            <ShowPlayersInReportContext.Provider
+                value={{ reporter: report.reporting_user, reported: report.reported_user }}
+            >
+                <div id="ViewReport" className="show-players-in-report">
+                    {isAnnulQueueModalOpen && (
+                        <AnnulQueueModal
+                            annulQueue={annulQueue ?? []}
+                            setAnnulQueue={setAnnulQueue}
+                            onClose={handleCloseAnnulQueueModal}
+                            forDetectedAI={true}
+                            player={report.reported_user}
                         />
-                    ) : (
-                        <span className="historical-report-number">{R(report.id)}</span>
                     )}
-                    {(user.is_moderator || null) && (
-                        <span className="moderator">
+                    <div className="view-report-header">
+                        {report_in_reports ? (
                             <Select
-                                id="ReportsCenterSelectModerator"
+                                id="ReportsCenterSelectReport"
                                 className="reports-center-category-option-select"
                                 classNamePrefix="ogs-react-select"
-                                value={moderators.filter((m: any) => m.id === moderator_id)[0]}
-                                getOptionValue={(data) => data.type}
-                                onChange={(m: any) => assignToModerator(m.id)}
-                                options={moderators}
+                                value={reports.filter((r) => r.id === report.id)[0]}
+                                getOptionValue={(r) => r.id.toString()}
+                                onChange={(r: ReactSelect.SingleValue<Report>) =>
+                                    r && onChange(r.id)
+                                }
+                                options={reports}
                                 isClearable={false}
                                 isSearchable={false}
                                 blurInputOnSelect={true}
-                                placeholder={"Moderator.."}
                                 components={{
                                     Option: ({
                                         innerRef,
@@ -390,358 +369,432 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): R
                                             ref={innerRef}
                                             {...innerProps}
                                             className={
-                                                "reports-center-assigned-moderator" +
+                                                "reports-center-selected-report" +
                                                 (isFocused ? "focused " : "") +
                                                 (isSelected ? "selected" : "")
                                             }
                                         >
-                                            {data.username}
+                                            {R(data.id)}
                                         </div>
                                     ),
                                     SingleValue: ({ innerProps, data }) => (
                                         <span
                                             {...innerProps}
-                                            className="reports-center-assigned-moderator"
+                                            className="reports-center-selected-report"
                                         >
-                                            {data.username}
+                                            {R(data.id)}
                                         </span>
                                     ),
                                     ValueContainer: ({ children }) => (
-                                        <div className="reports-center-assigned-moderator-container">
+                                        <div className="reports-center-selected-report-container">
                                             {children}
                                         </div>
                                     ),
                                 }}
                             />
-                        </span>
-                    )}
-                    <span>
-                        <button className={"default" + (prev_report ? "" : " hide")} onClick={prev}>
-                            &lt; Prev
-                        </button>
-
-                        <button className={"default" + (next_report ? "" : " hide")} onClick={next}>
-                            Next &gt;
-                        </button>
-
-                        {(user.is_moderator || null) &&
-                            (report.moderator ? (
-                                <>
-                                    {(report.moderator.id === user.id || null) && (
-                                        <button
-                                            className="danger xs"
-                                            onClick={() => {
-                                                setReportState(
-                                                    report?.moderator ? "claimed" : "pending",
-                                                );
-                                                void report_manager.unclaim(report.id);
-                                            }}
-                                        >
-                                            {_("Unclaim")}
-                                        </button>
-                                    )}
-                                </>
-                            ) : (
-                                <button className="primary" onClick={claimReport}>
-                                    {_("Claim")}
-                                </button>
-                            ))}
-                        {!claimed_by_me && (
-                            <button
-                                className="default"
-                                ref={ignore_button}
-                                onClick={() => {
-                                    report_manager.ignore(report.id);
-                                    next();
-                                }}
-                            >
-                                Ignore
-                            </button>
+                        ) : (
+                            <span className="historical-report-number">{R(report.id)}</span>
                         )}
-                    </span>
-                </div>
-                <div className="reported-user">
-                    <h3 className="users-header">
-                        <div className="reported-user">
-                            <ReportTypeSelector
-                                current_type={category?.type}
-                                lock={report.retyped}
-                                onUpdate={changeReportType}
-                            />
-                            <span>
-                                {pgettext(
-                                    "This is a header saying who is reported - 'offence by <Player>'",
-                                    "by",
-                                )}
-                                <Player user={report.reported_user} />
+                        {(user.is_moderator || null) && (
+                            <span className="moderator">
+                                <Select
+                                    id="ReportsCenterSelectModerator"
+                                    className="reports-center-category-option-select"
+                                    classNamePrefix="ogs-react-select"
+                                    value={moderators.filter((m: any) => m.id === moderator_id)[0]}
+                                    getOptionValue={(data) => data.type}
+                                    onChange={(m: any) => assignToModerator(m.id)}
+                                    options={moderators}
+                                    isClearable={false}
+                                    isSearchable={false}
+                                    blurInputOnSelect={true}
+                                    placeholder={"Moderator.."}
+                                    components={{
+                                        Option: ({
+                                            innerRef,
+                                            innerProps,
+                                            isFocused,
+                                            isSelected,
+                                            data,
+                                        }) => (
+                                            <div
+                                                ref={innerRef}
+                                                {...innerProps}
+                                                className={
+                                                    "reports-center-assigned-moderator" +
+                                                    (isFocused ? "focused " : "") +
+                                                    (isSelected ? "selected" : "")
+                                                }
+                                            >
+                                                {data.username}
+                                            </div>
+                                        ),
+                                        SingleValue: ({ innerProps, data }) => (
+                                            <span
+                                                {...innerProps}
+                                                className="reports-center-assigned-moderator"
+                                            >
+                                                {data.username}
+                                            </span>
+                                        ),
+                                        ValueContainer: ({ children }) => (
+                                            <div className="reports-center-assigned-moderator-container">
+                                                {children}
+                                            </div>
+                                        ),
+                                    }}
+                                />
                             </span>
-                        </div>
-                        <div>
-                            <span className="reporting-user">
-                                {pgettext(
-                                    "A label for the user name that reported an incident (followed by colon and the username)",
-                                    "Reported by",
-                                )}
-                                :
-                                {report.reporting_user ? (
-                                    <Player user={report.reporting_user} />
-                                ) : (
-                                    "System"
-                                )}
-                                <span className="when">{moment(report.created).fromNow()}</span>
-                            </span>
-                        </div>
-                    </h3>
-                </div>
-                <div className="notes-container">
-                    <div className="notes">
-                        <h4>Reporter Notes</h4>
-                        <div className="Card">
-                            {(report.reporter_note || null) &&
-                                (report.reporter_note_translation ? (
+                        )}
+                        <span>
+                            <button
+                                className={"default" + (prev_report ? "" : " hide")}
+                                onClick={prev}
+                            >
+                                &lt; Prev
+                            </button>
+
+                            <button
+                                className={"default" + (next_report ? "" : " hide")}
+                                onClick={next}
+                            >
+                                Next &gt;
+                            </button>
+
+                            {(user.is_moderator || null) &&
+                                (report.moderator ? (
                                     <>
-                                        {report.reporter_note_translation.source_text}
-                                        {(report.reporter_note_translation.target_language !==
-                                            report.reporter_note_translation.source_language ||
-                                            null) && (
-                                            <>
-                                                <div className="source-to-target-languages">
-                                                    {
-                                                        report.reporter_note_translation
-                                                            .source_language
-                                                    }{" "}
-                                                    =&gt;{" "}
-                                                    {
-                                                        report.reporter_note_translation
-                                                            .target_language
-                                                    }
-                                                </div>
-                                                <div className="translated">
-                                                    {report.reporter_note_translation.target_text}
-                                                </div>
-                                            </>
+                                        {(report.moderator.id === user.id || null) && (
+                                            <button
+                                                className="danger xs"
+                                                onClick={() => {
+                                                    setReportState(
+                                                        report?.moderator ? "claimed" : "pending",
+                                                    );
+                                                    void report_manager.unclaim(report.id);
+                                                }}
+                                            >
+                                                {_("Unclaim")}
+                                            </button>
                                         )}
                                     </>
                                 ) : (
-                                    <AutoTranslate source={report.reporter_note} />
+                                    <button className="primary" onClick={claimReport}>
+                                        {_("Claim")}
+                                    </button>
                                 ))}
-                        </div>
+                            {!claimed_by_me && (
+                                <button
+                                    className="default"
+                                    ref={ignore_button}
+                                    onClick={() => {
+                                        report_manager.ignore(report.id);
+                                        next();
+                                    }}
+                                >
+                                    Ignore
+                                </button>
+                            )}
+                        </span>
                     </div>
-
-                    {(report.system_note || null) && (
+                    <div className="reported-user">
+                        <h3 className="users-header">
+                            <div className="reported-user">
+                                <ReportTypeSelector
+                                    current_type={category?.type}
+                                    lock={report.retyped}
+                                    onUpdate={changeReportType}
+                                />
+                                <span>
+                                    {pgettext(
+                                        "This is a header saying who is reported - 'offence by <Player>'",
+                                        "by",
+                                    )}
+                                    <Player user={report.reported_user} />
+                                </span>
+                            </div>
+                            <div>
+                                <span className="reporting-user">
+                                    {pgettext(
+                                        "A label for the user name that reported an incident (followed by colon and the username)",
+                                        "Reported by",
+                                    )}
+                                    :
+                                    {report.reporting_user ? (
+                                        <Player user={report.reporting_user} />
+                                    ) : (
+                                        "System"
+                                    )}
+                                    <span className="when">{moment(report.created).fromNow()}</span>
+                                </span>
+                            </div>
+                        </h3>
+                    </div>
+                    <div className="notes-container">
                         <div className="notes">
-                            <h4>System Notes</h4>
-                            <div className="Card">{report.system_note}</div>
+                            <h4>Reporter Notes</h4>
+                            <div className="Card">
+                                {(report.reporter_note || null) &&
+                                    (report.reporter_note_translation ? (
+                                        <>
+                                            {report.reporter_note_translation.source_text}
+                                            {(report.reporter_note_translation.target_language !==
+                                                report.reporter_note_translation.source_language ||
+                                                null) && (
+                                                <>
+                                                    <div className="source-to-target-languages">
+                                                        {
+                                                            report.reporter_note_translation
+                                                                .source_language
+                                                        }{" "}
+                                                        =&gt;{" "}
+                                                        {
+                                                            report.reporter_note_translation
+                                                                .target_language
+                                                        }
+                                                    </div>
+                                                    <div className="translated">
+                                                        {
+                                                            report.reporter_note_translation
+                                                                .target_text
+                                                        }
+                                                    </div>
+                                                </>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <AutoTranslate source={report.reporter_note} />
+                                    ))}
+                            </div>
                         </div>
-                    )}
 
-                    {(user.is_moderator || null) && (
-                        <div className="notes">
-                            <h4>Moderator Notes</h4>
-                            <textarea value={moderatorNote} onChange={setAndSaveModeratorNote} />
-                        </div>
-                    )}
-
-                    {report.escalated &&
-                        (user.is_moderator || user.moderator_powers & MODERATOR_POWERS.SUSPEND) && (
+                        {(report.system_note || null) && (
                             <div className="notes">
-                                <h4>Escalator's note:</h4>
-                                <div className="Card">
-                                    {report.escalation_note || "(none provided)"}
-                                </div>
+                                <h4>System Notes</h4>
+                                <div className="Card">{report.system_note}</div>
                             </div>
                         )}
 
-                    {!user.is_moderator && user.moderator_powers && (
-                        <div className="voting">
-                            <ModerationActionSelector
-                                available_actions={availableActions ?? []}
-                                vote_counts={voteCounts}
-                                users_vote={usersVote}
-                                submit={(action, note, dissenter_note) => {
-                                    void report_manager
-                                        .vote(report.id, action, note, dissenter_note)
-                                        .then(() => next());
-                                }}
-                                enable={
-                                    report.state === "pending" &&
-                                    (!report.escalated ||
-                                        !!(user.moderator_powers & MODERATOR_POWERS.SUSPEND))
-                                }
-                                key={report.id}
-                                report={report}
-                            />
-                            {report.dissenter_note && (
+                        {(user.is_moderator || null) && (
+                            <div className="notes">
+                                <h4>Moderator Notes</h4>
+                                <textarea
+                                    value={moderatorNote}
+                                    onChange={setAndSaveModeratorNote}
+                                />
+                            </div>
+                        )}
+
+                        {report.escalated &&
+                            (user.is_moderator ||
+                                user.moderator_powers & MODERATOR_POWERS.SUSPEND) && (
                                 <div className="notes">
-                                    <h4>
-                                        {llm_pgettext(
-                                            "Heading for a paragraph",
-                                            "Dissenting voter notes:",
-                                        )}
-                                    </h4>
-                                    <div className="Card">{report.dissenter_note}</div>
+                                    <h4>Escalator's note:</h4>
+                                    <div className="Card">
+                                        {report.escalation_note || "(none provided)"}
+                                    </div>
                                 </div>
                             )}
-                        </div>
-                    )}
-                    {report.dissenter_note && user.is_moderator && (
-                        <div className="notes">
-                            <h4>
-                                {llm_pgettext("Heading for a paragraph", "Dissenting voter notes:")}
-                            </h4>
-                            <div className="Card">{report.dissenter_note}</div>
-                        </div>
-                    )}
-                </div>
 
-                <div className="actions">
-                    <div className="related-reports">
-                        {related.length > 0 && (
-                            <>
-                                <h4>{_("Related Reports")}</h4>
-                                <ul>
-                                    {related.map((r) => (
-                                        <li key={r.report.id}>
-                                            <Link to={`/reports-center/all/${r.report.id}`}>
-                                                {R(r.report.id)}: {r.relationship}
-                                            </Link>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </>
-                        )}
-                        {user.is_moderator && (
-                            <>
-                                {report.voters?.length > 0 && (
-                                    <div className="voters">
-                                        <h4>{_("Voters:")}</h4>
-                                        <ul>
-                                            {report.voters?.map((vote) => (
-                                                <li key={vote.voter_id}>
-                                                    <Player user={vote.voter_id} />: {vote.action}
-                                                </li>
-                                            ))}
-                                        </ul>
+                        {!user.is_moderator && user.moderator_powers && (
+                            <div className="voting">
+                                <ModerationActionSelector
+                                    available_actions={availableActions ?? []}
+                                    vote_counts={voteCounts}
+                                    users_vote={usersVote}
+                                    submit={(action, note, dissenter_note) => {
+                                        void report_manager
+                                            .vote(report.id, action, note, dissenter_note)
+                                            .then(() => next());
+                                    }}
+                                    enable={
+                                        report.state === "pending" &&
+                                        (!report.escalated ||
+                                            !!(user.moderator_powers & MODERATOR_POWERS.SUSPEND))
+                                    }
+                                    key={report.id}
+                                    report={report}
+                                />
+                                {report.dissenter_note && (
+                                    <div className="notes">
+                                        <h4>
+                                            {llm_pgettext(
+                                                "Heading for a paragraph",
+                                                "Dissenting voter notes:",
+                                            )}
+                                        </h4>
+                                        <div className="Card">{report.dissenter_note}</div>
                                     </div>
                                 )}
-                            </>
+                            </div>
+                        )}
+                        {report.dissenter_note && user.is_moderator && (
+                            <div className="notes">
+                                <h4>
+                                    {llm_pgettext(
+                                        "Heading for a paragraph",
+                                        "Dissenting voter notes:",
+                                    )}
+                                </h4>
+                                <div className="Card">{report.dissenter_note}</div>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="actions">
+                        <div className="related-reports">
+                            {related.length > 0 && (
+                                <>
+                                    <h4>{_("Related Reports")}</h4>
+                                    <ul>
+                                        {related.map((r) => (
+                                            <li key={r.report.id}>
+                                                <Link to={`/reports-center/all/${r.report.id}`}>
+                                                    {R(r.report.id)}: {r.relationship}
+                                                </Link>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </>
+                            )}
+                            {user.is_moderator && (
+                                <>
+                                    {report.voters?.length > 0 && (
+                                        <div className="voters">
+                                            <h4>{_("Voters:")}</h4>
+                                            <ul>
+                                                {report.voters?.map((vote) => (
+                                                    <li key={vote.voter_id}>
+                                                        <Player user={vote.voter_id} />:{" "}
+                                                        {vote.action}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+                                </>
+                            )}
+                        </div>
+                        {user.is_moderator && (
+                            <div className="actions-right">
+                                {reportState !== "resolved" &&
+                                report.detected_ai_games?.length > 0 ? (
+                                    <button
+                                        onClick={() =>
+                                            openAnnulQueueModal(setIsAnnulQueueModalOpen)
+                                        }
+                                    >
+                                        Inspect & Annul Games
+                                    </button>
+                                ) : null}
+                                {reportState !== "resolved" && claimed_by_me && (
+                                    <button
+                                        className="success"
+                                        onClick={() => {
+                                            void report_manager.good_report(report.id);
+                                            next();
+                                        }}
+                                    >
+                                        Close as good report
+                                    </button>
+                                )}
+
+                                {reportState !== "resolved" && claimed_by_me && (
+                                    <button
+                                        className="reject"
+                                        onClick={() => {
+                                            void report_manager.bad_report(report.id);
+                                            next();
+                                        }}
+                                    >
+                                        Close as bad report
+                                    </button>
+                                )}
+
+                                {reportState === "resolved" && (
+                                    <button
+                                        className="default"
+                                        onClick={() => void report_manager.reopen(report.id)}
+                                    >
+                                        Re-open
+                                    </button>
+                                )}
+                            </div>
                         )}
                     </div>
                     {user.is_moderator && (
-                        <div className="actions-right">
-                            {reportState !== "resolved" && report.detected_ai_games?.length > 0 ? (
-                                <button
-                                    onClick={() => openAnnulQueueModal(setIsAnnulQueueModalOpen)}
-                                >
-                                    Inspect & Annul Games
-                                </button>
-                            ) : null}
-                            {reportState !== "resolved" && claimed_by_me && (
-                                <button
-                                    className="success"
-                                    onClick={() => {
-                                        void report_manager.good_report(report.id);
-                                        next();
-                                    }}
-                                >
-                                    Close as good report
-                                </button>
-                            )}
-
-                            {reportState !== "resolved" && claimed_by_me && (
-                                <button
-                                    className="reject"
-                                    onClick={() => {
-                                        void report_manager.bad_report(report.id);
-                                        next();
-                                    }}
-                                >
-                                    Close as bad report
-                                </button>
-                            )}
-
-                            {reportState === "resolved" && (
-                                <button
-                                    className="default"
-                                    onClick={() => void report_manager.reopen(report.id)}
-                                >
-                                    Re-open
-                                </button>
-                            )}
-                        </div>
-                    )}
-                </div>
-                {user.is_moderator && (
-                    <>
-                        <hr />
-                        <div className="message-templates">
-                            <MessageTemplate
-                                title="Accused"
-                                player={report.reported_user}
-                                reported={report.reported_user}
-                                templates={WARNING_TEMPLATES}
-                                game_id={report.reported_game}
-                                gpt={report.automod_to_reported ?? null}
-                                logByDefault={true}
-                                onSelect={claimReport}
-                                onMessage={claimReport}
-                            />
-
-                            {report.reporting_user && (
+                        <>
+                            <hr />
+                            <div className="message-templates">
                                 <MessageTemplate
-                                    title="Reporter"
-                                    player={report.reporting_user}
+                                    title="Accused"
+                                    player={report.reported_user}
                                     reported={report.reported_user}
-                                    templates={REPORTER_RESPONSE_TEMPLATES}
+                                    templates={WARNING_TEMPLATES}
                                     game_id={report.reported_game}
-                                    gpt={report.automod_to_reporter ?? null}
-                                    logByDefault={!user.is_moderator} // log community moderator actions
+                                    gpt={report.automod_to_reported ?? null}
+                                    logByDefault={true}
                                     onSelect={claimReport}
                                     onMessage={claimReport}
                                 />
-                            )}
-                        </div>
+
+                                {report.reporting_user && (
+                                    <MessageTemplate
+                                        title="Reporter"
+                                        player={report.reporting_user}
+                                        reported={report.reported_user}
+                                        templates={REPORTER_RESPONSE_TEMPLATES}
+                                        game_id={report.reported_game}
+                                        gpt={report.automod_to_reporter ?? null}
+                                        logByDefault={!user.is_moderator} // log community moderator actions
+                                        onSelect={claimReport}
+                                        onMessage={claimReport}
+                                    />
+                                )}
+                            </div>
+                            <hr />
+                        </>
+                    )}
+                    <UserHistory target_user={report.reported_user} />
+                    <ErrorBoundary>
                         <hr />
-                    </>
-                )}
-                <UserHistory target_user={report.reported_user} />
-                <ErrorBoundary>
-                    <hr />
-                    {(report.url || null) && (
-                        <a href={report.url} target="_blank">
-                            {report.url}
-                        </a>
-                    )}
-                    {report.reported_game && (
-                        <ReportedGame
-                            game_id={report.reported_game}
-                            reported_at={report.reported_game_move}
-                            reported_by={report.reporting_user.id}
-                        />
-                    )}
-                    {report.report_type === "appeal" && (
-                        <AppealView user_id={report.reported_user.id} />
-                    )}
-                    {report.reported_review && (
-                        <span>
-                            {_("Review")}:{" "}
-                            <Link to={`/review/${report.reported_review}`}>
-                                ##{report.reported_review}
-                            </Link>
-                        </span>
-                    )}
-                    {report.reported_conversation && (
-                        <div className="reported-conversation">
-                            {report.reported_conversation.content.map((line, index) => (
-                                <div className="chatline" key={index}>
-                                    {line}
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </ErrorBoundary>
-            </div>
-        </ShowPlayersInReportContext.Provider>
+                        {(report.url || null) && (
+                            <a href={report.url} target="_blank">
+                                {report.url}
+                            </a>
+                        )}
+                        {report.reported_game && (
+                            <ReportedGame
+                                game_id={report.reported_game}
+                                reported_at={report.reported_game_move}
+                                reported_by={report.reporting_user.id}
+                                onGobanCreated={setCurrentGoban}
+                            />
+                        )}
+                        {report.report_type === "appeal" && (
+                            <AppealView user_id={report.reported_user.id} />
+                        )}
+                        {report.reported_review && (
+                            <span>
+                                {_("Review")}:{" "}
+                                <Link to={`/review/${report.reported_review}`}>
+                                    ##{report.reported_review}
+                                </Link>
+                            </span>
+                        )}
+                        {report.reported_conversation && (
+                            <div className="reported-conversation">
+                                {report.reported_conversation.content.map((line, index) => (
+                                    <div className="chatline" key={index}>
+                                        {line}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </ErrorBoundary>
+                </div>
+            </ShowPlayersInReportContext.Provider>
+        </div>
     );
 }
 
