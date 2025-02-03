@@ -5983,13 +5983,6 @@ globby@^11.1.0:
     merge2 "^1.4.1"
     slash "^3.0.0"
 
-goban@=8.3.74:
-  version "8.3.74"
-  resolved "https://registry.yarnpkg.com/goban/-/goban-8.3.74.tgz#12d3cb1b20ad44b4efb41f7c2925abaee9c5a166"
-  integrity sha512-LyZTNWKRBT3XMH+Ya87iBYDButdlMjepI/33DohToPgbUYuqL6St4o4HTLETNpTuUPzUUcmr01Vut/ON+awFkw==
-  dependencies:
-    eventemitter3 "^5.0.0"
-
 google-auth-library@^8.0.2:
   version "8.9.0"
   resolved "https://registry.yarnpkg.com/google-auth-library/-/google-auth-library-8.9.0.tgz#15a271eb2ec35d43b81deb72211bd61b1ef14dd0"

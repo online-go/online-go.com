@@ -14,6 +14,8 @@
         "baseUrl": ".",
         "paths": {
             "@/*": ["src/*"],
+            "goban": ["submodules/goban/src"],
+            "goscorer": ["submodules/goban/src/third_party/goscorer/goscorer"]
         },
 
         "forceConsistentCasingInFileNames": true,

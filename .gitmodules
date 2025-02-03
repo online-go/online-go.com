@@ -1,0 +1,6 @@
+[submodule "submodules/goban"]
+	path = submodules/goban
+	url = https://github.com:online-go/goban.git
+[submodule "submodules/react-dynamic-help"]
+	path = submodules/react-dynamic-help
+	url = https://github.com/GreenAsJade/react-dynamic-help.git

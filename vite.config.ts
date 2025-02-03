@@ -151,6 +151,9 @@ export default defineConfig({
     },
     define: {
         "process.env.NODE_ENV": JSON.stringify(process.env.NODE_ENV),
+
+        /* This is for goban to let it know we are building for a front end, as opposed to server usage */
+        CLIENT: true,
     },
     plugins: [
         ogs_vite_middleware(),
@@ -182,6 +185,11 @@ export default defineConfig({
         alias: Object.assign(
             {
                 "@": path.resolve(__dirname, "src"),
+                goban: path.resolve(__dirname, "submodules/goban/src"),
+                goscorer: path.resolve(
+                    __dirname,
+                    "submodules/goban/src/third_party/goscorer/goscorer",
+                ),
             },
             process.env.NODE_ENV !== "production"
                 ? {
