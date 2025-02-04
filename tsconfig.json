@@ -15,7 +15,8 @@
         "paths": {
             "@/*": ["src/*"],
             "goban": ["submodules/goban/src"],
-            "goscorer": ["submodules/goban/src/third_party/goscorer/goscorer"]
+            "goscorer": ["submodules/goban/src/third_party/goscorer/goscorer"],
+            "react-dynamic-help": ["submodules/react-dynamic-help/src"]
         },
 
         "forceConsistentCasingInFileNames": true,

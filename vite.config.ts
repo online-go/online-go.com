@@ -190,6 +190,7 @@ export default defineConfig({
                     __dirname,
                     "submodules/goban/src/third_party/goscorer/goscorer",
                 ),
+                "react-dynamic-help": path.resolve(__dirname, "submodules/react-dynamic-help/src"),
             },
             process.env.NODE_ENV !== "production"
                 ? {
@@ -202,13 +203,9 @@ export default defineConfig({
         esbuildOptions: {
             plugins: [fixReactVirtualized],
         },
-        exclude: ["react-dynamic-help"],
     },
 
     server: {
-        watch: {
-            ignored: ["!**/node_modules/react-dynamic-help/**"],
-        },
         port: 8080,
         host: true,
         proxy,
