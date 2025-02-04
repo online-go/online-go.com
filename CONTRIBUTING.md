@@ -1,8 +1,8 @@
 # Development Environment Quick Start
 
-If you're familiar with GitHub and want to dive into the code, all you'll need is
-to have [Node.js](https://nodejs.org/) installed then clone the repository and perform
-the following actions:
+If you're familiar with GitHub and want to dive into the code, all you'll need
+is to have [Node.js](https://nodejs.org/) installed then clone the repository
+or your fork with the `--recurse-submodules` flag and perform the following actions:
 
 ```
 # First install the necessary dependencies
