@@ -37,12 +37,12 @@ jobs:
                   path: node_modules
                   key: ${{ runner.os }}-node-modules
 
-            - name: yarn install
+            - name: npm install
               uses: nick-fields/retry@v3
               with:
                   timeout_minutes: 10
                   max_attempts: 3
-                  command: yarn install
+                  command: npm install
 
             - name: Eslint
               run: npm run lint
