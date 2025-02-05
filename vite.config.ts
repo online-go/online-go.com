@@ -172,7 +172,7 @@ export default defineConfig({
                   },
                   eslint: {
                       useFlatConfig: true,
-                      lintCommand: "eslint .",
+                      lintCommand: `eslint ${path.resolve(__dirname, "src")}`,
                   },
                   overlay: {
                       initialIsOpen: true,
