@@ -151,6 +151,9 @@ export default defineConfig({
     },
     define: {
         "process.env.NODE_ENV": JSON.stringify(process.env.NODE_ENV),
+
+        /* This is for goban to let it know we are building for a front end, as opposed to server usage */
+        CLIENT: true,
     },
     plugins: [
         ogs_vite_middleware(),
@@ -182,6 +185,12 @@ export default defineConfig({
         alias: Object.assign(
             {
                 "@": path.resolve(__dirname, "src"),
+                goban: path.resolve(__dirname, "submodules/goban/src"),
+                goscorer: path.resolve(
+                    __dirname,
+                    "submodules/goban/src/third_party/goscorer/goscorer",
+                ),
+                "react-dynamic-help": path.resolve(__dirname, "submodules/react-dynamic-help/src"),
             },
             process.env.NODE_ENV !== "production"
                 ? {
@@ -194,13 +203,9 @@ export default defineConfig({
         esbuildOptions: {
             plugins: [fixReactVirtualized],
         },
-        exclude: ["react-dynamic-help"],
     },
 
     server: {
-        watch: {
-            ignored: ["!**/node_modules/react-dynamic-help/**"],
-        },
         port: 8080,
         host: true,
         proxy,
@@ -278,24 +283,6 @@ function ogs_vite_middleware(): Plugin {
                         return;
                     }
 
-                    if (url === "/goban.js") {
-                        console.info(`GET ${url} -> node_modules/goban/build/goban.js`);
-                        send_response(
-                            await fs.readFile("node_modules/goban/build/goban.js", {
-                                encoding: "utf-8",
-                            }),
-                        );
-                        return;
-                    }
-                    if (url === "/goban.js.map") {
-                        console.info(`GET ${url} -> node_modules/goban/build/goban.js.map`);
-                        send_response(
-                            await fs.readFile("node_modules/goban/build/goban.js.map", {
-                                encoding: "utf-8",
-                            }),
-                        );
-                        return;
-                    }
                     if (url === "/manifest.json") {
                         const manifest = {
                             short_name: "OGS",
@@ -314,7 +301,6 @@ function ogs_vite_middleware(): Plugin {
                             theme_color: "#000000",
                         };
                         send_response(JSON.stringify(manifest), "application/json");
-
                         return;
                     }
                     if (url?.endsWith("ogs.css")) {
@@ -371,15 +357,12 @@ function ogs_vite_middleware(): Plugin {
 }
 
 async function ogs_process_template(content: string, req: IncomingMessage): Promise<string> {
-    const use_local_goban = (await fs.lstat("node_modules/goban")).isSymbolicLink();
     const url = new URL(req.url || "", `http://${req.headers.host}`);
     const port = url.port;
 
     const supported_languages = JSON.parse(
         await fs.readFile("i18n/languages.json", { encoding: "utf-8" }),
     );
-
-    const package_json = JSON.parse(await fs.readFile("package.json", { encoding: "utf-8" }));
 
     const replaced = content.replace(/[{][{]\s*(\w+)\s*[}][}]/g, (_, parameter) => {
         switch (parameter) {
@@ -446,13 +429,9 @@ async function ogs_process_template(content: string, req: IncomingMessage): Prom
             case "LANGUAGE_VERSION_DOTJS":
                 return "js";
             case "GOBAN_JS": {
-                if (use_local_goban) {
-                    return `/goban.js`;
-                } else {
-                    return `https://cdn.online-go.com/goban/${package_json.devDependencies.goban.substr(
-                        1,
-                    )}/goban.js`;
-                }
+                // Since we're using Vite's module resolution in dev mode,
+                // we don't need to serve a separate goban.js file
+                return "";
             }
             case "EXTRA_CONFIG":
                 //return `<script>window['websocket_host'] = "${server_url}";</script>`;

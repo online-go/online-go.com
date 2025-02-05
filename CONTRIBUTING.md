@@ -1,23 +1,21 @@
-# Development Environment
+# Development Environment Quick Start
 
-Make sure you have at least 4 GB of physical memory allocation to your OS and 4GB swap space allocated or `npm run dev` will probably freeze the system.
-
-Getting setup is easy, you'll need to have [Node.js](https://nodejs.org/) installed,
-then simply clone the repository and within the working directory run the following:
+If you're familiar with GitHub and want to dive into the code, all you'll need
+is to have [Node.js](https://nodejs.org/) installed then clone the repository
+or your fork with the `--recurse-submodules` flag and perform the following actions:
 
 ```
-# You only need to run this the first time
-npm install yarn
-npm run yarn install
+# First install the necessary dependencies
+npm install
+
+# Next install `husky`, this provides pre-commit checks to ensure the code
+# meets some basic guidelines
 npx husky install
 
 # Run this to start the development server and build system
 npm run dev
 ```
-If you get React dependency errors with npm install yarn, try this instead:
-```
-sudo npm install --global yarn
-```
+
 If you're on Linux, you can simply type `make` and it will do all this for you as well.
 
 If you're on Windows and need specific help getting tools installed and the repo cloned, see [Detailed Setup Steps](#detailed-setup-steps-windows-but-applicable-mostly-to-others) below.
@@ -28,9 +26,12 @@ Once running, you can then navigate to [http://dev.beta.online-go.com:8080/](htt
 which loads the interface from your local server that you just started with gulp, and
 connects to the beta server for testing.
 
-## Getting Started
+# Getting Started
 
--   Sign up for a [GitHub account](https://github.com/signup/free).
+To open issues or make code contributions you'll need to have a GitHub account, you can sign up for one for free here: https://github.com/signup/free
+
+## Opening issues
+
 -   Search the [issue tracker](https://github.com/online-go/online-go.com/issues) to see if the problem is already submitted or the request for an enhancement exists.
 -   Submit an issue if one does not exist. Please include as much of the below information as possible:
     -   A clear summary.
@@ -70,33 +71,33 @@ This project is largely built with TypeScript and React. If you are unfamiliar w
 ## Detailed Setup Steps (Windows, but applicable mostly to others)
 
 0. Create a fork of [online-go.com](http://online-go.com/)
- - Have an account at [github.com](http://github.com/), login there
- - Go to [GitHub - online-go/online-go.com: Source code for the Online-Go.com web interface](https://github.com/online-go/online-go.com)
- - Press the “fork” button
 
-1. Install VSCode 
+-   Have an account at [github.com](http://github.com/), login there
+-   Go to [GitHub - online-go/online-go.com: Source code for the Online-Go.com web interface](https://github.com/online-go/online-go.com)
+-   Press the “fork” button
+
+1. Install VSCode
 
 2. Install git from the windows installer: [Git - Downloading Package (git-scm.com)](https://git-scm.com/download/win).
-       Choose all defaults _except_ "**Configuring Line Ending Conversions**".
-       No matter what the description says, chose `checkout-as-is, commit-as-is` (the description makes it sound like you would not want this)
+   Choose all defaults _except_ "**Configuring Line Ending Conversions**".
+   No matter what the description says, chose `checkout-as-is, commit-as-is` (the description makes it sound like you would not want this)
 3. Download and run `nvm-setup.exe` from https://github.com/coreybutler/nvm-windows/releases
 4. In a command window, run
 
 `nvm install lts`
 
-`npm install -g yarn`
-
 `npm install -g husky`
 
 5. Open VSCode
- - Choose "clone git repository"
- - Chose "clone from github"
- - Allow it to log you into GitHub
- - Choose *your fork* of online-go.com to clone
-    - **make sure it's your fork** - VSCode may offer the official repo at the top of the list, don't chose that one
- - Chose a local folder somewhere sensible to clone it into (definitely distinct from anything left over from before!)
- - Agree to install the recommended extensions
-     (you definitely need these for OGS, they setup the editor for coding standards that are enforced, and provide linting while editing)
+
+-   Choose "clone git repository"
+-   Chose "clone from github"
+-   Allow it to log you into GitHub
+-   Choose _your fork_ of online-go.com to clone
+    -   **make sure it's your fork** - VSCode may offer the official repo at the top of the list, don't chose that one
+-   Chose a local folder somewhere sensible to clone it into (definitely distinct from anything left over from before!)
+-   Agree to install the recommended extensions
+    (you definitely need these for OGS, they setup the editor for coding standards that are enforced, and provide linting while editing)
 
 ... you should now see a code explorer on the left pane of VSCode showing the OGS repo file structure (maybe you need to click on the top icon in the left pane to get this view).
 
@@ -106,7 +107,7 @@ You could poke around in `src/` if you are already curious
 
 6. in a command window, cd to the folder that was created when you cloned the repo and do
 
-`yarn`
+`npm install`
 
 `npm run dev`
 
@@ -118,14 +119,14 @@ Navigate to localhost:8080 in your browser and hopefully see your local checkout
 
 You can immediately edit something:
 
- - Click on the search magnifying glass top left pane of VSCode
- - Type `no games being played` into the search bar
+-   Click on the search magnifying glass top left pane of VSCode
+-   Type `no games being played` into the search bar
 
 It should show you where this string is in [ObserveGamesComponent.tsx](src/components/ObserveGamesComponent/ObserveGamesComponent.tsx).
 
- - click on that to be taken to that place in the code
- - Edit the string, save the file
- - See in the browser that string update on the "Watch" page that was open.
+-   click on that to be taken to that place in the code
+-   Edit the string, save the file
+-   See in the browser that string update on the "Watch" page that was open.
 
 :tada: you made an edit to OGS UI.
 
@@ -134,25 +135,26 @@ It should show you where this string is in [ObserveGamesComponent.tsx](src/compo
 You will want to commit your changes regularly locally. To prepare for this you need to make a branch for them.
 
 This is easiest done in VSCode - down the bottom left is a label telling you what branch you are in fact on now. It has the "source control" symbol (branchy thing) and the name of the branch. To make a branch and commit to it:
- - Click the branch label
- - "Create a branch"
- - Give it a name
+
+-   Click the branch label
+-   "Create a branch"
+-   Give it a name
 
 Then
 
- - Click on the "source control" symbol in the left pane (select git actions)
- - Type a meaningful commit message in the obvious message entry place
- - click commit
+-   Click on the "source control" symbol in the left pane (select git actions)
+-   Type a meaningful commit message in the obvious message entry place
+-   click commit
 
 Do the last three steps often :slight_smile:
 
 8. Publish your change (to GitHub)
 
- When your change is ready for incorporation into OGS:
+When your change is ready for incorporation into OGS:
 
- - Click "source control" in the left
- - Click "publish change"
+-   Click "source control" in the left
+-   Click "publish change"
 
 **Note**: it might be saying "Sync" instead of "Publish" - this means that GitHub knows about your branch already from something you did previously, that's OK.
 
-🎉   Now your code is available ready for a Pull Request into the main repo.
+🎉 Now your code is available ready for a Pull Request into the main repo.

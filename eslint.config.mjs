@@ -184,6 +184,12 @@ export default [
         },
     },
     {
+        files: ["**/submodules/react-dynamic-help/**"],
+        rules: {
+            "header/header": "off",
+        },
+    },
+    {
         files: ["**/*.test.ts", "**/*.test.tsx"],
 
         languageOptions: {
