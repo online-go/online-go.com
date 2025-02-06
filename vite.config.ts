@@ -159,16 +159,18 @@ export default defineConfig({
         ogs_vite_middleware(),
         react(),
 
-        process.env.NODE_ENV !== "production" ? nodePolyfills() : null,
+        process.env.NODE_ENV !== "production" ? nodePolyfills() : undefined,
         // checker relative directory is src/
         //
         !OGS_I18N_BUILD_MODE
             ? checker({
                   typescript: {
-                      tsconfigPath:
+                      tsconfigPath: path.resolve(
+                          __dirname,
                           process.env.NODE_ENV === "production"
-                              ? "tsconfig.json"
-                              : "../tsconfig.json",
+                              ? "src/tsconfig.json"
+                              : "tsconfig.json",
+                      ),
                   },
                   eslint: {
                       useFlatConfig: true,
@@ -179,8 +181,8 @@ export default defineConfig({
                   },
                   enableBuild: true,
               })
-            : null,
-    ],
+            : undefined,
+    ].filter(Boolean),
     resolve: {
         alias: Object.assign(
             {
