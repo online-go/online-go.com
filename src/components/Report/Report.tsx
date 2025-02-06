@@ -152,8 +152,9 @@ export const report_categories: ReportDescription[] = [
         title: pgettext("Report user for AI use", "AI Use"),
         description: pgettext(
             "Report user for AI use",
-            "User is suspected of using an AI assistance in this game.",
+            "Use this if you are quite certain that AI is being used.  Please don't report unless you have convincing evidence.  Please make sure you provide the evidence in the report.",
         ),
+        min_description_length: 40,
         game_id_required: true,
     },
     {
