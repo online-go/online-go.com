@@ -165,12 +165,7 @@ export default defineConfig({
         !OGS_I18N_BUILD_MODE
             ? checker({
                   typescript: {
-                      tsconfigPath: path.resolve(
-                          __dirname,
-                          process.env.NODE_ENV === "production"
-                              ? "src/tsconfig.json"
-                              : "tsconfig.json",
-                      ),
+                      tsconfigPath: path.resolve(__dirname, "tsconfig.json"),
                   },
                   eslint: {
                       useFlatConfig: true,
