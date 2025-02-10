@@ -34,7 +34,11 @@ with open("build/ogs.strings.js", "r") as input_file:
     # If conflicts exist for our translation functions we'll silently fail to extract
     # the strings, so we throw an error here so we are aware of it and can fix it.
     if re.search(r"_[$][0-9]+", new_contents):
-        raise Exception("Found possible translation function name conflict: _[$][0-9]+")
+        m = re.search(r"_[$][0-9]+", new_contents)
+        if m:
+            raise Exception(
+                "Found possible translation function name conflict: %s" % m.group(0)
+            )
     if re.search(r"interpolate[$][0-9]+", new_contents):
         raise Exception(
             "Found possible translation function name conflict: interpolate[$][0-9]+"

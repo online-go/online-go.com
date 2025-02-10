@@ -85,7 +85,10 @@ export function PriceIncreaseMessage({
                         <button onClick={close}>{_("Dismiss")}</button>
 
                         <Link to="/supporter" className="btn primary">
-                            {_("Sign up for AI game reviews")}
+                            {llm_pgettext(
+                                "Learn more about our Site Supporter AI Review plans",
+                                "Learn more",
+                            )}
                         </Link>
                     </div>
                 )}

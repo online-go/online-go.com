@@ -22,13 +22,11 @@ todo-all:
 
 LANGUAGE_VERSION=`md5sum i18n/locale/*.js | sort | md5sum | awk '{print $$1}'`
 SUPPORTED_LANGUAGES=`python -c 'import json; print(json.dumps(json.loads(open("i18n/languages.json", "r").read())))'`
-GOBAN_VERSION=`python -c 'import json; print(json.loads(open("package.json", "r").read())["dependencies"]["goban"][1:])'`
 
 BASE_INDEX_HEADERS=-H "Content-Type: text/plain" \
 	-H "X-OGS-Index-Release: $(RELEASE)"  \
 	-H "X-OGS-Index-Version: $(VERSION)"  \
 	-H "X-OGS-Supported-Languages: $(SUPPORTED_LANGUAGES)"  \
-	-H "X-OGS-Goban-Js: https://cdn.online-go.com/goban/$(GOBAN_VERSION)/goban.min.js"  \
 	-H "X-OGS-Language-Version: $(LANGUAGE_VERSION)"  \
 
 DEV_INDEX_HEADERS=$(BASE_INDEX_HEADERS) -H "X-OGS-Index-Auth: $(DEV_INDEX_AUTH)"
@@ -46,7 +44,7 @@ dev-put:
 dev-del:
 	curl -X DELETE $(BETA_INDEX_HEADERS)  http://localhost:1080/_index
 
-beta-put: build sync-translations create-unified-pot audit-translations jsonify-po-files push-cdn upload-sentry-source-maps
+beta-put: build sync-translations build-i18n create-unified-pot audit-translations jsonify-po-files push-cdn upload-sentry-source-maps
 	OGS_VERSION_HASH=$(OGS_VERSION_HASH) npm run minify-index --silent | curl -X PUT $(BETA_INDEX_HEADERS) -d @- https://beta.online-go.com/_index
 	make beta-notify-slack
 
@@ -87,6 +85,7 @@ sync-translations:
 create-unified-pot:
 	# This is run on the pootle server and here, the pootle server does most of the work,
 	# this invocation extracts strings that need to be translated by LLMs
+	cd i18n; python  translation-code-replace-for-parsing.py
 	cd i18n; node create-unified-pot.js llm-translation-extraction
 
 audit-translations:

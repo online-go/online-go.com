@@ -7,6 +7,9 @@ dev: node_modules .husky
 build:
 	npm run build
 
+build-i18n:
+	npm run build:i18n
+
 local-dev: node_modules .husky
 	export OGS_BACKEND=LOCAL && npm run dev
 
