@@ -74,7 +74,7 @@ export function PriceIncreaseMessage({
                     </div>
                     <div className="body">
                         {llm_pgettext(
-                            "",
+                            "A message about the upcoming price increase for the Site Supporter AI Review service.",
                             "We will be increasing prices for our Site Supporter AI review service on March 1st to keep up with inflation. This will only apply to new subscriptions created on or after that date, so if you would like to lock in a subscription at the current rate, now is your chance!",
                         )}
                     </div>

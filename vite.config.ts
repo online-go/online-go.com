@@ -328,6 +328,14 @@ function ogs_vite_middleware(): Plugin {
                         );
                         */
 
+                        // if build file exists in i18n/build/locale, serve that instead
+                        const build_file = path.resolve(config.root, "../i18n/" + url);
+                        console.log("build_file", build_file);
+                        if (await fs.stat(build_file).catch(() => false)) {
+                            send_response(await fs.readFile(build_file, "utf-8"));
+                            return;
+                        }
+
                         const options = {
                             hostname: "storage.googleapis.com",
                             port: 80,
