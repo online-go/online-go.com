@@ -32,7 +32,7 @@ if (!window.ResizeObserver) {
 
 interface OgsResizeDetectorProps {
     onResize: () => void;
-    targetRef: React.RefObject<HTMLElement>;
+    targetRef: React.RefObject<HTMLElement | null>;
 }
 
 /**
@@ -43,7 +43,7 @@ interface OgsResizeDetectorProps {
  * stemming from dom reflows, but it's better than nothing and is probably good
  * enough.
  */
-export function OgsResizeDetector(props: OgsResizeDetectorProps): JSX.Element {
+export function OgsResizeDetector(props: OgsResizeDetectorProps): React.ReactElement {
     React.useEffect(() => {
         let width = -1;
         let height = -1;

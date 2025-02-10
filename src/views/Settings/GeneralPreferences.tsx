@@ -36,7 +36,7 @@ import { Toggle } from "@/components/Toggle";
 
 import { SettingGroupPageProps, PreferenceLine, PreferenceDropdown } from "@/lib/SettingsCommon";
 
-export function GeneralPreferences(props: SettingGroupPageProps): JSX.Element {
+export function GeneralPreferences(props: SettingGroupPageProps): React.ReactElement {
     const [profanity_filter, _setProfanityFilter]: [Array<string>, (x: Array<string>) => void] =
         React.useState(Object.keys(preferences.get("profanity-filter")));
 
@@ -49,7 +49,6 @@ export function GeneralPreferences(props: SettingGroupPageProps): JSX.Element {
         usePreference("desktop-notifications-require-interaction");
     */
     const [show_offline_friends, setShowOfflineFriends] = usePreference("show-offline-friends");
-    const [show_seek_graph, setShowSeekGraph] = usePreference("show-seek-graph");
     const [unicode_filter_usernames, setUnicodeFilterUsernames] = usePreference("unicode-filter");
     const [translation_dialog_never_show, setTranslationDialogNeverShow] = usePreference(
         "translation-dialog-never-show",
@@ -83,7 +82,7 @@ export function GeneralPreferences(props: SettingGroupPageProps): JSX.Element {
         desktop_notifications_enabled =
             preferences.get("desktop-notifications") &&
             (Notification as any).permission === "granted";
-    } catch (e) {
+    } catch {
         /* not all browsers support the Notification API */
     }
 
@@ -164,7 +163,7 @@ export function GeneralPreferences(props: SettingGroupPageProps): JSX.Element {
 
                     try {
                         Notification.requestPermission().then(onRequestResult).catch(ignore);
-                    } catch (e) {
+                    } catch {
                         /* deprecated usage, but only way supported on safari currently */
                         // eslint-disable-next-line @typescript-eslint/no-floating-promises
                         Notification.requestPermission(onRequestResult);
@@ -262,10 +261,6 @@ export function GeneralPreferences(props: SettingGroupPageProps): JSX.Element {
                     />
                 </PreferenceLine>
             )*/}
-
-            <PreferenceLine title={_("Show seek graph")}>
-                <Toggle checked={show_seek_graph} onChange={setShowSeekGraph} />
-            </PreferenceLine>
 
             <PreferenceLine title={_("Show offline friends on list")}>
                 <Toggle checked={show_offline_friends} onChange={setShowOfflineFriends} />

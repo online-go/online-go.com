@@ -23,12 +23,11 @@ interface Events {
     close: never;
 }
 
-let toast_meta_container: JQuery | null = null;
+let toast_meta_container: HTMLElement | null = null;
 
 export class Toast extends TypedEventEmitter<Events> {
     private react_root: ReactDOM.Root;
     container: HTMLElement;
-
     timeout: any = null;
 
     constructor(root: ReactDOM.Root, container: HTMLElement, timeout: number) {
@@ -45,8 +44,11 @@ export class Toast extends TypedEventEmitter<Events> {
 
     close() {
         this.react_root.unmount();
-        $(this.container).parent().remove();
-        $(this.container).remove();
+        const parent = this.container.parentElement;
+        if (parent) {
+            parent.remove();
+        }
+        this.container.remove();
         if (this.timeout) {
             this.timeout = null;
             clearTimeout(this.timeout);
@@ -57,36 +59,47 @@ export class Toast extends TypedEventEmitter<Events> {
 
 export function toast(element: React.ReactElement<any>, timeout: number = 0): Toast {
     if (toast_meta_container == null) {
-        toast_meta_container = $("<div id='toast-meta-container'>");
-        $(document.body).append(toast_meta_container);
+        toast_meta_container = document.createElement("div");
+        toast_meta_container.id = "toast-meta-container";
+        document.body.appendChild(toast_meta_container);
     }
 
-    const position_container = $("<div class='toast-position-container'>");
+    const position_container = document.createElement("div");
+    position_container.className = "toast-position-container";
     toast_meta_container.prepend(position_container);
 
-    const container = $("<div class='toast-container'>");
-    position_container.append(container);
+    const container = document.createElement("div");
+    container.className = "toast-container";
+    position_container.appendChild(container);
 
-    const root = ReactDOM.createRoot(container[0]);
+    const root = ReactDOM.createRoot(container);
     root.render(<React.StrictMode>{element}</React.StrictMode>);
-    const ret = new Toast(root, container[0] as HTMLElement, timeout);
+    const ret = new Toast(root, container, timeout);
 
-    container.click((ev) => {
-        if (ev.target.nodeName !== "BUTTON" && ev.target.className.indexOf("fab") === -1) {
+    container.addEventListener("click", (ev) => {
+        const target = ev.target as HTMLElement;
+        if (target.nodeName !== "BUTTON" && target.className.indexOf("fab") === -1) {
             ret.close();
         }
     });
 
     setTimeout(() => {
-        position_container.css({ height: container.outerHeight() }).addClass("opaque");
+        position_container.style.height = `${container.offsetHeight}px`;
+        position_container.classList.add("opaque");
     }, 1);
-    //position_container.css({height: 'auto'});
+
     setTimeout(() => {
-        container.css({ position: "relative" });
-        position_container.css({ height: "auto", minHeight: position_container.height() + 3 });
+        container.style.position = "relative";
+        position_container.style.height = "auto";
+        position_container.style.minHeight = `${position_container.offsetHeight + 3}px`;
     }, 350);
 
     return ret;
 }
 
+declare global {
+    interface Window {
+        toast: typeof toast;
+    }
+}
 window.toast = toast;

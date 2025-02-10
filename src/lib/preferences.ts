@@ -16,7 +16,7 @@
  */
 
 import * as data from "@/lib/data";
-import { GobanSelectedThemes, Goban, LabelPosition } from "goban";
+import { GobanSelectedThemes, Goban, LabelPosition, JGOFTimeControlSpeed, Size } from "goban";
 import * as React from "react";
 import { current_language } from "@/lib/translate";
 import { DataSchema } from "./data_schema";
@@ -31,6 +31,26 @@ export const defaults = {
     "asked-to-enable-desktop-notifications": false,
     "auto-advance-after-submit": true,
     "autoplay-delay": 10000,
+    "play.tab": "automatch" as "automatch" | "custom",
+    "automatch.size": "9x9" as Size,
+    "automatch.speed": "rapid" as JGOFTimeControlSpeed,
+    "automatch.game-clock": "flexible" as "exact" | "flexible" | "multiple",
+    "automatch.handicaps": "standard" as "enabled" | "standard" | "disabled",
+    "automatch.time-control": "fischer" as "fischer" | "byoyomi",
+    "automatch.opponent": "human" as "human" | "bot",
+    "automatch.bot": 0,
+    "automatch.lower-rank-diff": 3,
+    "automatch.upper-rank-diff": 3,
+    "automatch.show-custom-games": false,
+    "automatch.multiple-sizes": { "9x9": false, "13x13": false, "19x19": false },
+    "automatch.multiple-speeds": {
+        "blitz-fischer": false,
+        "blitz-byoyomi": false,
+        "rapid-fischer": false,
+        "rapid-byoyomi": false,
+        "live-fischer": false,
+        "live-byoyomi": false,
+    },
     "board-labeling": "automatic",
     "chat.show-all-global-channels": true,
     "chat.show-all-group-channels": true,
@@ -95,10 +115,11 @@ export const defaults = {
     "show-9x9-challenges": true,
     "show-other-boardsize-challenges": true,
     "show-rengo-challenges": true,
+    "show-handicap-challenges": true,
     "show-move-numbers": true,
     "show-offline-friends": true,
-    "show-seek-graph": true,
     "show-ratings-in-rating-grid": false,
+    "show-seek-graph": false,
 
     "show-tournament-indicator": true, // implicitly on desktop
     "show-tournament-indicator-on-mobile": false,
@@ -177,6 +198,9 @@ export const defaults = {
     "gotv.user-access-token": "",
     "gotv.followed-channels": [] as FollowedChannel[],
     "gotv.notified-streams": [] as { streamId: string; timestamp: number }[],
+
+    "user-history.show-mod-log": false,
+    "user-history.warnings-only": false,
 };
 
 defaults["profanity-filter"][current_language] = true;
@@ -245,7 +269,6 @@ export function dump(): void {
 }
 
 export function getSelectedThemes(): GobanSelectedThemes {
-    //let default_plain = $.browser.mobile || ($(window).width() * (window.devicePixelRatio || 1)) <= 768;
     let default_plain = getWindowWidth() * (window.devicePixelRatio || 1) <= 768;
     if (data.get("user").anonymous || data.get("user").id > 1618000) {
         default_plain = true;

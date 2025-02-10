@@ -115,23 +115,31 @@ export function player_is_ignored(user_id: number) {
     return user_id in ignores;
 }
 
+function createOrUpdateStyle(uid: number, display: string) {
+    const styleId = `ignore-style-${uid}`;
+    let style = document.getElementById(styleId) as HTMLStyleElement;
+
+    if (!style) {
+        style = document.createElement("style");
+        style.type = "text/css";
+        style.id = styleId;
+        document.head.appendChild(style);
+    }
+
+    style.textContent = `.chat-user-${uid} { display: ${display} !important; }`;
+}
+
 function ignoreUser(uid: number, dont_fetch = false) {
     if (dont_fetch) {
         ignores[uid] = true;
-        $(
-            "<style type='text/css'> .chat-user-" + uid + " { display: none !important; } </style>",
-        ).appendTo("head");
+        createOrUpdateStyle(uid, "none");
     } else {
         player_cache
             .fetch(uid, ["ui_class"])
             .then((obj) => {
                 if ((obj.ui_class?.indexOf("moderator") || 0) < 0) {
                     ignores[uid] = true;
-                    $(
-                        "<style type='text/css'> .chat-user-" +
-                            uid +
-                            " { display: none !important; } </style>",
-                    ).appendTo("head");
+                    createOrUpdateStyle(uid, "none");
                 } else {
                     console.error("Can't ignore a moderator.");
                 }
@@ -139,11 +147,10 @@ function ignoreUser(uid: number, dont_fetch = false) {
             .catch(errorLogger);
     }
 }
+
 function unIgnoreUser(uid: number) {
     delete ignores[uid];
-    $(
-        "<style type='text/css'> .chat-user-" + uid + " { display: block !important; } </style>",
-    ).appendTo("head");
+    createOrUpdateStyle(uid, "block");
 }
 
 data.watch(cached.blocks, (blocks: BlockState[]) => {

@@ -451,7 +451,7 @@ export function MessageTemplate({
     logByDefault: boolean;
     onSelect?: () => void | null;
     onMessage?: () => void | null;
-}): JSX.Element {
+}): React.ReactElement {
     const [uid] = React.useState(Math.random());
     const [selectedTemplate, setSelectedTemplate] = React.useState<string>(gpt ? "gpt" : "");
     const [template, setTemplate] = React.useState<TemplateEntry | null>(null);

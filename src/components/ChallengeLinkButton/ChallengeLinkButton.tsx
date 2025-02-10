@@ -30,7 +30,7 @@ type ChallengeLinkButtonProps = {
  *  Render a button that generates a "Challenge Link" URL, and tries to copy it to the clipboard, or display it.
  */
 
-export function ChallengeLinkButton(props: ChallengeLinkButtonProps): JSX.Element {
+export function ChallengeLinkButton(props: ChallengeLinkButtonProps): React.ReactElement {
     const full_class = "btn xs" + (props.class_extension ? ` ${props.class_extension}` : "");
 
     /* render */
@@ -79,7 +79,7 @@ export function copyChallengeLinkURL(ack_target: HTMLElement, uuid: string): voi
                 // ... give them the whole thing to copy...
                 showChallengeLink(challenge_link, ack_target),
             );
-    } catch (e) {
+    } catch {
         // Their browser doesn't even know about navigator.clipboard?
         showChallengeLink(challenge_link, ack_target);
     }

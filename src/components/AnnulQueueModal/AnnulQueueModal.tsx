@@ -307,11 +307,11 @@ export function AnnulQueueModal({
                                             <Resizable
                                                 id="move-tree-container"
                                                 className="vertically-resizable"
-                                                ref={(ref) =>
-                                                    goban &&
-                                                    ref?.div &&
-                                                    goban.setMoveTreeContainer(ref.div)
-                                                }
+                                                ref={(ref) => {
+                                                    if (goban && ref?.div) {
+                                                        goban.setMoveTreeContainer(ref.div);
+                                                    }
+                                                }}
                                             />
                                         )}
                                     </div>

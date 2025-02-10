@@ -14,10 +14,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-
 .Player {
-    themed color user
+    themed: color user;
     cursor: pointer;
     white-space: nowrap;
     display: inline-flex !important;
@@ -30,6 +28,7 @@
 
     &.nolink {
         cursor: auto;
+
         &:hover {
             text-decoration: none;
         }
@@ -43,98 +42,115 @@
     // Styling to support the "ShowPlayersInReportContext" context that we provide
     .show-players-in-report & {
         align-items: center;
+
         &::after {
             padding-left: 0.25rem;
             width: 0.8rem;
             font-family: 'FontAwesome';
             font-size: 0.7rem;
-            content: "";
+            content: '';
         }
+
         &.reported::after {
             content: fa-exclamation-triangle-content;
-            themed color danger
+            themed: color danger;
         }
+
         &.reporter::after {
             content: fa-bullhorn-content;
-            themed color supporter
+            themed: color supporter;
         }
     }
 
     &.with-flare {
-        align-items: baseline;  // if we have flare, then we don't have presence indicator, and it's better to line up the baselines (looks better in chat)
+        align-items: baseline; // if we have flare, then we don't have presence indicator, and it's better to line up the baselines (looks better in chat)
     }
 
     &.with-flare:before {
         width: 0.8rem;
         font-family: 'FontAwesome';
         font-size: 0.7rem;
-        content: " ";
+        content: ' ';
     }
+
     &.with-flare.supporter:before {
-        themed color supporter
+        themed: color supporter;
         content: fa-circle-content;
     }
+
     &.with-flare.professional:before {
-        themed color professional
+        themed: color professional;
         content: fa-graduation-cap;
         padding-right: 0.2rem;
     }
+
     &.with-flare.moderator:before {
-        themed color moderator
+        themed: color moderator;
         content: fa-gavel-content;
     }
+
     &.with-flare.admin:before {
-        themed color admin
+        themed: color admin;
         content: fa-wrench-content;
     }
+
     &.with-flare.dragon:before {
-        content: " ";
+        content: ' ';
         width: 0.75rem;
         height: 0.75rem;
         display: inline-block;
-        background-image: svg-load("../assets/dragon-icon.svg");
+        background-image: svg-load('../assets/dragon-icon.svg');
         background-size: cover;
         margin-left: -0.05rem;
         margin-right: 0.05rem;
     }
+
     &.with-flare.aga:before {
-        content: " ";
+        content: ' ';
         width: 0.75rem;
         height: 0.75rem;
         display: inline-block;
-        background-image: url("https://cdn.online-go.com/assets/agaico1.png");
+        background-image: url('https://cdn.online-go.com/assets/agaico1.png');
         background-size: cover;
         margin-left: -0.05rem;
         margin-right: 0.05rem;
     }
 
+    &.timeout {
+    }
 
-    &.timeout{
-    }
     &.supporter {
-        themed-important color supporter
+        themed-important: color supporter;
     }
+
     &.professional {
-        themed-important color professional
+        themed-important: color professional;
     }
-    &.ambassador{
-        themed-important color ambassador
+
+    &.ambassador {
+        themed-important: color ambassador;
     }
-    &.teacher{
-        themed-important color teacher
+
+    &.teacher {
+        themed-important: color teacher;
     }
-    &.bot{
-        themed-important color bot
+
+    &.bot {
+        themed-important: color bot;
     }
-    &.moderator{
-        themed-important color moderator
+
+    &.moderator {
+        themed-important: color moderator;
     }
+
     &.aga {
-        themed-important color aga-official
+        themed-important: color aga-official;
     }
-    &.admin{
-        themed-important color admin
+
+    &.admin {
+        themed-important: color admin;
     }
+
     &.guest {
         color: #888;
         cursor: default;
@@ -148,36 +164,35 @@
     // ---
     // This is the chat presence indicator in the PM chat dialog box ...
     // ... and in the Friends list, where it is currently not aligned properly, despite vertical-align: middle !
-
-    &.online, &.offline{
+    &.online, &.offline {
         position: relative;
         padding-left: 0.6rem;
+
         &:before {
             display: inline-flex;
             align-items: center;
             font-size: 0.5rem;
             height: 1rem;
-
             width: 0.5rem;
             font-family: 'FontAwesome';
             content: fa-circle-content;
-            themed color chat-offline;
-            text-shadow: 0 0 1px rgba(0,0,0,0.5);
+            themed: color chat-offline;
+            text-shadow: 0 0 1px rgba(0, 0, 0, 0.5);
             padding-right: 0.25rem;
         }
     }
 
     &.online:before {
-        themed color indicate-online
+        themed: color indicate-online;
     }
-    // ---
 
+    // ---
     .Player-username {
         flex: 1;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-        margin-left: .25rem;
+        margin-left: 0.25rem;
     }
 
     .Player-rank {
@@ -194,13 +209,12 @@
     }
 }
 
-
 .Player-with-icon {
     .PlayerIcon {
         margin-right: 0.5rem;
     }
 }
 
-.player-name-container span.Player{
+.player-name-container span.Player {
     color: inherit;
 }

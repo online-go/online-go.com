@@ -42,7 +42,7 @@ interface LadderEntry {
     };
 }
 
-export function LadderList(): JSX.Element {
+export function LadderList(): React.ReactElement {
     const [ladders, setLadders] = React.useState<Array<LadderEntry>>([]);
     const [joinedLadders, setJoinedLadders] = React.useState<Array<LadderEntry>>([]);
     const user = useUser();

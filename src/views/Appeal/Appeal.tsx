@@ -38,7 +38,7 @@ interface AppealMessage {
     hidden?: boolean;
 }
 
-export function Appeal(props: { player_id?: number }): JSX.Element | null {
+export function Appeal(props: { player_id?: number }): React.ReactElement | null {
     // we are either a full blow appeals page, or we are embedded within the ReportsCenter
     // For the embedded version we use props, for the routed version we use useParams
     const _params = useParams();

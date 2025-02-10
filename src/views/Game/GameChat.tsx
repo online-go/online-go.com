@@ -66,7 +66,7 @@ interface GameChatLineProperties {
     review_id?: number;
 }
 
-export function GameChat(props: GameChatProperties): JSX.Element {
+export function GameChat(props: GameChatProperties): React.ReactElement {
     const user = data.get("user");
     const goban = useGoban();
     const defaultChatMode = preferences.get("chat-mode") as ChatMode;
@@ -276,7 +276,6 @@ export function GameChat(props: GameChatProperties): JSX.Element {
                     />
                 )}
                 <TabCompleteInput
-                    ref={() => 0}
                     className={`chat-input  ${selected_chat_log}`}
                     disabled={user.anonymous || !data.get("user").email_validated}
                     placeholder={
@@ -333,7 +332,7 @@ interface QuickChatProperties {
     onSend: () => void;
 }
 
-export function QuickChat(props: QuickChatProperties): JSX.Element {
+export function QuickChat(props: QuickChatProperties): React.ReactElement {
     const [editing, setEditing] = React.useState<boolean>(false);
     const lc_phrases = localStorage.getItem("ogs.qc.messages");
     const phrases = React.useRef<string[]>(
@@ -438,7 +437,7 @@ export function QuickChat(props: QuickChatProperties): JSX.Element {
     );
 }
 
-export function GameChatLine(props: GameChatLineProperties): JSX.Element {
+export function GameChatLine(props: GameChatLineProperties): React.ReactElement {
     const line = props.line;
     const last_line = props.last_line;
     const ts = line.date ? new Date(line.date * 1000) : null;
@@ -447,8 +446,8 @@ export function GameChatLine(props: GameChatLineProperties): JSX.Element {
         third_person = line.body.substr(0, 4) === "/me " ? "third-person" : "";
         line.body = line.body.substr(4);
     }
-    let show_date: JSX.Element | null = null;
-    let move_number: JSX.Element | null = null;
+    let show_date: React.ReactElement | null = null;
+    let move_number: React.ReactElement | null = null;
     const goban = useGoban();
 
     if (!last_line || (line.date && last_line.date)) {
@@ -567,7 +566,7 @@ let orig_move: MoveTree | null = null;
 let stashed_pen_marks: any = null; //goban.pen_marks;
 //let orig_marks: unknown[] | null = null;
 
-function MarkupChatLine({ line }: { line: ChatLine }): JSX.Element {
+function MarkupChatLine({ line }: { line: ChatLine }): React.ReactElement {
     const body = line.body;
     const goban = useGoban();
 
@@ -780,7 +779,7 @@ interface ChatLogToggleButtonProperties {
     isUserModerator: boolean; // NOTE Should be false if moderator is playing
 }
 
-function ChatLogToggleButton(props: ChatLogToggleButtonProperties): JSX.Element {
+function ChatLogToggleButton(props: ChatLogToggleButtonProperties): React.ReactElement {
     const { selected_chat_log, toggleChatLog, isUserModerator } = props;
     return (
         <button

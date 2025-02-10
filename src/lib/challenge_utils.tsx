@@ -31,6 +31,7 @@ export interface ChallengeFilter {
     show9x9: boolean;
     showOtherSizes: boolean;
     showRengo: boolean;
+    showHandicap: boolean;
 }
 
 export type ChallengeFilterKey = keyof ChallengeFilter;
@@ -49,5 +50,6 @@ export function shouldDisplayChallenge(c: Challenge, filter: ChallengeFilter): b
         (filter.showUnranked && !c.ranked && !c.rengo) ||
         (filter.showRanked && c.ranked) ||
         (filter.showRengo && c.rengo);
-    return (c.eligible || filter.showIneligible) && matchesRanked && matchesSize;
+    const matchesHandicap = filter.showHandicap || c.handicap === 0;
+    return (c.eligible || filter.showIneligible) && matchesRanked && matchesSize && matchesHandicap;
 }

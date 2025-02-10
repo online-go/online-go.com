@@ -36,7 +36,7 @@ interface SeekGraphLegendProps {
     toggleHandler: (key: ChallengeFilterKey) => void;
 }
 
-export function SeekGraphLegend(props: SeekGraphLegendProps): JSX.Element {
+export function SeekGraphLegend(props: SeekGraphLegendProps): React.ReactElement {
     const [currentPalette, setCurrentPalette] = React.useState<SeekGraphColorPalette>(
         SeekGraphPalettes.DARK,
     );
@@ -52,9 +52,9 @@ export function SeekGraphLegend(props: SeekGraphLegendProps): JSX.Element {
 
     const legendItem = (
         text: string,
-        iconCreator: () => JSX.Element,
+        iconCreator: () => React.ReactElement,
         filterKey: ChallengeFilterKey,
-    ): JSX.Element => {
+    ): React.ReactElement => {
         return (
             <div key={text} className="legend-item">
                 {props.showIcons && iconCreator()}
@@ -71,15 +71,6 @@ export function SeekGraphLegend(props: SeekGraphLegendProps): JSX.Element {
 
     const group1 = [
         legendItem(_("19x19"), () => BoardSizeLegendIcon(currentPalette.size19), "show19x19"),
-        legendItem(_("13x13"), () => BoardSizeLegendIcon(currentPalette.size13), "show13x13"),
-        legendItem(_("9x9"), () => BoardSizeLegendIcon(currentPalette.size9), "show9x9"),
-        legendItem(
-            _("Other"),
-            () => BoardSizeLegendIcon(currentPalette.sizeOther),
-            "showOtherSizes",
-        ),
-    ];
-    const group2 = [
         legendItem(
             _("Ranked"),
             () =>
@@ -95,6 +86,14 @@ export function SeekGraphLegend(props: SeekGraphLegendProps): JSX.Element {
             "showRanked",
         ),
         legendItem(
+            _("Handicap"),
+            () => BoardSizeLegendIcon(currentPalette.handicap),
+            "showHandicap",
+        ),
+    ];
+    const group2 = [
+        legendItem(_("13x13"), () => BoardSizeLegendIcon(currentPalette.size13), "show13x13"),
+        legendItem(
             _("Unranked"),
             () =>
                 LegendIcon((ctx) => {
@@ -108,6 +107,14 @@ export function SeekGraphLegend(props: SeekGraphLegendProps): JSX.Element {
                 }),
             "showUnranked",
         ),
+        legendItem(
+            _("Other"),
+            () => BoardSizeLegendIcon(currentPalette.sizeOther),
+            "showOtherSizes",
+        ),
+    ];
+    const group3 = [
+        legendItem(_("9x9"), () => BoardSizeLegendIcon(currentPalette.size9), "show9x9"),
         legendItem(
             _("Rengo"),
             () =>
@@ -135,6 +142,7 @@ export function SeekGraphLegend(props: SeekGraphLegendProps): JSX.Element {
                 <div className="row">
                     <div className="legend-group grid">{group1}</div>
                     <div className="legend-group grid">{group2}</div>
+                    <div className="legend-group grid">{group3}</div>
                 </div>
             </Card>
         </div>
@@ -146,7 +154,7 @@ const ICON_HEIGHT = 10;
 const ICON_CENTER = { x: ICON_WIDTH / 2, y: ICON_HEIGHT / 2 };
 const ICON_SCALE = 2;
 
-function LegendIcon(draw: (ctx: CanvasRenderingContext2D) => void): JSX.Element {
+function LegendIcon(draw: (ctx: CanvasRenderingContext2D) => void): React.ReactElement {
     const canvas = React.useRef<HTMLCanvasElement>(null);
     React.useEffect(() => {
         const ctx: CanvasRenderingContext2D | undefined | null = canvas?.current?.getContext("2d");

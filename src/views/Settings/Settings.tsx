@@ -53,7 +53,7 @@ import { Supporter } from "@/views/Supporter";
 import { GoTVPreferences } from "./GoTVPreferences";
 import { ThemePreferences } from "./ThemePreferences";
 
-export function Settings(): JSX.Element {
+export function Settings(): React.ReactElement {
     const { category } = useParams();
     const [settings_state, setSettingsState]: [SettingsState, (s: SettingsState) => void] =
         React.useState({});
@@ -103,7 +103,7 @@ export function Settings(): JSX.Element {
     data.set("settings.page-selected", selected);
     const groups: Array<{
         key: string;
-        label: string | JSX.Element;
+        label: string | React.ReactElement;
         ref?: React.RefObject<any> | React.RefCallback<HTMLElement>;
     }> = [
         { key: "general", label: _("General Preferences") },
@@ -142,7 +142,9 @@ export function Settings(): JSX.Element {
         { key: "logout", label: _("Logout") },
     ];
 
-    let SelectedPage: (props: SettingGroupPageProps) => JSX.Element | null = () => <div>Error</div>;
+    let SelectedPage: (props: SettingGroupPageProps) => React.ReactElement | null = () => (
+        <div>Error</div>
+    );
 
     switch (selected) {
         case "general":
@@ -288,14 +290,14 @@ export function Settings(): JSX.Element {
     );
 }
 
-function SettingsGroupSelector(props: { children: React.ReactNode }): JSX.Element {
+function SettingsGroupSelector(props: { children: React.ReactNode }): React.ReactElement {
     return <div id="SettingsGroupSelector">{props.children}</div>;
 }
 
 type SettingsGroupProps = { selected: boolean; onClick: () => void; children: React.ReactNode };
 
 const SettingsGroup = React.forwardRef<HTMLDivElement, SettingsGroupProps>(
-    (props: SettingsGroupProps, ref): JSX.Element => {
+    (props: SettingsGroupProps, ref): React.ReactElement => {
         return (
             <div
                 className={"SettingsGroup" + (props.selected ? " selected" : "")}
@@ -310,7 +312,7 @@ const SettingsGroup = React.forwardRef<HTMLDivElement, SettingsGroupProps>(
     },
 );
 
-function LogoutPreferences(): JSX.Element {
+function LogoutPreferences(): React.ReactElement {
     return (
         <div className="LogoutButtons">
             <div>
@@ -334,12 +336,12 @@ function LogoutPreferences(): JSX.Element {
     );
 }
 
-function SupporterSettings(): JSX.Element {
+function SupporterSettings(): React.ReactElement {
     return <Supporter />;
 }
 
 /*
-export function Experiments(): JSX.Element {
+export function Experiments(): React.ReactElement {
     const [test, setTest] = React.useState<boolean>(data.get("experiments.test") === "a");
 
     return (

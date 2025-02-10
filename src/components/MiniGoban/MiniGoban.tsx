@@ -63,13 +63,10 @@ export interface MiniGobanProps {
 }
 
 function computedDisplayWidth(): number {
-    //const body_width = document.body.clientWidth;
-
-    //return Math.min($("body").width() - 50, em10_width * 2);
     return Math.min(getWindowWidth(), getEm10Width() * 2);
 }
 
-export function MiniGoban(props: MiniGobanProps): JSX.Element {
+export function MiniGoban(props: MiniGobanProps): React.ReactElement {
     const goban_div = React.useRef<HTMLDivElement>(
         (() => {
             const ret = document.createElement("div");
@@ -77,7 +74,7 @@ export function MiniGoban(props: MiniGobanProps): JSX.Element {
             return ret;
         })(),
     );
-    const goban = React.useRef<GobanRenderer>();
+    const goban = React.useRef<GobanRenderer | undefined>(undefined);
 
     const [white_points, setWhitePoints] = React.useState("");
     const [black_points, setBlackPoints] = React.useState("");
@@ -182,7 +179,7 @@ export function MiniGoban(props: MiniGobanProps): JSX.Element {
                         .catch(() => {
                             console.log("Couldn't work out black rank");
                         });
-                } catch (e) {
+                } catch {
                     console.log("Couldn't work out who played black");
                 }
             }
@@ -203,7 +200,7 @@ export function MiniGoban(props: MiniGobanProps): JSX.Element {
                         .catch(() => {
                             console.log("Couldn't work out white rank");
                         });
-                } catch (e) {
+                } catch {
                     console.log("Couldn't work out who played black");
                 }
             }

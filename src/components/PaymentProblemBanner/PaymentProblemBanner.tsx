@@ -22,7 +22,7 @@ import { Card } from "@/components/material";
 import { useUser, useData } from "@/lib/hooks";
 import { PaymentProblem } from "@/lib/data_schema";
 
-export function PaymentProblemBanner(): JSX.Element | null {
+export function PaymentProblemBanner(): React.ReactElement | null {
     const user = useUser();
     const [config, _setConfig] = useData("config");
     const [dismissed, _setDismissed] = useData("payment-problem-banner-dismissed-timestamp", 0);
@@ -65,7 +65,7 @@ export function PaymentProblemBanner(): JSX.Element | null {
     );
 }
 
-function PaymentProblemDescription({ problem }: { problem: PaymentProblem }): JSX.Element {
+function PaymentProblemDescription({ problem }: { problem: PaymentProblem }): React.ReactElement {
     switch (
         problem.type as string // as string so our fallback doesn't complain as being unreachable
     ) {

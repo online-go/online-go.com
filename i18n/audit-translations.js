@@ -413,6 +413,9 @@ async function llm_translate(key, entry, lang, language) {
         if (fs.existsSync("./llm-keys-cache.json")) {
             LLM_CACHE = JSON.parse(fs.readFileSync("./llm-keys-cache.json", "utf-8"));
         } else {
+            throw new Error(
+                "No LLM cache found. Bailing because this is probably an error, if not please put `{}` into llm-keys-cache.json",
+            );
             LLM_CACHE = {};
         }
     }
@@ -432,7 +435,8 @@ async function llm_translate(key, entry, lang, language) {
                 content:
                     "You are translating user interface strings from English to " +
                     language +
-                    ". Only include the translation in your response.",
+                    ". " +
+                    "Only include the translation in your response.",
             },
             {
                 role: "system",

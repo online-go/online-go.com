@@ -23,7 +23,7 @@ import { UIPush } from "../UIPush";
 
 interface PaginatedTableColumnProperties<EntryT> {
     cellProps?: any;
-    render: (row: EntryT) => JSX.Element | string | number | undefined | null;
+    render: (row: EntryT) => React.ReactElement | string | number | undefined | null;
     header: string;
     headerProps?: any;
     sortable?: boolean;
@@ -72,17 +72,17 @@ export interface PaginatedTableRef {
 }
 
 export const PaginatedTable = React.forwardRef<PaginatedTableRef, PaginatedTableProperties<any>>(
-    _PaginatedTable,
+    PaginatedTableImpl,
 ) as <RawEntryT = any, GroomedEntryT = RawEntryT>(
     props: PaginatedTableProperties<RawEntryT, GroomedEntryT> & {
         ref?: React.ForwardedRef<PaginatedTableRef>;
     },
-) => ReturnType<typeof _PaginatedTable>;
+) => ReturnType<typeof PaginatedTableImpl>;
 
-function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(
+function PaginatedTableImpl<RawEntryT = any, GroomedEntryT = RawEntryT>(
     props: PaginatedTableProperties<RawEntryT, GroomedEntryT>,
     ref: React.ForwardedRef<PaginatedTableRef>,
-): JSX.Element {
+): React.ReactElement {
     const table_name = props.name || "default";
     const [rows, setRows]: [any[], (x: any[]) => void] = React.useState<GroomedEntryT[]>([]);
     const [page, _setPage]: [number, (x: number) => void] = React.useState(props.startingPage || 1);
@@ -263,8 +263,8 @@ function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(
         setOrderBy(new_order_by);
     }
 
-    function getHeader(order: string[] | undefined, header: string): JSX.Element {
-        let el: JSX.Element;
+    function getHeader(order: string[] | undefined, header: string): React.ReactElement {
+        let el: React.ReactElement;
         if (order && order.length > 0) {
             let clsName = "";
             if (ordersMatch(order_by, order)) {
@@ -296,7 +296,7 @@ function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(
         " ",
     );
     const columns = props.columns.filter((c) => !!c);
-    const blank_rows: JSX.Element[] = [];
+    const blank_rows: React.ReactElement[] = [];
     const page_sizes = props.pageSizeOptions || [10, 25, 50];
 
     if (props.fillBlankRows) {
@@ -422,7 +422,7 @@ function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(
 function column_render<GroomedEntryT>(
     column: PaginatedTableColumnProperties<GroomedEntryT>,
     row: GroomedEntryT,
-): JSX.Element | string | number | null | undefined {
+): React.ReactElement | string | number | null | undefined {
     if (typeof column.render === "function") {
         return column.render(row);
     }

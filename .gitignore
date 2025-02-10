@@ -14,7 +14,7 @@ Makefile.passwords
 how_to_add_a_new_language.txt
 .DS_Store
 /.alm/
-package-lock.json
+yarn.lock
 report.*.json
 neovide_backtraces.log
 
@@ -22,3 +22,5 @@ i18n/data/
 i18n/import/
 i18n/prep-import.js
 npm-debug.log
+.yalc
+yalc.lock

@@ -14,21 +14,21 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 .GobanLineSummaryContainer {
-    //display: table
+    // display: table
     width: auto;
     max-width: max-content;
     overflow-x: auto;
-    //margin-left: auto;
-    //margin-right: auto;
+    // margin-left: auto;
+    // margin-right: auto;
 }
 
 .GobanLineSummary {
-    themed color fg;
+    themed: color fg;
+
     &:hover {
         text-decoration: none;
-        themed color fg;
+        themed: color fg;
     }
 }
 
@@ -56,11 +56,11 @@
     }
 
     .current-users-move {
-        themed background-color miniboard-to-move;
+        themed: background-color miniboard-to-move;
     }
 
     .viewed-users-move {
-        themed background-color miniboard-viewed-to-move;
+        themed: background-color miniboard-viewed-to-move;
     }
 
     .game-name, .player {
@@ -72,17 +72,18 @@
     }
 
     &.in-stone-removal-phase {
-        themed background-color miniboard-stone-removal
+        themed: background-color miniboard-stone-removal;
     }
+
     &:hover {
-        themed background-color miniboard-hover
+        themed: background-color miniboard-hover;
     }
 
     &.in-stone-removal-phase:hover {
-        themed background-color miniboard-stone-removal-hover
+        themed: background-color miniboard-stone-removal-hover;
     }
 
-    &.finished{
+    &.finished {
         opacity: 0.8;
     }
 
@@ -92,4 +93,3 @@
         margin: 2em;
     }
 }
-

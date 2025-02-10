@@ -486,9 +486,11 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         } else {
             win_rate = win_rates[move_number] || this.ai_review.win_rate;
             score = scores[move_number];
+            /*
             if (!score && score !== 0) {
                 this.ai_review.scores ? this.ai_review.scores[-1] : 0;
             }
+            */
         }
 
         if (next_ai_review_move) {
@@ -1232,7 +1234,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         }
     }
 
-    public render(): JSX.Element | null {
+    public render(): React.ReactElement | null {
         if (this.state.loading) {
             return null;
         }
@@ -1463,9 +1465,11 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                             ),
                             MenuList: (props) => {
                                 //const goban = this.context;
+                                //
+                                const MenuList = components.MenuList as any;
 
                                 return (
-                                    <components.MenuList {...props}>
+                                    <MenuList {...props}>
                                         {props.children}
                                         {show_full_ai_review_button && (
                                             <div className="ai-review-new-review">
@@ -1492,7 +1496,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                                 )*/}
                                             </div>
                                         )}
-                                    </components.MenuList>
+                                    </MenuList>
                                 );
                             },
                         }}
@@ -1670,7 +1674,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         );
     }
 
-    public renderWorstMoveList(lst: AIReviewWorstMoveEntry[]): JSX.Element | null {
+    public renderWorstMoveList(lst: AIReviewWorstMoveEntry[]): React.ReactElement | null {
         const goban = this.context;
         if (!goban?.engine.move_tree || !this.ai_review) {
             return null;
@@ -1732,7 +1736,7 @@ function sanityCheck(ai_review: JGOFAIReview) {
 function isEqualMoveIntersection(a: JGOFIntersection, b: JGOFIntersection): boolean {
     return a.x === b.x && a.y === b.y;
 }
-function ReviewStrengthIcon({ review }: { review: JGOFAIReview }): JSX.Element {
+function ReviewStrengthIcon({ review }: { review: JGOFAIReview }): React.ReactElement {
     let strength: string;
     let content = "";
     if (review.type === "fast") {
@@ -1804,7 +1808,7 @@ class AiSummaryTable extends React.Component<AiSummaryTableProperties, AiSummary
         super(props);
     }
 
-    render(): JSX.Element {
+    render(): React.ReactElement {
         return (
             <div className="ai-summary-container">
                 <table

@@ -131,77 +131,83 @@ function sanitize_shortcut(shortcut: string) {
     return shortcut;
 }
 
-$(() => {
-    $(document).on("keydown", (e) => {
-        try {
-            if (
-                document.activeElement?.tagName === "INPUT" ||
-                document.activeElement?.tagName === "TEXTAREA" ||
-                document.activeElement?.tagName === "SELECT" ||
-                document.activeElement?.className === "qc-option"
-            ) {
-                if (!(e.keyCode in input_enabled_keys)) {
-                    return true;
-                }
-            }
-        } catch (e) {
-            /* ie 11 throws this */
-            console.warn(e);
-        }
-
-        let shortcut = "";
-        if (e.shiftKey) {
-            shortcut += "shift-";
-        }
-        if (e.ctrlKey) {
-            shortcut += "ctrl-";
-        }
-        if (e.altKey) {
-            shortcut += "alt-";
-        }
-        if (e.metaKey) {
-            shortcut += "meta-";
-        }
-
-        if (e.keyCode in key_map) {
-            shortcut += key_map[e.keyCode as keyof typeof key_map];
-        } else {
-            shortcut += String.fromCharCode(e.keyCode);
-        }
-        shortcut = sanitize_shortcut(shortcut);
-
-        if (!preferences.get("function-keys-enabled")) {
-            if (/f[0-9]/.test(shortcut)) {
+const handleKeyDown = (e: KeyboardEvent) => {
+    try {
+        if (
+            document.activeElement?.tagName === "INPUT" ||
+            document.activeElement?.tagName === "TEXTAREA" ||
+            document.activeElement?.tagName === "SELECT" ||
+            document.activeElement?.className === "qc-option"
+        ) {
+            if (!(e.keyCode in input_enabled_keys)) {
                 return true;
             }
         }
+    } catch (err) {
+        console.warn(err);
+    }
 
-        if (shortcut in bound_shortcuts && bound_shortcuts[shortcut].length > 0) {
-            const binding = bound_shortcuts[shortcut][bound_shortcuts[shortcut].length - 1];
+    let shortcut = "";
+    if (e.shiftKey) {
+        shortcut += "shift-";
+    }
+    if (e.ctrlKey) {
+        shortcut += "ctrl-";
+    }
+    if (e.altKey) {
+        shortcut += "alt-";
+    }
+    if (e.metaKey) {
+        shortcut += "meta-";
+    }
 
-            binding.fn(e);
+    if (e.keyCode in key_map) {
+        shortcut += key_map[e.keyCode as keyof typeof key_map];
+    } else {
+        shortcut += String.fromCharCode(e.keyCode);
+    }
+    shortcut = sanitize_shortcut(shortcut);
 
-            if (shortcut === "esc") {
-                /* Allow escape through to other handlers, such as SWAL to close modals */
-                return true;
-            }
-
-            if (shortcut === "ctrl-c" || shortcut === "meta-c") {
-                /* Allow copy text on Ctrl+C in modal */
-                return true;
-            }
-
-            if (e.stopPropagation) {
-                e.stopPropagation();
-            }
-            if (e.preventDefault) {
-                e.preventDefault();
-            }
-            return false;
+    if (!preferences.get("function-keys-enabled")) {
+        if (/f[0-9]/.test(shortcut)) {
+            return true;
         }
-        return true;
+    }
+
+    if (shortcut in bound_shortcuts && bound_shortcuts[shortcut].length > 0) {
+        const binding = bound_shortcuts[shortcut][bound_shortcuts[shortcut].length - 1];
+
+        binding.fn(e);
+
+        if (shortcut === "esc") {
+            /* Allow escape through to other handlers, such as SWAL to close modals */
+            return true;
+        }
+
+        if (shortcut === "ctrl-c" || shortcut === "meta-c") {
+            /* Allow copy text on Ctrl+C in modal */
+            return true;
+        }
+
+        if (e.stopPropagation) {
+            e.stopPropagation();
+        }
+        if (e.preventDefault) {
+            e.preventDefault();
+        }
+        return false;
+    }
+    return true;
+};
+
+// Initialize global keyboard shortcuts when the DOM is ready
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => {
+        document.addEventListener("keydown", handleKeyDown);
     });
-});
+} else {
+    document.addEventListener("keydown", handleKeyDown);
+}
 
 export function kb_bind(shortcut: string, fn: () => void, priority: number): Binding {
     if (!priority) {

@@ -87,7 +87,7 @@ export class BanModal extends Modal<Events, BanModalProperties, any> {
     }
 }
 
-function BanDetails({ onChange }: { onChange: (d: any) => void }): JSX.Element {
+function BanDetails({ onChange }: { onChange: (d: any) => void }): React.ReactElement {
     const [public_reason, set_public_reason] = React.useState("");
     const [moderator_notes, set_moderator_notes] = React.useState("");
     const [expiration, set_expiration] = React.useState();

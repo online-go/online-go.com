@@ -101,7 +101,7 @@ export function GameDock({
     onCoordinatesMarked,
     onReviewClicked,
     onDetectionResultsClicked,
-}: DockProps): JSX.Element {
+}: DockProps): React.ReactElement {
     const goban = useGoban();
     const engine = goban.engine;
     const phase = engine.phase;
@@ -132,7 +132,7 @@ export function GameDock({
     let sgf_download_enabled = false;
     try {
         sgf_download_enabled = !goban.isAnalysisDisabled(true);
-    } catch (e) {
+    } catch {
         // ignore error
     }
 
@@ -180,7 +180,7 @@ export function GameDock({
     };
 
     const [volume, set_volume] = React.useState(sfx.getVolume("master"));
-    const volume_sound_debounce = React.useRef<any>();
+    const volume_sound_debounce = React.useRef<any | null>(null);
 
     const toggleVolume = () => {
         _setVolume(volume > 0 ? 0 : 0.5);

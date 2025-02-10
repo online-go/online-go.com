@@ -17,13 +17,13 @@
 
 /* spell-checker: disable */
 
-import * as React from "react";
+import React from "react";
 import { pgettext, _, getLanguageFlag, interpolate } from "@/lib/translate";
 import { Flag } from "@/components/Flag";
 import * as data from "@/lib/data";
 import { Markdown } from "@/components/Markdown";
 
-function shuffleArray(array: JSX.Element[]) {
+function shuffleArray(array: React.ReactElement[]) {
     for (let i = array.length - 1; i >= 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         const temp = array[i];
@@ -33,12 +33,11 @@ function shuffleArray(array: JSX.Element[]) {
     return array;
 }
 
-function scramble(...args: JSX.Element[]) {
+function scramble(...args: React.ReactElement[]) {
     return shuffleArray(args);
 }
 
-function findTitle(e: JSX.Element): string | null {
-    console.log(e);
+function findTitle(e: React.ReactElement<any>): string | null {
     if (e.props.title) {
         return e.props.title;
     } else {
@@ -52,7 +51,7 @@ function findTitle(e: JSX.Element): string | null {
     return null;
 }
 
-function ordered(...args: JSX.Element[]) {
+function ordered(...args: React.ReactElement[]) {
     return args.sort((a, b) => {
         const a_title = findTitle(a);
         const b_title = findTitle(b);
@@ -369,6 +368,11 @@ export const GoResources = () => {
                     <dl>
                         <dt>{_("Tsumego")}</dt>
                         {scramble(
+                            <BasicResource
+                                countries={[en]}
+                                title="Tsumego Hero"
+                                href="http://www.tsumego-hero.com"
+                            />,
                             <BasicResource
                                 countries={[en]}
                                 title="GoProblems.com"
@@ -737,6 +741,11 @@ export const GoResources = () => {
                     <dl>
                         <dt>{_("Sites")}</dt>
                         {scramble(
+                            <BasicResource
+                                countries={["fr"]}
+                                title="Jeu de go"
+                                href="https://www.jeudego.org/"
+                            />,
                             <BasicResource
                                 countries={[eu]}
                                 title="Awesome Baduk"
@@ -1676,7 +1685,7 @@ export const GoResources = () => {
 
 interface BasicResourceProps {
     countries: string[];
-    title: string | JSX.Element;
+    title: string | React.ReactElement;
     href?: string;
 }
 function BasicResourceInner({ countries, title, href }: BasicResourceProps) {
@@ -1705,9 +1714,9 @@ function BasicResource({ countries, title, href }: BasicResourceProps) {
 }
 interface BookProps extends BasicResourceProps {
     countries: string[];
-    title: string | JSX.Element;
+    title: string | React.ReactElement;
     href?: string;
-    authors: (string | JSX.Element)[];
+    authors: (string | React.ReactElement)[];
     editions?: Array<{ country: string; title: string; href: string }>;
 }
 

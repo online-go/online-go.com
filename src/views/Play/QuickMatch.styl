@@ -1,0 +1,629 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+.automatch-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+
+    .small-spinner {
+        width: 20px;
+        height: 20px;
+        position: relative;
+    }
+}
+
+.automatch-header {
+    flex-shrink: 0;
+    flex-grow: 0;
+    flex-basis: 2.5rem;
+    font-size: 1.3rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .btn-group {
+        display: flex;
+        flex-wrap: nowrap;
+    }
+}
+
+#QuickMatch {
+    margin-top: 1rem;
+    margin-right: 2rem;
+    margin-left: 2rem;
+    display: grid;
+    // 2x2 grid
+    grid-template-columns: 1fr 1fr;
+    user-select: none;
+    column-gap: 4rem;
+
+    .GameOption-cell {
+        display: flex;
+        flex-direction: column;
+        align-content: stretch;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .automatch-row-container {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .toggle-container {
+        display: flex;
+        align-items: center;
+    }
+
+    .toggle-label {
+        cursor: pointer;
+        font-size: 0.9rem;
+        themed: color shade3;
+        margin-right: 0.5rem;
+    }
+
+    .automatch-row {
+        display: flex;
+        justify-content: space-around;
+        align-content: stretch;
+        width: 100%;
+        flex-wrap: wrap;
+
+        button {
+            font-size: 1.1rem;
+            font-weight: bold;
+            flex-grow: 1;
+            flex-basis: 13rem;
+            max-width: 13rem;
+            height: 4rem;
+            margin: 0.5rem;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            align-content: center;
+            justify-content: center;
+
+            .play-button-text-root {
+                position: relative;
+                height: 1.5rem;
+
+                .time-per-move {
+                    position: absolute;
+                    bottom: -1.2rem;
+                    left: 0;
+                    right: 0;
+                    text-align: center;
+                }
+            }
+
+            .fa, .ogs-turtle {
+                margin: 0.2rem;
+            }
+
+            .ogs-turtle {
+                position: relative;
+                width: 1rem;
+            }
+
+            .ogs-turtle::before {
+                position: absolute;
+                top: -0.5rem;
+                left: 0;
+            }
+
+            .time-per-move {
+                font-size: font-size-smaller;
+            }
+        }
+    }
+
+    .automatch-settings {
+        font-size: 1rem;
+        flex: 0;
+        text-align: left;
+        white-space: nowrap;
+
+        .automatch-settings-link {
+            cursor: pointer;
+        }
+
+        i {
+            padding-right: 0.25rem;
+        }
+    }
+
+    .custom-game-row {
+        display: flex;
+        justify-content: space-around;
+        align-content: stretch;
+        width: 100%;
+
+        button {
+            font-size: 1.1rem;
+            font-weight: bold;
+            flex-grow: 1;
+            width: 100%;
+            max-width: 13rem;
+            margin: 0.5rem;
+            height: 4rem;
+
+            .fa {
+                margin: 0.2rem;
+            }
+        }
+    }
+
+    .custom-game-header {
+        display: flex;
+        justify-content: space-around;
+        align-content: stretch;
+        width: 100%;
+        justify-content: space-between;
+        align-items: left;
+        font-size: 1.3rem;
+        margin-top: 1rem;
+    }
+
+    .GameOption {
+        margin-bottom: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-content: stretch;
+        align-items: center;
+        width: 100%;
+        flex-wrap: wrap;
+        font-weight: bold;
+        font-size: 1.3rem;
+
+        .dropdown {
+            display: inline-flex;
+            justify-content: space-between;
+            min-width: 15rem;
+            align-items: center;
+            themed: background-color shade5;
+            border-radius: 0.2rem;
+            padding-left: 1rem;
+            padding-right: 1rem;
+            cursor: pointer;
+
+            &:hover {
+                themed: background-color shade4;
+            }
+
+            .DownCarret {
+                display: inline-block;
+                float: right;
+                padding-left: 1.5rem;
+                padding-right: -0.5rem;
+                margin: 0.5rem;
+            }
+        }
+    }
+
+    .MiniGoban {
+        width: 22rem !important;
+        height: 22rem !important;
+    }
+
+    .Multi-MiniGoban-container {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        flex-direction: row;
+        flex-wrap: wrap;
+        width: 100%;
+        min-height: 22rem;
+
+        .MiniGoban {
+            width: 12rem !important;
+            height: 12rem !important;
+        }
+    }
+
+    .subtext {
+        font-size: 0.9rem;
+    }
+
+    .game-speed-option-container {
+        // margin-top: 1rem;
+        margin-bottom: 2rem;
+        border-radius: 0.5rem;
+    }
+
+    .game-speed-title {
+        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        .description {
+            // padding-left: 1rem;
+            // padding-right: 1rem;
+            font-style: italic;
+            font-size: 0.9rem;
+        }
+    }
+
+    .game-speed-buttons {
+        // padding-bottom: 0.5rem;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+
+        // border-bottom: 0.15rem solid transparent;
+        &.flexible-active {
+            // themed-important border-color shade3
+        }
+
+        .time-control-button {
+            min-width: 10rem;
+        }
+
+        .or {
+            display: inline-block;
+            min-width: 2rem;
+            text-align: center;
+        }
+    }
+
+    .speed-options {
+        // margin-bottom: 2rem;
+    }
+
+    .opponent-options {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: stretch;
+        align-items: stretch;
+        align-content: stretch;
+        flex-grow: 1;
+        margin-top: 1rem;
+
+        .opponent-option-container {
+            display: inline-flex;
+            flex-direction: column;
+            flex-grow: 1;
+            height: 6rem;
+            margin-left: 0.5rem;
+            margin-right: 0.5rem;
+            transition: background-color 0.3s ease;
+            box-shadow: 0px 2px 5px 0px rgba(0, 0, 0, 0.15);
+            border: 1px solid transparent;
+            border-radius: 0.3rem;
+            padding-left: 0.6em;
+            padding-right: 0.6em;
+            // padding-top: 0.6em;
+            // padding-bottom: 0.6em;
+            min-width: 12rem;
+            cursor: pointer;
+            themed: background-color default-button;
+            themed: color default-button-color;
+
+            &:hover, &:focus {
+                text-decoration: none;
+                themed-lighten: background-color default-button button-highlight-brighten-amount;
+                themed-darken: border-color default-button button-border-highlight-darken-amount;
+            }
+
+            &:active, &.active {
+                text-decoration: none;
+                themed-darken: background-color default-button button-highlight-brighten-amount;
+                themed-important: border-color primary;
+            }
+
+            &.disabled {
+                themed-desaturate: background-color default-button button-disabled-desaturate-amount;
+                themed: color shade2;
+                themed-desaturate: border-color default-button button-disabled-desaturate-amount;
+                box-shadow: none;
+                cursor: default;
+                cursor: not-allowed;
+
+                select {
+                    themed: color shade2;
+                }
+            }
+
+            .opponent-title {
+                text-align: center;
+                font-size: 1.3rem;
+                padding-bottom: 0.5rem;
+                padding-top: 0.5rem;
+            }
+
+            .opponent-rank-range-description {
+                font-size: 0.9rem;
+                themed: color shade1;
+                text-align: center;
+                padding-right: 0.5rem;
+                padding-left: 0.5rem;
+                margin-bottom: 0.5rem;
+            }
+        }
+    }
+
+    .ogs-react-select__control {
+        // min-height: 2rem;
+        // height: 2rem;
+        themed: color shade1;
+    }
+
+    .ogs-react-select__control, .ogs-react-select__menu {
+        font-size: 1rem;
+        font-weight: normal;
+    }
+
+    .ogs-react-select__menu {
+        right: 0;
+        width: 20rem;
+        max-width: 90vw;
+
+        .ogs-react-select__group-heading {
+            text-transform: none;
+            font-size: 0.9rem;
+        }
+
+        .option {
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+
+            &.focused {
+                themed-important: background-color shade3;
+            }
+
+            &.selected {
+                themed-important: background-color shade3;
+            }
+
+            themed: color fg;
+        }
+
+        .option-label {
+            font-weight: bold;
+            padding-right: 0.5rem;
+            padding-left: 0.5rem;
+        }
+
+        .option-description {
+            font-size: 0.9rem;
+            font-style: italic;
+            themed: color shade1;
+            padding-right: 0.5rem;
+            padding-left: 0.5rem;
+        }
+    }
+
+    .option-label, .ogs-react-select__single-value {
+        display: flex !important;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .multiple-options-description {
+        font-size: 0.9rem;
+        font-style: italic;
+        themed: color shade1;
+        padding-right: 0.5rem;
+        padding-left: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .size-button {
+        margin-right: 0.2rem;
+        margin-left: 0.2rem;
+        width: 5.5rem;
+    }
+
+    .opponent-rank-range {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .opponent-rank-container {
+        .ogs-react-select__menu {
+            right: 0;
+            width: 6rem;
+            max-width: 40vw;
+        }
+    }
+}
+
+.PlayButton-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 2rem;
+
+    .anonymous-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin-top: 2rem;
+        margin-bottom: 2rem;
+        font-size: 1.3rem;
+        width: 100%;
+
+        .Link {
+            margin-left: 0.5rem;
+            margin-right: 0.5rem;
+        }
+    }
+
+    .play-button {
+        // margin-top: 3rem;
+        width: 100%;
+        height: 6rem;
+        font-size: 1.5rem;
+        line-height: 1.5rem;
+        text-align: center;
+        margin-bottom: 0;
+    }
+
+    .finding-game-container {
+        // flex-shrink: 0;
+        // flex-grow: 0;
+        // flex-basis: 2.5rem;
+        font-size: 1.3rem;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around;
+        align-items: center;
+        // align-content: center;
+        padding-bottom: 2.5rem;
+        padding-top: 1rem;
+
+        .spinner {
+            margin: 0;
+            height: 20px;
+            width: 20px;
+            margin-left: 1rem;
+            margin-right: 1rem;
+        }
+
+        button {
+            margin-left: 2rem;
+            font-size: 1.1rem;
+        }
+    }
+
+    .automatch-settings-corr {
+        flex: 0;
+        text-align: justify;
+        font-size: 1rem;
+        padding: 0.5rem;
+        padding-left: 3rem;
+    }
+}
+
+@media (max-width: hamburger-cutoff) {
+    #QuickMatch {
+        display: flex;
+        flex-direction: column;
+        margin-right: 0rem;
+        margin-left: 0rem;
+        column-gap: 0rem;
+        margin-top: 0rem;
+
+        .speed-options {
+            margin-bottom: 0;
+        }
+    }
+
+    .BoardSize-header {
+        display: none;
+    }
+
+    .PlayButton-container {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        left: 0;
+        right: 0;
+        z-index: z.dock;
+        themed: background-color, bg;
+        gap: 1rem;
+
+        .play-button {
+            margin: 0;
+        }
+    }
+
+    .GameOption-cell {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: space-between;
+        margin-top: 1rem;
+    }
+
+    .tab-head {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+
+        .tabs-container {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+    }
+
+    .game-speed-buttons {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+
+        button.time-control-button {
+            min-width: 8rem !important;
+        }
+    }
+
+    .opponent-option-container {
+        margin-bottom: 2rem;
+    }
+
+    .Play {
+        .Card {
+            margin: 0;
+        }
+
+        .game-speed-option {
+            .time-control-button {
+                min-width: 4rem !important;
+            }
+        }
+    }
+}
+
+.play-page-help-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+#QuickMatch, .PlayPageHelp {
+    .activity {
+        position: relative;
+    }
+
+    .activity.player-waiting:after, .activity.popular:after {
+        @extends .fa;
+        content: '\f111'; // font awesome circle
+        position: absolute;
+        font-size: 0.5rem;
+        top: 2px;
+        right: 2px;
+    }
+
+    .activity.player-waiting:after {
+        themed: color, quickmatch-player-waiting;
+    }
+
+    .activity.popular:after {
+        themed: color, shade1;
+    }
+}

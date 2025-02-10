@@ -31,7 +31,11 @@ interface Events {
 
 export type AutomatchPreferences = AutomatchPreferencesBase & {
     uuid: string;
-    size_speed_options: Array<{ size: Size; speed: Speed }>;
+    size_speed_options: Array<{
+        size: Size;
+        speed: Speed;
+        system: "byoyomi" | "fischer";
+    }>;
 };
 
 class AutomatchToast extends React.PureComponent<{}, any> {
@@ -110,6 +114,8 @@ class AutomatchManager extends TypedEventEmitter<Events> {
     private onAutomatchStart = (entry: { uuid: string; game_id: number }) => {
         this.remove(entry.uuid);
 
+        console.log("Automatch started", entry);
+
         if (entry.uuid === this.last_find_match_uuid) {
             browserHistory.push(`/game/${entry.game_id}`);
             //sfx.play("match_found");
@@ -154,11 +160,12 @@ class AutomatchManager extends TypedEventEmitter<Events> {
 
     public findMatch(preferences: AutomatchPreferences) {
         socket.send("automatch/find_match", preferences);
+        console.log("findMatch", preferences);
 
         /* live game? track it, and pop up our searching toast */
         if (
             preferences.size_speed_options.filter(
-                (opt) => opt.speed === "blitz" || opt.speed === "live",
+                (opt) => opt.speed === "blitz" || opt.speed === "rapid" || opt.speed === "live",
             ).length
         ) {
             this.last_find_match_uuid = preferences.uuid;

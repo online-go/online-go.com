@@ -46,6 +46,7 @@ export interface NotificationManagerEvents {
     notification: any;
     "notification-list-updated": never;
     "notification-count": number;
+    "game-started": Notification;
 }
 
 const boot_time = Date.now();
@@ -53,15 +54,16 @@ let notification_timeout: ReturnType<typeof setTimeout> | null = null;
 const sent: { [k: string]: boolean } = {};
 const game_turn_notifications_sent: { [k: string]: boolean } = {};
 
-$(window).on("storage", (event) => {
+window.addEventListener("storage", (event) => {
     //console.log(event);
-    const ev: any = event.originalEvent;
-    if (ev.key === "lastNotificationSent") {
-        const key = ev.newValue;
-        sent[key] = true;
-        setTimeout(() => {
-            delete sent[key];
-        }, 5000); /* duplicate looking messages are possible so we don't want to possibly block them for very long */
+    if (event.key === "lastNotificationSent") {
+        const key = event.newValue;
+        if (key) {
+            sent[key] = true;
+            setTimeout(() => {
+                delete sent[key];
+            }, 5000); /* duplicate looking messages are possible so we don't want to possibly block them for very long */
+        }
     }
 });
 
@@ -90,7 +92,7 @@ export function emitNotification(title: string, body: string, cb?: () => void) {
                                             emitNotification(title, body, cb);
                                         })
                                         .catch((err: any) => console.error(err));
-                                } catch (e) {
+                                } catch {
                                     /* deprecated usage, but only way supported on safari currently */
                                     void Notification.requestPermission(() => {
                                         emitNotification(title, body, cb);
@@ -191,8 +193,8 @@ export class NotificationManager {
     notifications: { [k: string]: Notification };
     ordered_notifications: Notification[];
     unread_notification_count: number = 0;
-    boards_to_move_on: { [k: string]: any };
-    active_boards: { [k: string]: any };
+    boards_to_move_on: { [k: string]: GameListEntry };
+    active_boards: { [k: string]: GameListEntry };
     advances: number = 0;
     auth: string | undefined;
     event_emitter: TypedEventEmitter<NotificationManagerEvents>;
@@ -239,8 +241,8 @@ export class NotificationManager {
         for (const k in this.boards_to_move_on) {
             const board = this.boards_to_move_on[k];
             target_boards.push({
-                id: parseInt(board.id),
-                expiration: parseInt(board.clock_expiration),
+                id: Number(board.id),
+                expiration: Number(board.clock_expiration),
             });
         }
 
@@ -249,8 +251,8 @@ export class NotificationManager {
             for (const k in this.active_boards) {
                 const board = this.active_boards[k];
                 target_boards.push({
-                    id: parseInt(board.id),
-                    expiration: parseInt(board.clock_expiration),
+                    id: Number(board.id),
+                    expiration: Number(board.clock_expiration),
                 });
             }
         } else {
@@ -289,7 +291,7 @@ export class NotificationManager {
         // the we go to the most urgent.
         if (
             we_have_moves_to_play &&
-            (!looking_at_game_id || (!click_event && looking_at_game_details.time_to_move < 3600))
+            (!looking_at_game_id || (!click_event && looking_at_game_details.time_per_move < 3600))
         ) {
             this.advances = 1; // reset to the most urgent board
         }
@@ -458,6 +460,10 @@ export class NotificationManager {
                 );
             }
 
+            if (notification.type === "gameStarted") {
+                this.event_emitter.emit("game-started", notification);
+            }
+
             if (
                 notification.type === "gameStarted" ||
                 notification.type === "gameEnded" ||
@@ -493,7 +499,7 @@ export class NotificationManager {
                         }
                         emitNotification(title, body);
                     }
-                } catch (e) {
+                } catch {
                     // ignore error
                 }
             }

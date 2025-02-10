@@ -13,17 +13,17 @@
         flex-shrink: 1;
         min-height: 10rem;
 
-
         .gutter-vertical {
-            themed background-color shade3
+            themed: background-color shade3;
             cursor: move;
             cursor: ns-resize;
         }
     }
+
     .game-list {
         border-bottom: 1px solid transparent;
-        themed border-bottom-color shade3
-        overflow: auto; 
+        themed: border-bottom-color shade3;
+        overflow: auto;
         box-sizing: border-box;
         padding: 1rem;
 
@@ -51,18 +51,20 @@
         padding: 0 1rem;
         overflow-y: scroll;
         border-bottom: 1px solid transparent;
-        themed border-bottom-color shade3
+        themed: border-bottom-color shade3;
+
         .Player {
-            themed color fg
+            themed: color fg;
         }
+
         word-wrap: break-word;
     }
 
     .timestamp {
-        @extend .monospace
+        @extends .monospace;
         font-size: 0.8rem;
         font-style: normal !important;
-        margin-right: .5rem;
+        margin-right: 0.5rem;
     }
 
     .third-person {
@@ -70,44 +72,49 @@
     }
 
     .mentions .body {
-        themed color chat-mentions
-        //font-weight: bold;
+        themed: color chat-mentions;
+        // font-weight: bold;
     }
+
     /body.light .mentions .body {
         font-weight: bold;
     }
+
     .self .body {
-        themed color chat-self-message
+        themed: color chat-self-message;
     }
 
-
     .system {
-        themed color chat-system
+        themed: color chat-system;
         padding-left: 1rem;
         border-top: 1px solid transparent;
-        themed border-top-color chat-system
-        padding-top: 0.5rem
-        padding-bottom: 0.5rem
-        margin-top: 0.5rem
+        themed: border-top-color chat-system;
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+        margin-top: 0.5rem;
     }
 
     .input-container {
         display: flex;
         align-items: center;
+
         button {
             margin: 0;
             padding-bottom: 0;
             padding-top: 0;
             font-size: 0.85rem;
         }
+
         input {
             flex: 1;
             overflow: hidden;
         }
+
         .channel-toggle {
             border-top-right-radius: 0;
             border-bottom-right-radius: 0;
         }
+
         .users-toggle {
             border-top-left-radius: 0;
             border-bottom-left-radius: 0;
@@ -117,7 +124,6 @@
     .chat-line {
         overflow: hidden;
         text-overflow: ellipsis;
-
         white-space: normal;
 
         .date {
@@ -129,24 +135,20 @@
     }
 
     .Player {
-        themed color fg
+        themed: color fg;
         font-weight: bold;
     }
 }
 
-
 .ChatHeader {
     border-bottom: 1px solid transparent;
-    themed border-bottom-color shade3
+    themed: border-bottom-color shade3;
     position: relative;
     flex: 0;
-    height: 2.0rem;
-    min-height: 2.0rem;
-    max-height: 2.0rem;
-
-
+    height: 2rem;
+    min-height: 2rem;
+    max-height: 2rem;
     background-size: cover;
-
 
     .backdrop, .foreground {
         position: absolute;
@@ -155,11 +157,13 @@
         top: 0;
         bottom: 0;
     }
+
     .backdrop {
-        themed background-color bg
+        themed: background-color bg;
         opacity: 0.5;
         z-index: 1;
     }
+
     .foreground {
         z-index: 2;
         display: flex;
@@ -171,10 +175,10 @@
         flex: 0;
         width: 2rem;
         flex-basis: 2rem;
-        themed color fg-increased-contrast
+        themed: color fg-increased-contrast;
 
         &.active {
-            themed color primary
+            themed: color primary;
         }
     }
 
@@ -183,17 +187,15 @@
         flex: 1;
         flex-basis: 100%;
         overflow: hidden;
-
         font-weight: bold;
         font-size: font-size-normal;
-
         position: relative;
 
         input {
             flex: 1;
-            height: 2.0rem;
-            min-height: 2.0rem;
-            max-height: 2.0rem;
+            height: 2rem;
+            min-height: 2rem;
+            max-height: 2rem;
             border: none;
         }
 
@@ -205,12 +207,12 @@
             top: 0;
             bottom: 0;
             z-index: 2;
-            themed color fg-increased-contrast
+            themed: color fg-increased-contrast;
             padding-right: 0.5rem;
             padding-left: 0.5rem;
             overflow: hidden;
-
             white-space: nowrap;
+
             a {
                 padding-left: 0.3rem;
                 padding-right: 0.3rem;
@@ -223,7 +225,7 @@
     }
 
     input {
-        themed background bg
+        themed: background bg;
         padding: 0.5rem;
     }
 
@@ -244,10 +246,9 @@
         cursor: pointer;
 
         &:hover, &.active {
-            themed background-color primary
-            themed color colored-background-fg
+            themed: background-color primary;
+            themed: color colored-background-fg;
         }
-
     }
 
     .fa-pencil, .fa-save {

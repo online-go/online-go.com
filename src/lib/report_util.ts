@@ -57,7 +57,7 @@ export interface Report {
     };
     moderator_note: string;
     system_note: string;
-    detected_ai_games: Array<Object>;
+    detected_ai_games: Array<object>;
 
     automod_to_moderator?: string; // Suggestions from "automod"
     automod_to_reporter?: string;
@@ -67,6 +67,7 @@ export interface Report {
     vote_counts: { [action: string]: number };
     voters: Vote[]; // votes from community moderators on this report
     escalation_note: string;
+    dissenter_note: string;
 
     unclaim: () => void;
     claim: () => void;

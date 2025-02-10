@@ -27,7 +27,7 @@ import { LineText } from "@/components/misc-ui";
 import { createDemoBoard } from "@/components/ChallengeModal";
 import { LanguagePicker } from "@/components/LanguagePicker";
 import { GobanThemePicker } from "@/components/GobanThemePicker";
-import { IncidentReportTracker } from "@/components/IncidentReportTracker";
+import { IncidentReportIndicator } from "@/components/IncidentReportTracker";
 import { KBShortcut } from "@/components/KBShortcut";
 import { NotificationList, notification_manager } from "@/components/Notifications";
 import { TurnIndicator } from "@/components/TurnIndicator";
@@ -41,18 +41,18 @@ import { logout } from "@/lib/auth";
 import { useUser, useData } from "@/lib/hooks";
 import { OmniSearch } from "./OmniSearch";
 
-const body = $(document.body);
+const body = document.body;
 
 function _update_theme(theme?: string) {
     if (!theme) {
         return;
     }
 
-    if (body.hasClass(theme)) {
+    if (body.classList.contains(theme)) {
         return;
     }
-    body.removeClass("light dark accessible");
-    body.addClass(theme);
+    body.classList.remove("light", "dark", "accessible");
+    body.classList.add(theme);
 }
 
 function setTheme(theme: string) {
@@ -72,7 +72,7 @@ const setThemeLight = setTheme.bind(null, "light");
 const setThemeDark = setTheme.bind(null, "dark");
 const setThemeAccessible = setTheme.bind(null, "accessible");
 
-export function NavBar(): JSX.Element {
+export function NavBar(): React.ReactElement {
     const user = useUser();
     const location = useLocation();
 
@@ -290,12 +290,16 @@ export function NavBar(): JSX.Element {
                         {_("Rating Calculator")}
                     </Link>
 
-                    {(user.is_moderator || !!user.moderator_powers) && (
-                        <Link className="admin-link" to="/reports-center">
-                            <i className="fa fa-exclamation-triangle"></i>
-                            {_("Reports Center")}
-                        </Link>
-                    )}
+                    <a href="https://translate.online-go.com/projects/ogs/" target="_blank">
+                        <i className="fa fa-globe"></i>
+                        {_("Contribute To Translation")}
+                    </a>
+
+                    <Link className="admin-link" to="/reports-center">
+                        <i className="fa fa-exclamation-triangle"></i>
+                        {_("Reports Center")}
+                    </Link>
+
                     {user.is_moderator && (
                         <Link className="admin-link" to="/moderator">
                             <i className="fa fa-gavel"></i>
@@ -400,7 +404,7 @@ export function NavBar(): JSX.Element {
                 ) : (
                     <>
                         <div className="spacer" />
-                        <IncidentReportTracker />
+                        <IncidentReportIndicator />
                         <ChatIndicator />
                         <TournamentIndicator />
                         <FriendIndicator />
@@ -449,13 +453,13 @@ export function NavBar(): JSX.Element {
 }
 
 interface MenuProps {
-    title: string | JSX.Element;
+    title: string | React.ReactElement;
     to?: string;
     children: React.ReactNode;
     className?: string;
 }
 
-function Menu({ title, to, children, className }: MenuProps): JSX.Element {
+function Menu({ title, to, children, className }: MenuProps): React.ReactElement {
     return (
         <section className={"Menu " + (className || "")}>
             {to ? (
@@ -470,7 +474,11 @@ function Menu({ title, to, children, className }: MenuProps): JSX.Element {
     );
 }
 
-function ProfileAndQuickSettingsBits({ settingsNavLink }: { settingsNavLink: any }): JSX.Element {
+function ProfileAndQuickSettingsBits({
+    settingsNavLink,
+}: {
+    settingsNavLink: any;
+}): React.ReactElement {
     const user = useUser();
 
     return (
@@ -510,7 +518,7 @@ function ProfileAndQuickSettingsBits({ settingsNavLink }: { settingsNavLink: any
     );
 }
 
-function BanIndicator(): JSX.Element {
+function BanIndicator(): React.ReactElement {
     return (
         <div className="BanIndicator">
             <h3>{_("Your account has been suspended")}</h3>

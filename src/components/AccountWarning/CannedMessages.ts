@@ -27,7 +27,7 @@ export const CANNED_MESSAGES: rest_api.warnings.WarningMessages = {
                 `
 Hi, welcome to OGS!
 
-Please consider resigning games rather than letting them time out, as this is fairer to your opponents than making them wait for your clock to run out. Thank you.
+Please consider resigning games rather than letting them time out, as this is fairer to the other player than making them wait for your clock to run out. Thank you.
         `,
             ),
             { game_id },
@@ -39,7 +39,7 @@ Please consider resigning games rather than letting them time out, as this is fa
                 `
 It has come to our attention that you abandoned game #{{game_id}} and allowed it to time out rather than resigning.
 
-Players are required to end their games properly, as letting them time out can cause opponents to wait unnecessarily, and prevent them from moving on to the next game.
+Players are required to end their games properly, as letting them time out can force the other player to wait unnecessarily, and prevent them from moving on to the next game.
 
 Please ensure that you end your games properly by accepting the correct score immediately after passing, or by resigning if you feel the position is hopeless.
 
@@ -95,6 +95,8 @@ our attention.
 
 We looked into the game and did not see them failing to finish the game properly.
 
+If a person has not started playing, it is OK for you to "Cancel" the game.
+
 It may be that you need to report a different type of problem, or provide more explanation - you are welcome to raise a new report if that is the case.
 
 Thank you for helping keep OGS enjoyable for everyone. We appreciate it.`,
@@ -125,11 +127,11 @@ Thank you for helping keep OGS enjoyable for everyone. We appreciate it.`,
                 `
 Hi, welcome to OGS!
 
-It appears that you delayed the end of game #{{game_id}}, which can frustrate your opponent and prevent them from moving on to the next game.
+It appears that you delayed the end of game #{{game_id}}, which can frustrate the other player and prevent them from moving on to the next game.
 
 Since you are a new player, no action will be taken against your account. We simply ask that you learn when to end a game.
 
-Until you develop the experience to judge better, if your opponent passes and there are no open borders between your stones then you should also pass.
+Until you develop the experience to judge better, if the other player passes and there are no open borders between your stones then you should also pass.
 
 After passing, promptly accept the correct score.
 
@@ -143,9 +145,9 @@ If in doubt about this sort of situation. please ask for help in chat or the for
             llm_pgettext(
                 "Warning message to a user",
                 `
-It has come to our attention that you delayed the end of game #{{game_id}}, which can frustrate your opponent and prevent them from moving on to their next game.
+It has come to our attention that you delayed the end of game #{{game_id}}, which can frustrate the other player and prevent them from moving on to their next game.
 
-Players are required to end their games properly, as letting them time out can cause opponents to wait unnecessarily, and prevent them from moving on to the next game.
+Players are required to end their games properly, as letting them time out can cause the other player to wait unnecessarily, and prevent them from moving on to the next game.
 
 Please ensure that you end your games properly by accepting the correct score immediately after passing, or by resigning if you feel the position is hopeless.
 
@@ -198,7 +200,7 @@ Thank you for your report, '{{reported}}' has been given a formal warning about 
                 `
 Thank you for bringing the possible instance of stalling play by '{{reported}}' to our attention. We looked into the report and don't see evidence of stalling.
 
-Note that the correct way to signal the game has finished is to pass.  If you didn't pass, then your opponent is entitled to keep playing.
+Note that the correct way to signal the game has finished is to pass.  If you didn't pass, then the other player is entitled to keep playing.
 
 It may be that you need to report a different type of problem, or provide more explanation - you are welcome to raise a new report if that is the case.
 
@@ -211,11 +213,11 @@ Thank you for helping keep OGS enjoyable for everyone. We appreciate it.`,
             llm_pgettext(
                 "Warning message to a user",
                 `
-It appears that you delayed the end of game #{{game_id}}, by clicking on the board to change the score incorrectly.   This can frustrate your opponent and prevent them from moving on to the next game.
+It appears that you delayed the end of game #{{game_id}}, by clicking on the board to change the score incorrectly.   This can frustrate the other player and prevent them from moving on to the next game.
 
 Since you are a new player, no action will be taken against your account. We simply ask that you learn when to end a game.
 
-Until you develop the experience to judge better, if your opponent passes and there are no open borders between your stones then you should also pass.
+Until you develop the experience to judge better, if the other player passes and there are no open borders between your stones then you should also pass.
 
 After passing, promptly accept the correct score.
 
@@ -258,7 +260,7 @@ It seems that person was a complete beginner - we have tried to explain that gam
                 `
 Thanks for the report about '{{reported}}'.
 
-It seems that person was a complete beginner - we have tried to explain that games should be ended correctly, to pass when their opponent passes, and to accept promptly, trusting the auto-score.
+It seems that person was a complete beginner - we have tried to explain that games should be ended correctly, to pass when the other player passes, and to accept promptly, trusting the auto-score.
 
 That incorrectly scored game has been annulled.`,
             ),
@@ -294,6 +296,32 @@ It may be that you need to report a different type of problem, or provide more e
 Thank you for helping keep OGS enjoyable for everyone. We appreciate it.`,
             ),
             { reported },
+        ),
+    annul_no_warning: (game_id) =>
+        interpolate(
+            llm_pgettext(
+                "Message to opponent who's game was annulled without warnings being given to either player",
+                `
+Just a note to let you know that we've annulled game #{{game_id}}, as the outcome was wrong.
+
+No-one was at fault, but we felt it was the best way to resolve the situation.
+`,
+            ),
+            { game_id },
+        ),
+    ack_annul_no_warning: (game_id) =>
+        interpolate(
+            llm_pgettext(
+                "Acknowledgement message to a user who reported a game that needed to be annulled",
+                `
+Thanks for your report about #{{game_id}}.
+
+We annulled that game, as the outcome was wrong.
+
+No-one was at fault - we felt this was the best way to resolve the situation.
+`,
+            ),
+            { game_id },
         ),
     final_warn_escaper: (game_id) =>
         interpolate(
@@ -344,7 +372,7 @@ Thanks.
                 `
 Important: this is a final warning.
 
-It seems you delayed the end of game #{{game_id}}, which can frustrate your opponent and prevent them from moving on to the next game.
+It seems you delayed the end of game #{{game_id}}, which can frustrate the other player and prevent them from moving on to the next game.
 
 If you continue to delay games without finishing them properly your account will be suspended.
 
@@ -364,7 +392,7 @@ Thanks.
                 `
 Important: this is a final warning.
 
-It seems you delayed the end of game #{{game_id}}, which can frustrate your opponent and prevent them from moving on to the next game.
+It seems you delayed the end of game #{{game_id}}, which can frustrate the other player and prevent them from moving on to the next game.
 
 The outcome was wrong as a result - we've annulled that game.
 

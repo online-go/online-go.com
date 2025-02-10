@@ -33,7 +33,7 @@ import { toast } from "@/lib/toast";
 import { InfoBall } from "@/components/InfoBall";
 import { pgettext, sorted_locale_countries, _ } from "@/lib/translate";
 
-export function AccountSettings(props: SettingGroupPageProps): JSX.Element {
+export function AccountSettings(props: SettingGroupPageProps): React.ReactElement {
     const user = useUser();
 
     const [username, _setUsername] = React.useState(user.username);
@@ -170,7 +170,7 @@ export function AccountSettings(props: SettingGroupPageProps): JSX.Element {
                     .then(() => {
                         try {
                             localStorage.clear();
-                        } catch (e) {
+                        } catch {
                             // ignore error
                         }
 
@@ -525,7 +525,7 @@ export function AccountSettings(props: SettingGroupPageProps): JSX.Element {
     );
 }
 
-function GitHubUsername({ uid }: { uid: string }): JSX.Element {
+function GitHubUsername({ uid }: { uid: string }): React.ReactElement {
     const [username, setUsername] = React.useState("");
 
     React.useEffect(() => {

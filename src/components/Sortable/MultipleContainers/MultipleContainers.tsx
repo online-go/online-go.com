@@ -306,7 +306,7 @@ export function MultipleContainers({
         requestAnimationFrame(() => {
             recentlyMovedToNewContainer.current = false;
         });
-        onUpdate ? onUpdate(items) : null;
+        onUpdate?.(items);
     }, [items]);
 
     return (

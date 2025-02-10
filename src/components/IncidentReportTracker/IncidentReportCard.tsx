@@ -17,7 +17,7 @@
 
 /*
  * This file contains the incident report tracking and management system
- * which is used by our IncidentReportTracker widget and our ReportsCenter view.
+ * which is used by our IncidentReportIndicator widget and our ReportsCenter view.
  */
 
 import * as React from "react";
@@ -52,7 +52,7 @@ interface IncidentReportCardProps {
     report: Report;
 }
 
-export function IncidentReportCard({ report }: IncidentReportCardProps): JSX.Element {
+export function IncidentReportCard({ report }: IncidentReportCardProps): React.ReactElement {
     const user = useUser();
     const [reporterNote, setReporterNote] = React.useState(report.reporter_note || "");
     const [isEditing, setIsEditing] = React.useState(false);

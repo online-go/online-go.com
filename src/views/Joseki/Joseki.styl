@@ -14,19 +14,17 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-
 .Joseki {
     top: below-navbar;
     bottom: 0;
     right: 0;
     left: 0;
-
     display: flex;
 
     @media screen and (max-width: 800px) {
         flex-direction: column;
     }
+
     @media screen and (min-width: 801px) {
         flex-direction: row;
         position: absolute;
@@ -45,11 +43,12 @@
 
         .goban-container {
             flex-grow: 1;
-            //flex-shrink: 1;
+            // flex-shrink: 1;
             display: flex;
             align-items: center;
             justify-content: center;
             position: relative;
+
             .Goban {
                 position: absolute;
                 top: 0;
@@ -60,12 +59,13 @@
         @media screen and (min-width: 801px) {
             padding-left: 1 em;
         }
+
         padding-top: 1em;
 
         @media screen and (max-width: 800px) {
             height: 100vw;
-            min-height: 100vw;  // firefox needs this
-            max-height: 100vw;  // firefox needs this
+            min-height: 100vw; // firefox needs this
+            max-height: 100vw; // firefox needs this
             flex-basis: 99%;
         }
     }
@@ -83,7 +83,6 @@
         flex-direction: column;
         padding-left: 0.5rem;
         min-width: 340px;
-
         padding-right: 0;
         display: flex;
 
@@ -105,6 +104,7 @@
             @media screen and (max-width: 800px) {
                 flex-direction: column;
             }
+
             @media screen and (min-width: 800px) {
                 flex-direction: row;
             }
@@ -124,6 +124,7 @@
                     margin: 0.2rem;
                 }
             }
+
             .top-bar-other {
                 display: flex;
                 flex-direction: row;
@@ -133,18 +134,21 @@
                 display: flex;
                 flex-direction: column;
                 align-content: center;
-                themed color shade1;
+                themed: color shade1;
+
                 .fa {
                     padding: 0.3rem;
                 }
+
                 span {
-                    font-size: x-small
+                    font-size: x-small;
                     padding: 0 0.3rem 0 0.3rem;
                 }
             }
+
             .joseki-help {
                 .fa {
-                    themed color shade1;
+                    themed: color shade1;
                     padding: 0.3rem;
                 }
             }
@@ -179,42 +183,41 @@
                 }
 
                 .pass-button:hover {
-                    themed background-color shade5
+                    themed: background-color shade5;
                 }
 
                 // can't theme box-shadow, so just using "light" version, and chose
                 // a colour for that that looks OK in both themes
                 .ideal {
-                    border-color light.joseki-ideal;
+                    border-color: light.joseki-ideal;
                     border-width: 2px;
                     box-shadow: 0 0 0.8rem light.joseki-ideal;
                 }
 
                 .good {
-                    border-color light.joseki-good;
+                    border-color: light.joseki-good;
                     border-width: 2px;
                     box-shadow: 0 0 0.8rem light.joseki-good;
                 }
 
                 .trick {
-                    border-color light.joseki-trick;
+                    border-color: light.joseki-trick;
                     border-width: 2px;
                     box-shadow: 0 0 0.8rem light.joseki-trick;
                 }
 
                 .question {
-                    border-color light.joseki-question;
+                    border-color: light.joseki-question;
                     border-width: 2px;
                     box-shadow: 0 0 0.8rem light.joseki-question;
                 }
 
                 .mistake {
-                    border-color light.joseki-mistake;
+                    border-color: light.joseki-mistake;
                     border-width: 2px;
                     box-shadow: 0 0 0.8rem light.joseki-mistake;
                 }
             }
-
 
             .move-controls.highlight {
                 .fa {
@@ -226,24 +229,22 @@
                 display: flex;
                 flex-direction: row;
                 justify-content: flex-end;
-
                 margin-right: 0.5rem; // space for the help icon in the top right
 
                 .btn {
                     min-width: 5em;
                 }
 
-               .selected {
-                    themed background-color success
-                    themed-darken border-color success border-darken-amount
+                .selected {
+                    themed: background-color success;
+                    themed-darken: border-color success border-darken-amount;
                 }
             }
         }
 
         .play-columns {
             flex-grow: 1;
-
-            flex-basis:auto;
+            flex-basis: auto;
             display: flex;
 
             .fa-filter {
@@ -255,8 +256,7 @@
 
         .play-dashboard {
             flex-grow: 1;
-
-            flex-basis:50%;
+            flex-basis: 50%;
             display: flex;
             flex-direction: column;
             padding-top: 3rem;
@@ -272,14 +272,14 @@
             }
 
             .fa-times {
-                color: red
+                color: red;
             }
         }
 
         .edit-container {
             flex-grow: 1;
-            flex-shrink:0;
-            flex-basis:auto;
+            flex-shrink: 0;
+            flex-basis: auto;
             display: flex;
             flex-direction: column;
         }
@@ -293,7 +293,7 @@
         .explore-pane {
             @media screen and (min-width: 1161px) {
                 flex-direction: row;
-                min-height: 20rem;  // prevent this from being shrunk too small when continuations pane grows big
+                min-height: 20rem; // prevent this from being shrunk too small when continuations pane grows big
             }
 
             @media screen and (max-width: 1160px) {
@@ -308,7 +308,6 @@
             display: flex;
             margin-left: 0.5rem;
             margin-bottom: 0.2rem;
-
             overflow-y: hidden;
         }
 
@@ -321,6 +320,7 @@
             .position-description {
                 flex-basis: 80%;
             }
+
             .see-also-block {
                 a {
                     margin-right: 0.8rem;
@@ -337,19 +337,19 @@
             padding-left: 3px;
             padding-right: 3px;
             border-radius: 3px;
-
-            themed background-color shade4;
+            themed: background-color shade4;
         }
 
         .position-joseki-source {
             padding-bottom: 1.5em;
+
             span {
                 padding-right: 0.5em;
             }
         }
 
         .extra-info-open {
-            themed background-color shade5;
+            themed: background-color shade5;
             border-radius: 5px;
         }
 
@@ -363,17 +363,15 @@
             }
 
             @media screen and (max-width: 1160px) {
-                margin-right 1em;
+                margin-right: 1em;
                 min-height: 17rem;
             }
 
             flex-grow: 1;
-            flex-basis: 50%;  // 50-50 left/right columns
-
+            flex-basis: 50%; // 50-50 left/right columns
             display: flex;
             flex-direction: column;
-
-            overflow-y: hidden;  // needed to contain the audit-container to the right size.
+            overflow-y: hidden; // needed to contain the audit-container to the right size.
 
             .extra-info-selector {
                 margin-bottom: 0.5rem;
@@ -396,7 +394,7 @@
                 justify-content: space-between;
                 padding-right: 0.5em;
                 align-items: center;
-                themed background-color shade4;
+                themed: background-color shade4;
             }
 
             .discussion-container {
@@ -412,7 +410,8 @@
                     .comment-text {
                         padding-left: 0.5em;
                         overflow-wrap: break-word;
-                        p {  // This p is generated by the <Markdown>
+
+                        p { // This p is generated by the <Markdown>
                             margin: 0 0 0.3rem 0;
                         }
                     }
@@ -425,7 +424,7 @@
                     padding: 3px;
                     border-radius: 3px;
                     min-height: 1.5rem;
-                    themed border-color shade3;
+                    themed: border-color shade3;
                 }
             }
 
@@ -457,9 +456,11 @@
 
             .play-results-container {
                 padding-left: 1rem;
+
                 h4 {
                     margin-bottom: 0.3rem;
                 }
+
                 div {
                     margin-left: 0.5rem;
                 }
@@ -472,11 +473,10 @@
 
         .move-attributes {
             display: grid;
-            grid-template-colums: 1fr 1fr;
+            // grid-template-colums: 1fr 1fr;
             grid-template-rows: auto;
             grid-row-gap: 1em;
-
-            margin-top: 1em
+            margin-top: 1em;
             margin-bottom: 1em;
             padding-right: 1em;
 
@@ -484,10 +484,12 @@
                 span {
                     margin-right: 0.5em;
                 }
+
                 button {
-                    margin-left 1em;
+                    margin-left: 1em;
                 }
             }
+
             .variation-order-select {
                 grid-column: 2 / 2;
                 justify-self: end;
@@ -539,14 +541,13 @@
             }
 
             .position-edit-button {
-                width: 100%
+                width: 100%;
                 display: flex;
                 justify-content: flex-end;
             }
         }
 
         .position-details {
-
             @media screen and (min-width: 1160px) {
                 flex-direction: row;
             }
@@ -558,15 +559,14 @@
             display: flex;
             flex-direction: row;
             justify-content: space-between;
-
             padding-top: 0.3rem;
         }
 
         .status-info {
             @media screen and (min-width: 1160px) {
-                flex-basis: 50%;     // share the space with continuations pane
-                overflow-x: hidden;  // Make sure long "Moves Made" doesn't grow this box
-                min-height: 12rem;   // Match continuations pane
+                flex-basis: 50%; // share the space with continuations pane
+                overflow-x: hidden; // Make sure long "Moves Made" doesn't grow this box
+                min-height: 12rem; // Match continuations pane
             }
 
             display: flex;
@@ -585,13 +585,13 @@
                     white-space: nowrap;
                     overflow: hidden;
                     text-overflow: ellipsis;
-                    direction: rtl;  // ellipsis on left
+                    direction: rtl; // ellipsis on left
                 }
             }
         }
 
         .continuations-pane {
-            flex-basis: 50%;  // 50/50 share the space with status info
+            flex-basis: 50%; // 50/50 share the space with status info
 
             @media screen and (max-width: 1160px) {
                 align-items: flex-start;
@@ -601,12 +601,10 @@
             display: flex;
             flex-direction: column;
             align-items: flex-end;
-
             min-height: 12rem;
-
             margin-bottom: 0.3rem;
 
-            .position-child-count  {
+            .position-child-count {
                 background: inherit;
                 border: none;
                 box-shadow: none;
@@ -626,7 +624,7 @@
 
             .details-pane-open {
                 align-items: flex-start;
-                themed background-color shade5;
+                themed: background-color shade5;
             }
 
             .count-details {
@@ -637,7 +635,6 @@
             .variation-count-item span {
                 margin-right: 0.5rem;
             }
-
         }
     }
 }

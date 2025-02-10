@@ -17,7 +17,7 @@
 import * as React from "react";
 import moment from "moment";
 
-import { _, pgettext } from "@/lib/translate";
+import { _, llm_pgettext, pgettext } from "@/lib/translate";
 import * as DynamicHelp from "react-dynamic-help";
 
 import { GobanEngineConfig } from "goban";
@@ -44,7 +44,7 @@ export function GameLog({
     goban_config,
     onContainsTimeout,
     onContainsAbandonment,
-}: GameLogProps): JSX.Element {
+}: GameLogProps): React.ReactElement {
     const [log, setLog] = React.useState<LogEntry[]>([]);
     const [shouldDisplayFullLog, setShouldDisplayFullLog] = React.useState(false);
 
@@ -58,8 +58,8 @@ export function GameLog({
     React.useEffect(() => {
         socket.send(`game/log`, { game_id }, (log) => {
             setLog(log);
-            onContainsTimeout && onContainsTimeout(null);
-            onContainsAbandonment && onContainsAbandonment(false);
+            onContainsTimeout?.(null);
+            onContainsAbandonment?.(false);
             const timeout_entry = log.find((entry) => entry.event === "timed_out");
             if (timeout_entry && onContainsTimeout) {
                 onContainsTimeout(timeout_entry.data.player_id);
@@ -138,7 +138,7 @@ export function GameLog({
                                         <td className="timestamp">
                                             {moment(entry.timestamp).format("L LTS")}
                                         </td>
-                                        <td className="event">{entry.event.replace(/_/g, " ")}</td>
+                                        <td className="event">{decodeLogEvent(entry.event)}</td>
                                         <td className="data">
                                             <LogData
                                                 config={goban_config}
@@ -164,6 +164,17 @@ export function GameLog({
     );
 }
 
+// Provide a human-readable version of the event name
+const decodeLogEvent = (event: string): string => {
+    if (event === "force_stone_removal_acceptance_abandoned") {
+        return llm_pgettext(
+            "Description of an event from the server",
+            "Forcing stone removal: someone abandoned scoring",
+        );
+    }
+    return event.replace(/_/g, " ");
+};
+
 // Fields that are only used to enhance the display of other fields,
 // or aren't used at all.
 const HIDDEN_LOG_FIELDS = [
@@ -183,7 +194,7 @@ export function LogData({
     markCoords: (stones: string) => void;
     event: string;
     data: any;
-}): JSX.Element | null {
+}): React.ReactElement | null {
     const [markedConfig, setMarkedConfig] = React.useState<GobanEngineConfig | null>(null);
 
     React.useEffect(() => {
@@ -193,7 +204,7 @@ export function LogData({
             return;
         }
 
-        // Possibly obvious once you think about it: the "stones" field in `data` referring to
+        // Possibly obvious once you think about it: the "stones" field in `data` is referring to
         //          "stones that are dead, or have been marked alive"
         //  It'd be better if this was called "marked stones", but that'd be a big change.
 
@@ -223,7 +234,7 @@ export function LogData({
         });
     }, [config, event, data?.removed, data?.stones]);
 
-    const ret: Array<JSX.Element> = [];
+    const ret: Array<React.ReactElement> = [];
 
     if (event === "game_created") {
         // game_created has the whole board config list of field, don't dump all those in the log.

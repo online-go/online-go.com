@@ -25,7 +25,7 @@ import { setSetShowFriendList } from "./close_friend_list";
 
 const online_subscriptions = {};
 
-export function FriendIndicator(): JSX.Element | null {
+export function FriendIndicator(): React.ReactElement | null {
     const user = data.get("user");
     const [show_friend_list, setShowFriendList] = React.useState(false);
     const [online_ct, setOnlineCt] = React.useState(0);

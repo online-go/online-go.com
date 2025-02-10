@@ -198,14 +198,14 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
     goban!: GobanRenderer;
     goban_div: HTMLDivElement;
     goban_opts: any = {};
-    goban_container!: HTMLDivElement;
+    goban_container?: HTMLDivElement;
 
-    joseki_tags!: JosekiTag[]; // the list of valid tags, collected from the server
-    the_joseki_tag!: JosekiTag; //  the tag that represents "Joseki Done"
+    joseki_tags?: JosekiTag[]; // the list of valid tags, collected from the server
+    the_joseki_tag?: JosekiTag; //  the tag that represents "Joseki Done"
     last_server_position = ""; // the most recent position that the server returned to us, used in back stepping
     last_placement = "";
     next_moves: Array<any> = []; // these are the moves that the server has told us are available as joseki moves from the current board position
-    current_marks!: Array<{ label: string; position: string }>; // the marks on the board - from the server, or from editing
+    current_marks?: Array<{ label: string; position: string }>; // the marks on the board - from the server, or from editing
     load_sequence_to_board = false; // True if we need to load the stones from the whole sequence received from the server onto the board
     show_comments_requested = false; //  If there is a "show_comments" parameter in the URL
     previous_position: { [key: string]: any } = {}; // Saving the information of the node we have moved from, so we can get back to it
@@ -221,7 +221,7 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
     prefetching = false; // if we have a prefetch of node positions in flight
     prefetched: { [id: string]: any } = {}; // Nodes that we have already prefetched, so don't do it again
 
-    last_click!: number; // most recent time (ms) we got a click from the goban
+    last_click?: number; // most recent time (ms) we got a click from the goban
 
     constructor(props: JosekiProps) {
         super(props);
@@ -365,7 +365,7 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
                     saved_filter
                         ? saved_filter
                         : {
-                              tags: [this.joseki_tags[0]],
+                              tags: this.joseki_tags ? [this.joseki_tags[0]] : [],
                               contributor: undefined,
                               source: undefined,
                           },
@@ -684,12 +684,12 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
 
         this.setState({ pass_available });
         const new_marks: { [k: string]: string } = {};
-        current_marks.forEach((mark: { [k: string]: string }) => {
+        current_marks?.forEach((mark: { [k: string]: string }) => {
             const label = mark["label"];
-            (new_marks[label] = this.goban.encodeMove(
+            new_marks[label] = this.goban.encodeMove(
                 this.goban.decodePrettyCoordinates(mark["position"]),
-            )),
-                this.goban.setMarks(new_marks);
+            );
+            this.goban.setMarks(new_marks);
         });
         this.goban.redraw(true); // stop it optimizing away color changes when mark doesn't change.
     };
@@ -1407,7 +1407,7 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
                     can_comment={this.state.user_can_comment}
                     joseki_source={this.state.joseki_source as any}
                     tags={this.state.tags}
-                    joseki_tags={this.joseki_tags}
+                    joseki_tags={this.joseki_tags || []}
                     set_variation_filter={this.updateVariationFilter}
                     current_filter={this.state.variation_filter}
                     child_count={this.state.child_count}
@@ -1426,7 +1426,7 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
                     } // this is copied into the initial value of joseki_source state in the component
                     tags={this.state.tags}
                     contributor={this.state.contributor_id}
-                    available_tags={this.joseki_tags}
+                    available_tags={this.joseki_tags || []}
                     save_new_info={this.saveNewPositionInfo}
                     update_marks={this.updateMarks}
                 />
@@ -1440,8 +1440,8 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
                     josekis_completed={this.state.josekis_completed as number}
                     joseki_best_attempt={this.state.joseki_best_attempt as number}
                     joseki_successes={this.state.joseki_successes as number}
-                    the_joseki_tag={this.the_joseki_tag}
-                    joseki_tags={this.joseki_tags}
+                    the_joseki_tag={this.the_joseki_tag || { label: "<error>", value: "<error>" }}
+                    joseki_tags={this.joseki_tags || []}
                     set_variation_filter={this.updateVariationFilter}
                     current_filter={this.state.variation_filter}
                 />

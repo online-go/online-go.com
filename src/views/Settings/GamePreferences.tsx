@@ -31,7 +31,7 @@ import {
     MAX_AI_VAR_MOVES,
 } from "@/lib/SettingsCommon";
 
-export function GamePreferences(): JSX.Element {
+export function GamePreferences(): React.ReactElement {
     const [dock_delay, _setDockDelay]: [number, (x: number) => void] = React.useState(
         preferences.get("dock-delay"),
     );

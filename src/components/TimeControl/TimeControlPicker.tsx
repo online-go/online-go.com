@@ -36,7 +36,7 @@ interface TimeControlPickerProperties {
 
 const numeric = (ev: React.ChangeEvent<HTMLSelectElement>) => parseInt(ev.target.value);
 
-export function TimeControlPicker(props: TimeControlPickerProperties): JSX.Element {
+export function TimeControlPicker(props: TimeControlPickerProperties): React.ReactElement {
     const tc = props.timeControl;
 
     const onChangeProperty = <T extends TimeControl, U extends keyof T & string>(
@@ -78,7 +78,7 @@ export function TimeControlPicker(props: TimeControlPickerProperties): JSX.Eleme
         );
     };
 
-    let selectors: JSX.Element[] = [];
+    let selectors: React.ReactElement[] = [];
     switch (tc.system) {
         case "fischer":
             selectors = [
@@ -231,7 +231,7 @@ interface TimeControlPropertySelectorProps<T extends TimeControl, U extends keyo
 
 function TimeControlPropertySelector<T extends TimeControl, U extends keyof T & string>(
     props: TimeControlPropertySelectorProps<T, U>,
-): JSX.Element {
+): React.ReactElement {
     return (
         <React.Fragment key={props.id}>
             <div id={`${props.id}-group`} className="form-group challenge-time-group">
@@ -281,7 +281,7 @@ interface TimeControlPropertyInputProps<T extends TimeControl, U extends keyof T
 
 function TimeControlPropertyInput<T extends TimeControl, U extends keyof T & string>(
     props: TimeControlPropertyInputProps<T, U>,
-): JSX.Element {
+): React.ReactElement {
     return (
         <div id={`${props.id}-group`} className="form-group challenge-time-group">
             <label id={`${props.id}-label`} className=" control-label" htmlFor={props.id}>

@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 .ChatChannelList {
     .channel {
         padding-left: 0.2rem;
@@ -22,21 +21,25 @@
         justify-content: space-between;
 
         &.active {
-            themed background-color primary
-            themed color colored-background-fg
+            themed: background-color primary;
+            themed: color colored-background-fg;
         }
+
         &:hover {
-            themed-desaturate background-color primary 80%
-            themed color colored-background-fg
+            themed-desaturate: background-color primary 80%;
+            themed: color colored-background-fg;
         }
+
         &.unjoined {
-            themed color shade1
+            themed: color shade1;
         }
+
         &.unread {
-            themed color primary
+            themed: color primary;
         }
+
         &.mentioned {
-            themed color chat-mentions
+            themed: color chat-mentions;
         }
 
         .channel-name {
@@ -53,10 +56,13 @@
             i, img, .flag {
                 flex: 0;
                 display: inline-block;
-                height: 16px;
-                width: 16px;
                 margin-right: 0.3rem;
                 margin-left: 0.1rem;
+            }
+
+            img {
+                height: 16px;
+                width: 16px;
             }
 
             .name {
@@ -69,23 +75,22 @@
 
             .unread-count {
                 flex-shrink: 0;
-                @extend .monospace
+                @extends .monospace;
                 font-size: 0.8rem;
                 font-style: normal !important;
                 float: right;
                 padding-left: 0.5rem;
-                padding-top: 0.10rem;
+                padding-top: 0.1rem;
 
                 &:before {
                     content: attr(data-count);
                 }
             }
         }
-
     }
 
     button {
-        //font-size: font-size-smaller;
+        // font-size: font-size-smaller;
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -95,13 +100,15 @@
         min-height: 1.7rem;
         max-height: 1.7rem;
         height: 1.7rem;
+
         .triangle {
-            //font-size: 0.9em;
+            // font-size: 0.9em;
             display: inline-block;
-            //vertical-align: top;
+            // vertical-align: top;
             margin: 0.3rem;
             padding-bottom: 0.15rem;
         }
+
         .text {
             display: inline-block;
         }
@@ -109,12 +116,12 @@
 
     .joinable {
         border-top: 0px solid transparent;
-        themed border-top-color shade3
-        
-        input[type="search"] {
+        themed: border-top-color shade3;
+
+        input[type='search'] {
             width: 100%;
             margin: 1rem 0;
-            themed background bg
+            themed: background bg;
         }
     }
 }

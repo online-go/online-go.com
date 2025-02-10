@@ -20,7 +20,7 @@ import { HelpFlow, HelpItem } from "react-dynamic-help";
 
 import { _, pgettext } from "@/lib/translate";
 
-export function OJEIntro(): JSX.Element {
+export function OJEIntro(): React.ReactElement {
     return (
         <HelpFlow
             id="oje-intro"

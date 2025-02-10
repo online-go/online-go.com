@@ -41,7 +41,7 @@ export function AutoTranslate({
     className,
     markdown,
     placeholder,
-}: AutoTranslateProps): JSX.Element | null {
+}: AutoTranslateProps): React.ReactElement | null {
     let showing_placeholder = false;
 
     if (!source && placeholder) {

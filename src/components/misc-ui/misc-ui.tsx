@@ -15,13 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as React from "react";
+import React from "react";
 
 /* This is intended to create text embedded in a horizontal line like
  *   --- my text ---
  * It relies on css for 'left' and 'right' being as expected in context, caveat emptor. */
 
-export const LineText = (props: JSX.IntrinsicElements["div"]) => (
+export const LineText = (props: React.HTMLProps<HTMLDivElement>) => (
     <div {...props} className={"LineText " + (props.className || "")}>
         <span className="left" />
         <span className="contents">{props.children}</span>
@@ -29,14 +29,14 @@ export const LineText = (props: JSX.IntrinsicElements["div"]) => (
     </div>
 );
 
-export const SearchInput = (props: JSX.IntrinsicElements["input"]) => (
+export const SearchInput = (props: React.HTMLProps<HTMLInputElement>) => (
     <div className={"SearchInput " + (props.className || "")}>
         <i className="fa fa-search"></i>
         <input type="search" className={props.className || ""} {...props} />
     </div>
 );
 
-export const Ribbon = (props: JSX.IntrinsicElements["div"]) => (
+export const Ribbon = (props: React.HTMLProps<HTMLDivElement>) => (
     <div className="Ribbon-container">
         <div {...props} className={"Ribbon " + (props.className || "")}>
             {props.children}

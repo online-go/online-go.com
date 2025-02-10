@@ -14,28 +14,25 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-// In here we customize dynamic help items instantiated by <HelpFlows>
-
 .rdh-help-item.rdh-help-item-custom {
     z-index: z.dynamic-help;
-    themed background-color help-popup-bg
-    themed border-color help-popup-bg
-    themed color colored-background-fg
+    themed: background-color help-popup-bg;
+    themed: border-color help-popup-bg;
+    themed: color colored-background-fg;
     padding: 0.2rem;
-    font-size: 1.0rem;
-    box-shadow: 0 0.2rem 0.5rem 0.2rem rgba(0,0,0,0.2);
+    font-size: 1rem;
+    box-shadow: 0 0.2rem 0.5rem 0.2rem rgba(0, 0, 0, 0.2);
 
     // On the phone, make sure the items will be visible even if it means
     // that they appear over their target (they will be dismissed anyhow).
-    @media only screen and (max-width 800px) {
+    @media only screen and (max-width: 800px) {
         left: 0 !important;
         right: auto !important;
-        }
+    }
 }
 
 .rdh-help-item>.rdh-popup-dismissers {
-    themed-darken color colored-background-fg 10%
+    themed-darken: color colored-background-fg 10%;
     cursor: pointer;
     margin-top: 0.7rem;
     font-size: 0.9rem;

@@ -18,6 +18,7 @@
 
 declare namespace rest_api {
     namespace warnings {
+        // Note that "warnings" are actually "any message we present in a dialog and track acknowledgement of".
         // These must match voting handling in django moderation.py
         // Don't forget to also update ACTION_PROMPTS as needed: new messages usually mean new actions.
         type WarningMessageId =
@@ -43,6 +44,8 @@ declare namespace rest_api {
             | "ack_warned_score_cheat"
             | "ack_warned_score_cheat_and_annul"
             | "no_score_cheating_evident"
+            | "annul_no_warning"
+            | "ack_annul_no_warning"
             | "final_warn_escaper"
             | "final_warn_escaper_and_annul"
             | "final_warn_staller"

@@ -17,7 +17,7 @@
 
 /*
  * This file contains the incident report tracking and management system
- * which is used by our IncidentReportTracker widget and our ReportsCenter view.
+ * which is used by our IncidentReportIndicator widget and our ReportsCenter view.
  */
 
 import * as React from "react";
@@ -88,7 +88,7 @@ class ReportManager extends EventEmitter<Events> {
         const user = data.get("user");
         report.id = parseInt(report.id as unknown as string);
 
-        console.log("updateIncidentReport", report);
+        //console.log("updateIncidentReport", report);
         if (!(report.id in this.active_incident_reports)) {
             if (
                 data.get("user").is_moderator &&
@@ -158,7 +158,7 @@ class ReportManager extends EventEmitter<Events> {
         reports.sort(compare_reports);
 
         this.sorted_active_incident_reports = reports;
-        console.log("active reports", reports.length, normal_ct);
+        //console.log("active reports", reports.length, normal_ct);
         this.emit("active-count", normal_ct);
         this.emit("update");
     }
@@ -167,7 +167,10 @@ class ReportManager extends EventEmitter<Events> {
         const quota = preferences.get("moderator.report-quota");
         return !quota || this.getHandledTodayCount() < preferences.get("moderator.report-quota")
             ? this.getAvailableReports()
-            : [];
+            : // Always show the user their own reports
+              this.getAvailableReports().filter(
+                  (report) => report.reporting_user.id === data.get("user").id,
+              );
     }
 
     // Clients should use getEligibleReports
@@ -352,11 +355,17 @@ class ReportManager extends EventEmitter<Events> {
         return res;
     }
 
-    public vote(report_id: number, voted_action: string, escalation_note: string): Promise<Report> {
+    public vote(
+        report_id: number,
+        voted_action: string,
+        escalation_note: string,
+        dissenter_note: string,
+    ): Promise<Report> {
         return post(`moderation/incident/${report_id}`, {
             action: "vote",
             voted_action: voted_action,
             escalation_note: escalation_note,
+            ...(dissenter_note && { dissenter_note }),
         })
             .then((res) => {
                 toast(

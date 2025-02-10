@@ -28,10 +28,10 @@ interface UserType {
 interface ActiveDroppedGameListProps {
     games: any[];
     user: UserType;
-    noActiveGamesView?: JSX.Element;
+    noActiveGamesView?: React.ReactElement;
 }
 
-export function ActiveDroppedGameList(props: ActiveDroppedGameListProps): JSX.Element {
+export function ActiveDroppedGameList(props: ActiveDroppedGameListProps): React.ReactElement {
     const { activeGames, droppedGames } = splitDroppedRengo(props.games, props.user.id);
     const hasActiveGames: boolean = activeGames.length !== 0;
     const hasDroppedGames: boolean = droppedGames.length !== 0;

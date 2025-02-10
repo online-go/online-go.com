@@ -1,11 +1,10 @@
 .moderator-log {
     td {
         vertical-align: top;
-
     }
 
     .date {
-        @extend .monospace
+        @extend .monospace;
         width: 7em;
         text-align: left;
         padding-right: 1em;
@@ -17,7 +16,7 @@
     }
 
     .action {
-        @extend .monospace
+        @extend .monospace;
         font-size: 0.8rem;
 
         a {
@@ -32,13 +31,24 @@
     }
 
     .acknowledgement-event {
-        themed background shade5;
-        themed color success;
+        themed: background shade5;
+        themed: color success;
         font-size: smaller;
         font-style: italic;
     }
 
+    .cm-action {
+        float: right;
+        font-size: smaller;
+
+        .cm-action-action {
+            themed: color danger;
+            font-size: medium;
+            margin-left: 1rem;
+        }
+    }
+
     .warning-event {
-        themed color danger;
+        themed: color danger;
     }
 }

@@ -14,14 +14,12 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-
 .Ladder-container {
     display: flex;
     align-items: stretch;
     justify-content: center;
-    max-height: "calc(100vh - %s - 0.2rem)" % navbar-height;
-    height: "calc(100vh - %s - 0.2rem)" % navbar-height;
+    max-height: 'calc(100vh - %s - 0.2rem)' % navbar-height;
+    height: 'calc(100vh - %s - 0.2rem)' % navbar-height;
 }
 
 .Ladder {
@@ -31,7 +29,6 @@
     justify-content: center;
     display: flex;
     flex-direction: column;
-
 
     .Ladder-header {
         display: flex;
@@ -55,6 +52,7 @@
             text-align: right;
             width: 40%;
         }
+
         td {
             text-align: left;
             width: 60%;
@@ -69,7 +67,6 @@
         overflow-x: hidden;
     }
 
-
     .LadderRow-container {
         display: flex;
         justify-content: center;
@@ -83,21 +80,20 @@
         height: 30px;
         cursor: pointer;
 
-
         &.not-challengeable {
             .Player, .right {
-                color #888 !important;
+                color: #888 !important;
             }
         }
 
         &.challengeable {
             .Player, .right {
-                themed-important color link-color
+                themed-important: color link-color;
             }
         }
 
         &:hover {
-            themed background-color shade4
+            themed: background-color shade4;
         }
 
         .Player {
@@ -105,7 +101,7 @@
         }
 
         .rank {
-            @extend .monospace;
+            @extends .monospace;
             display: inline-block;
             min-width: 5rem;
             max-width: 5rem;
@@ -113,20 +109,19 @@
         }
 
         &.highlight {
-            themed background-color search-highlight;
+            themed: background-color search-highlight;
         }
-
 
         .ladder-player {
             display: flex;
             flex-direction: row;
-            //margin-bottom: 0.5rem;
+            // margin-bottom: 0.5rem;
             align-items: center;
-            //font-size: font-size-big;
 
+            // font-size: font-size-big;
             .not-challengable {
-                //font-size: font-size-small;
-                themed color shade2;
+                // font-size: font-size-small;
+                themed: color shade2;
             }
 
             > .Player {
@@ -162,14 +157,13 @@
     }
 }
 
-
 .Ladder-challenge-details {
-    box-shadow: 0px 2px 3px rgba(0,0,0,0.2);
+    box-shadow: 0px 2px 3px rgba(0, 0, 0, 0.2);
     border: 1px solid transparent;
     box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.16), 0px 2px 5px 0px rgba(0, 0, 0, 0.15);
-    themed background-color shade4
-    themed border-color shade3
-    themed color fg
+    themed: background-color shade4;
+    themed: border-color shade3;
+    themed: color fg;
     max-width: 240px;
     padding: 0.2rem;
 
@@ -177,17 +171,19 @@
         display: block;
 
         .challenge-rank {
-            @extend .monospace;
+            @extends .monospace;
             margin-right: 0.3rem;
             display: inline-block;
             width: 3.5rem;
         }
+
         .challenge-link {
             display: block;
-            margin-right: 1.0rem;
+            margin-right: 1rem;
             white-space: nowrap;
             overflow: hidden;
             cursor: pointer;
+
             .Player {
                 cursor: pointer !important;
             }
@@ -199,6 +195,5 @@
     }
 
     .not-challengable {
-
     }
 }

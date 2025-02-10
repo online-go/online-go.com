@@ -1,0 +1,102 @@
+
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+#CustomGames {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    box-sizing: border-box;
+    margin-bottom: 8rem;
+
+    .header-container {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5em 0;
+        border-bottom: 1px solid #ccc;
+
+        .header-title {
+            margin: 0;
+            font-size: 1.5em;
+            flex-grow: 1;
+        }
+
+        .toggle-container {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.2em;
+
+            .toggle-indicator {
+                background: none;
+                border: none;
+                font-size: 0.8em;
+                padding: 0;
+                line-height: 1;
+            }
+
+            .toggle-label {
+                font-size: 0.9em;
+                color: #666;
+            }
+        }
+    }
+
+    // This shenanigans is needed to ensure that the canvas of the seek graph
+    // remains rendered, so we don't loose the reference we have to it.
+    .seek-graph-container.hidden {
+        clip-path: inset(0 100% 100% 0); /* Clip the entire element */
+        position: absolute; /* Remove it from the layout */
+    }
+
+    .seek-graph-container.visible {
+        .seek-graph-container.visible {
+            clip-path: none; /* Restore visibility */
+            position: static; /* Return to normal layout */
+        }
+    }
+
+    .Modal {
+        border: none;
+        box-shadow: none;
+    }
+
+    .ChallengeModal {
+        width: 100%;
+        max-height: unset;
+    }
+}
+
+.CustomGames--toggle-container {
+    margin-top: 2rem;
+    margin-bottom: 8rem;
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+
+    &.showing-custom-games {
+        margin-bottom: 1rem;
+    }
+
+    button {
+        height: 3rem;
+        font-size: 1.3rem;
+        width: 17rem;
+    }
+}

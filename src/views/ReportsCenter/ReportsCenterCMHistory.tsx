@@ -19,7 +19,7 @@ import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import { PaginatedTable } from "@/components/PaginatedTable";
 
-export function ReportsCenterCMHistory(): JSX.Element {
+export function ReportsCenterCMHistory(): React.ReactElement {
     const navigateTo = useNavigate();
 
     return (
@@ -84,10 +84,19 @@ export function ReportsCenterCMHistory(): JSX.Element {
                     {
                         header: "Your outcome",
                         className: () => "your-outcome",
-                        render: (X) => `${X.users_vote_category ?? ""}`,
+                        render: (X) => voteOutcomePresentation(X.users_vote_category),
                     },
                 ]}
             />
         </div>
     );
 }
+
+const voteOutcomePresentation = (outcome: string) => {
+    switch (outcome) {
+        case "not-applicable":
+            return "n/a";
+        default:
+            return outcome ?? "";
+    }
+};

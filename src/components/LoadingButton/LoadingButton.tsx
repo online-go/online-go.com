@@ -27,8 +27,13 @@ export function LoadingButton({
     icon,
     children,
     ...props
-}: LoadingButtonProps): JSX.Element {
-    const prefix = loading ? <i className="fa fa-circle-o-notch rotating" /> : icon;
+}: LoadingButtonProps): React.ReactElement {
+    //const prefix = loading ? <i className="fa fa-circle-o-notch rotating" /> : icon;
+    const prefix = loading ? (
+        <i className="fa fa-circle-o-notch rotating" aria-hidden="true" />
+    ) : (
+        icon
+    );
     return (
         <button {...props}>
             {prefix}

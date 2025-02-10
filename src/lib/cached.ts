@@ -75,7 +75,7 @@ export const cached = {
                         if (cb) {
                             cb();
                         }
-                    } catch (e) {
+                    } catch {
                         // ignore
                     }
                     disable_refresh_callback_on_user_change = false;

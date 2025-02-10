@@ -100,21 +100,6 @@ export interface AutomatchPreferencesBase {
         condition: AutomatchCondition;
         value: "japanese" | "chinese" | "aga" | "korean" | "nz" | "ing";
     };
-    time_control: {
-        condition: AutomatchCondition;
-        value: {
-            system: AutomatchTimeControlSystem;
-            initial_time?: number;
-            time_increment?: number;
-            max_time?: number;
-            main_time?: number;
-            period_time?: number;
-            periods?: number;
-            stones_per_period?: number;
-            per_move?: number;
-            pause_on_weekends?: boolean;
-        };
-    };
     handicap: {
         condition: AutomatchCondition;
         value: "enabled" | "disabled";

@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 .MiniGoban {
     display: inline-flex;
     flex-direction: column;
@@ -24,9 +23,10 @@
     max-height: 100vh;
     align-items: center;
     justify-content: center;
-    themed color fg;
+    themed: color fg;
+
     &:hover {
-        themed color fg;
+        themed: color fg;
         text-decoration: none;
     }
 
@@ -51,7 +51,6 @@
         z-index: 1;
     }
 
-
     .player-rank {
         float: left;
         overflow: hidden;
@@ -60,8 +59,9 @@
         flex-shrink: 0;
         flex-basis: auto;
         margin-right: 0.5em;
-        margin-left: 0.5em
+        margin-left: 0.5em;
     }
+
     .player-name {
         float: left;
         overflow: hidden;
@@ -70,6 +70,7 @@
         flex-shrink: 1;
         flex-basis: auto;
     }
+
     .score {
         position: absolute;
     }
@@ -83,34 +84,30 @@
         right: 1rem;
         text-align: center;
 
-
         &.to-move {
             font-weight: bold;
         }
-
     }
+
     .title-black {
         top: 0;
         padding-bottom: 1em;
     }
+
     .title-white {
         bottom: 0;
     }
 
-
-
-
     .title-black .score {
         top: 1.7em;
         left: 0.15em;
-
         transform-origin: 0 0;
         transform: rotate(90deg);
     }
-    .title-white .score {
-        bottom: 2.0em;
-        right: 0.0em;
 
+    .title-white .score {
+        bottom: 2em;
+        right: 0em;
         transform-origin: 100% 100%;
         transform: rotate(90deg);
     }
@@ -122,57 +119,56 @@
         padding: 1.2em;
         border-radius: 4px;
         border: 1px solid transparent;
-        themed color fg
+        themed: color fg;
     }
 
     .board.current-users-move {
         border: 1px solid transparent;
         border-radius: 4px;
-        //padding: 1.2em;
-        themed background-color miniboard-to-move;
-        themed border-color miniboard-to-move-border
+        // padding: 1.2em;
+        themed: background-color miniboard-to-move;
+        themed: border-color miniboard-to-move-border;
     }
 
     .board.viewed-users-move {
         border: 1px solid transparent;
         border-radius: 4px;
-        //padding: 1.2em;
-        themed background-color miniboard-viewed-to-move;
-        themed border-color miniboard-viewed-to-move-border
+        // padding: 1.2em;
+        themed: background-color miniboard-viewed-to-move;
+        themed: border-color miniboard-viewed-to-move-border;
     }
 
     .board.in-stone-removal-phase {
         border: 1px solid transparent;
         padding: 1em;
-        themed background-color miniboard-stone-removal
-        themed border-color miniboard-stone-removal-border
+        themed: background-color miniboard-stone-removal;
+        themed: border-color miniboard-stone-removal-border;
     }
-    .board.finished{
+
+    .board.finished {
         opacity: 0.8;
     }
+
     .board:hover {
-        themed background-color miniboard-hover
-        themed border-color miniboard-hover-border
+        themed: background-color miniboard-hover;
+        themed: border-color miniboard-hover-border;
     }
 
     .board.in-stone-removal-phase:hover {
-        themed background-color miniboard-stone-removal-hover
-        themed border-color miniboard-stone-removal-hover-border
+        themed: background-color miniboard-stone-removal-hover;
+        themed: border-color miniboard-stone-removal-hover-border;
     }
 
-    .no_games{
+    .no_games {
         text-align: center;
         font-weight: bold;
         margin: 2em;
     }
 
-
     &.nolink {
-
         .board {
-            background-color: transparent !important
+            background-color: transparent !important;
             border: none !important;
         }
     }
 }
-

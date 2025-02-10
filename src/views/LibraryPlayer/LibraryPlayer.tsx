@@ -515,7 +515,11 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                 </div>
 
                 <Dropzone
-                    ref={(r) => r && (this.dropzone = r)}
+                    ref={(r) => {
+                        if (r) {
+                            this.dropzone = r;
+                        }
+                    }}
                     accept=".sgf"
                     onDrop={this.uploadSGFs}
                     multiple={true}

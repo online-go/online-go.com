@@ -33,7 +33,7 @@ interface ChatDetailsProperties {
     subscribable?: boolean;
 }
 
-export function ChatDetails(props: ChatDetailsProperties): JSX.Element {
+export function ChatDetails(props: ChatDetailsProperties): React.ReactElement {
     const channel = props.chatChannelId;
 
     const [channelId, setChannelId] = React.useState(channel);

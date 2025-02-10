@@ -119,7 +119,7 @@ export function AccountWarning() {
 interface MessageTextRenderProps {
     warning: rest_api.warnings.Warning;
 }
-function MessageTextRender(props: MessageTextRenderProps): JSX.Element {
+function MessageTextRender(props: MessageTextRenderProps): React.ReactElement {
     if (props.warning.message_id) {
         return (
             <div className="canned-message">
@@ -144,7 +144,7 @@ interface WarningModalProps {
     accept: () => void;
 }
 
-function AckModal(props: WarningModalProps): JSX.Element {
+function AckModal(props: WarningModalProps): React.ReactElement {
     return (
         <>
             <div className="AccountWarning-backdrop" />
@@ -161,7 +161,7 @@ function AckModal(props: WarningModalProps): JSX.Element {
     );
 }
 
-function WarningModal(props: WarningModalProps): JSX.Element {
+function WarningModal(props: WarningModalProps): React.ReactElement {
     const [acceptTime, setAcceptTime] = React.useState<number>(0);
     const [boxChecked, setBoxChecked] = React.useState<boolean>(false);
 

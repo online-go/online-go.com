@@ -14,119 +14,135 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+.stream-item {
+    position: relative;
+    width: 320px;
+    height: 180px;
+    margin-bottom: 15px;
+    cursor: pointer;
+    overflow: hidden;
+    border-radius: 8px;
+    transition: transform 0.3s, box-shadow 0.3s;
+    background-color: var(--shade3);
+    box-sizing: border-box;
+    display: inline-block;
+    border: 2px solid transparent;
 
-.stream-item
-    position: relative
-    width: 320px
-    height: 180px
-    margin-bottom: 15px
-    cursor: pointer
-    overflow: hidden
-    border-radius: 8px
-    transition: transform 0.3s, box-shadow 0.3s
-    background-color: var(--shade3)
-    box-sizing: border-box
-    display: inline-block
-    border: 2px solid transparent
+    &:hover {
+        transform: scale(1.05);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 
-    &:hover
-        transform: scale(1.05)
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2)
-        
-        .overlay
-            opacity: 1
-        .stream-info h3
-            opacity: 0
-        .full-title
-            opacity: 1
+        .overlay {
+            opacity: 1;
+        }
 
-    .overlay
-        position: absolute
-        top: 0
-        left: 0
-        width: 100%
-        height: 100%
-        background-color: rgba(0, 0, 0, 0.5)
-        opacity: 0
-        transition: opacity 0.3s
+        .stream-info h3 {
+            opacity: 0;
+        }
 
-    .full-title
-        position: absolute
-        top: 50%
-        left: 50%
-        transform: translate(-50%, -50%)
-        color: white
-        font-size: 16px
-        font-weight: bold
-        text-align: center
-        opacity: 0
-        transition: opacity 0.3s
-        padding: 0 10px
-        white-space: normal
-        word-wrap: break-word
+        .full-title {
+            opacity: 1;
+        }
+    }
 
-    &.selected-stream
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5)
-        border-radius: 8px
-        themed border-color primary
-        
+    .overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
 
-    .stream-thumbnail
-        width: 100%
-        height: 100%
-        object-fit: cover
+    .full-title {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        font-size: 16px;
+        font-weight: bold;
+        text-align: center;
+        opacity: 0;
+        transition: opacity 0.3s;
+        padding: 0 10px;
+        white-space: normal;
+        word-wrap: break-word;
+    }
 
-    .stream-username
-        font-size: 14px
-        position: absolute
-        top: 10px
-        left: 10px
-        color: white
-        font-weight: bold
-        background: rgba(0, 0, 0, 0.5)
-        padding: 2px 5px
-        border-radius: 3px
+    &.selected-stream {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        border-radius: 8px;
+        themed: border-color primary;
+    }
 
-    .viewer-count
-        font-size: 14px
-        font-weight: bold
-        position: absolute
-        top: 10px
-        right: 10px
-        background: rgba(0, 0, 0, 0.5)
-        padding: 2px 5px
-        border-radius: 3px
-        color: white
+    .stream-thumbnail {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
 
-    .stream-info
-        position: absolute
-        bottom: 0
-        left: 0
-        width: 100%
-        padding: 10px
-        box-sizing: border-box
-        display: flex
-        justify-content: space-between
-        align-items: center
-        background: linear-gradient(to top, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0))
-        color: white
+    .stream-username {
+        font-size: 14px;
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        color: white;
+        font-weight: bold;
+        background: rgba(0, 0, 0, 0.5);
+        padding: 2px 5px;
+        border-radius: 3px;
+    }
 
-    .stream-info h3
-        margin: 0
-        font-size: 16px
-        font-weight: bold
-        white-space: nowrap
-        overflow: hidden
-        text-overflow: ellipsis
-        transition: opacity 0.3s
+    .viewer-count {
+        font-size: 14px;
+        font-weight: bold;
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: rgba(0, 0, 0, 0.5);
+        padding: 2px 5px;
+        border-radius: 3px;
+        color: white;
+    }
 
-    .language
-        font-size: 14px
-        font-weight: bold
-        background: rgba(0, 0, 0, 0.5)
-        padding: 2px 5px
-        border-radius: 3px
+    .stream-info {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        padding: 10px;
+        box-sizing: border-box;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0));
+        color: white;
+    }
 
-@media only screen and (max-width: 900px)
-    .stream-item
-        margin: 10px
+    .stream-info h3 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: bold;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        transition: opacity 0.3s;
+    }
+
+    .language {
+        font-size: 14px;
+        font-weight: bold;
+        background: rgba(0, 0, 0, 0.5);
+        padding: 2px 5px;
+        border-radius: 3px;
+    }
+}
+
+@media only screen and (max-width: 900px) {
+    .stream-item {
+        margin: 10px;
+    }
+}

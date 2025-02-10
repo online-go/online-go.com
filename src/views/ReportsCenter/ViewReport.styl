@@ -27,17 +27,17 @@
             flex-direction: row;
             align-items: center;
             justify-content: left;
+
             > span {
                 margin-left: 0.5rem;
             }
-
         }
 
         .reporting-user {
             float: right;
             font-size: 0.8rem;
             font-weight: 400;
-       }
+        }
     }
 
     .view-report-header {
@@ -46,10 +46,12 @@
         .report-id {
             margin-right: 1rem;
         }
+
         button {
             margin-left: 0.5rem;
             margin-right: 0.5rem;
         }
+
         .reports-center-selected-report {
             padding-left: 0.5rem;
         }
@@ -60,7 +62,7 @@
         margin-bottom: 1rem;
         border-top: 1px solid #ccc;
         border-bottom: 1px solid #ccc;
-        themed border-color shade3
+        themed: border-color shade3;
         text-align: center;
     }
 
@@ -88,6 +90,7 @@
         width: 16.5rem;
         justify-content: space-between;
         margin-bottom: 1rem;
+
         button {
             margin-left: 0;
             margin-right: 0;
@@ -111,11 +114,13 @@
             flex-direction: row;
             justify-content: space-around;
         }
+
         .actions-right {
             display: flex;
             flex-direction: row;
             justify-content: space-around;
             align-items: flex-end; // put the buttons down close-ish to the send-warning buttons
+
             button {
                 height: auto;
                 padding: 7px;
@@ -127,14 +132,17 @@
         h4 {
             margin-bottom: 0;
         }
+
         ul {
             margin-top: 0;
         }
     }
+
     .community-mod-note {
         h5 {
             margin: 0;
         }
+
         .Card {
             font-size: smaller;
             margin-bottom: 0; // aligns with items on the right
@@ -143,6 +151,7 @@
 
     .automod-analysis {
         margin-bottom: 1rem;
+
         .analysis {
             font-style: italic;
         }
@@ -153,6 +162,7 @@
         justify-content: space-between;
         margin-bottom: 1rem;
         flex-wrap: wrap;
+
         button {
             margin-left: 0;
             margin-right: 0;
@@ -161,6 +171,7 @@
 
     .notes {
         flex-basis: 50%;
+        white-space: pre-wrap;
     }
 
     .voting {
@@ -168,7 +179,7 @@
 
         .action-selector {
             display: flex;
-            align-items: center
+            align-items: center;
             padding: 0.3rem;
 
             input {
@@ -186,19 +197,18 @@
             margin-top: 0.5rem;
         }
     }
-
 }
 
 @media (max-width: 767px) {
-#ViewReport {
-    .newer-older-buttons {
-        display: inline-flex;
-        width: 100%;
-        max-width: 100vw;
-    }
+    #ViewReport {
+        .newer-older-buttons {
+            display: inline-flex;
+            width: 100%;
+            max-width: 100vw;
+        }
 
-    .voting {
-        flex-basis: 100%;
+        .voting {
+            flex-basis: 100%;
+        }
     }
-}
 }

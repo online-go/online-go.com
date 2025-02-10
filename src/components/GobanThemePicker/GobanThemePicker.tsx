@@ -67,7 +67,7 @@ function renderSampleBoard(canvas: HTMLCanvasElement, theme: GobanTheme, size: n
     ctx.fillText("A", xx + 0.5, yy + 0.5);
 }
 
-export function GobanBoardThemePicker(props: GobanThemePickerProperties): JSX.Element {
+export function GobanBoardThemePicker(props: GobanThemePickerProperties): React.ReactElement {
     const size = props.size || 44;
     const canvases = React.useRef<HTMLCanvasElement[]>([]);
     const selectTheme = React.useRef<{ [k: string]: () => void }>({});
@@ -115,7 +115,7 @@ export function GobanBoardThemePicker(props: GobanThemePickerProperties): JSX.El
     );
 }
 
-export function GobanCustomBoardPicker(props: GobanThemePickerProperties): JSX.Element {
+export function GobanCustomBoardPicker(props: GobanThemePickerProperties): React.ReactElement {
     const size = props.size || 44;
 
     const [line_color, _setLineColor] = usePreference("goban-theme-custom-board-line");
@@ -123,7 +123,7 @@ export function GobanCustomBoardPicker(props: GobanThemePickerProperties): JSX.E
         "goban-theme-custom-board-background",
     );
     const [background_image, _setBackgroundImage] = usePreference("goban-theme-custom-board-url");
-    const sample_canvas = React.useRef<HTMLCanvasElement>();
+    const sample_canvas = React.useRef<HTMLCanvasElement | undefined>(undefined);
     const [, refresh] = React.useState(0);
     const theme = Goban.THEMES_SORTED.board.filter((x) => x.theme_name === "Custom")[0];
     const [, setBoard] = usePreference("goban-theme-board");
@@ -259,7 +259,7 @@ export function renderSampleStone(
     }
 }
 
-export function GobanWhiteThemePicker(props: GobanThemePickerProperties): JSX.Element {
+export function GobanWhiteThemePicker(props: GobanThemePickerProperties): React.ReactElement {
     const size = props.size || 44;
 
     const canvases = React.useRef<HTMLCanvasElement[]>([]);
@@ -365,7 +365,7 @@ export function GobanWhiteThemePicker(props: GobanThemePickerProperties): JSX.El
     );
 }
 
-export function GobanCustomBlackPicker(props: GobanThemePickerProperties): JSX.Element {
+export function GobanCustomBlackPicker(props: GobanThemePickerProperties): React.ReactElement {
     const size = props.size || 44;
 
     const [url, _setUrl] = usePreference("goban-theme-custom-black-url");
@@ -458,7 +458,7 @@ export function GobanCustomBlackPicker(props: GobanThemePickerProperties): JSX.E
     );
 }
 
-export function GobanBlackThemePicker(props: GobanThemePickerProperties): JSX.Element {
+export function GobanBlackThemePicker(props: GobanThemePickerProperties): React.ReactElement {
     const size = props.size || 44;
 
     const canvases = React.useRef<HTMLCanvasElement[]>([]);
@@ -564,7 +564,7 @@ export function GobanBlackThemePicker(props: GobanThemePickerProperties): JSX.El
     );
 }
 
-export function GobanCustomWhitePicker(props: GobanThemePickerProperties): JSX.Element {
+export function GobanCustomWhitePicker(props: GobanThemePickerProperties): React.ReactElement {
     const size = props.size || 44;
 
     const [url, _setUrl] = usePreference("goban-theme-custom-white-url");
@@ -636,7 +636,7 @@ export function GobanCustomWhitePicker(props: GobanThemePickerProperties): JSX.E
     );
 }
 
-export function GobanThemePicker(props: GobanThemePickerProperties): JSX.Element {
+export function GobanThemePicker(props: GobanThemePickerProperties): React.ReactElement {
     return (
         <div className="GobanThemePicker">
             <GobanBoardThemePicker {...props} />

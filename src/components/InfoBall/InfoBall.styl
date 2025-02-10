@@ -14,50 +14,48 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+.InfoBall {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    position: relative;
 
- .InfoBall {
-     padding-left: 0.5rem;
-     padding-right: 0.5rem;
-     position: relative;
+    i {
+        cursor: pointer;
+    }
 
-     i {
-         cursor: pointer;
-     }
+    .details {
+        display: none;
+    }
 
-     .details {
-         display: none;
-     }
+    &.force-show-details, &:hover {
+        .details {
+            display: inline-block;
+            max-width: 20rem;
+            width: 20rem;
+            position: absolute;
+            themed: background-color primary;
+            themed: color colored-background-fg;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            z-index: z.infoball;
+            top: 1.5rem;
+            left: 0;
+        }
+    }
 
-     &.force-show-details, &:hover {
-         .details {
-             display: inline-block;
-             max-width: 20rem;
-             width: 20rem;
-             position: absolute;
-             themed background-color primary
-             themed color colored-background-fg
-             border-radius: 0.5rem;
-             padding: 0.5rem;
-             z-index: z.infoball;
-             top: 1.5rem;
-             left: 0;
-         }
-     }
+    .backdrop {
+        display: inline-block;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: z.modal.backdrop;
+    }
 
-     .backdrop {
-         display: inline-block;
-         position: fixed;
-         top: 0;
-         left: 0;
-         right: 0;
-         bottom: 0;
-         z-index: z.modal.backdrop;
-     }
-
-
-     &.force-hide-details {
-         .details {
-             display: none !important;
-         }
-     }
- }
+    &.force-hide-details {
+        .details {
+            display: none !important;
+        }
+    }
+}

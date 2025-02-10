@@ -538,7 +538,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
             if ((removes as any)._groups[0].length !== (adds as any)._groups[0].length) {
                 setTimeout(() => this.plot(), 50);
             }
-        } catch (e) {
+        } catch {
             // ignore
         }
     }

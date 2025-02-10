@@ -4,72 +4,61 @@ name: CI
 
 # Controls when the action will run.
 on:
-  # Triggers the workflow on push or pull request events but only for the devel branch
-  push:
-    branches: [ devel ]
-  pull_request:
-    branches: [ devel ]
+    # Triggers the workflow on push or pull request events but only for the devel branch
+    push:
+        branches: [devel]
+    pull_request:
+        branches: [devel]
 
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
+    # Allows you to run this workflow manually from the Actions tab
+    workflow_dispatch:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
+    build:
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
-    steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v4
+        # Steps represent a sequence of tasks that will be executed as part of the job
+        steps:
+            # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+            - uses: actions/checkout@v4
+              with:
+                  submodules: recursive
 
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '18'
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: "20"
 
-      - name: Cache node modules
-        id: cache-node-modules
-        uses: actions/cache@v3
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-node-modules
+            - name: Cache node modules
+              id: cache-node-modules
+              uses: actions/cache@v4
+              with:
+                  path: node_modules
+                  key: ${{ runner.os }}-node-modules
 
-      - name: yarn install
-        uses: nick-invision/retry@v2
-        with:
-          timeout_minutes: 10
-          max_attempts: 3
-          command: yarn install
+            - name: npm install
+              uses: nick-fields/retry@v3
+              with:
+                  timeout_minutes: 10
+                  max_attempts: 3
+                  command: npm install
 
-      # Build
-      - name: Build CSS
-        run: npx gulp min_styl
+            - name: Eslint
+              run: npm run lint
 
-      - name: Run linters
-        # uses: wearerequired/lint-action@v2
-        # with:
-          # auto_fix: ${{ github.event_name == 'pull_request' }}
-          # eslint: true
-          # eslint_extensions: "ts,tsx"
-        run: npm run lint && npm run prettier:check
+            - name: Prettier check
+              run: npm run prettier:check
 
-      - name: Webpack
-        run: npx webpack --optimization-minimize --devtool=source-map
+            - name: Type check
+              run: npm run type-check
 
-      #- name: Tests
-      #  run: npx jest
+            - name: Build
+              run: npm run build
 
-      - uses: streetsidesoftware/cspell-action@v5
-        with:
-            files: src/**/*.{ts,tsx}
+            #- name: Tests
+            #  run: npx jest
 
-      # Log compressed output size
-      - name: Compressed sizes
-        run: |
-          gzip -9 dist/ogs.min.js | wc -c
-          gzip -9 dist/vendor.min.js | wc -c
-          gzip -9 dist/ogs.min.css | wc -c
-
-
-
+            - uses: streetsidesoftware/cspell-action@v6
+              with:
+                  files: src/**/*.{ts,tsx}

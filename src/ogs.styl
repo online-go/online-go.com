@@ -15,6 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+@require '../node_modules/sweetalert2/dist/sweetalert2.css';
+@require '../node_modules/react-table/react-table.css';
+@require '../submodules/react-dynamic-help/src/DynamicHelp.css';
+
 font-size-big = 16pt
 font-size-mid = 14pt
 font-size-normal = 12pt
@@ -48,7 +52,7 @@ body.v6 {
 }
 
 
-/* z indicies */
+/* z indices */
 z = {
     goban: {
         shadow-layer   : 10,
@@ -88,7 +92,7 @@ z = {
     swal               : 10000,
     challenge-link     : 10010,  // We have to say "Challenge Link Copied" over the top of "Challenge Created"
 
-    dynamic-help       : 20000,  // Help popups would like to go on top of everthing
+    dynamic-help       : 20000,  // Help popups would like to go on top of everything
 
     account-warning    : 50003,
     network-warning    : 50004,
@@ -276,8 +280,9 @@ light.player-black-fg                   = #eeeeee
 light.player-white-fg                   = light.fg
 light.player-black-clock                = lighten(light.player-black-fg, 50%)
 light.player-white-clock                = light.player-white-fg
-light.player-black-paused-clock          = #ABA8AD;
-light.player-white-paused-clock          = #928A99;
+light.player-black-paused-clock         = #ABA8AD;
+light.player-white-paused-clock         = #928A99;
+light.quickmatch-player-waiting         = darken(light.success, 10%)
 
 /************/
 /*** DARK ***/
@@ -298,7 +303,7 @@ dark.toast-fg                           = dark.bg
 dark.link-color                         = #539bff
 dark.link-color-active                  = darken(dark.link-color, 20%)
 
-dark.default-button                     = lighten(dark.bg, 10%)
+dark.default-button                     = lighten(dark.bg, 20%)
 dark.default-button-color               = dark.fg
 dark.primary                            = darken(light.primary, core-color-darken-amount)
 dark.danger                             = darken(light.danger, core-color-darken-amount)
@@ -422,6 +427,7 @@ dark.player-white-paused-clock          = #5F4A71;
 dark.player-black-paused-clock          = #928A99;
 
 dark.joseki-ideal                       = #DBAF00;
+dark.quickmatch-player-waiting          = dark.success
 
 /******************/
 /*** ACCESSIBLE ***/
@@ -454,6 +460,8 @@ accessible.strong-loss                        = accessible.loss
 accessible.weak-win                           = darken(accessible.win, 35%)
 accessible.weak-loss                          = darken(accessible.loss, 35%)
 
+accessible.quickmatch-player-waiting          = accessible.indicate-online
+
 
 :root {
     --primary: light.primary;
@@ -461,6 +469,8 @@ accessible.weak-loss                          = darken(accessible.loss, 35%)
     --success: light.success;
     --info: light.info;
     --reject: light.reject;
+    --select-header-bg: light.shade5;
+    --select-header-fg: light.fg;
 }
 
 body.accessible {
@@ -469,6 +479,8 @@ body.accessible {
     --success: accessible.success;
     --info: accessible.info;
     --reject: accessible.reject;
+    --select-header-bg: accessible.shade4;
+    --select-header-fg: accessible.shade1;
 }
 body.dark {
     --primary: dark.primary;
@@ -476,6 +488,10 @@ body.dark {
     --success: dark.success;
     --info: dark.info;
     --reject: dark.reject;
+    --bg: dark.bg;
+    --fg: dark.fg;
+    --select-header-bg: dark.shade4;
+    --select-header-fg: dark.shade1;
 }
 
 
@@ -494,8 +510,6 @@ nowrap()
     white-space: nowrap;
 
 
-/* Sweetalert2 */
-@require '../node_modules/sweetalert2/dist/sweetalert2.css';
 
 .swal2-footer {
     border: none !important; // default solid border is ugly
@@ -506,9 +520,8 @@ nowrap()
 @require "global_styl/bootstrap-esq.styl";
 @require "global_styl/misc-ui.styl";
 @require "global_styl/ogs-font.styl";
-@require "../node_modules/goban/build/Goban.styl";
+@require "../submodules/goban/src/Goban.styl";
 @require "global_styl/swal.styl";
-@require "global_styl/flags16.styl";
 @require "global_styl/flags32.styl";
 @require "global_styl/font-awesome.styl";
 @require "global_styl/font-awesome-hacks.styl";
@@ -528,11 +541,7 @@ nowrap()
 @require "./views/[A-Z]*/*.styl";
 @require "./views/docs/*.styl";
 
-@require '../node_modules/react-table/react-table.css';
-@require '../node_modules/react-dynamic-help/dist/DynamicHelp.css';
 
-// @require '../node_modules/react-tabs/style/react-tabs.css';
-//
 // Put our theming into react-tabs css: copied from them and modified
 
 .react-tabs {

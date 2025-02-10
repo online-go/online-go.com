@@ -30,11 +30,13 @@ import { ReportsCenterSettings } from "./ReportsCenterSettings";
 import { ReportsCenterHistory } from "./ReportsCenterHistory";
 import { ReportsCenterCMDashboard } from "./ReportsCenterCMDashboard";
 import { ReportsCenterCMHistory } from "./ReportsCenterCMHistory";
+import { IncidentReportList } from "@/components/IncidentReportTracker";
 
 interface OtherView {
     special: string;
     title: string;
     show_cm: boolean;
+    show_all: boolean;
 }
 
 const categories: (ReportDescription | OtherView)[] = [
@@ -53,10 +55,11 @@ const categories: (ReportDescription | OtherView)[] = [
         },
     ])
     .concat([
-        { special: "hr", title: "", show_cm: true },
-        { special: "history", title: "History", show_cm: true },
-        { special: "cm", title: "Community Moderation", show_cm: true },
-        { special: "settings", title: "Settings", show_cm: false },
+        { special: "hr", title: "", show_cm: true, show_all: false },
+        { special: "history", title: "History", show_cm: true, show_all: false },
+        { special: "cm", title: "Community Moderation", show_cm: true, show_all: true },
+        { special: "my_reports", title: "My Own Reports", show_cm: true, show_all: true },
+        { special: "settings", title: "Settings", show_cm: false, show_all: false },
     ]);
 
 const category_priorities: { [type: string]: number } = {};
@@ -64,7 +67,7 @@ for (let i = 0; i < report_categories.length; ++i) {
     category_priorities[report_categories[i].type] = i;
 }
 
-export function ReportsCenter(): JSX.Element | null {
+export function ReportsCenter(): React.ReactElement | null {
     const user = useUser();
     const navigateTo = useNavigate();
     const refresh = useRefresh();
@@ -72,7 +75,10 @@ export function ReportsCenter(): JSX.Element | null {
     const report_id = parseInt(params["report_id"] || "0");
     const category = params["category"] || "all";
 
-    const [report_quota] = usePreference("moderator.report-quota");
+    let [report_quota] = usePreference("moderator.report-quota");
+    if (!user.is_moderator && !user.moderator_powers) {
+        report_quota = 0;
+    }
 
     const reports = report_manager.getEligibleReports();
 
@@ -103,7 +109,9 @@ export function ReportsCenter(): JSX.Element | null {
                 if (reports.length) {
                     for (let i = 0; i < reports.length; ++i) {
                         if (reports[i].report_type === category || category === "all") {
-                            navigateTo(`/reports-center/${category}/${reports[i].id}`);
+                            navigateTo(`/reports-center/${category}/${reports[i].id}`, {
+                                replace: true,
+                            });
                             return;
                         }
                     }
@@ -129,10 +137,6 @@ export function ReportsCenter(): JSX.Element | null {
         navigateTo(`/reports-center/${category}`);
     }, []);
 
-    if (!user.is_moderator && !user.moderator_powers) {
-        return null;
-    }
-
     const selectReport = (report_id: number) => {
         if (report_id) {
             navigateTo(`/reports-center/${category}/${report_id}`);
@@ -143,13 +147,19 @@ export function ReportsCenter(): JSX.Element | null {
 
     const visible_categories = user.is_moderator
         ? categories
-        : // community moderators supported report types
-          categories.filter(
-              (category) =>
-                  ("special" in category && category.show_cm) ||
-                  (!("special" in category) &&
-                      community_mod_has_power(user.moderator_powers, category.type)),
-          );
+        : user.moderator_powers
+          ? // community moderators supported report types
+            categories.filter(
+                (category) =>
+                    ("special" in category && category.show_cm) ||
+                    (!("special" in category) &&
+                        community_mod_has_power(user.moderator_powers, category.type)),
+            )
+          : categories.filter((category) => "special" in category && category.show_all);
+
+    const my_reports = report_manager
+        .getEligibleReports()
+        .filter((report) => report.reporting_user.id === user.id);
 
     return (
         <div className="ReportsCenter container">
@@ -199,7 +209,7 @@ export function ReportsCenter(): JSX.Element | null {
 
             <div id="ReportsCenterContainer">
                 <div id="ReportsCenterCategoryList">
-                    {visible_categories.map((report_type, idx): JSX.Element | null => {
+                    {visible_categories.map((report_type, idx): React.ReactElement | null => {
                         if ("type" in report_type) {
                             const ct = counts[report_type.type] || 0;
                             return (
@@ -229,6 +239,7 @@ export function ReportsCenter(): JSX.Element | null {
                                 case "settings":
                                 case "history":
                                 case "cm":
+                                case "my_reports":
                                     return (
                                         <div
                                             key={report_type.special}
@@ -310,6 +321,8 @@ export function ReportsCenter(): JSX.Element | null {
                     )
                 ) : category === "cm" ? (
                     <ReportsCenterCMDashboard />
+                ) : category === "my_reports" ? (
+                    <IncidentReportList reports={my_reports} modal={false} />
                 ) : category === "hr" ? null : (
                     <ViewReport
                         reports={

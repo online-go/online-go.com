@@ -85,7 +85,7 @@ import * as docs from "@/views/docs";
 import { useData } from "./lib/hooks";
 
 /*** Layout our main view and routes ***/
-function Main(props: { children: any }): JSX.Element {
+function Main(props: { children: any }): React.ReactElement {
     const [user] = useData("config.user");
     let username_needs_to_be_updated = false;
 
@@ -155,7 +155,7 @@ const PageNotFound = () => (
     </div>
 );
 
-function Default(): JSX.Element {
+function Default(): React.ReactElement {
     const user = data.get("config.user");
 
     if (user.anonymous) {
@@ -165,7 +165,7 @@ function Default(): JSX.Element {
     return <Overview />;
 }
 
-function ChatRedirect(): JSX.Element {
+function ChatRedirect(): React.ReactElement {
     let channel = data.get("chat.active_channel");
     const joined = data.get("chat.joined") || {};
 
@@ -195,12 +195,12 @@ function ChatRedirect(): JSX.Element {
     return <Navigate to={`/chat/${channel}`} replace />;
 }
 
-function SettingsRedirect(): JSX.Element {
+function SettingsRedirect(): React.ReactElement {
     const last_settings_page = data.get("settings.page-selected", "general");
     return <Navigate to={`/settings/${last_settings_page}`} replace />;
 }
 
-function WaitForUser(): JSX.Element | null {
+function WaitForUser(): React.ReactElement | null {
     const navigate = useNavigate();
     data.watch("config.user", (user) => {
         if (user.anonymous) {

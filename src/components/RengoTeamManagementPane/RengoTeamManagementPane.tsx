@@ -28,12 +28,12 @@ import { errorAlerter } from "@/lib/misc";
 
 import { Player } from "@/components/Player";
 import { EmbeddedChatCard } from "@/components/Chat";
+import { useUser } from "@/lib/hooks";
 
 type Challenge = socket_api.seekgraph_global.Challenge;
 type RengoParticipantsDTO = rest_api.RengoParticipantsDTO;
 
 interface RengoTeamManagementPaneProps {
-    user: rest_api.UserConfig;
     challenge_list: Challenge[];
     challenge_id: number;
     moderator: boolean;
@@ -50,7 +50,6 @@ interface RengoTeamManagementPaneProps {
 }
 
 export function RengoTeamManagementPane({
-    user,
     challenge_list,
     challenge_id,
     moderator,
@@ -64,7 +63,8 @@ export function RengoTeamManagementPane({
     balanceTeams = rengo_balancer.balanceTeams,
     setTeams = rengo_utils.setTeams,
     lock,
-}: RengoTeamManagementPaneProps): JSX.Element {
+}: RengoTeamManagementPaneProps): React.ReactElement {
+    const user = useUser();
     const [assignment_pending, setAssignmentPending] = React.useState(false);
     const [ordering_players, setOrderingPlayers] = React.useState(false);
     const [new_teams, setNewTeams] = React.useState<RengoParticipantsDTO | null>(null);

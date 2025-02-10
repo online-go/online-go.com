@@ -130,11 +130,11 @@ export function configure_goban() {
         customBlackStoneUrl: (): string => preferences.get("goban-theme-custom-black-url"),
         customWhiteStoneUrl: (): string => preferences.get("goban-theme-custom-white-url"),
         addCoordinatesToChatInput: (coordinates: string): void => {
-            const chat_input = $(".chat-input");
+            const chat_input = document.querySelector(".chat-input") as HTMLInputElement;
 
-            if (!chat_input.attr("disabled")) {
-                const txt = (chat_input.val().trim() + " " + coordinates).trim();
-                chat_input.val(txt);
+            if (chat_input && !chat_input.disabled) {
+                const txt = (chat_input.value.trim() + " " + coordinates).trim();
+                chat_input.value = txt;
             }
         },
 
@@ -179,7 +179,7 @@ export function configure_goban() {
         },
 
         toast: (message_id: string, duration: number) => {
-            let message: JSX.Element | null = null;
+            let message: React.ReactElement | null = null;
             switch (message_id) {
                 case "refusing_to_remove_group_is_alive":
                     message = (

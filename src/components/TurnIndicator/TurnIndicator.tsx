@@ -18,7 +18,7 @@
 import * as React from "react";
 import { notification_manager } from "@/components/Notifications";
 
-export function TurnIndicator(): JSX.Element {
+export function TurnIndicator(): React.ReactElement {
     const [count, setCount] = React.useState<number | undefined>(0);
     const [total, setTotal] = React.useState<number | undefined>(0);
 

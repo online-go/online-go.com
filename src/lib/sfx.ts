@@ -408,7 +408,7 @@ export class SFXManager {
                     if (sound_name !== "error") {
                         this.play("error");
                     }
-                } catch (e) {
+                } catch {
                     //
                 }
             }
@@ -528,7 +528,7 @@ export class SFXManager {
                     to_check.push(nav_lang);
                 }
             }
-        } catch (e) {
+        } catch {
             // ignore error
         }
 

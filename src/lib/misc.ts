@@ -131,13 +131,16 @@ export function getRelativeEventPosition(
 ): { x: number; y: number } | undefined {
     let x;
     let y;
-    const offset = $(event.target).offset();
+    const target = event.target as HTMLElement;
+    const rect = target.getBoundingClientRect();
+    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const offset = {
+        left: rect.left + scrollLeft,
+        top: rect.top + scrollTop,
+    };
 
-    if (!offset) {
-        return;
-    }
-
-    if (event.originalEvent.touches && event.originalEvent.touches.length) {
+    if (event.originalEvent?.touches && event.originalEvent?.touches.length) {
         x = event.originalEvent.touches[0].pageX - offset.left;
         y = event.originalEvent.touches[0].pageY - offset.top;
     } else if (event.touches && event.touches.length) {
@@ -273,7 +276,7 @@ export function getPrintableError(err: any): string | undefined {
         console.error(obj);
         try {
             obj = JSON.parse(err.responseText);
-        } catch (e) {
+        } catch {
             // ignore error
         }
         if (!obj) {
@@ -284,7 +287,7 @@ export function getPrintableError(err: any): string | undefined {
             );
             try {
                 console.error(new Error().stack);
-            } catch (e) {
+            } catch {
                 // ignore error
             }
             return "An unknown error has occurred!";
@@ -304,7 +307,7 @@ export function getPrintableError(err: any): string | undefined {
             if ("responseText" in obj) {
                 try {
                     obj = JSON.parse(obj.responseText);
-                } catch (e) {
+                } catch {
                     obj = obj.responseText;
                 }
             } else if ("errcode" in obj) {
@@ -352,11 +355,11 @@ export function errorAlerter(...args: any[]) {
             if ("responseText" in err_object) {
                 try {
                     err_object = JSON.parse(err_object.responseText);
-                } catch (e) {
+                } catch {
                     err_object = err_object.responseText;
                 }
             }
-        } catch (e) {
+        } catch {
             // ignore error
         }
         errcodeAlerter(err_object);
@@ -608,26 +611,26 @@ export function deepCompare(x: any, y: any) {
 /*** OGS Focus detection ***/
 const focus_window_id = "" + Math.random();
 try {
-    $(window).focus(() => {
+    window.addEventListener("focus", () => {
         try {
             localStorage.setItem("focused_window", focus_window_id);
-        } catch (e) {
+        } catch {
             // Ignored, safari in private mode errors out when setItem is called
         }
     });
-    $(window).blur(() => {
+    window.addEventListener("blur", () => {
         try {
             if (localStorage.getItem("focused_window") === focus_window_id) {
                 localStorage.removeItem("focused_window");
             }
-        } catch (e) {
+        } catch {
             // ignore error
         }
     });
     if (document.hasFocus()) {
         try {
             localStorage.setItem("focused_window", focus_window_id);
-        } catch (e) {
+        } catch {
             // ignore error
         }
     }

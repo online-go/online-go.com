@@ -39,7 +39,7 @@ export const sorted_locale_countries: { cc: string; name: string }[] = [];
 let catalog: { [key: string]: string[] };
 try {
     catalog = locales[current_language] || {};
-} catch (e) {
+} catch {
     catalog = {};
 }
 
@@ -332,7 +332,7 @@ extended_countries.push(["_CIS", gettext("CIS")]);
 extended_countries.push(["_Commonwealth", gettext("Commonwealth")]);
 extended_countries.push(["_England", gettext("England")]);
 extended_countries.push(["_Islamic_Conference", gettext("Islamic Conference")]);
-extended_countries.push(["_Kosovo", gettext("Kosovo")]);
+//extended_countries.push(["_Kosovo", gettext("Kosovo")]);
 extended_countries.push(["_Lord_Howe_Island", gettext("Lord Howe Island")]);
 extended_countries.push(["_NATO", gettext("NATO")]);
 extended_countries.push(["_Northern_Cyprus", gettext("Northern Cyprus")]);
@@ -365,6 +365,12 @@ fantasy_countries.push(["_GoT_Targaryen", gettext("House Targaryen")]);
 fantasy_countries.push(["_GoT_Tully", gettext("House Tully")]);
 fantasy_countries.push(["_GoT_Tyrell", gettext("House Tyrell")]);
 fantasy_countries.push(["_LGBT", gettext("LGBT+ Pride")]);
+fantasy_countries.push(["_Ulster", gettext("Ulster")]);
+fantasy_countries.push(["_Leinster", gettext("Leinster")]);
+fantasy_countries.push(["_Munster", gettext("Munster")]);
+fantasy_countries.push(["_Connacht", gettext("Connacht")]);
+fantasy_countries.push(["_Ireland_Provinces", gettext("Ireland Provinces")]);
+fantasy_countries.push(["_Galicia", gettext("Galicia")]);
 
 try {
     for (const e of fantasy_countries) {

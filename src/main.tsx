@@ -122,7 +122,7 @@ import * as preferences from "@/lib/preferences";
 try {
     // default_theme is set in index.html based on looking at the OS theme
     data.setDefault("theme", window.default_theme);
-} catch (e) {
+} catch {
     data.setDefault("theme", "light");
 }
 
@@ -165,7 +165,7 @@ import { errorAlerter } from "@/lib/misc";
 import { close_all_popovers } from "@/lib/popover";
 import * as sockets from "@/lib/sockets";
 import { _, setCurrentLanguage } from "@/lib/translate";
-import { init_tab_complete } from "@/lib/tab_complete";
+
 import * as player_cache from "@/lib/player_cache";
 import { toast } from "@/lib/toast";
 import cached from "@/lib/cached";
@@ -175,6 +175,7 @@ import { get_device_id } from "@/views/SignIn";
 import { ConfigSchema } from "@/lib/data_schema";
 import * as history from "history";
 import "debug";
+import "@/ogs.styl";
 
 /**
  * getPreferredLanguage() is defined in index.html. It gets the user's chosen
@@ -231,7 +232,7 @@ console.log("initial user", user);
  */
 try {
     localStorage.setItem("localstorage-test", "true");
-} catch (e) {
+} catch {
     toast(
         <div>
             {_(
@@ -312,7 +313,6 @@ browserHistory.listen(({ action /*, location */ }) => {
 });
 
 /*** Some finial initializations ***/
-init_tab_complete();
 
 //  don't inherit old rdh values
 if (user.anonymous) {

@@ -24,14 +24,14 @@ interface ToggleProps {
 
     width?: number;
     height?: number;
-    uncheckedIcon?: JSX.Element | boolean;
-    checkedIcon?: JSX.Element | boolean;
+    uncheckedIcon?: React.ReactElement | boolean;
+    checkedIcon?: React.ReactElement | boolean;
     id?: string;
     disabled?: boolean;
     className?: string;
 }
 
-export function Toggle(props: ToggleProps): JSX.Element {
+export function Toggle(props: ToggleProps): React.ReactElement {
     return (
         <span className={"Toggle " + (props.checked ? "on" : "off")}>
             <Switch height={20} width={48} checkedIcon={false} uncheckedIcon={false} {...props} />

@@ -152,8 +152,9 @@ export const report_categories: ReportDescription[] = [
         title: pgettext("Report user for AI use", "AI Use"),
         description: pgettext(
             "Report user for AI use",
-            "User is suspected of using an AI assistance in this game.",
+            "Use this if you are quite certain that AI is being used.  Please don't report unless you have convincing evidence.  Please make sure you provide the evidence in the report.",
         ),
+        min_description_length: 40,
         game_id_required: true,
     },
     {
@@ -188,7 +189,7 @@ export const report_categories: ReportDescription[] = [
     },
 ];
 
-export function Report(props: ReportProperties): JSX.Element {
+export function Report(props: ReportProperties): React.ReactElement {
     const {
         reported_user_id,
         onClose,
@@ -299,12 +300,12 @@ export function Report(props: ReportProperties): JSX.Element {
         })
             .then(() => {
                 set_submitting(false);
-                onClose && onClose();
+                onClose?.();
                 void alert.fire({ text: _("Thanks for the report!") });
             })
             .catch(() => {
                 set_submitting(false);
-                onClose && onClose();
+                onClose?.();
                 void alert.fire({ text: _("There was an error submitting your report") });
             });
     }
@@ -326,12 +327,12 @@ export function Report(props: ReportProperties): JSX.Element {
         post("moderation/warn", { user_id: reported_user_id, text: note })
             .then(() => {
                 set_submitting(false);
-                onClose && onClose();
+                onClose?.();
                 void alert.fire("Warning sent");
             })
             .catch(() => {
                 set_submitting(false);
-                onClose && onClose();
+                onClose?.();
                 void alert.fire({ text: _("There was an error submitting the warning!") });
             });
     }

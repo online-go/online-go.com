@@ -81,7 +81,7 @@ type ShowPlayersInReportContextType = {
 export const ShowPlayersInReportContext =
     React.createContext<ShowPlayersInReportContextType | null>(null);
 
-export function Player(props: PlayerProperties): JSX.Element {
+export function Player(props: PlayerProperties): React.ReactElement {
     const user = data.get("user");
     const player_id: number =
         (typeof props.user !== "object" ? props.user : props.user?.id || props.user?.player_id) ||
@@ -97,7 +97,7 @@ export function Player(props: PlayerProperties): JSX.Element {
         (player?.id && user?.id && !!data.get(`player-notes.${user?.id}.${player?.id}`)) || false,
     );
 
-    const elt_ref = React.useRef<HTMLSpanElement | HTMLAnchorElement>();
+    const elt_ref = React.useRef<HTMLSpanElement | HTMLAnchorElement | undefined>(undefined);
     const player_id_ref = React.useRef<number>(player_id);
     const username_ref = React.useRef<string | null | undefined>(null);
 
@@ -228,14 +228,14 @@ export function Player(props: PlayerProperties): JSX.Element {
         } else {
             let chat_id: string | null = null;
             try {
-                let cur = $(elt_ref.current as HTMLElement);
+                let cur = elt_ref.current as HTMLElement;
 
-                while (cur && cur[0].nodeName !== "BODY") {
-                    chat_id = cur.attr("data-chat-id");
+                while (cur && cur.nodeName !== "BODY") {
+                    chat_id = cur.getAttribute("data-chat-id") || null;
                     if (chat_id) {
                         break;
                     }
-                    cur = cur.parent();
+                    cur = cur.parentElement as HTMLElement;
                 }
             } catch (e) {
                 console.error(e);
@@ -278,7 +278,7 @@ export function Player(props: PlayerProperties): JSX.Element {
     }
 
     const nolink = !!props.nolink;
-    let rank: JSX.Element | null = null;
+    let rank: React.ReactElement | null = null;
 
     const main_attrs: any = {
         className: "Player",

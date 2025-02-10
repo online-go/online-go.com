@@ -23,7 +23,7 @@ import { errorAlerter } from "@/lib/misc";
 import { put } from "@/lib/requests";
 import { cached } from "@/lib/cached";
 
-export function ForceUsernameChange(): JSX.Element {
+export function ForceUsernameChange(): React.ReactElement {
     const user = data.get("config.user");
     const [username, setUsername] = React.useState("");
     const inputRef = React.useRef<HTMLInputElement | null>(null);

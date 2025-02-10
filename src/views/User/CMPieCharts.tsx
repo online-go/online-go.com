@@ -19,20 +19,23 @@ import React from "react";
 import { UserVoteActionSummary } from "./UserVoteActionSummary";
 import { community_mod_has_power, COMMUNITY_MODERATION_REPORT_TYPES } from "@/lib/report_util";
 import { ReportType } from "@/components/Report";
-import { interpolate, pgettext } from "@/lib/translate";
+import { pgettext } from "@/lib/translate";
 
 interface CMPieChartsProps {
     user_id: number;
     user_moderator_powers: number;
 }
 
-export function CMPieCharts({ user_id, user_moderator_powers }: CMPieChartsProps): JSX.Element {
+export function CMPieCharts({
+    user_id,
+    user_moderator_powers,
+}: CMPieChartsProps): React.ReactElement {
     return (
         <div className="CMPieCharts">
             <div className="mod-graph-header">
                 {pgettext(
                     "header for a graph showing breakdown of moderator's vote outcomes",
-                    "vote outcome: summary",
+                    "Summary (all report types)",
                 )}
             </div>
             <UserVoteActionSummary user_id={user_id} />
@@ -43,13 +46,7 @@ export function CMPieCharts({ user_id, user_moderator_powers }: CMPieChartsProps
                 .map(([report_type, _flag]) => (
                     <div key={report_type}>
                         <div className="mod-graph-header" key={report_type}>
-                            {interpolate(
-                                pgettext(
-                                    "header for a graph showing breakdown of moderator's vote outcomes",
-                                    "vote outcomes: {{report_type}}",
-                                ),
-                                { report_type },
-                            )}
+                            {report_type}
                         </div>
                         <UserVoteActionSummary
                             user_id={user_id}

@@ -14,9 +14,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 .AnnouncementCenter {
-
     text-align: center;
 
     .announcements {
@@ -24,9 +22,11 @@
         text-align: left;
         margin-top: 3rem;
     }
+
     .announcement {
         display: table-row;
     }
+
     .cell {
         display: table-cell;
         padding-right: 0.5rem;
@@ -42,13 +42,18 @@
     input, select {
         width: 30rem;
         max-width: 90vw;
+
+        &.invalid {
+            themed-important: border-color reject;
+        }
     }
 
     .announcement-history {
         text-align: left;
+
         td {
             min-width: 7rem;
-            padding-right: 1.0rem;
+            padding-right: 1rem;
         }
     }
 
@@ -62,6 +67,7 @@
             width: 10rem;
             margin-right: 0.5rem;
         }
+
         .text {
             display: inline-block;
             min-width: 5rem;

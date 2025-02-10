@@ -82,8 +82,8 @@ interface PlayControlsProps {
     title: string;
     show_title: boolean;
 
-    renderEstimateScore: () => JSX.Element;
-    renderAnalyzeButtonBar: () => JSX.Element;
+    renderEstimateScore: () => React.ReactElement;
+    renderAnalyzeButtonBar: () => React.ReactElement;
     setMoveTreeContainer: (r: Resizable) => void;
 
     // TODO: turn this into one render prop so that we don't have to pass these
@@ -129,7 +129,7 @@ export function PlayControls({
     updateVariationName,
     variationKeyPress,
     stopEstimatingScore,
-}: PlayControlsProps): JSX.Element {
+}: PlayControlsProps): React.ReactElement {
     const user = useUser();
     const goban = useGoban();
     const engine = goban.engine;
@@ -289,7 +289,7 @@ export function PlayControls({
 
     const rematch = () => {
         try {
-            $(document.activeElement as any).blur();
+            (document.activeElement as HTMLElement)?.blur();
         } catch (e) {
             console.error(e);
         }
@@ -1085,7 +1085,7 @@ export function copyBranch(
         if (!window.getSelection()?.isCollapsed) {
             return;
         }
-    } catch (e) {
+    } catch {
         // ignore error
     }
 
@@ -1106,7 +1106,7 @@ export function pasteBranch(
         if (!window.getSelection()?.isCollapsed) {
             return;
         }
-    } catch (e) {
+    } catch {
         // ignore error
     }
 
@@ -1130,7 +1130,7 @@ export function pasteBranch(
 
         try {
             paste(goban.engine.cur_move, copied_node.current);
-        } catch (e) {
+        } catch {
             errorAlerter(_("A move conflict has been detected"));
         }
         goban.syncReviewMove();
@@ -1149,7 +1149,7 @@ export function deleteBranch(goban: GobanRenderer, mode: GobanModes) {
         if (!window.getSelection()?.isCollapsed) {
             return;
         }
-    } catch (e) {
+    } catch {
         // ignore error
     }
 
@@ -1177,8 +1177,8 @@ export function deleteBranch(goban: GobanRenderer, mode: GobanModes) {
 interface ReviewControlsProps {
     mode: GobanModes;
     review_id: number;
-    renderEstimateScore: () => JSX.Element;
-    renderAnalyzeButtonBar: () => JSX.Element;
+    renderEstimateScore: () => React.ReactElement;
+    renderAnalyzeButtonBar: () => React.ReactElement;
     setMoveTreeContainer: (r: Resizable) => void;
 
     // TODO: turn this into one render prop so that we don't have to pass these
@@ -1241,7 +1241,7 @@ export function ReviewControls({
     const review_controller_id = useReviewControllerId(goban);
     const review_out_of_sync = useReviewOutOfSync(goban);
     React.useEffect(() => {
-        const renderExtraPlayerActions = (player_id: number): JSX.Element | null => {
+        const renderExtraPlayerActions = (player_id: number): React.ReactElement | null => {
             const user = data.get("user");
             if (
                 review_id &&
@@ -1419,7 +1419,7 @@ interface ShareAnalysisButtonProperties {
     isUserAnonymous: boolean;
 }
 
-function ShareAnalysisButton(props: ShareAnalysisButtonProperties): JSX.Element {
+function ShareAnalysisButton(props: ShareAnalysisButtonProperties): React.ReactElement {
     const { selected_chat_log, isUserAnonymous, shareAnalysis } = props;
     switch (selected_chat_log) {
         case "malkovich":
@@ -1567,12 +1567,12 @@ function AnnulmentReason({
     reason,
 }: {
     reason: rest_api.AnnulmentReason | { cancellation?: true; premature_timeout?: true } | null;
-}): JSX.Element | null {
+}): React.ReactElement | null {
     if (!reason) {
         return null;
     }
 
-    const arr: JSX.Element[] = [];
+    const arr: React.ReactElement[] = [];
 
     for (const key in reason) {
         switch (key) {

@@ -36,10 +36,10 @@ export async function getPlayerIconURL(id: number, size: number): Promise<string
     return player_cache.fetch(id, ["icon"]).then((user) => icon_size_url(user.icon || "", size));
 }
 
-export function PlayerIcon(props: PlayerIconProps): JSX.Element {
+export function PlayerIcon(props: PlayerIconProps): React.ReactElement {
     const [url, setUrl] = React.useState<string | null>(null);
 
-    const subscriber = React.useRef<player_cache.Subscriber>();
+    const subscriber = React.useRef<player_cache.Subscriber | undefined>(undefined);
     const id = getId(props);
 
     React.useEffect(() => {

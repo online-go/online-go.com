@@ -5,13 +5,11 @@
     justify-content: flex-end;
     cursor: pointer;
 
-
     .count {
         visibility: hidden;
         display: flex;
         justify-content: center;
         align-items: center;
-
         width: indiciator-size;
         height: indiciator-size;
         border-radius: 50%;
@@ -23,6 +21,7 @@
     .active.count {
         visibility: visible;
     }
+
     .inactive.count {
         visibility: visible;
     }
@@ -33,6 +32,7 @@ body.light .TurnIndicator {
         background-color: #101010;
         color: #fff;
     }
+
     .inactive.count {
         background-color: #d2d2d2;
     }
@@ -43,10 +43,10 @@ body.dark .TurnIndicator {
         background-color: #bbb;
         color: #252525;
     }
+
     .inactive.count {
         background-color: #535353;
     }
-
 }
 
 body.accessible .TurnIndicator {
@@ -54,11 +54,11 @@ body.accessible .TurnIndicator {
         background-color: #bbb;
         color: #252525;
     }
+
     .inactive.count {
         background-color: #535353;
     }
 }
-
 
 .TurnIndicatorV6 {
     display: inline-flex;
@@ -70,12 +70,12 @@ body.accessible .TurnIndicator {
     cursor: pointer;
 
     .ogs-goban {
-        themed color fg
+        themed: color fg;
     }
 
     &:hover {
         .ogs-goban {
-            themed-lighten color fg 30%
+            themed-lighten: color fg 30%;
         }
     }
 
@@ -83,5 +83,3 @@ body.accessible .TurnIndicator {
         font-size: font-size-smaller;
     }
 }
-
-

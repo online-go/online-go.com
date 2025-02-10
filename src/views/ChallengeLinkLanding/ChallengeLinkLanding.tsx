@@ -39,7 +39,7 @@ type Challenge = socket_api.seekgraph_global.Challenge;
 // This page will display a bouncing OGS logo until the challenge given in search param is loaded.
 // From there, the user can accept the game - going via login orn auto-registration if necessary.
 
-export function ChallengeLinkLanding(): JSX.Element {
+export function ChallengeLinkLanding(): React.ReactElement {
     /* State */
     const [linked_challenge, set_linked_challenge] = React.useState<Challenge>();
     const [logging_in, set_logging_in] = React.useState<boolean>(false);

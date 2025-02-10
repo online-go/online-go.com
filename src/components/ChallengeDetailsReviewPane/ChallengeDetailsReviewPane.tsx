@@ -29,7 +29,7 @@ interface ChallengeDetailsReviewPaneProperties {
 
 export function ChallengeDetailsReviewPane(
     props: ChallengeDetailsReviewPaneProperties,
-): JSX.Element {
+): React.ReactElement {
     const challenge = props.challenge; //
     const time_control_description = timeControlDescription(challenge.time_control_parameters);
     let player_color = _(challenge.challenger_color);

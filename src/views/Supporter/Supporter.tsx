@@ -129,7 +129,7 @@ interface Config {
 interface Price {
     active: boolean;
     title?: string;
-    description?: Array<string | JSX.Element>;
+    description?: Array<string | React.ReactElement>;
     //review_level: 'kyu' | 'dan' | 'pro' | 'meijin';
     //amount: number;
     //currency: string;
@@ -190,7 +190,7 @@ function guessCurrency(config: Config, country: string): string {
     return "USD";
 }
 
-export function Supporter(props: SupporterProperties): JSX.Element {
+export function Supporter(props: SupporterProperties): React.ReactElement {
     const params = useParams();
     const user = data.get("user");
     const inline = props?.inline;
@@ -224,7 +224,7 @@ export function Supporter(props: SupporterProperties): JSX.Element {
                 setSearchParams({});
             }
         }
-    } catch (e) {
+    } catch {
         // ignore. This case happens when we are clicking the "Full AI REview" button because
         // we can't use search params in this context, however it's also not important since
         // this is only ever used for payment callback stuff.
@@ -611,7 +611,7 @@ export function Supporter(props: SupporterProperties): JSX.Element {
     );
 }
 
-export function SiteSupporterText(): JSX.Element {
+export function SiteSupporterText(): React.ReactElement {
     return (
         <div className="SiteSupporterText">
             <p>
@@ -641,7 +641,7 @@ export function PriceBox({
     account_id,
     overrides,
     slug,
-}: PriceBoxProperties): JSX.Element | null {
+}: PriceBoxProperties): React.ReactElement | null {
     const user = data.get("user");
     const [mor_locations, setMorLocations] = React.useState<string[]>(
         data.get("config.billing_mor_locations") || [],
@@ -897,7 +897,7 @@ function Subscription({
 }: {
     subscription: Subscription;
     prices: Price[];
-}): JSX.Element | null {
+}): React.ReactElement | null {
     const user = data.get("user");
 
     let text: string;
@@ -1086,10 +1086,10 @@ function Subscription({
     );
 }
 
-function PaymentMethod({ payment }: { payment: Payment }): JSX.Element {
+function PaymentMethod({ payment }: { payment: Payment }): React.ReactElement {
     const user = data.get("user");
-    let details: JSX.Element | undefined;
-    let ret: JSX.Element | undefined;
+    let details: React.ReactElement | undefined;
+    let ret: React.ReactElement | undefined;
 
     if (payment.payment_method_details?.card) {
         const card = payment.payment_method_details?.card;
@@ -1180,7 +1180,7 @@ interface ManualServiceCreatorProperties {
 function ManualServiceCreator({
     account_id,
     refresh,
-}: ManualServiceCreatorProperties): JSX.Element | null {
+}: ManualServiceCreatorProperties): React.ReactElement | null {
     const user = data.get("user");
     const [level, setLevel]: [string, React.Dispatch<string>] = React.useState("");
     const [months, setMonths]: [string, React.Dispatch<string>] = React.useState("");
@@ -1234,7 +1234,7 @@ function ManualServiceCreator({
     );
 }
 
-function ServiceLine({ service }: { service: Service }): JSX.Element | null {
+function ServiceLine({ service }: { service: Service }): React.ReactElement | null {
     const user = data.get("user");
     const [active, setActive] = React.useState(service.active);
 
@@ -1278,7 +1278,7 @@ function SupporterOverridesEditor({
     overrides,
     onChange,
     config,
-}: SupporterOverridesProperties): JSX.Element | null {
+}: SupporterOverridesProperties): React.ReactElement | null {
     const user = data.get("user");
     const prices = config.plans;
     const currency = overrides.currency;
@@ -1544,7 +1544,7 @@ function SupporterOverridesEditor({
     );
 }
 
-function DeprecatedPlanNote({ slug }: { slug: string }): JSX.Element | null {
+function DeprecatedPlanNote({ slug }: { slug: string }): React.ReactElement | null {
     if (slug === "aji" || slug === "hane" || slug === "tenuki" || slug === "meijin") {
         return null;
     }
@@ -1604,7 +1604,7 @@ function DeprecatedPlanNote({ slug }: { slug: string }): JSX.Element | null {
     );
 }
 
-function HighlightNumbers({ text }: { text: string }): JSX.Element {
+function HighlightNumbers({ text }: { text: string }): React.ReactElement {
     const arr = text.split(/([0-9]+)/);
     return (
         <span className="HighlightNumbers">

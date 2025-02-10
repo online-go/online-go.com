@@ -43,7 +43,7 @@ export function GobanContainer({
     onResize: onResizeCb,
     onWheel,
     extra_props,
-}: GobanContainerProps): JSX.Element {
+}: GobanContainerProps): React.ReactElement {
     const ref_goban_container = React.useRef<HTMLDivElement>(null);
     const resize_debounce = React.useRef<NodeJS.Timeout | null>(null);
     const [last_move_opacity] = usePreference("last-move-opacity");
@@ -55,10 +55,12 @@ export function GobanContainer({
             return;
         }
         const m = goban.computeMetrics();
-        $(goban_div).css({
-            top: Math.ceil(ref_goban_container.current.offsetHeight - m.height) / 2,
-            left: Math.ceil(ref_goban_container.current.offsetWidth - m.width) / 2,
-        });
+        goban_div.style.top = `${
+            Math.ceil(ref_goban_container.current.offsetHeight - m.height) / 2
+        }px`;
+        goban_div.style.left = `${
+            Math.ceil(ref_goban_container.current.offsetWidth - m.width) / 2
+        }px`;
     };
     const onResize = React.useCallback(
         (no_debounce: boolean = false, do_cb: boolean = true) => {
@@ -82,7 +84,7 @@ export function GobanContainer({
             }
 
             if (goban_view_mode() === "portrait") {
-                const w = $(window).width() + 10;
+                const w = window.innerWidth + 10;
                 if (ref_goban_container.current.style.minHeight !== `${w}px`) {
                     ref_goban_container.current.style.minHeight = `${w}px`;
                 }

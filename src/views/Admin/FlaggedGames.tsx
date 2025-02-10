@@ -21,7 +21,7 @@ import { get } from "@/lib/requests";
 import { Player } from "@/components/Player";
 //import moment from "moment";
 
-export function FlaggedGames(): JSX.Element {
+export function FlaggedGames(): React.ReactElement {
     const [flagged_games, setFlaggedGames] = React.useState<any[]>([]);
 
     React.useEffect(() => {

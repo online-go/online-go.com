@@ -26,7 +26,7 @@ import { Toggle } from "@/components/Toggle";
 
 import { SettingGroupPageProps, SettingsState } from "@/lib/SettingsCommon";
 
-export function EmailPreferences(props: SettingGroupPageProps): JSX.Element {
+export function EmailPreferences(props: SettingGroupPageProps): React.ReactElement {
     return (
         <div>
             {_("Email me a notification when ...")}
@@ -46,7 +46,7 @@ function EmailNotificationToggle(props: {
     state: SettingsState;
     name: string;
     notification: string;
-}): JSX.Element {
+}): React.ReactElement {
     const [on, __set]: [boolean, (x: boolean) => void] = React.useState(
         !!props.state.notifications[props.notification].value.email,
     );

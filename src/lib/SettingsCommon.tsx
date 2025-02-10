@@ -44,7 +44,7 @@ export interface SettingsState {
 export function PreferenceToggle(props: {
     name: string;
     preference: ValidPreference;
-}): JSX.Element {
+}): React.ReactElement {
     const [on, setPreference] = usePreference(props.preference);
 
     return (
@@ -62,11 +62,11 @@ export function PreferenceToggle(props: {
 }
 
 export function PreferenceLine(props: {
-    title: string | JSX.Element;
+    title: string | React.ReactElement;
     description?: string;
     children: React.ReactNode;
     className?: string;
-}): JSX.Element {
+}): React.ReactElement {
     return (
         <div className={`PreferenceLine ${props.className || ""}`}>
             <span className="PreferenceLineTitle">
@@ -86,7 +86,7 @@ export interface PreferenceDropdownProps {
     onChange: (value: any) => void;
 }
 
-export function PreferenceDropdown(props: PreferenceDropdownProps): JSX.Element {
+export function PreferenceDropdown(props: PreferenceDropdownProps): React.ReactElement {
     return (
         <Select
             className="PreferenceDropdown"

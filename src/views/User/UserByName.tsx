@@ -22,7 +22,7 @@ import * as player_cache from "@/lib/player_cache";
 import { useParams } from "react-router-dom";
 import { User } from "./User";
 
-export function UserByName(): JSX.Element | null {
+export function UserByName(): React.ReactElement | null {
     const { username } = useParams();
     const [user_id, set_user_id] = React.useState<number>();
 

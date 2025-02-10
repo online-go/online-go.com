@@ -89,8 +89,8 @@ export interface UnreadChanged {
     channel: string;
     unread_ct: number;
     unread_delta: number;
-    mentioned: Boolean;
-    previous_mentioned: Boolean;
+    mentioned: boolean;
+    previous_mentioned: boolean;
 }
 
 const channel_information_cache: { [channel: string]: ChannelInformation } = {};
@@ -337,6 +337,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
     send_tokens = 5;
     flood_protection: Timeout | null = null;
     topic?: TopicMessage;
+    join_sent = false;
 
     constructor(channel: string, display_name: string) {
         super();
@@ -371,7 +372,10 @@ class ChatChannel extends TypedEventEmitter<Events> {
     handleAnonymousOverride = () => {
         if (inGameModChannel(this.channel)) {
             socket.off("connect", this._rejoin);
-            socket.send("chat/part", { channel: this.channel });
+            if (socket.connected && this.join_sent) {
+                socket.send("chat/part", { channel: this.channel });
+                this.join_sent = false;
+            }
             for (const user_id in this.user_list) {
                 this.handlePart(this.user_list[user_id]);
             }
@@ -379,6 +383,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
             socket.on("connect", this._rejoin);
             if (socket.connected) {
                 socket.send("chat/join", { channel: this.channel });
+                this.join_sent = true;
             }
         }
     };
@@ -407,11 +412,15 @@ class ChatChannel extends TypedEventEmitter<Events> {
     _rejoin = () => {
         if (socket.connected) {
             socket.send("chat/join", { channel: this.channel });
+            this.join_sent = true;
         }
     };
     _destroy() {
         if (socket.connected) {
-            socket.send("chat/part", { channel: this.channel });
+            if (this.join_sent) {
+                socket.send("chat/part", { channel: this.channel });
+                this.join_sent = false;
+            }
         }
         socket.off("connect", this._rejoin);
         this.removeAllListeners();

@@ -21,15 +21,14 @@ import moment from "moment";
 import { Player } from "@/components/Player";
 import { Link } from "react-router-dom";
 import { chat_markup } from "@/components/Chat";
+import { pgettext } from "@/lib/translate";
 
 interface ModLogProps {
     user_id: number;
-    warnings_only?: boolean;
+    groomData?: (data: rest_api.moderation.ModLogEntry[]) => rest_api.moderation.ModLogEntry[];
 }
 
-export function ModLog(props: ModLogProps): JSX.Element {
-    const groomFunction = (data: any[]) => data.filter((X) => !X.action.includes("ack"));
-
+export function ModLog(props: ModLogProps): React.ReactElement {
     return (
         <PaginatedTable
             className="moderator-log"
@@ -40,7 +39,7 @@ export function ModLog(props: ModLogProps): JSX.Element {
                 event: `modlog-${props.user_id}-updated`,
                 channel: "moderators",
             }}
-            {...(props.warnings_only && { groom: groomFunction })}
+            groom={props.groomData as (data: any[]) => any[]}
             columns={[
                 {
                     header: "",
@@ -51,7 +50,7 @@ export function ModLog(props: ModLogProps): JSX.Element {
                     header: "",
                     className: "logging-user",
                     render: (X) => {
-                        return X?.moderator?.id ? <Player user={X.moderator} /> : "-";
+                        return X?.actor?.id ? <Player user={X.actor} /> : "-";
                     },
                 },
                 {
@@ -89,12 +88,12 @@ export function ModLog(props: ModLogProps): JSX.Element {
                                         </div>
                                     ) : null}
                                     <div>{X.incident_report.url}</div>
-                                    <div>{X.incident_report.system_note}</div>
                                     <div>{X.incident_report.reporter_note}</div>
                                     {X.incident_report.moderator ? (
                                         <Player user={X.incident_report.moderator} />
                                     ) : null}
                                     <i> {X.incident_report.moderator_note}</i>
+                                    <div>{highlight_cm_action(X.incident_report.system_note)}</div>
                                 </div>
                             )}
                             <pre>{chat_markup(X.note, undefined, 1024 * 128)}</pre>
@@ -104,4 +103,25 @@ export function ModLog(props: ModLogProps): JSX.Element {
             ]}
         />
     );
+}
+
+function highlight_cm_action(text: string): React.ReactElement | string {
+    const match = text.match(/Actioned by community vote: (\w+)/);
+    if (match) {
+        const [prefix, action] = text.split(/Actioned by community vote: /);
+        return (
+            <>
+                {prefix}
+                Actioned by community vote:{" "}
+                <span className="cm-action">
+                    {pgettext(
+                        "This is a log message saying what Community Moderators voted for",
+                        "CMs voted for: ",
+                    )}
+                    <span className="cm-action-action">{action}</span>
+                </span>
+            </>
+        );
+    }
+    return text;
 }

@@ -14,20 +14,18 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 .joseki-tag-selector {
-
     .Select-control {
-        themed border-color shade1;
+        themed: border-color shade1;
         border: none;
-        themed background bg;
+        themed: background bg;
         border-radius: 5px;
         border-bottom: 1px solid;
 
-        div[class^="Select"] {
-            themed background bg;
-            themed color fg;
-            themed border-color shade1;
+        div[class^='Select'] {
+            themed: background bg;
+            themed: color fg;
+            themed: border-color shade1;
         }
     }
 
@@ -42,26 +40,25 @@
 
     .Select-menu-outer {
         .Select-menu {
-            themed background bg;
+            themed: background bg;
         }
 
         .Select-option:not(:hover) {
-            themed background bg;
-            themed color fg;
+            themed: background bg;
+            themed: color fg;
         }
 
         .Select-option:hover {
-            themed background shade1;
+            themed: background shade1;
         }
     }
 }
 
 // react-select is very opinionated about this state of the Select, we have to work hard
 // to override it...
-
 .joseki-tag-selector.Select.Select--multi.is-focused {
     .Select-control {
-        themed background bg;
-        themed border-color shade1;
+        themed: background bg;
+        themed: border-color shade1;
     }
 }

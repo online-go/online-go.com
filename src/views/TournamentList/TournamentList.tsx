@@ -43,7 +43,7 @@ interface TournamentListProperties {
 
 type TabValues = "my-tournaments" | "schedule" | "live" | "archive" | "correspondence";
 
-export function TournamentListMainView(): JSX.Element {
+export function TournamentListMainView(): React.ReactElement {
     const [tab, _setTab] = React.useState<TabValues>(preferences.get("tournaments-tab"));
     const [show_all, setShowAll] = React.useState<boolean>(preferences.get("tournaments-show-all"));
     const user = useUser();
@@ -169,7 +169,7 @@ export function TournamentListMainView(): JSX.Element {
     );
 }
 
-function MyTournaments(): JSX.Element {
+function MyTournaments(): React.ReactElement {
     return (
         <TournamentListImpl
             source={`me/tournaments/`}
@@ -178,7 +178,7 @@ function MyTournaments(): JSX.Element {
     );
 }
 
-function Schedule(): JSX.Element {
+function Schedule(): React.ReactElement {
     const [schedules, setSchedules] = React.useState<any[]>([]);
 
     React.useEffect(() => {
@@ -264,7 +264,7 @@ function TournamentListImpl({
     filter?: Filter;
     source: string;
     orderBy: Array<string>;
-}): JSX.Element {
+}): React.ReactElement {
     return (
         <div className="TournamentList">
             <PaginatedTable

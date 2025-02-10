@@ -14,8 +14,6 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-
 .ChatIndicator {
     display: flex;
     align-items: center;
@@ -34,33 +32,37 @@
         cursor: pointer;
         width: max-content;
     }
+
     .fa-comment {
-        themed color shade3;
+        themed: color shade3;
     }
+
     .count {
         font-size: font-size-smaller;
         padding-bottom: -5px;
     }
 
     &.mentioned .fa-comment {
-        themed color chat-mentions;
+        themed: color chat-mentions;
     }
+
     &.mentioned .count {
-        themed color chat-mentions;
+        themed: color chat-mentions;
     }
 
     &.unread .fa-comment {
-        themed color primary;
+        themed: color primary;
     }
+
     &.unread .count {
-        themed color primary;
+        themed: color primary;
     }
 
     .ChatList {
         display: flex;
         position: absolute;
         box-sizing: border-box;
-        themed background-color bg
+        themed: background-color bg;
         top: navbar-height;
         right: 0;
         width: 12rem;

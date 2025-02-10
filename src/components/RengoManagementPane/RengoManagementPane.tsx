@@ -22,7 +22,6 @@ import { useUser } from "@/lib/hooks";
 import { _, pgettext, interpolate } from "@/lib/translate";
 
 interface RengoManagementPaneProperties {
-    user: rest_api.UserConfig;
     challenge_id: number;
     rengo_challenge_list: Array<Challenge>;
     lock: boolean; // don't let the user start the challenge
@@ -39,7 +38,7 @@ interface RengoManagementPaneProperties {
  * picked out of a supplied list of challenges
  * */
 
-export function RengoManagementPane(props: RengoManagementPaneProperties): JSX.Element {
+export function RengoManagementPane(props: RengoManagementPaneProperties): React.ReactElement {
     const user = useUser();
     const { registerTargetItem } = React.useContext(DynamicHelp.Api);
 
@@ -61,11 +60,9 @@ export function RengoManagementPane(props: RengoManagementPaneProperties): JSX.E
         return <div></div>;
     }
 
-    const our_rengo_challenges = props.rengo_challenge_list.filter(
-        (c) => c.user_id === props.user.id,
-    );
+    const our_rengo_challenges = props.rengo_challenge_list.filter((c) => c.user_id === user.id);
     const own_challenge = our_rengo_challenges.find((c) => c.challenge_id === props.challenge_id);
-    const participating = the_challenge.rengo_participants.includes(props.user.id);
+    const participating = the_challenge.rengo_participants.includes(user.id);
     const challenge_ready_to_start = rengoReadyToStart(the_challenge);
 
     const auto_start_remaining =
@@ -101,7 +98,7 @@ export function RengoManagementPane(props: RengoManagementPaneProperties): JSX.E
                 React.Children.only(props.children)
             }
             <div className="rengo-challenge-buttons">
-                {(own_challenge || props.user.is_moderator || null) && (
+                {(own_challenge || user.is_moderator || null) && (
                     <React.Fragment>
                         {!props.dontShowCancelButton ? (
                             <button

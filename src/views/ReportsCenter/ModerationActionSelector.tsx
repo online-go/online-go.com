@@ -25,142 +25,319 @@ import { Report } from "@/lib/report_util";
 interface ModerationActionSelectorProps {
     available_actions: string[];
     vote_counts: { [action: string]: number };
+    users_vote: string | null;
     enable: boolean;
     report: Report;
-    claim: () => void;
-    submit: (action: string, note: string) => void;
+    submit: (action: string, note: string, dissenter_note: string) => void;
 }
 
 // Translatable versions of the prompts for Community Moderators.
 // The set of keys (choices) here is determined by the server's VotableActions class.
 //
 // Don't forget to update rest_api.warnings.WarningMessageId as needed: new actions usually mean new messages.
+
 const ACTION_PROMPTS = {
     annul_escaped: llm_pgettext(
-        "Label for a moderator to select this option",
+        "This phrase to be translated is the label of an option for a moderator of an \
+online Go game server to select: an action to apply to a report about a game of Go. \
+In the phrase you are asked to translate, 'no cheating' is a conclusion meaning the \
+moderator concluded cheating did not occur, rather than an instruction meaning the \
+reader should not cheat. 'escape' is jargon that means 'left the game without finishing it properly: \
+take care to convey this where there is any reference to escape or escaping.\
+When translating the word escaping, realise that this is jargon for stopped playing.\
+Be completely unambiguous with regards to the meaning of the word annul: \
+this means to declare the game invalid, and this is not the same as cancelling a game.",
         "Wrong result due to escape - annul game, warn the escaper.",
     ),
     warn_escaper: llm_pgettext(
-        "Label for a moderator to select this option",
+        "This phrase to be translated is the label of an option for a moderator of an \
+online Go game server to select: an action to apply to a report about a game of Go. \
+In the phrase you are asked to translate, 'no cheating' is a conclusion meaning the \
+moderator concluded cheating did not occur, rather than an instruction meaning the \
+reader should not cheat. 'escape' is jargon that means 'left the game without finishing it properly: \
+take care to convey this where there is any reference to escape or escaping.\
+When translating the word escaping, realise that this is jargon for stopped playing.\
+Be completely unambiguous with regards to the meaning of the word annul: \
+this means to declare the game invalid, and this is not the same as cancelling a game.",
         "The accused escaped - warn them.",
     ),
     call_escaped_game_for_black: llm_pgettext(
-        "Label for a moderator to select this option",
+        "This phrase to be translated is the label of an option for a moderator of an \
+online Go game server to select: an action to apply to a report about a game of Go. \
+In the phrase you are asked to translate, 'no cheating' is a conclusion meaning the \
+moderator concluded cheating did not occur, rather than an instruction meaning the \
+reader should not cheat. 'escape' is jargon that means 'left the game without finishing it properly: \
+take care to convey this where there is any reference to escape or escaping.\
+When translating the word escaping, realise that this is jargon for stopped playing.\
+Be completely unambiguous with regards to the meaning of the word annul: \
+this means to declare the game invalid, and this is not the same as cancelling a game.",
         "White escaped - call the game for black, and warn white.",
     ),
     call_escaped_game_for_white: llm_pgettext(
-        "Label for a moderator to select this option",
+        "This phrase to be translated is the label of an option for a moderator of an \
+online Go game server to select: an action to apply to a report about a game of Go. \
+In the phrase you are asked to translate, 'no cheating' is a conclusion meaning the \
+moderator concluded cheating did not occur, rather than an instruction meaning the \
+reader should not cheat. 'escape' is jargon that means 'left the game without finishing it properly: \
+take care to convey this where there is any reference to escape or escaping.\
+When translating the word escaping, realise that this is jargon for stopped playing.\
+Be completely unambiguous with regards to the meaning of the word annul: \
+this means to declare the game invalid, and this is not the same as cancelling a game.",
         "Black escaped - call the game for white, and warn black.",
     ),
     no_escaping: llm_pgettext(
-        "Label for a moderator to select this option",
+        "This phrase to be translated is the label of an option for a moderator of an \
+online Go game server to select: an action to apply to a report about a game of Go. \
+In the phrase you are asked to translate, 'no cheating' is a conclusion meaning the \
+moderator concluded cheating did not occur, rather than an instruction meaning the \
+reader should not cheat. 'escape' is jargon that means 'left the game without finishing it properly: \
+take care to convey this where there is any reference to escape or escaping.\
+When translating the word escaping, realise that this is jargon for stopped playing.\
+Be completely unambiguous with regards to the meaning of the word annul: \
+this means to declare the game invalid, and this is not the same as cancelling a game.",
         "No escaping evident - inform the reporter.",
     ),
     not_escaping_cancel: llm_pgettext(
-        "Label for a moderator to select this option",
+        "This phrase to be translated is the label of an option for a moderator of an \
+online Go game server to select: an action to apply to a report about a game of Go. \
+In the phrase you are asked to translate, 'no cheating' is a conclusion meaning the \
+moderator concluded cheating did not occur, rather than an instruction meaning the \
+reader should not cheat. 'escape' is jargon that means 'left the game without finishing it properly: \
+take care to convey this where there is any reference to escape or escaping.\
+When translating the word escaping, realise that this is jargon for stopped playing.\
+Be completely unambiguous with regards to the meaning of the word annul: \
+this means to declare the game invalid, and this is not the same as cancelling a game.",
         "Not escaping, they used 'cancel'.",
     ),
     annul_stalled: llm_pgettext(
-        "Label for a moderator to select this option",
+        "This phrase to be translated is the label of an option for a moderator of an \
+online Go game server to select: an action to apply to a report about a game of Go. \
+In the phrase you are asked to translate, 'no cheating' is a conclusion meaning the \
+moderator concluded cheating did not occur, rather than an instruction meaning the \
+reader should not cheat. Be completely unambiguous with regards to the meaning of \
+the word annul: choose a translation that means that the result of the game is not valid.\
+When translating stalling or stalled, realise that this means wasting time, not slowing down.",
         "Wrong result due to stalling - annul game, warn the staller.",
     ),
     warn_staller: llm_pgettext(
-        "Label for a moderator to select this option",
+        "This phrase to be translated is the label of an option for a moderator of an \
+online Go game server to select: an action to apply to a report about a game of Go. \
+In the phrase you are asked to translate, 'no cheating' is a conclusion meaning the \
+moderator concluded cheating did not occur, rather than an instruction meaning the \
+reader should not cheat. Be completely unambiguous with regards to the meaning of \
+the word annul: choose a translation that means that the result of the game is not valid.\
+When translating stalling or stalled, realise that this means wasting time, not slowing down.",
         "The accused stalled - warn them.",
     ),
     call_stalled_game_for_black: llm_pgettext(
-        "Label for a moderator to select this option",
+        "This phrase to be translated is the label of an option for a moderator of an \
+online Go game server to select: an action to apply to a report about a game of Go. \
+In the phrase you are asked to translate, 'no cheating' is a conclusion meaning the \
+moderator concluded cheating did not occur, rather than an instruction meaning the \
+reader should not cheat. Be completely unambiguous with regards to the meaning of \
+the word annul: choose a translation that means that the result of the game is not valid.\
+When translating stalling or stalled, realise that this means wasting time, not slowing down.",
         "White stalled - call the game for black, and warn white.",
     ),
     call_stalled_game_for_white: llm_pgettext(
-        "Label for a moderator to select this option",
+        "This phrase to be translated is the label of an option for a moderator of an \
+online Go game server to select: an action to apply to a report about a game of Go. \
+In the phrase you are asked to translate, 'no cheating' is a conclusion meaning the \
+moderator concluded cheating did not occur, rather than an instruction meaning the \
+reader should not cheat. Be completely unambiguous with regards to the meaning of \
+the word annul: choose a translation that means that the result of the game is not valid.\
+When translating stalling or stalled, realise that this means wasting time, not slowing down.",
         "Black stalled - call the game for white, and warn black.",
     ),
     no_stalling: llm_pgettext(
-        "Label for a moderator to select this option",
+        "This phrase to be translated is the label of an option for a moderator of an \
+online Go game server to select: an action to apply to a report about a game of Go. \
+In the phrase you are asked to translate, 'no cheating' is a conclusion meaning the \
+moderator concluded cheating did not occur, rather than an instruction meaning the \
+reader should not cheat. Be completely unambiguous with regards to the meaning of \
+the word annul: choose a translation that means that the result of the game is not valid.\
+When translating stalling or stalled, realise that this means wasting time, not slowing down.",
         "No stalling evident - inform the reporter.",
     ),
     annul_score_cheat: llm_pgettext(
-        "Label for a moderator to select this option",
+        "This phrase to be translated is the label of an option for a moderator of an \
+online Go game server to select: an action to apply to a report about a game of Go. \
+In the phrase you are asked to translate, 'no cheating' is a conclusion meaning the \
+moderator concluded cheating did not occur, rather than an instruction meaning the \
+reader should not cheat. \
+Be completely unambiguous with regards to the meaning of the word annul: \
+this means to declare the game invalid, and this is not the same as cancelling a game.\
+When translating cheating, realise that this means trying to win by breaking the rules.",
         "Annul the game and warn the cheater.",
     ),
     warn_score_cheat: llm_pgettext(
-        "Label for a moderator to select this option",
+        "This phrase to be translated is the label of an option for a moderator of an \
+online Go game server to select: an action to apply to a report about a game of Go. \
+In the phrase you are asked to translate, 'no cheating' is a conclusion meaning the \
+moderator concluded cheating did not occur, rather than an instruction meaning the \
+reader should not cheat. \
+Be completely unambiguous with regards to the meaning of the word annul: \
+this means to declare the game invalid, and this is not the same as cancelling a game.\
+When translating cheating, realise that this means trying to win by breaking the rules.",
         "The accused tried to cheat - warn the cheater.",
     ),
     no_score_cheat: llm_pgettext(
-        "Label for a moderator to select this option",
+        "This phrase to be translated is the label of an option for a moderator of an \
+online Go game server to select: an action to apply to a report about a game of Go. \
+In the phrase you are asked to translate, 'no cheating' is a conclusion meaning the \
+moderator concluded cheating did not occur, rather than an instruction meaning the \
+reader should not cheat. \
+Be completely unambiguous with regards to the meaning of the word annul: \
+this means to declare the game invalid, and this is not the same as cancelling a game.\
+When translating cheating, realise that this means trying to win by breaking the rules.",
         "No cheating - inform the reporter.",
     ),
     call_score_cheat_for_black: llm_pgettext(
-        "Label for a moderator to select this option",
+        "This phrase to be translated is the label of an option for a moderator of an \
+online Go game server to select: an action to apply to a report about a game of Go. \
+In the phrase you are asked to translate, 'no cheating' is a conclusion meaning the \
+moderator concluded cheating did not occur, rather than an instruction meaning the \
+reader should not cheat. Be completely unambiguous with regards to the meaning of \
+the word annul: choose a translation that means that the result of the game is not valid.",
         "White is cheating - call the game for black, and warn white.",
     ),
     call_score_cheat_for_white: llm_pgettext(
-        "Label for a moderator to select this option",
+        "This phrase to be translated is the label of an option for a moderator of an \
+online Go game server to select: an action to apply to a report about a game of Go. \
+In the phrase you are asked to translate, 'no cheating' is a conclusion meaning the \
+moderator concluded cheating did not occur, rather than an instruction meaning the \
+reader should not cheat. Be completely unambiguous with regards to the meaning of \
+the word annul: choose a translation that means that the result of the game is not valid.",
         "Black is cheating - call the game for white, and warn black.",
     ),
+    annul_no_warning: llm_pgettext(
+        "This phrase to be translated is the label of an option for a moderator of an \
+online Go game server to select: an action to apply to a report about a game of Go. \
+In the phrase you are asked to translate, 'no cheating' is a conclusion meaning the \
+moderator concluded cheating did not occur, rather than an instruction meaning the \
+reader should not cheat. \
+Be completely unambiguous with regards to the meaning of the word annul: \
+this means to declare the game invalid, and this is not the same as cancelling a game.",
+        "Annul the game, but issue no warnings.",
+    ),
     final_warning_escaping: llm_pgettext(
-        "Label for a moderator to select this option",
+        "This phrase to be translated is the label of an option for a moderator of an \
+online Go game server to select: an action to apply to a report about a game of Go. \
+In the phrase you are asked to translate, 'no cheating' is a conclusion meaning the \
+moderator concluded cheating did not occur, rather than an instruction meaning the \
+reader should not cheat. 'escape' is jargon that means 'left the game without finishing it properly: \
+take care to convey this where there is any reference to escape or escaping.\
+Be completely unambiguous with regards to the meaning of the word annul: \
+this means to declare the game invalid, and this is not the same as cancelling a game.",
         "Final warning: the accused escaped.",
     ),
     final_warning_stalling: llm_pgettext(
-        "Label for a moderator to select this option",
+        "This phrase to be translated is the label of an option for a moderator of an \
+online Go game server to select: an action to apply to a report about a game of Go. \
+In the phrase you are asked to translate, 'no cheating' is a conclusion meaning the \
+moderator concluded cheating did not occur, rather than an instruction meaning the \
+reader should not cheat. Be completely unambiguous with regards to the meaning of \
+the word annul: choose a translation that means that the result of the game is not valid.",
         "Final warning: the accused stalled.",
     ),
     final_warning_score_cheating: llm_pgettext(
-        "Label for a moderator to select this option",
+        "This phrase to be translated is the label of an option for a moderator of an \
+online Go game server to select: an action to apply to a report about a game of Go. \
+In the phrase you are asked to translate, 'no cheating' is a conclusion meaning the \
+moderator concluded cheating did not occur, rather than an instruction meaning the \
+reader should not cheat. Be completely unambiguous with regards to the meaning of \
+the word annul: choose a translation that means that the result of the game is not valid.",
         "Final warning: the accused tried to cheat.",
     ),
     final_warning_escaping_and_annul: llm_pgettext(
-        "Label for a moderator to select this option",
+        "This phrase to be translated is the label of an option for a moderator of an \
+online Go game server to select: an action to apply to a report about a game of Go. \
+In the phrase you are asked to translate, 'no cheating' is a conclusion meaning the \
+moderator concluded cheating did not occur, rather than an instruction meaning the \
+reader should not cheat. 'escape' is jargon that means 'left the game without finishing it properly: \
+take care to convey this where there is any reference to escape or escaping.\
+Be completely unambiguous with regards to the meaning of the word annul: \
+this means to declare the game invalid, and this is not the same as cancelling a game.",
         "Final warning: the accused escaped - annul game.",
     ),
     final_warning_stalling_and_annul: llm_pgettext(
-        "Label for a moderator to select this option",
+        "This phrase to be translated is the label of an option for a moderator of an \
+online Go game server to select: an action to apply to a report about a game of Go. \
+In the phrase you are asked to translate, 'no cheating' is a conclusion meaning the \
+moderator concluded cheating did not occur, rather than an instruction meaning the \
+reader should not cheat. \
+Be completely unambiguous with regards to the meaning of the word annul: \
+this means to declare the game invalid, and this is not the same as cancelling a game.",
         "Final warning: the accused stalled - annul game.",
     ),
     final_warning_score_cheating_and_annul: llm_pgettext(
-        "Label for a moderator to select this option",
+        "This phrase to be translated is the label of an option for a moderator of an \
+online Go game server to select: an action to apply to a report about a game of Go. \
+In the phrase you are asked to translate, 'no cheating' is a conclusion meaning the \
+moderator concluded cheating did not occur, rather than an instruction meaning the \
+reader should not cheat. \
+Be completely unambiguous with regards to the meaning of the word annul: \
+this means to declare the game invalid, and this is not the same as cancelling a game.",
         "Final warning: the accused tried to cheat - annul game.",
     ),
     warn_duplicate_reporter: llm_pgettext(
-        "Label for a moderator to select this option",
-        "Duplicate report - ask them not to do that.",
+        "This phrase to be translated is the label of an option for a moderator of an \
+online Go game server to select: an action to apply to a report about a game of Go. \
+In the phrase you are asked to translate, 'no cheating' is a conclusion meaning the \
+moderator concluded cheating did not occur, rather than an instruction meaning the \
+reader should not cheat. Be completely unambiguous with regards to the meaning of \
+the word annul: choose a translation that means that the result of the game is not valid.",
+        "Duplicate report - ask the reporter not to do that.",
     ),
-
-    suspend_user: llm_pgettext("Label for a moderator to select this option", "Suspend the user."),
-
+    suspend_user: llm_pgettext(
+        "This phrase to be translated is the label of an option for a moderator of an \
+online Go game server to select: an action to apply to a report about a game of Go. \
+In the phrase you are asked to translate, 'no cheating' is a conclusion meaning the \
+moderator concluded cheating did not occur, rather than an instruction meaning the \
+reader should not cheat. Be completely unambiguous with regards to the meaning of \
+the word annul: choose a translation that means that the result of the game is not valid.",
+        "Suspend the user.",
+    ),
     suspend_user_and_annul: llm_pgettext(
-        "Label for a moderator to select this option",
+        "This phrase to be translated is the label of an option for a moderator of an \
+online Go game server to select: an action to apply to a report about a game of Go. \
+In the phrase you are asked to translate, 'no cheating' is a conclusion meaning the \
+moderator concluded cheating did not occur, rather than an instruction meaning the \
+reader should not cheat. \
+Be completely unambiguous with regards to the meaning of the word annul: \
+this means to declare the game invalid, and this is not the same as cancelling a game.",
         "Suspend user and annul game.",
     ),
-
-    // Note: keep this last, so it's positioned above the "note to moderator" input field
     escalate: llm_pgettext(
-        "A label for a community moderator to select this option",
-        "Escalate: submit for consideration for more serious action.",
+        "This phrase to be translated is the label of an option for a moderator of an \
+online Go game server to select: an action to apply to a report about a game of Go. \
+In the phrase you are asked to translate, 'no cheating' is a conclusion meaning the \
+moderator concluded cheating did not occur, rather than an instruction meaning the \
+reader should not cheat. \
+Be completely unambiguous with regards to the meaning of the word annul: \
+this means to declare the game invalid, and this is not the same as cancelling a game.",
+        "Escalate: report needs final warning or suspension, or other unusual action.",
     ),
 };
 
 export function ModerationActionSelector({
     available_actions,
     vote_counts,
+    users_vote,
     enable,
     report,
-    claim,
     submit,
-}: ModerationActionSelectorProps): JSX.Element {
+}: ModerationActionSelectorProps): React.ReactElement {
     const user = useUser();
     const reportedBySelf = user.id === report.reporting_user.id;
 
-    const [selectedOption, setSelectedOption] = React.useState("");
-    const [escalation_note, setEscalationNote] = React.useState("");
     const [voted, setVoted] = React.useState(false);
+    const [selectedOption, setSelectedOption] = React.useState(users_vote || "");
+    const [escalation_note, setEscalationNote] = React.useState("");
+    const [dissenter_note, setDissenterNote] = React.useState("");
 
     const updateSelectedAction = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSelectedOption(e.target.value);
-        claim();
     };
 
     const { registerTargetItem } = React.useContext(DynamicHelp.Api);
@@ -169,6 +346,14 @@ export function ModerationActionSelector({
 
     // If for some reason we didn't get any actions to offer, we'll just offer "escalate"
     const action_choices = available_actions ? available_actions : ["escalate"];
+
+    // If we're in dissent, we'll ask for a "dissent" note
+    const inDissent =
+        selectedOption &&
+        !!Object.keys(vote_counts).find(
+            (k: string) =>
+                k !== selectedOption && (vote_counts[selectedOption] ?? 0) < vote_counts[k],
+        );
 
     return (
         <div className="ModerationActionSelector" ref={voting_pane}>
@@ -206,14 +391,15 @@ export function ModerationActionSelector({
                         <label htmlFor={a}>
                             {(ACTION_PROMPTS as any)[a]}
                             <span className="vote-count">
-                                ({(!!a && !!vote_counts && vote_counts[a]) ?? 0})
+                                ({(!!a && !!vote_counts && vote_counts[a]) ?? 0}
+                                {users_vote === a && "*"})
                             </span>
                         </label>
                     </div>
                 ))}
             {selectedOption === "escalate" && (
                 <textarea
-                    id="mod-note-text"
+                    id="escalation-note"
                     placeholder={llm_pgettext(
                         "A placeholder prompting community moderators for the reason why they are escalating a report",
                         "Reason for escalating?",
@@ -221,6 +407,18 @@ export function ModerationActionSelector({
                     rows={5}
                     value={escalation_note}
                     onChange={(ev) => setEscalationNote(ev.target.value)}
+                />
+            )}
+            {inDissent && selectedOption !== "escalate" && (
+                <textarea
+                    id="dissenter-note"
+                    placeholder={llm_pgettext(
+                        "A placeholder prompting community moderators for the reason why they are disagreeing with a vote",
+                        "(Optional) What is it that the other votes do not seem to take into account?",
+                    )}
+                    rows={5}
+                    value={dissenter_note}
+                    onChange={(ev) => setDissenterNote(ev.target.value)}
                 />
             )}
             <span className="action-buttons">
@@ -242,7 +440,7 @@ export function ModerationActionSelector({
                         }
                         onClick={() => {
                             setVoted(true);
-                            submit(selectedOption, escalation_note);
+                            submit(selectedOption, escalation_note, dissenter_note);
                         }}
                     >
                         {llm_pgettext("A label on a button for submitting a vote", "Vote")}

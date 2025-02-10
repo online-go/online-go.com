@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 .ChallengeModal {
     width: 50rem;
     max-width: 100%;
@@ -25,6 +24,7 @@
         justify-content: center;
         align-content: stretch;
     }
+
     .pane {
         min-width: 49%;
         box-sizing: border-box;
@@ -33,13 +33,16 @@
             width: 10rem;
             word-wrap: break-word;
         }
+
         .controls, .checkbox {
             width: 10rem;
             align-items: flex-start;
         }
+
         input, select {
             width: 10rem;
         }
+
         input[type='checkbox'] {
             width: 1rem;
         }
@@ -48,22 +51,23 @@
         // the user is in the middle of typing a valid number that
         // starts with the invalid values '1' or '2'
         .value-warning {
-            themed color danger
-            opacity: 1.0 !important;
+            themed: color danger;
+            opacity: 1 !important;
             transition: opacity 1s;
-            transition-timing-function: cubic-bezier(.67,-0.01,.99,0);
-        }
-        .fa-exclamation-circle {
-            padding-left: 1rem;
-            opacity: 0.0;
+            transition-timing-function: cubic-bezier(0.67, -0.01, 0.99, 0);
         }
 
+        .fa-exclamation-circle {
+            padding-left: 1rem;
+            opacity: 0;
+        }
     }
 
     .speed-warning {
         i {
             margin-right: 0.5em;
         }
+
         color: chocolate;
         font-size: 0.8em;
         text-align: center;
@@ -88,14 +92,15 @@
     .left-pane {
         margin-right: 0.5rem;
     }
+
     .right-pane {
         border-left: 1px solid transparent;
-        themed border-color shade3
+        themed: border-color shade3;
     }
 
     .help {
         .fa {
-            themed color shade1;
+            themed: color shade1;
             padding: 0.3rem;
         }
     }
@@ -107,13 +112,16 @@
     @media only screen and (max-width: 768px) {
         .pane {
             width: 100%;
+
             .control-label {
                 width: 50%;
             }
         }
+
         .left-pane {
-            margin-right 0;
+            margin-right: 0;
         }
+
         .right-pane {
             border-left: 0;
         }
@@ -122,5 +130,107 @@
     .header-with-icon {
         display: inline-flex;
         align-items: middle;
+    }
+
+    .header {
+        max-height: 80vh;
+        align-items: stretch !important;
+    }
+
+    .computer-opponents {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        overflow: auto;
+    }
+
+    .bot-categories {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+
+        h1 {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            themed: color shade1;
+            font-weight: bold !important;
+            padding-bottom: 0.5rem;
+        }
+
+        .bot-category {
+            margin-top: 1rem;
+        }
+    }
+
+    .bot-options {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        width: 100%;
+        align-items: flex-start;
+        // justify-content: space-around;
+    }
+
+    .bot-option {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        border-radius: 0.25rem;
+        padding-right: 0.5rem;
+        padding: 0.2rem;
+        gap: 1rem;
+        border: 2px solid transparent;
+        overflow: hidden;
+        flex-wrap: wrap;
+        width: 13rem;
+
+        &:hover {
+            themed: background-color shade4;
+        }
+
+        &.disabled {
+            opacity: 0.5;
+            background-color: transparent !important;
+            cursor: not-allowed;
+        }
+
+        .disabled-reason {
+            flex-grow: 1;
+            font-size: 0.8rem;
+            themed: color shade1;
+            display: inline-block;
+            width: 12rem;
+        }
+
+        .username-rank {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .username {
+            display: inline-block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 6rem;
+        }
+
+        .rank {
+            display: inline-block;
+            white-space: nowrap;
+            max-width: 2rem;
+        }
+
+        .PlayerIcon {
+            border-radius: 0.3rem;
+            themed: background-color shade5;
+        }
+
+        &.selected {
+            themed: border-color, primary;
+        }
     }
 }

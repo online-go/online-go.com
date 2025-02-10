@@ -14,13 +14,9 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-
 .LibraryPlayer {
-
     .breadcrumbs {
         display: flex;
-
         padding: 1rem;
         font-size: font-size-big;
 
@@ -28,6 +24,7 @@
             cursor: pointer;
             padding-left: 0.5rem;
         }
+
         .breadcrumb:hover {
             text-decoration: underline;
         }
@@ -36,8 +33,8 @@
     .collections {
         cursor: pointer;
         margin-bottom: 1rem;
-
     }
+
     .games {
     }
 
@@ -54,7 +51,7 @@
 
         span {
             display: table-cell;
-            padding-right: 1.0rem;
+            padding-right: 1rem;
         }
     }
 
@@ -73,7 +70,7 @@
         margin-left: 0.2rem;
         margin-bottom: 0.2rem;
         font-family: 'FontAwesome';
-        content: " ";
+        content: ' ';
     }
 
     .sortable.sorted-asc:after {
@@ -85,31 +82,36 @@
     }
 
     .private-lock {
-        //cursor: pointer;
+        // cursor: pointer;
         width: 2rem;
         text-align: center;
     }
+
     .fa-lock, .fa-unlock {
         cursor: pointer;
     }
+
     .collection-entry:hover {
         cursor: pointer;
         text-decoration: underline;
     }
 
-
     .date-column {
         min-width: 10rem;
     }
+
     .collection {
         padding-left: 2rem;
     }
+
     .collection, .name-column {
         min-width: 12rem;
     }
+
     .black-column, .white-column {
         min-width: 6rem;
     }
+
     .outcome-column {
         min-width: 5rem;
     }
@@ -123,11 +125,14 @@
             width: 100%;
             margin: 0.5rem 1rem 0.5rem 0;
         }
+
         label {
             user-select: none;
         }
+
         .name-checkbox {
             margin-right: 1rem;
+
             i {
                 margin: 0 0.5rem;
             }
@@ -137,5 +142,4 @@
     .upload-button {
         float: right;
     }
-
 }
