@@ -30,6 +30,7 @@ import { currencies } from "./currencies";
 import { Toggle } from "@/components/Toggle";
 import { LoadingPage } from "@/components/Loading";
 import { toast } from "@/lib/toast";
+import { PriceIncreaseMessage } from "@/components/PriceIncreaseMessage";
 
 interface SupporterProperties {
     inline?: boolean;
@@ -614,6 +615,8 @@ export function Supporter(props: SupporterProperties): React.ReactElement {
 export function SiteSupporterText(): React.ReactElement {
     return (
         <div className="SiteSupporterText">
+            <PriceIncreaseMessage noDismiss={true} />
+
             <p>
                 {_(
                     "Thanks to the generous support from players like you, Online-Go.com is able to provide the best place to play Go online for free to all players around the world. Online-Go.com introduces the game of Go to more people than any other site or organization in the West, making us an important cornerstone in the Western Go world. This is only possible with the continued support from our players, so thank you for taking the time to consider being a supporter!",
