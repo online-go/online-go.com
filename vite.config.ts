@@ -207,7 +207,7 @@ export default defineConfig({
     },
     optimizeDeps: {
         esbuildOptions: {
-            plugins: [fixReactVirtualized],
+            plugins: [fixReactVirtualized as any],
         },
     },
 
