@@ -17,7 +17,7 @@ local-dev: node_modules .husky
 	npx husky install
 
 node_modules: package.json
-	npm install
+	npm clean-install
 
 pretty prettier lint-fix:
 	npm run prettier
