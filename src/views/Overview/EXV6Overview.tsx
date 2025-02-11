@@ -42,6 +42,7 @@ import { NewUserRankChooser } from "@/components/NewUserRankChooser";
 import { FreeTrialBanner } from "@/components/FreeTrialBanner";
 import { SupporterProblems } from "@/components/SupporterProblems";
 import { FreeTrialSurvey } from "@/components/FreeTrialSurvey";
+import { PriceIncreaseMessage } from "@/components/PriceIncreaseMessage";
 
 declare let ogs_missing_translation_count: number;
 
@@ -158,6 +159,7 @@ export class EXV6Overview extends React.Component<{}, OverviewState> {
                     <div id="Overview">
                         <div className="left">
                             <SupporterProblems />
+                            <PriceIncreaseMessage />
                             <FreeTrialBanner />
                             <FreeTrialSurvey />
                             <DismissableMessages />

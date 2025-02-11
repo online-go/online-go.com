@@ -140,7 +140,7 @@ function main() {
                 }
 
                 for (let m of parser.getMatches(source)) {
-                    console.log(m);
+                    //console.log(m);
                     if (m.msgid == "") {
                         console.log("Skipping blank translation");
                         console.log(m);
@@ -188,7 +188,7 @@ function main() {
                 }
 
                 fs.writeFileSync("build/llm-keys.json", JSON.stringify(llm_keys, undefined, 4));
-                console.log("build/llm-keys-ui-keys.json written");
+                console.log("build/llm-keys.json written");
 
                 if (MODE === "llm-translation-extraction") {
                     console.log("llm-translation-extraction mode complete, exiting");

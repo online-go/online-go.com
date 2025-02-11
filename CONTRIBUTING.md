@@ -6,7 +6,7 @@ or your fork with the `--recurse-submodules` flag and perform the following acti
 
 ```
 # First install the necessary dependencies
-npm install
+npm clean-install
 
 # Next install `husky`, this provides pre-commit checks to ensure the code
 # meets some basic guidelines
@@ -107,7 +107,7 @@ You could poke around in `src/` if you are already curious
 
 6. in a command window, cd to the folder that was created when you cloned the repo and do
 
-`npm install`
+`npm clean-install`
 
 `npm run dev`
 

@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-.FreeTrialSurvey-container {
+.PriceIncreaseMessage-container {
     display: flex;
     justify-content: center;
     margin: 2rem 1rem;
@@ -24,57 +24,45 @@
     }
 }
 
-.FreeTrialSurvey {
+.PriceIncreaseMessage {
     border: 1px solid hsl(48, 100%, 40);
     border-radius: 0.5rem;
     display: flex;
     flex-direction: column;
     width: 60rem;
     max-width: calc(min(100%, 100vw));
-    min-height: 12rem;
+    //min-height: 12rem;
     overflow: auto;
     padding: 1rem;
+    text-align: justify;
 
     @media screen and (max-width: 850px) {
         flex-direction: column;
-        height: 30rem;
         align-items: stretch;
         align-content: stretch;
         justify-content: stretch;
         width: 100%;
     }
 
-    hr {
-        margin: 1rem 0;
-    }
-
-    .other {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .indent {
-        margin-left: 2rem;
-    }
-
-    // The markdown auto-linkifies our online-go.com text, which isn't
-    // important in this context and is just distracting
-    a {
-        themed: color fg;
-    }
-
-    textarea {
-        height: 10rem;
-    }
-
     .buttons {
         display: flex;
         flex-direction: row;
         justify-content: space-around;
-        margin: 0.5rem;
+        margin-top: 0.75rem;
 
         .translation-original, .language-map {
             display: none;
         }
+    }
+    
+    .title {
+        padding-bottom: 0.75rem;
+    }
+
+    .body {
+    }
+
+    .btn {
+        padding: 0.5rem;
     }
 }

@@ -15,23 +15,4 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as React from "react";
-
-import { _ } from "@/lib/translate";
-import { QuickMatch } from "./QuickMatch";
-import { CustomGames } from "./CustomGames";
-import { PriceIncreaseMessage } from "@/components/PriceIncreaseMessage";
-
-export function Play(): React.ReactElement {
-    React.useEffect(() => {
-        window.document.title = _("Play");
-    }, []);
-
-    return (
-        <div className="Play container">
-            <PriceIncreaseMessage />
-            <QuickMatch />
-            <CustomGames />
-        </div>
-    );
-}
+export * from "./PriceIncreaseMessage";

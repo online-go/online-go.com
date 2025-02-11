@@ -21,7 +21,8 @@ const googleTranslate = keys
     : null;
 
 const openai = keys ? new OpenAI({ apiKey: keys.openai_api_key }) : null;
-const OPENAI_MODEL = "gpt-4o";
+// const OPENAI_MODEL = "gpt-4o";
+const OPENAI_MODEL = "o1";
 
 let limit = 1;
 

@@ -247,6 +247,7 @@ export interface DataSchema
     "active-tournament": Announcement;
     "free-trial-saved-for-later-timestamp": number;
     "free-trial-survey-submitted-timestamp": number;
+    "price-increase-message-dismissed-timestamp": number;
 
     "chat-manager.last-seen": { [channel: string]: number };
     "device.uuid": string;

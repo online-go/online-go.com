@@ -7,6 +7,9 @@ dev: node_modules .husky
 build:
 	npm run build
 
+build-i18n:
+	npm run build:i18n
+
 local-dev: node_modules .husky
 	export OGS_BACKEND=LOCAL && npm run dev
 
@@ -14,7 +17,7 @@ local-dev: node_modules .husky
 	npx husky install
 
 node_modules: package.json
-	npm install
+	npm clean-install
 
 pretty prettier lint-fix:
 	npm run prettier
