@@ -84,6 +84,16 @@ export function ai_request_variation_analysis(
     const cur_move_string = cur_move.getMoveStringToThisPoint();
     const variation = cur_move_string.slice(trunk_move_string.length);
 
+    if (trunk_move_string.includes("undefined")) {
+        console.error("Trunk move string includes undefined", trunk_move_string);
+    } else if (cur_move_string.includes("undefined")) {
+        console.error("Current move string includes undefined", cur_move_string);
+    } else if (variation.includes("undefined")) {
+        console.error("Variation includes undefined", variation);
+    } else {
+        console.log("Sending request for variation analysis", variation);
+    }
+
     const key = `${uuid}-${game_id}-${ai_review_id}-${trunk_move.move_number}-${variation}`;
     if (key in analysis_requests_made) {
         return;

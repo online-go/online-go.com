@@ -353,7 +353,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                         const m = key.match(/move-([0-9]+)/) as string[];
                         const move_number = parseInt(m[1]);
                         this.ai_review.moves[move_number] = value;
-                    } else if (/variation-([0-9]+)-([a-z.]+)/.test(key)) {
+                    } else if (/variation-([0-9]+)-([!12a-z.A-Z-]+)/.test(key)) {
                         if (!this.ai_review) {
                             console.warn(
                                 "AI Review move received but ai review not initialized yet",
@@ -363,7 +363,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                         if (!this.ai_review.analyzed_variations) {
                             this.ai_review.analyzed_variations = {};
                         }
-                        const m = key.match(/variation-([0-9a-z.A-Z-]+)/) as string[];
+                        const m = key.match(/variation-([!0-9a-z.A-Z-]+)/) as string[];
                         const var_key = m[1];
                         this.ai_review.analyzed_variations[var_key] = value;
                     } else {
