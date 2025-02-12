@@ -17,7 +17,6 @@
 
 import { ModalTypes } from "@/components/ModalProvider/ModalTypes";
 import { ForkModal } from "@/components/ChallengeModal/ForkModal";
-import { ChallengeModal } from "@/components/ChallengeModal/ChallengeModal";
 import { LanguagePickerModal } from "@/components/LanguagePicker/LanguagePicker";
 import { GameLogModal } from "@/components/GameLogModal";
 
@@ -27,7 +26,6 @@ interface ModalRegistry {
 
 export const modalRegistry: ModalRegistry = {
     [ModalTypes.Fork]: ForkModal,
-    [ModalTypes.Challenge]: ChallengeModal,
     [ModalTypes.LanguagePicker]: LanguagePickerModal,
     [ModalTypes.GameLog]: GameLogModal,
 };

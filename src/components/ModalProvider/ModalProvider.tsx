@@ -17,7 +17,6 @@
 
 import * as React from "react";
 
-import { ChallengeModes } from "../ChallengeModal";
 import { createPortal } from "react-dom";
 import { GobanRenderer } from "goban";
 import { ModalContext } from "./ModalContext";
@@ -25,11 +24,6 @@ import { ModalTypes } from "./ModalTypes";
 import { modalRegistry } from "./ModalRegistry";
 
 interface Modals {
-    challenge: {
-        mode: ChallengeModes;
-        playerId?: number;
-        initialState: any;
-    };
     fork: {
         goban: GobanRenderer;
     };
@@ -39,7 +33,7 @@ type ModalTypesProps = {
     [key: string]: any;
 };
 
-export const ModalProvider = ({ children }: React.PropsWithChildren): JSX.Element => {
+export const ModalProvider = ({ children }: React.PropsWithChildren): React.ReactElement => {
     const [modalType, setModalType] = React.useState(null as ModalTypes | null);
     const [modalProps, setModalProps] = React.useState({} as ModalTypesProps);
 
@@ -47,13 +41,6 @@ export const ModalProvider = ({ children }: React.PropsWithChildren): JSX.Elemen
         setModalType(type);
 
         switch (type) {
-            case ModalTypes.Challenge:
-                setModalProps({
-                    mode: "computer" as ChallengeModes,
-                    initialState: null,
-                    playerId: undefined,
-                });
-                break;
             case ModalTypes.Fork:
                 setModalProps({
                     goban: (props as Modals["fork"]).goban,
@@ -68,6 +55,7 @@ export const ModalProvider = ({ children }: React.PropsWithChildren): JSX.Elemen
                 });
                 break;
             default:
+                // Some valid modal types do not have props
                 break;
         }
     };

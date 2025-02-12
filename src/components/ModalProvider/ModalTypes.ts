@@ -16,7 +16,6 @@
  */
 
 export enum ModalTypes {
-    Challenge = "challenge",
     LanguagePicker = "languagePicker",
     Fork = "fork",
     GameLog = "gameLog",
