@@ -22,7 +22,7 @@ import { Toggle } from "@/components/Toggle";
 import { uuid } from "@/lib/misc";
 import * as preferences from "@/lib/preferences";
 import { usePreference } from "@/lib/preferences";
-import { JGOFNumericPlayerColor, ColoredCircle, MoveTree, GobanRenderer } from "goban";
+import { JGOFNumericPlayerColor, ColoredCircle, MoveTree, GobanRenderer, JGOFMove } from "goban";
 import { useUser } from "@/lib/hooks";
 
 const cached_data: { [review_id: number]: { [board_string: string]: any } } = {};
@@ -184,8 +184,25 @@ export function AIDemoReview({
              * only analyze the final move. */
             pending_request = setTimeout(() => {
                 pending_request = null;
-                const move = goban.engine.cur_move;
+                let move = goban.engine.cur_move;
+                // store our board string for the final position
                 const board_string = stringifyBoardState(move);
+
+                const moves: JGOFMove[] = [];
+
+                /* We go back up to 3 moves to get a starting board state, and then send that board
+                 * state along with the moves to get to our current move. This ensures we can
+                 * handle really long variations like some folks like to do, and it also ensures
+                 * the AI doesn't suggest obvious board repetitions. */
+                for (let i = 0; i < 3; i++) {
+                    if (move.parent) {
+                        moves.unshift(move.toJGOFMove());
+                        move = move.parent;
+                    } else {
+                        break;
+                    }
+                }
+
                 const last_data = cached_data[goban?.review_id || 0]?.[board_string];
                 /* If we already have a final position, broadcast this to anyone
                  * who may be listening instead of re-analyzing */
@@ -208,11 +225,13 @@ export function AIDemoReview({
                             uuid: uuid(),
                             channel_id: `ai-position-analysis-stream-review-${goban.review_id}`,
                             rules: engine.rules,
-                            black_prisoners: goban.engine?.getBlackPrisoners() || 0,
-                            white_prisoners: goban.engine?.getWhitePrisoners() || 0,
+                            black_prisoners: move.state.black_prisoners || 0,
+                            white_prisoners: move.state.white_prisoners || 0,
                             komi: goban.engine?.komi || 0,
                             board: move.state.board,
+                            board_string,
                             player: move.state.player,
+                            moves,
                         })
                         .then((_response) => {
                             //console.log("ai-analyze-position response", response);
