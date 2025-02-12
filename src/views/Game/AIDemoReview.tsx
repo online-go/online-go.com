@@ -190,16 +190,18 @@ export function AIDemoReview({
 
                 const moves: JGOFMove[] = [];
 
-                /* We go back up to 3 moves to get a starting board state, and then send that board
+                /* We go back up to 2 moves to get a starting board state, and then send that board
                  * state along with the moves to get to our current move. This ensures we can
                  * handle really long variations like some folks like to do, and it also ensures
                  * the AI doesn't suggest obvious board repetitions. */
-                for (let i = 0; i < 3; i++) {
-                    if (move.parent) {
-                        moves.unshift(move.toJGOFMove());
-                        move = move.parent;
-                    } else {
-                        break;
+                if (move.move_number > 2) {
+                    for (let i = 0; i < 2; i++) {
+                        if (move.parent) {
+                            moves.unshift(move.toJGOFMove());
+                            move = move.parent;
+                        } else {
+                            break;
+                        }
                     }
                 }
 
