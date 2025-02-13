@@ -386,8 +386,9 @@ function renderAnalysis(goban: GobanRenderer, data: any) {
         }
 
         if (goban.engine.board[mv.y][mv.x]) {
+            const location_pretty_coord = goban.engine.prettyCoordinates(mv.x, mv.y);
             console.error(
-                "ERROR: AI is suggesting moves on intersections that have already been played, this is likely a move indexing error.",
+                `ERROR: AI is suggesting moves on intersection ${location_pretty_coord} that have already been played, this is likely a move indexing error or an illegal board state.`,
             );
         }
 
