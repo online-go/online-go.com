@@ -271,8 +271,8 @@ const global_replacements: TextReplacement[] = [
     },
     // tournaments
     {
-        split: /\b(tournament[- ]?(?:#)?[0-9]+)\b/i,
-        pattern: /\b(tournament)[- ]?(?:#)?([0-9]+)/i,
+        split: /\b(tournament[- ]?(?:#)?\d{3,})(?!-\d{2,})\b/i,
+        pattern: /\b(tournament)[- ]?(?:#)?(\d{3,})(?!-\d{2,})\b/i,
         replacement: (m, idx) => (
             <Link key={idx} to={`/tournament/${m[2]}`}>
                 {m[1] + "-" + m[2]}
