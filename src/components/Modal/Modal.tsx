@@ -27,7 +27,7 @@ type ModalProps<P> = P & { fastDismiss?: boolean };
 export type ModalConstructorInput<P> = ModalProps<P> | Readonly<ModalProps<P>>;
 export class Modal<Events, P, S> extends TypedEventEmitterPureComponent<
     Events & { close: never; open: never },
-    P & { fastDismiss?: boolean },
+    P & { fastDismiss?: boolean; onClose?: () => void },
     S
 > {
     constructor(props: ModalConstructorInput<P>) {
@@ -37,8 +37,10 @@ export class Modal<Events, P, S> extends TypedEventEmitterPureComponent<
             open_modal_cb(this);
         }
     }
-
     close = () => {
+        if (this.props.onClose) {
+            this.props.onClose();
+        }
         this.emit("close");
     };
     bindContainer(container: HTMLElement) {
