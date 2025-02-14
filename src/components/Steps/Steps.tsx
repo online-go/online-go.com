@@ -29,7 +29,7 @@ interface StepsProperties {
     // callback?: ()=>any,
 }
 
-export const Steps = (props: StepsProperties) => {
+export function Steps(props: StepsProperties): React.ReactElement {
     const children = (
         Array.isArray(props.children) ? props.children : props.children ? [props.children] : []
     ).concat([]);
@@ -82,4 +82,4 @@ export const Steps = (props: StepsProperties) => {
             })}
         </div>
     );
-};
+}

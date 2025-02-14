@@ -30,10 +30,10 @@ export const modalRegistry: ModalRegistry = {
     [ModalTypes.GameLog]: GameLogModal,
 };
 
-export const registerModal = (modalType: string, component: React.ComponentType<any>) => {
+export function registerModal(modalType: string, component: React.ComponentType<any>): void {
     modalRegistry[modalType] = component;
-};
+}
 
-export const unregisterModal = (modalType: string) => {
+export function unregisterModal(modalType: string): void {
     delete modalRegistry[modalType];
-};
+}

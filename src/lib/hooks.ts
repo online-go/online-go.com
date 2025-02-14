@@ -70,7 +70,7 @@ export function useMainGoban(): Goban | null | undefined {
     return window.global_goban;
 }
 
-export const useIsDesktop = () => {
+export function useIsDesktop(): boolean {
     const [isDesktop, setIsDesktop] = React.useState(true);
 
     React.useEffect(() => {
@@ -84,4 +84,4 @@ export const useIsDesktop = () => {
     }, []);
 
     return isDesktop;
-};
+}

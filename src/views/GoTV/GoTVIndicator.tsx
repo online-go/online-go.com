@@ -22,7 +22,7 @@ import { Stream, streamManager } from "./StreamManager";
 import { GoTVNotifier } from "./GoTVNotifier";
 
 // GoTVIndicator component shows the number of live streams and a link to GoTV
-export const GoTVIndicator: React.FC = () => {
+export function GoTVIndicator(): React.ReactElement {
     const [streams, setStreams] = useState<Stream[]>([]);
     const [streamCount, setStreamCount] = useState(0);
     const [showGoTVIndicator] = preferences.usePreference("gotv.show-gotv-indicator");
@@ -86,4 +86,4 @@ export const GoTVIndicator: React.FC = () => {
             <GoTVNotifier streams={streams} />
         </>
     );
-};
+}

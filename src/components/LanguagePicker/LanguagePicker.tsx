@@ -36,7 +36,7 @@ function language_sorter(a: string, b: string) {
     return 0;
 }
 
-export const LanguagePicker = () => {
+export function LanguagePicker(): React.ReactElement {
     const { showModal } = React.useContext(ModalContext);
 
     return (
@@ -48,9 +48,9 @@ export const LanguagePicker = () => {
             {languages[current_language]}
         </span>
     );
-};
+}
 
-export const LanguagePickerModal = () => {
+export function LanguagePickerModal(): React.ReactElement {
     const { hideModal } = React.useContext(ModalContext);
 
     const setLanguage = (language_code: string) => {
@@ -96,4 +96,4 @@ export const LanguagePickerModal = () => {
             </div>
         </div>
     );
-};
+}

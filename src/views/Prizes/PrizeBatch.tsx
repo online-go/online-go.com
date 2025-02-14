@@ -34,7 +34,7 @@ interface PrizeBatchParams {
     id: string;
 }
 
-export const PrizeBatch: React.FC = () => {
+export function PrizeBatch(): React.ReactElement {
     const params = useParams<keyof PrizeBatchParams>();
     const [batch, setBatch] = useState<PrizeBatch>();
     const [qty, setQty] = useState(1);
@@ -400,4 +400,4 @@ export const PrizeBatch: React.FC = () => {
             )}
         </div>
     );
-};
+}

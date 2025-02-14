@@ -31,7 +31,7 @@ interface Prize {
     supporter_level: string;
 }
 
-export const PrizeRedemption: React.FC = () => {
+export function PrizeRedemption(): React.ReactElement {
     const [code, setCode] = useState(["", "", "", "", "", ""]);
     const [prizeInfo, setPrizeInfo] = useState<Prize>();
     const [showForm, setShowForm] = useState(true);
@@ -278,4 +278,4 @@ export const PrizeRedemption: React.FC = () => {
             )}
         </div>
     );
-};
+}

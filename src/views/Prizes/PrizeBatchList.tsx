@@ -29,7 +29,7 @@ interface PrizeBatch {
     notes: string;
 }
 
-export const PrizeBatchList: React.FC = () => {
+export function PrizeBatchList(): React.ReactElement {
     const [prizeBatches, setPrizeBatches] = useState<PrizeBatch[]>([]);
     const [showNewBatchForm, setShowNewBatchForm] = useState<boolean>(false);
     const [expirationDate, setExpirationDate] = useState<string>(calculateExpirationDate());
@@ -119,7 +119,7 @@ export const PrizeBatchList: React.FC = () => {
             )}
         </div>
     );
-};
+}
 
 const NewBatchForm: React.FC<{
     expirationDate: string;

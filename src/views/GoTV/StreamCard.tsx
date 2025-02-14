@@ -34,7 +34,7 @@ interface StreamCardProps {
 }
 
 // StreamCard component displays information about a live stream
-export const StreamCard: React.FC<StreamCardProps> = ({ stream, isSelected, onClick }) => {
+export function StreamCard({ stream, isSelected, onClick }: StreamCardProps): React.ReactElement {
     return (
         <div
             // Apply "selected-stream" class if this stream is selected
@@ -58,4 +58,4 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, isSelected, onCl
             <div className="full-title">{stream.title}</div>
         </div>
     );
-};
+}
