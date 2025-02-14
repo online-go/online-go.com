@@ -33,7 +33,7 @@ import {
 } from "./translate";
 
 jest.mock("goban", () => ({
-    setGobanTranslations: jest.fn(),
+    setTranslations: jest.fn(),
 }));
 
 test("pluralidx en", () => {
