@@ -32,6 +32,7 @@ import { isLiveGame, durationString } from "@/components/TimeControl";
 import { MODERATOR_POWERS, MOD_POWER_NAMES } from "@/lib/moderation";
 import { notification_manager, Notification } from "./NotificationManager";
 import { ModerationOffer } from "@/components/ModerationOffer";
+import { player_is_ignored } from "@/components/BlockPlayer";
 
 export function NotificationList(): React.ReactElement {
     const [, setCount] = React.useState<number | undefined>(
@@ -311,6 +312,10 @@ class NotificationEntry extends React.Component<NotificationEntryProps, any> {
             //    notification.challenger + " " + _("vs") + " " + notification.challenged + (notification.name ? " - " + notification.name : ""));
 
             case "friendRequest":
+                if (player_is_ignored(notification.user?.id)) {
+                    return null;
+                }
+
                 return (
                     <div>
                         {_("Friend request from") /* translators: friend request from <user> */}{" "}

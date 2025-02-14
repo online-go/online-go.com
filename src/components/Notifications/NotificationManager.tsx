@@ -31,6 +31,7 @@ import { ogs_has_focus, getCurrentGameId, shouldOpenNewTab } from "@/lib/misc";
 import { lookingAtOurLiveGame } from "@/components/TimeControl/util";
 import { PlayerCacheEntry } from "@/lib/player_cache";
 import { GameListEntry } from "goban";
+import { player_is_ignored } from "@/components/BlockPlayer";
 
 //declare let Notification: any;
 
@@ -443,7 +444,12 @@ export class NotificationManager {
             }
 
             if (notification.type === "friendRequest") {
-                emitNotification(_("Friend Request"), _("You have received a new friend request"));
+                if (!player_is_ignored(notification.user?.id)) {
+                    emitNotification(
+                        _("Friend Request"),
+                        _("You have received a new friend request"),
+                    );
+                }
             }
 
             if (notification.type === "friendAccepted") {
@@ -553,6 +559,11 @@ export class NotificationManager {
             let should_count = !this.notifications[k].read;
             if (this.notifications[k].type === "supporterExpired") {
                 should_count = false;
+            }
+            if (this.notifications[k].type === "friendRequest") {
+                if (player_is_ignored(this.notifications[k].user?.id)) {
+                    should_count = false;
+                }
             }
 
             this.unread_notification_count += should_count ? 1 : 0;
