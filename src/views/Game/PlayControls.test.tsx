@@ -10,7 +10,7 @@ import * as React from "react";
 import * as data from "@/lib/data";
 import { MemoryRouter as Router } from "react-router-dom";
 import { GobanContext } from "./goban_context";
-import { act } from "react-dom/test-utils";
+import { act } from "react";
 import { OgsHelpProvider } from "@/components/OgsHelpProvider";
 const TEST_USER = {
     anonymous: false,

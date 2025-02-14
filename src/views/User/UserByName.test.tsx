@@ -9,7 +9,7 @@ import * as requests from "../../lib/requests";
 import { User } from "./User";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { render } from "@testing-library/react";
-import { act } from "react-dom/test-utils";
+import { act } from "react";
 
 let container: HTMLDivElement | undefined;
 beforeEach(() => {
