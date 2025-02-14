@@ -56,8 +56,8 @@ jobs:
             - name: Build
               run: npm run build
 
-            #- name: Tests
-            #  run: npx jest
+            - name: Tests
+              run: npm run test
 
             - uses: streetsidesoftware/cspell-action@v6
               with:

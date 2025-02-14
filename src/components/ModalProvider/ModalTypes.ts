@@ -15,13 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export * from "./AIReviewChart";
-export * from "./AIReview";
-export * from "./Game";
-export * from "./GameChat";
-export * from "./GameHooks";
-export * from "./GameTimings";
-export * from "./game_control";
-export * from "./goban_context";
-export * from "./util";
-export * from "./GameLog";
+export enum ModalTypes {
+    LanguagePicker = "languagePicker",
+    Fork = "fork",
+    GameLog = "gameLog",
+}
