@@ -22,9 +22,19 @@ import * as preferences from "@/lib/preferences";
 import * as data from "@/lib/data";
 import { game_control } from "./game_control";
 import { alert } from "@/lib/swal_config";
-import { useCurrentMoveNumber, usePlayerToMove, useShowUndoRequested } from "./GameHooks";
+import {
+    generateGobanHook,
+    useCurrentMoveNumber,
+    usePlayerToMove,
+    useShowUndoRequested,
+} from "./GameHooks";
 import { useGoban } from "./goban_context";
 import * as DynamicHelp from "react-dynamic-help";
+
+const useOfficialMoveNumber = generateGobanHook(
+    (goban) => goban!.engine.last_official_move?.move_number || -1,
+    ["last_official_move"],
+);
 
 interface PlayButtonsProps {
     // This option exists because Cancel Button is placed below
@@ -41,6 +51,7 @@ export function PlayButtons({ show_cancel = true }: PlayButtonsProps): React.Rea
     const { ref: accept_button, used: signalUndoAcceptUsed } =
         registerTargetItem("accept-undo-button");
 
+    const official_move_number = useOfficialMoveNumber(goban);
     const cur_move_number = useCurrentMoveNumber(goban);
     const player_to_move = usePlayerToMove(goban);
     const is_my_move = player_to_move === data.get("user").id;
@@ -155,7 +166,7 @@ export function PlayButtons({ show_cancel = true }: PlayButtonsProps): React.Rea
                 {!show_submit &&
                     is_my_move &&
                     engine.handicapMovesLeft() === 0 &&
-                    cur_move_number === goban.engine.last_official_move.move_number && (
+                    cur_move_number === official_move_number && (
                         <button className="sm primary bold pass-button" onClick={pass}>
                             {_("Pass")}
                         </button>
