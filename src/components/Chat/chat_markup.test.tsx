@@ -3,6 +3,7 @@
  * Copyright (C)  Benjamin P. Jones
  */
 
+import { Link } from "react-router-dom";
 import { chat_markup } from "./chat_markup";
 import * as React from "react";
 
@@ -64,4 +65,40 @@ test("Google Maps link not parsed as e-mail", () => {
             {"https://www.google.com/maps/@50.7006874,-3.0915427,13.75z"}
         </a>,
     );
+});
+
+test("Tournament links", () => {
+    // Valid tournament IDs should be linked
+    expect_singular_markup(
+        "Tournament 123",
+        <Link key={0} to="/tournament/123">
+            {"Tournament-123"}
+        </Link>,
+    );
+    expect_singular_markup(
+        "Tournament-4567",
+        <Link key={0} to="/tournament/4567">
+            {"Tournament-4567"}
+        </Link>,
+    );
+    expect_singular_markup(
+        "Tournament #99999",
+        <Link key={0} to="/tournament/99999">
+            {"Tournament-99999"}
+        </Link>,
+    );
+    expect_singular_markup(
+        "https://online-go.com/tournaments/6789",
+        <Link key={0} to="/tournament/6789">
+            {"tournament 6789"}
+        </Link>,
+    );
+
+    // Invalid cases should NOT be linked
+    expect_singular_markup(
+        "Live 9x9 Double Elimination Tournament 2025-02-13 14:30",
+        <span key={0}>{"Live 9x9 Double Elimination Tournament 2025-02-13 14:30"}</span>,
+    );
+    expect_singular_markup("Tournament 2025-02-13", <span key={0}>{"Tournament 2025-02-13"}</span>);
+    expect_singular_markup("Tournament 12345-67", <span key={0}>{"Tournament 12345-67"}</span>);
 });
