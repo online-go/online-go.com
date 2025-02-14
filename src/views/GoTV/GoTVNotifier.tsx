@@ -38,7 +38,7 @@ const NOTIFICATION_EXPIRATION_HOURS = 12;
 const NOTIFICATION_EXPIRATION_MS = NOTIFICATION_EXPIRATION_HOURS * 60 * 60 * 1000;
 
 // GoTVNotifier component manages notifications for live streams
-export const GoTVNotifier: React.FC<GoTVNotifierProps> = ({ streams }) => {
+export function GoTVNotifier({ streams }: GoTVNotifierProps): React.ReactElement {
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [allowNotifications] = usePreference("gotv.allow-notifications");
     const [followedChannels] = usePreference("gotv.followed-channels");
@@ -180,4 +180,4 @@ export const GoTVNotifier: React.FC<GoTVNotifierProps> = ({ streams }) => {
             )}
         </div>
     );
-};
+}

@@ -33,7 +33,7 @@ type ModalTypesProps = {
     [key: string]: any;
 };
 
-export const ModalProvider = ({ children }: React.PropsWithChildren): React.ReactElement => {
+export function ModalProvider({ children }: React.PropsWithChildren): React.ReactElement {
     const [modalType, setModalType] = React.useState(null as ModalTypes | null);
     const [modalProps, setModalProps] = React.useState({} as ModalTypesProps);
 
@@ -93,4 +93,4 @@ export const ModalProvider = ({ children }: React.PropsWithChildren): React.Reac
             {children}
         </ModalContext.Provider>
     );
-};
+}

@@ -21,25 +21,31 @@ import React from "react";
  *   --- my text ---
  * It relies on css for 'left' and 'right' being as expected in context, caveat emptor. */
 
-export const LineText = (props: React.HTMLProps<HTMLDivElement>) => (
-    <div {...props} className={"LineText " + (props.className || "")}>
-        <span className="left" />
-        <span className="contents">{props.children}</span>
-        <span className="right" />
-    </div>
-);
-
-export const SearchInput = (props: React.HTMLProps<HTMLInputElement>) => (
-    <div className={"SearchInput " + (props.className || "")}>
-        <i className="fa fa-search"></i>
-        <input type="search" className={props.className || ""} {...props} />
-    </div>
-);
-
-export const Ribbon = (props: React.HTMLProps<HTMLDivElement>) => (
-    <div className="Ribbon-container">
-        <div {...props} className={"Ribbon " + (props.className || "")}>
-            {props.children}
+export function LineText(props: React.HTMLProps<HTMLDivElement>): React.ReactElement {
+    return (
+        <div {...props} className={"LineText " + (props.className || "")}>
+            <span className="left" />
+            <span className="contents">{props.children}</span>
+            <span className="right" />
         </div>
-    </div>
-);
+    );
+}
+
+export function SearchInput(props: React.HTMLProps<HTMLInputElement>): React.ReactElement {
+    return (
+        <div className={"SearchInput " + (props.className || "")}>
+            <i className="fa fa-search"></i>
+            <input type="search" className={props.className || ""} {...props} />
+        </div>
+    );
+}
+
+export function Ribbon(props: React.HTMLProps<HTMLDivElement>): React.ReactElement {
+    return (
+        <div className="Ribbon-container">
+            <div {...props} className={"Ribbon " + (props.className || "")}>
+                {props.children}
+            </div>
+        </div>
+    );
+}

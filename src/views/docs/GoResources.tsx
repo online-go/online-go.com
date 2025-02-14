@@ -62,7 +62,7 @@ function ordered(...args: React.ReactElement[]) {
     });
 }
 
-export const GoResources = () => {
+export function GoResources(): React.ReactElement {
     window.document.title = _("Other Go Resources");
 
     const country = data.get("user")?.country || "us";
@@ -1681,7 +1681,7 @@ export const GoResources = () => {
             </div>
         </div>
     );
-};
+}
 
 interface BasicResourceProps {
     countries: string[];

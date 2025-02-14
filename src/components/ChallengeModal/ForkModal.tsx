@@ -29,7 +29,7 @@ interface ForkModalProperties {
     goban: GobanRenderer;
 }
 
-export const ForkModal = ({ goban }: ForkModalProperties) => {
+export function ForkModal({ goban }: ForkModalProperties): React.ReactElement {
     const [currPlayer, setCurrPlayer] = React.useState(null as PlayerCacheEntry | null);
     const { hideModal } = React.useContext(ModalContext);
 
@@ -83,4 +83,4 @@ export const ForkModal = ({ goban }: ForkModalProperties) => {
             </div>
         </div>
     );
-};
+}

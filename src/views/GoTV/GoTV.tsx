@@ -46,7 +46,7 @@ const load_twitch_library = () => {
 };
 
 // GoTV component manages the live stream display and user interactions
-export const GoTV = () => {
+export function GoTV(): React.ReactElement {
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
     const [streams, setStreams] = useState<Stream[]>([]);
     const [selectedStream, setSelectedStream] = useState<Stream | null>(null);
@@ -277,7 +277,7 @@ export const GoTV = () => {
             </div>
         </div>
     );
-};
+}
 
 const getParentDomain = () => {
     return window.location.hostname;
