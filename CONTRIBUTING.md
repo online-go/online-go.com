@@ -6,7 +6,7 @@ or your fork with the `--recurse-submodules` flag and perform the following acti
 
 ```
 # First install the necessary dependencies
-npm clean-install
+npx yarn install
 
 # Next install `husky`, this provides pre-commit checks to ensure the code
 # meets some basic guidelines
