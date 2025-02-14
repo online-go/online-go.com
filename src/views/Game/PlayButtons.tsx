@@ -152,11 +152,14 @@ export function PlayButtons({ show_cancel = true }: PlayButtonsProps): React.Rea
                 )}
             </span>
             <span>
-                {!show_submit && is_my_move && engine.handicapMovesLeft() === 0 && (
-                    <button className="sm primary bold pass-button" onClick={pass}>
-                        {_("Pass")}
-                    </button>
-                )}
+                {!show_submit &&
+                    is_my_move &&
+                    engine.handicapMovesLeft() === 0 &&
+                    cur_move_number === goban.engine.last_official_move.move_number && (
+                        <button className="sm primary bold pass-button" onClick={pass}>
+                            {_("Pass")}
+                        </button>
+                    )}
                 {show_submit && engine.undo_requested !== engine.getMoveNumber() && (
                     <button
                         className="sm primary bold submit-button"
