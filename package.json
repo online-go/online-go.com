@@ -25,7 +25,8 @@
         "spellcheck": "cspell \"src/**/*.{ts,tsx}\"",
         "minify-index": "node minify-index.js",
         "dependency-cruiser": "dependency-cruiser src",
-        "bundle-visualizer": "vite-bundle-visualizer -c vite.config.ts"
+        "bundle-visualizer": "vite-bundle-visualizer -c vite.config.ts",
+        "yarn": "yarn"
     },
     "browserslist": [
         "defaults"
@@ -98,10 +99,11 @@
         "ts-jest": "^29.2.5",
         "typescript": "=5.7.3",
         "xgettext-js": "^3.0.0",
-        "vite": "^6.1.0",
+        "vite": "^6.0.9",
         "vite-plugin-checker": "^0.8.0",
-        "vite-plugin-node-polyfills": "^0.23.0",
-        "vite-bundle-visualizer": "^1.2.1"
+        "vite-plugin-node-polyfills": "^0.22.0",
+        "vite-bundle-visualizer": "^1.2.1",
+        "yarn": "^1.22.22"
     },
     "dependencies": {
         "@dnd-kit/core": "^6.0.3",
@@ -154,7 +156,16 @@
         ]
     },
     "overrides": {
-        "react": "^19.0.0",
-        "react-dom": "^19.0.0"
-    }
+        "react": "$react",
+        "react-dom": "$react-dom",
+        "@types/react": "$@types/react",
+        "@types/react-dom": "$@types/react-dom"
+    },
+    "resolutions": {
+        "**/react": "^19.0.0",
+        "**/react-dom": "^19.0.0",
+        "**/@types/react": "^19.0.6",
+        "**/@types/react-dom": "^19.0.3"
+    },
+    "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }
