@@ -228,6 +228,24 @@ declare namespace rest_api {
         has_active_warning_flag?: boolean;
     }
 
+    interface MinimalPlayerDetail {
+        id: number;
+        username: string;
+        country: string; // Country Code
+        icon: string; // URL
+        ratings: {
+            version: number;
+            overall: {
+                rating: number;
+                deviation: number;
+                volatility: number;
+            };
+        };
+        ranking: number;
+        professional: boolean;
+        ui_class: string;
+    }
+
     namespace termination_api {
         interface Player {
             id: number;

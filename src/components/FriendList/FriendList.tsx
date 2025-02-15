@@ -23,12 +23,34 @@ import * as preferences from "@/lib/preferences";
 import { Player } from "@/components/Player";
 import cached from "@/lib/cached";
 import { PlayerCacheEntry } from "@/lib/player_cache";
-
+import { get, post } from "@/lib/requests";
+import { push_manager } from "../UIPush";
+import { player_is_ignored } from "../BlockPlayer";
 export function FriendList() {
     const [friends, setFriends] = React.useState<PlayerCacheEntry[]>([]);
     const [showOfflineFriends, setShowOfflineFriends] = React.useState(
         preferences.get("show-offline-friends"),
     );
+    const [invitations, setInvitations] = React.useState<rest_api.FriendInvitations>([]);
+
+    React.useEffect(() => {
+        const update_friend_list = () => {
+            get("me/friends/invitations/")
+                .then((invitations: rest_api.FriendInvitations) => {
+                    setInvitations(invitations);
+                })
+                .catch((err) => {
+                    console.error(err);
+                });
+        };
+
+        update_friend_list();
+        const handler = push_manager.on("update-friend-list", update_friend_list);
+
+        return () => {
+            push_manager.off(handler);
+        };
+    }, []);
 
     const sortFriends = React.useCallback((lst: PlayerCacheEntry[]) => {
         const ret = [...lst];
@@ -83,6 +105,20 @@ export function FriendList() {
         ev.stopPropagation();
     };
 
+    const acceptInvite = (invitation: rest_api.FriendInvitations[number]) => {
+        setInvitations(invitations.filter((inv) => inv.from_user.id !== invitation.from_user.id));
+        post("me/friends/invitations/", { from_user: invitation.from_user.id })
+            .then(() => 0)
+            .catch(() => 0);
+    };
+
+    const rejectInvite = (invitation: rest_api.FriendInvitations[number]) => {
+        setInvitations(invitations.filter((inv) => inv.from_user.id !== invitation.from_user.id));
+        post("me/friends/invitations/", { from_user: invitation.from_user.id, delete: true })
+            .then(() => 0)
+            .catch(() => 0);
+    };
+
     return (
         <div className="FriendList">
             <div className="show-offline">
@@ -97,6 +133,25 @@ export function FriendList() {
                     {_("Show offline")}
                 </label>
             </div>
+            {invitations.map((invitation) => {
+                if (player_is_ignored(invitation.from_user.id)) {
+                    return null;
+                }
+
+                return (
+                    <div className="friend-invitation" key={invitation.from_user.id}>
+                        <i className="fa fa-times" onClick={() => rejectInvite(invitation)} />
+                        <i className="fa fa-check" onClick={() => acceptInvite(invitation)} />
+                        <Player
+                            user={invitation.from_user}
+                            online
+                            rank
+                            noextracontrols
+                            shownotesindicator
+                        />
+                    </div>
+                );
+            })}
             {friends.map(
                 (friend: PlayerCacheEntry) =>
                     (online_status.is_player_online(friend.id) || showOfflineFriends) && (

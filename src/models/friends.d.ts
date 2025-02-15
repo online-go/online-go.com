@@ -1,5 +1,5 @@
 /*
- * Copyright (C)  Online-Go.com
+ * Copyright (C)   Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -14,31 +14,11 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-.FriendList {
-    .show-offline {
-        input, label {
-            cursor: pointer;
-        }
 
-        padding-bottom: 0.5rem;
-        display: flex;
-        align-items: center;
-    }
-
-    .friend-invitation {
-        display: flex;
-
-        .fa {
-            margin-right: 0.5rem;
-            cursor: pointer;
-        }
-
-        .fa-check {
-            themed: color success;
-        }
-
-        .fa-times {
-            themed: color reject;
-        }
-    }
+declare namespace rest_api {
+    type FriendInvitations = {
+        from_user: MinimalPlayerDetail;
+        accepted: boolean;
+        created: string; // ISO Date
+    }[];
 }

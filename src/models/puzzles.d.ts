@@ -16,29 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-interface UserT {
-    id: number;
-    username: string;
-    country: string; // Country Code
-    icon: string; // URL
-    ratings: {
-        version: number;
-        overall: {
-            rating: number;
-            deviation: number;
-            volatility: number;
-        };
-    };
-    ranking: number;
-    professional: boolean;
-    ui_class: string;
-}
-
 declare namespace rest_api {
     interface PuzzleDetail {
         id: number;
         order: number;
-        owner: UserT;
+        owner: MinimalPlayerDetail;
         name: string;
         created: string; // ISO Date
         modified: string; // ISO Date
@@ -78,7 +60,7 @@ declare namespace rest_api {
 
     interface PuzzleCollection {
         id: number;
-        owner: UserT;
+        owner: MinimalPlayerDetail;
         name: string;
         created: string; // ISODate
         private: boolean;
