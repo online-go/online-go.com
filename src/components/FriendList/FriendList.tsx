@@ -23,36 +23,37 @@ import * as preferences from "@/lib/preferences";
 import { Player } from "@/components/Player";
 import cached from "@/lib/cached";
 import { PlayerCacheEntry } from "@/lib/player_cache";
+import { get, post } from "@/lib/requests";
+import { push_manager } from "../UIPush";
+import { player_is_ignored } from "../BlockPlayer";
+export function FriendList() {
+    const [friends, setFriends] = React.useState<PlayerCacheEntry[]>([]);
+    const [showOfflineFriends, setShowOfflineFriends] = React.useState(
+        preferences.get("show-offline-friends"),
+    );
+    const [invitations, setInvitations] = React.useState<rest_api.FriendInvitations>([]);
 
-export class FriendList extends React.PureComponent<{}, any> {
-    constructor(props: {}) {
-        super(props);
-        this.state = {
-            friends: [] as PlayerCacheEntry[],
-            show_offline_friends: preferences.get("show-offline-friends"),
+    React.useEffect(() => {
+        const update_friend_list = () => {
+            get("me/friends/invitations/")
+                .then((invitations: rest_api.FriendInvitations) => {
+                    setInvitations(invitations);
+                })
+                .catch((err) => {
+                    console.error(err);
+                });
         };
-    }
-    friends_listener: any;
 
-    updateFriends = (friends: PlayerCacheEntry[]) => {
-        this.setState({
-            friends: this.sortFriends(friends),
-        });
-    };
+        update_friend_list();
+        const handler = push_manager.on("update-friend-list", update_friend_list);
 
-    componentDidMount() {
-        data.watch(cached.friends, this.updateFriends); /* this is managed by our FriendIndicator */
-        online_status.event_emitter.on("users-online-updated", this.resortFriends);
-    }
-    componentWillUnmount() {
-        data.unwatch(cached.friends, this.updateFriends);
-        online_status.event_emitter.off("users-online-updated", this.resortFriends);
-    }
-    resortFriends = () => {
-        this.setState({ friends: this.sortFriends(this.state.friends) });
-    };
-    sortFriends(lst: PlayerCacheEntry[]) {
-        const ret: any[] = ([] as PlayerCacheEntry[]).concat(lst);
+        return () => {
+            push_manager.off(handler);
+        };
+    }, []);
+
+    const sortFriends = React.useCallback((lst: PlayerCacheEntry[]) => {
+        const ret = [...lst];
         ret.sort((a, b) => {
             const a_online = online_status.is_player_online(a.id);
             const b_online = online_status.is_player_online(b.id);
@@ -62,54 +63,104 @@ export class FriendList extends React.PureComponent<{}, any> {
             if (b_online && !a_online) {
                 return 1;
             }
+            if (!a.username) {
+                return 1;
+            }
+            if (!b.username) {
+                return -1;
+            }
             return a.username.localeCompare(b.username);
         });
         return ret;
-    }
-    setShowOfflineFriends = (ev: React.ChangeEvent<HTMLInputElement>) => {
+    }, []);
+
+    const updateFriends = React.useCallback(
+        (newFriends: PlayerCacheEntry[]) => {
+            setFriends(sortFriends(newFriends));
+        },
+        [sortFriends],
+    );
+
+    const resortFriends = React.useCallback(() => {
+        setFriends((friends) => sortFriends(friends));
+    }, [sortFriends]);
+
+    React.useEffect(() => {
+        data.watch(cached.friends, updateFriends);
+        online_status.event_emitter.on("users-online-updated", resortFriends);
+
+        return () => {
+            data.unwatch(cached.friends, updateFriends);
+            online_status.event_emitter.off("users-online-updated", resortFriends);
+        };
+    }, [updateFriends, resortFriends]);
+
+    const handleShowOfflineFriends = (ev: React.ChangeEvent<HTMLInputElement>) => {
         preferences.set("show-offline-friends", ev.target.checked);
-        this.setState({ show_offline_friends: preferences.get("show-offline-friends") });
-        ev.stopPropagation();
-    };
-    clickShowOfflineFriends = (ev: React.MouseEvent) => {
-        ev.stopPropagation();
-    };
-    eat = (ev: React.MouseEvent) => {
+        setShowOfflineFriends(ev.target.checked);
         ev.stopPropagation();
     };
 
-    render() {
-        return (
-            <div className="FriendList">
-                <div className="show-offline">
-                    <input
-                        id="show-offline-friends"
-                        type="checkbox"
-                        checked={this.state.show_offline_friends}
-                        onClick={this.clickShowOfflineFriends}
-                        onChange={this.setShowOfflineFriends}
-                    />{" "}
-                    <label onClick={this.eat} htmlFor="show-offline-friends">
-                        {_("Show offline")}
-                    </label>
-                </div>
-                {this.state.friends.map(
-                    (friend: PlayerCacheEntry) =>
-                        (online_status.is_player_online(friend.id) ||
-                            this.state.show_offline_friends) && (
-                            <div className="friend-entry" key={friend.id}>
-                                <Player
-                                    user={friend}
-                                    online
-                                    rank
-                                    noextracontrols
-                                    shownotesindicator
-                                />
-                            </div>
-                        ),
-                )}
-                {(this.state.friends.length === 0 || null) && null}
+    const eat = (ev: React.MouseEvent) => {
+        ev.stopPropagation();
+    };
+
+    const acceptInvite = (invitation: rest_api.FriendInvitations[number]) => {
+        setInvitations(invitations.filter((inv) => inv.from_user.id !== invitation.from_user.id));
+        post("me/friends/invitations/", { from_user: invitation.from_user.id })
+            .then(() => 0)
+            .catch(() => 0);
+    };
+
+    const rejectInvite = (invitation: rest_api.FriendInvitations[number]) => {
+        setInvitations(invitations.filter((inv) => inv.from_user.id !== invitation.from_user.id));
+        post("me/friends/invitations/", { from_user: invitation.from_user.id, delete: true })
+            .then(() => 0)
+            .catch(() => 0);
+    };
+
+    return (
+        <div className="FriendList">
+            <div className="show-offline">
+                <input
+                    id="show-offline-friends"
+                    type="checkbox"
+                    checked={showOfflineFriends}
+                    onClick={eat}
+                    onChange={handleShowOfflineFriends}
+                />
+                <label onClick={eat} htmlFor="show-offline-friends">
+                    {_("Show offline")}
+                </label>
             </div>
-        );
-    }
+            {invitations.map((invitation) => {
+                if (player_is_ignored(invitation.from_user.id)) {
+                    return null;
+                }
+
+                return (
+                    <div className="friend-invitation" key={invitation.from_user.id}>
+                        <i className="fa fa-times" onClick={() => rejectInvite(invitation)} />
+                        <i className="fa fa-check" onClick={() => acceptInvite(invitation)} />
+                        <Player
+                            user={invitation.from_user}
+                            online
+                            rank
+                            noextracontrols
+                            shownotesindicator
+                        />
+                    </div>
+                );
+            })}
+            {friends.map(
+                (friend: PlayerCacheEntry) =>
+                    (online_status.is_player_online(friend.id) || showOfflineFriends) && (
+                        <div className="friend-entry" key={friend.id}>
+                            <Player user={friend} online rank noextracontrols shownotesindicator />
+                        </div>
+                    ),
+            )}
+            {(friends.length === 0 || null) && null}
+        </div>
+    );
 }
