@@ -81,7 +81,7 @@ interface DockProps {
 
 export function GameDock({
     annulled,
-    selected_ai_review_uuid,
+    //selected_ai_review_uuid,
     tournament_id,
     tournament_name,
     ladder_id,
@@ -139,10 +139,12 @@ export function GameDock({
     const sgf_url = review_id
         ? api1(`reviews/${review_id}/sgf?without-comments=1`)
         : api1(`games/${game_id}/sgf`);
+    /*
     const sgf_with_ai_review_url: string | null =
         game_id && selected_ai_review_uuid
             ? api1(`games/${game_id}/sgf?ai_review=${selected_ai_review_uuid}`)
             : null;
+    */
     const sgf_with_comments_url: string | null = review_id
         ? api1(`reviews/${review_id}/sgf`)
         : null;
@@ -510,6 +512,7 @@ export function GameDock({
                     <i className="fa fa-download"></i> {_("Download SGF")}
                 </a>
             )}
+            {/*
             {sgf_download_enabled && sgf_with_ai_review_url && (
                 <Tooltip tooltipRequired={tooltipRequired} title={_("SGF with AI Review")}>
                     <a href={sgf_with_ai_review_url} target="_blank">
@@ -517,6 +520,7 @@ export function GameDock({
                     </a>
                 </Tooltip>
             )}
+            */}
             {sgf_download_enabled && sgf_with_comments_url && (
                 <Tooltip tooltipRequired={tooltipRequired} title={_("SGF with comments")}>
                     <a href={sgf_with_comments_url} target="_blank">
