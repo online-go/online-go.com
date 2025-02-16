@@ -129,9 +129,19 @@ class ReportManager extends EventEmitter<Events> {
                 (game_id) => game_id !== report.reported_game,
             );
         } else {
-            this.active_incident_reports[report.id] = report;
-            if (report.reported_game && report.reporting_user?.id === user.id) {
-                this.this_user_reported_games.push(report.reported_game);
+            // It should go into the active list BUT there are some reports that we hide from full moderators because
+            // CMs are doing them.
+            if (
+                !user.is_moderator ||
+                !(
+                    ["escaping", "score_cheating", "stalling"].includes(report.report_type) ||
+                    (report.report_type === "ai_use" && !report.escalated)
+                )
+            ) {
+                this.active_incident_reports[report.id] = report;
+                if (report.reported_game && report.reporting_user?.id === user.id) {
+                    this.this_user_reported_games.push(report.reported_game);
+                }
             }
         }
         data.set("reported-games", this.this_user_reported_games);
@@ -195,20 +205,20 @@ class ReportManager extends EventEmitter<Events> {
             }
 
             // Community moderators only get to see reports that they have the power for and
-            // that they have not yet voted on, and are not escalated
+            // that they have not yet voted on
 
             if (user.moderator_powers && !community_mod_can_handle(user, report)) {
-                console.log("community_mod_can_handle reject", report.id, report.report_type);
                 return false;
             }
 
             // Don't offer community moderation reports to full mods, because community moderators do these.
             // (The only way full moderators see CM-class reports is if they go hunting and claim them)
+            // (AI reports are CM handled pre-escalation, full moderators after escalation)
             if (
                 user.is_moderator &&
                 !(report.moderator?.id === user.id) && // maybe they already have it, so they need to see it
-                ["escaping", "score_cheating", "stalling"].includes(report.report_type) &&
-                !report.escalated
+                (["escaping", "score_cheating", "stalling"].includes(report.report_type) ||
+                    (report.report_type === "ai_use" && !report.escalated))
             ) {
                 return false;
             }

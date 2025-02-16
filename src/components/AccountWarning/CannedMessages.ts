@@ -297,6 +297,19 @@ Thank you for helping keep OGS enjoyable for everyone. We appreciate it.`,
             ),
             { reported },
         ),
+    no_ai_use_evident: (reported) =>
+        interpolate(
+            llm_pgettext(
+                "Acknowledgement message to a user",
+                `
+Thank you for bringing the possible instance of AI use by '{{reported}}' to our attention. We looked into the game and couldn't see evidence of AI use.   
+
+It may be that you need to provide more explanation - you are welcome to raise a new report if that is the case.
+
+Thank you for helping keep OGS enjoyable for everyone. We appreciate it.`,
+            ),
+            { reported },
+        ),
     annul_no_warning: (game_id) =>
         interpolate(
             llm_pgettext(
