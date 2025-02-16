@@ -84,6 +84,7 @@ export const COMMUNITY_MODERATION_REPORT_TYPES: CommunityModeratorReportTypes = 
     stalling: "stalling",
     score_cheating: "score cheating",
     escaping: "escaping",
+    // AI is not included here because it's a special case
 };
 
 export function community_mod_has_power(
@@ -93,17 +94,20 @@ export function community_mod_has_power(
     const has_handle_score_cheat = (moderator_powers & MODERATOR_POWERS.HANDLE_SCORE_CHEAT) > 0;
     const has_handle_escaping = (moderator_powers & MODERATOR_POWERS.HANDLE_ESCAPING) > 0;
     const has_handle_stalling = (moderator_powers & MODERATOR_POWERS.HANDLE_STALLING) > 0;
+    const has_assess_ai_reports = (moderator_powers & MODERATOR_POWERS.ASSESS_AI_REPORTS) > 0;
 
     return (
         (report_type === "score_cheating" && has_handle_score_cheat) ||
         (report_type === "escaping" && has_handle_escaping) ||
-        (report_type === "stalling" && has_handle_stalling)
+        (report_type === "stalling" && has_handle_stalling) ||
+        (report_type === "ai_use" && has_assess_ai_reports)
     );
 }
 
 export function community_mod_can_handle(user: rest_api.UserConfig, report: Report): boolean {
     // Community moderators only get to see reports that they have the power for and
     // that they have not yet voted on... or if it's escalated, they must have suspend power
+    // AI report are different - CMs handle them pre-escalation, full moderators after escalation!
 
     if (!user.moderator_powers) {
         return false;
@@ -113,7 +117,8 @@ export function community_mod_can_handle(user: rest_api.UserConfig, report: Repo
     const they_can_vote_to_suspend = user.moderator_powers & MODERATOR_POWERS.SUSPEND;
     if (
         community_mod_has_power(user.moderator_powers, report.report_type) &&
-        (!they_already_voted || (report.escalated && they_can_vote_to_suspend))
+        (!they_already_voted ||
+            (report.escalated && they_can_vote_to_suspend && !(report.report_type === "ai_use")))
     ) {
         return true;
     }
