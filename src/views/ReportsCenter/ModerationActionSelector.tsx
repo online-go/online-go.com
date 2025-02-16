@@ -398,7 +398,12 @@ export function ModerationActionSelector({
                     {_("This report has no available actions yet.  You can escalate or ignore it.")}
                 </div>
             )}
-            {!enable && (
+            {!enable && report.state === "claimed" && (
+                <div className="disabled-actions-note">
+                    {_("This report is being looked at by a moderator.")}
+                </div>
+            )}
+            {!enable && report.state === "resolved" && (
                 <div className="disabled-actions-note">
                     {_("This report was handled after you decided to look at it!")}
                 </div>

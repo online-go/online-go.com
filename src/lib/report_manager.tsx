@@ -129,19 +129,9 @@ class ReportManager extends EventEmitter<Events> {
                 (game_id) => game_id !== report.reported_game,
             );
         } else {
-            // It should go into the active list BUT there are some reports that we hide from full moderators because
-            // CMs are doing them.
-            if (
-                !user.is_moderator ||
-                !(
-                    ["escaping", "score_cheating", "stalling"].includes(report.report_type) ||
-                    (report.report_type === "ai_use" && !report.escalated)
-                )
-            ) {
-                this.active_incident_reports[report.id] = report;
-                if (report.reported_game && report.reporting_user?.id === user.id) {
-                    this.this_user_reported_games.push(report.reported_game);
-                }
+            this.active_incident_reports[report.id] = report;
+            if (report.reported_game && report.reporting_user?.id === user.id) {
+                this.this_user_reported_games.push(report.reported_game);
             }
         }
         data.set("reported-games", this.this_user_reported_games);
@@ -213,12 +203,11 @@ class ReportManager extends EventEmitter<Events> {
 
             // Don't offer community moderation reports to full mods, because community moderators do these.
             // (The only way full moderators see CM-class reports is if they go hunting and claim them)
-            // (AI reports are CM handled pre-escalation, full moderators after escalation)
+            // (We do allow full moderators to see all AI reports, even while they're being voted on, at least for now
             if (
                 user.is_moderator &&
                 !(report.moderator?.id === user.id) && // maybe they already have it, so they need to see it
-                (["escaping", "score_cheating", "stalling"].includes(report.report_type) ||
-                    (report.report_type === "ai_use" && !report.escalated))
+                ["escaping", "score_cheating", "stalling"].includes(report.report_type)
             ) {
                 return false;
             }
