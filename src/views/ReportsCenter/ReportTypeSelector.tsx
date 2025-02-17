@@ -23,20 +23,30 @@ import { ReportType } from "@/components/Report";
 
 const DropdownIndicator = components.DropdownIndicator as any;
 
-const REPORT_TYPE_SELECTIONS: ReportTypeSelection[] = [
-    { value: "escaping", label: "Stopped Playing" },
-    { value: "stalling", label: "Stalling" },
-    { value: "score_cheating", label: "Score Cheating" },
-    { value: "inappropriate_content", label: "Inappropriate Content" },
-    { value: "harassment", label: "Harassment" },
-    { value: "sandbagging", label: "Sandbagging" },
-    { value: "ai_use", label: "AI Use" },
-    { value: "other", label: "Other" },
+const REPORT_TYPE_SELECTIONS: ReportTypeGroup[] = [
+    {
+        label: "Change type",
+        options: [
+            { value: "escaping", label: "Stopped Playing" },
+            { value: "stalling", label: "Stalling" },
+            { value: "score_cheating", label: "Score Cheating" },
+            { value: "inappropriate_content", label: "Inappropriate Content" },
+            { value: "harassment", label: "Harassment" },
+            { value: "sandbagging", label: "Sandbagging" },
+            { value: "ai_use", label: "AI Use" },
+            { value: "other", label: "Other" },
+        ],
+    },
 ];
 
 export interface ReportTypeSelection {
     value: ReportType;
     label: string;
+}
+
+interface ReportTypeGroup {
+    label: string;
+    options: ReportTypeSelection[];
 }
 
 interface ReportTypeSelectorProps {
@@ -52,7 +62,7 @@ export function ReportTypeSelector(props: ReportTypeSelectorProps) {
         }
     };
 
-    const current_selection = REPORT_TYPE_SELECTIONS.filter(
+    const current_selection = REPORT_TYPE_SELECTIONS[0].options.find(
         (selection) => selection.value === props.current_type,
     );
     return (
