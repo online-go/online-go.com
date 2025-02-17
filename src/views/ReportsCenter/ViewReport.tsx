@@ -87,7 +87,9 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): R
         setModeratorId(report?.moderator?.id);
         setReportState(report?.state);
         setAnnulQueue(report?.detected_ai_games);
-        setAvailableActions(report?.available_actions);
+        if (report?.available_actions !== null) {
+            setAvailableActions(report.available_actions);
+        }
         setVoteCounts(report?.vote_counts);
         setUsersVote(report?.voters?.find((v) => v.voter_id === user.id)?.action ?? null);
     };
