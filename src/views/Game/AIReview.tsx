@@ -120,16 +120,17 @@ export function AIReview(props: AIReviewProperties): React.ReactElement | null {
             user.is_moderator ||
             ((reportContext?.moderator_powers ?? 0) & MODERATOR_POWERS.ASSESS_AI_REPORTS) !== 0;
 
-        console.log("canViewTable", canViewTable);
         setHideTable(!canViewTable);
 
         // Expose to window for legacy support
         window.aireview = this;
-    }, [reportContext]);
+    }, [reportContext, props.game_id]);
 
-    // Update effect
     useEffect(() => {
-        getAIReviewList();
+        getAIReviewList(); // updates aiReviewRef.current
+    }, [props.game_id]);
+
+    useEffect(() => {
         if (!hideTable) {
             const aiTableOut = AiSummaryTableRowList();
             tableRowsRef.current = aiTableOut.ai_table_rows;
@@ -138,7 +139,7 @@ export function AIReview(props: AIReviewProperties): React.ReactElement | null {
             movesPendingRef.current = aiTableOut.moves_pending;
             maxEntriesRef.current = aiTableOut.max_entries;
         }
-    }, [props.game_id, hideTable]);
+    }, [hideTable, aiReviewRef.current]);
 
     const getGameId = (use_props?: AIReviewProperties) => {
         if (!use_props) {
@@ -281,7 +282,6 @@ export function AIReview(props: AIReviewProperties): React.ReactElement | null {
     };
 
     const setSelectedAIReview = (ai_review: JGOFAIReview) => {
-        console.log("setting selected ai review", ai_review);
         close_all_popovers();
         updateAIReviewMetadata(ai_review);
         setCurrentAIReview(ai_review);
@@ -297,11 +297,11 @@ export function AIReview(props: AIReviewProperties): React.ReactElement | null {
         } else {
             for (const k in ai_review) {
                 //console.log("Updating", k, ai_review[k]);
-                if (k !== "moves" || !ai_review["moves"]) {
-                    (ai_review as any)[k] = (ai_review as any)[k];
+                if (k !== "moves" || !aiReviewRef.current["moves"]) {
+                    (aiReviewRef.current as any)[k] = (ai_review as any)[k];
                 } else {
                     for (const move in ai_review["moves"]) {
-                        ai_review["moves"][move] = ai_review["moves"][move];
+                        (aiReviewRef.current as any)["moves"][move] = ai_review["moves"][move];
                     }
                 }
             }
@@ -1247,7 +1247,6 @@ export function AIReview(props: AIReviewProperties): React.ReactElement | null {
                 setTableHidden(true);
             }
 
-            console.log("ai_table_rows", ai_table_rows);
             return {
                 ai_table_rows,
                 avg_score_loss,
@@ -1256,7 +1255,6 @@ export function AIReview(props: AIReviewProperties): React.ReactElement | null {
                 max_entries,
             };
         } else {
-            console.log("default_table_rows", default_table_rows);
             return {
                 ai_table_rows: default_table_rows,
                 avg_score_loss,
@@ -1280,7 +1278,6 @@ export function AIReview(props: AIReviewProperties): React.ReactElement | null {
         return null;
     }
 
-    console.log("aiReviewRef.current", aiReviewRef.current);
     if (!aiReviewRef.current || props.hidden) {
         return (
             <div className="AIReview">
