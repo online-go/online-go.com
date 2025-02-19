@@ -43,10 +43,14 @@ import {
     Goban,
     encodeMoves,
     encodeMove,
+    GobanRenderer,
 } from "goban";
 import { game_control } from "./game_control";
 import { alert } from "@/lib/swal_config";
 import { GobanContext } from "./goban_context";
+import { ReportContext } from "@/contexts/ReportContext";
+import { MODERATOR_POWERS } from "@/lib/moderation";
+
 export interface AIReviewEntry {
     move_number: number;
     win_rate: number;
@@ -59,6 +63,8 @@ interface AIReviewProperties {
     game_id: number;
     hidden: boolean;
     onAIReviewSelected: (ai_review: JGOFAIReview) => void;
+    reportContext?: React.ContextType<typeof ReportContext>;
+    gobanContext?: React.ContextType<typeof GobanContext>;
 }
 
 interface AIReviewState {
@@ -69,23 +75,38 @@ interface AIReviewState {
     selected_ai_review?: JGOFAIReview;
     update_count: number;
     worst_moves_shown: number;
-    table_set: boolean;
+    hide_table: boolean;
     table_hidden: boolean;
 }
 
-export class AIReview extends React.Component<AIReviewProperties, AIReviewState> {
-    // this will be the full ai review we are working with, as opposed to
-    // selected_ai_review which will just contain some metadata from the
-    // postgres database
+// We need this wrapped because we want to access two contexts,
+// and we can't do that in a function component.
+// This wil be a lot cleaner when we convert it to a function component.
+export function AIReview(props: AIReviewProperties) {
+    return (
+        <ReportContext.Consumer>
+            {(reportContext) => (
+                <GobanContext.Consumer>
+                    {(gobanContext) => (
+                        <AIReviewClass
+                            {...props}
+                            reportContext={reportContext}
+                            gobanContext={gobanContext}
+                        />
+                    )}
+                </GobanContext.Consumer>
+            )}
+        </ReportContext.Consumer>
+    );
+}
+
+class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
     ai_review?: JGOFAIReview;
     table_rows!: string[][];
     avg_score_loss!: number[];
     median_score_loss!: number[];
     moves_pending!: number;
     max_entries!: number;
-
-    static contextType = GobanContext;
-    declare context: React.ContextType<typeof GobanContext>;
 
     constructor(props: AIReviewProperties) {
         super(props);
@@ -98,7 +119,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             // TODO: allow users to view more than 3 of these key moves
             // See https://forums.online-go.com/t/top-3-moves-score-a-better-metric/32702/15
             worst_moves_shown: 6,
-            table_set: false,
+            hide_table: false,
             table_hidden: preferences.get("ai-summary-table-show"),
         };
         this.state = state;
@@ -113,17 +134,24 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         this.median_score_loss = ai_table_out.median_score_loss;
         this.moves_pending = ai_table_out.moves_pending;
         this.max_entries = ai_table_out.max_entries;
-        if (!data.get("user").is_moderator) {
-            this.setState({
-                table_set: true,
-            });
-        }
+
+        const user = data.get("user");
+        const canViewTable =
+            user.is_moderator ||
+            ((this.props.reportContext?.moderator_powers ?? 0) &
+                MODERATOR_POWERS.ASSESS_AI_REPORTS) !==
+                0;
+
+        this.setState({
+            hide_table: !canViewTable,
+        });
     }
+
     componentDidUpdate(prevProps: AIReviewProperties) {
         if (this.getGameId() !== this.getGameId(prevProps)) {
             this.getAIReviewList();
         }
-        if (!this.state.table_set) {
+        if (!this.state.hide_table) {
             const ai_table_out = this.AiSummaryTableRowList();
             this.table_rows = ai_table_out.ai_table_rows;
             this.avg_score_loss = ai_table_out.avg_score_loss;
@@ -209,7 +237,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             .catch(errorLogger);
     }
 
-    private static handicapOffset(goban: Goban): number {
+    private static handicapOffset(goban: GobanRenderer): number {
         if (
             goban &&
             goban.engine &&
@@ -269,7 +297,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         this.updateAIReviewMetadata(ai_review);
         this.setState({
             selected_ai_review: ai_review,
-            table_set: false,
+            hide_table: false,
         });
         this.props.onAIReviewSelected(ai_review);
         this.syncAIReview();
@@ -433,7 +461,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             throw new Error("ai_review not set");
         }
 
-        const goban = this.context;
+        const goban = this.props.gobanContext;
 
         if (!goban) {
             throw new Error("goban not set");
@@ -747,7 +775,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
     }
 
     private requestAnalysisOfVariation(cur_move: MoveTree, trunk_move: MoveTree): boolean {
-        const goban = this.context;
+        const goban = this.props.gobanContext;
         if (!goban) {
             return false;
         }
@@ -810,7 +838,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             throw new Error("ai_review not set");
         }
 
-        const goban = this.context;
+        const goban = this.props.gobanContext;
 
         if (!goban) {
             throw new Error("goban not set");
@@ -890,7 +918,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
     }
 
     private AiSummaryTableRowList() {
-        const goban = this.context;
+        const goban = this.props.gobanContext;
         if (!goban) {
             throw new Error("goban not set");
         }
@@ -929,7 +957,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
         if (!this.ai_review?.engine.includes("katago")) {
             this.setState({
-                table_set: true,
+                hide_table: true,
             });
             return {
                 ai_table_rows: default_table_rows,
@@ -942,10 +970,10 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
         const handicap = goban.engine.handicap;
         //only useful when there's free placement, handicap = 1 no offset needed.
-        let h_offset = AIReview.handicapOffset(goban);
+        let h_offset = AIReviewClass.handicapOffset(goban);
         h_offset = h_offset === 1 ? 0 : h_offset;
         const b_player = h_offset > 0 || handicap > 1 ? 1 : 0;
-        const move_player_list = AIReview.getPlayerColorsMoveList(goban);
+        const move_player_list = AIReviewClass.getPlayerColorsMoveList(goban);
 
         if (this.ai_review?.type === "fast") {
             const scores = this.ai_review?.scores;
@@ -1065,7 +1093,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             }
 
             this.setState({
-                table_set: true,
+                hide_table: true,
             });
 
             return {
@@ -1212,7 +1240,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
             if (!check1 && !check2) {
                 this.setState({
-                    table_set: true,
+                    hide_table: true,
                 });
             }
 
@@ -1239,7 +1267,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             return null;
         }
 
-        const goban = this.context;
+        const goban = this.props.gobanContext;
 
         if (!goban || !goban.engine) {
             return null;
@@ -1527,23 +1555,31 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                 />
                                 <div className="worst-moves-summary-toggle-container">
                                     {this.renderWorstMoveList(worst_move_list)}
-                                    {(user.is_moderator || null) && (
-                                        <div className="ai-summary-toggler">
-                                            <span>
-                                                <i className="fa fa-table"></i>
-                                            </span>
-                                            <span>
-                                                <Toggle
-                                                    checked={this.state.table_hidden}
-                                                    onChange={(b) => {
-                                                        preferences.set("ai-summary-table-show", b);
-                                                        this.setState({ table_hidden: b });
-                                                        //console.log(this.state.table_hidden);
-                                                    }}
-                                                />
-                                            </span>
-                                        </div>
-                                    )}
+                                    {(user.is_moderator ||
+                                        (this.props.reportContext &&
+                                            (data.get("user").moderator_powers &
+                                                MODERATOR_POWERS.ASSESS_AI_REPORTS) !==
+                                                0)) &&
+                                        this.ai_review?.engine.includes("katago") && (
+                                            <div className="ai-summary-toggler">
+                                                <span>
+                                                    <i className="fa fa-table"></i>
+                                                </span>
+                                                <span>
+                                                    <Toggle
+                                                        checked={this.state.table_hidden}
+                                                        onChange={(b) => {
+                                                            preferences.set(
+                                                                "ai-summary-table-show",
+                                                                b,
+                                                            );
+                                                            this.setState({ table_hidden: b });
+                                                            //console.log(this.state.table_hidden);
+                                                        }}
+                                                    />
+                                                </span>
+                                            </div>
+                                        )}
                                 </div>
                                 {this.ai_review.scores && (
                                     <div className="win-score-toggler">
@@ -1657,25 +1693,29 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                         </span>
                     </div>
                 )*/}
-                {data.get("user").is_moderator && this.ai_review?.engine.includes("katago") && (
-                    <div>
-                        <AiSummaryTable
-                            heading_list={[_("Type"), _("Black"), "%", _("White"), "%"]}
-                            body_list={this.table_rows}
-                            avg_loss={this.avg_score_loss}
-                            median_score_loss={this.median_score_loss}
-                            table_hidden={this.state.table_hidden}
-                            pending_entries={this.moves_pending}
-                            max_entries={this.max_entries}
-                        />
-                    </div>
-                )}
+                {(data.get("user").is_moderator ||
+                    (this.props.reportContext &&
+                        (data.get("user").moderator_powers & MODERATOR_POWERS.ASSESS_AI_REPORTS) !==
+                            0)) &&
+                    this.ai_review?.engine.includes("katago") && (
+                        <div>
+                            <AiSummaryTable
+                                heading_list={[_("Type"), _("Black"), "%", _("White"), "%"]}
+                                body_list={this.table_rows}
+                                avg_loss={this.avg_score_loss}
+                                median_score_loss={this.median_score_loss}
+                                table_hidden={this.state.table_hidden}
+                                pending_entries={this.moves_pending}
+                                max_entries={this.max_entries}
+                            />
+                        </div>
+                    )}
             </div>
         );
     }
 
     public renderWorstMoveList(lst: AIReviewWorstMoveEntry[]): React.ReactElement | null {
-        const goban = this.context;
+        const goban = this.props.gobanContext;
         if (!goban?.engine.move_tree || !this.ai_review) {
             return null;
         }

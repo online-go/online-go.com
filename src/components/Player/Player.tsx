@@ -30,6 +30,7 @@ import { PlayerIcon } from "@/components/PlayerIcon";
 import * as player_cache from "@/lib/player_cache";
 import * as preferences from "@/lib/preferences";
 import online_status from "@/lib/online_status";
+import { ReportContext } from "@/contexts/ReportContext";
 
 /* There are cases where what we are handed is some odd looking dirty data. We
  * should probably start warning about remaining uses of these fields and then
@@ -73,14 +74,6 @@ export interface PlayerProperties {
     forceShowRank?: boolean;
 }
 
-type ShowPlayersInReportContextType = {
-    reporter: player_cache.PlayerCacheEntry;
-    reported: player_cache.PlayerCacheEntry;
-};
-
-export const ShowPlayersInReportContext =
-    React.createContext<ShowPlayersInReportContextType | null>(null);
-
 export function Player(props: PlayerProperties): React.ReactElement {
     const user = data.get("user");
     const player_id: number =
@@ -107,7 +100,7 @@ export function Player(props: PlayerProperties): React.ReactElement {
     const base = player || historical;
     const combined = base ? Object.assign({}, base, historical ? historical : {}) : null;
 
-    const viewReportContext = React.useContext(ShowPlayersInReportContext);
+    const viewReportContext = React.useContext(ReportContext);
 
     React.useEffect(() => {
         if (!props.disableCacheUpdate) {

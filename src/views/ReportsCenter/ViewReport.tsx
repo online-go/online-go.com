@@ -25,7 +25,7 @@ import { report_manager } from "@/lib/report_manager";
 import { Report } from "@/lib/report_util";
 import { AutoTranslate } from "@/components/AutoTranslate";
 import { interpolate, _, pgettext, llm_pgettext } from "@/lib/translate";
-import { Player, ShowPlayersInReportContext } from "@/components/Player";
+import { Player } from "@/components/Player";
 import { Link } from "react-router-dom";
 import { post } from "@/lib/requests";
 import { PlayerCacheEntry } from "@/lib/player_cache";
@@ -44,6 +44,7 @@ import * as DynamicHelp from "react-dynamic-help";
 import { MODERATOR_POWERS } from "@/lib/moderation";
 import { KBShortcut } from "@/components/KBShortcut";
 import { GobanRenderer } from "goban";
+import { ReportContext } from "@/contexts/ReportContext";
 
 interface ViewReportProps {
     reports: Report[];
@@ -331,8 +332,12 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): R
             <KBShortcut shortcut="left" action={nav_prev} />
             <KBShortcut shortcut="right" action={nav_next} />
 
-            <ShowPlayersInReportContext.Provider
-                value={{ reporter: report.reporting_user, reported: report.reported_user }}
+            <ReportContext.Provider
+                value={{
+                    reporter: report.reporting_user,
+                    reported: report.reported_user,
+                    moderator_powers: user.moderator_powers,
+                }}
             >
                 <div id="ViewReport" className="show-players-in-report">
                     {isAnnulQueueModalOpen && (
@@ -795,7 +800,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): R
                         )}
                     </ErrorBoundary>
                 </div>
-            </ShowPlayersInReportContext.Provider>
+            </ReportContext.Provider>
         </div>
     );
 }
