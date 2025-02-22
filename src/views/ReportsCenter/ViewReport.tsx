@@ -617,7 +617,8 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): R
                                     enable={
                                         report.state === "pending" &&
                                         (!report.escalated ||
-                                            !!(user.moderator_powers & MODERATOR_POWERS.SUSPEND))
+                                            (!!(user.moderator_powers & MODERATOR_POWERS.SUSPEND) &&
+                                                report.report_type !== "ai_use"))
                                     }
                                     key={report.id}
                                     report={report}
