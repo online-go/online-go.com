@@ -1211,7 +1211,9 @@ export function Game(): React.ReactElement | null {
                     } else {
                         const diff =
                             goban.current!.engine.getMoveNumber() - last_move_viewed.current;
-                        window.document.title = interpolate(_("(%s) moves made"), [diff]);
+                        if (diff > 0) {
+                            window.document.title = interpolate(_("(%s) moves made"), [diff]);
+                        }
                     }
                 } else {
                     window.document.title = state.title;
