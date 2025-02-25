@@ -594,7 +594,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): R
 
                         {report.escalated &&
                             (user.is_moderator ||
-                                user.moderator_powers & MODERATOR_POWERS.SUSPEND) && (
+                                (user.moderator_powers & MODERATOR_POWERS.SUSPEND) !== 0) && (
                                 <div className="notes">
                                     <h4>Escalator's note:</h4>
                                     <div className="Card">
@@ -617,7 +617,8 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): R
                                     enable={
                                         report.state === "pending" &&
                                         (!report.escalated ||
-                                            !!(user.moderator_powers & MODERATOR_POWERS.SUSPEND))
+                                            (!!(user.moderator_powers & MODERATOR_POWERS.SUSPEND) &&
+                                                report.report_type !== "ai_use"))
                                     }
                                     key={report.id}
                                     report={report}

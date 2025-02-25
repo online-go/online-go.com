@@ -306,7 +306,13 @@ export function Game(): React.ReactElement | null {
         const last_estimate_move = stopEstimatingScore();
         stopAutoplay();
         checkAndEnterAnalysis(last_estimate_move);
-        goban.current.jumpToLastOfficialMove();
+        if (goban.current.engine.last_official_move.move_number !== 0) {
+            goban.current.jumpToLastOfficialMove();
+        } else {
+            while (goban.current.engine.showNext()) {
+                // show next if there is one
+            }
+        }
         goban.current.syncReviewMove();
         console.log("nav_last", Date.now() - start);
     };
@@ -1205,7 +1211,9 @@ export function Game(): React.ReactElement | null {
                     } else {
                         const diff =
                             goban.current!.engine.getMoveNumber() - last_move_viewed.current;
-                        window.document.title = interpolate(_("(%s) moves made"), [diff]);
+                        if (diff > 0) {
+                            window.document.title = interpolate(_("(%s) moves made"), [diff]);
+                        }
                     }
                 } else {
                     window.document.title = state.title;

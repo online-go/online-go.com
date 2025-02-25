@@ -20,6 +20,7 @@ import * as data from "@/lib/data";
 import { useState, useEffect, useCallback } from "react";
 import { ChatChannelList, ChatLog, ChatUsersList } from "@/components/Chat";
 import { useParams } from "react-router";
+import { _ } from "@/lib/translate";
 
 export function ChatView(): React.ReactElement | null {
     const { channel } = useParams();
@@ -32,6 +33,14 @@ export function ChatView(): React.ReactElement | null {
     const [showing_users, set_showing_users]: [boolean, (tf: boolean) => void] = useState(
         false as boolean,
     );
+
+    useEffect(() => {
+        const oldTitle = window.document.title;
+        window.document.title = _("Chat");
+        return () => {
+            window.document.title = oldTitle;
+        };
+    }, [channel]);
 
     useEffect(() => {
         set_showing_channels(false);
