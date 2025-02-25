@@ -348,6 +348,16 @@ Be completely unambiguous with regards to the meaning of the word annul: \
 this means to declare the game invalid, and this is not the same as cancelling a game.",
         "No AI use evident - inform the reporter.",
     ),
+    no_ai_use_bad_report: llm_pgettext(
+        "This phrase to be translated is the label of an option for a moderator of an \
+online Go game server to select: an action to apply to a report about a game of Go. \
+In the phrase you are asked to translate, 'no cheating' is a conclusion meaning the \
+moderator concluded cheating did not occur, rather than an instruction meaning the \
+reader should not cheat. \
+Be completely unambiguous with regards to the meaning of the word annul: \
+this means to declare the game invalid, and this is not the same as cancelling a game.",
+        "No AI use, educate reporter about reporting AI use.",
+    ),
 };
 
 export function ModerationActionSelector({
