@@ -297,18 +297,33 @@ Thank you for helping keep OGS enjoyable for everyone. We appreciate it.`,
             ),
             { reported },
         ),
-    no_ai_use_evident: (reported) =>
+    no_ai_use_evident: (game_id) =>
         interpolate(
             llm_pgettext(
                 "Acknowledgement message to a user",
                 `
-Thank you for bringing the possible instance of AI use by '{{reported}}' to our attention. We looked into the game and couldn't see evidence of AI use.   
+Thank you for bringing the possible instance of AI use in Game #{{game_id}} to our attention. We looked into the game and couldn't see evidence of AI use.   
 
 It may be that you need to provide more explanation - you are welcome to raise a new report if that is the case.
 
 Thank you for helping keep OGS enjoyable for everyone. We appreciate it.`,
             ),
-            { reported },
+            { game_id },
+        ),
+    no_ai_use_bad_report: (game_id) =>
+        interpolate(
+            llm_pgettext(
+                "Acknowledgement and education message to a user",
+                `
+    Thank you for bringing the possible instance of AI use in Game #{{game_id}} to our attention. We looked into the game and couldn't see evidence of AI use.   
+    
+    Your report did not contain any real evidence of AI use - we'd prefer if you could provide more details, so our time is not wasted guessing.
+    
+    If you have a good reason to suspect AI use, please take some time to provide a detailed report describing why.
+
+    Thank you for helping keep OGS enjoyable for everyone. We appreciate it.`,
+            ),
+            { game_id },
         ),
     annul_no_warning: (game_id) =>
         interpolate(
