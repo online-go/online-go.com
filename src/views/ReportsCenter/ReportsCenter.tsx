@@ -323,19 +323,19 @@ export function ReportsCenter(): React.ReactElement | null {
                     <ReportsCenterCMDashboard />
                 ) : category === "my_reports" ? (
                     <IncidentReportList reports={my_reports} modal={false} />
-                ) : category === "hr" ? null : (
-                    <>
-                        <ReportsViewer
-                            reports={
-                                category === "all"
-                                    ? reports
-                                    : reports.filter((x) => x.report_type === category)
-                            }
-                            report_id={report_id}
-                            selectReport={selectReport}
-                        />
-                    </>
-                )}
+                ) : category === "my_reports" ? (
+                    <IncidentReportList reports={my_reports} modal={false} />
+                ) : category === "hr" ? null : user.is_moderator || user.moderator_powers ? (
+                    <ReportsViewer
+                        reports={
+                            category === "all"
+                                ? reports
+                                : reports.filter((x) => x.report_type === category)
+                        }
+                        report_id={report_id}
+                        selectReport={selectReport}
+                    />
+                ) : null}
             </div>
         </div>
     );
