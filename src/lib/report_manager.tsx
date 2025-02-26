@@ -88,7 +88,6 @@ class ReportManager extends EventEmitter<Events> {
         const user = data.get("user");
         report.id = parseInt(report.id as unknown as string);
 
-        //console.log("updateIncidentReport", report);
         if (!(report.id in this.active_incident_reports)) {
             if (
                 data.get("user").is_moderator &&
@@ -287,10 +286,6 @@ class ReportManager extends EventEmitter<Events> {
     }
 
     public async getReport(id: number): Promise<Report> {
-        if (id in this.active_incident_reports) {
-            return this.active_incident_reports[id];
-        }
-
         const res = await get(`moderation/incident/${id}`);
 
         if (res) {

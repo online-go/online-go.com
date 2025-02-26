@@ -25,12 +25,12 @@ import { _ } from "@/lib/translate";
 import { usePreference } from "@/lib/preferences";
 import { community_mod_has_power } from "@/lib/report_util";
 
-import { ViewReport } from "./ViewReport";
 import { ReportsCenterSettings } from "./ReportsCenterSettings";
 import { ReportsCenterHistory } from "./ReportsCenterHistory";
 import { ReportsCenterCMDashboard } from "./ReportsCenterCMDashboard";
 import { ReportsCenterCMHistory } from "./ReportsCenterCMHistory";
 import { IncidentReportList } from "@/components/IncidentReportTracker";
+import { ReportsViewer } from "./ReportsViewer";
 
 interface OtherView {
     special: string;
@@ -324,15 +324,17 @@ export function ReportsCenter(): React.ReactElement | null {
                 ) : category === "my_reports" ? (
                     <IncidentReportList reports={my_reports} modal={false} />
                 ) : category === "hr" ? null : (
-                    <ViewReport
-                        reports={
-                            category === "all"
-                                ? reports
-                                : reports.filter((x) => x.report_type === category)
-                        }
-                        onChange={selectReport}
-                        report_id={report_id}
-                    />
+                    <>
+                        <ReportsViewer
+                            reports={
+                                category === "all"
+                                    ? reports
+                                    : reports.filter((x) => x.report_type === category)
+                            }
+                            report_id={report_id}
+                            selectReport={selectReport}
+                        />
+                    </>
                 )}
             </div>
         </div>
