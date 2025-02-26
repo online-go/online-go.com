@@ -654,12 +654,13 @@ function SelfReportedAccountLinkages({
 }): React.ReactElement {
     const associations = [1, 2, 3] as const;
     const userAssociations = [];
-    for (const i of associations) {
-        const country = links[`org${i}`];
-        const id = links[`org${i}_id`];
-        const rank = links[`org${i}_rank`];
+    for (const num of associations) {
+        const country = links[`org${num}`];
+        const id = links[`org${num}_id`];
+        const rank = links[`org${num}_rank`];
         if (country && (id || (rank && rank > 0))) {
             userAssociations.push({
+                num,
                 country,
                 id,
                 rank,
@@ -686,6 +687,7 @@ function SelfReportedAccountLinkages({
         const rank = links[`${server}_rank`];
         if (id || (rank && rank > 0)) {
             userServers.push({
+                server,
                 name,
                 id,
                 rank,
@@ -697,12 +699,12 @@ function SelfReportedAccountLinkages({
         <div className="SelfReportedAccountLinkages">
             {userAssociations.length > 0 && <h3>{_("Associations")}</h3>}
             {userAssociations.map((props) => (
-                <AssociationLink {...props} />
+                <AssociationLink key={props.num} {...props} />
             ))}
 
             {userServers.length > 0 && <h3>{_("Servers")}</h3>}
             {userServers.map((props) => (
-                <ServerLink {...props} />
+                <ServerLink key={props.server} {...props} />
             ))}
         </div>
     );
