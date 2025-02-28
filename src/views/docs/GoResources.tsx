@@ -130,7 +130,7 @@ export function GoResources(): React.ReactElement {
                             <Book
                                 countries={[en]}
                                 title="Go on Go: The Analyzed Games of Go Seigen"
-                                href="https://www.usgo.org/sites/default/files/pdf/go-seigen-book.pdf"
+                                href="https://www.usgo-archive.org/sites/default/files/pdf/go-seigen-book.pdf"
                                 authors={["Go Seigen", "Translation by Jim Z. Yu"]}
                             />,
                             <Book
