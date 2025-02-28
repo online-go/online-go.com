@@ -15,68 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ReportedConversation } from "@/components/Report";
-import { PlayerCacheEntry } from "@/lib/player_cache";
 import { MODERATOR_POWERS } from "@/lib/moderation";
 import { ReportType } from "@/components/Report";
 
-interface Vote {
-    voter_id: number;
-    action: string;
-    updated: string;
-}
+import type { ServerToClient } from "submodules/goban/src/engine/protocol/ServerToClient";
 
-export interface Report {
-    // TBD put this into /models, in a suitable namespace?
-    // TBD: relationship between this and SeverToClient['incident-report']
-    id: number;
-    created: string;
-    updated: string;
-    state: string;
-    escalated: boolean;
-    escalated_at: string;
-    retyped: boolean;
-    source: string;
-    report_type: ReportType;
-    reporting_user: PlayerCacheEntry;
-    reported_user: PlayerCacheEntry;
-    reported_game: number;
-    reported_game_move?: number;
-    reported_review: number;
-    reported_conversation: ReportedConversation;
-    url: string;
-    moderator: PlayerCacheEntry;
-    cleared_by_user: boolean;
-    was_helpful: boolean;
-    reporter_note: string;
-    reporter_note_translation: {
-        source_language: string;
-        target_language: string;
-        source_text: string;
-        target_text: string;
-    };
-    moderator_note: string;
-    system_note: string;
-    detected_ai_games: Array<object>;
-
-    automod_to_moderator?: string; // Suggestions from "automod"
-    automod_to_reporter?: string;
-    automod_to_reported?: string;
-
-    available_actions: Array<string>; // community moderator actions
-    vote_counts: { [action: string]: number };
-    voters: Vote[]; // votes from community moderators on this report
-    escalation_note: string;
-    dissenter_note: string;
-
-    unclaim: () => void;
-    claim: () => void;
-    steal: () => void;
-    bad_report: () => void;
-    good_report: () => void;
-    cancel: () => void;
-    set_note: () => void;
-}
+export type ReportNotification = ServerToClient["incident-report"] extends (data: infer T) => void
+    ? T
+    : never;
 
 type CommunityModeratorReportTypes = Partial<Record<ReportType, string>>;
 
@@ -104,7 +50,10 @@ export function community_mod_has_power(
     );
 }
 
-export function community_mod_can_handle(user: rest_api.UserConfig, report: Report): boolean {
+export function community_mod_can_handle(
+    user: rest_api.UserConfig,
+    report: ReportNotification,
+): boolean {
     // Community moderators only get to see reports that they have the power for and
     // that they have not yet voted on... or if it's escalated, they must have suspend power
     // AI report are different - CMs handle them pre-escalation, full moderators after escalation!
@@ -116,7 +65,7 @@ export function community_mod_can_handle(user: rest_api.UserConfig, report: Repo
     const they_already_voted = report.voters?.some((vote) => vote.voter_id === user.id);
     const they_can_vote_to_suspend = user.moderator_powers & MODERATOR_POWERS.SUSPEND;
     if (
-        community_mod_has_power(user.moderator_powers, report.report_type) &&
+        community_mod_has_power(user.moderator_powers, report.report_type as ReportType) &&
         (!they_already_voted ||
             (report.escalated && they_can_vote_to_suspend && !(report.report_type === "ai_use")))
     ) {

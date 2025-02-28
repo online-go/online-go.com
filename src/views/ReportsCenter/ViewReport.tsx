@@ -22,7 +22,7 @@ import Select from "react-select";
 import { useUser } from "@/lib/hooks";
 import { report_categories, ReportType } from "@/components/Report";
 import { report_manager } from "@/lib/report_manager";
-import { Report } from "@/lib/report_util";
+import { ReportNotification } from "@/lib/report_util";
 import { AutoTranslate } from "@/components/AutoTranslate";
 import { interpolate, _, pgettext, llm_pgettext } from "@/lib/translate";
 import { Player } from "@/components/Player";
@@ -46,6 +46,8 @@ import { ReportContext } from "@/contexts/ReportContext";
 import { PlayerCacheEntry } from "@/lib/player_cache";
 import { useEffect } from "react";
 
+type ReportDetail = rest_api.moderation.ReportDetail;
+
 interface ViewReportProps {
     report_id: number;
     advanceToNextReport: () => void;
@@ -62,7 +64,7 @@ export function ViewReport({
 }: ViewReportProps): React.ReactElement {
     const user = useUser();
     const [moderatorNote, setModeratorNote] = React.useState("");
-    const [report, setReport] = React.useState<Report | null>(null);
+    const [report, setReport] = React.useState<ReportDetail | null>(null);
     const [usersVote, setUsersVote] = React.useState<string | null>(null);
     const [isAnnulQueueModalOpen, setIsAnnulQueueModalOpen] = React.useState(false);
     const [annulQueue, setAnnulQueue] = React.useState<null | undefined | any[]>(
@@ -78,7 +80,7 @@ export function ViewReport({
 
     const related = report_manager.getRelatedReports(report_id);
 
-    const updateReportState = (report: Report) => {
+    const updateReportState = (report: ReportDetail) => {
         setReport(report);
         setUsersVote(report?.voters?.find((v) => v.voter_id === user.id)?.action ?? null);
         setModeratorId(report?.moderator?.id ?? null);
@@ -86,7 +88,8 @@ export function ViewReport({
 
     const fetchAndUpdateReport = async (reportId: number) => {
         try {
-            const report = await report_manager.getReport(reportId);
+            const report = await report_manager.getReportDetails(reportId);
+            console.log(report.available_actions, typeof report.available_actions);
             updateReportState(report);
         } catch (error) {
             errorAlerter(error);
@@ -100,7 +103,7 @@ export function ViewReport({
 
         void fetchAndUpdateReport(report_id);
 
-        const onUpdate = async (r: Report) => {
+        const onUpdate = async (r: ReportNotification) => {
             if (r.id === report_id) {
                 await fetchAndUpdateReport(report_id);
             }
@@ -615,11 +618,13 @@ export function ViewReport({
                         )}
                         {report.reported_conversation && (
                             <div className="reported-conversation">
-                                {report.reported_conversation.content.map((line, index) => (
-                                    <div className="chatline" key={index}>
-                                        {line}
-                                    </div>
-                                ))}
+                                {report.reported_conversation.content.map(
+                                    (line: string, index: number) => (
+                                        <div className="chatline" key={index}>
+                                            {line}
+                                        </div>
+                                    ),
+                                )}
                             </div>
                         )}
                     </ErrorBoundary>

@@ -21,16 +21,17 @@ import { alert } from "@/lib/swal_config";
 import { post } from "@/lib/requests";
 
 import { ignore, errorAlerter } from "@/lib/misc";
-import { Report } from "@/lib/report_util";
+import { ReportNotification } from "@/lib/report_util";
 
-import { IncidentReportCard } from "./IncidentReportCard";
+import { IncidentReportCard, ActionableReport } from "./IncidentReportCard";
 
-// Define a type for the props
 type IncidentReportListProps = {
-    reports: Report[];
+    reports: ReportNotification[];
     modal?: boolean;
 };
 
+// This presents a list of incident reports with a summary and actions.
+// It's intended to be built from Report Notifications that we get from the term server via report_manager
 export function IncidentReportList({
     reports,
     modal = true,
@@ -40,14 +41,16 @@ export function IncidentReportList({
     }
 
     // Attach appropriate actions to each report
-    reports.forEach((report) => {
-        if (report.state !== "resolved") {
-            report.unclaim = () => {
+    const actionableReports: ActionableReport[] = reports.map((report) => {
+        const actionableReport = report as ActionableReport;
+
+        if (actionableReport.state !== "resolved") {
+            actionableReport.unclaim = () => {
                 post(`moderation/incident/${report.id}`, { id: report.id, action: "unclaim" })
                     .then(ignore)
                     .catch(errorAlerter);
             };
-            report.good_report = () => {
+            actionableReport.good_report = () => {
                 post(`moderation/incident/${report.id}`, {
                     id: report.id,
                     action: "resolve",
@@ -56,7 +59,7 @@ export function IncidentReportList({
                     .then(ignore)
                     .catch(errorAlerter);
             };
-            report.bad_report = () => {
+            actionableReport.bad_report = () => {
                 post(`moderation/incident/${report.id}`, {
                     id: report.id,
                     action: "resolve",
@@ -65,7 +68,7 @@ export function IncidentReportList({
                     .then(ignore)
                     .catch(errorAlerter);
             };
-            report.steal = () => {
+            actionableReport.steal = () => {
                 post(`moderation/incident/${report.id}`, { id: report.id, action: "steal" })
                     .then((res) => {
                         if (res.vanished) {
@@ -74,7 +77,7 @@ export function IncidentReportList({
                     })
                     .catch(errorAlerter);
             };
-            report.claim = () => {
+            actionableReport.claim = () => {
                 post(`moderation/incident/${report.id}`, { id: report.id, action: "claim" })
                     .then((res) => {
                         if (res.vanished) {
@@ -86,13 +89,13 @@ export function IncidentReportList({
                     })
                     .catch(errorAlerter);
             };
-            report.cancel = () => {
+            actionableReport.cancel = () => {
                 post(`moderation/incident/${report.id}`, { id: report.id, action: "cancel" })
                     .then(ignore)
                     .catch(errorAlerter);
             };
 
-            report.set_note = () => {
+            actionableReport.set_note = () => {
                 void alert
                     .fire({
                         input: "text",
@@ -112,13 +115,14 @@ export function IncidentReportList({
                     });
             };
         }
+        return actionableReport;
     });
 
     return (
         <div className="IncidentReportList">
             {modal && <div className="IncidentReportList-backdrop" onClick={hideList}></div>}
             <div className={modal ? "IncidentReportList-modal" : "IncidentReportList-plain"}>
-                {reports.map((report: Report, index) => (
+                {actionableReports.map((report: ActionableReport, index) => (
                     <IncidentReportCard key={index} report={report} />
                 ))}
             </div>

@@ -159,7 +159,7 @@ export function ReportsCenter(): React.ReactElement | null {
 
     const my_reports = report_manager
         .getEligibleReports()
-        .filter((report) => report.reporting_user.id === user.id);
+        .filter((report) => report.reporting_user?.id === user.id);
 
     return (
         <div className="ReportsCenter container">
@@ -321,8 +321,6 @@ export function ReportsCenter(): React.ReactElement | null {
                     )
                 ) : category === "cm" ? (
                     <ReportsCenterCMDashboard />
-                ) : category === "my_reports" ? (
-                    <IncidentReportList reports={my_reports} modal={false} />
                 ) : category === "my_reports" ? (
                     <IncidentReportList reports={my_reports} modal={false} />
                 ) : category === "hr" ? null : user.is_moderator || user.moderator_powers ? (

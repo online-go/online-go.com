@@ -10,7 +10,7 @@
 import * as React from "react";
 import Select from "react-select";
 import { useUser } from "@/lib/hooks";
-import { Report } from "@/lib/report_util";
+import { ReportNotification } from "@/lib/report_util";
 import { report_manager } from "@/lib/report_manager";
 import { _ } from "@/lib/translate";
 import * as DynamicHelp from "react-dynamic-help";
@@ -20,13 +20,14 @@ import { errorAlerter } from "@/lib/misc";
 import { ViewReport } from "@/views/ReportsCenter/ViewReport";
 
 interface ViewReportHeaderProps {
-    reports: Report[];
+    reports: ReportNotification[];
     report_id: number;
     selectReport: (report_id: number) => void;
 }
 
 let cached_moderators: PlayerCacheEntry[] = [];
 
+// Provides navigation around a set of report-notifications, with a full view of the current report
 export function ReportsViewer({
     reports,
     report_id,

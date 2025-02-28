@@ -27,20 +27,22 @@ import { toast } from "@/lib/toast";
 import { alert } from "@/lib/swal_config";
 import { socket } from "@/lib/sockets";
 import { pgettext } from "@/lib/translate";
-import { Report, community_mod_can_handle } from "@/lib/report_util";
+import { ReportNotification, community_mod_can_handle } from "@/lib/report_util";
 import { EventEmitter } from "eventemitter3";
 import { emitNotification } from "@/components/Notifications";
 import { browserHistory } from "@/lib/ogsHistory";
 import { get, post } from "@/lib/requests";
 import { MODERATOR_POWERS } from "./moderation";
 
+type ReportDetail = rest_api.moderation.ReportDetail;
+
 export interface ReportRelation {
     relationship: string;
-    report: Report;
+    report: ReportNotification;
 }
 
 interface Events {
-    "incident-report": (report: Report) => void;
+    "incident-report": (report: ReportNotification) => void;
     "active-count": (count: number) => void;
     update: () => void;
 }
@@ -50,8 +52,8 @@ interface Events {
 let post_connect_notification_squelch = true;
 
 class ReportManager extends EventEmitter<Events> {
-    active_incident_reports: { [id: string]: Report } = {};
-    sorted_active_incident_reports: Report[] = [];
+    active_incident_reports: { [id: string]: ReportNotification } = {};
+    sorted_active_incident_reports: ReportNotification[] = [];
     this_user_reported_games: number[] = [];
 
     constructor() {
@@ -72,7 +74,7 @@ class ReportManager extends EventEmitter<Events> {
         }
 
         socket.on("incident-report", (report) =>
-            this.updateIncidentReport(report as any as Report),
+            this.updateIncidentReport(report as any as ReportNotification),
         );
 
         preferences.watch("moderator.report-settings", () => {
@@ -84,7 +86,7 @@ class ReportManager extends EventEmitter<Events> {
         });
     }
 
-    public updateIncidentReport(report: Report) {
+    public updateIncidentReport(report: ReportNotification) {
         const user = data.get("user");
         report.id = parseInt(report.id as unknown as string);
 
@@ -142,7 +144,7 @@ class ReportManager extends EventEmitter<Events> {
         const prefs = preferences.get("moderator.report-settings");
         const user = data.get("user");
 
-        const reports: Report[] = [];
+        const reports: ReportNotification[] = [];
         let normal_ct = 0;
         for (const id in this.active_incident_reports) {
             const report = this.active_incident_reports[id];
@@ -162,18 +164,18 @@ class ReportManager extends EventEmitter<Events> {
         this.emit("update");
     }
 
-    public getEligibleReports(): Report[] {
+    public getEligibleReports(): ReportNotification[] {
         const quota = preferences.get("moderator.report-quota");
         return !quota || this.getHandledTodayCount() < preferences.get("moderator.report-quota")
             ? this.getAvailableReports()
             : // Always show the user their own reports
               this.getAvailableReports().filter(
-                  (report) => report.reporting_user.id === data.get("user").id,
+                  (report) => report.reporting_user?.id === data.get("user").id,
               );
     }
 
     // Clients should use getEligibleReports
-    private getAvailableReports(): Report[] {
+    private getAvailableReports(): ReportNotification[] {
         const user = data.get("user");
         return this.sorted_active_incident_reports.filter((report) => {
             if (!report) {
@@ -285,7 +287,7 @@ class ReportManager extends EventEmitter<Events> {
         this.update();
     }
 
-    public async getReport(id: number): Promise<Report> {
+    public async getReportDetails(id: number): Promise<ReportDetail> {
         const res = await get(`moderation/incident/${id}`);
 
         if (res) {
@@ -295,7 +297,7 @@ class ReportManager extends EventEmitter<Events> {
         throw new Error("Report not found");
     }
 
-    public async reopen(report_id: number): Promise<Report> {
+    public async reopen(report_id: number): Promise<ReportNotification> {
         const res = await post(`moderation/incident/${report_id}`, {
             id: report_id,
             action: "reopen",
@@ -303,7 +305,7 @@ class ReportManager extends EventEmitter<Events> {
         this.updateIncidentReport(res);
         return res;
     }
-    public async close(report_id: number, helpful: boolean): Promise<Report> {
+    public async close(report_id: number, helpful: boolean): Promise<ReportNotification> {
         delete this.active_incident_reports[report_id];
         this.update();
         const res = await post(`moderation/incident/${report_id}`, {
@@ -314,17 +316,17 @@ class ReportManager extends EventEmitter<Events> {
         this.updateIncidentReport(res);
         return res;
     }
-    public async good_report(report_id: number): Promise<Report> {
+    public async good_report(report_id: number): Promise<ReportNotification> {
         const res = await this.close(report_id, true);
         this.updateIncidentReport(res);
         return res;
     }
-    public async bad_report(report_id: number): Promise<Report> {
+    public async bad_report(report_id: number): Promise<ReportNotification> {
         const res = await this.close(report_id, false);
         this.updateIncidentReport(res);
         return res;
     }
-    public async unclaim(report_id: number): Promise<Report> {
+    public async unclaim(report_id: number): Promise<ReportNotification> {
         const res = await post(`moderation/incident/${report_id}`, {
             id: report_id,
             action: "unclaim",
@@ -332,7 +334,7 @@ class ReportManager extends EventEmitter<Events> {
         this.updateIncidentReport(res);
         return res;
     }
-    public async claim(report_id: number): Promise<Report> {
+    public async claim(report_id: number): Promise<ReportNotification> {
         const res = await post(`moderation/incident/${report_id}`, {
             id: report_id,
             action: "claim",
@@ -354,7 +356,7 @@ class ReportManager extends EventEmitter<Events> {
         voted_action: string,
         escalation_note: string,
         dissenter_note: string,
-    ): Promise<Report> {
+    ): Promise<ReportNotification> {
         return post(`moderation/incident/${report_id}`, {
             action: "vote",
             voted_action: voted_action,
@@ -392,7 +394,7 @@ class ReportManager extends EventEmitter<Events> {
     }
 }
 
-function compare_reports(a: Report, b: Report): number {
+function compare_reports(a: ReportNotification, b: ReportNotification): number {
     const prefs = preferences.get("moderator.report-settings");
     const sort_order = preferences.get("moderator.report-sort-order");
     const user = data.get("user");
@@ -406,13 +408,13 @@ function compare_reports(a: Report, b: Report): number {
         return custom_ordering || (sort_order === "newest-first" ? b.id - a.id : a.id - b.id);
     }
     if (a.moderator && !b.moderator) {
-        if (a.moderator.id === user.id) {
+        if (a.moderator?.id === user.id) {
             return A_BEFORE_B;
         }
         return B_BEFORE_A;
     }
     if (b.moderator && !a.moderator) {
-        if (b.moderator.id === user.id) {
+        if (b.moderator?.id === user.id) {
             return B_BEFORE_A;
         }
         return A_BEFORE_B;
@@ -421,10 +423,10 @@ function compare_reports(a: Report, b: Report): number {
     // both have moderators, sort our mod reports first, then other
     // mods, then by id
 
-    if (a.moderator.id !== user.id && b.moderator.id === user.id) {
+    if (a.moderator?.id !== user.id && b.moderator?.id === user.id) {
         return B_BEFORE_A;
     }
-    if (a.moderator.id === user.id && b.moderator.id !== user.id) {
+    if (a.moderator?.id === user.id && b.moderator?.id !== user.id) {
         return A_BEFORE_B;
     }
 
