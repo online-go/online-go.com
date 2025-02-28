@@ -99,7 +99,7 @@ export function IncidentReportList({
                 void alert
                     .fire({
                         input: "text",
-                        inputValue: report.moderator_note,
+                        inputValue: report.moderator_note || "",
                         showCancelButton: true,
                     })
                     .then(({ value: txt, isConfirmed }) => {

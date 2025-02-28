@@ -63,7 +63,6 @@ export function ViewReport({
     advanceToNextReport,
 }: ViewReportProps): React.ReactElement {
     const user = useUser();
-    const [moderatorNote, setModeratorNote] = React.useState("");
     const [report, setReport] = React.useState<ReportDetail | null>(null);
     const [usersVote, setUsersVote] = React.useState<string | null>(null);
     const [isAnnulQueueModalOpen, setIsAnnulQueueModalOpen] = React.useState(false);
@@ -80,6 +79,8 @@ export function ViewReport({
 
     const related = report_manager.getRelatedReports(report_id);
 
+    const [modNoteNeedsSave, setHasUnsavedChanges] = React.useState(false);
+
     const updateReportState = (report: ReportDetail) => {
         setReport(report);
         setUsersVote(report?.voters?.find((v) => v.voter_id === user.id)?.action ?? null);
@@ -89,7 +90,7 @@ export function ViewReport({
     const fetchAndUpdateReport = async (reportId: number) => {
         try {
             const report = await report_manager.getReportDetails(reportId);
-            console.log(report.available_actions, typeof report.available_actions);
+            console.log("got report", report.moderator_note);
             updateReportState(report);
         } catch (error) {
             errorAlerter(error);
@@ -97,6 +98,7 @@ export function ViewReport({
     };
 
     useEffect(() => {
+        console.log("report_id", report_id);
         if (report_id === 0) {
             return;
         }
@@ -135,31 +137,42 @@ export function ViewReport({
             if (!report) {
                 return;
             }
-            setModeratorNote(event.target.value);
 
-            if (report_note_id !== 0 && report_note_id !== report.id) {
-                window.alert(
-                    "Hold your horses, already saving an update, though you should never see this contact anoek",
-                );
-            } else {
-                report_note_id = report.id;
-                report_note_text = event.target.value;
+            const prevNote = report.moderator_note || "";
+            const newlineCount = (str: string) => (str.match(/\n/g) || []).length;
 
-                if (!report_note_update_timeout) {
-                    report_note_update_timeout = setTimeout(() => {
-                        post(`moderation/incident/${report.id}`, {
-                            id: report.id,
-                            action: "note",
-                            note: report_note_text,
-                        })
-                            .then(ignore)
-                            .catch(errorAlerter);
-                        report_note_id = 0;
-                        report_note_text = "";
-                        report_note_update_timeout = null;
-                    }, 250);
+            if (newlineCount(event.target.value) > newlineCount(prevNote)) {
+                if (report_note_id !== 0 && report_note_id !== report.id) {
+                    window.alert(
+                        "Hold your horses, already saving an update, though you should never see this contact anoek",
+                    );
+                } else {
+                    console.log("saving note", event.target.value);
+                    report_note_id = report.id;
+                    report_note_text = event.target.value;
+
+                    if (!report_note_update_timeout) {
+                        report_note_update_timeout = setTimeout(() => {
+                            post(`moderation/incident/${report.id}`, {
+                                id: report.id,
+                                action: "note",
+                                note: report_note_text,
+                            })
+                                .then(() => {
+                                    setHasUnsavedChanges(false);
+                                })
+                                .catch(errorAlerter);
+                            report_note_id = 0;
+                            report_note_text = "";
+                            report_note_update_timeout = null;
+                        }, 250);
+                    }
                 }
             }
+            setHasUnsavedChanges(event.target.value !== prevNote);
+            setReport((prevReport) =>
+                prevReport ? { ...prevReport, moderator_note: event.target.value } : null,
+            );
         },
         [report],
     );
@@ -410,9 +423,12 @@ export function ViewReport({
 
                         {(user.is_moderator || null) && (
                             <div className="notes">
-                                <h4>Moderator Notes</h4>
+                                <h4>
+                                    Moderator Notes{" "}
+                                    {modNoteNeedsSave && <span>(hit enter to save)</span>}
+                                </h4>
                                 <textarea
-                                    value={moderatorNote}
+                                    value={report.moderator_note || ""}
                                     onChange={setAndSaveModeratorNote}
                                 />
                             </div>
