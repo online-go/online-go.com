@@ -652,46 +652,60 @@ function SelfReportedAccountLinkages({
 }: {
     links: rest_api.AccountLinks;
 }): React.ReactElement {
-    const has_association = links.org1 || links.org2 || links.org3;
-    let has_other_server = false;
-    for (const key in links) {
-        if (
-            key !== "hidden" &&
-            key !== "hidden_ids" &&
-            key !== "last_updated" &&
-            !(key.indexOf("org") === 0) &&
-            links[key as keyof rest_api.AccountLinks]
-        ) {
-            has_other_server = true;
+    const associations = [1, 2, 3] as const;
+    const userAssociations = [];
+    for (const num of associations) {
+        const country = links[`org${num}`];
+        const id = links[`org${num}_id`];
+        const rank = links[`org${num}_rank`];
+        if (country && (id || (rank && rank > 0))) {
+            userAssociations.push({
+                num,
+                country,
+                id,
+                rank,
+            });
+        }
+    }
+
+    const servers = [
+        ["kgs", _("KGS")],
+        ["igs", _("IGS / PandaNet")],
+        ["dgs", _("DGS")],
+        ["golem", _("Little Golem")],
+        ["wbaduk", _("WBaduk")],
+        ["tygem", _("Tygem")],
+        ["fox", _("Fox")],
+        ["yike", _("Yike Weiqi")],
+        ["goquest", _("GoQuest")],
+        ["badukpop", _("BadukPop")],
+    ] as const;
+    const userServers = [];
+
+    for (const [server, name] of servers) {
+        const id = links[`${server}_username`];
+        const rank = links[`${server}_rank`];
+        if (id || (rank && rank > 0)) {
+            userServers.push({
+                server,
+                name,
+                id,
+                rank,
+            });
         }
     }
 
     return (
         <div className="SelfReportedAccountLinkages">
-            {has_association && <h3>{_("Associations")}</h3>}
-            <AssociationLink country={links.org1} id={links.org1_id} rank={links.org1_rank} />
-            <AssociationLink country={links.org2} id={links.org2_id} rank={links.org2_rank} />
-            <AssociationLink country={links.org3} id={links.org3_id} rank={links.org3_rank} />
+            {userAssociations.length > 0 && <h3>{_("Associations")}</h3>}
+            {userAssociations.map((props) => (
+                <AssociationLink key={props.num} {...props} />
+            ))}
 
-            {has_other_server && <h3>{_("Servers")}</h3>}
-            <ServerLink name={_("KGS")} id={links.kgs_username} rank={links.kgs_rank} />
-            <ServerLink name={_("IGS / PandaNet")} id={links.igs_username} rank={links.igs_rank} />
-            <ServerLink name={_("DGS")} id={links.dgs_username} rank={links.dgs_rank} />
-            <ServerLink
-                name={_("Little Golem")}
-                id={links.golem_username}
-                rank={links.golem_rank}
-            />
-            <ServerLink name={_("WBaduk")} id={links.wbaduk_username} rank={links.wbaduk_rank} />
-            <ServerLink name={_("Tygem")} id={links.tygem_username} rank={links.tygem_rank} />
-            <ServerLink name={_("Fox")} id={links.fox_username} rank={links.fox_rank} />
-            <ServerLink name={_("Yike Weiqi")} id={links.yike_username} rank={links.yike_rank} />
-            <ServerLink name={_("GoQuest")} id={links.goquest_username} rank={links.goquest_rank} />
-            <ServerLink
-                name={_("BadukPop")}
-                id={links.badukpop_username}
-                rank={links.badukpop_rank}
-            />
+            {userServers.length > 0 && <h3>{_("Servers")}</h3>}
+            {userServers.map((props) => (
+                <ServerLink key={props.server} {...props} />
+            ))}
         </div>
     );
 }
