@@ -479,6 +479,8 @@ export function Supporter(props: SupporterProperties): React.ReactElement {
         return;
     };
 
+    const grandfathered_plan = isGrandfatheredPlan(config.subscriptions[0], prices);
+
     return (
         <div className="Supporter">
             <SiteSupporterText />
@@ -496,6 +498,7 @@ export function Supporter(props: SupporterProperties): React.ReactElement {
                         overrides={overrides}
                         account_id={account_id}
                         slug={price.slug}
+                        grandfathered_plan={grandfathered_plan}
                     />
                 ))}
             </div>
@@ -634,6 +637,7 @@ interface PriceBoxProperties {
     overrides: SupporterOverrides;
     interval: "month" | "year";
     slug: "aji" | "hane" | "tenuki" | "meijin";
+    grandfathered_plan: boolean;
 }
 
 export function PriceBox({
@@ -644,6 +648,7 @@ export function PriceBox({
     account_id,
     overrides,
     slug,
+    grandfathered_plan,
 }: PriceBoxProperties): React.ReactElement | null {
     const user = data.get("user");
     const [mor_locations, setMorLocations] = React.useState<string[]>(
@@ -795,6 +800,15 @@ export function PriceBox({
                         <>
                             <h4>{_("Thank you for your support!")}</h4>
                             <p>{_("You are on this plan.")}</p>
+                            {grandfathered_plan && (
+                                <p className="highlight">
+                                    <b>
+                                        {_(
+                                            "You have a reduced rate for as long as you keep this plan.",
+                                        )}
+                                    </b>
+                                </p>
+                            )}
                         </>
                     ) : (
                         <p>{_("To change plans, please cancel your support below first")}</p>
@@ -894,6 +908,16 @@ export function PriceBox({
 
 */
 
+function isGrandfatheredPlan(subscription: Subscription, prices: Price[]): boolean {
+    const grandfathered_plan = !prices.find(
+        (price) =>
+            price.slug === subscription.plan?.slug &&
+            (price.price[subscription.plan?.currency || ""]?.month === subscription.plan?.amount ||
+                price.price[subscription.plan?.currency || ""]?.year === subscription.plan?.amount),
+    );
+    return grandfathered_plan;
+}
+
 function Subscription({
     subscription,
     prices,
@@ -918,11 +942,7 @@ function Subscription({
             break;
     }
 
-    const grandfathered_plan = !prices.find(
-        (price) =>
-            price.price[subscription.plan?.currency || ""]?.month === subscription.plan?.amount ||
-            price.price[subscription.plan?.currency || ""]?.year === subscription.plan?.amount,
-    );
+    const grandfathered_plan = isGrandfatheredPlan(subscription, prices);
 
     function cancel() {
         alert
