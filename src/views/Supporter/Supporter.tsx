@@ -911,7 +911,7 @@ export function PriceBox({
 function isGrandfatheredPlan(subscription: Subscription, prices: Price[]): boolean {
     const grandfathered_plan = !prices.find(
         (price) =>
-            price.slug === subscription.plan?.slug &&
+            price.slug === subscription?.plan?.slug &&
             (price.price[subscription.plan?.currency || ""]?.month === subscription.plan?.amount ||
                 price.price[subscription.plan?.currency || ""]?.year === subscription.plan?.amount),
     );
