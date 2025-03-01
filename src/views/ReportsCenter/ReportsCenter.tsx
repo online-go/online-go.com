@@ -25,12 +25,12 @@ import { _ } from "@/lib/translate";
 import { usePreference } from "@/lib/preferences";
 import { community_mod_has_power } from "@/lib/report_util";
 
-import { ViewReport } from "./ViewReport";
 import { ReportsCenterSettings } from "./ReportsCenterSettings";
 import { ReportsCenterHistory } from "./ReportsCenterHistory";
 import { ReportsCenterCMDashboard } from "./ReportsCenterCMDashboard";
 import { ReportsCenterCMHistory } from "./ReportsCenterCMHistory";
 import { IncidentReportList } from "@/components/IncidentReportTracker";
+import { ReportsViewer } from "./ReportsViewer";
 
 interface OtherView {
     special: string;
@@ -159,7 +159,7 @@ export function ReportsCenter(): React.ReactElement | null {
 
     const my_reports = report_manager
         .getEligibleReports()
-        .filter((report) => report.reporting_user.id === user.id);
+        .filter((report) => report.reporting_user?.id === user.id);
 
     return (
         <div className="ReportsCenter container">
@@ -323,17 +323,17 @@ export function ReportsCenter(): React.ReactElement | null {
                     <ReportsCenterCMDashboard />
                 ) : category === "my_reports" ? (
                     <IncidentReportList reports={my_reports} modal={false} />
-                ) : category === "hr" ? null : (
-                    <ViewReport
+                ) : category === "hr" ? null : user.is_moderator || user.moderator_powers ? (
+                    <ReportsViewer
                         reports={
                             category === "all"
                                 ? reports
                                 : reports.filter((x) => x.report_type === category)
                         }
-                        onChange={selectReport}
                         report_id={report_id}
+                        selectReport={selectReport}
                     />
-                )}
+                ) : null}
             </div>
         </div>
     );

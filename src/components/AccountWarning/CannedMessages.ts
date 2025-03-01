@@ -90,8 +90,7 @@ Thank you for your report, '{{reported}}' has been given a formal warning about 
             llm_pgettext(
                 "Acknowledgement message to a user",
                 `
-Thank you for bringing the possible instance of '{{reported}}' abandoning the game to
-our attention.
+Thank you for bringing the possible instance of '{{reported}}' abandoning the game to our attention.
 
 We looked into the game and did not see them failing to finish the game properly.
 

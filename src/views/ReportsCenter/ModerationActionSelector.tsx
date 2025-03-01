@@ -19,8 +19,8 @@ import * as React from "react";
 import { _, llm_pgettext } from "@/lib/translate";
 
 import * as DynamicHelp from "react-dynamic-help";
-import { useUser } from "@/lib/hooks";
-import { Report } from "@/lib/report_util";
+
+type Report = rest_api.moderation.ReportDetail;
 
 interface ModerationActionSelectorProps {
     available_actions: string[];
@@ -368,9 +368,6 @@ export function ModerationActionSelector({
     report,
     submit,
 }: ModerationActionSelectorProps): React.ReactElement {
-    const user = useUser();
-    const reportedBySelf = user.id === report.reporting_user.id;
-
     const [voted, setVoted] = React.useState(false);
     const [selectedOption, setSelectedOption] = React.useState(users_vote || "");
     const [escalation_note, setEscalationNote] = React.useState("");
@@ -467,14 +464,6 @@ export function ModerationActionSelector({
                 />
             )}
             <span className="action-buttons">
-                {((reportedBySelf && enable) || null) && (
-                    <button className="reject" onClick={report.cancel}>
-                        {llm_pgettext(
-                            "A button for cancelling a report created by yourself",
-                            "Cancel Report",
-                        )}
-                    </button>
-                )}
                 {((action_choices && enable) || null) && (
                     <button
                         className="success"

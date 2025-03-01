@@ -33,27 +33,42 @@
             }
         }
 
-        .reporting-user {
-            float: right;
-            font-size: 0.8rem;
-            font-weight: 400;
-        }
-    }
+        .users-header-right {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
 
-    .view-report-header {
-        margin-bottom: 1 rem;
+            .moderator-selector > span {
+                padding-right: 0.5rem;
+            }
 
-        .report-id {
-            margin-right: 1rem;
-        }
+            #ViewReportSelectModerator {
+                font-size: 0.8rem;
+                font-weight: 400;
+                display: inline-block;
+                width: 10rem;
 
-        button {
-            margin-left: 0.5rem;
-            margin-right: 0.5rem;
-        }
+                .reports-center-assigned-moderator-container {
+                    display: inline-flex;
+                    align-items: center;
+                    padding-left: 0.5rem;
+                }
 
-        .reports-center-selected-report {
-            padding-left: 0.5rem;
+                // Force moderator selector to be vertically small:
+                // get rid of padding and min-height of internals
+                .ogs-react-select__control {
+                    min-height: 0;
+
+                    .ogs-react-select__dropdown-indicator {
+                        padding: 0.2rem 0.5rem 0.2rem 0.5rem;
+                    }
+                }
+            }
+
+            .reporting-user {
+                font-size: 0.8rem;
+                font-weight: 400;
+            }
         }
     }
 
@@ -172,6 +187,12 @@
     .notes {
         flex-basis: 50%;
         white-space: pre-wrap;
+
+        h4>span {
+            padding-left: 2rem;
+            font-style: italic;
+            font-size: smaller;
+        }
     }
 
     .voting {

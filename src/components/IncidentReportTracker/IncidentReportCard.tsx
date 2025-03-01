@@ -33,12 +33,22 @@ import { Player } from "@/components/Player";
 
 import { errorAlerter } from "@/lib/misc";
 import { AutoTranslate } from "@/components/AutoTranslate";
-import { Report } from "@/lib/report_util";
+import { ReportNotification } from "@/lib/report_util";
 import { useUser } from "@/lib/hooks";
 import { report_categories } from "@/components/Report";
 import { openReportedConversationModal } from "@/components/ReportedConversationModal";
 
-function getReportType(report: Report): string {
+export type ActionableReport = ReportNotification & {
+    unclaim: () => void;
+    good_report: () => void;
+    bad_report: () => void;
+    steal: () => void;
+    claim: () => void;
+    cancel: () => void;
+    set_note: () => void;
+};
+
+function getReportType(report: ActionableReport): string {
     if (report.report_type === "appeal") {
         return "Ban Appeal";
     }
@@ -49,7 +59,7 @@ function getReportType(report: Report): string {
 }
 
 interface IncidentReportCardProps {
-    report: Report;
+    report: ActionableReport;
 }
 
 export function IncidentReportCard({ report }: IncidentReportCardProps): React.ReactElement {
@@ -178,13 +188,13 @@ export function IncidentReportCard({ report }: IncidentReportCardProps): React.R
                 </h3>
             )}
 
-            {report.reported_conversation && (
+            {report.reported_conversation && report.reported_user && (
                 <div
                     className="spread"
                     onClick={() => {
                         openReportedConversationModal(
-                            report.reported_user?.id,
-                            report.reported_conversation,
+                            report.reported_user!.id,
+                            report.reported_conversation!,
                         );
                     }}
                 >
