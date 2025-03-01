@@ -64,6 +64,7 @@ interface Plan {
     updated: string;
     amount: number;
     currency: string;
+    slug: string;
     name?: string;
 }
 interface Subscription {
@@ -226,7 +227,7 @@ export function Supporter(props: SupporterProperties): React.ReactElement {
             }
         }
     } catch {
-        // ignore. This case happens when we are clicking the "Full AI REview" button because
+        // ignore. This case happens when we are clicking the "Full AI Review" button because
         // we can't use search params in this context, however it's also not important since
         // this is only ever used for payment callback stuff.
     }
@@ -423,7 +424,6 @@ export function Supporter(props: SupporterProperties): React.ReactElement {
     }
 
     const current_plan_slug = getCurrentPlanSlug(config);
-
     const generatePrizeText = () => {
         const highestLevel = Math.max(...prizes.map((prize) => prize.level));
         const expirationDate = prizes.reduce((latest, current) => {
@@ -1675,22 +1675,26 @@ function formatMoneyWithTrimmedZeros(currency_code: string, amount: number): str
 }
 
 function getCurrentPlanSlug(config: Config): string | null {
-    const max_service_level = Math.max(0, ...config.services.map((s) => s.level));
-    if (max_service_level >= 20) {
-        return "meijin";
+    let ret: string | null = null;
+    for (const subscription of config.subscriptions) {
+        if (!subscription.canceled) {
+            const slug = subscription.plan?.slug;
+            if (slug) {
+                if (ret === null) {
+                    ret = slug;
+                } else {
+                    ret = getHigherPlanSlug(ret, slug);
+                }
+            }
+        }
     }
-    if (max_service_level >= 10) {
-        return "tenuki";
-    }
-    if (max_service_level >= 5) {
-        return "hane";
-    }
-    if (max_service_level >= 3) {
-        return "aji";
-        //return "kyu";
-    }
-    if (max_service_level >= 1) {
-        return "basic";
-    }
-    return null;
+
+    return ret;
+}
+
+function getHigherPlanSlug(slug1: string, slug2: string): string {
+    const order = ["basic", "aji", "hane", "tenuki", "meijin"];
+    const index1 = order.indexOf(slug1);
+    const index2 = order.indexOf(slug2);
+    return order[Math.max(index1, index2)];
 }
