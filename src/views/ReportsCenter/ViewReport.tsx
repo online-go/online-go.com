@@ -90,7 +90,6 @@ export function ViewReport({
     const fetchAndUpdateReport = async (reportId: number) => {
         try {
             const report = await report_manager.getReportDetails(reportId);
-            console.log("got report", report.moderator_note);
             updateReportState(report);
         } catch (error) {
             errorAlerter(error);
@@ -98,7 +97,6 @@ export function ViewReport({
     };
 
     useEffect(() => {
-        console.log("report_id", report_id);
         if (report_id === 0) {
             return;
         }

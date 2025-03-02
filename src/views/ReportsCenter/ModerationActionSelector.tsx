@@ -416,29 +416,34 @@ export function ModerationActionSelector({
                 </div>
             )}
             {enable &&
-                action_choices.map((a) => (
-                    <div
-                        key={a}
-                        className="action-selector"
-                        ref={a === "escalate" ? escalate_option : null}
-                    >
-                        <input
-                            id={a}
-                            name="availableActions"
-                            type="radio"
-                            checked={selectedOption === a}
-                            value={a}
-                            onChange={updateSelectedAction}
-                        />
-                        <label htmlFor={a}>
-                            {(ACTION_PROMPTS as any)[a]}
-                            <span className="vote-count">
-                                ({(!!a && !!vote_counts && vote_counts[a]) ?? 0}
-                                {users_vote === a && "*"})
-                            </span>
-                        </label>
-                    </div>
-                ))}
+                action_choices.map((a) => {
+                    const voteCount = (!!a && !!vote_counts && vote_counts[a]) ?? 0;
+                    const isUsersVote = users_vote === a;
+
+                    return (
+                        <div
+                            key={a}
+                            className="action-selector"
+                            ref={a === "escalate" ? escalate_option : null}
+                        >
+                            <input
+                                id={a}
+                                name="availableActions"
+                                type="radio"
+                                checked={selectedOption === a}
+                                value={a}
+                                onChange={updateSelectedAction}
+                            />
+                            <label htmlFor={a}>
+                                {(ACTION_PROMPTS as any)[a]}
+                                <span className="vote-count">
+                                    ({voteCount}
+                                    {isUsersVote ? "*" : ""})
+                                </span>
+                            </label>
+                        </div>
+                    );
+                })}
             {selectedOption === "escalate" && (
                 <textarea
                     id="escalation-note"
