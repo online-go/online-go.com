@@ -23,14 +23,14 @@ import { report_manager } from "@/lib/report_manager";
 import Select from "react-select";
 import { _ } from "@/lib/translate";
 import { usePreference } from "@/lib/preferences";
-import { community_mod_has_power } from "@/lib/report_util";
+import { community_mod_can_handle, community_mod_has_power } from "@/lib/report_util";
 
 import { ReportsCenterSettings } from "./ReportsCenterSettings";
 import { ReportsCenterHistory } from "./ReportsCenterHistory";
 import { ReportsCenterCMDashboard } from "./ReportsCenterCMDashboard";
 import { ReportsCenterCMHistory } from "./ReportsCenterCMHistory";
 import { IncidentReportList } from "@/components/IncidentReportTracker";
-import { ReportsViewer } from "./ReportsViewer";
+import { ModeratorReportsViewer } from "./ReportsViewer";
 
 interface OtherView {
     special: string;
@@ -80,10 +80,16 @@ export function ReportsCenter(): React.ReactElement | null {
         report_quota = 0;
     }
 
-    const reports = report_manager.getEligibleReports();
+    const visible_reports = report_manager.getEligibleReports();
+
+    const reports_for_moderation = user.is_moderator
+        ? visible_reports
+        : visible_reports.filter((x) => community_mod_can_handle(user, x));
+
+    const my_own_reports = visible_reports.filter((x) => x.reporting_user?.id === user.id);
 
     const counts: any = {};
-    for (const report of reports) {
+    for (const report of reports_for_moderation) {
         counts[report.report_type] = (counts[report.report_type] || 0) + 1;
         counts["all"] = (counts["all"] || 0) + 1;
     }
@@ -156,10 +162,6 @@ export function ReportsCenter(): React.ReactElement | null {
                         community_mod_has_power(user.moderator_powers, category.type)),
             )
           : categories.filter((category) => "special" in category && category.show_all);
-
-    const my_reports = report_manager
-        .getEligibleReports()
-        .filter((report) => report.reporting_user?.id === user.id);
 
     return (
         <div className="ReportsCenter container">
@@ -322,13 +324,13 @@ export function ReportsCenter(): React.ReactElement | null {
                 ) : category === "cm" ? (
                     <ReportsCenterCMDashboard />
                 ) : category === "my_reports" ? (
-                    <IncidentReportList reports={my_reports} modal={false} />
+                    <IncidentReportList reports={my_own_reports} modal={false} />
                 ) : category === "hr" ? null : user.is_moderator || user.moderator_powers ? (
-                    <ReportsViewer
+                    <ModeratorReportsViewer
                         reports={
                             category === "all"
-                                ? reports
-                                : reports.filter((x) => x.report_type === category)
+                                ? reports_for_moderation
+                                : reports_for_moderation.filter((x) => x.report_type === category)
                         }
                         report_id={report_id}
                         selectReport={selectReport}
