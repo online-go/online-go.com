@@ -28,7 +28,9 @@ interface ViewReportHeaderProps {
 let cached_moderators: PlayerCacheEntry[] = [];
 
 // Provides navigation around a set of report-notifications, with a full view of the current report
-export function ReportsViewer({
+// Intended for use by moderators, not for users looking at their own reports
+// (Users use IncidentReportsList)
+export function ModeratorReportsViewer({
     reports,
     report_id,
     selectReport,
