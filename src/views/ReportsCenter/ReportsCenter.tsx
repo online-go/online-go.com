@@ -23,7 +23,7 @@ import { report_manager } from "@/lib/report_manager";
 import Select from "react-select";
 import { _ } from "@/lib/translate";
 import { usePreference } from "@/lib/preferences";
-import { community_mod_can_handle, community_mod_has_power } from "@/lib/report_util";
+import { community_mod_has_power } from "@/lib/report_util";
 
 import { ReportsCenterSettings } from "./ReportsCenterSettings";
 import { ReportsCenterHistory } from "./ReportsCenterHistory";
@@ -58,7 +58,15 @@ const categories: (ReportDescription | OtherView)[] = [
         { special: "hr", title: "", show_cm: true, show_all: false },
         { special: "history", title: "History", show_cm: true, show_all: false },
         { special: "cm", title: "Community Moderation", show_cm: true, show_all: true },
-        { special: "my_reports", title: "My Own Reports", show_cm: true, show_all: true },
+        {
+            special: "my_reports",
+            get title() {
+                const count = report_manager.getMyReports().length;
+                return count > 0 ? `My Own Reports (${count})` : "My Own Reports";
+            },
+            show_cm: true,
+            show_all: true,
+        },
         { special: "settings", title: "Settings", show_cm: false, show_all: false },
     ]);
 
@@ -80,13 +88,9 @@ export function ReportsCenter(): React.ReactElement | null {
         report_quota = 0;
     }
 
-    const visible_reports = report_manager.getEligibleReports();
+    const reports_for_moderation = report_manager.moderationQueue();
 
-    const reports_for_moderation = user.is_moderator
-        ? visible_reports
-        : visible_reports.filter((x) => community_mod_can_handle(user, x));
-
-    const my_own_reports = visible_reports.filter((x) => x.reporting_user?.id === user.id);
+    const my_own_reports = report_manager.getMyReports();
 
     const counts: any = {};
     for (const report of reports_for_moderation) {
@@ -110,7 +114,7 @@ export function ReportsCenter(): React.ReactElement | null {
 
         const setToFirstAvailableReport = () => {
             if (!report_id) {
-                const reports = report_manager.getEligibleReports();
+                const reports = report_manager.getNotificationReports();
 
                 if (reports.length) {
                     for (let i = 0; i < reports.length; ++i) {

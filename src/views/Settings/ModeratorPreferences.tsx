@@ -39,6 +39,9 @@ export function ModeratorPreferences(_props: SettingGroupPageProps): React.React
     const [hide_player_card_mod_controls, setHidePlayerCardModControls] = usePreference(
         "moderator.hide-player-card-mod-controls",
     );
+    const [prefer_incident_list, setPreferIncidentList] = usePreference(
+        "moderator.prefer-incident-list",
+    );
 
     const [report_quota, _setReportQuota] = React.useState(
         preferences.get("moderator.report-quota"),
@@ -120,6 +123,9 @@ export function ModeratorPreferences(_props: SettingGroupPageProps): React.React
                             checked={hide_player_card_mod_controls}
                             onChange={setHidePlayerCardModControls}
                         />
+                    </PreferenceLine>
+                    <PreferenceLine title="Prefer incident list">
+                        <Toggle checked={prefer_incident_list} onChange={setPreferIncidentList} />
                     </PreferenceLine>
 
                     <ReportsCenterSettings />

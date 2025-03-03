@@ -32,9 +32,9 @@ export function IncidentReportIndicator(): React.ReactElement | null {
     const navigate = useNavigate();
     const [show_incident_list, setShowIncidentList] = React.useState<boolean | undefined>(false);
 
-    const [normal_ct, setNormalCt] = React.useState(0);
+    const [report_count, setReportCount] = React.useState(0);
     const [prefer_hidden] = usePreference("hide-incident-reports");
-    const [report_quota] = usePreference("moderator.report-quota");
+    const [prefer_incident_list] = usePreference("moderator.prefer-incident-list");
     const refresh = useRefresh();
 
     const { registerTargetItem, triggerFlow, signalUsed } = React.useContext(DynamicHelp.Api);
@@ -46,7 +46,7 @@ export function IncidentReportIndicator(): React.ReactElement | null {
     );
 
     function toggleList() {
-        if (user.is_moderator || user.moderator_powers) {
+        if (!prefer_incident_list && (user.is_moderator || user.moderator_powers)) {
             signalUsed("incident-report-indicator");
             navigate("/reports-center/");
         } else {
@@ -56,45 +56,34 @@ export function IncidentReportIndicator(): React.ReactElement | null {
 
     React.useEffect(() => {
         if (incidentReportIndicatorActive() && user.moderator_powers) {
-            if (normal_ct > 0) {
+            if (report_count > 0) {
                 triggerFlow("community-moderator-with-reports-intro");
             } else {
                 triggerFlow("community-moderator-no-reports-intro");
             }
         }
-    }, [incident_report_indicator, prefer_hidden, normal_ct]);
+    }, [incident_report_indicator, prefer_hidden, report_count]);
 
     React.useEffect(() => {
-        function updateCt(count: number) {
-            if ((user.is_moderator || user.moderator_powers > 0) && !!report_quota) {
-                const handled_today = user.reports_handled_today || 0;
-                setNormalCt(Math.max(0, Math.min(count, report_quota - handled_today)));
-            } else {
-                setNormalCt(count);
-            }
+        function updateCount() {
+            setReportCount(report_manager.getNotificationReports().length);
         }
 
-        function updateUser() {
-            updateCt(
-                report_manager.getEligibleReports().filter((r) => r.report_type !== "troll").length,
-            );
-        }
+        data.watch("user", updateCount);
+        data.watch("preferences.moderator.report-quota", updateCount);
+        data.watch("preferences.show-cm-reports", updateCount);
 
-        data.watch("user", updateUser);
-        data.watch("preferences.moderator.report-quota", updateUser);
-        data.watch("preferences.show-cm-reports", updateUser);
-
-        report_manager.on("active-count", updateCt);
+        report_manager.on("active-count", updateCount);
         report_manager.on("update", refresh);
 
         data.watch("ui-state.show_incident_list", setShowIncidentList);
 
         return () => {
-            report_manager.off("active-count", updateCt);
+            report_manager.off("active-count", updateCount);
             report_manager.off("update", refresh);
-            data.unwatch("user", updateUser);
-            data.unwatch("preferences.moderator.report-quota", updateUser);
-            data.unwatch("preferences.show-cm-reports", updateUser);
+            data.unwatch("user", updateCount);
+            data.unwatch("preferences.moderator.report-quota", updateCount);
+            data.unwatch("preferences.show-cm-reports", updateCount);
             data.unwatch("ui-state.show_incident_list", setShowIncidentList);
         };
     }, []);
@@ -104,7 +93,7 @@ export function IncidentReportIndicator(): React.ReactElement | null {
         return null;
     }
 
-    const reports = report_manager.getEligibleReports();
+    const reports = report_manager.getNotificationReports();
     const hide_indicator = (reports.length === 0 && !user.is_moderator) || prefer_hidden;
 
     return (
@@ -119,10 +108,12 @@ export function IncidentReportIndicator(): React.ReactElement | null {
             {!hide_indicator && (
                 <div className={"IncidentReportIndicator"} onClick={toggleList}>
                     <i
-                        className={`fa fa-exclamation-triangle ${normal_ct > 0 ? "active" : ""}`}
+                        className={`fa fa-exclamation-triangle ${report_count > 0 ? "active" : ""}`}
                         ref={incident_report_indicator}
                     />
-                    <span className={`count ${normal_ct > 0 ? "active" : ""}`}>{normal_ct}</span>
+                    <span className={`count ${report_count > 0 ? "active" : ""}`}>
+                        {report_count}
+                    </span>
                 </div>
             )}
             {!!show_incident_list && <IncidentReportList reports={reports} />}

@@ -51,6 +51,9 @@ interface Events {
 // existing notifications when we reconnect to the server
 let post_connect_notification_squelch = true;
 
+// Notifications about "reports and changes to reports that the user has access to"
+// arrive here from the server, over the websocket.
+
 class ReportManager extends EventEmitter<Events> {
     active_incident_reports: { [id: string]: ReportNotification } = {};
     sorted_active_incident_reports: ReportNotification[] = [];
@@ -86,6 +89,7 @@ class ReportManager extends EventEmitter<Events> {
         });
     }
 
+    // Processing for each notification from the server: mostly making sure our lists contain the right reports
     public updateIncidentReport(report: ReportNotification) {
         const user = data.get("user");
         report.id = parseInt(report.id as unknown as string);
@@ -112,6 +116,43 @@ class ReportManager extends EventEmitter<Events> {
             }
         }
 
+        if (report.state === "resolved") {
+            delete this.active_incident_reports[report.id];
+            this.this_user_reported_games = this.this_user_reported_games.filter(
+                (game_id) => game_id !== report.reported_game,
+            );
+        } else {
+            this.active_incident_reports[report.id] = report;
+            if (report.reported_game && report.reporting_user?.id === user.id) {
+                this.this_user_reported_games.push(report.reported_game);
+            }
+        }
+        // this is used in the Report submitting modal to prevent or warn about
+        // duplicate reports on the same game
+        data.set("reported-games", this.this_user_reported_games);
+
+        this.emit("incident-report", report);
+        this.update();
+    }
+
+    // Processing that's needed if anything changes - our user actions and new notifications
+    private update() {
+        const prefs = preferences.get("moderator.report-settings");
+
+        const current_reports = Object.values(this.active_incident_reports).filter(
+            (report) => (prefs[report.report_type]?.visible ?? true) && !this.getIgnored(report.id),
+        );
+        current_reports.sort(compare_reports);
+
+        const active_count = this.getNotificationReports().length;
+
+        this.sorted_active_incident_reports = current_reports;
+
+        this.emit("active-count", active_count);
+        this.emit("update");
+    }
+
+    private userAlreadyVoted(user: rest_api.UserConfig, report: ReportNotification): boolean {
         // They voted if there is a vote from them (obviously) - but:
         // if the report is escalated _and_ they have SUSPEND power, we are only interested in votes
         // after the escalated_at time
@@ -123,59 +164,41 @@ class ReportManager extends EventEmitter<Events> {
                     !(user.moderator_powers & MODERATOR_POWERS.SUSPEND) || // If the user does not have SUSPEND powers, any vote counts
                     new Date(vote.updated) > new Date(report.escalated_at)), // If the user has SUSPEND powers, vote must be after escalation
         );
-
-        if (report.state === "resolved" || they_already_voted) {
-            delete this.active_incident_reports[report.id];
-            this.this_user_reported_games = this.this_user_reported_games.filter(
-                (game_id) => game_id !== report.reported_game,
-            );
-        } else {
-            this.active_incident_reports[report.id] = report;
-            if (report.reported_game && report.reporting_user?.id === user.id) {
-                this.this_user_reported_games.push(report.reported_game);
-            }
-        }
-        data.set("reported-games", this.this_user_reported_games);
-        this.emit("incident-report", report);
-        this.update();
+        console.log("userAlreadyVoted", user.id, report.id, report, they_already_voted);
+        return they_already_voted;
     }
 
-    public update() {
-        const prefs = preferences.get("moderator.report-settings");
+    private userCanModerate(user: rest_api.UserConfig, report: ReportNotification): boolean {
+        // (assumes that they can see the report)
+        return (
+            (user.is_moderator && (!report.moderator || report.moderator.id === user.id)) ||
+            (!!user.moderator_powers && community_mod_can_handle(user, report))
+        );
+    }
+
+    public moderationQueue(): ReportNotification[] {
         const user = data.get("user");
-
-        const reports: ReportNotification[] = [];
-        let normal_ct = 0;
-        for (const id in this.active_incident_reports) {
-            const report = this.active_incident_reports[id];
-            if ((prefs[report.report_type]?.visible ?? true) && !this.getIgnored(report.id)) {
-                reports.push(report);
-                if (!report.moderator || report.moderator.id === user.id) {
-                    normal_ct++;
-                }
-            }
-        }
-
-        reports.sort(compare_reports);
-
-        this.sorted_active_incident_reports = reports;
-        //console.log("active reports", reports.length, normal_ct);
-        this.emit("active-count", normal_ct);
-        this.emit("update");
-    }
-
-    public getEligibleReports(): ReportNotification[] {
         const quota = preferences.get("moderator.report-quota");
         return !quota || this.getHandledTodayCount() < preferences.get("moderator.report-quota")
-            ? this.getAvailableReports()
-            : // Always show the user their own reports
-              this.getAvailableReports().filter(
-                  (report) => report.reporting_user?.id === data.get("user").id,
-              );
+            ? this.getVisibleReports().filter(
+                  (r) => this.userCanModerate(user, r) && !this.userAlreadyVoted(user, r),
+              )
+            : [];
     }
 
-    // Clients should use getEligibleReports
-    private getAvailableReports(): ReportNotification[] {
+    public getMyReports(): ReportNotification[] {
+        const user_id = data.get("user").id;
+        return this.getVisibleReports().filter((r) => r.reporting_user?.id === user_id);
+    }
+
+    public getNotificationReports(): ReportNotification[] {
+        const user = data.get("user");
+        return user.is_moderator || user.moderator_powers
+            ? this.moderationQueue()
+            : this.getMyReports();
+    }
+
+    private getVisibleReports(): ReportNotification[] {
         const user = data.get("user");
         return this.sorted_active_incident_reports.filter((report) => {
             if (!report) {
@@ -388,7 +411,7 @@ class ReportManager extends EventEmitter<Events> {
     }
     public getReportsLeftUntilGoal(): number {
         const report_quota = preferences.get("moderator.report-quota");
-        const count = this.getAvailableReports().length;
+        const count = this.moderationQueue().length;
         const handled_today = this.getHandledTodayCount();
         return Math.max(0, Math.min(count, report_quota - handled_today));
     }
