@@ -53,11 +53,6 @@ interface ViewReportProps {
     advanceToNextReport: () => void;
 }
 
-// Used for saving updates to the report
-let report_note_id = 0;
-let report_note_text = "";
-let report_note_update_timeout: ReturnType<typeof setTimeout> | null = null;
-
 export function ViewReport({
     report_id,
     advanceToNextReport,
@@ -80,6 +75,24 @@ export function ViewReport({
     const related = report_manager.getRelatedReports(report_id);
 
     const [modNoteNeedsSave, setHasUnsavedChanges] = React.useState(false);
+
+    const [newModeratorNote, setNewModeratorNote] = React.useState("");
+
+    const saveModeratorNote = () => {
+        if (!report) {
+            return;
+        }
+        post(`moderation/incident/${report.id}`, {
+            id: report.id,
+            action: "note",
+            note: newModeratorNote.trim(),
+        })
+            .then(() => {
+                setHasUnsavedChanges(false);
+                setNewModeratorNote("");
+            })
+            .catch(errorAlerter);
+    };
 
     const updateReportState = (report: ReportDetail) => {
         setReport(report);
@@ -129,51 +142,6 @@ export function ViewReport({
                 .catch(errorAlerter);
         }
     }, []);
-
-    const setAndSaveModeratorNote = React.useCallback(
-        (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-            if (!report) {
-                return;
-            }
-
-            const prevNote = report.moderator_note || "";
-            const newlineCount = (str: string) => (str.match(/\n/g) || []).length;
-
-            if (newlineCount(event.target.value) > newlineCount(prevNote)) {
-                if (report_note_id !== 0 && report_note_id !== report.id) {
-                    window.alert(
-                        "Hold your horses, already saving an update, though you should never see this contact anoek",
-                    );
-                } else {
-                    console.log("saving note", event.target.value);
-                    report_note_id = report.id;
-                    report_note_text = event.target.value;
-
-                    if (!report_note_update_timeout) {
-                        report_note_update_timeout = setTimeout(() => {
-                            post(`moderation/incident/${report.id}`, {
-                                id: report.id,
-                                action: "note",
-                                note: report_note_text,
-                            })
-                                .then(() => {
-                                    setHasUnsavedChanges(false);
-                                })
-                                .catch(errorAlerter);
-                            report_note_id = 0;
-                            report_note_text = "";
-                            report_note_update_timeout = null;
-                        }, 250);
-                    }
-                }
-            }
-            setHasUnsavedChanges(event.target.value !== prevNote);
-            setReport((prevReport) =>
-                prevReport ? { ...prevReport, moderator_note: event.target.value } : null,
-            );
-        },
-        [report],
-    );
 
     const claimReport = () => {
         if (!report) {
@@ -423,11 +391,24 @@ export function ViewReport({
                             <div className="notes">
                                 <h4>
                                     Moderator Notes{" "}
-                                    {modNoteNeedsSave && <span>(hit enter to save)</span>}
+                                    {modNoteNeedsSave && (
+                                        <button
+                                            className="success mod-note-save"
+                                            onClick={saveModeratorNote}
+                                        >
+                                            {_("Save")}
+                                        </button>
+                                    )}
                                 </h4>
+                                <div className="Card">{report.moderator_note}</div>
+
                                 <textarea
-                                    value={report.moderator_note || ""}
-                                    onChange={setAndSaveModeratorNote}
+                                    className="new-mod-note"
+                                    value={newModeratorNote}
+                                    onChange={(e) => {
+                                        setNewModeratorNote(e.target.value);
+                                        setHasUnsavedChanges(e.target.value !== "");
+                                    }}
                                 />
                             </div>
                         )}
