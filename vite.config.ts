@@ -29,19 +29,26 @@ import autoprefixer from "autoprefixer";
 import { nodePolyfills } from "vite-plugin-node-polyfills";
 
 const OGS_I18N_BUILD_MODE = (process.env.OGS_I18N_BUILD_MODE || "false").toLowerCase() === "true";
-let OGS_BACKEND = process.env.OGS_BACKEND || "BETA";
-OGS_BACKEND = OGS_BACKEND.toUpperCase();
-//OGS_BACKEND = "BETA";
-//OGS_BACKEND = "PRODUCTION";
-//OGS_BACKEND = "LOCAL";
+let OGS_BACKEND = process.env.OGS_BACKEND;
+OGS_BACKEND = OGS_BACKEND ? OGS_BACKEND.toUpperCase() : "LOCAL";
+
+const SUPPORTED_BACKENDS = ["BETA", "PRODUCTION", "LOCAL", "DOCKER"] as const;
+if (process.env.OGS_BACKEND && !SUPPORTED_BACKENDS.includes(OGS_BACKEND as any)) {
+    throw new Error(
+        `Unsupported OGS_BACKEND value: ${OGS_BACKEND}. Must be one of: ${SUPPORTED_BACKENDS.join(
+            ", ",
+        )}`,
+    );
+}
 
 const backend_url =
     OGS_BACKEND === "BETA"
         ? "https://beta.online-go.com"
         : OGS_BACKEND === "PRODUCTION"
           ? "https://online-go.com"
-          : //: "http://localhost:1080"; // local
-            "http://127.0.0.1:1080"; // local
+          : OGS_BACKEND === "DOCKER"
+            ? "http://loadbalancer"
+            : "http://127.0.0.1:1080"; // LOCAL
 
 const proxy: Record<string, ProxyOptions> = {};
 
