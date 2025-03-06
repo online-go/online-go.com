@@ -24,7 +24,7 @@ import * as React from "react";
 
 import moment from "moment";
 import { post } from "@/lib/requests";
-
+import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 
 import { _ } from "@/lib/translate";
@@ -64,6 +64,7 @@ interface IncidentReportCardProps {
 
 export function IncidentReportCard({ report }: IncidentReportCardProps): React.ReactElement {
     const user = useUser();
+    const navigateTo = useNavigate();
     const [reporterNote, setReporterNote] = React.useState(report.reporter_note || "");
     const [isEditing, setIsEditing] = React.useState(false);
 
@@ -87,14 +88,28 @@ export function IncidentReportCard({ report }: IncidentReportCardProps): React.R
         }
     };
 
+    let report_id_button: React.ReactElement;
+
+    if (user.is_moderator || user.moderator_powers) {
+        report_id_button = (
+            <button
+                onClick={(_e) => {
+                    navigateTo(`/reports-center/all/${report.id}`);
+                }}
+                className="small"
+            >
+                {"R" + report.id.toString().slice(-3)}
+            </button>
+        );
+    } else {
+        report_id_button = (
+            <button className="small inactive">{"R" + report.id.toString().slice(-3)}</button>
+        );
+    }
     return (
         <div className="incident" key={report.id}>
             <div className="report-header">
-                <div className="report-id">
-                    <button className="small inactive">
-                        {"R" + report.id.toString().slice(-3)}
-                    </button>
-                </div>
+                <div className="report-id">{report_id_button}</div>
                 {getReportType(report)}
                 {!report.moderator && user.is_moderator && (
                     <button className="primary xs" onClick={report.claim}>
