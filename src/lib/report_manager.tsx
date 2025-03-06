@@ -187,12 +187,18 @@ class ReportManager extends EventEmitter<Events> {
     }
 
     public getMyReports(): ReportNotification[] {
-        const user_id = data.get("user").id;
+        const user_id = data.get("user")?.id;
+        if (!user_id) {
+            return [];
+        }
         return this.getVisibleReports().filter((r) => r.reporting_user?.id === user_id);
     }
 
     public getNotificationReports(): ReportNotification[] {
         const user = data.get("user");
+        if (!user) {
+            return [];
+        }
         return user.is_moderator || user.moderator_powers
             ? this.moderationQueue()
             : this.getMyReports();
@@ -200,6 +206,9 @@ class ReportManager extends EventEmitter<Events> {
 
     private getVisibleReports(): ReportNotification[] {
         const user = data.get("user");
+        if (!user) {
+            return [];
+        }
         return this.sorted_active_incident_reports.filter((report) => {
             if (!report) {
                 return false;
