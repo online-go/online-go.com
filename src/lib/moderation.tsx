@@ -33,6 +33,7 @@ export enum MODERATOR_POWERS {
     HANDLE_STALLING = 0b100,
     SUSPEND = 0b1000,
     ASSESS_AI_REPORTS = 0b10000,
+    SEE_REPORTED_USER_BANNED_STATUS = 0b100000,
 }
 
 export const MOD_POWER_NAMES: { [key in MODERATOR_POWERS]: string } = {
@@ -53,6 +54,10 @@ export const MOD_POWER_NAMES: { [key in MODERATOR_POWERS]: string } = {
     [MODERATOR_POWERS.ASSESS_AI_REPORTS]: pgettext(
         "A label for a moderator power",
         "Assess AI Reports",
+    ),
+    [MODERATOR_POWERS.SEE_REPORTED_USER_BANNED_STATUS]: pgettext(
+        "A label for a moderator power",
+        "See reported user's banned status",
     ),
 };
 
