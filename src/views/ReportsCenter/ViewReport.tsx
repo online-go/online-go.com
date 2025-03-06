@@ -257,6 +257,11 @@ export function ViewReport({
                                         "by",
                                     )}
                                     <Player user={report.reported_user} />
+                                    {report.reported_is_banned && (
+                                        <span className="reported-user-banned">
+                                            {_("suspended account")}
+                                        </span>
+                                    )}
                                 </span>
                             </h3>
                         </div>
