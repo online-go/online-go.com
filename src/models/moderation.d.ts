@@ -68,6 +68,8 @@ declare namespace rest_api {
             reporting_user: PlayerCacheEntry;
             reported_user: PlayerCacheEntry;
             reported_game: number;
+            reported_game_white?: number;
+            reported_game_black?: number;
             reported_game_move?: number;
             reported_review: number;
             reported_conversation: ReportedConversation;

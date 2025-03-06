@@ -270,6 +270,9 @@ export function Player(props: PlayerProperties): React.ReactElement {
         }
     }
 
+    const is_white_player = viewReportContext?.white_player === player_id;
+    const is_black_player = viewReportContext?.black_player === player_id;
+
     const nolink = !!props.nolink;
     let rank: React.ReactElement | null = null;
 
@@ -308,6 +311,14 @@ export function Player(props: PlayerProperties): React.ReactElement {
 
     if (props.noextracontrols) {
         main_attrs.className += " noextracontrols";
+    }
+
+    if (is_white_player) {
+        main_attrs.className += " white-player";
+    }
+
+    if (is_black_player) {
+        main_attrs.className += " black-player";
     }
 
     if (props.rank !== false) {

@@ -207,6 +207,26 @@
         padding-left: 3px;
         vertical-align: middle;
     }
+
+    &.white-player::before {
+        content: '';
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: #fff;
+        border: 1px solid rgba(0, 0, 0, 0.3);
+        margin-left: 0.4rem;
+    }
+
+    &.black-player::before {
+        content: '';
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: #000;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        margin-left: 0.4rem;
+    }
 }
 
 .Player-with-icon {
