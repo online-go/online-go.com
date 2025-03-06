@@ -69,6 +69,8 @@ declare namespace rest_api {
             reported_user: PlayerCacheEntry;
             reported_is_banned?: boolean; // only full mods and empowered CMs get this
             reported_game: number;
+            reported_game_white?: number;
+            reported_game_black?: number;
             reported_game_move?: number;
             reported_review: number;
             reported_conversation: ReportedConversation;

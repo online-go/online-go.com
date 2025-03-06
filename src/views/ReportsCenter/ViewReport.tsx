@@ -231,6 +231,8 @@ export function ViewReport({
                     reporter: report.reporting_user,
                     reported: report.reported_user,
                     moderator_powers: user.moderator_powers,
+                    white_player: report.reported_game_white,
+                    black_player: report.reported_game_black,
                 }}
             >
                 <div id="ViewReport" className="show-players-in-report">

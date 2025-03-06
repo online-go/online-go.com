@@ -13,6 +13,8 @@ type ReportContextType = {
     reporter: player_cache.PlayerCacheEntry;
     reported: player_cache.PlayerCacheEntry;
     moderator_powers: number;
+    white_player: number | undefined;
+    black_player: number | undefined;
 };
 
 export const ReportContext = React.createContext<ReportContextType | null>(null);
