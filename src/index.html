@@ -251,6 +251,17 @@
             body.accessible {
                 background-color: #1a1a1a;
             }
+            .sr-only {
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                padding: 0;
+                margin: -1px;
+                overflow: hidden;
+                clip: rect(0, 0, 0, 0);
+                white-space: nowrap;
+                border-width: 0;
+            }
         </style>
         {{EXTRA_CONFIG}}
     </head>
@@ -346,8 +357,9 @@
             }
         </script>
         <div id="em10"></div>
-        <div id="loading-svg-container">
-            <div id="svg-bouncer">
+        <div id="loading-svg-container" role="status" aria-live="polite">
+            <span class="sr-only">Loading...</span>
+            <div id="svg-bouncer" aria-hidden="true">
                 <svg
                     xmlns:svg="http://www.w3.org/2000/svg"
                     xmlns="http://www.w3.org/2000/svg"
