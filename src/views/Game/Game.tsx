@@ -75,6 +75,7 @@ import { is_valid_url } from "@/lib/url_validation";
 import { disableTouchAction, enableTouchAction } from "./touch_actions";
 import { BotDetectionResults } from "./BotDetectionResults";
 import { ActiveTournament } from "@/lib/types";
+import { MainContent } from "@/components/MainContent";
 
 export function Game(): React.ReactElement | null {
     const params = useParams<"game_id" | "review_id" | "move_number">();
@@ -1710,7 +1711,7 @@ export function Game(): React.ReactElement | null {
 
     return (
         <div>
-            <div
+            <MainContent
                 className={
                     "Game MainGobanView " +
                     (zen_mode ? "zen " : "") +
@@ -1867,7 +1868,7 @@ export function Game(): React.ReactElement | null {
 
                     <div className="align-row-end"></div>
                 </GobanContext.Provider>
-            </div>
+            </MainContent>
         </div>
     );
 }
