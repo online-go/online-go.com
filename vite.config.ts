@@ -30,7 +30,7 @@ import { nodePolyfills } from "vite-plugin-node-polyfills";
 
 const OGS_I18N_BUILD_MODE = (process.env.OGS_I18N_BUILD_MODE || "false").toLowerCase() === "true";
 let OGS_BACKEND = process.env.OGS_BACKEND;
-OGS_BACKEND = OGS_BACKEND ? OGS_BACKEND.toUpperCase() : "LOCAL";
+OGS_BACKEND = OGS_BACKEND ? OGS_BACKEND.toUpperCase() : "BETA";
 
 const SUPPORTED_BACKENDS = ["BETA", "PRODUCTION", "LOCAL", "DOCKER"] as const;
 if (process.env.OGS_BACKEND && !SUPPORTED_BACKENDS.includes(OGS_BACKEND as any)) {
