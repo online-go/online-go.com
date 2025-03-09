@@ -83,9 +83,11 @@ import { GoTV } from "@/views/GoTV";
 
 import * as docs from "@/views/docs";
 import { useData } from "./lib/hooks";
+import { MainSection } from "@/components/MainSection";
+import { AccessibilityMenu } from "@/components/AccessibilityMenu";
 
 /*** Layout our main view and routes ***/
-function Main(props: { children: any }): React.ReactElement {
+function AppLayout(props: { children: any }): React.ReactElement {
     const [user] = useData("config.user");
     let username_needs_to_be_updated = false;
 
@@ -115,9 +117,14 @@ function Main(props: { children: any }): React.ReactElement {
             <Variant value="enabled" bodyClass="v6">
                 <div id="variant-container">
                     <ErrorBoundary>
+                        <AccessibilityMenu />
+                    </ErrorBoundary>
+                    <ErrorBoundary>
                         <NavBar />
                     </ErrorBoundary>
-                    <ErrorBoundary>{props.children}</ErrorBoundary>
+                    <ErrorBoundary>
+                        <MainSection>{props.children}</MainSection>
+                    </ErrorBoundary>
                     <ErrorBoundary>
                         <Announcements />
                     </ErrorBoundary>
@@ -132,6 +139,9 @@ function Main(props: { children: any }): React.ReactElement {
             <ExDefault>
                 <div id="default-variant-container">
                     <ErrorBoundary>
+                        <AccessibilityMenu />
+                    </ErrorBoundary>
+                    <ErrorBoundary>
                         <NavBar />
                     </ErrorBoundary>
                     <ErrorBoundary>
@@ -140,7 +150,9 @@ function Main(props: { children: any }): React.ReactElement {
                     <ErrorBoundary>
                         <NetworkStatus />
                     </ErrorBoundary>
-                    <ErrorBoundary>{props.children}</ErrorBoundary>
+                    <ErrorBoundary>
+                        <MainSection>{props.children}</MainSection>
+                    </ErrorBoundary>
                     <ErrorBoundary>
                         <AccountWarning />
                     </ErrorBoundary>
@@ -217,7 +229,7 @@ function WaitForUser(): React.ReactElement | null {
 
 export const routes = (
     <Router history={browserHistory}>
-        <Main>
+        <AppLayout>
             <Routes>
                 <Route path="/sign-in" element={<SignIn />} />
                 <Route path="/register" element={<Register />} />
@@ -376,6 +388,6 @@ export const routes = (
                 <Route path="/" element={<Default />} />
                 <Route path="/*" element={<PageNotFound />} />
             </Routes>
-        </Main>
+        </AppLayout>
     </Router>
 );
