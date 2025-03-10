@@ -505,7 +505,6 @@ export function NavBar(): React.ReactElement {
                                 as="nav"
                                 aria-label={_("Profile")}
                                 openMenuLabel={_("Open profile and settings menu")}
-                                openMenuPosition="start"
                             >
                                 <ProfileAndQuickSettingsBits settingsNavLink={settingsNavLink} />
                             </Menu>

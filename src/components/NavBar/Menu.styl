@@ -12,17 +12,20 @@
         border: none;
         box-shadow: none;
         padding: 0;
+        border-radius: 0;
 
-        // position on the right of the text
+        // below the text
         position: absolute;
-        right: -.2rem;
-        top: 0;
-        bottom: 0;
+        right: 0;
+        left: 0;
+        bottom: 2px;
         display: flex;
-        align-items: center;
+        justify-content: center;
+        line-height: 1em;
 
         font-size: .7rem;
 
+        // show when the menu is opened, or the button is focused
         &.active, &:focus {
             z-index: 1;
             width: initial;
@@ -30,13 +33,10 @@
             margin: 0;
         }
 
+        // change the arrow direction when open
         &.active {
             transform: rotate(180deg);
             transform-origin: center center;
-        }
-        &.positionStart {
-            right: initial;
-            left: 0;
         }
     }
 }

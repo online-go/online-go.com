@@ -28,7 +28,6 @@ interface MenuProps<T extends React.ElementType> {
     className?: string;
     as?: T;
     openMenuLabel: string;
-    openMenuPosition?: "start" | "end";
 }
 
 /**
@@ -48,7 +47,6 @@ export function Menu<T extends React.ElementType = "li">({
     className,
     as,
     openMenuLabel,
-    openMenuPosition = "end",
     ...rest
 }: MenuProps<T>): React.ReactElement {
     const Component = as || "li";
@@ -111,28 +109,8 @@ export function Menu<T extends React.ElementType = "li">({
         return () => {};
     }, [isActive]);
 
-    // This button will be displayed only for screen readers and when focused.
-    // Used to open the menu
-    const openMenuButton = (
-        <button
-            tabIndex={0}
-            onClick={() => setActiveMenu(isActive ? null : menuId)}
-            className={clsx("OpenMenuButton", {
-                active: isActive,
-                positionStart: openMenuPosition === "start",
-            })}
-            aria-label={openMenuLabel}
-            aria-expanded={isActive}
-            aria-controls={ariaId}
-            ref={buttonRef}
-        >
-            <span aria-hidden={true}>▼</span>
-        </button>
-    );
-
     return (
         <Component className={clsx("Menu", { active: isActive }, className)} {...rest}>
-            {openMenuPosition === "start" && openMenuButton}
             {to ? (
                 <Link className="Menu-title" to={to}>
                     {title}
@@ -142,7 +120,20 @@ export function Menu<T extends React.ElementType = "li">({
                     {title}
                 </span>
             )}
-            {openMenuPosition === "end" && openMenuButton}
+            {/* This button is used to open the menu on screen readers and will be displayed only when focused. */}
+            <button
+                tabIndex={0}
+                onClick={() => setActiveMenu(isActive ? null : menuId)}
+                className={clsx("OpenMenuButton", {
+                    active: isActive,
+                })}
+                aria-label={openMenuLabel}
+                aria-expanded={isActive}
+                aria-controls={ariaId}
+                ref={buttonRef}
+            >
+                <span aria-hidden={true}>▼</span>
+            </button>
             <ul className="Menu-children" id={ariaId} ref={menuRef}>
                 {children}
             </ul>
