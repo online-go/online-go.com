@@ -571,7 +571,7 @@ const MenuLink = forwardRef<HTMLElement, MenuLinkProps>(
 
         return (
             <li>
-                <Element {...elementProps} aria-hidden="true">
+                <Element {...elementProps}>
                     {icon && <span aria-hidden={true}>{icon}</span>}
                     <span className="MenuLinkTitle">{title}</span>
                 </Element>
