@@ -97,7 +97,7 @@ export function GobanBoardThemePicker(props: GobanThemePickerProperties): React.
         <div className="GobanThemePicker">
             <div className="theme-set">
                 {standard_themes.map((theme, idx) => (
-                    <button
+                    <div
                         key={theme.theme_name}
                         title={_(theme.theme_name)}
                         aria-label={_(theme.theme_name)}
@@ -108,7 +108,7 @@ export function GobanBoardThemePicker(props: GobanThemePickerProperties): React.
                         onClick={selectTheme.current[theme.theme_name]}
                     >
                         {canvases.current[idx] && <PersistentElement elt={canvases.current[idx]} />}
-                    </button>
+                    </div>
                 ))}
             </div>
         </div>
