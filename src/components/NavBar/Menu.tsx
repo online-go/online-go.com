@@ -73,7 +73,7 @@ export function Menu<T extends React.ElementType = "li">({
         return () => {};
     }, [isActive]);
 
-    // Add keyboard navigation for menu items when isActive
+    // Add keyboard navigation (arrow up/down) for menu children, only when the menu is open.
     useEffect(() => {
         if (isActive) {
             const handleKeyDown = (e: KeyboardEvent) => {
@@ -85,9 +85,13 @@ export function Menu<T extends React.ElementType = "li">({
                     const activeElement = document.activeElement;
 
                     if (buttonRef.current === document.activeElement) {
-                        // @ts-expect-error nextElement will always be a <a> or <button>
-                        items[0]?.focus();
+                        // If the menu button is currently focused, and pressed down arrow then we focus the first item.
+                        if (e.key === "ArrowDown") {
+                            // @ts-expect-error nextElement will always be a <a> or <button>
+                            items[0]?.focus();
+                        }
                     } else {
+                        // We focus the next or previous focusable item relatively the currently selected one.
                         const activeIndex = items.indexOf(activeElement as HTMLElement);
                         if (activeIndex >= 0) {
                             const nextIndex =
@@ -134,6 +138,7 @@ export function Menu<T extends React.ElementType = "li">({
             >
                 <span aria-hidden={true}>▼</span>
             </button>
+            {/* Children will show one hovering the menu, or when the menu is opened via the button */}
             <ul className="Menu-children" id={ariaId} ref={menuRef}>
                 {children}
             </ul>
