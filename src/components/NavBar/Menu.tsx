@@ -138,7 +138,7 @@ export function Menu<T extends React.ElementType = "li">({
                     {title}
                 </Link>
             ) : (
-                <span className="Menu-title" tabIndex={0}>
+                <span className="Menu-title" aria-hidden="true">
                     {title}
                 </span>
             )}
