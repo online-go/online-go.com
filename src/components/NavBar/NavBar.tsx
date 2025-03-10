@@ -37,6 +37,7 @@ import { TournamentIndicator } from "@/components/Announcements";
 import { FriendIndicator } from "@/components/FriendList";
 import { ChatIndicator } from "@/components/Chat";
 import { GoTVIndicator } from "@/views/GoTV";
+import { Menu, MenuContext } from "./Menu";
 
 import { logout } from "@/lib/auth";
 import { useUser, useData } from "@/lib/hooks";
@@ -169,369 +170,367 @@ export function NavBar(): React.ReactElement {
 
     const searchInputId = useId();
 
+    const [activeMenu, setActiveMenu] = useState<null | string>(null);
+
     return (
-        <header
-            className={
-                "NavBar" +
-                (hamburger_expanded ? " hamburger-expanded" : "") +
-                (force_nav_close ? " force-nav-close" : "")
-            }
-        >
-            <KBShortcut shortcut="`" action={() => search_input.current?.focus()} />
-
-            {banned_user_id && show_appeal_box ? <BanIndicator /> : null}
-
-            <span className="hamburger">
-                {hamburger_expanded ? (
-                    <i className="fa fa-times" onClick={toggleHamburgerExpanded} />
-                ) : (
-                    <i className="fa fa-bars" onClick={toggleHamburgerExpanded} />
-                )}
-                <Link to="/">
-                    <span className="ogs-nav-logo" />
-                </Link>
-            </span>
-
-            <nav className="left" aria-label={_("Main Navigation")}>
-                <ul>
-                    <li>
-                        <Link to="/" className="Menu-title">
-                            <span className="ogs-nav-logo" aria-hidden={true} />
-                            {_("Home")}
-                        </Link>
-                    </li>
-                    <Menu title={_("Play")} to="/play">
-                        <MenuLink title={_("Play")} to="/play" icon={<i className="ogs-goban" />} />
-                        <MenuLink
-                            title={_("Tournaments")}
-                            to="/tournaments"
-                            icon={<i className="fa fa-trophy" />}
-                        />
-                        <MenuLink
-                            title={_("Ladders")}
-                            to="/ladders"
-                            icon={<i className="fa fa-list-ol" />}
-                        />
-                    </Menu>
-                    <Menu title={_("Learn")} to="/learn-to-play-go">
-                        <MenuLink
-                            title={_("Learn to play Go")}
-                            to="/learn-to-play-go"
-                            icon={<i className="fa fa-graduation-cap" />}
-                        />
-                        <MenuLink
-                            title={_("Sign up for AI game reviews")}
-                            to="/supporter"
-                            icon={<i className="fa fa-star" />}
-                        />
-                        <MenuLink
-                            title={_("Puzzles")}
-                            to="/puzzles"
-                            icon={<i className="fa fa-puzzle-piece" />}
-                        />
-                        <MenuLink
-                            title={_("Other Go Resources")}
-                            to="/docs/other-go-resources"
-                            icon={<i className="fa fa-link" />}
-                        />
-                    </Menu>
-                    <Menu title={_("Watch")} to="/observe-games">
-                        <MenuLink
-                            title={_("Games")}
-                            to="/observe-games"
-                            icon={<i className="fa fa-eye" />}
-                        />
-                        <MenuLink title={"GoTV"} to="/gotv" icon={<i className="fa fa-tv" />} />
-                    </Menu>
-                    <Menu title={_("Community")} to="/chat">
-                        <MenuLink
-                            title={_("Forums")}
-                            to="https://forums.online-go.com/"
-                            icon={<i className="fa fa-comments" />}
-                            target="_blank"
-                            external={true}
-                        />
-                        <MenuLink
-                            title={_("Chat")}
-                            to="/chat"
-                            icon={<i className="fa fa-comment-o" />}
-                        />
-                        <MenuLink
-                            title={_("Groups")}
-                            to="/groups"
-                            icon={<i className="fa fa-users" />}
-                        />
-                        <MenuLink
-                            title={_("Support OGS")}
-                            to="/supporter"
-                            icon={<i className="fa fa-star" />}
-                        />
-                        <MenuLink
-                            title={_("About")}
-                            to="/docs/about"
-                            icon={<i className="fa fa-info-circle" />}
-                        />
-                        <MenuLink
-                            title={_("GitHub")}
-                            to="https://github.com/online-go/online-go.com/"
-                            icon={<i className="fa fa-github" />}
-                            target="_blank"
-                            external={true}
-                        />
-                        <MenuLink
-                            title={_("Documentation & FAQ")}
-                            to="https://github.com/online-go/online-go.com/wiki"
-                            icon={<i className="fa fa-question-circle" />}
-                            target="_blank"
-                            external={true}
-                        />
-                    </Menu>
-                    <Menu title={_("Tools")}>
-                        <MenuLink
-                            title={_("Joseki")}
-                            to="/joseki"
-                            icon={<i className="fa fa-sitemap" />}
-                        />
-                        {user.anonymous ? null : (
-                            <MenuLink
-                                title={_("Demo Board")}
-                                onClick={newDemo}
-                                icon={<i className="fa fa-plus" />}
-                            />
-                        )}
-                        {user.anonymous ? null : (
-                            <MenuLink
-                                title={_("SGF Library")}
-                                to={`/library/${user.id}`}
-                                icon={<i className="fa fa-book" />}
-                            />
-                        )}
-
-                        <MenuLink
-                            title={_("Rating Calculator")}
-                            to="/rating-calculator"
-                            icon={<i className="fa fa-calculator" />}
-                        />
-
-                        <MenuLink
-                            title={_("Contribute To Translation")}
-                            to="https://translate.online-go.com/projects/ogs/"
-                            icon={<i className="fa fa-globe" />}
-                            target="_blank"
-                        />
-
-                        <MenuLink
-                            title={_("Reports Center")}
-                            to="/reports-center"
-                            icon={<i className="fa fa-exclamation-triangle" />}
-                        />
-
-                        {user.is_moderator && (
-                            <MenuLink
-                                title={_("Moderator Center")}
-                                to="/moderator"
-                                icon={<i className="fa fa-gavel" />}
-                            />
-                        )}
-                        {user.is_moderator && (
-                            <MenuLink
-                                title={_("Appeals Center")}
-                                to="/appeals-center"
-                                icon={<i className="fa fa-gavel" />}
-                            />
-                        )}
-                        {user.is_moderator && (
-                            <MenuLink
-                                title="Firewall"
-                                to="/admin/firewall"
-                                icon={<i className="fa fa-fire-extinguisher" />}
-                            />
-                        )}
-                        {(user.is_moderator || user.is_announcer) && (
-                            <MenuLink
-                                title={_("Announcement Center")}
-                                icon={<i className="fa fa-bullhorn" />}
-                                to="/announcement-center"
-                            />
-                        )}
-                        {user.is_superuser && (
-                            <MenuLink
-                                title="Prize Batches"
-                                icon={<i className="fa fa-trophy" />}
-                                to="/prize-batches"
-                            />
-                        )}
-                        {user.is_superuser && (
-                            <MenuLink
-                                title="Admin"
-                                icon={<i className="fa fa-wrench" />}
-                                to="/admin"
-                            />
-                        )}
-                    </Menu>
-                    <Menu title={_("Settings")} to="/settings" className="mobile-only">
-                        <MenuLink
-                            title={_("Profile")}
-                            to={`/user/view/${user.id}`}
-                            icon={<PlayerIcon user={user} size={16} />}
-                        />
-
-                        <MenuLink
-                            title={_("Settings")}
-                            to="/user/settings"
-                            icon={<i className="fa fa-gear" />}
-                            ref={settingsNavLink}
-                        />
-
-                        <MenuLink
-                            title={_("Sign out")}
-                            onClick={logout}
-                            icon={<i className="fa fa-power-off" />}
-                        />
-                    </Menu>
-                </ul>
-            </nav>
-
-            <section className="center OmniSearch-container">
-                <div className="OmniSearch-input-container">
-                    <label htmlFor={searchInputId}>
-                        <i aria-hidden={true} className="fa fa-search" />
-                        <span className="sr-only">{_("Search the site")}</span>
-                    </label>
-
-                    <input
-                        id={searchInputId}
-                        type="text"
-                        className="OmniSearch-input"
-                        ref={search_input}
-                        value={search}
-                        autoComplete="off"
-                        onChange={(ev) => setSearch(ev.target.value)}
-                        onKeyUp={(ev) => {
-                            if (ev.key === "Escape") {
-                                setSearch("");
-                                (ev.target as HTMLInputElement).blur();
-                            }
-                        }}
-                        onFocus={() => setSearchFocus(true)}
-                        onBlur={() => setSearchFocus(false)}
-                        placeholder={_("Search")}
-                    />
-                </div>
-                {(search_focus || omniMouseOver) && (
-                    <OmniSearch
-                        search={search}
-                        onMouseOver={() => setOmniMouseOver(true)}
-                        onMouseOut={() => setOmniMouseOver(false)}
-                    />
-                )}
-            </section>
-
-            <section className={`right ${search_focus ? "search-focused" : ""}`}>
-                {user.anonymous ? (
-                    <>
-                        <span className="spacer" />
-                        <i className="fa fa-adjust" onClick={toggleTheme} />
-                        <LanguagePicker />
-                        {show_sign_in && (
-                            <Link className="sign-in" to={"/sign-in#" + location.pathname}>
-                                {_("Sign In")}
-                            </Link>
-                        )}
-                    </>
-                ) : (
-                    <>
-                        <div className="spacer" />
-                        <IncidentReportIndicator />
-                        <ChatIndicator />
-                        <TournamentIndicator />
-                        <FriendIndicator />
-                        <NotificationIndicator onClick={toggleNotifications} />
-                        <GoTVIndicator />
-                        <TurnIndicator />
-
-                        <span className="icon-container mobile-only" onClick={toggleRightNav}>
-                            <PlayerIcon user={user} size={64} />
-                        </span>
-
-                        <Menu
-                            title={
-                                <span className="icon-container">
-                                    <PlayerIcon user={user} size={64} />
-                                    <span className="username">{user.username}</span>
-                                </span>
-                            }
-                            to={`/user/view/${user.id}`}
-                            className="profile desktop-only"
-                            as="nav"
-                            aria-label={_("Profile and settings")}
-                        >
-                            <ProfileAndQuickSettingsBits settingsNavLink={settingsNavLink} />
-                        </Menu>
-                    </>
-                )}
-            </section>
-
-            <div
+        <MenuContext.Provider value={{ setActiveMenu, activeMenu }}>
+            <header
                 className={
-                    "nav-menu-modal-backdrop " +
-                    (notifications_active || right_nav_active ? "active" : "")
+                    "NavBar" +
+                    (hamburger_expanded ? " hamburger-expanded" : "") +
+                    (force_nav_close ? " force-nav-close" : "")
                 }
-                onClick={closeNavbar}
-            />
+            >
+                <KBShortcut shortcut="`" action={() => search_input.current?.focus()} />
 
-            {notifications_active && <NotificationList />}
+                {banned_user_id && show_appeal_box ? <BanIndicator /> : null}
 
-            {/* Right Nav drop down on mobile */}
-            {right_nav_active && (
-                <div className="RightNav">
-                    <ProfileAndQuickSettingsBits settingsNavLink={settingsNavLink} />
-                </div>
-            )}
-        </header>
-    );
-}
-
-interface MenuProps<T extends React.ElementType> {
-    title: string | React.ReactElement;
-    to?: string;
-    children: React.ReactNode;
-    className?: string;
-    as?: T;
-}
-
-function Menu<T extends React.ElementType = "li">({
-    title,
-    to,
-    children,
-    className,
-    as,
-    ...rest
-}: MenuProps<T>): React.ReactElement {
-    const Component = as || "li";
-    const [forceOpen, setForceOpen] = useState(false);
-
-    const commonProps = {
-        className: "Menu-title",
-        onFocus: () => {
-            setForceOpen(true);
-        },
-        onBlur: () => setForceOpen(false),
-    };
-
-    return (
-        <Component className={clsx("Menu", { active: forceOpen }, className)} {...rest}>
-            {to ? (
-                <Link to={to} {...commonProps} tabIndex={0}>
-                    {title}
-                </Link>
-            ) : (
-                <span tabIndex={0} {...commonProps}>
-                    {title}
+                <span className="hamburger">
+                    {hamburger_expanded ? (
+                        <i className="fa fa-times" onClick={toggleHamburgerExpanded} />
+                    ) : (
+                        <i className="fa fa-bars" onClick={toggleHamburgerExpanded} />
+                    )}
+                    <Link to="/">
+                        <span className="ogs-nav-logo" />
+                    </Link>
                 </span>
-            )}
-            <ul className="Menu-children">{children}</ul>
-        </Component>
+
+                <nav className="left" aria-label={_("Main Navigation")}>
+                    <ul>
+                        <li>
+                            <Link to="/" className="Menu-title">
+                                <span className="ogs-nav-logo" aria-hidden={true} />
+                                {_("Home")}
+                            </Link>
+                        </li>
+                        <Menu
+                            menuId="play"
+                            title={_("Play")}
+                            to="/play"
+                            openMenuLabel={_("Open play menu")}
+                        >
+                            <MenuLink
+                                title={_("Play")}
+                                to="/play"
+                                icon={<i className="ogs-goban" />}
+                            />
+                            <MenuLink
+                                title={_("Tournaments")}
+                                to="/tournaments"
+                                icon={<i className="fa fa-trophy" />}
+                            />
+                            <MenuLink
+                                title={_("Ladders")}
+                                to="/ladders"
+                                icon={<i className="fa fa-list-ol" />}
+                            />
+                        </Menu>
+                        <Menu
+                            menuId="learn"
+                            title={_("Learn")}
+                            to="/learn-to-play-go"
+                            openMenuLabel={_("Open learn menu")}
+                        >
+                            <MenuLink
+                                title={_("Learn to play Go")}
+                                to="/learn-to-play-go"
+                                icon={<i className="fa fa-graduation-cap" />}
+                            />
+                            <MenuLink
+                                title={_("Sign up for AI game reviews")}
+                                to="/supporter"
+                                icon={<i className="fa fa-star" />}
+                            />
+                            <MenuLink
+                                title={_("Puzzles")}
+                                to="/puzzles"
+                                icon={<i className="fa fa-puzzle-piece" />}
+                            />
+                            <MenuLink
+                                title={_("Other Go Resources")}
+                                to="/docs/other-go-resources"
+                                icon={<i className="fa fa-link" />}
+                            />
+                        </Menu>
+                        <Menu
+                            menuId="watch"
+                            title={_("Watch")}
+                            to="/observe-games"
+                            openMenuLabel={_("Open watch menu")}
+                        >
+                            <MenuLink
+                                title={_("Games")}
+                                to="/observe-games"
+                                icon={<i className="fa fa-eye" />}
+                            />
+                            <MenuLink title={"GoTV"} to="/gotv" icon={<i className="fa fa-tv" />} />
+                        </Menu>
+                        <Menu
+                            menuId="community"
+                            title={_("Community")}
+                            to="/chat"
+                            openMenuLabel={_("Open community menu")}
+                        >
+                            <MenuLink
+                                title={_("Forums")}
+                                to="https://forums.online-go.com/"
+                                icon={<i className="fa fa-comments" />}
+                                target="_blank"
+                                external={true}
+                            />
+                            <MenuLink
+                                title={_("Chat")}
+                                to="/chat"
+                                icon={<i className="fa fa-comment-o" />}
+                            />
+                            <MenuLink
+                                title={_("Groups")}
+                                to="/groups"
+                                icon={<i className="fa fa-users" />}
+                            />
+                            <MenuLink
+                                title={_("Support OGS")}
+                                to="/supporter"
+                                icon={<i className="fa fa-star" />}
+                            />
+                            <MenuLink
+                                title={_("About")}
+                                to="/docs/about"
+                                icon={<i className="fa fa-info-circle" />}
+                            />
+                            <MenuLink
+                                title={_("GitHub")}
+                                to="https://github.com/online-go/online-go.com/"
+                                icon={<i className="fa fa-github" />}
+                                target="_blank"
+                                external={true}
+                            />
+                            <MenuLink
+                                title={_("Documentation & FAQ")}
+                                to="https://github.com/online-go/online-go.com/wiki"
+                                icon={<i className="fa fa-question-circle" />}
+                                target="_blank"
+                                external={true}
+                            />
+                        </Menu>
+                        <Menu
+                            menuId="tools"
+                            title={_("Tools")}
+                            openMenuLabel={_("Open tools menu")}
+                        >
+                            <MenuLink
+                                title={_("Joseki")}
+                                to="/joseki"
+                                icon={<i className="fa fa-sitemap" />}
+                            />
+                            {user.anonymous ? null : (
+                                <MenuLink
+                                    title={_("Demo Board")}
+                                    onClick={newDemo}
+                                    icon={<i className="fa fa-plus" />}
+                                />
+                            )}
+                            {user.anonymous ? null : (
+                                <MenuLink
+                                    title={_("SGF Library")}
+                                    to={`/library/${user.id}`}
+                                    icon={<i className="fa fa-book" />}
+                                />
+                            )}
+
+                            <MenuLink
+                                title={_("Rating Calculator")}
+                                to="/rating-calculator"
+                                icon={<i className="fa fa-calculator" />}
+                            />
+
+                            <MenuLink
+                                title={_("Contribute To Translation")}
+                                to="https://translate.online-go.com/projects/ogs/"
+                                icon={<i className="fa fa-globe" />}
+                                target="_blank"
+                            />
+
+                            <MenuLink
+                                title={_("Reports Center")}
+                                to="/reports-center"
+                                icon={<i className="fa fa-exclamation-triangle" />}
+                            />
+
+                            {user.is_moderator && (
+                                <MenuLink
+                                    title={_("Moderator Center")}
+                                    to="/moderator"
+                                    icon={<i className="fa fa-gavel" />}
+                                />
+                            )}
+                            {user.is_moderator && (
+                                <MenuLink
+                                    title={_("Appeals Center")}
+                                    to="/appeals-center"
+                                    icon={<i className="fa fa-gavel" />}
+                                />
+                            )}
+                            {user.is_moderator && (
+                                <MenuLink
+                                    title="Firewall"
+                                    to="/admin/firewall"
+                                    icon={<i className="fa fa-fire-extinguisher" />}
+                                />
+                            )}
+                            {(user.is_moderator || user.is_announcer) && (
+                                <MenuLink
+                                    title={_("Announcement Center")}
+                                    icon={<i className="fa fa-bullhorn" />}
+                                    to="/announcement-center"
+                                />
+                            )}
+                            {user.is_superuser && (
+                                <MenuLink
+                                    title="Prize Batches"
+                                    icon={<i className="fa fa-trophy" />}
+                                    to="/prize-batches"
+                                />
+                            )}
+                            {user.is_superuser && (
+                                <MenuLink
+                                    title="Admin"
+                                    icon={<i className="fa fa-wrench" />}
+                                    to="/admin"
+                                />
+                            )}
+                        </Menu>
+                        <Menu
+                            menuId="setting-mobile"
+                            title={_("Settings")}
+                            to="/settings"
+                            className="mobile-only"
+                            openMenuLabel={_("Open settings menu")}
+                        >
+                            <MenuLink
+                                title={_("Profile")}
+                                to={`/user/view/${user.id}`}
+                                icon={<PlayerIcon user={user} size={16} />}
+                            />
+
+                            <MenuLink
+                                title={_("Settings")}
+                                to="/user/settings"
+                                icon={<i className="fa fa-gear" />}
+                                ref={settingsNavLink}
+                            />
+
+                            <MenuLink
+                                title={_("Sign out")}
+                                onClick={logout}
+                                icon={<i className="fa fa-power-off" />}
+                            />
+                        </Menu>
+                    </ul>
+                </nav>
+
+                <section className="center OmniSearch-container">
+                    <div className="OmniSearch-input-container">
+                        <label htmlFor={searchInputId}>
+                            <i aria-hidden={true} className="fa fa-search" />
+                            <span className="sr-only">{_("Search the site")}</span>
+                        </label>
+
+                        <input
+                            id={searchInputId}
+                            type="text"
+                            className="OmniSearch-input"
+                            ref={search_input}
+                            value={search}
+                            autoComplete="off"
+                            onChange={(ev) => setSearch(ev.target.value)}
+                            onKeyUp={(ev) => {
+                                if (ev.key === "Escape") {
+                                    setSearch("");
+                                    (ev.target as HTMLInputElement).blur();
+                                }
+                            }}
+                            onFocus={() => setSearchFocus(true)}
+                            onBlur={() => setSearchFocus(false)}
+                            placeholder={_("Search")}
+                        />
+                    </div>
+                    {(search_focus || omniMouseOver) && (
+                        <OmniSearch
+                            search={search}
+                            onMouseOver={() => setOmniMouseOver(true)}
+                            onMouseOut={() => setOmniMouseOver(false)}
+                        />
+                    )}
+                </section>
+
+                <section className={`right ${search_focus ? "search-focused" : ""}`}>
+                    {user.anonymous ? (
+                        <>
+                            <span className="spacer" />
+                            <i className="fa fa-adjust" onClick={toggleTheme} />
+                            <LanguagePicker />
+                            {show_sign_in && (
+                                <Link className="sign-in" to={"/sign-in#" + location.pathname}>
+                                    {_("Sign In")}
+                                </Link>
+                            )}
+                        </>
+                    ) : (
+                        <>
+                            <div className="spacer" />
+                            <IncidentReportIndicator />
+                            <ChatIndicator />
+                            <TournamentIndicator />
+                            <FriendIndicator />
+                            <NotificationIndicator onClick={toggleNotifications} />
+                            <GoTVIndicator />
+                            <TurnIndicator />
+
+                            <span className="icon-container mobile-only" onClick={toggleRightNav}>
+                                <PlayerIcon user={user} size={64} />
+                            </span>
+
+                            <Menu
+                                menuId="settings"
+                                title={
+                                    <span className="icon-container">
+                                        <PlayerIcon user={user} size={64} />
+                                        <span className="username">{user.username}</span>
+                                    </span>
+                                }
+                                to={`/user/view/${user.id}`}
+                                className="profile desktop-only"
+                                as="nav"
+                                aria-label={_("Profile")}
+                                openMenuLabel={_("Open profile and settings menu")}
+                                openMenuPosition="start"
+                            >
+                                <ProfileAndQuickSettingsBits settingsNavLink={settingsNavLink} />
+                            </Menu>
+                        </>
+                    )}
+                </section>
+
+                <div
+                    className={
+                        "nav-menu-modal-backdrop " +
+                        (notifications_active || right_nav_active ? "active" : "")
+                    }
+                    onClick={closeNavbar}
+                />
+
+                {notifications_active && <NotificationList />}
+
+                {/* Right Nav drop down on mobile */}
+                {right_nav_active && (
+                    <div className="RightNav">
+                        <ProfileAndQuickSettingsBits settingsNavLink={settingsNavLink} />
+                    </div>
+                )}
+            </header>
+        </MenuContext.Provider>
     );
 }
 
@@ -573,8 +572,8 @@ const MenuLink = forwardRef<HTMLElement, MenuLinkProps>(
         return (
             <li>
                 <Element {...elementProps} aria-hidden="true">
-                    {icon && <div aria-hidden={true}>{icon}</div>}
-                    <div className="MenuLinkTitle">{title}</div>
+                    {icon && <span aria-hidden={true}>{icon}</span>}
+                    <span className="MenuLinkTitle">{title}</span>
                 </Element>
             </li>
         );

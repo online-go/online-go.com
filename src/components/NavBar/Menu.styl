@@ -1,0 +1,42 @@
+.NavBar {
+    // button to open the menu - visible only by screen readers - or when focused
+    .OpenMenuButton {
+        // hide (show on :focus or .active)
+        margin: -1px;
+        width: 1px;
+        height: 1px;
+        z-index: -100;
+
+        // reset
+        background: none;
+        border: none;
+        box-shadow: none;
+        padding: 0;
+
+        // position on the right of the text
+        position: absolute;
+        right: -.2rem;
+        top: 0;
+        bottom: 0;
+        display: flex;
+        align-items: center;
+
+        font-size: .7rem;
+
+        &.active, &:focus {
+            z-index: 1;
+            width: initial;
+            height: initial;
+            margin: 0;
+        }
+
+        &.active {
+            transform: rotate(180deg);
+            transform-origin: center center;
+        }
+        &.positionStart {
+            right: initial;
+            left: 0;
+        }
+    }
+}
