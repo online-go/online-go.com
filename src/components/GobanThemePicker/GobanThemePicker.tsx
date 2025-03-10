@@ -22,7 +22,6 @@ import { getSelectedThemes, usePreference } from "@/lib/preferences";
 import { PersistentElement } from "@/components/PersistentElement";
 import { Experiment, Variant, Default } from "../Experiment";
 import { LineText } from "../misc-ui";
-import { Link } from "react-router-dom";
 
 interface GobanThemePickerProperties {
     size?: number;
@@ -642,9 +641,6 @@ export function GobanThemePicker(props: GobanThemePickerProperties): React.React
             <GobanBoardThemePicker {...props} />
             <GobanWhiteThemePicker {...props} />
             <GobanBlackThemePicker {...props} />
-            <Link to="/settings/theme" style={{ justifyContent: "center" }}>
-                {pgettext("Link to settings page with more theme options", "More options")}
-            </Link>
         </div>
     );
 }

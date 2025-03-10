@@ -19,6 +19,7 @@ import * as React from "react";
 import * as player_cache from "@/lib/player_cache";
 import { errorLogger } from "@/lib/misc";
 import { player_is_ignored } from "@/components/BlockPlayer";
+import { _ } from "@/lib/translate";
 
 interface PlayerIconProps {
     id?: number;
@@ -85,6 +86,7 @@ export function PlayerIcon(props: PlayerIconProps): React.ReactElement {
                 className={`PlayerIcon PlayerIcon-${props.size} ${props.className || ""}`}
                 src={url}
                 style={props.style}
+                alt={_("Profile picture")}
             />
         );
     }
