@@ -615,13 +615,34 @@ function ProfileAndQuickSettingsBits({
                 <div role="group" aria-labelledby={themeId} className="theme-selectors-container">
                     <h5 className="sr-only">{_("Website theme")}</h5>
                     <div className="theme-selectors">
-                        <button className="theme-button light" onClick={setThemeLight}>
+                        <button
+                            className="theme-button light"
+                            onClick={setThemeLight}
+                            aria-label={pgettext(
+                                "Name of the browser/app theme with a light background",
+                                "Light theme",
+                            )}
+                        >
                             <i className="fa fa-sun-o" />
                         </button>
-                        <button className="theme-button dark" onClick={setThemeDark}>
+                        <button
+                            className="theme-button dark"
+                            onClick={setThemeDark}
+                            aria-label={pgettext(
+                                "Name of the browser/app theme with a dark background",
+                                "Dark theme",
+                            )}
+                        >
                             <i className="fa fa-moon-o" />
                         </button>
-                        <button className="theme-button accessible" onClick={setThemeAccessible}>
+                        <button
+                            className="theme-button accessible"
+                            onClick={setThemeAccessible}
+                            aria-label={pgettext(
+                                "Name of the browser/app theme designed for users with visual impairments",
+                                "Accessible theme",
+                            )}
+                        >
                             <i className="fa fa-eye" />
                         </button>
                     </div>
