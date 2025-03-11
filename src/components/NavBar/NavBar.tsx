@@ -651,16 +651,11 @@ function ProfileAndQuickSettingsBits({
                     </div>
                 </div>
             </li>
-            <li>
-                <MenuLink
-                    title={pgettext(
-                        "Link to settings page with more theme options",
-                        "More options",
-                    )}
-                    centered={true}
-                    to="/settings/theme"
-                />
-            </li>
+            <MenuLink
+                title={pgettext("Link to settings page with more theme options", "More options")}
+                centered={true}
+                to="/settings/theme"
+            />
         </>
     );
 }
