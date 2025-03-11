@@ -16,7 +16,9 @@
             "@/*": ["src/*"],
             "goban": ["submodules/goban/src"],
             "goscorer": ["submodules/goban/src/third_party/goscorer/goscorer"],
-            "react-dynamic-help": ["submodules/react-dynamic-help/src"]
+            "react-dynamic-help": ["submodules/react-dynamic-help/src"],
+            "@helpers/*": ["e2e-tests/helpers/*"],
+            "@helpers": ["e2e-tests/helpers"]
         },
 
         "forceConsistentCasingInFileNames": true,
@@ -41,7 +43,8 @@
         "typings_manual/index.d.ts",
         "node_modules/jest-chain/types/index.d.ts",
         "./vite.config.ts",
+        "./playwright.config.ts"
     ],
-    "include": ["src"],
+    "include": ["src", "e2e-tests"],
     "exclude": ["node_modules", "dist"]
 }

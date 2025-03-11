@@ -24,3 +24,9 @@ i18n/prep-import.js
 npm-debug.log
 .yalc
 yalc.lock
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
