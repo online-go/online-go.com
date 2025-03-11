@@ -350,6 +350,7 @@ export function NavBar(): React.ReactElement {
                                 to="https://translate.online-go.com/projects/ogs/"
                                 icon={<i className="fa fa-globe" />}
                                 target="_blank"
+                                external={true}
                             />
 
                             <MenuLink
