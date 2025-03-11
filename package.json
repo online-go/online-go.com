@@ -20,7 +20,7 @@
         "lint:fix": "eslint --fix src/",
         "stylus-supremacy": "stylus-supremacy format --replace --options .vscode/settings.json 'src/**/*.styl'",
         "stylus": "stylus --out dist/ --compress --include-css --sourcemap -c src/ogs.styl",
-        "test": "node --experimental-vm-modules node_modules/.bin/jest && playwright test",
+        "test": "node --experimental-vm-modules node_modules/.bin/jest && playwright install --with-deps && playwright test",
         "fresh-test": "clear && jest",
         "spellcheck": "cspell \"src/**/*.{ts,tsx}\"",
         "minify-index": "node minify-index.js",
