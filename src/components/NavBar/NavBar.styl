@@ -37,7 +37,7 @@ header.NavBar {
         color: supporter-gold;
     }
 
-    .left, .right {
+    &>.left, &>.right {
         flex: 1rem;
         flex-grow: 0;
         flex-shrink: 0;
@@ -57,6 +57,22 @@ header.NavBar {
     &.force-nav-close {
         .Menu-children {
             display: none !important;
+        }
+    }
+
+    .Menu-children {
+        /* reset <ul> */
+        margin: 0;
+        padding: 0;
+        list-style: none;
+
+        .MenuLink, .MenuLink > * {
+            display flex;
+            align-items: center;
+        }
+
+        .MenuLink.centered {
+            justify-content: center;
         }
     }
 
@@ -80,7 +96,7 @@ header.NavBar {
                 z-index: z.nav-menu.menu;
             }
 
-            .fakelink:hover, a:hover {
+            .MenuLink:hover {
                 themed: background-color shade4;
             }
 
@@ -125,9 +141,14 @@ header.NavBar {
                     margin-bottom: 1rem;
                 }
 
-                .theme-selectors {
+                .theme-selectors-container {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 1rem;
                     margin-top: 0.5rem;
-                    margin-bottom: 0.5rem;
+                }
+
+                .theme-selectors {
                     display: flex;
                     justify-content: space-around;
                 }
@@ -145,16 +166,10 @@ header.NavBar {
                     themed: border-color primary;
 
                     .Menu-children {
-                        display: inline-flex;
                         flex-direction: column;
                         border-color: clear !important;
                         background-color: none !important;
                     }
-                }
-
-                a, .fakelink {
-                    display: inline-flex;
-                    align-items: center;
                 }
 
                 .Menu-children {
@@ -296,21 +311,30 @@ header.NavBar {
             .right {
                 display: none;
             }
+
+            .OpenMenuButton {
+                display: none;
+            }
         }
 
         &.hamburger-expanded .left {
-            display: inline-flex !important;
-            flex-direction: column;
+            display: inline !important;
+
             themed: background-color navbar-background-color;
             position: absolute;
             top: navbar-height;
             bottom: 0;
             left: 0;
             padding: 0;
-            align-items: flex-start;
             // max-height: "calc(100vh - %s)" % navbar-height;
             // overflow-y: auto;
             z-index: z.nav-menu.menu;
+
+            &>ul {
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+            }
 
             .ogs-nav-logo {
                 display: none;
@@ -410,12 +434,40 @@ header.NavBar {
         }
     }
 
-    a, .clickable, .fakelink {
-        themed: color text-color;
+    button.MenuLink {
+        background: transparent;
+        outline: none;
+        border:none;
+        border-radius: 0;
+        width: 100%;
+        text-align: left;
+        margin: 0;
+        box-shadow: none;
+
+        &:focus {
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0), 0 0px 0px 2px #4c9ffe;
+        }
+
+        &:hover {
+            text-decoration: underline;
+        }
     }
 
-    a:active, a:hover, .clickable:hover, .fakelink:hover {
-        themed: color text-color-active;
+    .MenuLink, a, .clickable {
+        themed: color text-color;
+        transition: background .2s;
+    }
+
+    .MenuLink, button.MenuLink, a, .clickable {
+        &:active, &:hover {
+            themed: color text-color-active;
+
+            // underline only on the text (not the icon)
+            text-decoration: none;
+            .MenuLinkTitle {
+                text-decoration: underline;
+            }
+        }
     }
 
     .ogs-nav-logo {
@@ -425,9 +477,13 @@ header.NavBar {
     }
 
     .left {
-        display: flex;
-        align-items: center;
-        // padding-left: 1rem;
+        & > ul {
+            display: flex;
+            align-items: center;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
     }
 
     .left, .Menu {
@@ -440,9 +496,8 @@ header.NavBar {
             align-items: center;
         }
 
-        a, .fakelink {
-            display: inline-block;
-            line-height: navbar-height;
+        .MenuLink {
+            height: navbar-height;
             padding-left: 0.5rem;
             padding-right: 0.5rem;
         }
@@ -548,9 +603,14 @@ header.NavBar {
             margin-bottom: 1rem;
         }
 
-        .theme-selectors {
+        .theme-selectors-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
             margin-top: 0.5rem;
-            margin-bottom: 0.5rem;
+        }
+
+        .theme-selectors {
             display: flex;
             justify-content: space-around;
         }
@@ -563,7 +623,7 @@ header.NavBar {
             justify-content: space-around;
         }
 
-        a, .fakelink {
+        .MenuLink {
             margin: 0.5rem;
             display: inline-flex;
             align-items: center;
@@ -647,6 +707,14 @@ header.NavBar {
             }
         }
     }
+
+    .ThemeMenu {
+        h4 {
+            margin: 0;
+            text-align center;
+            font-weight:normal;
+        }
+    }
 }
 
 .OmniSearch-container {
@@ -667,13 +735,13 @@ header.NavBar {
         flex: 1;
         max-width: 20rem;
         position: relative;
-    }
 
-    .fa-search {
-        margin-right: 0.3rem;
-        position: absolute;
-        left: 0.2rem;
-        cursor: pointer;
+        label {
+            margin-right: 0.3rem;
+            position: absolute;
+            left: 0.2rem;
+            cursor: pointer;
+        }
     }
 
     .OmniSearch-input {
