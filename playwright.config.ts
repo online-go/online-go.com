@@ -115,12 +115,14 @@ export default defineConfig({
     ],
 
     /* Run your local dev server before starting the tests */
-    webServer: {
-        command: `yarn vite`,
-        url: FRONTEND_URL,
-        reuseExistingServer: !process.env.CI,
-        timeout: 120 * 1000,
-        stdout: "pipe",
-        stderr: "pipe",
-    },
+    webServer: process.env.FRONTEND_URL
+        ? undefined
+        : {
+              command: `yarn vite`,
+              url: FRONTEND_URL,
+              reuseExistingServer: !process.env.CI,
+              timeout: 120 * 1000,
+              stdout: "pipe",
+              stderr: "pipe",
+          },
 });
