@@ -164,7 +164,7 @@ class ReportManager extends EventEmitter<Events> {
                     !(user.moderator_powers & MODERATOR_POWERS.SUSPEND) || // If the user does not have SUSPEND powers, any vote counts
                     new Date(vote.updated) > new Date(report.escalated_at)), // If the user has SUSPEND powers, vote must be after escalation
         );
-        console.log("userAlreadyVoted", user.id, report.id, report, they_already_voted);
+        //console.log("userAlreadyVoted", user.id, report.id, report, they_already_voted);
         return they_already_voted;
     }
 
