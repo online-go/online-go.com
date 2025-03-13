@@ -55,15 +55,7 @@ ogsTest.describe("Register, logout, login", () => {
         // Log out...
         await userDropdown.click();
 
-        // Look for fake-link sign out button within the profile menu
-        // First wait for the specific menu container...
-
-        const profileMenu = page.locator(".Menu.profile .Menu-children");
-        await expect(profileMenu).toBeVisible();
-
-        // Kinda icky implementation dependent, but this "fake link" thing is not test friendly!
-        const logoutButton = profileMenu.locator('span.fakelink:has-text("Sign out")');
-        await expect(logoutButton).toBeVisible();
+        const logoutButton = await expectOGSClickableByName(page, /Sign out$/);
 
         await logoutButton.click();
 
