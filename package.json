@@ -26,9 +26,9 @@
         "minify-index": "node minify-index.js",
         "dependency-cruiser": "dependency-cruiser src",
         "bundle-visualizer": "vite-bundle-visualizer -c vite.config.ts",
-        "test:e2e": "playwright test",
-        "test:e2e:ui": "playwright test --ui",
-        "test:e2e:debug": "playwright test --debug",
+        "test:e2e": "node scripts/run-playwright.js",
+        "test:e2e:ui": "node scripts/run-playwright.js --ui",
+        "test:e2e:debug": "node scripts/run-playwright.js --debug",
         "test:e2e:docker": "docker run --rm -it --add-host=host.docker.internal:host-gateway -v $(pwd):/app -w /app -e FRONTEND_URL=http://host.docker.internal:8080 mcr.microsoft.com/playwright:v1.51.0-noble npx playwright test"
     },
     "browserslist": [
