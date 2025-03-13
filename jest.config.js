@@ -5,7 +5,14 @@ export default {
         "**/__tests__/**/*.+(ts|tsx|js)", // directories named __test__
         "**/?(*.)+(spec|test).+(ts|tsx|js)", // files with the test.ts/test.tsx/test.js extension
     ],
-    testPathIgnorePatterns: ["/node_modules/", "/dist/", "/doc/", "/submodules/", "/i18n/"],
+    testPathIgnorePatterns: [
+        "/node_modules/",
+        "/dist/",
+        "/doc/",
+        "/submodules/",
+        "/i18n/",
+        "/e2e-tests/",
+    ],
     transform: {
         "^.+\\.(ts|tsx)$": "ts-jest",
         "^.+goscorer.js$": "ts-jest",
