@@ -32,7 +32,7 @@ const OGS_I18N_BUILD_MODE = (process.env.OGS_I18N_BUILD_MODE || "false").toLower
 let OGS_BACKEND = process.env.OGS_BACKEND;
 OGS_BACKEND = OGS_BACKEND ? OGS_BACKEND.toUpperCase() : "BETA";
 
-const SUPPORTED_BACKENDS = ["BETA", "PRODUCTION", "LOCAL", "DOCKER"] as const;
+const SUPPORTED_BACKENDS = ["BETA", "PRODUCTION", "LOCAL"] as const;
 if (process.env.OGS_BACKEND && !SUPPORTED_BACKENDS.includes(OGS_BACKEND as any)) {
     throw new Error(
         `Unsupported OGS_BACKEND value: ${OGS_BACKEND}. Must be one of: ${SUPPORTED_BACKENDS.join(
@@ -46,9 +46,7 @@ const backend_url =
         ? "https://beta.online-go.com"
         : OGS_BACKEND === "PRODUCTION"
           ? "https://online-go.com"
-          : OGS_BACKEND === "DOCKER"
-            ? "http://loadbalancer"
-            : "http://127.0.0.1:1080"; // LOCAL
+          : "http://127.0.0.1:1080"; // LOCAL
 
 const proxy: Record<string, ProxyOptions> = {};
 
@@ -171,7 +169,17 @@ export default defineConfig({
     plugins: [
         ogs_vite_middleware(),
         react(),
-
+        {
+            name: "welcome-message",
+            configureServer(server) {
+                server.httpServer?.once("listening", () => {
+                    console.log("\n⚫ ⚪ Online-Go.com development server running...!\n");
+                    console.log(
+                        "⚫ ⚪ Chat with us in Slack at:\n\n   https://join.slack.com/t/online-go/shared_invite/zt-2jww58l2v-iwhhBiVsXNxcD9xm74bIKA\n",
+                    );
+                });
+            },
+        },
         process.env.NODE_ENV !== "production" ? nodePolyfills() : null,
         // checker relative directory is src/
         //
