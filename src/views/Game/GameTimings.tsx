@@ -24,6 +24,7 @@ import * as React from "react";
 import { AdHocPackedMove, GobanMovesArray } from "goban";
 import { useUser } from "@/lib/hooks";
 import { showSecondsResolution } from "@/lib/misc";
+import { MODERATOR_POWERS } from "@/lib/moderation";
 
 interface GameTimingProperties {
     moves: GobanMovesArray;
@@ -102,14 +103,15 @@ export function GameTimings(props: GameTimingProperties): React.ReactElement {
         }
     }
 
-    const cm = user.moderator_powers !== 0; // community moderator
+    const have_blurs =
+        user.is_moderator || (user.moderator_powers & MODERATOR_POWERS.AI_DETECTOR) !== 0;
 
     return (
         <div className="GameTimings">
             <div className="timings-header">Game Timings</div>
             <div>Move</div>
-            <div>Black {!cm && "(blur)"}</div>
-            <div>White {!cm && "(blur)"}</div>
+            <div>Black {have_blurs && "(blur)"}</div>
+            <div>White {have_blurs && "(blur)"}</div>
             <div>Elapsed Time</div>
             {white_first_turn ? first_row : ""}
             {
@@ -221,12 +223,12 @@ export function GameTimings(props: GameTimingProperties): React.ReactElement {
                                 <div>{idx * 2 + 1 + handicap_move_offset}</div>
                                 <div>
                                     {black_move_time}
-                                    {!cm && blurDurationFormat(black_blur)}
+                                    {have_blurs && blurDurationFormat(black_blur)}
                                     {black_download_sgf ? <i className="fa fa-download" /> : null}
                                 </div>
                                 <div>
                                     {white_move_time}
-                                    {!cm && blurDurationFormat(white_blur)}
+                                    {have_blurs && blurDurationFormat(white_blur)}
                                     {white_download_sgf ? <i className="fa fa-download" /> : null}
                                 </div>
                                 <div>

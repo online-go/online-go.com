@@ -34,6 +34,7 @@ export enum MODERATOR_POWERS {
     SUSPEND = 0b1000,
     ASSESS_AI_REPORTS = 0b10000,
     SEE_REPORTED_USER_BANNED_STATUS = 0b100000,
+    AI_DETECTOR = 0b1000000,
 }
 
 export const MOD_POWER_NAMES: { [key in MODERATOR_POWERS]: string } = {
@@ -59,6 +60,7 @@ export const MOD_POWER_NAMES: { [key in MODERATOR_POWERS]: string } = {
         "A label for a moderator power",
         "See reported user's banned status",
     ),
+    [MODERATOR_POWERS.AI_DETECTOR]: pgettext("A label for a moderator power", "AI Detection team"),
 };
 
 export function doAnnul(
