@@ -20,7 +20,7 @@ import { expect } from "@playwright/test";
 import { ogsTest } from "@helpers";
 import { expectOGSClickableByName } from "@helpers/matchers";
 
-ogsTest.describe("Register, logout, login", () => {
+ogsTest.describe("@Smoke Register, logout, login", () => {
     const testInfo = {
         newUsername: `SmokeRegister_${Date.now().toString(36).slice(-6)}`,
     };

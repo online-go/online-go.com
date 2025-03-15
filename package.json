@@ -26,6 +26,7 @@
         "minify-index": "node minify-index.js",
         "dependency-cruiser": "dependency-cruiser src",
         "bundle-visualizer": "vite-bundle-visualizer -c vite.config.ts",
+        "test:e2e:smoke": "node scripts/run-playwright.js --grep @Smoke",
         "test:e2e": "node scripts/run-playwright.js",
         "test:e2e:ui": "node scripts/run-playwright.js --ui",
         "test:e2e:debug": "node scripts/run-playwright.js --debug",
