@@ -35,7 +35,7 @@ const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:8080";
 export default defineConfig({
     testDir: "./e2e-tests",
     testMatch: ["**/*.spec.ts"],
-    timeout: 15 * 1000,
+    timeout: 60 * 1000, // overall test timeout - we have some long multi-user tests
     expect: {
         timeout: 5000,
     },
@@ -67,8 +67,9 @@ export default defineConfig({
         baseURL: FRONTEND_URL,
 
         /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-        trace: "on-first-retry",
-        video: "on-first-retry",
+        trace: "retain-on-failure",
+        video: "retain-on-failure",
+        screenshot: "only-on-failure",
     },
 
     /* Configure projects for major browsers */
@@ -121,7 +122,7 @@ export default defineConfig({
               command: `yarn vite`,
               url: FRONTEND_URL,
               reuseExistingServer: !process.env.CI,
-              timeout: 120 * 1000,
+              timeout: 120 * 1000, // server startup.
               stdout: "pipe",
               stderr: "pipe",
           },
