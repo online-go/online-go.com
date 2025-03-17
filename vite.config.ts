@@ -173,9 +173,9 @@ export default defineConfig({
             name: "welcome-message",
             configureServer(server) {
                 server.httpServer?.once("listening", () => {
-                    console.log("\n⚫ ⚪ Online-Go.com development server running...!\n");
+                    console.log("\n⚫ ⚪ Online-Go.com development server running...!");
                     console.log(
-                        "⚫ ⚪ Chat with us in Slack at:\n\n   https://join.slack.com/t/online-go/shared_invite/zt-2jww58l2v-iwhhBiVsXNxcD9xm74bIKA\n",
+                        "\n⚫ ⚪ Chat with us in Slack at:\n\n   https://join.slack.com/t/online-go/shared_invite/zt-2jww58l2v-iwhhBiVsXNxcD9xm74bIKA\n",
                     );
                 });
             },
