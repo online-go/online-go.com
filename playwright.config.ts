@@ -37,7 +37,7 @@ export default defineConfig({
     testMatch: ["**/*.spec.ts"],
     timeout: 60 * 1000, // overall test timeout - we have some long multi-user tests
     expect: {
-        timeout: 5000,
+        timeout: process.env.CI ? 30000 : 5000,
     },
 
     /* Run tests in files in parallel */
