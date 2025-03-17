@@ -1,0 +1,140 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ */
+
+import { expect } from "@playwright/test";
+import { Page, Browser } from "@playwright/test";
+
+import { expectOGSClickableByName } from "./matchers";
+
+export const loginAsUser = async (page: Page, username: string, password: string) => {
+    await page.goto("/sign-in");
+
+    const isUserLoggedIn = await page.locator(".username").getByText(username).isVisible();
+    if (isUserLoggedIn) {
+        return; // We're already logged in.
+    }
+
+    // Actually log in
+    await page.getByLabel("Username").fill(username);
+    await page.getByLabel("Password").fill(password);
+    await page.getByRole("button", { name: /Sign in$/ }).click();
+
+    await expect(page.locator(".username").getByText(username)).toBeVisible();
+};
+
+export const turnOffDynamicHelp = async (page: Page) => {
+    await page.goto("/settings/help");
+    const switchElement = page.locator(
+        'div.PreferenceLine:has-text("Show dynamic help") input[role="switch"]',
+    );
+    const parentElement = page.locator('div.PreferenceLine:has-text("Show dynamic help")');
+    await expect(parentElement).toBeVisible();
+    const isSwitchOn = await switchElement.evaluate((el) => (el as HTMLInputElement).checked);
+    if (isSwitchOn) {
+        await parentElement.click();
+    }
+};
+
+export const setupStandardUser = async (browser: Browser, username: string) => {
+    const userContext = await browser.newContext();
+    const userPage = await userContext.newPage();
+    await loginAsUser(userPage, username, "test");
+    await turnOffDynamicHelp(userPage); // the popups can get in the way.
+
+    return {
+        userPage,
+        userContext,
+    };
+};
+
+export const setupAIAssessor = async (browser: Browser, username: string) => {
+    const aiAssessorContext = await browser.newContext();
+    const aiAssessorPage = await aiAssessorContext.newPage();
+    await loginAsUser(aiAssessorPage, username, "test");
+    await turnOffDynamicHelp(aiAssessorPage); // the popups can get in the way.
+
+    await turnOffModerationQuota(aiAssessorPage); // need them to be able to keep voting!
+
+    return {
+        aiAssessorPage,
+        aiAssessorContext,
+    };
+};
+
+export const turnOffModerationQuota = async (page: Page) => {
+    await page.goto("/settings/moderator");
+
+    const preferenceLine = await page.locator(".PreferenceLine").filter({
+        has: page.locator(".PreferenceLineTitle", { hasText: "Report quota" }),
+    });
+
+    await expect(preferenceLine).toBeVisible();
+    const reportQuotaInput = preferenceLine.locator('.PreferenceLineBody input[type="number"]');
+
+    await reportQuotaInput.fill("0");
+};
+
+export const goToUsersGame = async (page: Page, username: string, gameName: string) => {
+    await page.fill(".OmniSearch-input", username);
+    await page.waitForSelector(".results .result");
+    await page.click(`.results .result:has-text('${username}')`);
+
+    await expect(page.getByText("Game History")).toBeVisible();
+    const target_game = page.getByText(gameName, { exact: true });
+    await expect(target_game).toBeVisible();
+
+    // Go to that page ...
+    await target_game.click();
+    await expect(page.locator(".Game")).toBeVisible();
+};
+
+export const reportUser = async (page: Page, username: string, type: string, notes: string) => {
+    const playerLink = page.locator(`a.Player:has-text("${username}")`);
+    await expect(playerLink).toBeVisible();
+    await playerLink.hover(); // Ensure the dropdown stays open
+    await playerLink.click();
+
+    await expect(page.getByRole("button", { name: /Report$/ })).toBeVisible();
+    await page.getByRole("button", { name: /Report$/ }).click();
+
+    await expect(page.getByText("Request Moderator Assistance")).toBeVisible();
+
+    await page.selectOption(".type-picker select", { value: type });
+
+    const notesBox = page.locator(".notes");
+    await notesBox.fill(notes);
+
+    const submitButton = await expectOGSClickableByName(page, /Report User$/);
+    await submitButton.click();
+
+    await expect(page.getByText("Thanks for the report!")).toBeVisible();
+    const OK = await expectOGSClickableByName(page, "OK");
+    // tidy up
+    await OK.click();
+    await expect(OK).toBeHidden();
+};
+
+export const assertIncidentReportIndicatorActive = async (page: Page, count: number) => {
+    const indicator = page.locator(".IncidentReportIndicator");
+    const icon = indicator.locator(".fa-exclamation-triangle.active");
+    const countDisplay = indicator.locator(".count.active");
+
+    await expect(indicator).toBeVisible();
+    await expect(icon).toBeVisible();
+    await expect(countDisplay).toHaveText(`${count}`);
+
+    return indicator;
+};
+
+export const assertIncidentReportIndicatorInactive = async (page: Page) => {
+    const indicator = page.locator(".IncidentReportIndicator");
+    await expect(indicator).toBeEmpty();
+};

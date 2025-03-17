@@ -45,19 +45,19 @@ jobs:
                   command: yarn install
 
             - name: Eslint
-              run: npm run lint
+              run: yarn lint
 
             - name: Prettier check
-              run: npm run prettier:check
+              run: yarn prettier:check
 
             - name: Type check
-              run: npm run type-check
+              run: yarn type-check
 
             - name: Build
-              run: npm run build
+              run: yarn build-ci
 
             - name: Tests
-              run: npm run test
+              run: yarn test
 
             - uses: streetsidesoftware/cspell-action@v6
               with:
