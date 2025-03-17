@@ -54,7 +54,7 @@ jobs:
               run: yarn type-check
 
             - name: Build
-              run: yarn build
+              run: yarn build-ci
 
             - name: Tests
               run: yarn smoke-test
