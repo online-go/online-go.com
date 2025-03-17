@@ -21,6 +21,7 @@
         "stylus-supremacy": "stylus-supremacy format --replace --options .vscode/settings.json 'src/**/*.styl'",
         "stylus": "stylus --out dist/ --compress --include-css --sourcemap -c src/ogs.styl",
         "test": "node --experimental-vm-modules node_modules/.bin/jest && playwright install --with-deps && playwright test",
+        "smoke-test": "playwright install --with-deps &&  node scripts/run-playwright.js --grep @Smoke",
         "fresh-test": "clear && jest",
         "spellcheck": "cspell \"src/**/*.{ts,tsx}\"",
         "minify-index": "node minify-index.js",
