@@ -289,11 +289,11 @@ export function Player(props: PlayerProperties): React.ReactElement {
         main_attrs.className += " " + combined.ui_class;
     }
 
-    if (viewReportContext && viewReportContext.reported.id === player_id) {
+    if (viewReportContext?.reported?.id === player_id) {
         main_attrs.className += " reported";
     }
 
-    if (viewReportContext && viewReportContext.reporter.id === player_id) {
+    if (viewReportContext?.reporter?.id === player_id) {
         main_attrs.className += " reporter";
     }
 
