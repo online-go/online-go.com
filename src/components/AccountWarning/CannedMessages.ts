@@ -119,6 +119,36 @@ Thank you for helping keep OGS enjoyable for everyone. We appreciate it.`,
             ),
             { reported },
         ),
+    warn_first_turn_escaper: (game_id) =>
+        interpolate(
+            llm_pgettext(
+                "Warning message to a user",
+                `
+We've noticed that you joined game #{{game_id}} but didn't make any moves.
+
+It's possible you didn't notice this game start - we understand that.
+
+However, could you please take care avoid this situation, so that other users are not left waiting and wondering.
+
+Thank you for helping keep OGS enjoyable for everyone. We appreciate it.
+`,
+            ),
+            { game_id },
+        ),
+    notify_warned_first_turn_escaper: (game_id) =>
+        interpolate(
+            llm_pgettext(
+                "Notification message to a user",
+                `
+We've noticed that the other player left game #{{game_id}} without making any moves.
+
+We've automatically alerted that person about this, and asked them to be more respectful of people's time - you don't need to report it.
+
+Hopefully they'll be more careful next time!
+`,
+            ),
+            { game_id },
+        ),
     warn_beginner_staller: (game_id) =>
         interpolate(
             llm_pgettext(

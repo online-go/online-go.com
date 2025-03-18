@@ -35,7 +35,7 @@ const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:8080";
 export default defineConfig({
     testDir: "./e2e-tests",
     testMatch: ["**/*.spec.ts"],
-    timeout: 60 * 1000, // overall test timeout - we have some long multi-user tests
+    timeout: 120 * 1000, // overall test timeout - we have some long multi-user tests
     expect: {
         timeout: process.env.CI ? 30000 : 5000,
     },
