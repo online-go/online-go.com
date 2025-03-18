@@ -19,8 +19,10 @@ import { ogsTest } from "@helpers";
 
 import { cmDontNotifyEscalatedAiTest } from "./cm-dont-notify-escalated-ai";
 import { cmVoteOnOwnReportTest } from "./cm-vote-on-own-report";
+import { cmWarnFirstTurnEscapersTest } from "./cm-auto-warn-first-turn-escaper";
 
 ogsTest.describe("@CM Community Moderation Tests", () => {
     ogsTest("CM should be able to vote on their own report", cmVoteOnOwnReportTest);
     ogsTest("We should not notify escalated AI reports", cmDontNotifyEscalatedAiTest);
+    ogsTest("We should warn first turn escapers", cmWarnFirstTurnEscapersTest);
 });
