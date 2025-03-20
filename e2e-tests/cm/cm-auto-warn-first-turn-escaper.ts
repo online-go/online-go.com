@@ -15,9 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// (No seeded data in use)
+
 import { Browser } from "@playwright/test";
 
-import { setupStandardUser } from "@helpers/user-utils";
+import { newTestUsername, prepareNewUser } from "@helpers/user-utils";
 
 import {
     acceptDirectChallenge,
@@ -27,11 +29,17 @@ import {
 } from "@helpers/game-utils";
 
 export const cmWarnFirstTurnEscapersTest = async ({ browser }: { browser: Browser }) => {
-    const { userPage: challengerPage } = await setupStandardUser(browser, "E2E_CM_OTHER");
-    const { userPage: escaperPage } = await setupStandardUser(browser, "E2E_CM_REPORTED");
+    const { userPage: challengerPage } = await prepareNewUser(
+        browser,
+        newTestUsername("CmFTEChall"), // cspell:disable-line
+        "test",
+    );
+
+    const escaperUsername = newTestUsername("CmFTEEscaper"); // cspell:disable-line
+    const { userPage: escaperPage } = await prepareNewUser(browser, escaperUsername, "test");
 
     // Challenger challenges the escaper
-    await createDirectChallenge(challengerPage, "E2E_CM_REPORTED", {
+    await createDirectChallenge(challengerPage, escaperUsername, {
         ...defaultChallengeSettings,
         gameName: "E2E First Turn Escape Game",
     });

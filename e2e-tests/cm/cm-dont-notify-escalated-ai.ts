@@ -15,44 +15,55 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// cspell:words CmDontNotRep AIER DNOT DNEA
+
+/*
+ * Uses init_e2e data:
+ * - E2E_CM_DNEA_AI_ACCUSED : user supposedly used AI
+ * - "E2E CM DNEA Game" : game in which the AI use supposedly occurred
+ * - E2E_CM_DNEA_AI_V1, E2E_CM_DNEA_AI_V2, E2E_CM_DNEA_AI_V3 : AI assessors who vote
+ * - E2E_CM_DNEA_AI_ASSESSOR : CM AI Assessor who should not be notified
+ */
+
 import { Browser } from "@playwright/test";
 
 import {
     assertIncidentReportIndicatorActive,
     assertIncidentReportIndicatorInactive,
     goToUsersGame,
-    loginAsUser,
+    newTestUsername,
+    prepareNewUser,
     reportUser,
-    setupAIAssessor,
-    setupStandardUser,
-    turnOffDynamicHelp,
+    setupSeededCM,
 } from "@helpers/user-utils";
+
 import { expectOGSClickableByName } from "@helpers/matchers";
 import { expect } from "@playwright/test";
 
 export const cmDontNotifyEscalatedAiTest = async ({ browser }: { browser: Browser }) => {
-    const { userPage: reporterPage } = await setupStandardUser(browser, "E2E_REPORTER");
+    const { userPage: reporterPage } = await prepareNewUser(
+        browser,
+        newTestUsername("CmDontNotRep"), // cspell:disable-line
+        "test",
+    );
 
     // Report someone for AI use
-    await loginAsUser(reporterPage, "E2E_REPORTER", "test");
-    await turnOffDynamicHelp(reporterPage); // the popups can get in the way.
-
-    await goToUsersGame(reporterPage, "E2E_CM_REPORTED", "E2E CM Sample Game");
+    await goToUsersGame(reporterPage, "E2E_CM_DNEA_AI_ACCUSED", "E2E CM DNEA Game");
 
     await reportUser(
         reporterPage,
-        "E2E_CM_REPORTED",
+        "E2E_CM_DNEA_AI_ACCUSED",
         "ai_use",
         "E2E test reporting AI use: I'm sure he cheated!", // min 40 chars
     );
 
     // Vote the report into moderation queue
 
-    const aiAssessors = ["E2E_CM_AI_V1", "E2E_CM_AI_V2", "E2E_CM_AI_V3"];
+    const aiAssessors = ["E2E_CM_DNEA_AI_V1", "E2E_CM_DNEA_AI_V2", "E2E_CM_DNEA_AI_V3"];
 
     const aiAssessorContexts = [];
     for (const aiUser of aiAssessors) {
-        const { aiAssessorPage: aiCMPage, aiAssessorContext: aiContext } = await setupAIAssessor(
+        const { aiAssessorPage: aiCMPage, aiAssessorContext: aiContext } = await setupSeededCM(
             browser,
             aiUser,
         );
@@ -79,7 +90,7 @@ export const cmDontNotifyEscalatedAiTest = async ({ browser }: { browser: Browse
     }
 
     // Now we're going to check that the another CM AI Assessor doesn't get notified
-    const { aiAssessorPage: aiCMPage } = await setupAIAssessor(browser, "E2E_CM_AI");
+    const { aiAssessorPage: aiCMPage } = await setupSeededCM(browser, "E2E_CM_DNEA_AI_ASSESSOR");
 
     await assertIncidentReportIndicatorInactive(aiCMPage);
 

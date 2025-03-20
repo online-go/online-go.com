@@ -15,9 +15,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ogsTest } from "@helpers";
-import { smokeRegisterLogoutLogin } from "./smoke-register-operations";
+// (No seeded data in use - must not use seeded data for smoke tests!)
 
-ogsTest.describe("@Smoke Basic self contained tests to confirm server is functional", () => {
-    ogsTest("Should be able to register, logout, login", smokeRegisterLogoutLogin);
-});
+import { Browser } from "@playwright/test";
+
+import { logoutUser, registerNewUser, loginAsUser, newTestUsername } from "@helpers/user-utils";
+
+export const smokeRegisterLogoutLogin = async ({ browser }: { browser: Browser }) => {
+    const testInfo = {
+        newUsername: newTestUsername("SmokeReg"),
+    };
+
+    const { userPage } = await registerNewUser(browser, testInfo.newUsername, "test");
+
+    await logoutUser(userPage);
+
+    await loginAsUser(userPage, testInfo.newUsername, "test");
+};

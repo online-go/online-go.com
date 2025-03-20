@@ -14,6 +14,80 @@ import { Page, Browser } from "@playwright/test";
 
 import { expectOGSClickableByName } from "./matchers";
 
+// This is tweaked to provide us with lots of unique usernames but also
+// a decent number of readable user-role characters, within the OGS username 20 character limit
+// on registration.
+export const newTestUsername = (user_role: string) => {
+    if (user_role.length > 12) {
+        throw new Error("user_role must be less than 13 characters");
+    }
+    const timestamp = Date.now().toString(36);
+    // Tests take longer than a minute to run, so we can take 4 chars that change roughly minutely
+    // This assumes that you don't re-run a single test more than once per minute or so (47 seconds actually)
+    const midChars = timestamp.slice(-6, -2);
+    return `e2e${user_role}_${midChars}`;
+};
+
+export const registerNewUser = async (browser: Browser, username: string, password: string) => {
+    const userContext = await browser.newContext();
+    const userPage = await userContext.newPage();
+    await userPage.goto("/");
+    // Go from "landing page" to the "sign in" page.
+    await userPage.getByRole("link", { name: /sign in/i }).click();
+    await expect(userPage.getByLabel("Username")).toBeVisible();
+    await expect(userPage.getByLabel("Password")).toBeVisible();
+    await expectOGSClickableByName(userPage, /Sign in$/);
+
+    // From there to "Register"
+    const registerPageButton = await expectOGSClickableByName(userPage, /Register here!/);
+    await registerPageButton.click();
+
+    // Fill in registration form
+    await userPage.getByLabel("Username").fill(username);
+    await userPage.getByLabel("Password").fill(password);
+    const registerButton = await expectOGSClickableByName(userPage, /Register$/);
+    await registerButton.click();
+
+    // Verify successful registration
+    await expect(userPage.getByText("Welcome")).toBeVisible();
+
+    const userDropdown = userPage.locator(".username").getByText(username);
+    await expect(userDropdown).toBeVisible();
+
+    return {
+        userPage,
+        userContext,
+    };
+};
+
+export const prepareNewUser = async (browser: Browser, username: string, password: string) => {
+    const { userPage, userContext } = await registerNewUser(browser, username, password);
+
+    // Skip the "choose rank" business
+    const skipButton = await expectOGSClickableByName(userPage, /Skip$/);
+    await skipButton.click();
+
+    await turnOffDynamicHelp(userPage); // the popups can get in the way.
+
+    return {
+        userPage,
+        userContext,
+    };
+};
+
+export const logoutUser = async (page: Page) => {
+    // Log out...
+    const userDropdown = page.locator(".username").first();
+    await userDropdown.click();
+
+    const logoutButton = await expectOGSClickableByName(page, /Sign out$/);
+
+    await logoutButton.click();
+
+    // Logout causes the username to disappear
+    await expect(page.locator(".username").first()).toBeHidden();
+};
+
 export const loginAsUser = async (page: Page, username: string, password: string) => {
     await page.goto("/sign-in");
 
@@ -43,7 +117,10 @@ export const turnOffDynamicHelp = async (page: Page) => {
     }
 };
 
-export const setupStandardUser = async (browser: Browser, username: string) => {
+// actually you could set up any user using this but its unusual to need to log in
+// a newly registered user.
+
+export const setupSeededUser = async (browser: Browser, username: string) => {
     const userContext = await browser.newContext();
     const userPage = await userContext.newPage();
     await loginAsUser(userPage, username, "test");
@@ -55,7 +132,7 @@ export const setupStandardUser = async (browser: Browser, username: string) => {
     };
 };
 
-export const setupAIAssessor = async (browser: Browser, username: string) => {
+export const setupSeededCM = async (browser: Browser, username: string) => {
     const aiAssessorContext = await browser.newContext();
     const aiAssessorPage = await aiAssessorContext.newPage();
     await loginAsUser(aiAssessorPage, username, "test");
@@ -82,13 +159,17 @@ export const turnOffModerationQuota = async (page: Page) => {
     await reportQuotaInput.fill("0");
 };
 
+// Note: if there are multiple matches, this grabs the first.   This is avoids issues if we
+// accidentally have more seed games than intended.
 export const goToUsersGame = async (page: Page, username: string, gameName: string) => {
     await page.fill(".OmniSearch-input", username);
     await page.waitForSelector(".results .result");
     await page.click(`.results .result:has-text('${username}')`);
 
-    await expect(page.getByText("Game History")).toBeVisible();
-    const target_game = page.getByText(gameName, { exact: true });
+    const gameHistory = page.getByText("Game History");
+    await gameHistory.scrollIntoViewIfNeeded(); // assists debug
+    await expect(gameHistory).toBeVisible();
+    const target_game = page.getByText(gameName, { exact: true }).first();
     await expect(target_game).toBeVisible();
 
     // Go to that page ...
