@@ -63,7 +63,7 @@ export const cmDontNotifyEscalatedAiTest = async ({ browser }: { browser: Browse
 
     const aiAssessorContexts = [];
     for (const aiUser of aiAssessors) {
-        const { aiAssessorPage: aiCMPage, aiAssessorContext: aiContext } = await setupSeededCM(
+        const { seededCMPage: aiCMPage, seededCMContext: aiContext } = await setupSeededCM(
             browser,
             aiUser,
         );
@@ -90,7 +90,7 @@ export const cmDontNotifyEscalatedAiTest = async ({ browser }: { browser: Browse
     }
 
     // Now we're going to check that the another CM AI Assessor doesn't get notified
-    const { aiAssessorPage: aiCMPage } = await setupSeededCM(browser, "E2E_CM_DNEA_AI_ASSESSOR");
+    const { seededCMPage: aiCMPage } = await setupSeededCM(browser, "E2E_CM_DNEA_AI_ASSESSOR");
 
     await assertIncidentReportIndicatorInactive(aiCMPage);
 

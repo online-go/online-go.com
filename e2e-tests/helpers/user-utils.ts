@@ -133,16 +133,16 @@ export const setupSeededUser = async (browser: Browser, username: string) => {
 };
 
 export const setupSeededCM = async (browser: Browser, username: string) => {
-    const aiAssessorContext = await browser.newContext();
-    const aiAssessorPage = await aiAssessorContext.newPage();
-    await loginAsUser(aiAssessorPage, username, "test");
-    await turnOffDynamicHelp(aiAssessorPage); // the popups can get in the way.
+    const seededCMContext = await browser.newContext();
+    const seededCMPage = await seededCMContext.newPage();
+    await loginAsUser(seededCMPage, username, "test");
+    await turnOffDynamicHelp(seededCMPage); // the popups can get in the way.
 
-    await turnOffModerationQuota(aiAssessorPage); // need them to be able to keep voting!
+    await turnOffModerationQuota(seededCMPage); // need them to be able to keep voting!
 
     return {
-        aiAssessorPage,
-        aiAssessorContext,
+        seededCMPage,
+        seededCMContext,
     };
 };
 
