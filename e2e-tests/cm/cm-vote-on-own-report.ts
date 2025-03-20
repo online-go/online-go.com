@@ -15,20 +15,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// cspell:words VOOR REPOR
+
+/*
+ * Uses init_e2e data:
+ * - E2E_CM_VOOR_REPORTER : user who reports
+ * - E2E_CM_VOOR_REPORTED : user who is reported
+ * - "E2E CM VOOR Sample Game" : game in which the report is made
+ * - E2E_CM_OTHER_VOOR : The other person in that game (who's name must not match E2E_CM_VOOR_! See below!)
+ */
+
 import { Browser, expect } from "@playwright/test";
 
 import { expectOGSClickableByName } from "@helpers/matchers";
-import { goToUsersGame, reportUser, setupStandardUser } from "@helpers/user-utils";
+import { goToUsersGame, reportUser, setupSeededUser } from "@helpers/user-utils";
 
 export const cmVoteOnOwnReportTest = async ({ browser }: { browser: Browser }) => {
-    const { userPage: reporterPage } = await setupStandardUser(browser, "E2E_CM_ESC");
+    const { userPage: reporterPage } = await setupSeededUser(browser, "E2E_CM_VOOR_REPORTER");
 
-    await goToUsersGame(reporterPage, "E2E_CM_REPORTED", "E2E CM Sample Game");
+    await goToUsersGame(reporterPage, "E2E_CM_VOOR_REPORTED", "E2E CM VOOR Game");
 
     // ... and report the user
-    // (the username is truncated inside the player card!)
-    // cspell:disable-next-line
-    await reportUser(reporterPage, "E2E_CM_REPOR", "escaping", "E2E test reporting an escaper");
+    // (The username is truncated inside the player card!  So the "other player" name must not match here!)
+    await reportUser(reporterPage, "E2E_CM_VOOR_", "escaping", "E2E test reporting an escaper");
 
     // Go to the report page
     await reporterPage.goto("/reports-center");

@@ -119,7 +119,7 @@ export default defineConfig({
     webServer: process.env.FRONTEND_URL
         ? undefined
         : {
-              command: `yarn vite`,
+              command: `echo "Starting vite server: ${process.env.OGS_BACKEND}" && yarn vite`,
               url: FRONTEND_URL,
               reuseExistingServer: !process.env.CI,
               timeout: 120 * 1000, // server startup.
