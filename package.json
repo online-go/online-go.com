@@ -105,7 +105,7 @@
         "terser": "^5.37.0",
         "ts-jest": "^29.2.5",
         "typescript": "=5.7.3",
-        "vite": "^6.0.9",
+        "vite": "^6.0.12",
         "vite-bundle-visualizer": "^1.2.1",
         "vite-plugin-checker": "^0.8.0",
         "vite-plugin-node-polyfills": "^0.22.0",
