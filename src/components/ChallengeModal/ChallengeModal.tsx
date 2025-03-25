@@ -1721,6 +1721,8 @@ export class ChallengeModalBody extends React.Component<
                     opt.setting.game.width === this.state.challenge.game.width &&
                     opt.setting.game.height === this.state.challenge.game.height &&
                     opt.setting.game.handicap === this.state.challenge.game.handicap &&
+                    opt.setting.min_ranking === this.state.challenge.min_ranking &&
+                    opt.setting.max_ranking === this.state.challenge.max_ranking &&
                     JSON.stringify(opt.setting.game.time_control_parameters) ===
                         JSON.stringify(this.state.time_control),
             ) || null;
