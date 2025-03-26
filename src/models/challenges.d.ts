@@ -85,7 +85,7 @@ declare namespace rest_api {
     // Payload of challenge POST
     interface ChallengeDetails {
         initialized: boolean;
-        min_ranking: number;
+        min_ranking: number; // This darn thing is a number from 5-38, the rank selector index in ChallengeModal
         max_ranking: number;
         challenger_color: ColorSelectionOptions;
         rengo_auto_start: number;
