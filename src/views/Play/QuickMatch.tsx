@@ -688,6 +688,7 @@ export function QuickMatch(): React.ReactElement {
     // ids for accessibility
     const boardSizeId = "section-board-size";
     const gameClockId = "section-game-clock";
+    const handicapId = "section-handicap";
 
     return (
         <>
@@ -971,12 +972,13 @@ export function QuickMatch(): React.ReactElement {
                     </div>
                 </section>
 
-                {/* Opponent */}
-                <div className="GameOption-cell">
+                {/* Handicap */}
+                <section className="GameOption-cell" aria-labelledby={handicapId}>
                     <div className="GameOption">
-                        <span>{_("Handicap")}</span>
+                        <h2 id={handicapId}>{_("Handicap")}</h2>
                         <Select
                             classNamePrefix="ogs-react-select"
+                            aria-labelledby={handicapId}
                             styles={
                                 {
                                     ...select_styles,
