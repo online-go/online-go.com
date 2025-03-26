@@ -687,6 +687,7 @@ export function QuickMatch(): React.ReactElement {
 
     return (
         <>
+            <h1 className="sr-only">Plays Go – Find a Game</h1>
             <div id="QuickMatch">
                 {/* Board Size */}
                 <div className="GameOption-cell">
