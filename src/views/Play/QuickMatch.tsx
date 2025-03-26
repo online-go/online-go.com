@@ -694,11 +694,11 @@ export function QuickMatch(): React.ReactElement {
             <div id="QuickMatch">
                 {/* Board Size */}
                 <section className="GameOption-cell" aria-labelledby={boardSizeId}>
-                    <h2 id={boardSizeId} className="GameOption BoardSize-header">
-                        <span>{_("Board Size")}</span>
-                    </h2>
+                    <div id={boardSizeId} className="GameOption BoardSize-header">
+                        <h2>{_("Board Size")}</h2>
+                    </div>
 
-                    <ul role="list" className="boardSize-picker-list">
+                    <ol role="list" className="boardSize-picker-list">
                         {(["9x9", "13x13", "19x19"] as Size[]).map((s) => {
                             const isActive = isSizeActive(s);
                             return (
