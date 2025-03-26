@@ -687,6 +687,7 @@ export function QuickMatch(): React.ReactElement {
 
     // ids for accessibility
     const boardSizeId = "section-board-size";
+    const gameClockId = "section-game-clock";
 
     return (
         <>
@@ -722,7 +723,7 @@ export function QuickMatch(): React.ReactElement {
                                 </li>
                             );
                         })}
-                    </ul>
+                    </ol>
 
                     <div aria-hidden={true}>
                         {game_clock === "multiple" ? (
@@ -775,12 +776,16 @@ export function QuickMatch(): React.ReactElement {
                 </section>
 
                 {/* Game Speed */}
-                <div className="GameOption-cell">
+                <section className="GameOption-cell" aria-labelledby={gameClockId}>
                     <div className="GameOption">
-                        <span>
+                        <h2 id={gameClockId}>
                             {pgettext("Clock settings header for a new game", "Game Clock")}
-                        </span>
+                        </h2>
                         <Select
+                            aria-label={pgettext(
+                                "label for the dropdown to choose how the selected clock preferences will be matched in the matchmaking (i.e. 'flexible', 'exact','multiple')",
+                                "Clock preference matching",
+                            )}
                             classNamePrefix="ogs-react-select"
                             styles={
                                 {
@@ -818,133 +823,153 @@ export function QuickMatch(): React.ReactElement {
                                 {_("Select all the settings you are comfortable playing with.")}
                             </div>
                         )}
-                        {(
-                            ["blitz", "rapid", "live", "correspondence"] as JGOFTimeControlSpeed[]
-                        ).map((speed) => {
-                            const opt =
-                                SPEED_OPTIONS[
-                                    game_clock === "multiple"
-                                        ? min_selected_size
-                                        : (board_size as any)
-                                ][speed];
-                            const min_opt = SPEED_OPTIONS[min_selected_size as any][speed];
-                            const max_opt = SPEED_OPTIONS[max_selected_size as any][speed];
+                        <ol role="list" className="unstyled">
+                            {(
+                                [
+                                    "blitz",
+                                    "rapid",
+                                    "live",
+                                    "correspondence",
+                                ] as JGOFTimeControlSpeed[]
+                            ).map((speed) => {
+                                const opt =
+                                    SPEED_OPTIONS[
+                                        game_clock === "multiple"
+                                            ? min_selected_size
+                                            : (board_size as any)
+                                    ][speed];
+                                const min_opt = SPEED_OPTIONS[min_selected_size as any][speed];
+                                const max_opt = SPEED_OPTIONS[max_selected_size as any][speed];
 
-                            return (
-                                <div
-                                    className={
-                                        "game-speed-option-container" +
-                                        (game_speed === speed ? " active" : "")
-                                    }
-                                    key={speed}
-                                >
-                                    <div className="game-speed-title">
-                                        <span className="description">
-                                            {selected_size_count > 1 && speed !== "correspondence"
-                                                ? `${
-                                                      min_opt.time_estimate
-                                                  } - ${max_opt.time_estimate.replace(
-                                                      /\u223c/,
-                                                      "",
-                                                  )}`
-                                                : opt.time_estimate}
-                                        </span>
-                                    </div>
-                                    <div
+                                const isActiveFisherSpeedSystem = isSpeedSystemActive(
+                                    speed,
+                                    "fischer",
+                                );
+
+                                return (
+                                    <li
                                         className={
-                                            "game-speed-buttons " +
-                                            (game_speed === speed && game_clock === "flexible"
-                                                ? "flexible-active"
-                                                : "")
+                                            "game-speed-option-container" +
+                                            (game_speed === speed ? " active" : "")
                                         }
+                                        key={speed}
                                     >
-                                        <button
+                                        <div className="game-speed-title">
+                                            <h3 className="description">
+                                                {selected_size_count > 1 &&
+                                                speed !== "correspondence"
+                                                    ? `${
+                                                          min_opt.time_estimate
+                                                      } - ${max_opt.time_estimate.replace(
+                                                          /\u223c/,
+                                                          "",
+                                                      )}`
+                                                    : opt.time_estimate}
+                                            </h3>
+                                        </div>
+                                        <div
                                             className={
-                                                "time-control-button" +
-                                                (isSpeedSystemActive(speed, "fischer")
-                                                    ? " active"
-                                                    : "") +
-                                                getActivityClass(board_size, speed, "fischer")
+                                                "game-speed-buttons " +
+                                                (game_speed === speed && game_clock === "flexible"
+                                                    ? "flexible-active"
+                                                    : "")
                                             }
-                                            disabled={
-                                                automatch_search_active ||
-                                                (game_clock === "multiple" &&
-                                                    speed === "correspondence")
-                                            }
-                                            onClick={() => {
-                                                toggleSpeedSystem(speed, "fischer");
-                                            }}
                                         >
-                                            {selected_size_count > 1 && speed !== "correspondence"
-                                                ? `${shortDurationString(
-                                                      min_opt.fischer.initial_time,
-                                                  ).replace(
-                                                      /[^0-9]+/g,
-                                                      "",
-                                                  )} - ${shortDurationString(
-                                                      max_opt.fischer.initial_time,
-                                                  )}`
-                                                : shortDurationString(opt.fischer.initial_time)}
-                                            {" + "}
-                                            {shortDurationString(opt.fischer.time_increment)}
-                                        </button>
-                                        {opt.byoyomi && (
-                                            <>
-                                                {game_clock === "flexible" &&
-                                                game_speed === speed ? (
-                                                    <span className="or">
-                                                        {pgettext(
-                                                            "Used on the play page to indicate that either time control preference may be used (5m+5s _or_ 5m+5x30s)",
-                                                            "or",
-                                                        )}
-                                                    </span>
-                                                ) : (
-                                                    <span className="or">&nbsp;&nbsp;</span>
-                                                )}
-                                                <button
-                                                    className={
-                                                        "time-control-button" +
-                                                        (isSpeedSystemActive(speed, "byoyomi")
-                                                            ? " active"
-                                                            : "") +
-                                                        getActivityClass(
-                                                            board_size,
-                                                            speed,
-                                                            "byoyomi",
-                                                        )
-                                                    }
-                                                    onClick={() => {
-                                                        toggleSpeedSystem(speed, "byoyomi");
-                                                    }}
-                                                    disabled={automatch_search_active}
-                                                >
-                                                    {selected_size_count > 1 &&
-                                                    speed !== "correspondence"
-                                                        ? `${shortDurationString(
-                                                              min_opt.byoyomi!.main_time,
-                                                          ).replace(
-                                                              /[^0-9]+/g,
-                                                              "",
-                                                          )} - ${shortDurationString(
-                                                              max_opt.byoyomi!.main_time,
-                                                          )}`
-                                                        : shortDurationString(
-                                                              opt.byoyomi.main_time,
-                                                          )}
-                                                    {" + "}
-                                                    {opt.byoyomi.periods}x
-                                                    {shortDurationString(
-                                                        opt.byoyomi.period_time,
-                                                    ).trim()}
-                                                </button>
-                                            </>
-                                        )}
-                                    </div>
-                                </div>
-                            );
-                        })}
+                                            <button
+                                                className={
+                                                    "time-control-button" +
+                                                    (isActiveFisherSpeedSystem ? " active" : "") +
+                                                    getActivityClass(board_size, speed, "fischer")
+                                                }
+                                                aria-pressed={
+                                                    isActiveFisherSpeedSystem ? "true" : "false"
+                                                }
+                                                disabled={
+                                                    automatch_search_active ||
+                                                    (game_clock === "multiple" &&
+                                                        speed === "correspondence")
+                                                }
+                                                onClick={() => {
+                                                    toggleSpeedSystem(speed, "fischer");
+                                                }}
+                                            >
+                                                {selected_size_count > 1 &&
+                                                speed !== "correspondence"
+                                                    ? `${shortDurationString(
+                                                          min_opt.fischer.initial_time,
+                                                      ).replace(
+                                                          /[^0-9]+/g,
+                                                          "",
+                                                      )} - ${shortDurationString(
+                                                          max_opt.fischer.initial_time,
+                                                      )}`
+                                                    : shortDurationString(opt.fischer.initial_time)}
+                                                {" + "}
+                                                {shortDurationString(opt.fischer.time_increment)}
+                                            </button>
+                                            {opt.byoyomi && (
+                                                <>
+                                                    {game_clock === "flexible" &&
+                                                    game_speed === speed ? (
+                                                        <span className="or">
+                                                            {pgettext(
+                                                                "Used on the play page to indicate that either time control preference may be used (5m+5s _or_ 5m+5x30s)",
+                                                                "or",
+                                                            )}
+                                                        </span>
+                                                    ) : (
+                                                        <span className="or">&nbsp;&nbsp;</span>
+                                                    )}
+                                                    <button
+                                                        className={
+                                                            "time-control-button" +
+                                                            (isSpeedSystemActive(speed, "byoyomi")
+                                                                ? " active"
+                                                                : "") +
+                                                            getActivityClass(
+                                                                board_size,
+                                                                speed,
+                                                                "byoyomi",
+                                                            )
+                                                        }
+                                                        aria-pressed={
+                                                            isSpeedSystemActive(speed, "byoyomi")
+                                                                ? "true"
+                                                                : "false"
+                                                        }
+                                                        onClick={() => {
+                                                            toggleSpeedSystem(speed, "byoyomi");
+                                                        }}
+                                                        disabled={automatch_search_active}
+                                                    >
+                                                        {selected_size_count > 1 &&
+                                                        speed !== "correspondence"
+                                                            ? `${shortDurationString(
+                                                                  min_opt.byoyomi!.main_time,
+                                                              ).replace(
+                                                                  /[^0-9]+/g,
+                                                                  "",
+                                                              )} - ${shortDurationString(
+                                                                  max_opt.byoyomi!.main_time,
+                                                              )}`
+                                                            : shortDurationString(
+                                                                  opt.byoyomi.main_time,
+                                                              )}
+                                                        {" + "}
+                                                        {opt.byoyomi.periods}x
+                                                        {shortDurationString(
+                                                            opt.byoyomi.period_time,
+                                                        ).trim()}
+                                                    </button>
+                                                </>
+                                            )}
+                                        </div>
+                                    </li>
+                                );
+                            })}
+                        </ol>
                     </div>
-                </div>
+                </section>
 
                 {/* Opponent */}
                 <div className="GameOption-cell">
@@ -989,7 +1014,7 @@ export function QuickMatch(): React.ReactElement {
                             }}
                         />
                     </div>
-                </div>
+                </section>
 
                 {/* Play Button */}
                 <div className="GameOption-cell">
