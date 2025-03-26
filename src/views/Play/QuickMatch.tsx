@@ -689,6 +689,7 @@ export function QuickMatch(): React.ReactElement {
     const boardSizeId = "section-board-size";
     const gameClockId = "section-game-clock";
     const handicapId = "section-handicap";
+    const opponentRankId = "section-opponent-rank";
 
     return (
         <>
@@ -1018,10 +1019,10 @@ export function QuickMatch(): React.ReactElement {
                     </div>
                 </section>
 
-                {/* Play Button */}
-                <div className="GameOption-cell">
+                {/* Opponent Rank */}
+                <section className="GameOption-cell" aria-labelledby={opponentRankId}>
                     <div className="GameOption opponent-rank-container">
-                        <span>{_("Opponent Rank")}</span>
+                        <h2 id={opponentRankId}>{_("Opponent Rank")}</h2>
                         <div className="opponent-rank-range">
                             <Select
                                 classNamePrefix="ogs-react-select"
@@ -1106,7 +1107,7 @@ export function QuickMatch(): React.ReactElement {
                             />
                         </div>
                     </div>
-                </div>
+                </section>
             </div>
 
             <div className="PlayButton-container">
