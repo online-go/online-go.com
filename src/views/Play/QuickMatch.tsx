@@ -685,82 +685,94 @@ export function QuickMatch(): React.ReactElement {
         setHandicaps("standard");
     }
 
+    // ids for accessibility
+    const boardSizeId = "section-board-size";
+
     return (
         <>
             <h1 className="sr-only">Plays Go – Find a Game</h1>
             <div id="QuickMatch">
                 {/* Board Size */}
-                <div className="GameOption-cell">
-                    <div className="GameOption BoardSize-header">
+                <section className="GameOption-cell" aria-labelledby={boardSizeId}>
+                    <h2 id={boardSizeId} className="GameOption BoardSize-header">
                         <span>{_("Board Size")}</span>
-                    </div>
+                    </h2>
 
-                    <div style={{ textAlign: "center" }}>
-                        {(["9x9", "13x13", "19x19"] as Size[]).map((s) => (
-                            <button
-                                className={
-                                    "btn size-button " +
-                                    (isSizeActive(s) ? "active " : "") +
-                                    getActivityClass(s)
-                                }
-                                key={s}
-                                disabled={automatch_search_active}
-                                onClick={() => {
-                                    toggleSize(s);
-                                }}
-                            >
-                                {s}
-                            </button>
-                        ))}
-                    </div>
+                    <ul role="list" className="boardSize-picker-list">
+                        {(["9x9", "13x13", "19x19"] as Size[]).map((s) => {
+                            const isActive = isSizeActive(s);
+                            return (
+                                <li>
+                                    <button
+                                        className={
+                                            "btn size-button " +
+                                            (isActive ? "active " : "") +
+                                            getActivityClass(s)
+                                        }
+                                        key={s}
+                                        disabled={automatch_search_active}
+                                        onClick={() => {
+                                            toggleSize(s);
+                                        }}
+                                        aria-pressed={isActive ? "true" : "false"}
+                                        aria-label={`${_("Board Size")}: ${s}`}
+                                    >
+                                        {s}
+                                    </button>
+                                </li>
+                            );
+                        })}
+                    </ul>
 
-                    {game_clock === "multiple" ? (
-                        selected_size_count > 1 ? (
-                            <span className="Multi-MiniGoban-container">
-                                {["19x19", "13x13", "9x9"].map(
-                                    (s) =>
-                                        multiple_sizes[s as keyof typeof multiple_sizes] && (
-                                            <span key={s}>
-                                                <MiniGoban
-                                                    width={parseInt(s)}
-                                                    height={parseInt(s)}
-                                                    displayWidth={150}
-                                                    labels_positioning="all"
-                                                    noLink={true}
-                                                    json={{
-                                                        width: parseInt(s),
-                                                        height: parseInt(s),
-                                                    }}
-                                                />
-                                            </span>
-                                        ),
-                                )}
-                            </span>
+                    <div aria-hidden={true}>
+                        {game_clock === "multiple" ? (
+                            selected_size_count > 1 ? (
+                                <span className="Multi-MiniGoban-container">
+                                    {["19x19", "13x13", "9x9"].map(
+                                        (s) =>
+                                            multiple_sizes[s as keyof typeof multiple_sizes] && (
+                                                <span key={s}>
+                                                    <MiniGoban
+                                                        width={parseInt(s)}
+                                                        height={parseInt(s)}
+                                                        displayWidth={150}
+                                                        labels_positioning="all"
+                                                        noLink={true}
+                                                        json={{
+                                                            width: parseInt(s),
+                                                            height: parseInt(s),
+                                                        }}
+                                                    />
+                                                </span>
+                                            ),
+                                    )}
+                                </span>
+                            ) : (
+                                <MiniGoban
+                                    width={parseInt(min_selected_size)}
+                                    height={parseInt(min_selected_size)}
+                                    labels_positioning="all"
+                                    noLink={true}
+                                    json={{
+                                        width: parseInt(min_selected_size),
+                                        height: parseInt(min_selected_size),
+                                    }}
+                                />
+                            )
                         ) : (
                             <MiniGoban
-                                width={parseInt(min_selected_size)}
-                                height={parseInt(min_selected_size)}
+                                width={parseInt(board_size)}
+                                height={parseInt(board_size)}
                                 labels_positioning="all"
                                 noLink={true}
                                 json={{
-                                    width: parseInt(min_selected_size),
-                                    height: parseInt(min_selected_size),
+                                    width: parseInt(board_size),
+                                    height: parseInt(board_size),
                                 }}
                             />
-                        )
-                    ) : (
-                        <MiniGoban
-                            width={parseInt(board_size)}
-                            height={parseInt(board_size)}
-                            labels_positioning="all"
-                            noLink={true}
-                            json={{
-                                width: parseInt(board_size),
-                                height: parseInt(board_size),
-                            }}
-                        />
-                    )}
-                </div>
+                        )}
+                    </div>
+                </section>
 
                 {/* Game Speed */}
                 <div className="GameOption-cell">
