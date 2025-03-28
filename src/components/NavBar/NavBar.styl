@@ -215,7 +215,7 @@ header.NavBar {
 
     /* mobile */
     @media only screen and (max-width: hamburger-cutoff) {
-        .left {
+        &>.left {
             display: none !important;
         }
 
@@ -317,7 +317,7 @@ header.NavBar {
             }
         }
 
-        &.hamburger-expanded .left {
+        &.hamburger-expanded>.left {
             display: inline !important;
 
             themed: background-color navbar-background-color;
@@ -442,6 +442,7 @@ header.NavBar {
         width: 100%;
         text-align: left;
         margin: 0;
+        padding: 0;
         box-shadow: none;
 
         &:focus {
@@ -476,7 +477,7 @@ header.NavBar {
         margin-right: 1rem;
     }
 
-    .left {
+    >.left {
         & > ul {
             display: flex;
             align-items: center;
@@ -486,7 +487,7 @@ header.NavBar {
         }
     }
 
-    .left, .Menu {
+    >.left, .Menu {
         .Menu-title {
             display: inline-flex;
             line-height: navbar-height;
@@ -598,6 +599,9 @@ header.NavBar {
         user-select: none;
         z-index: z.nav-menu.menu;
         box-shadow: -2px 2px 1px 0px rgba(0, 0, 0, 0.16);
+        list-style: none;
+        margin: 0;
+        padding: 0;
 
         .NotificationList {
             margin-bottom: 1rem;
