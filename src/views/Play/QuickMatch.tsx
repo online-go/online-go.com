@@ -701,7 +701,7 @@ export function QuickMatch(): React.ReactElement {
                         <h2>{_("Board Size")}</h2>
                     </div>
 
-                    <ol role="list" className="boardSize-picker-list">
+                    <ol className="boardSize-picker-list unstyled">
                         {(["9x9", "13x13", "19x19"] as Size[]).map((s) => {
                             const isActive = isSizeActive(s);
                             return (
@@ -825,7 +825,7 @@ export function QuickMatch(): React.ReactElement {
                                 {_("Select all the settings you are comfortable playing with.")}
                             </div>
                         )}
-                        <ol role="list" className="unstyled">
+                        <ol className="unstyled">
                             {(
                                 [
                                     "blitz",
@@ -1126,18 +1126,32 @@ export function QuickMatch(): React.ReactElement {
                 {/* Human */}
                 {automatch_manager.active_live_automatcher && (
                     <div className="finding-game-container">
+                        <span className="sr-only">
+                            {pgettext(
+                                "current status of game search, by 'Searching for game' ",
+                                "Current status:",
+                            )}{" "}
+                        </span>
+                        {_("Searching for game...")}
                         <LoadingButton
-                            className="success sm"
+                            className="danger sm"
                             loading={true}
                             onClick={cancelActiveAutomatch}
+                            autoFocus={true}
                         >
-                            {pgettext("Cancel automatch", "Searching for game...")}
+                            {pgettext("Cancel automatch", "Cancel search")}
                         </LoadingButton>
                     </div>
                 )}
 
                 {correspondence_spinner && (
                     <div>
+                        <span className="sr-only">
+                            {pgettext(
+                                "current status of game search, by 'Searching for game' ",
+                                "Current status:",
+                            )}{" "}
+                        </span>
                         <div className="automatch-header">{_("Finding you a game...")}</div>
                         <div className="automatch-settings-corr">
                             {_(
