@@ -21,8 +21,10 @@ import { cmDontNotifyEscalatedAiTest } from "./cm-dont-notify-escalated-ai";
 import { cmVoteOnOwnReportTest } from "./cm-vote-on-own-report";
 import { cmWarnFirstTurnEscapersTest } from "./cm-auto-warn-first-turn-escaper";
 import { cmShowOnlyPostEscalationVotesTest } from "./cm-show-only-post-escalation-votes";
+import { cmWarnFirstTurnDisconnectorTest } from "./cm-auto-warn-first-turn-disconnector";
 
 ogsTest.describe("@CM Community Moderation Tests", () => {
+    ogsTest("We should warn first turn disconnectors", cmWarnFirstTurnDisconnectorTest);
     ogsTest("CM should be able to vote on their own report", cmVoteOnOwnReportTest);
     ogsTest("We should not notify escalated AI reports", cmDontNotifyEscalatedAiTest);
     ogsTest("We should warn first turn escapers", cmWarnFirstTurnEscapersTest);
