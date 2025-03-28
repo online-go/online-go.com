@@ -25,42 +25,49 @@
  * - E2E_CM_OTHER_VOOR : The other person in that game (who's name must not match E2E_CM_VOOR_! See below!)
  */
 
-import { Browser, expect } from "@playwright/test";
+import { Browser, TestInfo, expect } from "@playwright/test";
 
 import { expectOGSClickableByName } from "@helpers/matchers";
 import { goToUsersGame, reportUser, setupSeededUser } from "@helpers/user-utils";
 
-export const cmVoteOnOwnReportTest = async ({ browser }: { browser: Browser }) => {
-    const { userPage: reporterPage } = await setupSeededUser(browser, "E2E_CM_VOOR_REPORTER");
+import { withIncidentIndicatorLock } from "@helpers/report-utils";
 
-    await goToUsersGame(reporterPage, "E2E_CM_VOOR_REPORTED", "E2E CM VOOR Game");
+export const cmVoteOnOwnReportTest = async (
+    { browser }: { browser: Browser },
+    testInfo: TestInfo,
+) => {
+    await withIncidentIndicatorLock(testInfo, async () => {
+        const { userPage: reporterPage } = await setupSeededUser(browser, "E2E_CM_VOOR_REPORTER");
 
-    // ... and report the user
-    // (The username is truncated inside the player card!  So the "other player" name must not match here!)
-    await reportUser(reporterPage, "E2E_CM_VOOR_", "escaping", "E2E test reporting an escaper");
+        await goToUsersGame(reporterPage, "E2E_CM_VOOR_REPORTED", "E2E CM VOOR Game");
 
-    // Go to the report page
-    await reporterPage.goto("/reports-center");
-    const myReports = reporterPage.getByText("My Own Reports");
-    await expect(myReports).toBeVisible();
-    await myReports.click();
+        // ... and report the user
+        // (The username is truncated inside the player card!  So the "other player" name must not match here!)
+        await reportUser(reporterPage, "E2E_CM_VOOR_", "escaping", "E2E test reporting an escaper");
 
-    // We assume that the report is the first one in the list
-    const reportButton = reporterPage.locator(".report-id > button");
-    await reportButton.click();
+        // Go to the report page
+        await reporterPage.goto("/reports-center");
+        const myReports = reporterPage.getByText("My Own Reports");
+        await expect(myReports).toBeVisible();
+        await myReports.click();
 
-    // Select an option...
-    await reporterPage.locator('.action-selector input[type="radio"]').first().click();
+        // We assume that the report is the first one in the list
+        const reportButton = reporterPage.locator(".report-id > button");
+        await reportButton.click();
 
-    // ... then we should be allowed to vote.
+        // Select an option...
+        await reporterPage.locator('.action-selector input[type="radio"]').first().click();
 
-    await expectOGSClickableByName(reporterPage, /Vote$/);
+        // ... then we should be allowed to vote.
 
-    // .. but instead, let's cancel this report, to tidy up.
+        await expectOGSClickableByName(reporterPage, /Vote$/);
 
-    await myReports.click();
-    const cancelButton = await expectOGSClickableByName(reporterPage, /Cancel$/);
-    await cancelButton.click();
+        // .. but instead, let's cancel this report, to tidy up.
 
-    await expect(reportButton).toBeHidden();
+        await myReports.click();
+        const cancelButton = await expectOGSClickableByName(reporterPage, /Cancel$/);
+        await cancelButton.click();
+
+        await expect(reportButton).toBeHidden();
+    });
 };

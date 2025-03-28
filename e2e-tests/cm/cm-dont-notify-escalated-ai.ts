@@ -25,7 +25,7 @@
  * - E2E_CM_DNEA_AI_ASSESSOR : CM AI Assessor who should not be notified
  */
 
-import { Browser } from "@playwright/test";
+import { Browser, TestInfo } from "@playwright/test";
 
 import {
     assertIncidentReportIndicatorActive,
@@ -40,66 +40,73 @@ import {
 import { expectOGSClickableByName } from "@helpers/matchers";
 import { expect } from "@playwright/test";
 
-export const cmDontNotifyEscalatedAiTest = async ({ browser }: { browser: Browser }) => {
-    const { userPage: reporterPage } = await prepareNewUser(
-        browser,
-        newTestUsername("CmDontNotRep"), // cspell:disable-line
-        "test",
-    );
+import { withIncidentIndicatorLock } from "@helpers/report-utils";
 
-    // Report someone for AI use
-    await goToUsersGame(reporterPage, "E2E_CM_DNEA_AI_ACCUSED", "E2E CM DNEA Game");
-
-    await reportUser(
-        reporterPage,
-        "E2E_CM_DNEA_AI_ACCUSED",
-        "ai_use",
-        "E2E test reporting AI use: I'm sure he cheated!", // min 40 chars
-    );
-
-    // Vote the report into moderation queue
-
-    const aiAssessors = ["E2E_CM_DNEA_AI_V1", "E2E_CM_DNEA_AI_V2", "E2E_CM_DNEA_AI_V3"];
-
-    const aiAssessorContexts = [];
-    for (const aiUser of aiAssessors) {
-        const { seededCMPage: aiCMPage, seededCMContext: aiContext } = await setupSeededCM(
+export const cmDontNotifyEscalatedAiTest = async (
+    { browser }: { browser: Browser },
+    testInfo: TestInfo,
+) => {
+    await withIncidentIndicatorLock(testInfo, async () => {
+        const { userPage: reporterPage } = await prepareNewUser(
             browser,
-            aiUser,
+            newTestUsername("CmDontNotRep"), // cspell:disable-line
+            "test",
         );
 
-        aiAssessorContexts.push(aiContext); // keep them alive for the duration of the test, for debugging
+        // Report someone for AI use
+        await goToUsersGame(reporterPage, "E2E_CM_DNEA_AI_ACCUSED", "E2E CM DNEA Game");
 
-        const indicator = await assertIncidentReportIndicatorActive(aiCMPage, 1);
+        await reportUser(
+            reporterPage,
+            "E2E_CM_DNEA_AI_ACCUSED",
+            "ai_use",
+            "E2E test reporting AI use: I'm sure he cheated!", // min 40 chars
+        );
 
-        await indicator.click();
+        // Vote the report into moderation queue
 
-        await expect(aiCMPage.getByRole("heading", { name: "Reports Center" })).toBeVisible();
+        const aiAssessors = ["E2E_CM_DNEA_AI_V1", "E2E_CM_DNEA_AI_V2", "E2E_CM_DNEA_AI_V3"];
 
-        await expect(
-            aiCMPage.getByText("E2E test reporting AI use: I'm sure he cheated!"),
-        ).toBeVisible();
+        const aiAssessorContexts = [];
+        for (const aiUser of aiAssessors) {
+            const { seededCMPage: aiCMPage, seededCMContext: aiContext } = await setupSeededCM(
+                browser,
+                aiUser,
+            );
 
-        // Select the definite AI option...
-        await aiCMPage.locator('.action-selector input[type="radio"]').first().click();
+            aiAssessorContexts.push(aiContext); // keep them alive for the duration of the test, for debugging
 
-        // ... then we should be allowed to vote.
+            const indicator = await assertIncidentReportIndicatorActive(aiCMPage, 1);
 
-        const voteButton = await expectOGSClickableByName(aiCMPage, /Vote$/);
-        await voteButton.click();
-    }
+            await indicator.click();
 
-    // Now we're going to check that the another CM AI Assessor doesn't get notified
-    const { seededCMPage: aiCMPage } = await setupSeededCM(browser, "E2E_CM_DNEA_AI_ASSESSOR");
+            await expect(aiCMPage.getByRole("heading", { name: "Reports Center" })).toBeVisible();
 
-    await assertIncidentReportIndicatorInactive(aiCMPage);
+            await expect(
+                aiCMPage.getByText("E2E test reporting AI use: I'm sure he cheated!"),
+            ).toBeVisible();
 
-    // reporter cleans up their report
-    await reporterPage.goto("/reports-center");
-    const myReports = reporterPage.getByText("My Own Reports");
-    await expect(myReports).toBeVisible();
-    await myReports.click();
+            // Select the definite AI option...
+            await aiCMPage.locator('.action-selector input[type="radio"]').first().click();
 
-    const cancelButton = await expectOGSClickableByName(reporterPage, /Cancel$/);
-    await cancelButton.click();
+            // ... then we should be allowed to vote.
+
+            const voteButton = await expectOGSClickableByName(aiCMPage, /Vote$/);
+            await voteButton.click();
+        }
+
+        // Now we're going to check that the another CM AI Assessor doesn't get notified
+        const { seededCMPage: aiCMPage } = await setupSeededCM(browser, "E2E_CM_DNEA_AI_ASSESSOR");
+
+        await assertIncidentReportIndicatorInactive(aiCMPage);
+
+        // reporter cleans up their report
+        await reporterPage.goto("/reports-center");
+        const myReports = reporterPage.getByText("My Own Reports");
+        await expect(myReports).toBeVisible();
+        await myReports.click();
+
+        const cancelButton = await expectOGSClickableByName(reporterPage, /Cancel$/);
+        await cancelButton.click();
+    });
 };
