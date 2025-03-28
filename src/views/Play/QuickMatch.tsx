@@ -1125,12 +1125,6 @@ export function QuickMatch(): React.ReactElement {
                 {/* Human */}
                 {automatch_manager.active_live_automatcher && (
                     <div className="finding-game-container">
-                        <span className="sr-only">
-                            {pgettext(
-                                "current status of game search, by 'Searching for game' ",
-                                "Current status:",
-                            )}{" "}
-                        </span>
                         {_("Searching for game...")}
                         <LoadingButton
                             className="danger sm"
@@ -1145,12 +1139,6 @@ export function QuickMatch(): React.ReactElement {
 
                 {correspondence_spinner && (
                     <div>
-                        <span className="sr-only">
-                            {pgettext(
-                                "current status of game search, by 'Searching for game' ",
-                                "Current status:",
-                            )}{" "}
-                        </span>
                         <div className="automatch-header">{_("Finding you a game...")}</div>
                         <div className="automatch-settings-corr">
                             {_(
