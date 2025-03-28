@@ -705,14 +705,13 @@ export function QuickMatch(): React.ReactElement {
                         {(["9x9", "13x13", "19x19"] as Size[]).map((s) => {
                             const isActive = isSizeActive(s);
                             return (
-                                <li>
+                                <li key={s}>
                                     <button
                                         className={
                                             "btn size-button " +
                                             (isActive ? "active " : "") +
                                             getActivityClass(s)
                                         }
-                                        key={s}
                                         disabled={automatch_search_active}
                                         onClick={() => {
                                             toggleSize(s);
