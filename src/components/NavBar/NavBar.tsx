@@ -525,9 +525,9 @@ export function NavBar(): React.ReactElement {
 
                 {/* Right Nav drop down on mobile */}
                 {right_nav_active && (
-                    <div className="RightNav">
+                    <ul className="RightNav">
                         <ProfileAndQuickSettingsBits settingsNavLink={settingsNavLink} />
-                    </div>
+                    </ul>
                 )}
             </header>
         </MenuContext.Provider>

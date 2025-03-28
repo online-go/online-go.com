@@ -58,6 +58,12 @@
         align-content: stretch;
         justify-content: space-between;
         align-items: center;
+
+    }
+
+    .boardSize-picker-list {
+        justify-content: center;
+        display flex;
     }
 
     .automatch-row-container {
@@ -183,6 +189,7 @@
     }
 
     .GameOption {
+        margin-top: 0;
         margin-bottom: 1rem;
         display: flex;
         justify-content: space-between;
@@ -192,6 +199,11 @@
         flex-wrap: wrap;
         font-weight: bold;
         font-size: 1.3rem;
+
+        h2 {
+            font-size: inherit;
+            margin: 0;
+        }
 
         .dropdown {
             display: inline-flex;
@@ -259,6 +271,8 @@
             // padding-right: 1rem;
             font-style: italic;
             font-size: 0.9rem;
+            margin: 0;
+            font-weight: normal;
         }
     }
 
@@ -487,8 +501,9 @@
         width: 100%;
         height: 100%;
         display: flex;
-        flex-direction: row;
-        justify-content: space-around;
+        flex-direction: column;
+        gap: 1rem;
+        justify-content: center;
         align-items: center;
         // align-content: center;
         padding-bottom: 2.5rem;
@@ -503,7 +518,6 @@
         }
 
         button {
-            margin-left: 2rem;
             font-size: 1.1rem;
         }
     }
