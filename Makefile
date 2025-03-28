@@ -18,7 +18,7 @@ local-dev: node_modules .husky
 
 node_modules: package.json
 	npm ls yarn || npm install yarn
-	npm run yarn install
+	yarn install
 
 pretty prettier lint-fix:
 	npm run prettier
