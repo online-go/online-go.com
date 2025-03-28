@@ -18,6 +18,7 @@
 // (No seeded data in use)
 
 import { Browser } from "@playwright/test";
+import { expect } from "@playwright/test";
 
 import { newTestUsername, prepareNewUser } from "@helpers/user-utils";
 
@@ -28,24 +29,24 @@ import {
     defaultChallengeSettings,
 } from "@helpers/game-utils";
 
-export const cmWarnFirstTurnEscapersTest = async ({ browser }: { browser: Browser }) => {
+export const cmDontAutoWarnBlitzTest = async ({ browser }: { browser: Browser }) => {
     const { userPage: challengerPage } = await prepareNewUser(
         browser,
-        newTestUsername("CmFTEChall"), // cspell:disable-line
+        newTestUsername("CmDWBChall"), // cspell:disable-line
         "test",
     );
 
-    const escaperUsername = newTestUsername("CmFTEEscaper"); // cspell:disable-line
+    const escaperUsername = newTestUsername("CmDWBEscaper"); // cspell:disable-line
     const { userPage: escaperPage } = await prepareNewUser(browser, escaperUsername, "test");
 
     // Challenger challenges the escaper
     await createDirectChallenge(challengerPage, escaperUsername, {
         ...defaultChallengeSettings,
         gameName: "E2E First Turn Escape Game",
-        speed: "live",
+        speed: "blitz",
         timeControl: "byoyomi",
-        mainTime: "45",
-        timePerPeriod: "10",
+        mainTime: "1",
+        timePerPeriod: "1",
         periods: "1",
     });
 
@@ -64,21 +65,11 @@ export const cmWarnFirstTurnEscapersTest = async ({ browser }: { browser: Browse
     // Now challenger is waiting for escaper ... eventually escaper times out
     // and challenger gets the ack that we are looking for
 
-    console.log("cmWarnFirstTurnEscaper waiting escaper timeout (about a minute)...");
-    await challengerPage
-        .locator(
-            '.AccountWarningAck .canned-message:has-text("We\'ve noticed that the other player left game")',
-        )
-        .waitFor();
-    await challengerPage.locator(".AccountWarningAck button.primary").click();
+    console.log(
+        "cmDontAutoWarnBlitzTest waiting escaper timeout to not have warning (about a minute)",
+    );
 
-    // And escaper should have warning...
-    await escaperPage
-        .locator('.AccountWarning .canned-message:has-text("We\'ve noticed that you joined game")')
-        .waitFor();
-
-    await escaperPage.locator("#AccountWarning-accept:not([disabled])").waitFor();
-    await escaperPage.locator("#AccountWarning-accept").check();
-    await escaperPage.locator(".AccountWarning button.primary:not([disabled])").waitFor();
-    await escaperPage.locator(".AccountWarning button.primary").click();
+    // Wait a minute, then verify no warning was generated
+    await challengerPage.waitForTimeout(60000);
+    await expect(challengerPage.locator(".AccountWarningAck")).not.toBeVisible();
 };
