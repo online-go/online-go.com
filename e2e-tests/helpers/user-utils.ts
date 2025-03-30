@@ -203,6 +203,37 @@ export const reportUser = async (page: Page, username: string, type: string, not
     await expect(OK).toBeHidden();
 };
 
+export const reportPlayerByColor = async (
+    page: Page,
+    color: string,
+    type: string,
+    notes: string,
+) => {
+    const playerLink = page.locator(`${color}.player-name-container a.Player`);
+    await expect(playerLink).toBeVisible();
+    await playerLink.hover(); // Ensure the dropdown stays open
+    await playerLink.click();
+
+    await expect(page.getByRole("button", { name: /Report$/ })).toBeVisible();
+    await page.getByRole("button", { name: /Report$/ }).click();
+
+    await expect(page.getByText("Request Moderator Assistance")).toBeVisible();
+
+    await page.selectOption(".type-picker select", { value: type }); // cspell:disable-line
+
+    const notesBox = page.locator(".notes");
+    await notesBox.fill(notes);
+
+    const submitButton = await expectOGSClickableByName(page, /Report User$/);
+    await submitButton.click();
+
+    await expect(page.getByText("Thanks for the report!")).toBeVisible();
+    const OK = await expectOGSClickableByName(page, "OK");
+    // tidy up
+    await OK.click();
+    await expect(OK).toBeHidden();
+};
+
 export const assertIncidentReportIndicatorActive = async (page: Page, count: number) => {
     const indicator = page.locator(".IncidentReportIndicator");
     const icon = indicator.locator(".fa-exclamation-triangle.active");
