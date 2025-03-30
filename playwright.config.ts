@@ -52,7 +52,7 @@ export default defineConfig({
     // TBD UNCOMMENT
     //workers: process.env.CI ? 1 : undefined,
 
-    workers: 4, // 1 is best for test development: easier to debug
+    workers: 2, // 1 is best for test development: easier to debug
 
     /* Reporter to use. See https://playwright.dev/docs/test-reporters */
     reporter: [

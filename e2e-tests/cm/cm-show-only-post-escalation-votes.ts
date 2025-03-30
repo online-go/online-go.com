@@ -58,8 +58,8 @@ export const cmShowOnlyPostEscalationVotesTest = async (
         await reportUser(
             reporterPage,
             "E2E_CM_SOPEV_OTHER",
-            "escaping",
-            "E2E test - SOPEV reporting escaping!",
+            "score_cheating",
+            "E2E test - SOPEV reporting score cheating!",
         );
 
         // Now put a pre-escalation vote on the report
@@ -78,7 +78,7 @@ export const cmShowOnlyPostEscalationVotesTest = async (
         ).toBeVisible();
 
         await expect(
-            initialVoterPage.getByText("E2E test - SOPEV reporting escaping!"),
+            initialVoterPage.getByText("E2E test - SOPEV reporting score cheating!"),
         ).toBeVisible();
 
         // Doesn't matter what option we vote for actually, first is handy
@@ -99,7 +99,9 @@ export const cmShowOnlyPostEscalationVotesTest = async (
 
         await expect(escalatorPage.getByRole("heading", { name: "Reports Center" })).toBeVisible();
 
-        await expect(escalatorPage.getByText("E2E test - SOPEV reporting escaping!")).toBeVisible();
+        await expect(
+            escalatorPage.getByText("E2E test - SOPEV reporting score cheating!"),
+        ).toBeVisible();
 
         // escalation is always the last option - yay that's handy
         await escalatorPage.locator('.action-selector input[type="radio"]').last().click();
