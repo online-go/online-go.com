@@ -63,9 +63,12 @@ export const registerNewUser = async (browser: Browser, username: string, passwo
 export const prepareNewUser = async (browser: Browser, username: string, password: string) => {
     const { userPage, userContext } = await registerNewUser(browser, username, password);
 
-    // Skip the "choose rank" business
-    const skipButton = await expectOGSClickableByName(userPage, /Skip$/);
-    await skipButton.click();
+    // We need to choose _something_ to get rid of this on the Profile page:
+    // typically, we don't want to see that.
+    const chooseButton = await expectOGSClickableByName(userPage, /Basic/);
+    await chooseButton.click();
+
+    await expect(userPage.getByText("You're not currently playing any games")).toBeVisible();
 
     await turnOffDynamicHelp(userPage); // the popups can get in the way.
 
@@ -73,6 +76,21 @@ export const prepareNewUser = async (browser: Browser, username: string, passwor
         userPage,
         userContext,
     };
+};
+
+export const goToProfile = async (userPage: Page) => {
+    const menuLink = userPage.locator('nav[aria-label="Profile"] .Menu-title');
+    await expect(menuLink).toBeVisible();
+    await expect(menuLink).toBeEnabled();
+    await menuLink.hover(); // Ensure the dropdown stays open
+    await menuLink.click();
+
+    const profileLink = userPage.getByRole("link", { name: "Profile" });
+    await expect(profileLink).toBeVisible();
+    await expect(profileLink).toBeEnabled();
+    await profileLink.click();
+
+    await userPage.mouse.move(0, 0); // Move mouse away to ensure menu closes
 };
 
 export const logoutUser = async (page: Page) => {
