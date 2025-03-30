@@ -396,20 +396,27 @@ export function User(props: { user_id?: number }): React.ReactElement {
                                                 />
                                             </h3>
                                             {renderRatingGrid(show_ratings_in_rating_grid)}
-                                            <button
-                                                className="btn-group sm toggle-chart"
+                                            <div
+                                                className="toggle-container"
                                                 onClick={() =>
                                                     setShowDistributionChart(!showDistributionChart)
                                                 }
                                             >
-                                                <i
-                                                    className="speed-icon fa fa-bar-chart"
-                                                    title={_("Global Distribution")}
-                                                />
-                                                {showDistributionChart
-                                                    ? _(" Hide Global Distribution")
-                                                    : _(" Compare to Global Distribution")}
-                                            </button>
+                                                <div className="toggle-indicator">
+                                                    {showDistributionChart ? "▼" : "▶"}
+                                                </div>
+                                                <span className="toggle-label">
+                                                    {showDistributionChart
+                                                        ? pgettext(
+                                                              "label for button to hide the global distribution chart",
+                                                              "Hide distribution",
+                                                          )
+                                                        : pgettext(
+                                                              "label for button to show the global distribution chart",
+                                                              "Compare to Global Distribution",
+                                                          )}
+                                                </span>
+                                            </div>
                                         </>
                                     )}
                                 </div>
