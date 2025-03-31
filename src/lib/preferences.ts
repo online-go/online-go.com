@@ -120,6 +120,7 @@ export const defaults = {
     "show-offline-friends": true,
     "show-ratings-in-rating-grid": false,
     "show-seek-graph": false,
+    "show-rank-distribution-graph": false,
 
     "show-tournament-indicator": true, // implicitly on desktop
     "show-tournament-indicator-on-mobile": false,

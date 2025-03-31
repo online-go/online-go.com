@@ -55,6 +55,7 @@ import { AvatarCard, AvatarCardEditableFields } from "./AvatarCard";
 import { ActivityCard } from "./ActivityCard";
 import { ActiveDroppedGameList } from "@/components/ActiveDroppedGameList";
 import { NewUserRankChooser } from "@/components/NewUserRankChooser";
+import { usePreference } from "@/lib/preferences";
 
 type RatingsSpeed = "overall" | "blitz" | "live" | "correspondence";
 type RatingsSize = 0 | 9 | 13 | 19;
@@ -73,7 +74,9 @@ export function User(props: { user_id?: number }): React.ReactElement {
     const [selected_size, setSelectedSize] = React.useState<RatingsSize>(0);
     const [resolved, setResolved] = React.useState(false);
     const [temporary_show_ratings, setTemporaryShowRatings] = React.useState(false);
-    const [showDistributionChart, setShowDistributionChart] = React.useState(false);
+    const [showDistributionChart, setShowDistributionChart] = usePreference(
+        "show-rank-distribution-graph",
+    );
     const [bot_ai, setBotAi] = React.useState("");
     const [bot_apikey, setBotApikey] = React.useState("");
     const [rating_chart_type_toggle_left, setRatingChartTypeToggleLeft] = React.useState<
@@ -396,20 +399,34 @@ export function User(props: { user_id?: number }): React.ReactElement {
                                                 />
                                             </h3>
                                             {renderRatingGrid(show_ratings_in_rating_grid)}
-                                            <button
-                                                className="btn-group sm toggle-chart"
+                                            <div
+                                                className="toggle-container"
                                                 onClick={() =>
                                                     setShowDistributionChart(!showDistributionChart)
                                                 }
                                             >
-                                                <i
-                                                    className="speed-icon fa fa-bar-chart"
-                                                    title={_("Global Distribution")}
-                                                />
-                                                {showDistributionChart
-                                                    ? _(" Hide Global Distribution")
-                                                    : _(" Compare to Global Distribution")}
-                                            </button>
+                                                <div className="toggle-indicator">
+                                                    {showDistributionChart ? "▼" : "▶"}
+                                                </div>
+                                                <span className="toggle-label">
+                                                    {showDistributionChart ? (
+                                                        <span>
+                                                            {pgettext(
+                                                                "label for button to hide the global distribution chart",
+                                                                "Hide distribution",
+                                                            )}
+                                                        </span>
+                                                    ) : (
+                                                        <span>
+                                                            <i className="speed-icon fa fa-bar-chart" />
+                                                            {pgettext(
+                                                                "label for button to show the global distribution chart",
+                                                                "Compare to Global Distribution",
+                                                            )}
+                                                        </span>
+                                                    )}
+                                                </span>
+                                            </div>
                                         </>
                                     )}
                                 </div>

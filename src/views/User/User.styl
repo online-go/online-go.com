@@ -123,6 +123,33 @@
         }
     }
 
+    .toggle-container {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        cursor: pointer;
+        justify-content: flex-end;
+        themed: color shade1;
+        font-size: 10pt;
+
+        .toggle-indicator {
+            display: flex;
+            align-items: center;
+            font-size: 0.7rem;
+            margin-top: 0.1rem; // just looks better with this
+        }
+
+        i {
+            font-size: 0.9rem;
+            margin-left: 0.2rem;
+            margin-right: 0.2rem;
+        }
+
+        .toggle-label {
+            display: flex;
+        }
+    }
+
     .activity-card > div {
         margin-bottom: 1em;
     }
@@ -153,7 +180,7 @@
     }
 
     td.browser_id {
-        @extends .monospace;
+        @extend .monospace;
         width: 7em;
         text-align: left;
         padding-right: 1em;
@@ -251,11 +278,11 @@
     }
 
     .library-won-result {
-        @extends .result-won;
+        @extend .result-won;
     }
 
     .library-lost-result {
-        @extends .result-lost;
+        @extend .result-lost;
     }
 
     .Dropzone {
