@@ -33,6 +33,7 @@ export type MessageIdAPI =
     | "ai_review_must_be_site_supporter"
     | "ai_review_must_be_player"
     | "ai_review_queue_full"
+    | "ai_review_already_requested"
     | "komi_invalid"
     | "test";
 

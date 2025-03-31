@@ -73,6 +73,9 @@ export function format_message(props: MessageProps): string {
                 "Please wait until your current reviews are completed before requesting more.",
             );
 
+        case "ai_review_already_requested":
+            return _("You have already requested an AI review for this game recently.");
+
         case "stone_already_placed_here":
         case "illegal_self_capture":
         case "illegal_ko_move":
