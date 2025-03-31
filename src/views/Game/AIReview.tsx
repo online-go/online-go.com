@@ -228,7 +228,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                             return b.strength - a.strength;
                         }
 
-                        return a.date - b.date;
+                        return new Date(b.date).getTime() - new Date(a.date).getTime();
                     });
                     //console.log("List: ", lst);
                     this.setSelectedAIReview(lst[0]);
