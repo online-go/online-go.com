@@ -17,7 +17,7 @@
 import "./RatingsChartDistribution.styl";
 import * as React from "react";
 import { ResponsiveLine } from "@nivo/line";
-import { _ } from "@/lib/translate";
+import { _, interpolate, pgettext } from "@/lib/translate";
 import { rating_to_rank, boundedRankString } from "@/lib/rank_utils";
 
 interface RatingsChartDistributionProps {
@@ -168,6 +168,36 @@ const createRatingDistribution = async (): Promise<{
     }
 };
 
+const findRatingPercentile = (
+    InputRating: number,
+    cumulativeData: Array<{ x: number; y: number }>,
+) => {
+    if (!cumulativeData || cumulativeData.length === 0) {
+        return null;
+    }
+    if (cumulativeData.length === 1) {
+        return InputRating >= cumulativeData[0].x ? 100 : 0;
+    }
+    // Handle out of bounds cases
+    if (InputRating <= cumulativeData[0].x) {
+        return 0;
+    }
+    if (InputRating >= cumulativeData[cumulativeData.length - 1].x) {
+        return 100;
+    }
+    // interpolation
+    for (let i = 0; i < cumulativeData.length - 1; i++) {
+        const curr = cumulativeData[i];
+        const next = cumulativeData[i + 1];
+        if (curr.x <= InputRating && next.x >= InputRating) {
+            const interpolatedY =
+                curr.y + ((InputRating - curr.x) * (next.y - curr.y)) / (next.x - curr.x);
+            return (interpolatedY / cumulativeData[cumulativeData.length - 1].y) * 100;
+        }
+    }
+    return null;
+};
+
 const RatingsChartDistribution: React.FC<RatingsChartDistributionProps> = ({
     myRating,
     otherRating,
@@ -249,15 +279,19 @@ const RatingsChartDistribution: React.FC<RatingsChartDistributionProps> = ({
             axisLeft={{
                 legend: chartLabel.players,
                 legendPosition: "middle",
-                legendOffset: -40,
                 tickValues: 5,
+                format: (value) => {
+                    return value.toLocaleString();
+                },
+                // added extra margin for large tick values
+                legendOffset: -30,
+                tickSize: 0,
+                tickPadding: -20,
             }}
             axisBottom={{
                 tickValues: 8,
                 format: (value) =>
-                    showRatings
-                        ? value.toString()
-                        : boundedRankString(rating_to_rank(value), false),
+                    showRatings ? value.toString() : boundedRankString(rating_to_rank(value), true),
             }}
             theme={getColoredAxis(line1Color)}
             xScale={{
@@ -409,8 +443,51 @@ const RatingsChartDistribution: React.FC<RatingsChartDistributionProps> = ({
         />
     );
 
+    let percentile: number | null = null;
+    if (otherRating && chartData?.cumulativeData?.[0]?.data) {
+        const calculatedPercentile = findRatingPercentile(
+            otherRating,
+            chartData.cumulativeData[0].data,
+        );
+        if (calculatedPercentile !== null) {
+            percentile = calculatedPercentile;
+        }
+    } else if (myRating && chartData?.cumulativeData?.[0]?.data) {
+        const calculatedPercentile = findRatingPercentile(
+            myRating,
+            chartData.cumulativeData[0].data,
+        );
+        if (calculatedPercentile !== null) {
+            percentile = calculatedPercentile;
+        }
+    }
+
     return (
         <div className="RatingsChartDistribution">
+            {percentile !== null && !isNaN(percentile) && (
+                <h4>
+                    {myRating
+                        ? interpolate(
+                              pgettext(
+                                  "player performance rating distribution",
+                                  "You are better than {{percentile}}% of players",
+                              ),
+                              {
+                                  percentile: percentile.toFixed(2),
+                              },
+                          )
+                        : interpolate(
+                              pgettext(
+                                  "player performance rating distribution",
+                                  "{{name}} is better than {{percentile}}% of players",
+                              ),
+                              {
+                                  name: otherPlayerName || _("User"),
+                                  percentile: percentile.toFixed(2),
+                              },
+                          )}
+                </h4>
+            )}
             <div className="wrapper">
                 <div className="graphContainer">
                     <FirstYAxisChart />
