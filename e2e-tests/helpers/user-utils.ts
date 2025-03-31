@@ -177,6 +177,17 @@ export const goToUsersGame = async (page: Page, username: string, gameName: stri
     await expect(page.locator(".Game")).toBeVisible();
 };
 
+export const goToUsersProfile = async (page: Page, username: string) => {
+    await page.fill(".OmniSearch-input", username);
+    await page.waitForSelector(".results .result");
+    await page.click(`.results .result:has-text('${username}')`);
+
+    // It's actually tricky to prove we're on the profile page.  Appearance of this will have to do.
+    const playerUsername = page.locator(".Player-username").getByText(username);
+    await expect(playerUsername).toBeVisible();
+    return playerUsername;
+};
+
 export const reportUser = async (page: Page, username: string, type: string, notes: string) => {
     const playerLink = page.locator(`a.Player:has-text("${username}")`);
     await expect(playerLink).toBeVisible();

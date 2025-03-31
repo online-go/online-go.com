@@ -26,7 +26,7 @@ import { _, pgettext, interpolate, llm_pgettext } from "@/lib/translate";
 import { post, del } from "@/lib/requests";
 import { Modal, openModal } from "@/components/Modal";
 import { socket } from "@/lib/sockets";
-import { rankString, amateurRanks, allRanks } from "@/lib/rank_utils";
+import { rankString, amateurRanks, allRanks, rankSelectorIndexToText } from "@/lib/rank_utils";
 import { CreatedChallengeInfo, RuleSet } from "@/lib/types";
 import { errorLogger, errorAlerter, rulesText, dup } from "@/lib/misc";
 import { PlayerIcon } from "@/components/PlayerIcon";
@@ -117,7 +117,6 @@ export interface RejectionDetails {
     };
 }
 
-// Add this type definition
 interface PreferredSettingOption {
     value: number; // index of the setting
     label: string; // challenge text description
@@ -1714,6 +1713,8 @@ export class ChallengeModalBody extends React.Component<
             }),
         );
 
+        const rank_min = this.state.conf.restrict_rank ? this.state.challenge.min_ranking : -1000;
+        const rank_max = this.state.conf.restrict_rank ? this.state.challenge.max_ranking : 1000;
         const selected =
             options.find(
                 (opt: PreferredSettingOption) =>
@@ -1721,6 +1722,8 @@ export class ChallengeModalBody extends React.Component<
                     opt.setting.game.width === this.state.challenge.game.width &&
                     opt.setting.game.height === this.state.challenge.game.height &&
                     opt.setting.game.handicap === this.state.challenge.game.handicap &&
+                    opt.setting.min_ranking === rank_min &&
+                    opt.setting.max_ranking === rank_max &&
                     JSON.stringify(opt.setting.game.time_control_parameters) ===
                         JSON.stringify(this.state.time_control),
             ) || null;
@@ -2255,12 +2258,13 @@ export function challengeRematch(
 export function challenge_text_description(challenge: ChallengeDetails) {
     const c = challenge;
     const g = "game" in challenge ? challenge.game : challenge;
-    let details_html = g.ranked ? _("Ranked") : _("Unranked");
+    let challenge_description = g.ranked ? _("Ranked") : _("Unranked");
 
     if (g.rengo) {
-        details_html += " " + (g.rengo_casual_mode ? _("casual rengo") : _("strict rengo"));
+        challenge_description +=
+            " " + (g.rengo_casual_mode ? _("casual rengo") : _("strict rengo"));
         if (c.rengo_auto_start > 0) {
-            details_html +=
+            challenge_description +=
                 ", " +
                 interpolate(_("auto-starting at {{auto_start}} players"), {
                     auto_start: c.rengo_auto_start,
@@ -2268,7 +2272,7 @@ export function challenge_text_description(challenge: ChallengeDetails) {
         }
     }
 
-    details_html +=
+    challenge_description +=
         ", " + g.width + "x" + g.height + ", " + interpolate(_("%s rules"), [rulesText(g.rules)]);
 
     const time_control =
@@ -2280,28 +2284,45 @@ export function challenge_text_description(challenge: ChallengeDetails) {
         if (time_control.system !== "none") {
             // This is gross and still needs refactoring, but preserves the old behavior
             const time_control_system = time_control.system;
-            details_html +=
+            challenge_description +=
                 ", " +
                 interpolate(_("%s clock: %s"), [
                     timeControlSystemText(time_control_system).toLocaleLowerCase(),
                     shortShortTimeControl(time_control),
                 ]);
         } else {
-            details_html += ", " + _("no time limits");
+            challenge_description += ", " + _("no time limits");
         }
 
         if (time_control.pause_on_weekends) {
-            details_html += ", " + _("pause on weekends");
+            challenge_description += ", " + _("pause on weekends");
         }
     }
 
-    details_html +=
+    challenge_description +=
         ", " +
         interpolate(_("%s handicap"), [g.handicap < 0 ? _("auto") : g.handicap]) +
         (g?.komi_auto !== "custom" || g.komi == null || typeof g.komi === "object"
             ? ""
             : ", " + interpolate(_("{{komi}} komi"), { komi: g.komi })) +
         (g.disable_analysis ? ", " + _("analysis disabled") : "");
+
+    // (In some places we use +/-1000 to represent "no rank limit)"
+
+    if (
+        c.min_ranking !== undefined &&
+        c.min_ranking > 0 &&
+        c.max_ranking !== undefined &&
+        c.max_ranking < 1000
+    ) {
+        challenge_description +=
+            ", " +
+            interpolate(_("ranks {{min}} to {{max}}"), {
+                min: rankSelectorIndexToText(c.min_ranking),
+                max: rankSelectorIndexToText(c.max_ranking),
+            });
+    }
+
     if (c.challenger_color !== "automatic") {
         let your_color = "";
 
@@ -2318,10 +2339,11 @@ export function challenge_text_description(challenge: ChallengeDetails) {
             your_color = _(c.challenger_color);
         }
 
-        details_html += ", " + interpolate(pgettext("color", "you play as %s"), [your_color]);
+        challenge_description +=
+            ", " + interpolate(pgettext("color", "you play as %s"), [your_color]);
     }
 
-    return details_html;
+    return challenge_description;
 }
 
 function isStandardBoardSize(board_size: string): boolean {

@@ -41,8 +41,8 @@ export default defineConfig({
     },
 
     /* Run tests in files in parallel */
-    fullyParallel: true, // turn off for easier debug
-
+    //fullyParallel: true,
+    fullyParallel: false, // for test development, easier to debug
     /* Fail the build on CI if you accidentally left test.only in the source code. */
     forbidOnly: !!process.env.CI,
     /* Retry on CI only */
@@ -52,7 +52,7 @@ export default defineConfig({
     // TBD UNCOMMENT
     //workers: process.env.CI ? 1 : undefined,
 
-    workers: 2, // 1 is best for test development: easier to debug
+    workers: 2, // for test development consider 1, easier to debug
 
     /* Reporter to use. See https://playwright.dev/docs/test-reporters */
     reporter: [

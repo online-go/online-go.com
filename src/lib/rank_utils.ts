@@ -452,3 +452,12 @@ export function effective_outcome(
         white_effective_stronger: white_effective_rating >= black_effective_rating,
     };
 }
+
+/**
+ * Converts a rank selector index to its text representation
+ * @param index The rank selector index (5-38)
+ * @returns The text representation of the rank
+ */
+export function rankSelectorIndexToText(index: number): string {
+    return rankString(index) + (index === 38 ? "+" : "");
+}
