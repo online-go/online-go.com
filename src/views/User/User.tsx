@@ -46,6 +46,7 @@ import { Flag } from "@/components/Flag";
 import { Markdown } from "@/components/Markdown";
 import { RatingsChart } from "@/components/RatingsChart";
 import { RatingsChartByGame } from "@/components/RatingsChartByGame";
+import { RatingsChartDistribution } from "@/components/RatingsChartDistribution";
 import { associations } from "@/lib/associations";
 import { Toggle } from "@/components/Toggle";
 import { AchievementList } from "@/components/Achievements";
@@ -72,6 +73,7 @@ export function User(props: { user_id?: number }): React.ReactElement {
     const [selected_size, setSelectedSize] = React.useState<RatingsSize>(0);
     const [resolved, setResolved] = React.useState(false);
     const [temporary_show_ratings, setTemporaryShowRatings] = React.useState(false);
+    const [showDistributionChart, setShowDistributionChart] = React.useState(false);
     const [bot_ai, setBotAi] = React.useState("");
     const [bot_apikey, setBotApikey] = React.useState("");
     const [rating_chart_type_toggle_left, setRatingChartTypeToggleLeft] = React.useState<
@@ -394,6 +396,20 @@ export function User(props: { user_id?: number }): React.ReactElement {
                                                 />
                                             </h3>
                                             {renderRatingGrid(show_ratings_in_rating_grid)}
+                                            <button
+                                                className="btn-group sm toggle-chart"
+                                                onClick={() =>
+                                                    setShowDistributionChart(!showDistributionChart)
+                                                }
+                                            >
+                                                <i
+                                                    className="speed-icon fa fa-bar-chart"
+                                                    title={_("Global Distribution")}
+                                                />
+                                                {showDistributionChart
+                                                    ? _(" Hide Global Distribution")
+                                                    : _(" Compare to Global Distribution")}
+                                            </button>
                                         </>
                                     )}
                                 </div>
@@ -401,7 +417,26 @@ export function User(props: { user_id?: number }): React.ReactElement {
                     </div>
                 </div>
             </div>
-
+            <div className="ratings-row">
+                {showDistributionChart && (
+                    <div className="ratings-chart">
+                        <RatingsChartDistribution
+                            myRating={
+                                viewer.id === user.id
+                                    ? (getUserRating(user, "overall", 0).rating || 0) | 0
+                                    : undefined
+                            }
+                            otherRating={
+                                viewer.id === user.id
+                                    ? undefined
+                                    : (getUserRating(user, "overall", 0).rating || 0) | 0
+                            }
+                            otherPlayerName={viewer.id === user.id ? undefined : user.username}
+                            showRatings={show_ratings_in_rating_grid ?? true}
+                        />
+                    </div>
+                )}
+            </div>
             {(!preferences.get("hide-ranks") || temporary_show_ratings) &&
                 (!user.professional || global_user.id === user.id) && (
                     <div className="ratings-row">

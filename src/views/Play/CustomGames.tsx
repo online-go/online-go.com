@@ -405,15 +405,24 @@ export function CustomGames(): React.ReactElement {
         });
     }, [live_list, cancelOpenChallenge]);
 
+    const customGamesHeadingTitle = pgettext("Games available to accept", "Available Games");
+
     if (!show_custom_games) {
         return (
-            <div>
+            <section aria-labelledby="CustomGamesTitle">
+                <h2 className="sr-only" id="CustomGamesTitle">
+                    {customGamesHeadingTitle}
+                </h2>
                 <div className="CustomGames--toggle-container">
-                    <button className="custom-games-toggle" onClick={toggleCustomGames}>
+                    <button
+                        className="custom-games-toggle"
+                        onClick={toggleCustomGames}
+                        aria-expanded="false"
+                    >
                         {_("Explore custom games")}
                     </button>
                 </div>
-            </div>
+            </section>
         );
     }
 
@@ -429,239 +438,263 @@ export function CustomGames(): React.ReactElement {
                 unfreezeChallenges,
             }}
         >
-            <div>
-                <div className="CustomGames--toggle-container showing-custom-games">
-                    <button className="custom-games-toggle" onClick={toggleCustomGames}>
-                        {_("Hide custom games")}
-                    </button>
-                    <button
-                        className="primary"
-                        disabled={disable_challenge_buttons}
-                        onClick={() => {
-                            challenge(undefined, undefined, undefined, undefined, undefined);
-                        }}
-                    >
-                        {_("Create a custom game")}
-                    </button>
-                </div>
-            </div>
-
-            <div id="CustomGames">
-                {liveOwnChallengePending() ? (
-                    <Card>
-                        <div className="automatch-header">{_("Waiting for opponent...")}</div>
-                        <div className="automatch-row-container">
-                            <div className="spinner">
-                                <div className="double-bounce1"></div>
-                                <div className="double-bounce2"></div>
-                            </div>
-                        </div>
-                        <div className="automatch-settings">
-                            <button className="danger sm" onClick={cancelOwnChallenges}>
-                                {pgettext("Cancel challenge", "Cancel")}
-                            </button>
-                        </div>
-                    </Card>
-                ) : live_rengo_challenge_to_show ? (
-                    <Card>
-                        <RengoManagementPane
-                            challenge_id={live_rengo_challenge_to_show.challenge_id}
-                            rengo_challenge_list={rengo_list}
-                            startRengoChallenge={rengo_utils.startOwnRengoChallenge}
-                            cancelChallenge={cancelOpenRengoChallenge}
-                            withdrawFromRengoChallenge={unNominateForRengoChallenge}
-                            joinRengoChallenge={rengo_utils.nominateForRengoChallenge}
-                            lock={
-                                rengo_manage_pane_lock[live_rengo_challenge_to_show?.challenge_id]
-                            }
+            <section aria-labelledby="CustomGamesTitle">
+                <div>
+                    <div className="CustomGames--toggle-container showing-custom-games">
+                        <button
+                            className="custom-games-toggle"
+                            onClick={toggleCustomGames}
+                            aria-expanded="true"
+                            aria-controls="CustomGames"
                         >
-                            <RengoTeamManagementPane
+                            {_("Hide custom games")}
+                        </button>
+                        <button
+                            className="primary"
+                            disabled={disable_challenge_buttons}
+                            onClick={() => {
+                                challenge(undefined, undefined, undefined, undefined, undefined);
+                            }}
+                        >
+                            {_("Create a custom game")}
+                        </button>
+                    </div>
+                </div>
+
+                <div id="CustomGames">
+                    {liveOwnChallengePending() ? (
+                        <Card>
+                            <div className="automatch-header">{_("Waiting for opponent...")}</div>
+                            <div className="automatch-row-container">
+                                <div className="spinner">
+                                    <div className="double-bounce1"></div>
+                                    <div className="double-bounce2"></div>
+                                </div>
+                            </div>
+                            <div className="automatch-settings">
+                                <button className="danger sm" onClick={cancelOwnChallenges}>
+                                    {pgettext("Cancel challenge", "Cancel")}
+                                </button>
+                            </div>
+                        </Card>
+                    ) : live_rengo_challenge_to_show ? (
+                        <Card>
+                            <RengoManagementPane
                                 challenge_id={live_rengo_challenge_to_show.challenge_id}
-                                challenge_list={rengo_list}
-                                moderator={user.is_moderator}
-                                show_chat={false}
-                                assignToTeam={rengo_utils.assignToTeam}
-                                kickRengoUser={rengo_utils.kickRengoUser}
-                                locked={
+                                rengo_challenge_list={rengo_list}
+                                startRengoChallenge={rengo_utils.startOwnRengoChallenge}
+                                cancelChallenge={cancelOpenRengoChallenge}
+                                withdrawFromRengoChallenge={unNominateForRengoChallenge}
+                                joinRengoChallenge={rengo_utils.nominateForRengoChallenge}
+                                lock={
                                     rengo_manage_pane_lock[
-                                        live_rengo_challenge_to_show.challenge_id
+                                        live_rengo_challenge_to_show?.challenge_id
                                     ]
                                 }
-                                lock={(lock: boolean) =>
-                                    setPaneLock(live_rengo_challenge_to_show.challenge_id, lock)
-                                }
-                            />
-                        </RengoManagementPane>
-                    </Card>
-                ) : null}
-                <div className="row">
-                    <div className="row header-container">
-                        <h2 className="header-title">
-                            {pgettext("Games available to accept", "Available Games")}
-                        </h2>
-                        <div className="toggle-container" onClick={toggleSeekGraph}>
-                            <div className="toggle-indicator">{seekGraphVisible ? "▼" : "▶"}</div>
-                            <span className="toggle-label">
-                                {seekGraphVisible
-                                    ? pgettext(
-                                          "label for button to hide the graph of available challenges vs rank",
-                                          "Hide plot",
-                                      )
-                                    : pgettext(
-                                          "label for button to show the graph of available challenges vs rank",
-                                          "Show plot",
-                                      )}
-                            </span>
+                            >
+                                <RengoTeamManagementPane
+                                    challenge_id={live_rengo_challenge_to_show.challenge_id}
+                                    challenge_list={rengo_list}
+                                    moderator={user.is_moderator}
+                                    show_chat={false}
+                                    assignToTeam={rengo_utils.assignToTeam}
+                                    kickRengoUser={rengo_utils.kickRengoUser}
+                                    locked={
+                                        rengo_manage_pane_lock[
+                                            live_rengo_challenge_to_show.challenge_id
+                                        ]
+                                    }
+                                    lock={(lock: boolean) =>
+                                        setPaneLock(live_rengo_challenge_to_show.challenge_id, lock)
+                                    }
+                                />
+                            </RengoManagementPane>
+                        </Card>
+                    ) : null}
+                    <div className="row">
+                        <div className="row header-container">
+                            <h2 id="CustomGamesTitle" className="header-title">
+                                {customGamesHeadingTitle}
+                            </h2>
+                            <div className="toggle-container" onClick={toggleSeekGraph}>
+                                <div className="toggle-indicator">
+                                    {seekGraphVisible ? "▼" : "▶"}
+                                </div>
+                                <span className="toggle-label">
+                                    {seekGraphVisible
+                                        ? pgettext(
+                                              "label for button to hide the graph of available challenges vs rank",
+                                              "Hide plot",
+                                          )
+                                        : pgettext(
+                                              "label for button to show the graph of available challenges vs rank",
+                                              "Show plot",
+                                          )}
+                                </span>
+                            </div>
                         </div>
+
+                        <div
+                            ref={ref_container}
+                            className={`seek-graph-container ${
+                                seekGraphVisible ? "visible" : "hidden"
+                            }`}
+                        >
+                            <OgsResizeDetector onResize={onResize} targetRef={ref_container} />
+                            <PersistentElement elt={canvas} />
+                        </div>
+
+                        <SeekGraphLegend
+                            filter={filter}
+                            showIcons={true}
+                            toggleHandler={toggleFilterHandler}
+                        ></SeekGraphLegend>
                     </div>
 
-                    <div
-                        ref={ref_container}
-                        className={`seek-graph-container ${
-                            seekGraphVisible ? "visible" : "hidden"
-                        }`}
-                    >
-                        <OgsResizeDetector onResize={onResize} targetRef={ref_container} />
-                        <PersistentElement elt={canvas} />
-                    </div>
+                    <div id="challenge-list-container">
+                        <div id="challenge-list-inner-container">
+                            <div id="challenge-list" onMouseMove={freezeChallenges}>
+                                {(corr_automatchers.length || null) && (
+                                    <div className="challenge-row">
+                                        <span className="cell break">
+                                            {_("Your Automatch Requests")}
+                                        </span>
+                                        <CellBreaks width={7} />
+                                    </div>
+                                )}
+                                {(corr_automatchers.length || null) && (
+                                    <div className="challenge-row">
+                                        <span className="head">{/* buttons */}</span>
+                                        <span className="head">{_("Rank")}</span>
+                                        <span className="head">{_("Size")}</span>
+                                        <span className="head">{_("Time Control")}</span>
+                                        <span className="head">{_("Handicap")}</span>
+                                        <span className="head">{_("Rules")}</span>
+                                    </div>
+                                )}
+                                {corr_automatchers.map((m) => (
+                                    <div
+                                        className="challenge-row automatch-challenge-row"
+                                        key={m.uuid}
+                                    >
+                                        <span className="cell">
+                                            <button
+                                                className="danger xs"
+                                                onClick={() => {
+                                                    automatch_manager.cancel(m.uuid);
+                                                }}
+                                            >
+                                                {pgettext("Cancel automatch", "Cancel")}
+                                            </button>
+                                        </span>
 
-                    <SeekGraphLegend
-                        filter={filter}
-                        showIcons={true}
-                        toggleHandler={toggleFilterHandler}
-                    ></SeekGraphLegend>
-                </div>
+                                        <span className="cell">
+                                            {m.lower_rank_diff === m.upper_rank_diff ? (
+                                                <span>&plusmn; {m.lower_rank_diff}</span>
+                                            ) : (
+                                                <span>
+                                                    -{m.lower_rank_diff} &nbsp; +{m.upper_rank_diff}
+                                                </span>
+                                            )}
+                                        </span>
 
-                <div id="challenge-list-container">
-                    <div id="challenge-list-inner-container">
-                        <div id="challenge-list" onMouseMove={freezeChallenges}>
-                            {(corr_automatchers.length || null) && (
+                                        <span className="cell">
+                                            {m.size_speed_options
+                                                .filter((x) => x.speed === "correspondence")
+                                                .map((x) => x.size)
+                                                .join(",")}
+                                        </span>
+
+                                        <span className={m.size_speed_options[0].system + " cell"}>
+                                            {timeControlSystemText(m.size_speed_options[0].system)}
+                                        </span>
+
+                                        <span className={m.handicap.condition + " cell"}>
+                                            {m.handicap.condition === "no-preference"
+                                                ? pgettext(
+                                                      "Automatch: no preference",
+                                                      "No preference",
+                                                  )
+                                                : m.handicap.value === "enabled"
+                                                  ? pgettext("Handicap enabled", "Enabled")
+                                                  : pgettext("Handicap disabled", "Disabled")}
+                                        </span>
+
+                                        <span className={m.rules.condition + " cell"}>
+                                            {m.rules.condition === "no-preference"
+                                                ? pgettext(
+                                                      "Automatch: no preference",
+                                                      "No preference",
+                                                  )
+                                                : rulesText(m.rules.value)}
+                                        </span>
+                                        <span className="cell"></span>
+                                    </div>
+                                ))}
+
                                 <div className="challenge-row">
+                                    <span className="cell break">{_("Short Games")}</span>
+                                    <CellBreaks width={8} />
+                                </div>
+
+                                {anyChallengesToShow(filter, live_list) ? (
+                                    <ChallengeListHeaders />
+                                ) : null}
+
+                                <ChallengeList
+                                    list={live_list}
+                                    filter={filter}
+                                    is_live_list={true}
+                                />
+
+                                <div style={{ marginTop: "2em" }}></div>
+
+                                <div className="challenge-row" style={{ marginTop: "1em" }}>
                                     <span className="cell break">
-                                        {_("Your Automatch Requests")}
-                                    </span>
-                                    <CellBreaks width={7} />
-                                </div>
-                            )}
-                            {(corr_automatchers.length || null) && (
-                                <div className="challenge-row">
-                                    <span className="head">{/* buttons */}</span>
-                                    <span className="head">{_("Rank")}</span>
-                                    <span className="head">{_("Size")}</span>
-                                    <span className="head">{_("Time Control")}</span>
-                                    <span className="head">{_("Handicap")}</span>
-                                    <span className="head">{_("Rules")}</span>
-                                </div>
-                            )}
-                            {corr_automatchers.map((m) => (
-                                <div className="challenge-row automatch-challenge-row" key={m.uuid}>
-                                    <span className="cell">
-                                        <button
-                                            className="danger xs"
-                                            onClick={() => {
-                                                automatch_manager.cancel(m.uuid);
-                                            }}
-                                        >
-                                            {pgettext("Cancel automatch", "Cancel")}
-                                        </button>
-                                    </span>
-
-                                    <span className="cell">
-                                        {m.lower_rank_diff === m.upper_rank_diff ? (
-                                            <span>&plusmn; {m.lower_rank_diff}</span>
-                                        ) : (
-                                            <span>
-                                                -{m.lower_rank_diff} &nbsp; +{m.upper_rank_diff}
-                                            </span>
+                                        {pgettext(
+                                            "Game speed: multi-day games",
+                                            "Daily Correspondence",
                                         )}
                                     </span>
-
-                                    <span className="cell">
-                                        {m.size_speed_options
-                                            .filter((x) => x.speed === "correspondence")
-                                            .map((x) => x.size)
-                                            .join(",")}
-                                    </span>
-
-                                    <span className={m.size_speed_options[0].system + " cell"}>
-                                        {timeControlSystemText(m.size_speed_options[0].system)}
-                                    </span>
-
-                                    <span className={m.handicap.condition + " cell"}>
-                                        {m.handicap.condition === "no-preference"
-                                            ? pgettext("Automatch: no preference", "No preference")
-                                            : m.handicap.value === "enabled"
-                                              ? pgettext("Handicap enabled", "Enabled")
-                                              : pgettext("Handicap disabled", "Disabled")}
-                                    </span>
-
-                                    <span className={m.rules.condition + " cell"}>
-                                        {m.rules.condition === "no-preference"
-                                            ? pgettext("Automatch: no preference", "No preference")
-                                            : rulesText(m.rules.value)}
-                                    </span>
-                                    <span className="cell"></span>
+                                    <CellBreaks width={8} />
                                 </div>
-                            ))}
 
-                            <div className="challenge-row">
-                                <span className="cell break">{_("Short Games")}</span>
-                                <CellBreaks width={8} />
+                                {anyChallengesToShow(filter, correspondence_list) ? (
+                                    <ChallengeListHeaders />
+                                ) : null}
+
+                                <ChallengeList list={correspondence_list} filter={filter} />
+
+                                <div style={{ marginTop: "2em" }}></div>
                             </div>
-
-                            {anyChallengesToShow(filter, live_list) ? (
-                                <ChallengeListHeaders />
-                            ) : null}
-
-                            <ChallengeList list={live_list} filter={filter} is_live_list={true} />
-
-                            <div style={{ marginTop: "2em" }}></div>
-
-                            <div className="challenge-row" style={{ marginTop: "1em" }}>
-                                <span className="cell break">
-                                    {pgettext(
-                                        "Game speed: multi-day games",
-                                        "Daily Correspondence",
-                                    )}
-                                </span>
-                                <CellBreaks width={8} />
-                            </div>
-
-                            {anyChallengesToShow(filter, correspondence_list) ? (
-                                <ChallengeListHeaders />
-                            ) : null}
-
-                            <ChallengeList list={correspondence_list} filter={filter} />
-
-                            <div style={{ marginTop: "2em" }}></div>
+                            {filter.showRengo && (
+                                <div id="challenge-list">
+                                    <div className="challenge-row" style={{ marginTop: "1em" }}>
+                                        <span className="cell break">{_("Rengo")}</span>
+                                    </div>
+                                    <table id="rengo-table">
+                                        <thead>
+                                            {anyChallengesToShow(filter, rengo_list) ? (
+                                                <RengoListHeaders />
+                                            ) : null}
+                                        </thead>
+                                        <tbody>
+                                            <RengoList
+                                                filter={filter}
+                                                list={rengo_list}
+                                                show_in_rengo_management_pane={
+                                                    show_in_rengo_management_pane
+                                                }
+                                                rengo_manage_pane_lock={rengo_manage_pane_lock}
+                                            />
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
                         </div>
-                        {filter.showRengo && (
-                            <div id="challenge-list">
-                                <div className="challenge-row" style={{ marginTop: "1em" }}>
-                                    <span className="cell break">{_("Rengo")}</span>
-                                </div>
-                                <table id="rengo-table">
-                                    <thead>
-                                        {anyChallengesToShow(filter, rengo_list) ? (
-                                            <RengoListHeaders />
-                                        ) : null}
-                                    </thead>
-                                    <tbody>
-                                        <RengoList
-                                            filter={filter}
-                                            list={rengo_list}
-                                            show_in_rengo_management_pane={
-                                                show_in_rengo_management_pane
-                                            }
-                                            rengo_manage_pane_lock={rengo_manage_pane_lock}
-                                        />
-                                    </tbody>
-                                </table>
-                            </div>
-                        )}
                     </div>
                 </div>
-            </div>
+            </section>
         </PlayContext.Provider>
     );
 }

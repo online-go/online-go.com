@@ -15,14 +15,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ogsTest } from "@helpers";
+rating-chart-height = 300px;
 
-import { cmDontNotifyEscalatedAiTest } from "./cm-dont-notify-escalated-ai";
-import { cmVoteOnOwnReportTest } from "./cm-vote-on-own-report";
-import { cmShowOnlyPostEscalationVotesTest } from "./cm-show-only-post-escalation-votes";
+.RatingsChartDistribution
+    height: rating-chart-height
+    max-width: calc(100vw - 2em)
 
-ogsTest.describe("@CM Community Moderation Tests", () => {
-    ogsTest("CM should be able to vote on their own report", cmVoteOnOwnReportTest);
-    ogsTest("We should not notify escalated AI reports", cmDontNotifyEscalatedAiTest);
-    ogsTest("We should show only post-escalation votes", cmShowOnlyPostEscalationVotesTest);
-});
+    .wrapper
+        height: rating-chart-height
+        position: relative
+
+    .graphContainer
+        height: rating-chart-height
+        position: absolute
+        top: 0
+        width: 100%
+        z-index: 0
+
+    .secondGraph
+        height: rating-chart-height
+        position: absolute
+        top: 0
+        width: 100%
+        z-index: 4
+
+    .loading
+        display: flex
+        justify-content: center
+        align-items: center
+        height: rating-chart-height

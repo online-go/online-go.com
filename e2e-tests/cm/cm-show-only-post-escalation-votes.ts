@@ -26,7 +26,7 @@
  * - E2E_CM_SOPEV_ESCALATOR : CM who escalates the report
  */
 
-import { Browser } from "@playwright/test";
+import { Browser, TestInfo } from "@playwright/test";
 
 import {
     assertIncidentReportIndicatorActive,
@@ -39,89 +39,104 @@ import {
 
 import { expectOGSClickableByName } from "@helpers/matchers";
 import { expect } from "@playwright/test";
+import { withIncidentIndicatorLock } from "@helpers/report-utils";
 
-export const cmShowOnlyPostEscalationVotesTest = async ({ browser }: { browser: Browser }) => {
-    const { userPage: reporterPage } = await prepareNewUser(
-        browser,
-        newTestUsername("CmSOPEVRep"), // cspell:disable-line
-        "test",
-    );
+export const cmShowOnlyPostEscalationVotesTest = async (
+    { browser }: { browser: Browser },
+    testInfo: TestInfo,
+) => {
+    await withIncidentIndicatorLock(testInfo, async () => {
+        const { userPage: reporterPage } = await prepareNewUser(
+            browser,
+            newTestUsername("CmSOPEVRep"), // cspell:disable-line
+            "test",
+        );
 
-    // Report someone for escaping
-    await goToUsersGame(reporterPage, "E2E_CM_SOPEV_REPORTED", "E2E CM SOPEV Game");
+        // Report someone for escaping
+        await goToUsersGame(reporterPage, "E2E_CM_SOPEV_REPORTED", "E2E CM SOPEV Game");
 
-    await reportUser(
-        reporterPage,
-        "E2E_CM_SOPEV_OTHER",
-        "escaping",
-        "E2E test - SOPEV reporting escaping!",
-    );
+        await reportUser(
+            reporterPage,
+            "E2E_CM_SOPEV_OTHER",
+            "score_cheating",
+            "E2E test - SOPEV reporting score cheating!",
+        );
 
-    // Now put a pre-escalation vote on the report
+        // Now put a pre-escalation vote on the report
 
-    const { seededCMPage: initialVoterPage } = await setupSeededCM(
-        browser,
-        "E2E_CM_SOPEV_INITIAL_VOTER",
-    );
+        const { seededCMPage: initialVoterPage } = await setupSeededCM(
+            browser,
+            "E2E_CM_SOPEV_INITIAL_VOTER",
+        );
 
-    let indicator = await assertIncidentReportIndicatorActive(initialVoterPage, 1);
+        let indicator = await assertIncidentReportIndicatorActive(initialVoterPage, 1);
 
-    await indicator.click();
+        await indicator.click();
 
-    await expect(initialVoterPage.getByRole("heading", { name: "Reports Center" })).toBeVisible();
+        await expect(
+            initialVoterPage.getByRole("heading", { name: "Reports Center" }),
+        ).toBeVisible();
 
-    await expect(initialVoterPage.getByText("E2E test - SOPEV reporting escaping!")).toBeVisible();
+        await expect(
+            initialVoterPage.getByText("E2E test - SOPEV reporting score cheating!"),
+        ).toBeVisible();
 
-    // Doesn't matter what option we vote for actually, first is handy
-    await initialVoterPage.locator('.action-selector input[type="radio"]').first().click();
-    let voteButton = await expectOGSClickableByName(initialVoterPage, /Vote$/);
+        // Doesn't matter what option we vote for actually, first is handy
+        await initialVoterPage.locator('.action-selector input[type="radio"]').first().click();
+        let voteButton = await expectOGSClickableByName(initialVoterPage, /Vote$/);
 
-    await voteButton.click();
+        await voteButton.click();
 
-    // Now escalate the report
-    const { seededCMPage: escalatorPage } = await setupSeededCM(browser, "E2E_CM_SOPEV_ESCALATOR");
+        // Now escalate the report
+        const { seededCMPage: escalatorPage } = await setupSeededCM(
+            browser,
+            "E2E_CM_SOPEV_ESCALATOR",
+        );
 
-    indicator = await assertIncidentReportIndicatorActive(escalatorPage, 1);
+        indicator = await assertIncidentReportIndicatorActive(escalatorPage, 1);
 
-    await indicator.click();
+        await indicator.click();
 
-    await expect(escalatorPage.getByRole("heading", { name: "Reports Center" })).toBeVisible();
+        await expect(escalatorPage.getByRole("heading", { name: "Reports Center" })).toBeVisible();
 
-    await expect(escalatorPage.getByText("E2E test - SOPEV reporting escaping!")).toBeVisible();
+        await expect(
+            escalatorPage.getByText("E2E test - SOPEV reporting score cheating!"),
+        ).toBeVisible();
 
-    // escalation is always the last option - yay that's handy
-    await escalatorPage.locator('.action-selector input[type="radio"]').last().click();
-    await escalatorPage.locator("#escalation-note").fill("E2E test - SOPEV escalation note");
+        // escalation is always the last option - yay that's handy
+        await escalatorPage.locator('.action-selector input[type="radio"]').last().click();
+        await escalatorPage.locator("#escalation-note").fill("E2E test - SOPEV escalation note");
 
-    voteButton = await expectOGSClickableByName(escalatorPage, /Vote$/);
+        voteButton = await expectOGSClickableByName(escalatorPage, /Vote$/);
 
-    await voteButton.click();
+        await voteButton.click();
 
-    await expect(
-        escalatorPage.getByText("Escalated due to VotingOutcome.VOTED_ESCALATION"),
-    ).toBeVisible();
+        await expect(
+            escalatorPage.getByText("Escalated due to VotingOutcome.VOTED_ESCALATION"),
+        ).toBeVisible();
 
-    // Now the previous vote from the initial voter should be gone
+        // Now the previous vote from the initial voter should be gone
 
-    // Make sure the all the escalated voting options are loaded
-    const radioButtons = escalatorPage.locator('.action-selector input[type="radio"]');
-    await expect(await radioButtons.count()).toBeGreaterThanOrEqual(7);
+        // Make sure the all the escalated voting options are loaded
+        const radioButtons = escalatorPage.locator('.action-selector input[type="radio"]');
+        await expect(await radioButtons.count()).toBeGreaterThanOrEqual(7);
 
-    // Make sure there are no votes showing
-    const voteCounts = escalatorPage.locator(".vote-count");
-    for (let i = 0; i < (await voteCounts.count()); i++) {
-        const text = await voteCounts.nth(i).textContent();
-        expect(text).toBe("(0)");
-    }
+        // Make sure there are no votes showing
+        const voteCounts = escalatorPage.locator(".vote-count");
+        for (let i = 0; i < (await voteCounts.count()); i++) {
+            const text = await voteCounts.nth(i).textContent();
+            expect(text).toBe("(0)");
+        }
 
-    //  (we probably should make sure that the report is not acted on with pre-escalation votes,
-    //   but that's for another day)
-    // reporter cleans up their report
-    await reporterPage.goto("/reports-center");
-    const myReports = reporterPage.getByText("My Own Reports");
-    await expect(myReports).toBeVisible();
-    await myReports.click();
+        //  (we probably should make sure that the report is not acted on with pre-escalation votes,
+        //   but that's for another day)
+        // reporter cleans up their report
+        await reporterPage.goto("/reports-center");
+        const myReports = reporterPage.getByText("My Own Reports");
+        await expect(myReports).toBeVisible();
+        await myReports.click();
 
-    const cancelButton = await expectOGSClickableByName(reporterPage, /Cancel$/);
-    await cancelButton.click();
+        const cancelButton = await expectOGSClickableByName(reporterPage, /Cancel$/);
+        await cancelButton.click();
+    });
 };

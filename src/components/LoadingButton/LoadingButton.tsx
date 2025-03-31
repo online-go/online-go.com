@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import { useEffect, useRef } from "react";
 
 interface LoadingButtonProps extends React.ComponentProps<"button"> {
     loading?: boolean;
@@ -26,8 +27,19 @@ export function LoadingButton({
     loading,
     icon,
     children,
+    autoFocus,
     ...props
 }: LoadingButtonProps): React.ReactElement {
+    const buttonRef = useRef<HTMLButtonElement>(null);
+
+    // autofocus button
+    useEffect(() => {
+        if (autoFocus) {
+            console.log(autoFocus, buttonRef.current);
+            buttonRef.current?.focus();
+        }
+    }, []);
+
     //const prefix = loading ? <i className="fa fa-circle-o-notch rotating" /> : icon;
     const prefix = loading ? (
         <i className="fa fa-circle-o-notch rotating" aria-hidden="true" />
@@ -35,7 +47,7 @@ export function LoadingButton({
         icon
     );
     return (
-        <button {...props}>
+        <button {...props} ref={buttonRef}>
             {prefix}
             {prefix && " "}
             {children}

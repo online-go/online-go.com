@@ -15,14 +15,4 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ogsTest } from "@helpers";
-
-import { cmDontNotifyEscalatedAiTest } from "./cm-dont-notify-escalated-ai";
-import { cmVoteOnOwnReportTest } from "./cm-vote-on-own-report";
-import { cmShowOnlyPostEscalationVotesTest } from "./cm-show-only-post-escalation-votes";
-
-ogsTest.describe("@CM Community Moderation Tests", () => {
-    ogsTest("CM should be able to vote on their own report", cmVoteOnOwnReportTest);
-    ogsTest("We should not notify escalated AI reports", cmDontNotifyEscalatedAiTest);
-    ogsTest("We should show only post-escalation votes", cmShowOnlyPostEscalationVotesTest);
-});
+export * from "./RatingsChartDistribution";

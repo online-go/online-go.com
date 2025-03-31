@@ -73,17 +73,47 @@ interface ReportProperties {
 type Gamedata = {
     outcome: string;
     winner: number;
+    moves: Array<any>; // It's actually and AdHocPackedMove[], but we only care about the length.
 };
 
-function checkEscapingForResignation(
+function checkGameForEscapingReportApplicability(
     game_id?: number,
     reported_user_id?: number,
 ): Promise<string | null> {
+    console.log("checkGameForEscapingReportApplicability", game_id, reported_user_id);
     return get(`/termination-api/game/${game_id}`).then((gamedata: Gamedata) => {
-        if (gamedata?.outcome.includes("Resignation") && gamedata.winner !== reported_user_id) {
+        if (gamedata?.outcome?.includes("Resignation") && gamedata.winner !== reported_user_id) {
             return pgettext(
                 "A message when trying to create a report that doesn't make sense",
                 `That player resigned, so 'stopped playing' is not applicable: resigning is normally an acceptable way to finish the game.
+
+Please choose a different type of report, if there is a different problem.`,
+            );
+        } else if (gamedata?.moves.length < 2) {
+            return pgettext(
+                "A message when the user is trying to report something that we don't want them to report yet",
+                `If the other player leaves the game without playing the first move we will automatically warn them about this.
+
+Please choose a different type of report, if there is a different problem.`,
+            );
+        } else {
+            console.log("checkGameForEscapingReportApplicability", gamedata);
+            return null;
+        }
+    });
+}
+
+function checkGameForStallingReportApplicability(
+    game_id?: number,
+    _reported_user_id?: number,
+): Promise<string | null> {
+    return get(`/termination-api/game/${game_id}`).then((gamedata: Gamedata) => {
+        if (gamedata?.moves.length < 2) {
+            return pgettext(
+                "A message when the user is trying to report something that we don't want them to report yet",
+                `There aren't enough moves played in this game to decide if someone is playing stalling moves.
+                
+If the other player leaves the game without playing, we will automatically warn them about that.
 
 Please choose a different type of report, if there is a different problem.`,
             );
@@ -102,7 +132,7 @@ export const report_categories: ReportDescription[] = [
             "User left the game or stopped playing without concluding it properly.",
         ),
         game_id_required: true,
-        check_applicability: checkEscapingForResignation,
+        check_applicability: checkGameForEscapingReportApplicability,
     },
     {
         type: "score_cheating",
@@ -122,6 +152,7 @@ export const report_categories: ReportDescription[] = [
         ),
         game_id_required: true,
         min_description_length: 20,
+        check_applicability: checkGameForStallingReportApplicability,
     },
     {
         type: "inappropriate_content",
@@ -154,7 +185,7 @@ export const report_categories: ReportDescription[] = [
             "Report user for AI use",
             "Use this if you are quite certain that AI is being used.  Please don't report unless you have convincing evidence.  Please make sure you provide the evidence in the report.",
         ),
-        min_description_length: 40,
+        min_description_length: 20,
         game_id_required: true,
     },
     {
@@ -232,10 +263,12 @@ export function Report(props: ReportProperties): React.ReactElement {
             category
                 .check_applicability(game_id, reported_user_id)
                 .then((inapplicable_reason) => {
+                    console.log("checkGameForEscapingReportApplicability", inapplicable_reason);
                     set_inapplicable_reason(inapplicable_reason);
                     set_validating(false);
                 })
-                .catch(() => {
+                .catch((error) => {
+                    console.log("checkGameForEscapingReportApplicability", "error", error);
                     set_validating(false);
                 });
         } else {
