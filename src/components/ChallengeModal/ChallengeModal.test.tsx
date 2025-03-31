@@ -18,11 +18,9 @@
 import * as React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { ChallengeModalBody, ChallengeModalProperties } from "./ChallengeModal";
-import { JGOFTimeControl, JGOFTimeControlSpeed, JGOFTimeControlSystem } from "goban";
-import { RuleSet } from "@/lib/types";
-import { post } from "@/lib/requests";
+import { JGOFTimeControl, JGOFTimeControlSpeed } from "goban";
 
-type ChallengeModes = "open" | "computer" | "player" | "demo";
+import { post } from "@/lib/requests";
 
 // Mock preferences first to prevent data.setDefault error
 jest.mock("@/lib/preferences", () => ({
@@ -31,19 +29,9 @@ jest.mock("@/lib/preferences", () => ({
     defaults: {},
 }));
 
-// Mock misc module to prevent infinite recursion
+// Mock misc module to prevent potential infinite recursion in dup implementation
 jest.mock("@/lib/misc", () => ({
-    dup: (obj: any) => {
-        try {
-            return JSON.parse(JSON.stringify(obj));
-        } catch {
-            // If there's a circular reference, just return a shallow copy
-            if (Array.isArray(obj)) {
-                return [...obj];
-            }
-            return { ...obj };
-        }
-    },
+    dup: (obj: any) => structuredClone(obj),
 }));
 
 // Mock TimeControl/util
@@ -362,7 +350,7 @@ describe("ChallengeModalBody", () => {
     it("renders rank restrictions when enabled", async () => {
         const openModeProps = {
             ...defaultProps,
-            mode: "open" as ChallengeModes,
+            mode: "open",
             config: {
                 ...defaultProps.config,
                 conf: {
@@ -373,11 +361,11 @@ describe("ChallengeModalBody", () => {
                     ...defaultProps.config?.challenge,
                     min_ranking: 5,
                     max_ranking: 36,
-                    challenger_color: "automatic" as const,
+                    challenger_color: "automatic",
                     invite_only: false,
                     game: {
                         name: "Test Game",
-                        rules: "japanese" as RuleSet,
+                        rules: "japanese",
                         ranked: false,
                         width: 19,
                         height: 19,
@@ -389,15 +377,16 @@ describe("ChallengeModalBody", () => {
                     },
                 },
                 time_control: {
-                    system: "byoyomi" as JGOFTimeControlSystem,
-                    speed: "live" as JGOFTimeControlSpeed,
+                    system: "byoyomi",
+                    speed: "live",
                     main_time: 1200,
                     period_time: 30,
                     periods: 5,
                     pause_on_weekends: false,
                 },
             },
-        };
+        } as const;
+
         render(<ChallengeModalBody {...openModeProps} modal={mockModal} />);
 
         // Find the restrict rank checkbox
@@ -416,7 +405,7 @@ describe("ChallengeModalBody", () => {
     it.skip("renders AI player options when in computer mode", () => {
         const computerModeProps = {
             ...defaultProps,
-            mode: "computer" as ChallengeModes,
+            mode: "computer",
             initialState: {
                 ...defaultProps.initialState,
                 challenge: {
@@ -442,7 +431,7 @@ describe("ChallengeModalBody", () => {
                     pause_on_weekends: false,
                 },
             },
-        };
+        } as const;
         render(<ChallengeModalBody {...computerModeProps} modal={mockModal} />);
 
         const noBotsMessage = screen.getByText(
@@ -454,7 +443,7 @@ describe("ChallengeModalBody", () => {
     it("creates an open challenge when submitted", async () => {
         const openModeProps = {
             ...defaultProps,
-            mode: "open" as ChallengeModes,
+            mode: "open",
             config: {
                 ...defaultProps.config,
                 conf: {
@@ -466,11 +455,11 @@ describe("ChallengeModalBody", () => {
                     ...defaultProps.config?.challenge,
                     min_ranking: 5,
                     max_ranking: 36,
-                    challenger_color: "automatic" as const,
+                    challenger_color: "automatic",
                     invite_only: false,
                     game: {
                         name: "Test Game",
-                        rules: "japanese" as RuleSet,
+                        rules: "japanese",
                         ranked: false,
                         width: 19,
                         height: 19,
@@ -482,15 +471,15 @@ describe("ChallengeModalBody", () => {
                     },
                 },
                 time_control: {
-                    system: "byoyomi" as JGOFTimeControlSystem,
-                    speed: "live" as JGOFTimeControlSpeed,
+                    system: "byoyomi",
+                    speed: "live",
                     main_time: 1200,
                     period_time: 30,
                     periods: 5,
                     pause_on_weekends: false,
                 },
             },
-        };
+        } as const;
 
         // Mock the post request
         (post as jest.Mock).mockResolvedValueOnce({ id: 123 });
