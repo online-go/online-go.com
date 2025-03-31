@@ -19,7 +19,7 @@
 
 import { Browser } from "@playwright/test";
 
-import { newTestUsername, prepareNewUser } from "@helpers/user-utils";
+import { loginAsUser, newTestUsername, prepareNewUser } from "@helpers/user-utils";
 
 import {
     acceptDirectChallenge,
@@ -28,24 +28,28 @@ import {
     defaultChallengeSettings,
 } from "@helpers/game-utils";
 
-export const cmWarnFirstTurnEscapersTest = async ({ browser }: { browser: Browser }) => {
+import { ogsTest } from "@helpers";
+
+export const modWarnFirstTurnDisconnectorTest = async ({ browser }: { browser: Browser }) => {
+    ogsTest.setTimeout(6 * 60 * 1000); // Set timeout to 6 minutes, to let disconnect happen
+
     const { userPage: challengerPage } = await prepareNewUser(
         browser,
-        newTestUsername("CmFTEChall"), // cspell:disable-line
+        newTestUsername("CmFTDChall"), // cspell:disable-line
         "test",
     );
 
-    const escaperUsername = newTestUsername("CmFTEEscaper"); // cspell:disable-line
+    const escaperUsername = newTestUsername("CmFTDis"); // cspell:disable-line
     const { userPage: escaperPage } = await prepareNewUser(browser, escaperUsername, "test");
 
     // Challenger challenges the escaper
     await createDirectChallenge(challengerPage, escaperUsername, {
         ...defaultChallengeSettings,
-        gameName: "E2E First Turn Escape Game",
+        gameName: "E2E First Turn Disconnector Game",
         speed: "live",
         timeControl: "byoyomi",
-        mainTime: "45",
-        timePerPeriod: "10",
+        mainTime: "360", // longer than the disconnect timer (which is 5 mins)
+        timePerPeriod: "360",
         periods: "1",
     });
 
@@ -61,10 +65,12 @@ export const cmWarnFirstTurnEscapersTest = async ({ browser }: { browser: Browse
 
     await clickInTheMiddle(challengerPage);
 
-    // Now challenger is waiting for escaper ... eventually escaper times out
-    // and challenger gets the ack that we are looking for
+    console.log(
+        "Note: cmWarnFirstTurnDisconnectorTest waiting for disconnect timer (approximately 5 minutes)...",
+    );
+    await escaperPage.close(); // escaper disconnects
 
-    console.log("cmWarnFirstTurnEscaper waiting escaper timeout (about a minute)...");
+    // ... eventually challenger gets the ack that we are looking for
     await challengerPage
         .locator(
             '.AccountWarningAck .canned-message:has-text("We\'ve noticed that the other player left game")',
@@ -72,13 +78,18 @@ export const cmWarnFirstTurnEscapersTest = async ({ browser }: { browser: Browse
         .waitFor();
     await challengerPage.locator(".AccountWarningAck button.primary").click();
 
-    // And escaper should have warning...
-    await escaperPage
+    // And escaper should have warning when they log in again
+    const newEscaperContext = await browser.newContext();
+    const newEscaperPage = await newEscaperContext.newPage();
+
+    await loginAsUser(newEscaperPage, escaperUsername, "test");
+
+    await newEscaperPage
         .locator('.AccountWarning .canned-message:has-text("We\'ve noticed that you joined game")')
         .waitFor();
 
-    await escaperPage.locator("#AccountWarning-accept:not([disabled])").waitFor();
-    await escaperPage.locator("#AccountWarning-accept").check();
-    await escaperPage.locator(".AccountWarning button.primary:not([disabled])").waitFor();
-    await escaperPage.locator(".AccountWarning button.primary").click();
+    await newEscaperPage.locator("#AccountWarning-accept:not([disabled])").waitFor();
+    await newEscaperPage.locator("#AccountWarning-accept").check();
+    await newEscaperPage.locator(".AccountWarning button.primary:not([disabled])").waitFor();
+    await newEscaperPage.locator(".AccountWarning button.primary").click();
 };
