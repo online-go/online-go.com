@@ -471,7 +471,7 @@ const RatingsChartDistribution: React.FC<RatingsChartDistributionProps> = ({
                         ? interpolate(
                               pgettext(
                                   "player performance rating distribution",
-                                  "You are better than {{percentile}}% of players",
+                                  "You have a higher rating than {{percentile}}% of players",
                               ),
                               {
                                   percentile: percentile.toFixed(2),
@@ -480,7 +480,7 @@ const RatingsChartDistribution: React.FC<RatingsChartDistributionProps> = ({
                         : interpolate(
                               pgettext(
                                   "player performance rating distribution",
-                                  "{{name}} is better than {{percentile}}% of players",
+                                  "{{name}} has a higher rating than {{percentile}}% of players",
                               ),
                               {
                                   name: otherPlayerName || _("User"),
