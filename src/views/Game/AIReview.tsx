@@ -215,12 +215,14 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                             return a.type === "full" ? -1 : 1;
                         }
 
+                        /*
                         if (a.network_size < b.network_size) {
                             return 1;
                         }
                         if (b.network_size < a.network_size) {
                             return -1;
                         }
+                        */
 
                         if (a.strength - b.strength !== 0) {
                             return b.strength - a.strength;
