@@ -1,4 +1,7 @@
-global.window = window
+import structuredClone from "@ungap/structured-clone";
+
+global.window = window;
+global.structuredClone = structuredClone;
 
 // Goban stuff
 HTMLCanvasElement.prototype.getContext = () => {

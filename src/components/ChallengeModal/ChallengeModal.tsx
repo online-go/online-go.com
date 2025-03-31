@@ -71,7 +71,7 @@ type ChallengeModes = "open" | "computer" | "player" | "demo";
 
 interface Events {}
 
-interface ChallengeModalProperties {
+export interface ChallengeModalProperties {
     mode: ChallengeModes;
     game_record_mode?: boolean /* when true, if mode === "demo", we will create a game instance instead of a review instance */;
     playerId?: number;
@@ -1567,7 +1567,7 @@ export class ChallengeModalBody extends React.Component<
                     {this.komiSettings()}
 
                     <div className="form-group">
-                        <label className="control-label" htmlFor="color">
+                        <label className="control-label" htmlFor="challenge-color">
                             {_("Your Color")}
                         </label>
                         <div className="controls">
@@ -1630,7 +1630,7 @@ export class ChallengeModalBody extends React.Component<
                                         <div className="form-group" id="challenge-min-rank-group">
                                             <label
                                                 className="control-label"
-                                                htmlFor="minimum_ranking"
+                                                htmlFor="challenge-min-rank"
                                             >
                                                 {_("Minimum Ranking")}
                                             </label>
@@ -1655,7 +1655,7 @@ export class ChallengeModalBody extends React.Component<
                                         <div className="form-group" id="challenge-max-rank-group">
                                             <label
                                                 className="control-label"
-                                                htmlFor="maximum_ranking"
+                                                htmlFor="challenge-max-rank"
                                             >
                                                 {_("Maximum Ranking")}
                                             </label>
