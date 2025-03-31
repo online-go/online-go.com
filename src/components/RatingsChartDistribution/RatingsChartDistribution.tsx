@@ -17,7 +17,7 @@
 import "./RatingsChartDistribution.styl";
 import * as React from "react";
 import { ResponsiveLine } from "@nivo/line";
-import { _, interpolate, pgettext } from "@/lib/translate";
+import { _, interpolate, pgettext, gettext } from "@/lib/translate";
 import { rating_to_rank, boundedRankString } from "@/lib/rank_utils";
 
 interface RatingsChartDistributionProps {
@@ -41,10 +41,11 @@ interface RatingHistogramResponse {
 }
 
 const chartLabel = {
-    cumulative: _("Cumulative"),
-    players: _("Players"),
-    yourRating: _("Your Rating"),
-    glicko2Rating: _("Rating"),
+    cumulative: gettext("Cumulative"),
+    players: gettext("Players"),
+    yourRating: gettext("Your Rating"),
+    rating: gettext("Rating"),
+    rank: gettext("Rank"),
 };
 
 const line1Color = "#7798BF";
@@ -412,8 +413,8 @@ const RatingsChartDistribution: React.FC<RatingsChartDistributionProps> = ({
                     >
                         <div>
                             {showRatings
-                                ? `Rating: ${slice.points[0].data.x}`
-                                : `Rank: ${boundedRankString(
+                                ? `${chartLabel.rating}: ${slice.points[0].data.x}`
+                                : `${chartLabel.rank}: ${boundedRankString(
                                       rating_to_rank(Number(slice.points[0].data.x)),
                                       true,
                                   )}`}
@@ -429,7 +430,7 @@ const RatingsChartDistribution: React.FC<RatingsChartDistributionProps> = ({
                                     padding: "3px 0",
                                 }}
                             >
-                                <strong>{point.serieId}:</strong>{" "}
+                                <strong>{gettext(String(point.serieId))}:</strong>{" "}
                                 {point.serieId === "Cumulative"
                                     ? `${(Number(point.data.y) * 100).toFixed(2)}%`
                                     : point.data.yFormatted}
