@@ -29,7 +29,7 @@ import {
     defaultChallengeSettings,
 } from "@helpers/game-utils";
 
-export const cmDontAutoWarnBlitzTest = async ({ browser }: { browser: Browser }) => {
+export const modDontAutoWarnBlitzTest = async ({ browser }: { browser: Browser }) => {
     const { userPage: challengerPage } = await prepareNewUser(
         browser,
         newTestUsername("CmDWBChall"), // cspell:disable-line

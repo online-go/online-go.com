@@ -43,7 +43,12 @@ export const cmVoteOnOwnReportTest = async (
 
         // ... and report the user
         // (The username is truncated inside the player card!  So the "other player" name must not match here!)
-        await reportUser(reporterPage, "E2E_CM_VOOR_", "escaping", "E2E test reporting an escaper");
+        await reportUser(
+            reporterPage,
+            "E2E_CM_VOOR_",
+            "score_cheating",
+            "E2E test reporting a score cheat",
+        );
 
         // Go to the report page
         await reporterPage.goto("/reports-center");
