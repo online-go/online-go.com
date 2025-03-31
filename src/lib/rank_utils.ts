@@ -453,54 +453,11 @@ export function effective_outcome(
     };
 }
 
-// Maps rank selector indices to their corresponding text representations
-// The "index" numbers are the rank-selector dropdown option values.
-const rankIndexToText: Record<number, string> = {
-    5: "25 Kyu",
-    6: "24 Kyu",
-    7: "23 Kyu",
-    8: "22 Kyu",
-    9: "21 Kyu",
-    10: "20 Kyu",
-    11: "19 Kyu",
-    12: "18 Kyu",
-    13: "17 Kyu",
-    14: "16 Kyu",
-    15: "15 Kyu",
-    16: "14 Kyu",
-    17: "13 Kyu",
-    18: "12 Kyu",
-    19: "11 Kyu",
-    20: "10 Kyu",
-    21: "9 Kyu",
-    22: "8 Kyu",
-    23: "7 Kyu",
-    24: "6 Kyu",
-    25: "5 Kyu",
-    26: "4 Kyu",
-    27: "3 Kyu",
-    28: "2 Kyu",
-    29: "1 Kyu",
-    30: "1 Dan",
-    31: "2 Dan",
-    32: "3 Dan",
-    33: "4 Dan",
-    34: "5 Dan",
-    35: "6 Dan",
-    36: "7 Dan",
-    37: "8 Dan",
-    38: "9 Dan+",
-};
-
 /**
  * Converts a rank selector index to its text representation
  * @param index The rank selector index (5-38)
  * @returns The text representation of the rank
  */
 export function rankSelectorIndexToText(index: number): string {
-    const text = rankIndexToText[index];
-    if (!text) {
-        throw new Error(`Invalid rank selector index: ${index}. Must be between 5 and 38.`);
-    }
-    return text;
+    return rankString(index) + (index === 38 ? "+" : "");
 }

@@ -57,6 +57,8 @@ export const cmWPreferredSettingsRankTest = async ({ browser }: { browser: Brows
     await checkbox.setChecked(true);
     await challengerPage.waitForSelector("#challenge-min-rank:not([disabled])");
     await challengerPage.selectOption("#challenge-min-rank", getRankIndex("25 Kyu"));
+    await challengerPage.waitForSelector("#challenge-max-rank:not([disabled])");
+    await challengerPage.selectOption("#challenge-max-rank", getRankIndex("9 Dan+"));
 
     // When we change the settings, we get the option to add the new setting
 
@@ -64,6 +66,9 @@ export const cmWPreferredSettingsRankTest = async ({ browser }: { browser: Brows
     await addButton.click();
 
     // Good, this means that rank restrictions are giving us new settings.
+
+    // (more diligent testing would check individually if min and max work,
+    //  and whether the description strings are correct, but this will do for now...)
 
     // Check if we can select the original and have the rank restriction removed
 
