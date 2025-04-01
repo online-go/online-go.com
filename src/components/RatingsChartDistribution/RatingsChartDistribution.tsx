@@ -212,6 +212,11 @@ const RatingsChartDistribution: React.FC<RatingsChartDistributionProps> = ({
         effectiveMaxRating: number;
     } | null>(null);
 
+    const truncatedPlayerName =
+        otherPlayerName && otherPlayerName.length > 20
+            ? `${otherPlayerName.substring(0, 20)}...`
+            : otherPlayerName;
+
     React.useEffect(() => {
         const fetchData = async () => {
             const data = await createRatingDistribution();
@@ -345,7 +350,7 @@ const RatingsChartDistribution: React.FC<RatingsChartDistributionProps> = ({
                                   strokeWidth: 2,
                                   strokeDasharray: "10,0",
                               },
-                              legend: otherPlayerName,
+                              legend: truncatedPlayerName,
                               legendPosition: "top" as const,
                               legendOrientation: "horizontal" as const,
                               textStyle: {
@@ -483,7 +488,7 @@ const RatingsChartDistribution: React.FC<RatingsChartDistributionProps> = ({
                                   "{{name}} has a higher rating than {{percentile}}% of players",
                               ),
                               {
-                                  name: otherPlayerName || _("User"),
+                                  name: truncatedPlayerName || _("User"),
                                   percentile: percentile.toFixed(2),
                               },
                           )}
