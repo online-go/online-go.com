@@ -57,7 +57,7 @@ jobs:
               run: yarn build-ci
 
             - name: Tests
-              run: yarn test
+              run: yarn test:ci
 
             - uses: streetsidesoftware/cspell-action@v6
               with:
