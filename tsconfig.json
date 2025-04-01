@@ -4,6 +4,7 @@
     "compilerOptions": {
         "outDir": "./dist/",
         "target": "es2015",
+        "module": "esnext",
         "moduleResolution": "node",
         "isolatedModules": true,
         "esModuleInterop": true,
