@@ -17,10 +17,11 @@
 
 import * as React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
-import { ChallengeModalBody, ChallengeModalProperties } from "./ChallengeModal";
+import { ChallengeModalBody } from "./ChallengeModal";
 import { JGOFTimeControl, JGOFTimeControlSpeed } from "goban";
 
 import { post } from "@/lib/requests";
+import { ChallengeModalProperties } from "@/components/ChallengeModal/ChallengeModal.types";
 
 // Mock preferences first to prevent data.setDefault error
 jest.mock("@/lib/preferences", () => ({
