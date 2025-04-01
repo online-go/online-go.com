@@ -17,7 +17,9 @@
 
 import { ogsTest } from "@helpers";
 import { smokeRegisterLogoutLogin } from "./smoke-register-operations";
+import { smokeCssSanityTest } from "./smoke-css-sanity";
 
 ogsTest.describe("@Smoke Basic self contained tests to confirm server is functional", () => {
     ogsTest("Should be able to register, logout, login", smokeRegisterLogoutLogin);
+    ogsTest("Basic screenshots should look right", smokeCssSanityTest);
 });

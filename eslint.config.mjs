@@ -205,4 +205,13 @@ export default [
             "@typescript-eslint/no-floating-promises": "off",
         },
     },
+    {
+        files: ["**/e2e-tests/**/*.ts"],
+        languageOptions: {
+            globals: {
+                ...globals.browser,
+                expect: "readonly",
+            },
+        },
+    },
 ];
