@@ -29,7 +29,7 @@ export const smokeCssSanityTest = async ({ browser }: { browser: Browser }) => {
     await expect(userPage).toHaveScreenshot("initial-page.png", {
         fullPage: true,
         stylePath: path.join(currentDir, "screenshot_mask.css"),
-        maxDiffPixelRatio: 0.015, // experience shows some jitter of top right icon rendering
+        maxDiffPixelRatio: 0.001, // experience shows some jitter of top right icon rendering
     });
 
     await goToProfile(userPage);
@@ -37,7 +37,7 @@ export const smokeCssSanityTest = async ({ browser }: { browser: Browser }) => {
     await expect(userPage).toHaveScreenshot("profile-page.png", {
         fullPage: true,
         stylePath: path.join(currentDir, "screenshot_mask.css"),
-        maxDiffPixelRatio: 0.015, // experience shows some jitter of top right icon rendering
+        maxDiffPixelRatio: 0.001, // experience shows some jitter of top right icon rendering
     });
 
     await userPage.close();
