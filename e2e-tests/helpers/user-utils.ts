@@ -85,7 +85,7 @@ export const goToProfile = async (userPage: Page) => {
     await menuLink.hover(); // Ensure the dropdown stays open
     await menuLink.click();
 
-    const profileLink = userPage.getByRole("link", { name: "Profile" });
+    const profileLink = userPage.getByRole("link", { name: "Profile", exact: true });
     await expect(profileLink).toBeVisible();
     await expect(profileLink).toBeEnabled();
     await profileLink.click();
