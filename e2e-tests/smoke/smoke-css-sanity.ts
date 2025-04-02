@@ -57,5 +57,12 @@ export const smokeCssSanityTest = async ({ browser }: { browser: Browser }) => {
         maxDiffPixelRatio: 0.001,
     });
 
+    await userPage.goto("/groups");
+    await expect(userPage).toHaveScreenshot("groups-page.png", {
+        fullPage: true,
+        stylePath: path.join(currentDir, "groups_screenshot_mask.css"),
+        maxDiffPixelRatio: 0.001,
+    });
+
     await userPage.close();
 };
