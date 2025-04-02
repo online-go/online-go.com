@@ -72,15 +72,15 @@ jobs:
             - name: Cache Playwright Docker image
               run: |
                 # Try to pull from our cache first
-                if docker pull ghcr.io/${{ github.repository }}/playwright:v1.51.0-noble; then
+                if docker pull ghcr.io/online-go/playwright:v1.51.0-noble; then
                   echo "Successfully pulled cached Playwright image"
                 else
                   echo "Cache miss - pulling from Microsoft registry"
                   # Pull from Microsoft and tag for our cache
                   docker pull mcr.microsoft.com/playwright:v1.51.0-noble
-                  docker tag mcr.microsoft.com/playwright:v1.51.0-noble ghcr.io/${{ github.repository }}/playwright:v1.51.0-noble
+                  docker tag mcr.microsoft.com/playwright:v1.51.0-noble ghcr.io/online-go/playwright:v1.51.0-noble
                   # Push to our cache
-                  docker push ghcr.io/${{ github.repository }}/playwright:v1.51.0-noble
+                  docker push ghcr.io/online-go/playwright:v1.51.0-noble
                 fi
 
             - name: Tests
