@@ -85,7 +85,7 @@ export const goToProfile = async (userPage: Page) => {
     await menuLink.hover(); // Ensure the dropdown stays open
     await menuLink.click();
 
-    const profileLink = userPage.getByRole("link", { name: "Profile" });
+    const profileLink = userPage.getByRole("link", { name: "Profile", exact: true });
     await expect(profileLink).toBeVisible();
     await expect(profileLink).toBeEnabled();
     await profileLink.click();
@@ -109,7 +109,10 @@ export const logoutUser = async (page: Page) => {
 export const loginAsUser = async (page: Page, username: string, password: string) => {
     await page.goto("/sign-in");
 
-    const isUserLoggedIn = await page.locator(".username").getByText(username).isVisible();
+    await page.waitForLoadState("networkidle");
+    const isUserLoggedIn = await page
+        .locator('.username:has-text("${username}")')
+        .isVisible({ timeout: 0 });
     if (isUserLoggedIn) {
         return; // We're already logged in.
     }
@@ -119,7 +122,11 @@ export const loginAsUser = async (page: Page, username: string, password: string
     await page.getByLabel("Password").fill(password);
     await page.getByRole("button", { name: /Sign in$/ }).click();
 
+    await page.waitForLoadState("networkidle");
     await expect(page.locator(".username").getByText(username)).toBeVisible();
+
+    // Save the authenticated state for Playwright
+    await page.context().storageState({ path: "playwright/.auth/user.json" });
 };
 
 export const turnOffDynamicHelp = async (page: Page) => {

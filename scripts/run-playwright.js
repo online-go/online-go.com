@@ -1,3 +1,6 @@
+// Workaround for PW needs no experimental strip types when using our
+// node 23.x.x
+
 import { spawnSync } from "child_process";
 
 const isNode23 = process.version.startsWith("v23");

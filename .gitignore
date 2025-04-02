@@ -29,4 +29,5 @@ yalc.lock
 /test-results/
 /playwright-report/
 /blob-report/
-/playwright/.cache/
+/playwright/
+/e2e-tests/playwright/

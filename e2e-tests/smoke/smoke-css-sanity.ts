@@ -29,7 +29,10 @@ export const smokeCssSanityTest = async ({ browser }: { browser: Browser }) => {
     await expect(userPage).toHaveScreenshot("initial-page.png", {
         fullPage: true,
         stylePath: path.join(currentDir, "screenshot_mask.css"),
-        maxDiffPixelRatio: 0.001, // experience shows some jitter of top right icon rendering
+        // Experience shows some jitter of top right icon rendering
+        // I think it's due to slightly variable width of the top right username
+        // container depending on the username length: could be nice to lock this.
+        maxDiffPixelRatio: 0.001,
     });
 
     await goToProfile(userPage);
@@ -37,7 +40,28 @@ export const smokeCssSanityTest = async ({ browser }: { browser: Browser }) => {
     await expect(userPage).toHaveScreenshot("profile-page.png", {
         fullPage: true,
         stylePath: path.join(currentDir, "screenshot_mask.css"),
-        maxDiffPixelRatio: 0.001, // experience shows some jitter of top right icon rendering
+        maxDiffPixelRatio: 0.001,
+    });
+
+    await userPage.goto("/ladders");
+    await expect(userPage).toHaveScreenshot("ladders-page.png", {
+        fullPage: true,
+        stylePath: path.join(currentDir, "ladders_screenshot_mask.css"),
+        maxDiffPixelRatio: 0.001,
+    });
+
+    await userPage.goto("/tournaments");
+    await expect(userPage).toHaveScreenshot("tournaments-page.png", {
+        fullPage: true,
+        stylePath: path.join(currentDir, "screenshot_mask.css"),
+        maxDiffPixelRatio: 0.001,
+    });
+
+    await userPage.goto("/groups");
+    await expect(userPage).toHaveScreenshot("groups-page.png", {
+        fullPage: true,
+        stylePath: path.join(currentDir, "groups_screenshot_mask.css"),
+        maxDiffPixelRatio: 0.001,
     });
 
     await userPage.close();

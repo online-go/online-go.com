@@ -16,6 +16,7 @@
  */
 
 import { defineConfig, devices } from "@playwright/test";
+import { checkLastRunTime } from "./e2e-tests/global-teardown";
 
 /**
  * Read environment variables from file.
@@ -32,27 +33,57 @@ import { defineConfig, devices } from "@playwright/test";
 // Load from environment or use defaults
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:8080";
 
+if (!process.env.TEST_WORKER_INDEX) {
+    // Stuff we want to do before Playwright gets going...
+
+    console.log("Environment configuration:", {
+        FRONTEND_URL,
+        CI: process.env.CI,
+    });
+
+    if (process.env.CI) {
+        console.log("Running in CI mode: SMOKE TESTS ONLY");
+    } else {
+        console.log("Running in local mode: FULL TEST SUITE (except smoketests)");
+    }
+
+    // This chicanery is all due to OGS having a 20 char limit on usernames :p
+    // That limits the resolution of unique test users based on time, so we need to
+    // make sure we don't run more tests closer together than 60 seconds.
+
+    checkLastRunTime()
+        .then(() => {
+            console.log("Last run time check completed");
+        })
+        .catch((err) => {
+            console.error("Error checking last run time:", err);
+        });
+}
+
 export default defineConfig({
+    globalTeardown: "./e2e-tests/global-teardown.ts",
     testDir: "./e2e-tests",
-    testMatch: ["**/*.spec.ts"],
+    testMatch: process.env.CI ? ["smoketests.spec.ts"] : ["**/*.spec.ts", "!**/smoketests/**"],
     timeout: 120 * 1000, // overall test timeout - we have some long multi-user tests
     expect: {
-        timeout: process.env.CI ? 30000 : 5000,
+        timeout: process.env.CI ? 30000 : 10000,
     },
 
     /* Run tests in files in parallel */
-    //fullyParallel: true,
-    fullyParallel: false, // for test development, easier to debug
+    // We currently need this to be false for full e2e suite due to contention for the reports centre
+    // The CI struggles with parallel tests, so we run them serially as well.
+    fullyParallel: false,
+
     /* Fail the build on CI if you accidentally left test.only in the source code. */
     forbidOnly: !!process.env.CI,
-    /* Retry on CI only */
-    retries: process.env.CI ? 2 : 0,
+
+    retries: 0, // we want to be stable, not retrying
 
     /* Opt out of parallel tests on CI. */
     // TBD UNCOMMENT
     //workers: process.env.CI ? 1 : undefined,
 
-    workers: 2, // for test development consider 1, easier to debug
+    workers: 1, // for test development consider 1, easier to debug
 
     /* Reporter to use. See https://playwright.dev/docs/test-reporters */
     reporter: [
@@ -115,7 +146,7 @@ export default defineConfig({
         },
     ],
 
-    /* Run your local dev server before starting the tests */
+    /* Run a local dev server before starting the tests */
     webServer: process.env.FRONTEND_URL
         ? undefined
         : {
