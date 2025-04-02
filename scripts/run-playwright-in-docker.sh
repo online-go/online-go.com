@@ -4,6 +4,9 @@
 # so that it's recognisable as a CSRF bypass at the backend
 HOST_IP="host.docker.internal"
 
+# Pull the image first to ensure we use cached version if available
+docker pull mcr.microsoft.com/playwright:v1.51.0-noble
+
 # Mounts made to allow playwright in docker to write out smoketest snapshots 
 # and failed test results if it needs to.
 
