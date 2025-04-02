@@ -62,18 +62,26 @@ jobs:
             - name: Wait for server
               run: timeout 30 bash -c 'until curl -s http://localhost:8080 > /dev/null; do sleep 1; done'
 
-            - name: Cache Playwright Docker image
-              uses: actions/cache@v4
+            - name: Login to GitHub Container Registry
+              uses: docker/login-action@v3
               with:
-                path: /tmp/playwright-docker
-                key: playwright-docker-v1.51.0
-                restore-keys: playwright-docker-
+                registry: ghcr.io
+                username: ${{ github.actor }}
+                password: ${{ secrets.GITHUB_TOKEN }}
 
-            - name: Pull Playwright Docker image
+            - name: Cache Playwright Docker image
               run: |
-                mkdir -p /tmp/playwright-docker
-                docker pull mcr.microsoft.com/playwright:v1.51.0-noble
-                docker save mcr.microsoft.com/playwright:v1.51.0-noble > /tmp/playwright-docker/playwright.tar
+                # Try to pull from our cache first
+                if docker pull ghcr.io/${{ github.repository }}/playwright:v1.51.0-noble; then
+                  echo "Successfully pulled cached Playwright image"
+                else
+                  echo "Cache miss - pulling from Microsoft registry"
+                  # Pull from Microsoft and tag for our cache
+                  docker pull mcr.microsoft.com/playwright:v1.51.0-noble
+                  docker tag mcr.microsoft.com/playwright:v1.51.0-noble ghcr.io/${{ github.repository }}/playwright:v1.51.0-noble
+                  # Push to our cache
+                  docker push ghcr.io/${{ github.repository }}/playwright:v1.51.0-noble
+                fi
 
             - name: Tests
               run: yarn test:ci
