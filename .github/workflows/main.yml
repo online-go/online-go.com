@@ -62,19 +62,6 @@ jobs:
             - name: Wait for server
               run: timeout 30 bash -c 'until curl -s http://localhost:8080 > /dev/null; do sleep 1; done'
 
-            - name: Cache Playwright Docker image
-              uses: actions/cache@v4
-              with:
-                path: /tmp/playwright-docker
-                key: playwright-docker-v1.51.0
-                restore-keys: playwright-docker-
-
-            - name: Pull Playwright Docker image
-              run: |
-                mkdir -p /tmp/playwright-docker
-                docker pull mcr.microsoft.com/playwright:v1.51.0-noble
-                docker save mcr.microsoft.com/playwright:v1.51.0-noble > /tmp/playwright-docker/playwright.tar
-
             - name: Tests
               run: yarn test:ci
 
