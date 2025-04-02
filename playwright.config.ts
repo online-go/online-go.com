@@ -42,8 +42,8 @@ export default defineConfig({
 
     /* Run tests in files in parallel */
     // We currently need this to be false for full e2e suite due to contention for the reports centre
-    // the CI only runs smoke tests, so we can be parallel there
-    fullyParallel: process.env.CI ? true : false,
+    // The CI struggles with parallel tests, so we run them serially as well.
+    fullyParallel: false,
 
     /* Fail the build on CI if you accidentally left test.only in the source code. */
     forbidOnly: !!process.env.CI,
