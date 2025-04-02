@@ -3,3 +3,8 @@ profile-page-chromium-darwin.png filter=lfs diff=lfs merge=lfs -text
 tournaments-page-chromium-darwin.png filter=lfs diff=lfs merge=lfs -text
 groups-page-chromium-darwin.png filter=lfs diff=lfs merge=lfs -text
 initial-page-chromium-darwin.png filter=lfs diff=lfs merge=lfs -text
+groups-page-chromium-linux.png filter=lfs diff=lfs merge=lfs -text
+initial-page-chromium-linux.png filter=lfs diff=lfs merge=lfs -text
+ladders-page-chromium-linux.png filter=lfs diff=lfs merge=lfs -text
+profile-page-chromium-linux.png filter=lfs diff=lfs merge=lfs -text
+tournaments-page-chromium-linux.png filter=lfs diff=lfs merge=lfs -text

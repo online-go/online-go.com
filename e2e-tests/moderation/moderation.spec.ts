@@ -24,9 +24,9 @@ import { modBlockEarlyEscapeReportTest } from "./mod-block-early-escape-report";
 import { modBlockEarlyStallingReportTest } from "./mod-block-early-stall-report";
 
 ogsTest.describe("@Mod Moderation Tests", () => {
-    ogsTest("We should warn first turn disconnectors", modWarnFirstTurnDisconnectorTest);
-    ogsTest("We should not auto-warn blitz games", modDontAutoWarnBlitzTest);
-    ogsTest("We should warn first turn escapers", modWarnFirstTurnEscapersTest);
+    ogsTest("@Slow We should warn first turn disconnectors", modWarnFirstTurnDisconnectorTest);
+    ogsTest("@Slow We should not auto-warn blitz games", modDontAutoWarnBlitzTest);
+    ogsTest("@Slow We should warn first turn escapers", modWarnFirstTurnEscapersTest);
     ogsTest("We should block early escape reports", modBlockEarlyEscapeReportTest);
     ogsTest("We should block early stalling reports", modBlockEarlyStallingReportTest);
 });

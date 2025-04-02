@@ -53,8 +53,14 @@ jobs:
             - name: Type check
               run: yarn type-check
 
-            - name: Build
+            - name: Test the Build
               run: yarn build-ci
+
+            - name: Start frontend server
+              run: yarn vite &
+
+            - name: Wait for server
+              run: timeout 30 bash -c 'until curl -s http://localhost:8080 > /dev/null; do sleep 1; done'
 
             - name: Tests
               run: yarn test:ci
