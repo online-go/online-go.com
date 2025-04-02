@@ -37,12 +37,14 @@ export default defineConfig({
     testMatch: ["**/*.spec.ts"],
     timeout: 120 * 1000, // overall test timeout - we have some long multi-user tests
     expect: {
-        timeout: process.env.CI ? 30000 : 5000,
+        timeout: process.env.CI ? 30000 : 7000,
     },
 
     /* Run tests in files in parallel */
-    //fullyParallel: true,
-    fullyParallel: false, // for test development, easier to debug
+    // We currently need this to be false for full e2e suite due to contention for the reports centre
+    // the CI only runs smoke tests, so we can be parallel there
+    fullyParallel: process.env.CI ? true : false,
+
     /* Fail the build on CI if you accidentally left test.only in the source code. */
     forbidOnly: !!process.env.CI,
     /* Retry on CI only */

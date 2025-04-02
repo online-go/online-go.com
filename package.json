@@ -22,7 +22,7 @@
         "stylus-supremacy": "stylus-supremacy format --replace --options .vscode/settings.json 'src/**/*.styl'",
         "stylus": "stylus --out dist/ --compress --include-css --sourcemap -c src/ogs.styl",
         "test": "node --experimental-vm-modules node_modules/.bin/jest",
-        "test:ci": "node scripts/run-playwright.js --grep @Smoke && node --experimental-vm-modules node_modules/.bin/jest",
+        "test:ci": "CI=true node scripts/run-playwright.js --grep @Smoke && node --experimental-vm-modules node_modules/.bin/jest",
         "fresh-test": "clear && jest",
         "spellcheck": "cspell \"src/**/*.{ts,tsx}\"",
         "minify-index": "node minify-index.js",
