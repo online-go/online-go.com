@@ -7,7 +7,7 @@ HOST_IP="host.docker.internal"
 # Mounts made to allow playwright in docker to write out smoketest snapshots 
 # and failed test results if it needs to.
 
-docker run --rm -it \
+docker run --rm \
   --add-host=host.docker.internal:host-gateway \
   -v "$(pwd):/app" \
   -v "$(pwd)/e2e-tests/smoke/smoketests.spec.ts-snapshots:/app/e2e-tests/smoke/smoketests.spec.ts-snapshots" \
