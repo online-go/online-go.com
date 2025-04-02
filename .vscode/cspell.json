@@ -1,7 +1,5 @@
 {
-    "ignorePaths": [
-        "src/views/GoTV/twitchLanguageCodes.ts"
-    ],
+    "ignorePaths": ["src/views/GoTV/twitchLanguageCodes.ts"],
     "words": [
         "abcdefghjklmnopqrstuvwxyz",
         "AFAICT",
@@ -186,7 +184,8 @@
         "yike",
         "yomi",
         "zenmode",
-        "zoomable"
+        "zoomable",
+        "testid"
     ],
     "language": "en,en-GB"
 }

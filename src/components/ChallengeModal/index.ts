@@ -16,3 +16,10 @@
  */
 
 export * from "./ChallengeModal";
+export * from "./ChallengeModal.api";
+export { challenge_text_description } from "./ChallengeModal.utils";
+export type {
+    ChallengeModalProperties,
+    ChallengeModalConfig,
+    ChallengeDetails,
+} from "./ChallengeModal.types";
