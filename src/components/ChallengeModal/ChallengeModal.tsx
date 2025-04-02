@@ -1749,7 +1749,7 @@ export class ChallengeModalBody extends React.Component<
                 width: this.state.challenge.game.width,
                 height: this.state.challenge.game.height,
                 ranked: true,
-                handicap: this.state.challenge.game.handicap,
+                handicap: this.state.challenge.game.handicap !== "0",
                 system: this.state.time_control.system,
                 speed: this.state.time_control.speed,
                 [this.state.time_control.system]: speed_settings,
@@ -1929,7 +1929,12 @@ export class ChallengeModalBody extends React.Component<
                     )}
                 </div>
                 {(mode !== "computer" || this.state.show_computer_settings) && (
-                    <div className="body">
+                    <div
+                        className={
+                            "body" +
+                            (this.state.show_computer_settings ? " computer-settings-expanded" : "")
+                        }
+                    >
                         <div className="challenge  form-inline">
                             <div className="challenge-pane-container">
                                 {this.basicSettings()}
