@@ -46,7 +46,7 @@ export const smokeCssSanityTest = async ({ browser }: { browser: Browser }) => {
     await userPage.goto("/ladders");
     await expect(userPage).toHaveScreenshot("ladders-page.png", {
         fullPage: true,
-        stylePath: path.join(currentDir, "screenshot_mask.css"),
+        stylePath: path.join(currentDir, "ladders_screenshot_mask.css"),
         maxDiffPixelRatio: 0.001,
     });
 
