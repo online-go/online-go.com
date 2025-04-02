@@ -59,7 +59,7 @@ function render_achievement_entry(entry: AchievementEntry): React.ReactElement {
             title = "Western Server Challenge Contender";
             description = "Played 100 or more games during the 2025 Western Server Challenge";
             break;
-        case "wdc2025-grand-slam":
+        case "wsc2025-grand-slam":
             title = "Western Server Challenge Grand Slam";
             description =
                 "Played 100 or more games on each size during the 2025 Western Server Challenge";
