@@ -72,6 +72,8 @@ export const prepareNewUser = async (browser: Browser, username: string, passwor
 
     await turnOffDynamicHelp(userPage); // the popups can get in the way.
 
+    await userPage.goto("/");
+
     return {
         userPage,
         userContext,
@@ -131,6 +133,7 @@ export const loginAsUser = async (page: Page, username: string, password: string
 
 export const turnOffDynamicHelp = async (page: Page) => {
     await page.goto("/settings/help");
+    await page.waitForLoadState("networkidle");
     const switchElement = page.locator(
         'div.PreferenceLine:has-text("Show dynamic help") input[role="switch"]',
     );

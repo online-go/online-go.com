@@ -24,44 +24,67 @@ import path from "path";
 const currentDir = new URL(".", import.meta.url).pathname;
 
 export const smokeCssSanityTest = async ({ browser }: { browser: Browser }) => {
+    // Look at important pages pre-login, because the layout is most stable:
+    // no "user variations" like GoTV, actual information etc!
+
+    const userContext = await browser.newContext();
+    const page = await userContext.newPage();
+    await page.goto("/");
+
+    await await expect(page).toHaveScreenshot("logged-out-initial-page.png", {
+        fullPage: true,
+    });
+
+    await page.goto("/ladders");
+    await expect(page).toHaveScreenshot("logged-out-ladders-page.png", {
+        fullPage: true,
+    });
+
+    await page.goto("/tournaments");
+    await expect(page).toHaveScreenshot("logged-out-tournaments-page.png", {
+        fullPage: true,
+    });
+
+    await page.goto("/groups");
+    await expect(page).toHaveScreenshot("logged-out-groups-page.png", {
+        fullPage: true,
+    });
+
+    // Now look at some logged in views, masking as needed...
+
     const { userPage } = await prepareNewUser(browser, newTestUsername("SmokeCss"), "test");
 
     await expect(userPage).toHaveScreenshot("initial-page.png", {
         fullPage: true,
-        stylePath: path.join(currentDir, "screenshot_mask.css"),
-        // Experience shows some jitter of top right icon rendering
-        // I think it's due to slightly variable width of the top right username
-        // container depending on the username length: could be nice to lock this.
-        maxDiffPixelRatio: 0.001,
+        stylePath: path.join(currentDir, "basic_screenshot_mask.css"),
     });
 
     await goToProfile(userPage);
 
     await expect(userPage).toHaveScreenshot("profile-page.png", {
         fullPage: true,
-        stylePath: path.join(currentDir, "screenshot_mask.css"),
-        maxDiffPixelRatio: 0.001,
+        stylePath: path.join(currentDir, "basic_screenshot_mask.css"),
     });
 
     await userPage.goto("/ladders");
+    await userPage.waitForLoadState("networkidle");
     await expect(userPage).toHaveScreenshot("ladders-page.png", {
         fullPage: true,
         stylePath: path.join(currentDir, "ladders_screenshot_mask.css"),
-        maxDiffPixelRatio: 0.001,
     });
 
     await userPage.goto("/tournaments");
+    await userPage.waitForLoadState("networkidle");
     await expect(userPage).toHaveScreenshot("tournaments-page.png", {
         fullPage: true,
-        stylePath: path.join(currentDir, "screenshot_mask.css"),
-        maxDiffPixelRatio: 0.001,
+        stylePath: path.join(currentDir, "basic_screenshot_mask.css"),
     });
 
     await userPage.goto("/groups");
+    await userPage.waitForLoadState("networkidle");
     await expect(userPage).toHaveScreenshot("groups-page.png", {
         fullPage: true,
         stylePath: path.join(currentDir, "groups_screenshot_mask.css"),
-        maxDiffPixelRatio: 0.001,
     });
 
     await userPage.close();

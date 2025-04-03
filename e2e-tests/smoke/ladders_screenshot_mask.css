@@ -1,4 +1,8 @@
-.username, .PlayerIcon, tbody, h4 {
+section.right {
+  visibility: hidden !important;
+}
+
+.username, .PlayerIcon, .GoTVIndicator, tbody, h4 {
   visibility: hidden;
 }
 

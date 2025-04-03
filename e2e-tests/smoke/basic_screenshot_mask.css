@@ -1,0 +1,8 @@
+section.right {
+  visibility: hidden !important;
+}
+
+.username, .Player, .PlayerIcon, .GoTVIndicator {
+  visibility: hidden !important;
+}
+
