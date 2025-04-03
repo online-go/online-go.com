@@ -7,6 +7,7 @@
 -   [Smoke Tests](#smoke-tests)
 
     -   [Updating the screenshots](#updating-the-screenshots)
+    -   [Debugging failed CI e2e tests](#debugging-failed-ci-e2e-tests)
 
 -   [yarn targets](#yarn-targets)
 
@@ -64,6 +65,12 @@ It will say it failed - and it will have generated new screenshots for you.
 
 If you run it again, it should pass. You can commit the screenshots and that's it.
 
+## Debugging failed CI e2e tests
+
+Playwright writes useful stuff when tests fail - screenshots and an activity log.
+
+If the e2e test fails in the CI, it stores this stuff - a link is provided in the CI build log
+
 # yarn targets
 
 There are various yarn targets that support e2e. See package.json 😝
@@ -112,7 +119,7 @@ This runs the Smoke Tests from the PW docker.
 
 Things of note:
 
--   Playwright has a "search path" that picks up \*_/_.spec.ts
+-   Playwright has a "search path" that picks up \*\*_/\*_.spec.ts
 -   The \*\* are used by us to group tests into "functional things under test"
 -   Each "functional set" has single spec.ts file in the folder called
 
