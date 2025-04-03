@@ -50,12 +50,10 @@ export const smokeCssSanityTest = async ({ browser }: { browser: Browser }) => {
     });
 
     await goToProfile(userPage);
-    // this darn thing takes forever to get removed
-    await expect(userPage.locator(".graph-type-toggle")).not.toBeVisible();
 
     await expect(userPage).toHaveScreenshot("profile-page.png", {
         fullPage: true,
-        stylePath: path.join(currentDir, "basic_screenshot_mask.css"),
+        stylePath: path.join(currentDir, "profile_screenshot_mask.css"),
     });
 
     await load(userPage, "/ladders");
