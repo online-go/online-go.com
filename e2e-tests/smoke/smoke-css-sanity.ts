@@ -19,34 +19,24 @@
 
 import { Browser, expect } from "@playwright/test";
 import { goToProfile, newTestUsername, prepareNewUser } from "@helpers/user-utils";
+import { load } from "@helpers";
 import path from "path";
 
 const currentDir = new URL(".", import.meta.url).pathname;
 
 export const smokeCssSanityTest = async ({ browser }: { browser: Browser }) => {
-    // Look at important pages pre-login, because the layout is most stable:
-    // no "user variations" like GoTV, actual information etc!
-
     const userContext = await browser.newContext();
     const page = await userContext.newPage();
-    await page.goto("/");
+    await load(page, "/");
 
     await await expect(page).toHaveScreenshot("logged-out-initial-page.png", {
         fullPage: true,
+        stylePath: path.join(currentDir, "basic_screenshot_mask.css"), // get rid of the "ObserveGames"
     });
 
-    await page.goto("/ladders");
-    await expect(page).toHaveScreenshot("logged-out-ladders-page.png", {
-        fullPage: true,
-    });
+    await load(page, "/sign-in");
 
-    await page.goto("/tournaments");
-    await expect(page).toHaveScreenshot("logged-out-tournaments-page.png", {
-        fullPage: true,
-    });
-
-    await page.goto("/groups");
-    await expect(page).toHaveScreenshot("logged-out-groups-page.png", {
+    await await expect(page).toHaveScreenshot("sign-in-page.png", {
         fullPage: true,
     });
 
@@ -60,28 +50,27 @@ export const smokeCssSanityTest = async ({ browser }: { browser: Browser }) => {
     });
 
     await goToProfile(userPage);
+    // this darn thing takes forever to get removed
+    await expect(userPage.locator(".graph-type-toggle")).not.toBeVisible();
 
     await expect(userPage).toHaveScreenshot("profile-page.png", {
         fullPage: true,
         stylePath: path.join(currentDir, "basic_screenshot_mask.css"),
     });
 
-    await userPage.goto("/ladders");
-    await userPage.waitForLoadState("networkidle");
+    await load(userPage, "/ladders");
     await expect(userPage).toHaveScreenshot("ladders-page.png", {
         fullPage: true,
         stylePath: path.join(currentDir, "ladders_screenshot_mask.css"),
     });
 
-    await userPage.goto("/tournaments");
-    await userPage.waitForLoadState("networkidle");
+    await load(userPage, "/tournaments");
     await expect(userPage).toHaveScreenshot("tournaments-page.png", {
         fullPage: true,
         stylePath: path.join(currentDir, "basic_screenshot_mask.css"),
     });
 
-    await userPage.goto("/groups");
-    await userPage.waitForLoadState("networkidle");
+    await load(userPage, "/groups");
     await expect(userPage).toHaveScreenshot("groups-page.png", {
         fullPage: true,
         stylePath: path.join(currentDir, "groups_screenshot_mask.css"),

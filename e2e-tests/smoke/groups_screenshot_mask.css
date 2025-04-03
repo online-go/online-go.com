@@ -2,7 +2,19 @@ section.right {
   visibility: hidden !important;
 }
 
-.username, .PlayerIcon, .GoTVIndicator, tbody {
-  visibility: hidden;
+.username, .PlayerIcon {
+  visibility: hidden !important;
 }
 
+tbody {
+  visibility: hidden !important;
+}
+
+/* For some reason, these borders get rendered even with tbody hidden */
+tr {
+  border: none !important;
+}
+
+td {
+  border: none !important;
+}
