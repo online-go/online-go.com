@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { DataSchema } from "@/lib/data_schema";
 import { CreatedChallengeInfo, RuleSet } from "@/lib/types";
 import {
     GobanEngineInitialState,
@@ -22,6 +23,8 @@ import {
     JGOFTimeControlSpeed,
     JGOFTimeControlSystem,
 } from "goban";
+import { TimeControl } from "../TimeControl";
+import { ViewMode } from "@/views/Game";
 
 export type ChallengeDetails = rest_api.ChallengeDetails;
 
@@ -39,6 +42,14 @@ export interface ChallengeModalProperties {
     tournamentRecordRoundId?: number;
     libraryCollectionId?: number;
     created?: (c: CreatedChallengeInfo) => void;
+}
+
+export interface ChallengeModalInput extends ChallengeModalProperties {
+    modal: {
+        close?: () => void;
+        on: (event: "open" | "close", callback: () => void) => void;
+        off: (event: "open" | "close", callback: () => void) => void;
+    };
 }
 
 /* These rejection details come from gtp2ogs and allows bots to
@@ -120,3 +131,40 @@ interface TimeControlConfig {
     periods?: number;
     pause_on_weekends: boolean;
 }
+
+export type ChallengeModalConf = {
+    mode: ChallengeModes;
+    username: string;
+    bot_id: number;
+    selected_board_size: string;
+    restrict_rank: boolean;
+};
+
+export type ChallengeModalChallengeSettings = ChallengeDetails & {
+    invite_only?: boolean;
+    boardWidth?: number;
+    boardHeight?: number;
+    game: ChallengeDetails["game"] & { speed?: JGOFTimeControlSpeed };
+};
+
+export type ChallengeModalDemoSettings = DataSchema["demo.settings"];
+
+export type ChallengeModalState = {
+    challenge: ChallengeModalChallengeSettings;
+    conf: ChallengeModalConf;
+    demo: ChallengeModalDemoSettings;
+    forking_game: boolean;
+    hide_preferred_settings_on_portrait: boolean;
+    input_value_warning: boolean;
+    preferred_settings: ChallengeDetails[];
+    selected_demo_player_black: number;
+    selected_demo_player_white: number;
+    time_control: TimeControl;
+    view_mode: ViewMode;
+    player_username_resolved?: boolean;
+    show_computer_settings?: boolean;
+    initial_state?: {
+        black: string;
+        white: string;
+    };
+};

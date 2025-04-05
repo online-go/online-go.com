@@ -55,7 +55,12 @@ import {
 } from "@/components/ChallengeModal/ChallengeModal.utils";
 import {
     ChallengeDetails,
+    ChallengeModalChallengeSettings,
+    ChallengeModalConf,
+    ChallengeModalDemoSettings,
+    ChallengeModalInput,
     ChallengeModalProperties,
+    ChallengeModalState,
     PreferredSettingOption,
     RejectionDetails,
 } from "@/components/ChallengeModal/ChallengeModal.types";
@@ -81,7 +86,7 @@ const standard_board_sizes: { [k: string]: string | undefined } = {
     "5x13": "5x13",
 };
 
-export class ChallengeModal extends Modal<{}, ChallengeModalProperties, any> {
+export class ChallengeModal extends Modal<{}, ChallengeModalProperties, ChallengeModalState> {
     constructor(props: ChallengeModalProperties) {
         super(props);
     }
@@ -91,27 +96,10 @@ export class ChallengeModal extends Modal<{}, ChallengeModalProperties, any> {
     }
 }
 
-export class ChallengeModalBody extends React.Component<
-    ChallengeModalProperties & {
-        modal: {
-            close?: () => void;
-            on: (event: "open" | "close", callback: () => void) => void;
-            off: (event: "open" | "close", callback: () => void) => void;
-        };
-    },
-    any
-> {
+export class ChallengeModalBody extends React.Component<ChallengeModalInput, ChallengeModalState> {
     ref: React.RefObject<HTMLDivElement | null> = React.createRef();
 
-    constructor(
-        props: ChallengeModalProperties & {
-            modal: {
-                close?: () => void;
-                on: (event: "open" | "close", callback: () => void) => void;
-                off: (event: "open" | "close", callback: () => void) => void;
-            };
-        },
-    ) {
+    constructor(props: ChallengeModalInput) {
         super(props);
 
         const speed = data.get("challenge.speed", "live");
@@ -752,8 +740,22 @@ export class ChallengeModalBody extends React.Component<
     };
 
     /* update bindings  */
-    update_conf_bot_id = (ev: React.ChangeEvent<HTMLSelectElement>) =>
-        this.upstate("conf.bot_id", parseInt(ev.target.value));
+    update_conf = (update_fn: (prev: ChallengeModalConf) => ChallengeModalConf): void => {
+        this.setState((prev) => ({ ...prev, conf: update_fn(prev.conf) }));
+    };
+    update_challenge_settings = (
+        update_fn: (prev: ChallengeModalChallengeSettings) => ChallengeModalChallengeSettings,
+    ): void => {
+        this.setState((prev) => ({ ...prev, challenge: update_fn(prev.challenge) }));
+    };
+    update_demo_settings = (
+        update_fn: (prev: ChallengeModalDemoSettings) => ChallengeModalDemoSettings,
+    ): void => {
+        this.setState((prev) => ({ ...prev, demo: update_fn(prev.demo) }));
+    };
+    update_bot_id = (id: number) => this.update_conf((prev) => ({ ...prev, bot_id: id }));
+
+    // TODO
     update_challenge_game_name = (ev: React.ChangeEvent<HTMLInputElement>) =>
         this.upstate(this.gameStateName("name"), ev);
     update_private = (ev: React.ChangeEvent<HTMLInputElement>) =>
@@ -907,8 +909,8 @@ export class ChallengeModalBody extends React.Component<
             const tc = updateSystem(
                 this.state.time_control,
                 "simple",
-                this.state.challenge.boardWidth,
-                this.state.challenge.boardHeight,
+                this.state.challenge.boardWidth ?? 19,
+                this.state.challenge.boardHeight ?? 19,
             );
             this.setState({
                 time_control: tc,
@@ -1749,7 +1751,7 @@ export class ChallengeModalBody extends React.Component<
                 width: this.state.challenge.game.width,
                 height: this.state.challenge.game.height,
                 ranked: true,
-                handicap: this.state.challenge.game.handicap !== "0",
+                handicap: this.state.challenge.game.handicap.toString() !== "0",
                 system: this.state.time_control.system,
                 speed: this.state.time_control.speed,
                 [this.state.time_control.system]: speed_settings,
@@ -1803,7 +1805,7 @@ export class ChallengeModalBody extends React.Component<
 
         const selected_bot_value = available_bots.find((b) => b.id === this.state.conf.bot_id);
         if (selected_bot_value?.disabled) {
-            this.upstate("conf.bot_id", 0);
+            this.update_bot_id(0);
         }
 
         return available_bots.length <= 0 ? (
@@ -1839,7 +1841,7 @@ export class ChallengeModalBody extends React.Component<
                                                 }
                                                 onClick={() => {
                                                     if (!bot.disabled) {
-                                                        this.upstate("conf.bot_id", bot.id);
+                                                        this.update_bot_id(bot.id);
                                                     }
                                                 }}
                                             >
