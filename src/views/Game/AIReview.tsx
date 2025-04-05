@@ -529,7 +529,9 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                             .slice(0, move_number + 1)
                             .reverse()
                             .find((s) => s) || 0;
-                    score = last_score;
+                    if (last_score && last_score !== 0) {
+                        score = last_score;
+                    }
                 }
             }
         }
