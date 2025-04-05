@@ -58,11 +58,13 @@ import {
     ChallengeModalChallengeSettings,
     ChallengeModalConf,
     ChallengeModalDemoSettings,
+    ChallengeModalGameSettings,
     ChallengeModalInput,
     ChallengeModalProperties,
     ChallengeModalState,
     PreferredSettingOption,
     RejectionDetails,
+    UpdateFn,
 } from "@/components/ChallengeModal/ChallengeModal.types";
 
 /* Constants  */
@@ -740,24 +742,27 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
     };
 
     /* update bindings  */
-    update_conf = (update_fn: (prev: ChallengeModalConf) => ChallengeModalConf): void => {
+
+    /* nested fn updates */
+    update_conf = (update_fn: UpdateFn<ChallengeModalConf>): void =>
         this.setState((prev) => ({ ...prev, conf: update_fn(prev.conf) }));
-    };
-    update_challenge_settings = (
-        update_fn: (prev: ChallengeModalChallengeSettings) => ChallengeModalChallengeSettings,
-    ): void => {
+    update_challenge_settings = (update_fn: UpdateFn<ChallengeModalChallengeSettings>): void =>
         this.setState((prev) => ({ ...prev, challenge: update_fn(prev.challenge) }));
-    };
-    update_demo_settings = (
-        update_fn: (prev: ChallengeModalDemoSettings) => ChallengeModalDemoSettings,
-    ): void => {
+    update_demo_settings = (update_fn: UpdateFn<ChallengeModalDemoSettings>): void =>
         this.setState((prev) => ({ ...prev, demo: update_fn(prev.demo) }));
-    };
+    update_game_settings = (update_fn: UpdateFn<ChallengeModalGameSettings>): void =>
+        this.update_challenge_settings((prev) => ({ ...prev, game: update_fn(prev.game) }));
+
+    /* direct fn updates */
     update_bot_id = (id: number) => this.update_conf((prev) => ({ ...prev, bot_id: id }));
+    update_demo_name = (name: string): void =>
+        this.update_demo_settings((prev) => ({ ...prev, name: name }));
+    update_game_name = (name: string): void =>
+        this.update_game_settings((prev) => ({ ...prev, name: name }));
+    update_challenge_game_name: (name: string) => void =
+        this.props.mode === "demo" ? this.update_demo_name : this.update_game_name;
 
     // TODO
-    update_challenge_game_name = (ev: React.ChangeEvent<HTMLInputElement>) =>
-        this.upstate(this.gameStateName("name"), ev);
     update_private = (ev: React.ChangeEvent<HTMLInputElement>) =>
         this.upstate([
             [this.gameStateName("private"), ev],
@@ -971,7 +976,9 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                                 <input
                                     type="text"
                                     value={this.gameState().name}
-                                    onChange={this.update_challenge_game_name}
+                                    onChange={(ev) =>
+                                        this.update_challenge_game_name(ev.target.value)
+                                    }
                                     className="form-control"
                                     id="challenge-game-name"
                                     placeholder={_("Game Name")}

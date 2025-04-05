@@ -140,11 +140,15 @@ export type ChallengeModalConf = {
     restrict_rank: boolean;
 };
 
+export type ChallengeModalGameSettings = ChallengeDetails["game"] & {
+    speed?: JGOFTimeControlSpeed;
+};
+
 export type ChallengeModalChallengeSettings = ChallengeDetails & {
     invite_only?: boolean;
     boardWidth?: number;
     boardHeight?: number;
-    game: ChallengeDetails["game"] & { speed?: JGOFTimeControlSpeed };
+    game: ChallengeModalGameSettings;
 };
 
 export type ChallengeModalDemoSettings = DataSchema["demo.settings"];
@@ -168,3 +172,5 @@ export type ChallengeModalState = {
         white: string;
     };
 };
+
+export type UpdateFn<T> = (prev: T) => T;
