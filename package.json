@@ -25,7 +25,7 @@
         "minify-index": "node minify-index.js",
         "dependency-cruiser": "dependency-cruiser src",
         "bundle-visualizer": "vite-bundle-visualizer -c vite.config.ts",
-        "test": "node --experimental-vm-modules node_modules/.bin/jest",
+        "test": "jest",
         "fresh-test": "clear && jest",
         "test:e2e": "node scripts/run-playwright.js ",   
         "test:e2e:quick": "node scripts/run-playwright.js --grep-invert \"@Smoke\\|@Slow\"",     
