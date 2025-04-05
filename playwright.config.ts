@@ -33,7 +33,7 @@ import { checkLastRunTime } from "./e2e-tests/global-teardown";
 // Load from environment or use defaults
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:8080";
 
-if (!process.env.TEST_WORKER_INDEX) {
+if (!process.env.TEST_WORKER_INDEX && !process.env.PW_UI) {
     // Stuff we want to do before Playwright gets going...
 
     console.log("Environment configuration:", {
@@ -71,8 +71,8 @@ export default defineConfig({
 
     /* Run tests in files in parallel */
     // We currently need this to be false for full e2e suite due to contention for the reports centre
-    // The CI struggles with parallel tests, so we run them serially as well.
-    fullyParallel: false,
+    // Fully parallel in the CI makes tests time out - everything gets too slow.
+    fullyParallel: false, //process.env.CI ? true : false,
 
     /* Fail the build on CI if you accidentally left test.only in the source code. */
     forbidOnly: !!process.env.CI,

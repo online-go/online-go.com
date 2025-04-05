@@ -24,19 +24,29 @@ export async function checkNoErrorBoundaries(page: Page) {
     }
 }
 
-// Our customisation is to make sure that no ErrorBoundary is rendered in all tests (that use this fixture)
+export async function load(page: Page, url: string) {
+    await page.goto(url);
+    await page.waitForLoadState("networkidle");
+}
 
+// Our customisation is to make sure that no ErrorBoundary is rendered in all tests (that use this fixture)
 export const ogsTest = base.extend({
+    browser: async ({ browser }, use) => {
+        await use(browser); // eslint-disable-line react-hooks/rules-of-hooks
+
+        // Check for error boundaries in all pages
+        const finalContexts = await browser.contexts();
+        for (const context of finalContexts) {
+            const pages = context.pages();
+            for (const page of pages) {
+                await checkNoErrorBoundaries(page);
+            }
+        }
+    },
+    context: async ({ context }, use) => {
+        await use(context); // eslint-disable-line react-hooks/rules-of-hooks
+    },
     page: async ({ page }, use) => {
-        // dumb linter - thinks this is a hook.
         await use(page); // eslint-disable-line react-hooks/rules-of-hooks
-        await checkNoErrorBoundaries(page);
     },
 });
-
-export async function login(page: Page, username: string, password: string) {
-    await page.click("text=Sign In");
-    await page.getByLabel("Username").fill(username);
-    await page.getByLabel("Password").fill(password);
-    await page.getByRole("button", { name: "Sign In" }).click();
-}

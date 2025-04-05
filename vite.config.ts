@@ -173,7 +173,8 @@ export default defineConfig({
             name: "welcome-message",
             configureServer(server) {
                 server.httpServer?.once("listening", () => {
-                    console.log("\n⚫ ⚪ Online-Go.com development server running...!");
+                    console.log("\n⚫ ⚪ Online-Go.com development server running!");
+                    console.log("\n Talking to ", OGS_BACKEND, " backend at ", backend_url, "\n");
                     console.log(
                         "\n⚫ ⚪ Chat with us in Slack at:\n\n   https://join.slack.com/t/online-go/shared_invite/zt-2jww58l2v-iwhhBiVsXNxcD9xm74bIKA\n",
                     );
@@ -345,7 +346,7 @@ function ogs_vite_middleware(): Plugin {
 
                         // if build file exists in i18n/build/locale, serve that instead
                         const build_file = path.resolve(config.root, "../i18n/" + url);
-                        console.log("build_file", build_file);
+                        //console.log("build_file", build_file);
                         if (await fs.stat(build_file).catch(() => false)) {
                             send_response(await fs.readFile(build_file, "utf-8"));
                             return;
