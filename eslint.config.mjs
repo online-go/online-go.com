@@ -30,6 +30,7 @@ export default [
             "**/.github",
             "**/doc",
             "**/*.js",
+            "**/*.cjs",
             "**/deployment-staging-area/",
             ".dependency-cruiser.cjs",
             ".dependency-cruiser.mjs",
