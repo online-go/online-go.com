@@ -1,0 +1,2 @@
+wsc2025-grand-slam.png filter=lfs diff=lfs merge=lfs -text
+wsc2025.png filter=lfs diff=lfs merge=lfs -text

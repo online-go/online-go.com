@@ -413,7 +413,7 @@ export function User(props: { user_id?: number }): React.ReactElement {
                                                         <span>
                                                             {pgettext(
                                                                 "label for button to hide the global distribution chart",
-                                                                "Hide distribution",
+                                                                "Hide Distribution",
                                                             )}
                                                         </span>
                                                     ) : (
@@ -435,24 +435,25 @@ export function User(props: { user_id?: number }): React.ReactElement {
                 </div>
             </div>
             <div className="ratings-row">
-                {showDistributionChart && (
-                    <div className="ratings-chart">
-                        <RatingsChartDistribution
-                            myRating={
-                                viewer.id === user.id
-                                    ? (getUserRating(user, "overall", 0).rating || 0) | 0
-                                    : undefined
-                            }
-                            otherRating={
-                                viewer.id === user.id
-                                    ? undefined
-                                    : (getUserRating(user, "overall", 0).rating || 0) | 0
-                            }
-                            otherPlayerName={viewer.id === user.id ? undefined : user.username}
-                            showRatings={show_ratings_in_rating_grid ?? true}
-                        />
-                    </div>
-                )}
+                {showDistributionChart &&
+                    (!preferences.get("hide-ranks") || temporary_show_ratings) && (
+                        <div className="ratings-chart">
+                            <RatingsChartDistribution
+                                myRating={
+                                    viewer.id === user.id
+                                        ? (getUserRating(user, "overall", 0).rating || 0) | 0
+                                        : undefined
+                                }
+                                otherRating={
+                                    viewer.id === user.id
+                                        ? undefined
+                                        : (getUserRating(user, "overall", 0).rating || 0) | 0
+                                }
+                                otherPlayerName={viewer.id === user.id ? undefined : user.username}
+                                showRatings={show_ratings_in_rating_grid ?? true}
+                            />
+                        </div>
+                    )}
             </div>
             {(!preferences.get("hide-ranks") || temporary_show_ratings) &&
                 (!user.professional || global_user.id === user.id) && (
