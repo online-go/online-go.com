@@ -1,4 +1,4 @@
-export default {
+module.exports = {
     roots: ["<rootDir>"],
     testEnvironment: "jsdom",
     testMatch: [
@@ -35,7 +35,6 @@ export default {
         "^goban$": "<rootDir>/submodules/goban/src",
         "^goscorer$": "<rootDir>/submodules/goban/src/third_party/goscorer/goscorer",
     },
-    setupFiles: ["./setup-jest.js"],
-
+    setupFiles: ["./setup-jest.cjs"],
     setupFilesAfterEnv: ["jest-chain", "@testing-library/jest-dom"],
 };

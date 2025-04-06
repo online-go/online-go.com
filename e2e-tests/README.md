@@ -1,17 +1,29 @@
 # Table of Contents
 
 -   [Overview](#overview)
+
     -   [Default tests to run](#default-tests-to-run)
--   [yarn targets](#yarn-targets)
-    -   [`test:e2e`](#teste2e)
-    -   [`test:e2e:quick`](#teste2equick)
-    -   [`test:e2e:smoke`](#teste2esmoke)
-    -   [`test:e2e:ui`](#teste2eui)
-    -   [`test:e2e:debug`](#teste2edebug)
-    -   [`test:ci`](#testci)
-    -   [`test:e2e:docker`](#teste2edocker)
-    -   [`test:e2e:docker:smoke`](#teste2edockersmoke)
+
 -   [Smoke Tests](#smoke-tests)
+
+    -   [Updating the screenshots](#updating-the-screenshots)
+    -   [Debugging failed CI e2e tests](#debugging-failed-ci-e2e-tests)
+
+-   [yarn targets](#yarn-targets)
+
+    -   `test:e2e`
+    -   `test:e2e:quick`
+    -   `test:e2e:smoke`
+    -   `test:e2e:ui`
+    -   `test:e2e:debug`
+    -   `test:ci`
+    -   `test:e2e:docker`
+    -   `test:e2e:docker:smoke`
+
+-   [Writing Tests](#writing-tests)
+
+    -   [Multi-user tests](#multi-user-tests)
+    -   [Seeded Data](#seeded-data)
 
 # Overview
 
@@ -36,6 +48,28 @@ Slow tests are skipped by the yarn "test:e2e:quick" target.
 
 Our PW config is set up so that if the environment variable `CI` is set, then Smoke Tests run,
 otherwise "all the non smoke tests" are run.
+
+# Smoke Tests
+
+The "Smoke Tests" have to be run in a docker, because they contain screenshot-based tests, which need an identical OS & Browser in order to pass.
+
+## Updating the screenshots
+
+If you need to update the screenshots, the easiest thing to do is
+
+-   Delete the reference screenshots from the folder in e2e-tests/smoke/smoketests.spec.ts-snapshots
+
+-   Run `yarn test:e2e:smoke`
+
+It will say it failed - and it will have generated new screenshots for you.
+
+If you run it again, it should pass. You can commit the screenshots and that's it.
+
+## Debugging failed CI e2e tests
+
+Playwright writes useful stuff when tests fail - screenshots and an activity log.
+
+If the e2e test fails in the CI, it stores this stuff - a link is provided in the CI build log
 
 # yarn targets
 
@@ -81,18 +115,47 @@ It does NOT set `CI` to be true, so it is a way that you can run non-Smoke tests
 
 This runs the Smoke Tests from the PW docker.
 
-# Smoke Tests
+# Writing Tests
 
-The "Smoke Tests" have to be run in a docker, because they contain screenshot-based tests, which need an identical OS & Browser in order to pass.
+Things of note:
 
-## Updating the screenshots
+-   Playwright has a "search path" that picks up \*\*_/\*_.spec.ts
+-   The \*\* are used by us to group tests into "functional things under test"
+-   Each "functional set" has single spec.ts file in the folder called
 
-If you need to update the screenshots, the easiest thing to do is
+    `func`/`function.spec.ts`
 
--   Delete the reference screenshots from the folder in e2e-tests/smoke/smoketests.spec.ts-snapshots
+-   This includes the individual tests, each of which is in its own file: NOT a .spec.ts file.
+-   Each .spec.ts file provides Playwright `@tag` for the set of tests, which is useful for selecting those tests only on the command line.
+-   Individual tests that have to wait a long time have a `@Slow` tag
+-   Which should not be taken to mean that the other tests are quick 😝
 
--   Run `yarn test:e2e:smoke`
+-   Playwright tests use a "test fixture" typically called `test`.
+    -   We have a subclassed version of this `ogsTest`
+        -   it adds checking at the end of each test that no `ErrorBoundary` appeared
 
-It will say it failed - and it will have generate new screenshots.
+## Multi-user tests
 
-If you run it again, it should pass.
+-   user-utils.ts provides helper functions for doing multi-user tests.
+    -   `prepareNewUser` creates a new browser context with the named new user logged in.
+    -   Tests must create their users from fresh each time (except see below)
+    -   `newTestUsername` provides a means of creating a unique new username.
+    -   It takes as an argument a user-identifier, which is intended to help understand what test
+        and what role this user plays in it.
+    -   \*\* _This can be at most 12 characters_
+        unfortunately a run-time failure because typing can't specify this
+        -   The reason is because it uses time to generate the uniquifier, and we only have a total
+            of 20 characters to play with in an OGS username! 8 characters gives us unique names at about 1 minute intervals.
+
+## Seeded Data
+
+-   The backend has a function (called init_e2e) that seeds (and re-seeds, to fix broken seeded data) data
+-   Tests that use seeded data say so, in comments at the top.
+-   Seeded data should not be shared between tests (it creates maintenance nightmares)
+-   There is a naming convention for seeded data entities - hopefully obvious.
+
+Why do we need seeded data?
+
+-   We can't test "moderator level" features because we can't create moderators via an API
+    -   This means that any "test data" that a moderator would put in place has to be seeded in the target DB.
+    -   Notably: this is "Community Moderators" - users with CM powers have to be seeded.

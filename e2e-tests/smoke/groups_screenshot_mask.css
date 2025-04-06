@@ -1,4 +1,20 @@
-.username, .PlayerIcon, tbody {
-  visibility: hidden;
+section.right {
+  visibility: hidden !important;
 }
 
+.username, .PlayerIcon {
+  visibility: hidden !important;
+}
+
+tbody {
+  visibility: hidden !important;
+}
+
+/* For some reason, these borders get rendered even with tbody hidden */
+tr {
+  border: none !important;
+}
+
+td {
+  border: none !important;
+}

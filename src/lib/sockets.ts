@@ -46,6 +46,9 @@ if (
 } else if (typeof process !== "undefined" && process.env.OGS_BACKEND === "LOCAL") {
     // if we're a developer using a local server, then use it for ai
     ai_host = `http://localhost:13284`;
+} else if (typeof process !== "undefined" && process.env.OGS_BACKEND === "PRODUCTION") {
+    // if we're a developer using a local server, then use it for ai
+    ai_host = `https://ai.online-go.com`;
 } else if (
     // The CI doesn't work with beta.  Note that jest in the CI has NODE_ENV==="test".
     // the .org exception is for anoek's development environment

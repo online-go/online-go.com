@@ -1,4 +1,21 @@
-.username, .PlayerIcon, tbody, h4 {
+section.right { /* NavBar changeable icons and user name */
+  visibility: hidden !important;
+}
+
+.username, .Player, .PlayerIcon { /* hide the username, player icon, and player name */
   visibility: hidden;
 }
 
+/* The content of the ladder table, which is changeable */
+tbody {
+  visibility: hidden;
+}
+
+/* For some reason, these borders get rendered even with tbody hidden */
+td {
+  border: none !important;
+}
+
+tr {
+  border: none !important;
+}

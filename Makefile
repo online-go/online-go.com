@@ -13,6 +13,9 @@ build-i18n:
 local-dev: node_modules .husky
 	export OGS_BACKEND=LOCAL && npm run dev
 
+point-to-production: node_modules .husky
+	export OGS_BACKEND=PRODUCTION && npm run dev
+
 .husky: 
 	npx husky install
 
