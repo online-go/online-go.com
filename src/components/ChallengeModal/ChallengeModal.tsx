@@ -747,9 +747,9 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
     update_conf = (update_fn: UpdateFn<ChallengeModalConf>): void =>
         this.setState((prev) => ({ ...prev, conf: update_fn(prev.conf) }));
     update_challenge_settings = (update_fn: UpdateFn<ChallengeModalChallengeSettings>): void =>
-        this.setState((prev) => ({ ...prev, challenge: update_fn(prev.challenge) }));
+        this.setState((prev) => ({ challenge: update_fn(prev.challenge) }));
     update_demo_settings = (update_fn: UpdateFn<ChallengeModalDemoSettings>): void =>
-        this.setState((prev) => ({ ...prev, demo: update_fn(prev.demo) }));
+        this.setState((prev) => ({ demo: update_fn(prev.demo) }));
     update_game_settings = (update_fn: UpdateFn<ChallengeModalGameSettings>): void =>
         this.update_challenge_settings((prev) => ({ ...prev, game: update_fn(prev.game) }));
 
@@ -811,8 +811,10 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         this.upstate(this.gameStateName("height"), parseInt(ev.target.value));
     update_rules = (ev: React.ChangeEvent<HTMLSelectElement>) =>
         this.upstate(this.gameStateName("rules"), ev);
-    update_handicap = (ev: React.ChangeEvent<HTMLSelectElement>) =>
-        this.upstate("challenge.game.handicap", ev);
+    // update_handicap = (ev: React.ChangeEvent<HTMLSelectElement>) =>
+    //     this.upstate("challenge.game.handicap", ev);
+    update_handicap = (handicap: number) =>
+        this.update_game_settings((prev) => ({ ...prev, handicap: handicap }));
 
     update_komi_auto = (ev: React.ChangeEvent<HTMLSelectElement>) => {
         const game = this.gameState();
@@ -914,8 +916,8 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
             const tc = updateSystem(
                 this.state.time_control,
                 "simple",
-                this.state.challenge.boardWidth ?? 19,
-                this.state.challenge.boardHeight ?? 19,
+                this.state.challenge.boardWidth,
+                this.state.challenge.boardHeight,
             );
             this.setState({
                 time_control: tc,
@@ -1155,7 +1157,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                     <div className="checkbox">
                         <select
                             value={game.handicap}
-                            onChange={this.update_handicap}
+                            onChange={(v) => this.update_handicap(parseInt(v.target.value))}
                             className="challenge-dropdown form-control"
                         >
                             <option
