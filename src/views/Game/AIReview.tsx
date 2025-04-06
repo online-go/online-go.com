@@ -521,6 +521,19 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                 this.ai_review.scores ? this.ai_review.scores[-1] : 0;
             }
             */
+            // Fixes when current move is out of range of ai_review.scores array
+            if (!score && score !== 0) {
+                if (scores?.some((s) => typeof s === "number")) {
+                    const last_score =
+                        scores
+                            .slice(0, move_number + 1)
+                            .reverse()
+                            .find((s) => s) || 0;
+                    if (last_score && last_score !== 0) {
+                        score = last_score;
+                    }
+                }
+            }
         }
 
         if (next_ai_review_move) {
