@@ -97,10 +97,7 @@ export function ViewReport({
 
     const updateReportState = (report: ReportDetail) => {
         setReport(report);
-        setUsersVote(
-            (report?.voters?.find((v) => v.voter_id === user.id)
-                ?.action as CommunityModerationAction) ?? null,
-        );
+        setUsersVote(report?.voters?.find((v) => v.voter_id === user.id)?.action ?? null);
         setModeratorId(report?.moderator?.id ?? null);
     };
 

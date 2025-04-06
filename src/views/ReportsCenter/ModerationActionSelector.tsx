@@ -376,8 +376,10 @@ export function ModerationActionSelector({
     const [escalation_note, setEscalationNote] = React.useState("");
     const [dissenter_note, setDissenterNote] = React.useState("");
 
-    const updateSelectedAction = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setSelectedOption(e.target.value as CommunityModerationAction);
+    const updateSelectedAction = (
+        e: React.ChangeEvent<HTMLInputElement & { value: CommunityModerationAction }>,
+    ) => {
+        setSelectedOption(e.target.value);
     };
 
     const { registerTargetItem } = React.useContext(DynamicHelp.Api);
@@ -387,7 +389,7 @@ export function ModerationActionSelector({
     // If for some reason we didn't get any actions to offer, we'll just offer "escalate"
     const action_choices: CommunityModerationAction[] = available_actions
         ? available_actions
-        : ["escalate" as CommunityModerationAction];
+        : ["escalate"];
 
     // If we're in dissent, we'll ask for a "dissent" note
     const inDissent =
@@ -483,12 +485,10 @@ export function ModerationActionSelector({
                             (selectedOption === "escalate" && !escalation_note)
                         }
                         onClick={() => {
-                            setVoted(true);
-                            submit(
-                                selectedOption as CommunityModerationAction,
-                                escalation_note,
-                                dissenter_note,
-                            );
+                            if (selectedOption) {
+                                setVoted(true);
+                                submit(selectedOption, escalation_note, dissenter_note);
+                            }
                         }}
                     >
                         {llm_pgettext("A label on a button for submitting a vote", "Vote")}

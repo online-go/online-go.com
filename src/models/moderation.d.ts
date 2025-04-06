@@ -16,7 +16,6 @@
  */
 
 declare namespace rest_api {
-    import { Vote } from "@/lib/report_util";
     import { ReportedConversation } from "@/components/Report";
 
     namespace moderation {
@@ -89,6 +88,13 @@ declare namespace rest_api {
             | "no_ai_use_evident"
             | "no_ai_use_bad_report";
 
+        // Regrettably, there's another definition of Vote in goban ServerToClient.ts
+        // I wonder how we unity the rest_api and goban interfaces...
+        export interface CommunityModeratorVote {
+            voter_id: number;
+            action: CommunityModerationAction;
+            updated: string;
+        }
         export interface ReportDetail {
             // It's the full information we get from Django when we ask for a report by id
             id: number;
@@ -130,7 +136,7 @@ declare namespace rest_api {
 
             available_actions: Array<CommunityModerationAction>;
             vote_counts: { [action: string]: number };
-            voters: Vote[]; // votes from community moderators on this report
+            voters: CommunityModeratorVote[];
             escalation_note: string;
             dissenter_note: string;
         }
