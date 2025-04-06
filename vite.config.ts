@@ -162,6 +162,7 @@ export default defineConfig({
     },
     define: {
         "process.env.NODE_ENV": JSON.stringify(process.env.NODE_ENV),
+        "process.env.OGS_BACKEND": JSON.stringify(OGS_BACKEND),
 
         /* This is for goban to let it know we are building for a front end, as opposed to server usage */
         CLIENT: true,
