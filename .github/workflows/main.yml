@@ -53,28 +53,27 @@ jobs:
             - name: Type check
               run: yarn type-check
 
-            - name: Test the Build
-              run: yarn build-ci
-
-            - name: Start frontend server
+            - name: Start frontend server for e2e tests
               run: yarn vite &
 
-            - name: Setup Docker Buildx
-              uses: docker/setup-buildx-action@v3
-
-            - name: Cache Playwright image
-              uses: docker/build-push-action@v6
+            - name: Check docker image cache presence
+              id: cache-docker-image
+              uses: actions/cache@v4
               with:
-                push: false
-                load: true
-                tags: ${{ env.PLAYWRIGHT_DOCKER }}
-                cache-from: type=gha
-                cache-to: type=gha,mode=max
-                pull: true
-                context: .
-                file: |
-                  FROM ${{ env.PLAYWRIGHT_DOCKER }}
-                  RUN echo "Caching Playwright image"
+                path: /tmp/playwright-image.tar
+                key: docker-playwright-${{ hashFiles('.github/workflows/your-workflow.yml') }}
+
+            - name: Pull Playwright image if its not cached
+              if: steps.cache-docker-image.outputs.cache-hit != 'true'
+              run: docker pull ${{ env.PLAYWRIGHT_DOCKER }}
+
+            - name: Save Docker image in cache
+              if: steps.cache-docker-image.outputs.cache-hit != 'true'
+              run: docker save ${{ env.PLAYWRIGHT_DOCKER }} > /tmp/playwright-image.tar
+
+            - name: Load Docker image
+              if: steps.cache-docker-image.outputs.cache-hit == 'true'
+              run: docker load < /tmp/playwright-image.tar
 
             - name: Check server ready, wait if needed
               run: curl -s --retry 30 --retry-delay 1 --retry-all-errors http://localhost:8080 > /dev/null
@@ -90,6 +89,9 @@ jobs:
                 path: test-results/
                 retention-days: 7
                 if-no-files-found: ignore
+
+            - name: Test the Build
+              run: yarn build-ci
 
             - uses: streetsidesoftware/cspell-action@v6
               with:
