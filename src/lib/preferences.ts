@@ -203,6 +203,7 @@ export const defaults = {
 
     "user-history.show-mod-log": false,
     "user-history.warnings-only": false,
+    "debug.test-wanted": false,
 };
 
 defaults["profanity-filter"][current_language] = true;
