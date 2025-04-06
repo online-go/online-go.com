@@ -745,7 +745,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
 
     /* nested fn updates */
     update_conf = (update_fn: UpdateFn<ChallengeModalConf>): void =>
-        this.setState((prev) => ({ ...prev, conf: update_fn(prev.conf) }));
+        this.setState((prev) => ({ conf: update_fn(prev.conf) }));
     update_challenge_settings = (update_fn: UpdateFn<ChallengeModalChallengeSettings>): void =>
         this.setState((prev) => ({ ...prev, challenge: update_fn(prev.challenge) }));
     update_demo_settings = (update_fn: UpdateFn<ChallengeModalDemoSettings>): void =>
