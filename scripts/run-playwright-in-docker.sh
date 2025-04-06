@@ -11,9 +11,6 @@ if [ -z "${PLAYWRIGHT_DOCKER}" ]; then
     exit 1
 fi
 
-# Pull the image first to ensure we use cached version if available
-docker pull $PLAYWRIGHT_DOCKER
-
 # Mounts made to allow playwright in docker to write out smoketest snapshots 
 # and failed test results if it needs to.
 
