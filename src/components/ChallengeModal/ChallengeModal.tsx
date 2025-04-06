@@ -1758,7 +1758,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                 width: this.state.challenge.game.width,
                 height: this.state.challenge.game.height,
                 ranked: true,
-                handicap: this.state.challenge.game.handicap.toString() !== "0",
+                handicap: this.state.challenge.game.handicap !== 0,
                 system: this.state.time_control.system,
                 speed: this.state.time_control.speed,
                 [this.state.time_control.system]: speed_settings,
