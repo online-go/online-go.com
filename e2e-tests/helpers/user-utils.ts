@@ -55,6 +55,8 @@ export const registerNewUser = async (browser: Browser, username: string, passwo
     const userDropdown = userPage.locator(".username").getByText(username);
     await expect(userDropdown).toBeVisible();
 
+    await userPage.waitForLoadState("networkidle");
+
     return {
         userPage,
         userContext,
