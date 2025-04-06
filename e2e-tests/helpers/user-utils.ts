@@ -13,6 +13,7 @@ import { expect } from "@playwright/test";
 import { Page, Browser } from "@playwright/test";
 
 import { expectOGSClickableByName } from "./matchers";
+import { load } from "@helpers";
 
 // This is tweaked to provide us with lots of unique usernames but also
 // a decent number of readable user-role characters, within the OGS username 20 character limit
@@ -72,6 +73,8 @@ export const prepareNewUser = async (browser: Browser, username: string, passwor
 
     await turnOffDynamicHelp(userPage); // the popups can get in the way.
 
+    await load(userPage, "/");
+
     return {
         userPage,
         userContext,
@@ -90,6 +93,8 @@ export const goToProfile = async (userPage: Page) => {
     await expect(profileLink).toBeEnabled();
     await profileLink.click();
 
+    await expect(userPage.getByText("Ratings")).toBeVisible();
+    await userPage.waitForLoadState("networkidle");
     await userPage.mouse.move(0, 0); // Move mouse away to ensure menu closes
 };
 
@@ -131,6 +136,7 @@ export const loginAsUser = async (page: Page, username: string, password: string
 
 export const turnOffDynamicHelp = async (page: Page) => {
     await page.goto("/settings/help");
+    await page.waitForLoadState("networkidle");
     const switchElement = page.locator(
         'div.PreferenceLine:has-text("Show dynamic help") input[role="switch"]',
     );
