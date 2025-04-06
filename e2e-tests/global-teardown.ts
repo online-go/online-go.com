@@ -46,7 +46,7 @@ export async function checkLastRunTime() {
         if (diffMinutes < 1) {
             const waitTime = Math.ceil((60000 - diffMs) / 1000);
             console.log(
-                `Waiting ${waitTime} seconds since last run was ${Math.round(
+                `Waiting ${waitTime} seconds for next unique username, since last run was ${Math.round(
                     diffMinutes * 60,
                 )} seconds ago`,
             );

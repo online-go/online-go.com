@@ -32,9 +32,9 @@
         "test:e2e:smoke": "yarn test:e2e:docker:smoke",
         "test:e2e:ui": "PW_UI=true node scripts/run-playwright.js --ui",
         "test:e2e:debug": "node scripts/run-playwright.js --debug",
-        "test:ci": "yarn test:e2e:docker:smoke && node --experimental-vm-modules node_modules/.bin/jest",
-        "test:e2e:docker": "scripts/run-playwright-in-docker.sh",
-        "test:e2e:docker:smoke": "CI=true scripts/run-playwright-in-docker.sh --grep @Smoke"
+        "test:ci": "yarn test:e2e:docker:smoke && yarn test",
+        "test:e2e:docker:smoke": "CI=true yarn test:e2e:docker --grep @Smoke",
+        "test:e2e:docker": "PLAYWRIGHT_DOCKER=mcr.microsoft.com/playwright:v1.51.0-noble scripts/run-playwright-in-docker.sh"
     },
     "browserslist": [
         "defaults"
