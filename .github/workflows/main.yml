@@ -59,10 +59,10 @@ jobs:
             - name: Start frontend server
               run: yarn vite &
 
-            - name: Set up Docker Buildx to pull Playwright image
+            - name: Setup Docker Buildx
               uses: docker/setup-buildx-action@v3
 
-            - name: Pull Playwright image with cache
+            - name: Cache Playwright image
               uses: docker/build-push-action@v6
               with:
                 push: false
@@ -71,6 +71,10 @@ jobs:
                 cache-from: type=gha
                 cache-to: type=gha,mode=max
                 pull: true
+                context: .
+                file: |
+                  FROM ${{ env.PLAYWRIGHT_DOCKER }}
+                  RUN echo "Caching Playwright image"
 
             - name: Check server ready, wait if needed
               run: curl -s --retry 30 --retry-delay 1 --retry-all-errors http://localhost:8080 > /dev/null
