@@ -745,7 +745,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
 
     /* nested fn updates */
     update_conf = (update_fn: UpdateFn<ChallengeModalConf>): void =>
-        this.setState((prev) => ({ ...prev, conf: update_fn(prev.conf) }));
+        this.setState((prev) => ({ conf: update_fn(prev.conf) }));
     update_challenge_settings = (update_fn: UpdateFn<ChallengeModalChallengeSettings>): void =>
         this.setState((prev) => ({ challenge: update_fn(prev.challenge) }));
     update_demo_settings = (update_fn: UpdateFn<ChallengeModalDemoSettings>): void =>
@@ -1760,7 +1760,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                 width: this.state.challenge.game.width,
                 height: this.state.challenge.game.height,
                 ranked: true,
-                handicap: this.state.challenge.game.handicap.toString() !== "0",
+                handicap: this.state.challenge.game.handicap !== 0,
                 system: this.state.time_control.system,
                 speed: this.state.time_control.speed,
                 [this.state.time_control.system]: speed_settings,
