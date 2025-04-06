@@ -13,6 +13,9 @@ on:
     # Allows you to run this workflow manually from the Actions tab
     workflow_dispatch:
 
+env:
+  PLAYWRIGHT_DOCKER: mcr.microsoft.com/playwright:v1.51.0-noble
+
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
     build:
@@ -47,8 +50,6 @@ jobs:
             - name: Eslint
               run: yarn lint
 
-            - name: Prettier check
-              run: yarn prettier:check
 
             - name: Type check
               run: yarn type-check
@@ -81,7 +82,7 @@ jobs:
             - name: Tests
               run: yarn test:ci
 
-            - name: Upload test results
+            - name: Upload e2e test failure results (if any)
               if: always() 
               uses: actions/upload-artifact@v4
               with:
@@ -93,6 +94,10 @@ jobs:
             - name: Test the Build
               run: yarn build-ci
 
-            - uses: streetsidesoftware/cspell-action@v6
+            - name: Prettier check
+              run: yarn prettier:check
+
+            - name: Spell check
+              uses: streetsidesoftware/cspell-action@v6
               with:
                   files: src/**/*.{ts,tsx}
