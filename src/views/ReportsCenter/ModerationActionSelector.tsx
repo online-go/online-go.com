@@ -21,14 +21,15 @@ import { _, llm_pgettext } from "@/lib/translate";
 import * as DynamicHelp from "react-dynamic-help";
 
 type Report = rest_api.moderation.ReportDetail;
+type CommunityModerationAction = rest_api.moderation.CommunityModerationAction;
 
 interface ModerationActionSelectorProps {
-    available_actions: string[];
+    available_actions: CommunityModerationAction[];
     vote_counts: { [action: string]: number };
-    users_vote: string | null;
+    users_vote: CommunityModerationAction | null;
     enable: boolean;
     report: Report;
-    submit: (action: string, note: string, dissenter_note: string) => void;
+    submit: (action: CommunityModerationAction, note: string, dissenter_note: string) => void;
 }
 
 // Translatable versions of the prompts for Community Moderators.
@@ -36,7 +37,7 @@ interface ModerationActionSelectorProps {
 //
 // Don't forget to update rest_api.warnings.WarningMessageId as needed: new actions usually mean new messages.
 
-const ACTION_PROMPTS = {
+const ACTION_PROMPTS: Record<CommunityModerationAction, string> = {
     annul_escaped: llm_pgettext(
         "This phrase to be translated is the label of an option for a moderator of an \
 online Go game server to select: an action to apply to a report about a game of Go. \
@@ -369,12 +370,14 @@ export function ModerationActionSelector({
     submit,
 }: ModerationActionSelectorProps): React.ReactElement {
     const [voted, setVoted] = React.useState(false);
-    const [selectedOption, setSelectedOption] = React.useState(users_vote || "");
+    const [selectedOption, setSelectedOption] = React.useState<CommunityModerationAction | "">(
+        users_vote || "",
+    );
     const [escalation_note, setEscalationNote] = React.useState("");
     const [dissenter_note, setDissenterNote] = React.useState("");
 
     const updateSelectedAction = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setSelectedOption(e.target.value);
+        setSelectedOption(e.target.value as CommunityModerationAction);
     };
 
     const { registerTargetItem } = React.useContext(DynamicHelp.Api);
@@ -382,7 +385,9 @@ export function ModerationActionSelector({
     const { ref: escalate_option } = registerTargetItem("escalate-option");
 
     // If for some reason we didn't get any actions to offer, we'll just offer "escalate"
-    const action_choices = available_actions ? available_actions : ["escalate"];
+    const action_choices: CommunityModerationAction[] = available_actions
+        ? available_actions
+        : ["escalate" as CommunityModerationAction];
 
     // If we're in dissent, we'll ask for a "dissent" note
     const inDissent =
@@ -479,7 +484,11 @@ export function ModerationActionSelector({
                         }
                         onClick={() => {
                             setVoted(true);
-                            submit(selectedOption, escalation_note, dissenter_note);
+                            submit(
+                                selectedOption as CommunityModerationAction,
+                                escalation_note,
+                                dissenter_note,
+                            );
                         }}
                     >
                         {llm_pgettext("A label on a button for submitting a vote", "Vote")}

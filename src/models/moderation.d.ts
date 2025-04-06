@@ -54,6 +54,41 @@ declare namespace rest_api {
             note?: string;
         }
 
+        // This is all the actions that we are prepared to display to a community moderator
+        // as voting options (we have translations for these)
+        export type CommunityModerationAction =
+            | "annul_escaped"
+            | "warn_escaper"
+            | "call_escaped_game_for_black"
+            | "call_escaped_game_for_white"
+            | "no_escaping"
+            | "not_escaping_cancel"
+            | "annul_stalled"
+            | "warn_staller"
+            | "call_stalled_game_for_black"
+            | "call_stalled_game_for_white"
+            | "no_stalling"
+            | "annul_score_cheat"
+            | "warn_score_cheat"
+            | "no_score_cheat"
+            | "call_score_cheat_for_black"
+            | "call_score_cheat_for_white"
+            | "annul_no_warning"
+            | "final_warning_escaping"
+            | "final_warning_stalling"
+            | "final_warning_score_cheating"
+            | "final_warning_escaping_and_annul"
+            | "final_warning_stalling_and_annul"
+            | "final_warning_score_cheating_and_annul"
+            | "warn_duplicate_reporter"
+            | "suspend_user"
+            | "suspend_user_and_annul"
+            | "escalate"
+            | "definitely_ai"
+            | "check_ai_tools"
+            | "no_ai_use_evident"
+            | "no_ai_use_bad_report";
+
         export interface ReportDetail {
             // It's the full information we get from Django when we ask for a report by id
             id: number;
@@ -93,7 +128,7 @@ declare namespace rest_api {
             automod_to_reporter?: string;
             automod_to_reported?: string;
 
-            available_actions: Array<string>; // community moderator actions
+            available_actions: Array<CommunityModerationAction>;
             vote_counts: { [action: string]: number };
             voters: Vote[]; // votes from community moderators on this report
             escalation_note: string;

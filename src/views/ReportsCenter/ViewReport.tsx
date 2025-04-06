@@ -47,6 +47,7 @@ import { PlayerCacheEntry } from "@/lib/player_cache";
 import { useEffect } from "react";
 
 type ReportDetail = rest_api.moderation.ReportDetail;
+type CommunityModerationAction = rest_api.moderation.CommunityModerationAction;
 
 interface ViewReportProps {
     report_id: number;
@@ -59,7 +60,7 @@ export function ViewReport({
 }: ViewReportProps): React.ReactElement {
     const user = useUser();
     const [report, setReport] = React.useState<ReportDetail | null>(null);
-    const [usersVote, setUsersVote] = React.useState<string | null>(null);
+    const [usersVote, setUsersVote] = React.useState<CommunityModerationAction | null>(null);
     const [isAnnulQueueModalOpen, setIsAnnulQueueModalOpen] = React.useState(false);
     const [annulQueue, setAnnulQueue] = React.useState<null | undefined | any[]>(
         report?.detected_ai_games,
@@ -96,7 +97,10 @@ export function ViewReport({
 
     const updateReportState = (report: ReportDetail) => {
         setReport(report);
-        setUsersVote(report?.voters?.find((v) => v.voter_id === user.id)?.action ?? null);
+        setUsersVote(
+            (report?.voters?.find((v) => v.voter_id === user.id)
+                ?.action as CommunityModerationAction) ?? null,
+        );
         setModeratorId(report?.moderator?.id ?? null);
     };
 
