@@ -762,7 +762,6 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
     update_challenge_game_name: (name: string) => void =
         this.props.mode === "demo" ? this.update_demo_name : this.update_game_name;
 
-    // TODO
     update_private = (ev: React.ChangeEvent<HTMLInputElement>) =>
         this.upstate([
             [this.gameStateName("private"), ev],
@@ -811,8 +810,6 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         this.upstate(this.gameStateName("height"), parseInt(ev.target.value));
     update_rules = (ev: React.ChangeEvent<HTMLSelectElement>) =>
         this.upstate(this.gameStateName("rules"), ev);
-    // update_handicap = (ev: React.ChangeEvent<HTMLSelectElement>) =>
-    //     this.upstate("challenge.game.handicap", ev);
     update_handicap = (handicap: number) =>
         this.update_game_settings((prev) => ({ ...prev, handicap: handicap }));
 
@@ -1157,7 +1154,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                     <div className="checkbox">
                         <select
                             value={game.handicap}
-                            onChange={(v) => this.update_handicap(parseInt(v.target.value))}
+                            onChange={(ev) => this.update_handicap(parseInt(ev.target.value))}
                             className="challenge-dropdown form-control"
                         >
                             <option
