@@ -22,7 +22,7 @@ import {
     ChallengeModes,
 } from "src/components/ChallengeModal/ChallengeModal.types";
 import { openModal } from "@/components/Modal";
-import { ChallengeModal, isStandardBoardSize } from "@/components/ChallengeModal";
+import { ChallengeModal, isStandardBoardSize } from "@/components/ChallengeModal/ChallengeModal";
 import { GobanEngineConfig, GobanEnginePlayerEntry, GobanRenderer } from "goban";
 import { dup } from "@/lib/misc";
 
