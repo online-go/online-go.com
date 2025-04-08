@@ -1123,6 +1123,11 @@ export function GoResources(): React.ReactElement {
                                 title="Kids Go Server"
                                 href="https://kidsgoserver.com/"
                             />,
+                            <BasicResource
+                                countries={[un]}
+                                title="Go Variants"
+                                href="https://www.govariants.com/"
+                            />,
                         ).map((elt, idx) => (
                             <dd key={idx}>{elt}</dd>
                         ))}
