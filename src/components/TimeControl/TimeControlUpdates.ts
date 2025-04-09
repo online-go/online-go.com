@@ -48,8 +48,8 @@ export function updateSpeed(
 export function updateSystem(
     old: TimeControl,
     system: TimeControlSystem,
-    boardWidth: number,
-    boardHeight: number,
+    boardWidth?: number,
+    boardHeight?: number,
 ): TimeControl {
     return recallTimeControlSettings(old.speed, system, boardWidth, boardHeight);
 }

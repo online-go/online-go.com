@@ -204,3 +204,16 @@ export function rejectionDetailsToMessage(details: RejectionDetails): string | u
             return undefined;
     }
 }
+
+// For legacy reasons, handicap can have a string value
+// when these challenge details come from local storage.
+export function sanitizeChallengeDetails(challengeDetails: ChallengeDetails): ChallengeDetails {
+    return {
+        ...challengeDetails,
+        game: { ...challengeDetails.game, handicap: Number(challengeDetails.game.handicap) },
+    };
+}
+
+export function getPreferredSettings(): ChallengeDetails[] {
+    return data.get("preferred-game-settings", []).map(sanitizeChallengeDetails);
+}

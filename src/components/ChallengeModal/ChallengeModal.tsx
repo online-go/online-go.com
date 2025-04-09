@@ -52,12 +52,21 @@ import Select from "react-select";
 import {
     rejectionDetailsToMessage,
     challenge_text_description,
+    sanitizeChallengeDetails,
+    getPreferredSettings,
 } from "@/components/ChallengeModal/ChallengeModal.utils";
 import {
     ChallengeDetails,
+    ChallengeModalChallengeSettings,
+    ChallengeModalConf,
+    ChallengeModalDemoSettings,
+    ChallengeModalGameSettings,
+    ChallengeModalInput,
     ChallengeModalProperties,
+    ChallengeModalState,
     PreferredSettingOption,
     RejectionDetails,
+    UpdateFn,
 } from "@/components/ChallengeModal/ChallengeModal.types";
 
 /* Constants  */
@@ -81,7 +90,7 @@ const standard_board_sizes: { [k: string]: string | undefined } = {
     "5x13": "5x13",
 };
 
-export class ChallengeModal extends Modal<{}, ChallengeModalProperties, any> {
+export class ChallengeModal extends Modal<{}, ChallengeModalProperties, ChallengeModalState> {
     constructor(props: ChallengeModalProperties) {
         super(props);
     }
@@ -91,53 +100,38 @@ export class ChallengeModal extends Modal<{}, ChallengeModalProperties, any> {
     }
 }
 
-export class ChallengeModalBody extends React.Component<
-    ChallengeModalProperties & {
-        modal: {
-            close?: () => void;
-            on: (event: "open" | "close", callback: () => void) => void;
-            off: (event: "open" | "close", callback: () => void) => void;
-        };
-    },
-    any
-> {
+export class ChallengeModalBody extends React.Component<ChallengeModalInput, ChallengeModalState> {
     ref: React.RefObject<HTMLDivElement | null> = React.createRef();
 
-    constructor(
-        props: ChallengeModalProperties & {
-            modal: {
-                close?: () => void;
-                on: (event: "open" | "close", callback: () => void) => void;
-                off: (event: "open" | "close", callback: () => void) => void;
-            };
-        },
-    ) {
+    constructor(props: ChallengeModalInput) {
         super(props);
 
         const speed = data.get("challenge.speed", "live");
 
-        const challenge: ChallengeDetails = data.get(`challenge.challenge.${speed}`, {
-            initialized: false,
-            min_ranking: 5,
-            max_ranking: 36,
-            challenger_color: "automatic",
-            rengo_auto_start: 0,
-            game: {
-                name: "",
-                rules: "japanese",
-                ranked: true,
-                width: 19,
-                height: 19,
-                handicap: -1,
-                komi_auto: "automatic",
-                komi: 5.5,
-                disable_analysis: false,
-                initial_state: null,
-                private: false,
-                rengo: false,
-                rengo_casual_mode: true,
-            },
-        });
+        const challenge: ChallengeDetails = sanitizeChallengeDetails(
+            data.get(`challenge.challenge.${speed}`, {
+                initialized: false,
+                min_ranking: 5,
+                max_ranking: 36,
+                challenger_color: "automatic",
+                rengo_auto_start: 0,
+                game: {
+                    name: "",
+                    rules: "japanese",
+                    ranked: true,
+                    width: 19,
+                    height: 19,
+                    handicap: -1,
+                    komi_auto: "automatic",
+                    komi: 5.5,
+                    disable_analysis: false,
+                    initial_state: null,
+                    private: false,
+                    rengo: false,
+                    rengo_casual_mode: true,
+                },
+            }),
+        );
 
         const demo = data.get("demo.settings", {
             name: "",
@@ -205,7 +199,7 @@ export class ChallengeModalBody extends React.Component<
                 ? this.props.playersList.length - 1
                 : 0,
 
-            preferred_settings: data.get("preferred-game-settings", []),
+            preferred_settings: getPreferredSettings(),
             view_mode: goban_view_mode(),
             hide_preferred_settings_on_portrait: true,
             input_value_warning: false,
@@ -289,7 +283,7 @@ export class ChallengeModalBody extends React.Component<
         if (!preferred_settings) {
             return;
         }
-        this.setState({ preferred_settings: preferred_settings });
+        this.setState({ preferred_settings: preferred_settings.map(sanitizeChallengeDetails) });
     };
 
     syncBoardSize(value: string) {
@@ -371,7 +365,7 @@ export class ChallengeModalBody extends React.Component<
     }
 
     addToPreferredSettings = () => {
-        const preferred_settings = data.get("preferred-game-settings", []);
+        const preferred_settings = getPreferredSettings();
         const challenge = JSON.parse(JSON.stringify(this.getChallenge()));
         preferred_settings.push(challenge);
         data.set(
@@ -385,7 +379,7 @@ export class ChallengeModalBody extends React.Component<
     };
 
     deletePreferredSetting = (index: number) => {
-        const preferred_settings = data.get("preferred-game-settings", []);
+        const preferred_settings = getPreferredSettings();
         preferred_settings.splice(index, 1);
         data.set(
             "preferred-game-settings",
@@ -395,7 +389,7 @@ export class ChallengeModalBody extends React.Component<
     };
 
     usePreferredSetting = (index: number) => {
-        const preferred_settings = data.get("preferred-game-settings", []);
+        const preferred_settings = getPreferredSettings();
         const setting: ChallengeDetails = JSON.parse(JSON.stringify(preferred_settings[index]));
         if (this.props.mode !== "open") {
             setting.rengo_auto_start = 0;
@@ -752,10 +746,26 @@ export class ChallengeModalBody extends React.Component<
     };
 
     /* update bindings  */
-    update_conf_bot_id = (ev: React.ChangeEvent<HTMLSelectElement>) =>
-        this.upstate("conf.bot_id", parseInt(ev.target.value));
-    update_challenge_game_name = (ev: React.ChangeEvent<HTMLInputElement>) =>
-        this.upstate(this.gameStateName("name"), ev);
+
+    /* nested fn updates */
+    update_conf = (update_fn: UpdateFn<ChallengeModalConf>): void =>
+        this.setState((prev) => ({ conf: update_fn(prev.conf) }));
+    update_challenge_settings = (update_fn: UpdateFn<ChallengeModalChallengeSettings>): void =>
+        this.setState((prev) => ({ challenge: update_fn(prev.challenge) }));
+    update_demo_settings = (update_fn: UpdateFn<ChallengeModalDemoSettings>): void =>
+        this.setState((prev) => ({ demo: update_fn(prev.demo) }));
+    update_game_settings = (update_fn: UpdateFn<ChallengeModalGameSettings>): void =>
+        this.update_challenge_settings((prev) => ({ ...prev, game: update_fn(prev.game) }));
+
+    /* direct fn updates */
+    update_bot_id = (id: number) => this.update_conf((prev) => ({ ...prev, bot_id: id }));
+    update_demo_name = (name: string): void =>
+        this.update_demo_settings((prev) => ({ ...prev, name: name }));
+    update_game_name = (name: string): void =>
+        this.update_game_settings((prev) => ({ ...prev, name: name }));
+    update_challenge_game_name: (name: string) => void =
+        this.props.mode === "demo" ? this.update_demo_name : this.update_game_name;
+
     update_private = (ev: React.ChangeEvent<HTMLInputElement>) =>
         this.upstate([
             [this.gameStateName("private"), ev],
@@ -804,8 +814,8 @@ export class ChallengeModalBody extends React.Component<
         this.upstate(this.gameStateName("height"), parseInt(ev.target.value));
     update_rules = (ev: React.ChangeEvent<HTMLSelectElement>) =>
         this.upstate(this.gameStateName("rules"), ev);
-    update_handicap = (ev: React.ChangeEvent<HTMLSelectElement>) =>
-        this.upstate("challenge.game.handicap", ev);
+    update_handicap = (handicap: number) =>
+        this.update_game_settings((prev) => ({ ...prev, handicap: handicap }));
 
     update_komi_auto = (ev: React.ChangeEvent<HTMLSelectElement>) => {
         const game = this.gameState();
@@ -969,7 +979,9 @@ export class ChallengeModalBody extends React.Component<
                                 <input
                                     type="text"
                                     value={this.gameState().name}
-                                    onChange={this.update_challenge_game_name}
+                                    onChange={(ev) =>
+                                        this.update_challenge_game_name(ev.target.value)
+                                    }
                                     className="form-control"
                                     id="challenge-game-name"
                                     placeholder={_("Game Name")}
@@ -1146,7 +1158,7 @@ export class ChallengeModalBody extends React.Component<
                     <div className="checkbox">
                         <select
                             value={game.handicap}
-                            onChange={this.update_handicap}
+                            onChange={(ev) => this.update_handicap(parseInt(ev.target.value))}
                             className="challenge-dropdown form-control"
                         >
                             <option
@@ -1749,7 +1761,7 @@ export class ChallengeModalBody extends React.Component<
                 width: this.state.challenge.game.width,
                 height: this.state.challenge.game.height,
                 ranked: true,
-                handicap: this.state.challenge.game.handicap !== "0",
+                handicap: this.state.challenge.game.handicap !== 0,
                 system: this.state.time_control.system,
                 speed: this.state.time_control.speed,
                 [this.state.time_control.system]: speed_settings,
@@ -1803,7 +1815,7 @@ export class ChallengeModalBody extends React.Component<
 
         const selected_bot_value = available_bots.find((b) => b.id === this.state.conf.bot_id);
         if (selected_bot_value?.disabled) {
-            this.upstate("conf.bot_id", 0);
+            this.update_bot_id(0);
         }
 
         return available_bots.length <= 0 ? (
@@ -1839,7 +1851,7 @@ export class ChallengeModalBody extends React.Component<
                                                 }
                                                 onClick={() => {
                                                     if (!bot.disabled) {
-                                                        this.upstate("conf.bot_id", bot.id);
+                                                        this.update_bot_id(bot.id);
                                                     }
                                                 }}
                                             >
