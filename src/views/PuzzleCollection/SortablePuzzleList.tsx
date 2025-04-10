@@ -146,6 +146,11 @@ function PuzzleEntry({ puzzle }: { puzzle: PuzzleEntryInterface }) {
             <span className="difficulty">{longRankString(puzzle.rank)}</span>
             <button
                 className="edit"
+                onTouchStart={(ev) => {
+                    ev.stopPropagation();
+                    ev.preventDefault();
+                    navigateTo(`/puzzle/${puzzle.id}`, ev);
+                }}
                 onClick={(ev) => {
                     ev.stopPropagation();
                     ev.preventDefault();
