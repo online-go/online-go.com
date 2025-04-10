@@ -30,6 +30,7 @@
     display: inline-flex;
     align-items: center;
     padding: 0.5rem;
+    max-width: calc(100% - 1.2rem);
 
     &:hover {
         themed: border-color shade4;
@@ -46,15 +47,18 @@
 
     .minigoban {
         width: 5rem;
+        flex-shrink: 0;
     }
 
     .name {
         width: 19rem;
+        flex-shrink: 1;
         overflow: hidden;
     }
 
     .difficulty {
         width: 5rem;
+        flex-shrink: 0;
         overflow: hidden;
     }
 }
