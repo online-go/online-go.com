@@ -33,6 +33,8 @@ export async function expectOGSClickableByName(page: Page, name: string | RegExp
         .or(page.getByRole("link", { name }))
         .or(page.getByRole("navigation", { name }));
 
+    await element.scrollIntoViewIfNeeded();
+    await expect(element).toBeVisible();
     await expect(element).toBeOGSClickable();
     return element;
 }

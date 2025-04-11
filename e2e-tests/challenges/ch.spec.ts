@@ -17,11 +17,13 @@
 
 import { ogsTest } from "@helpers";
 
-import { cmWPreferredSettingsRankTest } from "./ch-preferred-rank";
+import { chPreferredSettingsRankTest } from "./ch-preferred-rank";
+import { chBasicCreationTest } from "./ch-basic-creation";
 
 ogsTest.describe("@Challenges Challenge Tests", () => {
     ogsTest(
         "Should be able to have different preferred settings based on rank",
-        cmWPreferredSettingsRankTest,
+        chPreferredSettingsRankTest,
     );
+    ogsTest("Should be able to create a challenge with a correct call", chBasicCreationTest);
 });

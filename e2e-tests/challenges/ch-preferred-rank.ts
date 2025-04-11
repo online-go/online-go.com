@@ -22,10 +22,10 @@ import { expect } from "@playwright/test";
 
 import { newTestUsername, prepareNewUser } from "@helpers/user-utils";
 
-import { getRankIndex } from "@helpers/game-utils";
+import { getRankIndex } from "@helpers/challenge-utils";
 import { expectOGSClickableByName } from "@helpers/matchers";
 
-export const cmWPreferredSettingsRankTest = async ({ browser }: { browser: Browser }) => {
+export const chPreferredSettingsRankTest = async ({ browser }: { browser: Browser }) => {
     const { userPage: challengerPage } = await prepareNewUser(
         browser,
         newTestUsername("ChRankFussy"), // cspell:disable-line
