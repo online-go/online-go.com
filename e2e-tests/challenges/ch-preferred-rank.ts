@@ -22,7 +22,7 @@ import { expect } from "@playwright/test";
 
 import { newTestUsername, prepareNewUser } from "@helpers/user-utils";
 
-import { getRankIndex } from "@helpers/challenge-utils";
+import { getRankIndex, loadChallengeModal } from "@helpers/challenge-utils";
 import { expectOGSClickableByName } from "@helpers/matchers";
 
 export const chPreferredSettingsRankTest = async ({ browser }: { browser: Browser }) => {
@@ -32,13 +32,7 @@ export const chPreferredSettingsRankTest = async ({ browser }: { browser: Browse
         "test",
     );
 
-    await challengerPage.goto("/play");
-
-    const customGames = await expectOGSClickableByName(challengerPage, "Explore custom games");
-    await customGames.click();
-
-    const createButton = await expectOGSClickableByName(challengerPage, "Create a custom game");
-    await createButton.click();
+    await loadChallengeModal(challengerPage);
 
     // Now we save the default settings as a "preferred setting"
     // Since it's a new user, this will be "no rank restriction"

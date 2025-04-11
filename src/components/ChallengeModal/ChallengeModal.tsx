@@ -1131,6 +1131,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                     <div className="controls">
                         <div className="checkbox">
                             <select
+                                id="challenge-rules"
                                 value={this.gameState().rules}
                                 onChange={this.update_rules}
                                 className="challenge-dropdown form-control"

@@ -11,6 +11,7 @@
 
 import { expect } from "@playwright/test";
 import { Page } from "@playwright/test";
+import { expectOGSClickableByName } from "@helpers/matchers";
 
 // This defines the fields in the challenge modal form that need to be filled out.
 export interface ChallengeModalFields {
@@ -30,6 +31,25 @@ export interface ChallengeModalFields {
     // Can be either a rank index (5-38) or text like "25 Kyu", "1 Dan", etc.
     rank_min?: number | string;
     rank_max?: number | string;
+    rules?: string;
+    width?: number;
+    height?: number;
+    komi_auto?: string;
+    disable_analysis?: boolean;
+    rengo?: boolean;
+    rengo_casual_mode?: boolean;
+    pause_on_weekends?: boolean;
+    time_control_parameters?: {
+        main_time?: number;
+        period_time?: number;
+        periods?: number;
+        periods_min?: number;
+        periods_max?: number;
+        pause_on_weekends?: boolean;
+        speed?: string;
+        system?: string;
+        time_control?: string;
+    };
 }
 
 // Maps rank text to their corresponding select option indices
@@ -84,6 +104,7 @@ export const getRankIndex = (rank: number | string): string => {
     return index;
 };
 
+// This is the "default that we use to create challenges".
 export const defaultChallengeSettings: ChallengeModalFields = {
     gameName: "E2E Test game",
     boardSize: "19x19",
@@ -99,6 +120,42 @@ export const defaultChallengeSettings: ChallengeModalFields = {
     komi: "automatic",
     // Note that restrict-rank and private, rengo are not available in direct challenges,
     // so we can't default them.
+};
+
+export const createDirectChallenge = async (
+    page: Page,
+    challenged: string,
+    settings: ChallengeModalFields = {},
+) => {
+    await page.fill(".OmniSearch-input", challenged);
+    await page.waitForSelector(".results .result");
+    await page.click(`.results .result:has-text('${challenged}')`);
+    const playerLink = page.locator(`a.Player:has-text("${challenged}")`);
+    await expect(playerLink).toBeVisible();
+    await playerLink.hover(); // Ensure the dropdown stays open
+    await playerLink.click();
+
+    await expect(page.getByRole("button", { name: /Challenge$/ })).toBeVisible();
+    await page.getByRole("button", { name: /Challenge$/ }).click();
+
+    // Fill out the challenge form
+    await fillOutChallengeForm(page, settings);
+
+    // Send the challenge
+    await page.getByRole("button", { name: "Send Challenge" }).click();
+    await expect(page.getByText("Waiting for opponent")).toBeVisible();
+};
+
+export const acceptDirectChallenge = async (page: Page) => {
+    await page.goto("/");
+
+    // Click skip button if present
+    const skipButton = page.getByRole("button", { name: /skip/i });
+    if (await skipButton.isVisible()) {
+        await skipButton.click();
+    }
+
+    await page.locator(".fab.primary.raiser").click();
 };
 
 // Fill out the challenge form with the given settings.
@@ -163,38 +220,267 @@ export const fillOutChallengeForm = async (page: Page, settings: ChallengeModalF
     }
 };
 
-export const createDirectChallenge = async (
-    page: Page,
-    challenged: string,
-    settings: ChallengeModalFields = {},
-) => {
-    await page.fill(".OmniSearch-input", challenged);
-    await page.waitForSelector(".results .result");
-    await page.click(`.results .result:has-text('${challenged}')`);
-    const playerLink = page.locator(`a.Player:has-text("${challenged}")`);
-    await expect(playerLink).toBeVisible();
-    await playerLink.hover(); // Ensure the dropdown stays open
-    await playerLink.click();
-
-    await expect(page.getByRole("button", { name: /Challenge$/ })).toBeVisible();
-    await page.getByRole("button", { name: /Challenge$/ }).click();
-
-    // Fill out the challenge form
-    await fillOutChallengeForm(page, settings);
-
-    // Send the challenge
-    await page.getByRole("button", { name: "Send Challenge" }).click();
-    await expect(page.getByText("Waiting for opponent")).toBeVisible();
-};
-
-export const acceptDirectChallenge = async (page: Page) => {
-    await page.goto("/");
-
-    // Click skip button if present
-    const skipButton = page.getByRole("button", { name: /skip/i });
-    if (await skipButton.isVisible()) {
-        await skipButton.click();
+// Verify that the challenge form fields match the expected values
+export const checkChallengeForm = async (page: Page, settings: ChallengeModalFields) => {
+    if (settings.gameName) {
+        await expect(page.locator("#challenge-game-name")).toHaveValue(settings.gameName);
+    }
+    if (settings.boardSize) {
+        await expect(page.locator("#challenge-board-size")).toHaveValue(settings.boardSize);
+    }
+    if (settings.speed) {
+        await expect(page.locator("#challenge-speed")).toHaveValue(settings.speed);
+    }
+    if (settings.timeControl) {
+        await expect(page.locator("#challenge-time-control")).toHaveValue(settings.timeControl);
+    }
+    if (settings.mainTime) {
+        await expect(page.locator("#tc-main-time-byoyomi")).toHaveValue(settings.mainTime);
+    }
+    if (settings.timePerPeriod) {
+        await expect(page.locator("#tc-per-period-byoyomi")).toHaveValue(settings.timePerPeriod);
+    }
+    if (settings.periods) {
+        await expect(page.locator("#tc-periods-byoyomi")).toHaveValue(settings.periods);
     }
 
-    await page.locator(".fab.primary.raiser").click();
+    if (settings.color) {
+        await expect(page.locator("#challenge-color")).toHaveValue(settings.color);
+    }
+    if (settings.private !== undefined) {
+        const checkbox = page.locator("#challenge-private");
+        if (settings.private) {
+            await expect(checkbox).toBeChecked();
+        } else {
+            await expect(checkbox).not.toBeChecked();
+        }
+    }
+    if (settings.ranked !== undefined) {
+        const checkbox = page.locator("#challenge-ranked");
+        if (settings.ranked) {
+            await expect(checkbox).toBeChecked();
+        } else {
+            await expect(checkbox).not.toBeChecked();
+        }
+    }
+    if (settings.restrict_rank !== undefined) {
+        const checkbox = page.locator("#challenge-restrict-rank");
+        if (settings.restrict_rank) {
+            await expect(checkbox).toBeChecked();
+        } else {
+            await expect(checkbox).not.toBeChecked();
+        }
+    }
+    if (settings.rank_min !== undefined) {
+        await expect(page.locator("#challenge-min-rank")).toHaveValue(
+            getRankIndex(settings.rank_min),
+        );
+    }
+    if (settings.rank_max !== undefined) {
+        await expect(page.locator("#challenge-max-rank")).toHaveValue(
+            getRankIndex(settings.rank_max),
+        );
+    }
+    if (settings.handicap) {
+        await expect(page.locator("#challenge-handicap")).toHaveValue(settings.handicap);
+    }
+    if (settings.komi) {
+        if (settings.komi === "automatic") {
+            await expect(page.locator("#challenge-komi")).toHaveValue("automatic");
+        } else {
+            await expect(page.locator("#challenge-komi")).toHaveValue("custom");
+            await expect(page.locator("#challenge-komi-value")).toHaveValue(
+                settings.komi.toString(),
+            );
+        }
+    }
+    if (settings.rules) {
+        await expect(page.locator("#challenge-rules")).toHaveValue(settings.rules);
+    }
+    if (settings.disable_analysis !== undefined) {
+        const checkbox = page.locator("#challenge-disable-analysis");
+        if (settings.disable_analysis) {
+            await expect(checkbox).toBeChecked();
+        } else {
+            await expect(checkbox).not.toBeChecked();
+        }
+    }
+    if (settings.rengo !== undefined) {
+        const checkbox = page.locator("#rengo-option");
+        if (settings.rengo) {
+            await expect(checkbox).toBeChecked();
+
+            if (settings.rengo_casual_mode !== undefined) {
+                const checkbox = page.locator("#rengo-auto-start");
+                await expect(checkbox).toBeVisible();
+                if (settings.rengo_casual_mode) {
+                    await expect(checkbox).toBeChecked();
+                } else {
+                    await expect(checkbox).not.toBeChecked();
+                }
+            }
+        } else {
+            await expect(checkbox).not.toBeChecked();
+        }
+    }
+
+    if (settings.time_control_parameters) {
+        const params = settings.time_control_parameters;
+        if (params.main_time !== undefined) {
+            await expect(page.locator("#tc-main-time-byoyomi")).toHaveValue(
+                params.main_time.toString(),
+            );
+        }
+        if (params.period_time !== undefined) {
+            await expect(page.locator("#tc-per-period-byoyomi")).toHaveValue(
+                params.period_time.toString(),
+            );
+        }
+        if (params.periods !== undefined) {
+            await expect(page.locator("#tc-periods-byoyomi")).toHaveValue(
+                params.periods.toString(),
+            );
+        }
+        if (params.speed) {
+            await expect(page.locator("#challenge-speed")).toHaveValue(params.speed);
+        }
+        if (params.system) {
+            await expect(page.locator("#challenge-time-control")).toHaveValue(params.system);
+        }
+        if (params.time_control) {
+            await expect(page.locator("#challenge-time-control")).toHaveValue(params.time_control);
+        }
+        if (params.pause_on_weekends !== undefined) {
+            const checkbox = page.locator("#challenge-pause-on-weekends");
+            if (params.pause_on_weekends) {
+                await expect(checkbox).toBeChecked();
+            } else {
+                await expect(checkbox).not.toBeChecked();
+            }
+        }
+    }
+};
+
+export interface ChallengePOSTPayload {
+    game: {
+        name?: string;
+        rules?: string;
+        ranked?: boolean;
+        width?: number;
+        height?: number;
+        handicap?: number;
+        komi_auto?: string;
+        komi?: number | null;
+        disable_analysis?: boolean;
+        initial_state?: any;
+        private?: boolean;
+        rengo?: boolean;
+        rengo_casual_mode?: boolean;
+        time_control?: string;
+        time_control_parameters?: {
+            main_time?: number;
+            period_time?: number;
+            periods?: number;
+            periods_min?: number;
+            periods_max?: number;
+            pause_on_weekends?: boolean;
+            speed?: string;
+            system?: string;
+            time_control?: string;
+        };
+        pause_on_weekends?: boolean;
+    };
+}
+
+export const testChallengePOSTPayload = async (
+    page: Page,
+    expectedPayload: ChallengePOSTPayload,
+) => {
+    await page.route("**/challenges", async (route) => {
+        const request = route.request();
+        const requestBody = JSON.parse(request.postData() || "{}");
+
+        // Verify all game parameters
+        if (expectedPayload.game.name !== undefined) {
+            expect(requestBody.game.name).toBe(expectedPayload.game.name);
+        }
+        if (expectedPayload.game.rules !== undefined) {
+            expect(requestBody.game.rules).toBe(expectedPayload.game.rules);
+        }
+        if (expectedPayload.game.ranked !== undefined) {
+            expect(requestBody.game.ranked).toBe(expectedPayload.game.ranked);
+        }
+        if (expectedPayload.game.width !== undefined) {
+            expect(requestBody.game.width).toBe(expectedPayload.game.width);
+        }
+        if (expectedPayload.game.height !== undefined) {
+            expect(requestBody.game.height).toBe(expectedPayload.game.height);
+        }
+        if (expectedPayload.game.handicap !== undefined) {
+            expect(requestBody.game.handicap).toBe(expectedPayload.game.handicap);
+        }
+        if (expectedPayload.game.komi_auto !== undefined) {
+            expect(requestBody.game.komi_auto).toBe(expectedPayload.game.komi_auto);
+        }
+        if (expectedPayload.game.komi !== undefined) {
+            expect(requestBody.game.komi).toBe(expectedPayload.game.komi);
+        }
+        if (expectedPayload.game.disable_analysis !== undefined) {
+            expect(requestBody.game.disable_analysis).toBe(expectedPayload.game.disable_analysis);
+        }
+        if (expectedPayload.game.initial_state !== undefined) {
+            expect(requestBody.game.initial_state).toBe(expectedPayload.game.initial_state);
+        }
+        if (expectedPayload.game.private !== undefined) {
+            expect(requestBody.game.private).toBe(expectedPayload.game.private);
+        }
+        if (expectedPayload.game.rengo !== undefined) {
+            expect(requestBody.game.rengo).toBe(expectedPayload.game.rengo);
+        }
+        if (expectedPayload.game.rengo_casual_mode !== undefined) {
+            expect(requestBody.game.rengo_casual_mode).toBe(expectedPayload.game.rengo_casual_mode);
+        }
+        if (expectedPayload.game.time_control !== undefined) {
+            expect(requestBody.game.time_control).toBe(expectedPayload.game.time_control);
+        }
+        if (expectedPayload.game.time_control_parameters !== undefined) {
+            expect(requestBody.game.time_control_parameters).toEqual(
+                expectedPayload.game.time_control_parameters,
+            );
+        }
+        if (expectedPayload.game.pause_on_weekends !== undefined) {
+            expect(requestBody.game.pause_on_weekends).toBe(expectedPayload.game.pause_on_weekends);
+        }
+
+        // Abort the request after verification
+        await route.abort();
+    });
+
+    // Click the create button
+    await page.click('button:has-text("Create Game")');
+
+    // Clear the POST checker
+    await page.unroute("**/challenges");
+};
+
+export const loadChallengeModal = async (page: Page) => {
+    await page.goto("/play");
+
+    const customGames = await expectOGSClickableByName(page, "Explore custom games");
+    await customGames.click();
+
+    const createButton = await expectOGSClickableByName(page, "Create a custom game");
+    await createButton.click();
+
+    await expect(page.locator(".header")).toContainText("Custom Game");
+};
+
+// If we've loaded it before, then we don't need to click Explore Custom Games again
+export const reloadChallengeModal = async (page: Page) => {
+    await page.goto("/play");
+
+    const createButton = await expectOGSClickableByName(page, "Create a custom game");
+    await createButton.click();
+
+    await expect(page.locator(".header")).toContainText("Custom Game");
 };
