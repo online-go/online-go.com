@@ -27,7 +27,7 @@ import { expectOGSClickableByName } from "@helpers/matchers";
 export const chBasicCreationTest = async ({ browser }: { browser: Browser }) => {
     const { userPage: challengerPage } = await prepareNewUser(
         browser,
-        newTestUsername("ChRankFussy"), // cspell:disable-line
+        newTestUsername("ChBasic"), // cspell:disable-line
         "test",
     );
 
