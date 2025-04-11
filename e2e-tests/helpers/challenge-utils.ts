@@ -97,9 +97,8 @@ export const defaultChallengeSettings: ChallengeModalFields = {
     ranked: true,
     handicap: "0",
     komi: "automatic",
-    restrict_rank: false,
-    rank_min: undefined,
-    rank_max: undefined,
+    // Note that restrict-rank and private, rengo are not available in direct challenges,
+    // so we can't default them.
 };
 
 // Fill out the challenge form with the given settings.
@@ -134,17 +133,14 @@ export const fillOutChallengeForm = async (page: Page, settings: ChallengeModalF
     }
     if (final_settings.private !== undefined) {
         const checkbox = page.locator("#challenge-private");
-        await expect(checkbox).toBeEnabled();
         await checkbox.setChecked(final_settings.private);
     }
     if (final_settings.ranked) {
         const checkbox = page.locator("#challenge-ranked");
-        await expect(checkbox).toBeEnabled();
         await checkbox.setChecked(final_settings.ranked);
     }
     if (final_settings.restrict_rank !== undefined) {
         const checkbox = page.locator("#challenge-restrict-rank");
-        await expect(checkbox).toBeEnabled();
         await checkbox.setChecked(final_settings.restrict_rank);
     }
     if (final_settings.rank_min !== undefined) {
