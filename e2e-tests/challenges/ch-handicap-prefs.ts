@@ -212,4 +212,108 @@ export const chHandicapPrefsTest = async ({ browser }: { browser: Browser }) => 
             time_control: "byoyomi",
         },
     });
+
+    // Try none handicap, which is the  meaning of 0
+    await fillOutChallengeForm(challengerPage, {
+        gameName: "Handicap 2 Match",
+        handicap: "0",
+    });
+
+    await testChallengePOSTPayload(challengerPage, {
+        game: {
+            name: "Handicap 2 Match",
+            rules: "japanese",
+            ranked: true,
+            width: 19,
+            height: 19,
+            handicap: 0,
+            komi_auto: "automatic",
+            komi: null,
+            disable_analysis: false,
+            initial_state: null,
+            private: false,
+            rengo: false,
+            rengo_casual_mode: true,
+            time_control: "byoyomi",
+            time_control_parameters: {
+                main_time: 2,
+                period_time: 2,
+                periods: 1,
+                periods_min: 1,
+                periods_max: 10,
+                speed: "blitz",
+                system: "byoyomi",
+                time_control: "byoyomi",
+                pause_on_weekends: false,
+            },
+            pause_on_weekends: false,
+        },
+    });
+
+    // Load a fresh challenge page
+    await reloadChallengeModal(challengerPage);
+
+    // see if Handicap in particular is remembered
+    await checkChallengeForm(challengerPage, {
+        gameName: "Handicap 2 Match",
+        boardSize: "19x19",
+        speed: "blitz",
+        timeControl: "byoyomi",
+        mainTime: "2",
+        timePerPeriod: "2",
+        periods: "1",
+        handicap: "0",
+        komi: "automatic",
+        ranked: true,
+        private: false,
+        rules: "japanese",
+        width: 19,
+        height: 19,
+        komi_auto: "automatic",
+        disable_analysis: false,
+        rengo: false,
+        rengo_casual_mode: true,
+        time_control_parameters: {
+            main_time: 2,
+            period_time: 2,
+            periods: 1,
+            periods_min: 1,
+            periods_max: 10,
+            speed: "blitz",
+            system: "byoyomi",
+            time_control: "byoyomi",
+        },
+    });
+
+    // double check that it not only looks right, but also that the payload is correct
+    await testChallengePOSTPayload(challengerPage, {
+        game: {
+            name: "Handicap 2 Match",
+            rules: "japanese",
+            ranked: true,
+            width: 19,
+            height: 19,
+            handicap: 0,
+            komi_auto: "automatic",
+            komi: null,
+            disable_analysis: false,
+            initial_state: null,
+            private: false,
+            rengo: false,
+            rengo_casual_mode: true,
+            time_control: "byoyomi",
+            time_control_parameters: {
+                main_time: 2,
+                period_time: 2,
+                periods: 1,
+                periods_min: 1,
+                periods_max: 10,
+                speed: "blitz",
+                system: "byoyomi",
+                time_control: "byoyomi",
+                pause_on_weekends: false,
+            },
+            pause_on_weekends: false,
+        },
+    });
 };
