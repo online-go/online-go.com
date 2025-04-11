@@ -25,6 +25,8 @@ export interface ChallengeModalFields {
     private?: boolean;
     ranked?: boolean;
     restrict_rank?: boolean;
+    handicap?: string;
+    komi?: string;
     // Can be either a rank index (5-38) or text like "25 Kyu", "1 Dan", etc.
     rank_min?: number | string;
     rank_max?: number | string;
@@ -93,6 +95,8 @@ export const defaultChallengeSettings: ChallengeModalFields = {
     color: "black",
     private: false,
     ranked: true,
+    handicap: "0",
+    komi: "automatic",
     restrict_rank: false,
     rank_min: undefined,
     rank_max: undefined,
@@ -124,6 +128,7 @@ export const fillOutChallengeForm = async (page: Page, settings: ChallengeModalF
     if (final_settings.periods) {
         await page.fill("#tc-periods-byoyomi", final_settings.periods);
     }
+
     if (final_settings.color) {
         await page.selectOption("#challenge-color", final_settings.color);
     }
@@ -149,6 +154,16 @@ export const fillOutChallengeForm = async (page: Page, settings: ChallengeModalF
     if (final_settings.rank_max !== undefined) {
         await page.waitForSelector("#challenge-max-rank:not([disabled])");
         await page.selectOption("#challenge-max-rank", getRankIndex(final_settings.rank_max));
+    }
+    if (final_settings.handicap) {
+        await page.selectOption("#challenge-handicap", { value: final_settings.handicap });
+    }
+    if (final_settings.komi) {
+        // First set komi to custom if needed
+        if (final_settings.komi !== "automatic") {
+            await page.selectOption("#challenge-komi", { value: "custom" });
+            await page.fill("#challenge-komi-value", final_settings.komi.toString());
+        }
     }
 };
 

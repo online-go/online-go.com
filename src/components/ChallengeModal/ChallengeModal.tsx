@@ -1160,6 +1160,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                             value={game.handicap}
                             onChange={(ev) => this.update_handicap(parseInt(ev.target.value))}
                             className="challenge-dropdown form-control"
+                            id="challenge-handicap"
                         >
                             <option
                                 value="-1"
@@ -1192,6 +1193,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                                 value={game.komi_auto}
                                 onChange={this.update_komi_auto}
                                 className="challenge-dropdown form-control"
+                                id="challenge-komi"
                             >
                                 <option value="automatic">{_("Automatic")}</option>
                                 <option value="custom" disabled={game.ranked}>

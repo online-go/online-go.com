@@ -65,7 +65,7 @@ export const chBasicCreationTest = async ({ browser }: { browser: Browser }) => 
         expect(requestBody.game.ranked).toBe(true);
         expect(requestBody.game.width).toBe(19);
         expect(requestBody.game.height).toBe(19);
-        expect(requestBody.game.handicap).toBe(-1);
+        expect(requestBody.game.handicap).toBe(0);
         expect(requestBody.game.komi_auto).toBe("automatic");
         expect(requestBody.game.komi).toBe(null);
         expect(requestBody.game.disable_analysis).toBe(false);
