@@ -1,5 +1,7 @@
 {
-    "ignorePaths": ["src/views/GoTV/twitchLanguageCodes.ts"],
+    "ignorePaths": [
+        "src/views/GoTV/twitchLanguageCodes.ts"
+    ],
     "words": [
         "abcdefghjklmnopqrstuvwxyz",
         "AFAICT",
@@ -155,6 +157,7 @@
         "swal",
         "sweetalert",
         "tenuki",
+        "testid",
         "testuser",
         "tesuji",
         "Timecop",
@@ -170,6 +173,7 @@
         "unhighlight",
         "unitify",
         "Unranked",
+        "unroute",
         "unstarted",
         "uservoice",
         "usgc",
@@ -184,8 +188,7 @@
         "yike",
         "yomi",
         "zenmode",
-        "zoomable",
-        "testid"
+        "zoomable"
     ],
     "language": "en,en-GB"
 }

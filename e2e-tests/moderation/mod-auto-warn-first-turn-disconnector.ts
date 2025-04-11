@@ -22,11 +22,11 @@ import { Browser } from "@playwright/test";
 import { loginAsUser, newTestUsername, prepareNewUser } from "@helpers/user-utils";
 
 import {
-    acceptDirectChallenge,
-    clickInTheMiddle,
     createDirectChallenge,
+    acceptDirectChallenge,
     defaultChallengeSettings,
-} from "@helpers/game-utils";
+} from "@helpers/challenge-utils";
+import { clickInTheMiddle } from "@helpers/game-utils";
 
 import { ogsTest } from "@helpers";
 
