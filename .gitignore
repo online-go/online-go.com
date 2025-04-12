@@ -25,6 +25,9 @@ npm-debug.log
 .yalc
 yalc.lock
 
+# Coverage directory used by Jest (yarn test --coverage)
+coverage
+
 # Playwright
 /test-results/
 /playwright-report/
