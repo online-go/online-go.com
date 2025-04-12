@@ -73,6 +73,11 @@ export const chHandicapPrefsTest = async ({ browser }: { browser: Browser }) => 
     });
 
     await testChallengePOSTPayload(challengerPage, {
+        initialized: false,
+        min_ranking: -1000,
+        max_ranking: 1000,
+        challenger_color: "automatic",
+        rengo_auto_start: 0,
         game: {
             name: "Friendly Match",
             rules: "japanese",

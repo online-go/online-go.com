@@ -22,7 +22,11 @@ import { expect } from "@playwright/test";
 
 import { newTestUsername, prepareNewUser } from "@helpers/user-utils";
 
-import { getRankIndex, loadChallengeModal } from "@helpers/challenge-utils";
+import {
+    getRankIndex,
+    loadChallengeModal,
+    testChallengePOSTPayload,
+} from "@helpers/challenge-utils";
 import { expectOGSClickableByName } from "@helpers/matchers";
 
 export const chPreferredSettingsRankTest = async ({ browser }: { browser: Browser }) => {
@@ -78,4 +82,41 @@ export const chPreferredSettingsRankTest = async ({ browser }: { browser: Browse
     await expect(checkbox).not.toBeChecked();
 
     await expect(deleteButton).toBeVisible();
+
+    // Check that the payload is correct
+    await testChallengePOSTPayload(challengerPage, {
+        initialized: false,
+        min_ranking: -1000,
+        max_ranking: 1000,
+        challenger_color: "automatic",
+        rengo_auto_start: 0,
+        game: {
+            name: "Friendly Match",
+            rules: "japanese",
+            ranked: true,
+            width: 19,
+            height: 19,
+            handicap: -1,
+            komi_auto: "automatic",
+            komi: null,
+            disable_analysis: false,
+            initial_state: null,
+            private: false,
+            rengo: false,
+            rengo_casual_mode: true,
+            time_control: "byoyomi",
+            time_control_parameters: {
+                main_time: 604800,
+                period_time: 86400,
+                periods: 5,
+                periods_min: 1,
+                periods_max: 300,
+                pause_on_weekends: true,
+                speed: "correspondence",
+                system: "byoyomi",
+                time_control: "byoyomi",
+            },
+            pause_on_weekends: true,
+        },
+    });
 };

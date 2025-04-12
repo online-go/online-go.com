@@ -362,6 +362,11 @@ export const checkChallengeForm = async (page: Page, settings: ChallengeModalFie
 };
 
 export interface ChallengePOSTPayload {
+    initialized?: boolean;
+    min_ranking?: number;
+    max_ranking?: number;
+    challenger_color?: string;
+    rengo_auto_start?: number;
     game: {
         name?: string;
         rules?: string;
@@ -395,10 +400,32 @@ export interface ChallengePOSTPayload {
 export const testChallengePOSTPayload = async (
     page: Page,
     expectedPayload: ChallengePOSTPayload,
+    log_request_body: boolean = false,
 ) => {
     await page.route("**/challenges", async (route) => {
         const request = route.request();
         const requestBody = JSON.parse(request.postData() || "{}");
+
+        if (log_request_body) {
+            console.log("Challenge POST payload:", JSON.stringify(requestBody, null, 2));
+        }
+
+        // Verify top-level fields
+        if (expectedPayload.initialized !== undefined) {
+            expect(requestBody.initialized).toBe(expectedPayload.initialized);
+        }
+        if (expectedPayload.min_ranking !== undefined) {
+            expect(requestBody.min_ranking).toBe(expectedPayload.min_ranking);
+        }
+        if (expectedPayload.max_ranking !== undefined) {
+            expect(requestBody.max_ranking).toBe(expectedPayload.max_ranking);
+        }
+        if (expectedPayload.challenger_color !== undefined) {
+            expect(requestBody.challenger_color).toBe(expectedPayload.challenger_color);
+        }
+        if (expectedPayload.rengo_auto_start !== undefined) {
+            expect(requestBody.rengo_auto_start).toBe(expectedPayload.rengo_auto_start);
+        }
 
         // Verify all game parameters
         if (expectedPayload.game.name !== undefined) {
