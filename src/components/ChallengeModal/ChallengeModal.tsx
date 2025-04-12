@@ -227,10 +227,6 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
             }
 
             if (this.props.config.time_control) {
-                console.log(
-                    "Loading time control from config:",
-                    JSON.stringify(this.props.config.time_control),
-                );
                 state.time_control = this.props.config.time_control;
             }
         }
