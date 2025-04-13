@@ -160,39 +160,40 @@ export const acceptDirectChallenge = async (page: Page) => {
 
 // Fill out the challenge form with the given settings.
 // If any settings are not provided, the default values will be used for those fields.
+// If a setting is provided as undefined, it will not be touched.
 export const fillOutChallengeForm = async (page: Page, settings: ChallengeModalFields) => {
     const final_settings = { ...defaultChallengeSettings, ...settings };
 
-    if (final_settings.gameName) {
+    if (final_settings.gameName !== undefined) {
         await page.fill("#challenge-game-name", final_settings.gameName);
     }
-    if (final_settings.boardSize) {
+    if (final_settings.boardSize !== undefined) {
         await page.selectOption("#challenge-board-size", final_settings.boardSize);
     }
-    if (final_settings.speed) {
+    if (final_settings.speed !== undefined) {
         await page.selectOption("#challenge-speed", final_settings.speed);
     }
-    if (final_settings.timeControl) {
+    if (final_settings.timeControl !== undefined) {
         await page.selectOption("#challenge-time-control", final_settings.timeControl);
     }
-    if (final_settings.mainTime) {
+    if (final_settings.mainTime !== undefined) {
         await page.selectOption("#tc-main-time-byoyomi", final_settings.mainTime);
     }
-    if (final_settings.timePerPeriod) {
+    if (final_settings.timePerPeriod !== undefined) {
         await page.selectOption("#tc-per-period-byoyomi", final_settings.timePerPeriod);
     }
-    if (final_settings.periods) {
+    if (final_settings.periods !== undefined) {
         await page.fill("#tc-periods-byoyomi", final_settings.periods);
     }
 
-    if (final_settings.color) {
+    if (final_settings.color !== undefined) {
         await page.selectOption("#challenge-color", final_settings.color);
     }
     if (final_settings.private !== undefined) {
         const checkbox = page.locator("#challenge-private");
         await checkbox.setChecked(final_settings.private);
     }
-    if (final_settings.ranked) {
+    if (final_settings.ranked !== undefined) {
         const checkbox = page.locator("#challenge-ranked");
         await checkbox.setChecked(final_settings.ranked);
     }
@@ -208,15 +209,23 @@ export const fillOutChallengeForm = async (page: Page, settings: ChallengeModalF
         await page.waitForSelector("#challenge-max-rank:not([disabled])");
         await page.selectOption("#challenge-max-rank", getRankIndex(final_settings.rank_max));
     }
-    if (final_settings.handicap) {
+    if (final_settings.handicap !== undefined) {
         await page.selectOption("#challenge-handicap", { value: final_settings.handicap });
     }
-    if (final_settings.komi) {
+    if (final_settings.komi !== undefined) {
         // First set komi to custom if needed
         if (final_settings.komi !== "automatic") {
             await page.selectOption("#challenge-komi", { value: "custom" });
             await page.fill("#challenge-komi-value", final_settings.komi.toString());
         }
+    }
+
+    if (final_settings.rengo !== undefined) {
+        if (final_settings.ranked) {
+            throw new Error("Rengo games cannot be ranked");
+        }
+        const checkbox = page.locator("#rengo-option");
+        await checkbox.setChecked(final_settings.rengo);
     }
 };
 
@@ -311,16 +320,18 @@ export const checkChallengeForm = async (page: Page, settings: ChallengeModalFie
             await expect(checkbox).toBeChecked();
 
             if (settings.rengo_casual_mode !== undefined) {
-                const checkbox = page.locator("#rengo-auto-start");
-                await expect(checkbox).toBeVisible();
+                const casual_checkbox = page.locator("#rengo-casual-mode");
+                await expect(casual_checkbox).toBeVisible();
                 if (settings.rengo_casual_mode) {
-                    await expect(checkbox).toBeChecked();
+                    await expect(casual_checkbox).toBeChecked();
                 } else {
-                    await expect(checkbox).not.toBeChecked();
+                    await expect(casual_checkbox).not.toBeChecked();
                 }
             }
         } else {
             await expect(checkbox).not.toBeChecked();
+            const casual_checkbox = page.locator("#rengo-casual-mode");
+            await expect(casual_checkbox).not.toBeVisible();
         }
     }
 
@@ -384,6 +395,7 @@ export interface ChallengePOSTPayload {
         time_control?: string;
         time_control_parameters?: {
             main_time?: number;
+            per_move?: number;
             period_time?: number;
             periods?: number;
             periods_min?: number;

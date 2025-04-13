@@ -20,6 +20,8 @@ import { ogsTest } from "@helpers";
 import { chPreferredSettingsRankTest } from "./ch-preferred-rank";
 import { chBasicCreationTest } from "./ch-basic-creation";
 import { chHandicapPrefsTest } from "./ch-handicap-prefs";
+import { chRengoTest } from "./ch-rengo";
+
 ogsTest.describe("@Challenges Challenge Tests", () => {
     ogsTest("Should be able to create a challenge with a correct call", chBasicCreationTest);
     ogsTest(
@@ -27,4 +29,5 @@ ogsTest.describe("@Challenges Challenge Tests", () => {
         chPreferredSettingsRankTest,
     );
     ogsTest("Should handle handicap preferences correctly", chHandicapPrefsTest);
+    ogsTest("Should handle rengo correctly", chRengoTest);
 });
