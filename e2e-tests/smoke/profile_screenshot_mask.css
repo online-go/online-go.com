@@ -1,0 +1,17 @@
+section.right { /* NavBar changeable icons and user name */
+  visibility: hidden !important;
+}
+
+.username, .Player, .PlayerIcon { /* hide the username, player icon, and player name */
+  visibility: hidden !important;
+}
+
+/* We need to do something about this darn thing, takes ages to settle */
+.graph-type-toggle {
+  visibility: hidden !important;
+}
+
+/* And the vacation-days thing takes ages to load */
+.activity-card > div:first-of-type{
+  visibility: hidden !important;
+}

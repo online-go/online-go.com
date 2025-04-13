@@ -13,6 +13,7 @@ import { expect } from "@playwright/test";
 import { Page, Browser } from "@playwright/test";
 
 import { expectOGSClickableByName } from "./matchers";
+import { load } from "@helpers";
 
 // This is tweaked to provide us with lots of unique usernames but also
 // a decent number of readable user-role characters, within the OGS username 20 character limit
@@ -54,6 +55,8 @@ export const registerNewUser = async (browser: Browser, username: string, passwo
     const userDropdown = userPage.locator(".username").getByText(username);
     await expect(userDropdown).toBeVisible();
 
+    await userPage.waitForLoadState("networkidle");
+
     return {
         userPage,
         userContext,
@@ -65,12 +68,15 @@ export const prepareNewUser = async (browser: Browser, username: string, passwor
 
     // We need to choose _something_ to get rid of this on the Profile page:
     // typically, we don't want to see that.
-    const chooseButton = await expectOGSClickableByName(userPage, /Basic/);
+    // (Quirky regex due to variable text on the button for A/B/C testing)
+    const chooseButton = await expectOGSClickableByName(userPage, /^Basic/);
     await chooseButton.click();
 
     await expect(userPage.getByText("You're not currently playing any games")).toBeVisible();
 
     await turnOffDynamicHelp(userPage); // the popups can get in the way.
+
+    await load(userPage, "/");
 
     return {
         userPage,
@@ -85,11 +91,13 @@ export const goToProfile = async (userPage: Page) => {
     await menuLink.hover(); // Ensure the dropdown stays open
     await menuLink.click();
 
-    const profileLink = userPage.getByRole("link", { name: "Profile" });
+    const profileLink = userPage.getByRole("link", { name: "Profile", exact: true });
     await expect(profileLink).toBeVisible();
     await expect(profileLink).toBeEnabled();
     await profileLink.click();
 
+    await expect(userPage.getByText("Ratings")).toBeVisible();
+    await userPage.waitForLoadState("networkidle");
     await userPage.mouse.move(0, 0); // Move mouse away to ensure menu closes
 };
 
@@ -109,7 +117,10 @@ export const logoutUser = async (page: Page) => {
 export const loginAsUser = async (page: Page, username: string, password: string) => {
     await page.goto("/sign-in");
 
-    const isUserLoggedIn = await page.locator(".username").getByText(username).isVisible();
+    await page.waitForLoadState("networkidle");
+    const isUserLoggedIn = await page
+        .locator('.username:has-text("${username}")')
+        .isVisible({ timeout: 0 });
     if (isUserLoggedIn) {
         return; // We're already logged in.
     }
@@ -119,11 +130,16 @@ export const loginAsUser = async (page: Page, username: string, password: string
     await page.getByLabel("Password").fill(password);
     await page.getByRole("button", { name: /Sign in$/ }).click();
 
+    await page.waitForLoadState("networkidle");
     await expect(page.locator(".username").getByText(username)).toBeVisible();
+
+    // Save the authenticated state for Playwright
+    await page.context().storageState({ path: "playwright/.auth/user.json" });
 };
 
 export const turnOffDynamicHelp = async (page: Page) => {
     await page.goto("/settings/help");
+    await page.waitForLoadState("networkidle");
     const switchElement = page.locator(
         'div.PreferenceLine:has-text("Show dynamic help") input[role="switch"]',
     );

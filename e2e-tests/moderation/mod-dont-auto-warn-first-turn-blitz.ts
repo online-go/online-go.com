@@ -23,11 +23,11 @@ import { expect } from "@playwright/test";
 import { newTestUsername, prepareNewUser } from "@helpers/user-utils";
 
 import {
-    acceptDirectChallenge,
-    clickInTheMiddle,
     createDirectChallenge,
+    acceptDirectChallenge,
     defaultChallengeSettings,
-} from "@helpers/game-utils";
+} from "@helpers/challenge-utils";
+import { clickInTheMiddle } from "@helpers/game-utils";
 
 export const modDontAutoWarnBlitzTest = async ({ browser }: { browser: Browser }) => {
     const { userPage: challengerPage } = await prepareNewUser(

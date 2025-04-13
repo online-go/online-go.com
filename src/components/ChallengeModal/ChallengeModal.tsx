@@ -878,7 +878,7 @@ export class ChallengeModalBody extends React.Component<
     update_rules = (ev: React.ChangeEvent<HTMLSelectElement>) =>
         this.upstate(this.gameStateName("rules"), ev);
     update_handicap = (ev: React.ChangeEvent<HTMLSelectElement>) =>
-        this.upstate("challenge.game.handicap", ev);
+        this.upstate("challenge.game.handicap", parseInt(ev.target.value));
 
     update_komi_auto = (ev: React.ChangeEvent<HTMLSelectElement>) => {
         const game = this.gameState();
@@ -1192,6 +1192,7 @@ export class ChallengeModalBody extends React.Component<
                     <div className="controls">
                         <div className="checkbox">
                             <select
+                                id="challenge-rules"
                                 value={this.gameState().rules}
                                 onChange={this.update_rules}
                                 className="challenge-dropdown form-control"
@@ -1221,6 +1222,7 @@ export class ChallengeModalBody extends React.Component<
                             value={game.handicap}
                             onChange={this.update_handicap}
                             className="challenge-dropdown form-control"
+                            id="challenge-handicap"
                         >
                             <option
                                 value="-1"
@@ -1253,6 +1255,7 @@ export class ChallengeModalBody extends React.Component<
                                 value={game.komi_auto}
                                 onChange={this.update_komi_auto}
                                 className="challenge-dropdown form-control"
+                                id="challenge-komi"
                             >
                                 <option value="automatic">{_("Automatic")}</option>
                                 <option value="custom" disabled={game.ranked}>

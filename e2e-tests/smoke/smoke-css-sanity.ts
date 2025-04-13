@@ -19,25 +19,59 @@
 
 import { Browser, expect } from "@playwright/test";
 import { goToProfile, newTestUsername, prepareNewUser } from "@helpers/user-utils";
+import { load } from "@helpers";
 import path from "path";
 
 const currentDir = new URL(".", import.meta.url).pathname;
 
 export const smokeCssSanityTest = async ({ browser }: { browser: Browser }) => {
+    const userContext = await browser.newContext();
+    const page = await userContext.newPage();
+    await load(page, "/");
+
+    await await expect(page).toHaveScreenshot("logged-out-initial-page.png", {
+        fullPage: true,
+        stylePath: path.join(currentDir, "basic_screenshot_mask.css"), // get rid of the "ObserveGames"
+    });
+
+    await load(page, "/sign-in");
+
+    await await expect(page).toHaveScreenshot("sign-in-page.png", {
+        fullPage: true,
+    });
+
+    // Now look at some logged in views, masking as needed...
+
     const { userPage } = await prepareNewUser(browser, newTestUsername("SmokeCss"), "test");
 
     await expect(userPage).toHaveScreenshot("initial-page.png", {
         fullPage: true,
-        stylePath: path.join(currentDir, "screenshot_mask.css"),
-        maxDiffPixelRatio: 0.001, // experience shows some jitter of top right icon rendering
+        stylePath: path.join(currentDir, "basic_screenshot_mask.css"),
     });
 
     await goToProfile(userPage);
 
     await expect(userPage).toHaveScreenshot("profile-page.png", {
         fullPage: true,
-        stylePath: path.join(currentDir, "screenshot_mask.css"),
-        maxDiffPixelRatio: 0.001, // experience shows some jitter of top right icon rendering
+        stylePath: path.join(currentDir, "profile_screenshot_mask.css"),
+    });
+
+    await load(userPage, "/ladders");
+    await expect(userPage).toHaveScreenshot("ladders-page.png", {
+        fullPage: true,
+        stylePath: path.join(currentDir, "ladders_screenshot_mask.css"),
+    });
+
+    await load(userPage, "/tournaments");
+    await expect(userPage).toHaveScreenshot("tournaments-page.png", {
+        fullPage: true,
+        stylePath: path.join(currentDir, "basic_screenshot_mask.css"),
+    });
+
+    await load(userPage, "/groups");
+    await expect(userPage).toHaveScreenshot("groups-page.png", {
+        fullPage: true,
+        stylePath: path.join(currentDir, "groups_screenshot_mask.css"),
     });
 
     await userPage.close();
