@@ -68,7 +68,8 @@ export const prepareNewUser = async (browser: Browser, username: string, passwor
 
     // We need to choose _something_ to get rid of this on the Profile page:
     // typically, we don't want to see that.
-    const chooseButton = await expectOGSClickableByName(userPage, /Basic/);
+    // (Quirky regex due to variable text on the button for A/B/C testing)
+    const chooseButton = await expectOGSClickableByName(userPage, /^Basic/);
     await chooseButton.click();
 
     await expect(userPage.getByText("You're not currently playing any games")).toBeVisible();

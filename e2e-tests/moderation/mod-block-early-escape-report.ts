@@ -22,11 +22,8 @@
 import { Browser, expect } from "@playwright/test";
 
 import { prepareNewUser, newTestUsername } from "@helpers/user-utils";
-import {
-    createDirectChallenge,
-    acceptDirectChallenge,
-    clickInTheMiddle,
-} from "@helpers/game-utils";
+import { createDirectChallenge, acceptDirectChallenge } from "@helpers/challenge-utils";
+import { clickInTheMiddle } from "@helpers/game-utils";
 
 export const modBlockEarlyEscapeReportTest = async ({ browser }: { browser: Browser }) => {
     const { userPage: reporterPage } = await prepareNewUser(

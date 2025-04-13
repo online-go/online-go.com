@@ -474,6 +474,11 @@ export function GoResources(): React.ReactElement {
                                 </a>
                             </span>,
                             <BasicResource
+                                countries={["ma"]}
+                                title="MrGo 66"
+                                href="https://www.youtube.com/@mrgo66"
+                            />,
+                            <BasicResource
                                 countries={[en]}
                                 title="European go federation Twitch"
                                 href="http://twitch.tv/europeangofederation"

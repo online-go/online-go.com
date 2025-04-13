@@ -226,10 +226,6 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
             }
 
             if (this.props.config.time_control) {
-                console.log(
-                    "Loading time control from config:",
-                    JSON.stringify(this.props.config.time_control),
-                );
                 state.time_control = this.props.config.time_control;
             }
         }
@@ -1155,6 +1151,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                     <div className="controls">
                         <div className="checkbox">
                             <select
+                                id="challenge-rules"
                                 value={this.gameState().rules}
                                 onChange={this.update_rules}
                                 className="challenge-dropdown form-control"
@@ -1184,6 +1181,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                             value={game.handicap}
                             onChange={(ev) => this.update_handicap(parseInt(ev.target.value))}
                             className="challenge-dropdown form-control"
+                            id="challenge-handicap"
                         >
                             <option
                                 value="-1"
@@ -1216,6 +1214,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                                 value={game.komi_auto}
                                 onChange={this.update_komi_auto}
                                 className="challenge-dropdown form-control"
+                                id="challenge-komi"
                             >
                                 <option value="automatic">{_("Automatic")}</option>
                                 <option value="custom" disabled={game.ranked}>
@@ -1676,20 +1675,37 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
             }),
         );
 
+        const handicap = this.state.challenge.game.handicap;
+
+        // see usePreferredSetting
         const rank_min = this.state.conf.restrict_rank ? this.state.challenge.min_ranking : -1000;
-        const rank_max = this.state.conf.restrict_rank ? this.state.challenge.max_ranking : 1000;
+        const rank_max = this.state.challenge.max_ranking;
+
         const selected =
-            options.find(
-                (opt: PreferredSettingOption) =>
-                    opt.setting.game.rules === this.state.challenge.game.rules &&
-                    opt.setting.game.width === this.state.challenge.game.width &&
-                    opt.setting.game.height === this.state.challenge.game.height &&
-                    opt.setting.game.handicap === this.state.challenge.game.handicap &&
-                    opt.setting.min_ranking === rank_min &&
-                    opt.setting.max_ranking === rank_max &&
-                    JSON.stringify(opt.setting.game.time_control_parameters) ===
-                        JSON.stringify(this.state.time_control),
-            ) || null;
+            options.find((opt: PreferredSettingOption) => {
+                // note that for some reason this.state.conf.restrict_rank is not stored with prefs
+                const opt_restrict_rank =
+                    opt.setting.min_ranking > -1000 && opt.setting.max_ranking < 1000;
+
+                const rank_choice_match =
+                    (!opt_restrict_rank && !this.state.conf.restrict_rank) ||
+                    (opt_restrict_rank &&
+                        this.state.conf.restrict_rank &&
+                        opt.setting.min_ranking === rank_min &&
+                        opt.setting.max_ranking === rank_max);
+
+                const selected =
+                    (opt.setting.game.rules === this.state.challenge.game.rules &&
+                        opt.setting.game.width === this.state.challenge.game.width &&
+                        opt.setting.game.height === this.state.challenge.game.height &&
+                        opt.setting.game.handicap === handicap &&
+                        rank_choice_match &&
+                        JSON.stringify(opt.setting.game.time_control_parameters) ===
+                            JSON.stringify(this.state.time_control)) ||
+                    null;
+
+                return selected;
+            }) || null;
 
         return (
             <div

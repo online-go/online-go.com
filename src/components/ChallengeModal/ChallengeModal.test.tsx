@@ -18,97 +18,12 @@
 import * as React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { ChallengeModalBody } from "./ChallengeModal";
-import { JGOFTimeControl, JGOFTimeControlSpeed } from "goban";
-
 import { post } from "@/lib/requests";
 import { ChallengeModalProperties } from "@/components/ChallengeModal/ChallengeModal.types";
 
-// Mock preferences first to prevent data.setDefault error
-jest.mock("@/lib/preferences", () => ({
-    get: jest.fn(() => false),
-    set: jest.fn(),
-    defaults: {},
-}));
-
-// Mock misc module to prevent potential infinite recursion in dup implementation
-jest.mock("@/lib/misc", () => ({
-    dup: (obj: any) => structuredClone(obj),
-}));
-
-// Mock TimeControl/util
-const mockTimeSettings: JGOFTimeControl = {
-    system: "fischer",
-    speed: "correspondence",
-    initial_time: 600,
-    time_increment: 10,
-    max_time: 600,
-    pause_on_weekends: true,
-};
-
-jest.mock("@/components/TimeControl/util", () => ({
-    getDefaultTimeSettings: () => mockTimeSettings,
-    getTimeControlFromPreset: () => mockTimeSettings,
-    timeControlSystemText: (system: string) => {
-        switch (system) {
-            case "fischer":
-                return "Fischer";
-            case "simple":
-                return "Simple";
-            case "byoyomi":
-                return "Byo-Yomi";
-            case "canadian":
-                return "Canadian";
-            case "absolute":
-                return "Absolute";
-            case "none":
-                return "None";
-            default:
-                return "[unknown]";
-        }
-    },
-    getTimeOptions: (speed: string, system: string, property: string) => {
-        type TimeOption = { time: number; label: string };
-        type TimeOptions = {
-            [key: string]: {
-                [key: string]: {
-                    [key: string]: TimeOption[];
-                };
-            };
-        };
-        const options: TimeOptions = {
-            live: {
-                fischer: {
-                    initial_time: [
-                        { time: 300, label: "5 minutes" },
-                        { time: 600, label: "10 minutes" },
-                    ],
-                    time_increment: [
-                        { time: 5, label: "5 seconds" },
-                        { time: 10, label: "10 seconds" },
-                    ],
-                    max_time: [
-                        { time: 600, label: "10 minutes" },
-                        { time: 900, label: "15 minutes" },
-                    ],
-                },
-            },
-        };
-        return options[speed]?.[system]?.[property] || [];
-    },
-}));
-
-// Mock TimeControl/TimeControlUpdates
-jest.mock("@/components/TimeControl/TimeControlUpdates", () => ({
-    updateProperty: jest.fn(),
-    updateSpeed: jest.fn(),
-    updateSystem: jest.fn(),
-    recallTimeControlSettings: jest.fn(),
-    saveTimeControlSettings: jest.fn(),
-}));
-
 // Mock data module
 jest.mock("@/lib/data", () => ({
-    get: (key: string) => {
+    get: (key: string, default_value: unknown) => {
         if (key === "challenge.speed") {
             return "live";
         }
@@ -145,7 +60,8 @@ jest.mock("@/lib/data", () => ({
         if (key === "preferred-game-settings") {
             return [];
         }
-        return null;
+
+        return default_value;
     },
     set: jest.fn(),
     remove: jest.fn(),
@@ -154,117 +70,10 @@ jest.mock("@/lib/data", () => ({
     unwatch: jest.fn(),
 }));
 
-interface TimeControlPickerProps {
-    timeControl: JGOFTimeControl;
-    onChange: (timeControl: JGOFTimeControl) => void;
-    forceSystem?: boolean;
-}
-
-jest.mock("@/components/TimeControl", () => ({
-    TimeControlPicker: ({ timeControl, onChange }: TimeControlPickerProps) => (
-        <div data-testid="time-control-picker">
-            <div className="form-group">
-                <label>Game Speed</label>
-                <select
-                    data-testid="game-speed"
-                    value={timeControl?.speed || "correspondence"}
-                    onChange={(e) => {
-                        const newSpeed = e.target.value as JGOFTimeControlSpeed;
-                        const newTimeControl = {
-                            ...timeControl,
-                            speed: newSpeed,
-                        };
-                        onChange(newTimeControl as JGOFTimeControl);
-                    }}
-                >
-                    <option value="correspondence">Correspondence</option>
-                </select>
-            </div>
-            <div className="form-group">
-                <label>Time Control</label>
-                <select
-                    data-testid="time-control-system"
-                    value={timeControl?.system || "fischer"}
-                    onChange={(e) => {
-                        const newSystem = e.target.value as "fischer";
-                        const newTimeControl = {
-                            ...timeControl,
-                            system: newSystem,
-                        };
-                        onChange(newTimeControl as JGOFTimeControl);
-                    }}
-                >
-                    <option value="fischer">Fischer</option>
-                </select>
-            </div>
-            {timeControl?.system === "fischer" && (
-                <>
-                    <div className="form-group">
-                        <label>Initial Time (seconds)</label>
-                        <input
-                            type="number"
-                            data-testid="initial-time"
-                            value={timeControl?.initial_time || 600}
-                            onChange={(e) => {
-                                const newTimeControl = {
-                                    ...timeControl,
-                                    initial_time: parseInt(e.target.value),
-                                };
-                                onChange(newTimeControl as JGOFTimeControl);
-                            }}
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label>Time Increment (seconds)</label>
-                        <input
-                            type="number"
-                            data-testid="time-increment"
-                            value={timeControl?.time_increment || 10}
-                            onChange={(e) => {
-                                const newTimeControl = {
-                                    ...timeControl,
-                                    time_increment: parseInt(e.target.value),
-                                };
-                                onChange(newTimeControl as JGOFTimeControl);
-                            }}
-                        />
-                    </div>
-                </>
-            )}
-        </div>
-    ),
-    isLiveGame: jest.fn().mockReturnValue(true),
-    timeControlSystemText: jest.fn().mockReturnValue("Fischer"),
-    shortShortTimeControl: jest.fn().mockReturnValue("5m+5s"),
-}));
-
 jest.mock("@/lib/requests", () => ({
     post: jest.fn(),
     del: jest.fn(),
     get: jest.fn(),
-}));
-
-// Mock bots module
-jest.mock("@/lib/bots", () => ({
-    bots_list: () => [
-        {
-            id: 1,
-            username: "Test Bot",
-            rank: 10,
-            accepts_ranked: true,
-            accepts_private: true,
-            description: "A test bot",
-            icon: "test-icon",
-            bot_apikey: "test-key",
-            bot_owner: 1,
-            bot: true,
-            ui_class: "test",
-            settings: {},
-        },
-    ],
-    one_bot: jest.fn(),
-    bot_count: jest.fn(),
-    getAcceptableTimeSetting: jest.fn().mockReturnValue([{ _config_version: 1 }, null]),
 }));
 
 const defaultProps: ChallengeModalProperties = {
@@ -401,44 +210,6 @@ describe("ChallengeModalBody", () => {
 
         expect(minRankSelect).toBeInTheDocument();
         expect(maxRankSelect).toBeInTheDocument();
-    });
-
-    it.skip("renders AI player options when in computer mode", () => {
-        const computerModeProps = {
-            ...defaultProps,
-            mode: "computer",
-            initialState: {
-                ...defaultProps.initialState,
-                challenge: {
-                    ...defaultProps.initialState.challenge,
-                    game: {
-                        ...defaultProps.initialState.challenge.game,
-                        width: 19,
-                        height: 19,
-                        rules: "japanese",
-                        ranked: false,
-                        handicap: 0,
-                        komi: 6.5,
-                        disable_analysis: false,
-                        speed: "live",
-                    },
-                },
-                time_control: {
-                    system: "byoyomi",
-                    speed: "live",
-                    time_control: 300,
-                    period_time: 30,
-                    periods: 5,
-                    pause_on_weekends: false,
-                },
-            },
-        } as const;
-        render(<ChallengeModalBody {...computerModeProps} modal={mockModal} />);
-
-        const noBotsMessage = screen.getByText(
-            "No bots available that can play with the selected settings",
-        );
-        expect(noBotsMessage).toBeInTheDocument();
     });
 
     it("creates an open challenge when submitted", async () => {
