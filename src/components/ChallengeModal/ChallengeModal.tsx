@@ -799,10 +799,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
     };
 
     update_rengo_auto_start = (auto_start_threshold: number) => {
-        let new_val = auto_start_threshold;
-        if (isNaN(new_val)) {
-            new_val = 0;
-        }
+        const new_val = isNaN(auto_start_threshold) ? 0 : auto_start_threshold;
 
         if (new_val >= 0) {
             this.update_challenge_settings((prev) => ({
