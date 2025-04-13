@@ -159,7 +159,6 @@ export type ChallengeModalState = {
     demo: ChallengeModalDemoSettings;
     forking_game: boolean;
     hide_preferred_settings_on_portrait: boolean;
-    input_value_warning: boolean;
     preferred_settings: ChallengeDetails[];
     selected_demo_player_black: number;
     selected_demo_player_white: number;
