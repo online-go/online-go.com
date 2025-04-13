@@ -17,7 +17,7 @@
 
 // (No seeded data in use)
 
-import { Browser } from "@playwright/test";
+import { Browser, expect } from "@playwright/test";
 
 import { newTestUsername, prepareNewUser } from "@helpers/user-utils";
 
@@ -25,6 +25,7 @@ import {
     checkChallengeForm,
     fillOutChallengeForm as fillOutStandardChallengeForm,
     loadChallengeModal,
+    reloadChallengeModal,
     testChallengePOSTPayload,
 } from "@helpers/challenge-utils";
 
@@ -43,12 +44,16 @@ export const chRengoTest = async ({ browser }: { browser: Browser }) => {
         ranked: true,
     });
 
-    await fillOutStandardChallengeForm(challengerPage, {
-        gameName: "Rengo Match 1",
-        ranked: false,
-        rengo: true,
-        rengo_casual_mode: true,
-    });
+    await fillOutStandardChallengeForm(
+        challengerPage,
+        {
+            gameName: "Rengo Match 1",
+            ranked: false,
+            rengo: true,
+            rengo_casual_mode: true,
+        },
+        false, // don't set any other values (because rengo forces some)
+    );
 
     await checkChallengeForm(challengerPage, {
         gameName: "Rengo Match 1",
@@ -56,33 +61,79 @@ export const chRengoTest = async ({ browser }: { browser: Browser }) => {
         rengo_casual_mode: true,
         private: false,
         ranked: false,
+        timeControl: "simple", // rengo forces this.
     });
 
-    await testChallengePOSTPayload(challengerPage, {
-        rengo_auto_start: 0,
-        game: {
-            name: "Rengo Match 1",
-            rules: "japanese",
+    await testChallengePOSTPayload(
+        challengerPage,
+        {
+            rengo_auto_start: 0,
+            game: {
+                name: "Rengo Match 1",
+                rules: "japanese",
+                ranked: false,
+                width: 19,
+                height: 19,
+                handicap: 0,
+                komi_auto: "automatic",
+                komi: null,
+                disable_analysis: false,
+                initial_state: null,
+                private: false,
+                rengo: true,
+                rengo_casual_mode: true,
+                time_control: "simple", // rengo forces this.
+                time_control_parameters: {
+                    per_move: 172800, // These are the default values for simple time control.
+                    speed: "correspondence",
+                    system: "simple",
+                    time_control: "simple",
+                    pause_on_weekends: true,
+                },
+                pause_on_weekends: true,
+            },
+        },
+        true,
+    );
+
+    await reloadChallengeModal(challengerPage);
+
+    await fillOutStandardChallengeForm(
+        challengerPage,
+        {
+            gameName: "Rengo Match none",
             ranked: false,
-            width: 19,
-            height: 19,
-            handicap: 0,
-            komi_auto: "automatic",
-            komi: null,
-            disable_analysis: false,
-            initial_state: null,
-            private: false,
             rengo: true,
             rengo_casual_mode: true,
-            time_control: "simple", // rengo forces this.
-            time_control_parameters: {
-                per_move: 4,
-                speed: "blitz",
-                system: "simple",
-                time_control: "simple",
-                pause_on_weekends: false,
-            },
-            pause_on_weekends: false,
+            rengo_auto_start: "1", // this value disables create button
         },
-    });
+        false,
+    );
+
+    const create_button = challengerPage.locator('button:has-text("Create Game")');
+    await expect(create_button).toBeDisabled();
+
+    await fillOutStandardChallengeForm(
+        challengerPage,
+        {
+            rengo: true,
+            rengo_casual_mode: true,
+            rengo_auto_start: "2", // this value disables create button
+        },
+        false,
+    );
+
+    await expect(create_button).toBeDisabled();
+
+    await fillOutStandardChallengeForm(
+        challengerPage,
+        {
+            rengo: true,
+            rengo_casual_mode: true,
+            rengo_auto_start: "3", // lowest nonzero valid value
+        },
+        false,
+    );
+
+    await expect(create_button).toBeEnabled();
 };
