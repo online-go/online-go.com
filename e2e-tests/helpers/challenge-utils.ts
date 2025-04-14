@@ -38,6 +38,7 @@ export interface ChallengeModalFields {
     disable_analysis?: boolean;
     rengo?: boolean;
     rengo_casual_mode?: boolean;
+    rengo_auto_start?: string;
     pause_on_weekends?: boolean;
     time_control_parameters?: {
         main_time?: number;
@@ -49,6 +50,61 @@ export interface ChallengeModalFields {
         speed?: string;
         system?: string;
         time_control?: string;
+    };
+}
+
+// This is the "default that we use to create challenges".
+export const defaultChallengeSettings: ChallengeModalFields = {
+    gameName: "E2E Test game",
+    boardSize: "19x19",
+    speed: "blitz",
+    timeControl: "byoyomi",
+    mainTime: "2",
+    timePerPeriod: "2",
+    periods: "1",
+    color: "black",
+    private: false,
+    ranked: true,
+    handicap: "0",
+    komi: "automatic",
+    // Note that restrict-rank and private, rengo are not available in direct challenges,
+    // so we can't default them.
+};
+
+export interface ChallengePOSTPayload {
+    initialized?: boolean;
+    min_ranking?: number;
+    max_ranking?: number;
+    challenger_color?: string;
+    rengo_auto_start?: number;
+    game: {
+        name?: string;
+        rules?: string;
+        ranked?: boolean;
+        width?: number;
+        height?: number;
+        handicap?: number;
+        komi_auto?: string;
+        komi?: number | null;
+        disable_analysis?: boolean;
+        initial_state?: any;
+        private?: boolean;
+        rengo?: boolean;
+        rengo_casual_mode?: boolean;
+        time_control?: string;
+        time_control_parameters?: {
+            main_time?: number;
+            per_move?: number;
+            period_time?: number;
+            periods?: number;
+            periods_min?: number;
+            periods_max?: number;
+            pause_on_weekends?: boolean;
+            speed?: string;
+            system?: string;
+            time_control?: string;
+        };
+        pause_on_weekends?: boolean;
     };
 }
 
@@ -104,24 +160,6 @@ export const getRankIndex = (rank: number | string): string => {
     return index;
 };
 
-// This is the "default that we use to create challenges".
-export const defaultChallengeSettings: ChallengeModalFields = {
-    gameName: "E2E Test game",
-    boardSize: "19x19",
-    speed: "blitz",
-    timeControl: "byoyomi",
-    mainTime: "2",
-    timePerPeriod: "2",
-    periods: "1",
-    color: "black",
-    private: false,
-    ranked: true,
-    handicap: "0",
-    komi: "automatic",
-    // Note that restrict-rank and private, rengo are not available in direct challenges,
-    // so we can't default them.
-};
-
 export const createDirectChallenge = async (
     page: Page,
     challenged: string,
@@ -160,39 +198,44 @@ export const acceptDirectChallenge = async (page: Page) => {
 
 // Fill out the challenge form with the given settings.
 // If any settings are not provided, the default values will be used for those fields.
-export const fillOutChallengeForm = async (page: Page, settings: ChallengeModalFields) => {
-    const final_settings = { ...defaultChallengeSettings, ...settings };
+// If a setting is provided as undefined, it will not be touched.
+export const fillOutChallengeForm = async (
+    page: Page,
+    settings: ChallengeModalFields,
+    use_defaults: boolean = true,
+) => {
+    const final_settings = use_defaults ? { ...defaultChallengeSettings, ...settings } : settings;
 
-    if (final_settings.gameName) {
+    if (final_settings.gameName !== undefined) {
         await page.fill("#challenge-game-name", final_settings.gameName);
     }
-    if (final_settings.boardSize) {
+    if (final_settings.boardSize !== undefined) {
         await page.selectOption("#challenge-board-size", final_settings.boardSize);
     }
-    if (final_settings.speed) {
+    if (final_settings.speed !== undefined) {
         await page.selectOption("#challenge-speed", final_settings.speed);
     }
-    if (final_settings.timeControl) {
+    if (final_settings.timeControl !== undefined) {
         await page.selectOption("#challenge-time-control", final_settings.timeControl);
     }
-    if (final_settings.mainTime) {
+    if (final_settings.mainTime !== undefined) {
         await page.selectOption("#tc-main-time-byoyomi", final_settings.mainTime);
     }
-    if (final_settings.timePerPeriod) {
+    if (final_settings.timePerPeriod !== undefined) {
         await page.selectOption("#tc-per-period-byoyomi", final_settings.timePerPeriod);
     }
-    if (final_settings.periods) {
+    if (final_settings.periods !== undefined) {
         await page.fill("#tc-periods-byoyomi", final_settings.periods);
     }
 
-    if (final_settings.color) {
+    if (final_settings.color !== undefined) {
         await page.selectOption("#challenge-color", final_settings.color);
     }
     if (final_settings.private !== undefined) {
         const checkbox = page.locator("#challenge-private");
         await checkbox.setChecked(final_settings.private);
     }
-    if (final_settings.ranked) {
+    if (final_settings.ranked !== undefined) {
         const checkbox = page.locator("#challenge-ranked");
         await checkbox.setChecked(final_settings.ranked);
     }
@@ -208,14 +251,32 @@ export const fillOutChallengeForm = async (page: Page, settings: ChallengeModalF
         await page.waitForSelector("#challenge-max-rank:not([disabled])");
         await page.selectOption("#challenge-max-rank", getRankIndex(final_settings.rank_max));
     }
-    if (final_settings.handicap) {
+    if (final_settings.handicap !== undefined) {
         await page.selectOption("#challenge-handicap", { value: final_settings.handicap });
     }
-    if (final_settings.komi) {
+    if (final_settings.komi !== undefined) {
         // First set komi to custom if needed
         if (final_settings.komi !== "automatic") {
             await page.selectOption("#challenge-komi", { value: "custom" });
             await page.fill("#challenge-komi-value", final_settings.komi.toString());
+        }
+    }
+
+    if (final_settings.rengo !== undefined) {
+        if (final_settings.ranked) {
+            throw new Error("Rengo games cannot be ranked");
+        }
+        const checkbox = page.locator("#rengo-option");
+        await checkbox.setChecked(final_settings.rengo);
+
+        if (final_settings.rengo_casual_mode !== undefined) {
+            const casual_checkbox = page.locator("#rengo-casual-mode");
+            await casual_checkbox.setChecked(final_settings.rengo_casual_mode);
+        }
+
+        if (final_settings.rengo_casual_mode && final_settings.rengo_auto_start !== undefined) {
+            const auto_start_input = page.locator("#rengo-auto-start");
+            await auto_start_input.fill(final_settings.rengo_auto_start);
         }
     }
 };
@@ -311,16 +372,18 @@ export const checkChallengeForm = async (page: Page, settings: ChallengeModalFie
             await expect(checkbox).toBeChecked();
 
             if (settings.rengo_casual_mode !== undefined) {
-                const checkbox = page.locator("#rengo-auto-start");
-                await expect(checkbox).toBeVisible();
+                const casual_checkbox = page.locator("#rengo-casual-mode");
+                await expect(casual_checkbox).toBeVisible();
                 if (settings.rengo_casual_mode) {
-                    await expect(checkbox).toBeChecked();
+                    await expect(casual_checkbox).toBeChecked();
                 } else {
-                    await expect(checkbox).not.toBeChecked();
+                    await expect(casual_checkbox).not.toBeChecked();
                 }
             }
         } else {
             await expect(checkbox).not.toBeChecked();
+            const casual_checkbox = page.locator("#rengo-casual-mode");
+            await expect(casual_checkbox).not.toBeVisible();
         }
     }
 
@@ -360,43 +423,6 @@ export const checkChallengeForm = async (page: Page, settings: ChallengeModalFie
         }
     }
 };
-
-export interface ChallengePOSTPayload {
-    initialized?: boolean;
-    min_ranking?: number;
-    max_ranking?: number;
-    challenger_color?: string;
-    rengo_auto_start?: number;
-    game: {
-        name?: string;
-        rules?: string;
-        ranked?: boolean;
-        width?: number;
-        height?: number;
-        handicap?: number;
-        komi_auto?: string;
-        komi?: number | null;
-        disable_analysis?: boolean;
-        initial_state?: any;
-        private?: boolean;
-        rengo?: boolean;
-        rengo_casual_mode?: boolean;
-        time_control?: string;
-        time_control_parameters?: {
-            main_time?: number;
-            period_time?: number;
-            periods?: number;
-            periods_min?: number;
-            periods_max?: number;
-            pause_on_weekends?: boolean;
-            speed?: string;
-            system?: string;
-            time_control?: string;
-        };
-        pause_on_weekends?: boolean;
-    };
-}
-
 export const testChallengePOSTPayload = async (
     page: Page,
     expectedPayload: ChallengePOSTPayload,
