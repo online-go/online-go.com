@@ -207,7 +207,7 @@ export function rejectionDetailsToMessage(details: RejectionDetails): string | u
 
 // For legacy reasons, handicap can have a string value
 // when these challenge details come from local storage.
-export function sanitizeChallengeDetails(challengeDetails: ChallengeDetails): ChallengeDetails {
+export function sanitizeChallengeDetails<T extends ChallengeDetails>(challengeDetails: T): T {
     return {
         ...challengeDetails,
         game: { ...challengeDetails.game, handicap: Number(challengeDetails.game.handicap) },

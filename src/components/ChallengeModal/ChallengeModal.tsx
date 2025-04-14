@@ -202,7 +202,6 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
             preferred_settings: getPreferredSettings(),
             view_mode: goban_view_mode(),
             hide_preferred_settings_on_portrait: true,
-            input_value_warning: false,
             time_control: this.loadLastTimeControlSettings(),
         };
 
@@ -256,6 +255,13 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         this.props.modal.on("close", () => {
             data.unwatch("preferred-game-settings", this.preferredSettingsUpdated);
         });
+    }
+
+    rengo_auto_start_input_warning(): boolean {
+        return (
+            this.state.challenge.rengo_auto_start === 1 ||
+            this.state.challenge.rengo_auto_start === 2
+        );
     }
 
     gameStateOf(state: any) {
@@ -755,6 +761,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
 
     /* direct fn updates */
     update_bot_id = (id: number) => this.update_conf((prev) => ({ ...prev, bot_id: id }));
+
     update_demo_name = (name: string): void =>
         this.update_demo_settings((prev) => ({ ...prev, name: name }));
     update_game_name = (name: string): void =>
@@ -762,40 +769,43 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
     update_challenge_game_name: (name: string) => void =
         this.props.mode === "demo" ? this.update_demo_name : this.update_game_name;
 
-    update_private = (ev: React.ChangeEvent<HTMLInputElement>) =>
-        this.upstate([
-            [this.gameStateName("private"), ev],
-            [this.gameStateName("ranked"), false],
-        ]);
-    update_invite_only = (ev: React.ChangeEvent<HTMLInputElement>) =>
-        this.upstate("challenge.invite_only", ev);
-    update_rengo = (ev: React.ChangeEvent<HTMLInputElement>) => {
+    update_private_game = (isPrivate: boolean) =>
+        this.update_game_settings((prev) => ({ ...prev, private: isPrivate, ranked: false }));
+    update_private_demo = (isPrivate: boolean) =>
+        this.update_demo_settings(
+            (prev): ChallengeModalDemoSettings => ({ ...prev, private: isPrivate }),
+        );
+    update_private =
+        this.props.mode === "demo" ? this.update_private_demo : this.update_private_game;
+
+    update_invite_only = (invite_only: boolean) =>
+        this.update_challenge_settings((prev) => ({ ...prev, invite_only: invite_only }));
+
+    update_rengo = (isRengo: boolean) => {
         this.forceTimeControlSystemIfNecessary(
-            ev.target.checked,
+            isRengo,
             this.state.challenge.game.rengo_casual_mode,
         );
-        this.upstate([
-            ["challenge.game.rengo", ev],
-            ["challenge.game.ranked", false],
-            ["challenge.game.handicap", 0],
-        ]);
+        this.update_game_settings((prev) => ({
+            ...prev,
+            rengo: isRengo,
+            ranked: false,
+            handicap: 0,
+        }));
     };
-    update_rengo_casual = (ev: React.ChangeEvent<HTMLInputElement>) => {
-        this.forceTimeControlSystemIfNecessary(this.state.challenge.game.rengo, ev.target.checked);
-        this.upstate("challenge.game.rengo_casual_mode", ev);
+    update_rengo_casual = (isRengoCasual: boolean) => {
+        this.forceTimeControlSystemIfNecessary(this.state.challenge.game.rengo, isRengoCasual);
+        this.update_game_settings((prev) => ({ ...prev, rengo_casual_mode: isRengoCasual }));
     };
 
-    update_rengo_auto_start = (ev: React.ChangeEvent<HTMLInputElement>) => {
-        let new_val = parseInt(ev.target.value);
-        if (isNaN(new_val)) {
-            new_val = 0;
-        }
-
-        this.upstate("input_value_warning", new_val === 1 || new_val === 2);
+    update_rengo_auto_start = (auto_start_threshold: number) => {
+        const new_val = isNaN(auto_start_threshold) ? 0 : auto_start_threshold;
 
         if (new_val >= 0) {
-            // It's clearer to display blank ("") if there is no auto-start.  Blank means no autostart, the same as zero.
-            this.upstate("challenge.rengo_auto_start", new_val || "");
+            this.update_challenge_settings((prev) => ({
+                ...prev,
+                rengo_auto_start: new_val,
+            }));
         }
     };
 
@@ -998,7 +1008,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                                 id="challenge-private"
                                 disabled={this.state.challenge.game.rengo}
                                 checked={this.gameState().private}
-                                onChange={this.update_private}
+                                onChange={(ev) => this.update_private(ev.target.checked)}
                             />
                         </div>
                     </div>
@@ -1017,7 +1027,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                                     type="checkbox"
                                     id="challenge-invite-only"
                                     checked={this.state.challenge.invite_only}
-                                    onChange={this.update_invite_only}
+                                    onChange={(ev) => this.update_invite_only(ev.target.checked)}
                                 />
                             </div>
                         </div>
@@ -1039,7 +1049,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                                             this.state.challenge.game.ranked)
                                     }
                                     checked={this.state.challenge.game.rengo}
-                                    onChange={this.update_rengo}
+                                    onChange={(ev) => this.update_rengo(ev.target.checked)}
                                 />
                             </div>
                         </div>
@@ -1061,7 +1071,9 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                                         type="checkbox"
                                         id="rengo-casual-mode"
                                         checked={this.state.challenge.game.rengo_casual_mode}
-                                        onChange={this.update_rengo_casual}
+                                        onChange={(ev) =>
+                                            this.update_rengo_casual(ev.target.checked)
+                                        }
                                     />
                                     <a
                                         href="https://forums.online-go.com/t/how-does-rengo-work-at-ogs/42484"
@@ -1093,8 +1105,15 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                                 <div className={"checkbox"}>
                                     <input
                                         type="number"
-                                        value={this.state.challenge.rengo_auto_start}
-                                        onChange={this.update_rengo_auto_start}
+                                        // It's clearer to display blank ("") if there is no auto-start.  Blank means no autostart, the same as zero.
+                                        value={
+                                            !this.state.challenge.rengo_auto_start
+                                                ? ""
+                                                : this.state.challenge.rengo_auto_start
+                                        }
+                                        onChange={(ev) =>
+                                            this.update_rengo_auto_start(parseInt(ev.target.value))
+                                        }
                                         id="rengo-auto-start"
                                         className="form-control"
                                         style={{ width: "3em" }}
@@ -1105,7 +1124,9 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                                     <i
                                         className={
                                             "fa fa-exclamation-circle " +
-                                            (this.state.input_value_warning ? "value-warning" : "")
+                                            (this.rengo_auto_start_input_warning()
+                                                ? "value-warning"
+                                                : "")
                                         }
                                     />
                                 </div>
@@ -2027,7 +2048,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                         <button
                             onClick={this.createChallenge}
                             className="primary"
-                            disabled={this.state.input_value_warning}
+                            disabled={this.rengo_auto_start_input_warning()}
                         >
                             {pgettext("Create a game anyone can join", "Create Game")}
                         </button>
