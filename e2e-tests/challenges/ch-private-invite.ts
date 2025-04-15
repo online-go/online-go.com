@@ -126,7 +126,7 @@ export const chPrivateInviteTest = async ({ browser }: { browser: Browser }) => 
     });
 
     await testChallengePOSTPayload(challengerPage, {
-        rengo_auto_start: 0,
+        invite_only: true,        
         game: {
             name: "Private Match 2",
             rules: "japanese",
@@ -139,7 +139,6 @@ export const chPrivateInviteTest = async ({ browser }: { browser: Browser }) => 
             disable_analysis: false,
             initial_state: null,
             private: true,
-            invite_only: true,
             rengo: false,
             time_control: "byoyomi",
             time_control_parameters: {
