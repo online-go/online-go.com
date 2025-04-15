@@ -65,7 +65,6 @@ export const defaultChallengeSettings: ChallengeModalFields = {
     periods: "1",
     color: "black",
     private: false,
-    invite_only: false,
     ranked: true,
     handicap: "0",
     komi: "automatic",
