@@ -149,8 +149,9 @@ function ReportChooser({ report_id, current_report, reports, prev, next }: Repor
 
     const currentIndex = reports.findIndex((r) => r.id === report_id);
 
+    // assumption here is that if it's not in reports then it's resolved - at least from
+    // the perspective of the current user.
     const resolved = currentIndex === -1 || reports[currentIndex]?.state === "resolved";
-    console.log(">>> resolved", resolved, currentIndex, reports[currentIndex]);
 
     const hasPrev = currentIndex > 0;
     const hasNext = currentIndex + 1 < reports.length;
