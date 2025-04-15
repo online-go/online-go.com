@@ -202,9 +202,11 @@ export const acceptDirectChallenge = async (page: Page) => {
 export const fillOutChallengeForm = async (
     page: Page,
     settings: ChallengeModalFields,
-    use_defaults: boolean = true,
+    options: { fillWithDefaults?: boolean } = { fillWithDefaults: true },
 ) => {
-    const final_settings = use_defaults ? { ...defaultChallengeSettings, ...settings } : settings;
+    const final_settings = options.fillWithDefaults
+        ? { ...defaultChallengeSettings, ...settings }
+        : settings;
 
     if (final_settings.gameName !== undefined) {
         await page.fill("#challenge-game-name", final_settings.gameName);
@@ -426,13 +428,13 @@ export const checkChallengeForm = async (page: Page, settings: ChallengeModalFie
 export const testChallengePOSTPayload = async (
     page: Page,
     expectedPayload: ChallengePOSTPayload,
-    log_request_body: boolean = false,
+    options: { logRequestBody?: boolean } = { logRequestBody: false },
 ) => {
     await page.route("**/challenges", async (route) => {
         const request = route.request();
         const requestBody = JSON.parse(request.postData() || "{}");
 
-        if (log_request_body) {
+        if (options.logRequestBody) {
             console.log("Challenge POST payload:", JSON.stringify(requestBody, null, 2));
         }
 
