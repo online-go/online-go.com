@@ -45,6 +45,8 @@ export const chPrivateInviteTest = async ({ browser }: { browser: Browser }) => 
         ranked: true,
     });
 
+    // First test interactions without submitting
+    
     // Turn on private
     await fillOutStandardChallengeForm(
         challengerPage,
@@ -60,7 +62,7 @@ export const chPrivateInviteTest = async ({ browser }: { browser: Browser }) => 
         gameName: "Private Match 1",
         rengo: false,
         private: true,
-        ranked: false,
+        ranked: false, // set false by private
     });
 
     const auto_start_input = challengerPage.locator("#rengo-auto-start");
@@ -72,53 +74,72 @@ export const chPrivateInviteTest = async ({ browser }: { browser: Browser }) => 
     const rengo_checkbox = challengerPage.locator("#rengo-option");
     await expect(rengo_checkbox).toBeDisabled();
 
-    await testChallengePOSTPayload(challengerPage, {
-        rengo_auto_start: 0,
-        game: {
-            name: "Private Match 1",
-            rules: "japanese",
-            ranked: false,
-            width: 19,
-            height: 19,
-            handicap: -1,
-            komi_auto: "automatic",
-            komi: null,
-            disable_analysis: false,
-            initial_state: null,
-            private: true,
-            rengo: false,
-            time_control: "byoyomi",
-            time_control_parameters: {
-                main_time: 604800,
-                period_time: 86400,
-                periods: 5,
-                periods_min: 1,
-                periods_max: 300,
-                pause_on_weekends: true,
-                speed: "correspondence",
-                system: "byoyomi",
-                time_control: "byoyomi",
-            },
-            pause_on_weekends: true,
-        },
-        },
-
-    );
-
-    await reloadChallengeModal(challengerPage);
-
-    // Turn on invite only
+    // Toggle invite only
     await fillOutStandardChallengeForm(
         challengerPage,
     {
-        gameName: "Private Match 2",
         invite_only: true,
     },
     { fillWithDefaults: false }, // don't set any other values
     );
 
     await checkChallengeForm(challengerPage, {
-        gameName: "Private Match 2",
+        rengo: false,
+        private: true,
+        ranked: false,
+        invite_only: true,
+    });
+
+
+    await expect(ranked_checkbox).toBeDisabled();
+    await expect(rengo_checkbox).toBeDisabled();
+
+    // Turn off private
+    await fillOutStandardChallengeForm(
+        challengerPage,
+    {
+        private: false,
+    },
+    { fillWithDefaults: false }, // don't set any other values
+    );
+
+    await checkChallengeForm(challengerPage, {
+        rengo: false,
+        private: false,
+        ranked: false,
+        invite_only: true,
+    });
+
+    await expect(ranked_checkbox).toBeEnabled();
+    await expect(rengo_checkbox).toBeEnabled();
+    await expect(auto_start_input).not.toBeVisible();   
+
+    // Now test POST payloads for the flags
+    await testChallengePOSTPayload(challengerPage, {
+        invite_only: true,
+        game: {
+            name: "Private Match 1",
+            private: false,
+            rengo: false,
+            ranked: false,
+        },
+    });
+
+    await reloadChallengeModal(challengerPage);
+
+    await fillOutStandardChallengeForm(
+        
+        challengerPage,
+        {
+            gameName: "Private Match 2",
+            private: true,
+            rengo: false,
+            ranked: false,
+            invite_only: true,
+        },
+    );
+
+    await checkChallengeForm(challengerPage, {
         rengo: false,
         private: true,
         ranked: false,
@@ -126,35 +147,44 @@ export const chPrivateInviteTest = async ({ browser }: { browser: Browser }) => 
     });
 
     await testChallengePOSTPayload(challengerPage, {
-        invite_only: true,        
+        invite_only: true,
         game: {
             name: "Private Match 2",
-            rules: "japanese",
-            ranked: false,
-            width: 19,
-            height: 19,
-            handicap: -1,
-            komi_auto: "automatic",
-            komi: null,
-            disable_analysis: false,
-            initial_state: null,
             private: true,
             rengo: false,
-            time_control: "byoyomi",
-            time_control_parameters: {
-                main_time: 604800,
-                period_time: 86400,
-                periods: 5,
-                periods_min: 1,
-                periods_max: 300,
-                pause_on_weekends: true,
-                speed: "correspondence",
-                system: "byoyomi",
-                time_control: "byoyomi",
-            },
-            pause_on_weekends: true,
+            ranked: false,
         },
+    });
+
+    await reloadChallengeModal(challengerPage);
+
+    await fillOutStandardChallengeForm(
+        challengerPage,
+        {
+            gameName: "Private Match 3",
+            private: true,
+            rengo: false,
+            ranked: false,
+            invite_only: false,
         },
-        { logRequestBody: true },
     );
+
+    await checkChallengeForm(challengerPage, {
+        gameName: "Private Match 3",
+        rengo: false,
+        private: true,
+        ranked: false,
+        invite_only: false,
+    });
+
+    await testChallengePOSTPayload(challengerPage, {
+        invite_only: false,
+        game: {
+            name: "Private Match 3",
+            private: true,
+            rengo: false,
+            ranked: false,
+        },
+    });
+    
 };
