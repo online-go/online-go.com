@@ -12,7 +12,7 @@ import Select from "react-select";
 import { useUser } from "@/lib/hooks";
 import { ReportNotification } from "@/lib/report_util";
 import { report_manager } from "@/lib/report_manager";
-import { _ } from "@/lib/translate";
+import { _, pgettext } from "@/lib/translate";
 import * as DynamicHelp from "react-dynamic-help";
 
 import { ViewReport } from "@/views/ReportsCenter/ViewReport";
@@ -146,7 +146,12 @@ function ReportChooser({ report_id, current_report, reports, prev, next }: Repor
     const { ref: ignore_button } = registerTargetItem("ignore-button");
 
     const claimed_by_me = current_report?.moderator?.id === user.id;
+
     const currentIndex = reports.findIndex((r) => r.id === report_id);
+
+    const resolved = currentIndex === -1 || reports[currentIndex]?.state === "resolved";
+    console.log(">>> resolved", resolved, currentIndex, reports[currentIndex]);
+
     const hasPrev = currentIndex > 0;
     const hasNext = currentIndex + 1 < reports.length;
 
@@ -200,6 +205,11 @@ function ReportChooser({ report_id, current_report, reports, prev, next }: Repor
                 >
                     Ignore
                 </button>
+            )}
+            {resolved && (
+                <span className="resolved-report-label">
+                    {pgettext("A label telling moderators the report is resolved", "Resolved")}
+                </span>
             )}
         </span>
     );
