@@ -20,6 +20,7 @@ import { ogsTest } from "@helpers";
 import { chPreferredSettingsRankTest } from "./ch-preferred-rank";
 import { chBasicCreationTest } from "./ch-basic-creation";
 import { chHandicapPrefsTest } from "./ch-handicap-prefs";
+import { chPrivateInviteTest } from "./ch-private-invite";
 import { chRengoTest } from "./ch-rengo";
 
 ogsTest.describe("@Challenges Challenge Tests", () => {
@@ -29,5 +30,6 @@ ogsTest.describe("@Challenges Challenge Tests", () => {
         chPreferredSettingsRankTest,
     );
     ogsTest("Should handle handicap preferences correctly", chHandicapPrefsTest);
-    ogsTest("Should handle rengo correctly", chRengoTest);
+    ogsTest("Should handle rengo options correctly", chRengoTest);
+    ogsTest("Should handle private and invite checkboxes correctly", chPrivateInviteTest);
 });

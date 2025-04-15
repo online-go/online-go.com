@@ -24,6 +24,7 @@ export interface ChallengeModalFields {
     periods?: string;
     color?: string;
     private?: boolean;
+    invite_only?: boolean;
     ranked?: boolean;
     restrict_rank?: boolean;
     handicap?: string;
@@ -64,6 +65,7 @@ export const defaultChallengeSettings: ChallengeModalFields = {
     periods: "1",
     color: "black",
     private: false,
+    invite_only: false,
     ranked: true,
     handicap: "0",
     komi: "automatic",
@@ -89,6 +91,7 @@ export interface ChallengePOSTPayload {
         disable_analysis?: boolean;
         initial_state?: any;
         private?: boolean;
+        invite_only?: boolean;
         rengo?: boolean;
         rengo_casual_mode?: boolean;
         time_control?: string;
@@ -202,9 +205,11 @@ export const acceptDirectChallenge = async (page: Page) => {
 export const fillOutChallengeForm = async (
     page: Page,
     settings: ChallengeModalFields,
-    use_defaults: boolean = true,
+    options: { fillWithDefaults?: boolean } = { fillWithDefaults: true },
 ) => {
-    const final_settings = use_defaults ? { ...defaultChallengeSettings, ...settings } : settings;
+    const final_settings = options.fillWithDefaults
+        ? { ...defaultChallengeSettings, ...settings }
+        : settings;
 
     if (final_settings.gameName !== undefined) {
         await page.fill("#challenge-game-name", final_settings.gameName);
@@ -426,13 +431,13 @@ export const checkChallengeForm = async (page: Page, settings: ChallengeModalFie
 export const testChallengePOSTPayload = async (
     page: Page,
     expectedPayload: ChallengePOSTPayload,
-    log_request_body: boolean = false,
+    options: { logRequestBody?: boolean } = { logRequestBody: false },
 ) => {
     await page.route("**/challenges", async (route) => {
         const request = route.request();
         const requestBody = JSON.parse(request.postData() || "{}");
 
-        if (log_request_body) {
+        if (options.logRequestBody) {
             console.log("Challenge POST payload:", JSON.stringify(requestBody, null, 2));
         }
 
@@ -486,6 +491,9 @@ export const testChallengePOSTPayload = async (
         }
         if (expectedPayload.game.private !== undefined) {
             expect(requestBody.game.private).toBe(expectedPayload.game.private);
+        }
+        if (expectedPayload.game.invite_only !== undefined) {
+            expect(requestBody.game.invite_only).toBe(expectedPayload.game.invite_only);
         }
         if (expectedPayload.game.rengo !== undefined) {
             expect(requestBody.game.rengo).toBe(expectedPayload.game.rengo);

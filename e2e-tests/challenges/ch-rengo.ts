@@ -52,7 +52,7 @@ export const chRengoTest = async ({ browser }: { browser: Browser }) => {
             rengo: true,
             rengo_casual_mode: true,
         },
-        false, // don't set any other values (because rengo forces some)
+        { fillWithDefaults: false }, // don't set any other values (because rengo forces some)
     );
 
     await checkChallengeForm(challengerPage, {
@@ -93,7 +93,6 @@ export const chRengoTest = async ({ browser }: { browser: Browser }) => {
                 pause_on_weekends: true,
             },
         },
-        true,
     );
 
     await reloadChallengeModal(challengerPage);
@@ -107,7 +106,7 @@ export const chRengoTest = async ({ browser }: { browser: Browser }) => {
             rengo_casual_mode: true,
             rengo_auto_start: "1", // this value disables create button
         },
-        false,
+        { fillWithDefaults: false },
     );
 
     const create_button = challengerPage.locator('button:has-text("Create Game")');
@@ -120,7 +119,7 @@ export const chRengoTest = async ({ browser }: { browser: Browser }) => {
             rengo_casual_mode: true,
             rengo_auto_start: "2", // this value disables create button
         },
-        false,
+        { fillWithDefaults: false },
     );
 
     await expect(create_button).toBeDisabled();
@@ -132,7 +131,7 @@ export const chRengoTest = async ({ browser }: { browser: Browser }) => {
             rengo_casual_mode: true,
             rengo_auto_start: "3", // lowest nonzero valid value
         },
-        false,
+        { fillWithDefaults: false },
     );
 
     await expect(create_button).toBeEnabled();
