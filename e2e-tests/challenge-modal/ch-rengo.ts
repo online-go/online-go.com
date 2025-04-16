@@ -64,36 +64,33 @@ export const chRengoTest = async ({ browser }: { browser: Browser }) => {
         timeControl: "simple", // rengo forces this.
     });
 
-    await testChallengePOSTPayload(
-        challengerPage,
-        {
-            rengo_auto_start: 0,
-            game: {
-                name: "Rengo Match 1",
-                rules: "japanese",
-                ranked: false,
-                width: 19,
-                height: 19,
-                handicap: 0,
-                komi_auto: "automatic",
-                komi: null,
-                disable_analysis: false,
-                initial_state: null,
-                private: false,
-                rengo: true,
-                rengo_casual_mode: true,
-                time_control: "simple", // rengo forces this.
-                time_control_parameters: {
-                    per_move: 172800, // These are the default values for simple time control.
-                    speed: "correspondence",
-                    system: "simple",
-                    time_control: "simple",
-                    pause_on_weekends: true,
-                },
+    await testChallengePOSTPayload(challengerPage, {
+        rengo_auto_start: 0,
+        game: {
+            name: "Rengo Match 1",
+            rules: "japanese",
+            ranked: false,
+            width: 19,
+            height: 19,
+            handicap: 0,
+            komi_auto: "automatic",
+            komi: null,
+            disable_analysis: false,
+            initial_state: null,
+            private: false,
+            rengo: true,
+            rengo_casual_mode: true,
+            time_control: "simple", // rengo forces this.
+            time_control_parameters: {
+                per_move: 172800, // These are the default values for simple time control.
+                speed: "correspondence",
+                system: "simple",
+                time_control: "simple",
                 pause_on_weekends: true,
             },
+            pause_on_weekends: true,
         },
-    );
+    });
 
     await reloadChallengeModal(challengerPage);
 

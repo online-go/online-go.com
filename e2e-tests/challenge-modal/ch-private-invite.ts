@@ -46,7 +46,7 @@ export const chPrivateInviteTest = async ({ browser }: { browser: Browser }) => 
     });
 
     // First test interactions without submitting
-    
+
     // Turn on private
     await fillOutStandardChallengeForm(
         challengerPage,
@@ -77,10 +77,10 @@ export const chPrivateInviteTest = async ({ browser }: { browser: Browser }) => 
     // Toggle invite only
     await fillOutStandardChallengeForm(
         challengerPage,
-    {
-        invite_only: true,
-    },
-    { fillWithDefaults: false }, // don't set any other values
+        {
+            invite_only: true,
+        },
+        { fillWithDefaults: false }, // don't set any other values
     );
 
     await checkChallengeForm(challengerPage, {
@@ -90,17 +90,16 @@ export const chPrivateInviteTest = async ({ browser }: { browser: Browser }) => 
         invite_only: true,
     });
 
-
     await expect(ranked_checkbox).toBeDisabled();
     await expect(rengo_checkbox).toBeDisabled();
 
     // Turn off private
     await fillOutStandardChallengeForm(
         challengerPage,
-    {
-        private: false,
-    },
-    { fillWithDefaults: false }, // don't set any other values
+        {
+            private: false,
+        },
+        { fillWithDefaults: false }, // don't set any other values
     );
 
     await checkChallengeForm(challengerPage, {
@@ -112,7 +111,7 @@ export const chPrivateInviteTest = async ({ browser }: { browser: Browser }) => 
 
     await expect(ranked_checkbox).toBeEnabled();
     await expect(rengo_checkbox).toBeEnabled();
-    await expect(auto_start_input).not.toBeVisible();   
+    await expect(auto_start_input).not.toBeVisible();
 
     // Now test POST payloads for the flags
     await testChallengePOSTPayload(challengerPage, {
@@ -127,17 +126,13 @@ export const chPrivateInviteTest = async ({ browser }: { browser: Browser }) => 
 
     await reloadChallengeModal(challengerPage);
 
-    await fillOutStandardChallengeForm(
-        
-        challengerPage,
-        {
-            gameName: "Private Match 2",
-            private: true,
-            rengo: false,
-            ranked: false,
-            invite_only: true,
-        },
-    );
+    await fillOutStandardChallengeForm(challengerPage, {
+        gameName: "Private Match 2",
+        private: true,
+        rengo: false,
+        ranked: false,
+        invite_only: true,
+    });
 
     await checkChallengeForm(challengerPage, {
         rengo: false,
@@ -158,16 +153,13 @@ export const chPrivateInviteTest = async ({ browser }: { browser: Browser }) => 
 
     await reloadChallengeModal(challengerPage);
 
-    await fillOutStandardChallengeForm(
-        challengerPage,
-        {
-            gameName: "Private Match 3",
-            private: true,
-            rengo: false,
-            ranked: false,
-            invite_only: false,
-        },
-    );
+    await fillOutStandardChallengeForm(challengerPage, {
+        gameName: "Private Match 3",
+        private: true,
+        rengo: false,
+        ranked: false,
+        invite_only: false,
+    });
 
     await checkChallengeForm(challengerPage, {
         gameName: "Private Match 3",
@@ -186,5 +178,4 @@ export const chPrivateInviteTest = async ({ browser }: { browser: Browser }) => 
             ranked: false,
         },
     });
-    
 };
