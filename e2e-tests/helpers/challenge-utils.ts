@@ -26,6 +26,7 @@ export interface ChallengeModalFields {
     private?: boolean;
     invite_only?: boolean;
     ranked?: boolean;
+    aga_ranked?: boolean; // I see we sent this, I don't know what sets it
     restrict_rank?: boolean;
     handicap?: string;
     komi?: string;
@@ -72,6 +73,50 @@ export const defaultChallengeSettings: ChallengeModalFields = {
     // so we can't default them.
 };
 
+// Define all valid fields for each interface
+const validFields: Record<string, readonly string[]> = {
+    ChallengePOSTPayload: [
+        'initialized',
+        'min_ranking',
+        'max_ranking',
+        'challenger_color',
+        'rengo_auto_start',
+        'invite_only',
+        'game',
+        'aga_ranked'
+    ] as const,
+    DemoBoardPOSTPayload: [
+        'name',
+        'rules',
+        'width',
+        'height',
+        'komi_auto',
+        'black_name',
+        'black_ranking',
+        'white_name',
+        'white_ranking',
+        'private',
+        'black_pro',
+        'white_pro'
+    ] as const
+};
+
+// Helper function to check for unexpected fields in the request body
+const checkForUnexpectedFields = <T extends keyof typeof validFields>(
+    requestBody: any,
+    interfaceName: T
+) => {
+    const expectedFields = validFields[interfaceName];
+    const unexpectedFields = Object.keys(requestBody).filter(
+        (field) => !expectedFields.includes(field)
+    );
+    if (unexpectedFields.length > 0) {
+        throw new Error(
+            `Unexpected fields found in request body: ${unexpectedFields.join(", ")}`
+        );
+    }
+};
+
 export interface ChallengePOSTPayload {
     initialized?: boolean;
     min_ranking?: number;
@@ -109,6 +154,21 @@ export interface ChallengePOSTPayload {
         pause_on_weekends?: boolean;
     };
 }
+interface DemoBoardPOSTPayload {
+    name?: string;
+    rules?: string;
+    width?: number;
+    height?: number;
+    komi_auto?: string;
+    black_name?: string;
+    black_ranking?: number;
+    white_name?: string;
+    white_ranking?: number;
+    private?: boolean;
+    black_pro?: number;
+    white_pro?: number;
+}
+
 
 // Maps rank text to their corresponding select option indices
 // (see src/lib/rank_utils.ts for the reverse)
@@ -454,6 +514,8 @@ export const testChallengePOSTPayload = async (
             console.log("Challenge POST payload:", JSON.stringify(requestBody, null, 2));
         }
 
+        checkForUnexpectedFields(requestBody, 'ChallengePOSTPayload');
+
         // Verify top-level fields
         if (expectedPayload.initialized !== undefined) {
             expect(requestBody.initialized).toBe(expectedPayload.initialized);
@@ -557,4 +619,71 @@ export const reloadChallengeModal = async (page: Page) => {
     await createButton.click();
 
     await expect(page.locator(".header")).toContainText("Custom Game");
+};
+
+
+
+export const testDemoBoardPOSTPayload = async (
+    page: Page,
+    expectedPayload: DemoBoardPOSTPayload,
+    options: { logRequestBody?: boolean } = { logRequestBody: false },
+) => {
+    await page.route("**/demos", async (route) => {
+        const request = route.request();
+        const requestBody = JSON.parse(request.postData() || "{}");
+
+        if (options.logRequestBody) {
+            console.log("Demo POST payload:", JSON.stringify(requestBody, null, 2));
+        }
+
+        checkForUnexpectedFields(requestBody, 'DemoBoardPOSTPayload');
+
+        // Verify demo board specific fields
+        if (expectedPayload.name !== undefined) {
+            expect(requestBody.name).toBe(expectedPayload.name);
+        }
+        if (expectedPayload.rules !== undefined) {
+            expect(requestBody.rules).toBe(expectedPayload.rules);
+        }
+        if (expectedPayload.width !== undefined) {
+            expect(requestBody.width).toBe(expectedPayload.width);
+        }
+        if (expectedPayload.height !== undefined) {
+            expect(requestBody.height).toBe(expectedPayload.height);
+        }
+        if (expectedPayload.komi_auto !== undefined) {
+            expect(requestBody.komi_auto).toBe(expectedPayload.komi_auto);
+        }
+        if (expectedPayload.black_name !== undefined) {
+            expect(requestBody.black_name).toBe(expectedPayload.black_name);
+        }
+        if (expectedPayload.black_ranking !== undefined) {
+            expect(requestBody.black_ranking).toBe(expectedPayload.black_ranking);
+        }
+        if (expectedPayload.white_name !== undefined) {
+            expect(requestBody.white_name).toBe(expectedPayload.white_name);
+        }
+        if (expectedPayload.white_ranking !== undefined) {
+            expect(requestBody.white_ranking).toBe(expectedPayload.white_ranking);
+        }
+        if (expectedPayload.private !== undefined) {
+            expect(requestBody.private).toBe(expectedPayload.private);
+        }
+        
+        if (expectedPayload.black_pro !== undefined) {
+            expect(requestBody.black_pro).toBe(expectedPayload.black_pro);
+        }
+        if (expectedPayload.white_pro !== undefined) {
+            expect(requestBody.white_pro).toBe(expectedPayload.white_pro);
+        }
+
+        // Abort the request after verification
+        await route.abort();
+    });
+
+    // Click the create button
+    await page.click('button:has-text("Create Demo")');
+
+    // Clear the POST checker
+    await page.unroute("**/demos");
 };

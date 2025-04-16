@@ -295,3 +295,30 @@ export const assertIncidentReportIndicatorInactive = async (page: Page) => {
     const indicator = page.locator(".IncidentReportIndicator");
     await expect(indicator).toBeEmpty();
 };
+
+export const selectNavMenuItem = async (
+    page: Page,
+    menuItemAriaName: string, // we can use aria here because it as implemented already
+    subMenuItemName: string, // ideally we'd use aria here, but it's not implemented yet
+) => {
+    // Find the menu item by its button's aria-label
+    const menuItem = page
+        .locator('nav[aria-label="Main Navigation"]')
+        .locator(`li.Menu:has(button[aria-label="${menuItemAriaName}"])`);
+
+    await expect(menuItem).toBeVisible();
+
+    // Click the button to open the menu using force option
+    const menuButton = menuItem.locator("button.OpenMenuButton");
+    await menuButton.click({ force: true });
+
+    // Find the subitem within this specific menu's children
+    const subItemLink = menuItem
+        .locator(".Menu-children")
+        .locator(".MenuLink")
+        .filter({ has: page.locator(".MenuLinkTitle", { hasText: subMenuItemName }) });
+    await subItemLink.waitFor({ state: "visible" });
+
+    // Click the subitem link
+    await subItemLink.click();
+};
