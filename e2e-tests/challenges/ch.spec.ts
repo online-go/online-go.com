@@ -23,7 +23,11 @@ import { chHandicapPrefsTest } from "./ch-handicap-prefs";
 import { chPrivateInviteTest } from "./ch-private-invite";
 import { chRengoTest } from "./ch-rengo";
 import { chDemoBoardTest } from "./ch-demo-board";
-ogsTest.describe("@Challenges Challenge Tests", () => {
+
+// Note: these "Challenge Modal" tests are front-end tests only at present.
+// POST payloads are inspected/tested but not sent to the server.
+
+ogsTest.describe("@ChallengeModal Challenge Modal Tests", () => {
     ogsTest("Should be able to create a challenge with a correct call", chBasicCreationTest);
     ogsTest(
         "Should be able to have different preferred settings based on rank",
