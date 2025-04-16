@@ -24,6 +24,7 @@ export interface ChallengeModalFields {
     periods?: string;
     color?: string;
     private?: boolean;
+    invite_only?: boolean;
     ranked?: boolean;
     restrict_rank?: boolean;
     handicap?: string;
@@ -77,6 +78,7 @@ export interface ChallengePOSTPayload {
     max_ranking?: number;
     challenger_color?: string;
     rengo_auto_start?: number;
+    invite_only?: boolean;    
     game: {
         name?: string;
         rules?: string;
@@ -281,6 +283,11 @@ export const fillOutChallengeForm = async (
             await auto_start_input.fill(final_settings.rengo_auto_start);
         }
     }
+
+    if (final_settings.invite_only !== undefined) {
+        const checkbox = page.locator("#challenge-invite-only");
+        await checkbox.setChecked(final_settings.invite_only);
+    }
 };
 
 // Verify that the challenge form fields match the expected values
@@ -313,6 +320,15 @@ export const checkChallengeForm = async (page: Page, settings: ChallengeModalFie
     if (settings.private !== undefined) {
         const checkbox = page.locator("#challenge-private");
         if (settings.private) {
+            await expect(checkbox).toBeChecked();
+        } else {
+            await expect(checkbox).not.toBeChecked();
+        }
+    }
+
+    if (settings.invite_only !== undefined) {
+        const checkbox = page.locator("#challenge-invite-only");
+        if (settings.invite_only) {
             await expect(checkbox).toBeChecked();
         } else {
             await expect(checkbox).not.toBeChecked();
@@ -488,6 +504,9 @@ export const testChallengePOSTPayload = async (
         }
         if (expectedPayload.game.private !== undefined) {
             expect(requestBody.game.private).toBe(expectedPayload.game.private);
+        }
+        if (expectedPayload.invite_only !== undefined) {
+            expect(requestBody.invite_only).toBe(expectedPayload.invite_only);
         }
         if (expectedPayload.game.rengo !== undefined) {
             expect(requestBody.game.rengo).toBe(expectedPayload.game.rengo);

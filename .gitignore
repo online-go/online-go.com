@@ -34,3 +34,4 @@ coverage
 /blob-report/
 /playwright/
 /e2e-tests/playwright/
+.incident_indicator.lock
