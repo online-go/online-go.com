@@ -16,9 +16,9 @@
  */
 
 import { PuzzleConfig } from "goban";
-import { LearningPage, LearningPageProperties } from "./LearningPage";
+import { LearningPage, LearningPageProperties } from "../../LearningPage";
 import { _, pgettext } from "@/lib/translate";
-import { LearningHubSection } from "./LearningHubSection";
+import { LearningHubSection } from "../../LearningHubSection";
 
 export class Capture extends LearningHubSection {
     static pages(): Array<typeof LearningPage> {

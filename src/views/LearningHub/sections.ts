@@ -17,16 +17,16 @@
 
 import { pgettext } from "@/lib/translate";
 import { LearningHubSection } from "./LearningHubSection";
-import { Capture } from "./Capture";
-import { Defend } from "./Defend";
+import { Capture } from "./Sections/Fundamentals/Capture";
+import { Defend } from "./Sections/Fundamentals/Defend";
 import { SnapBack } from "./SnapBack";
 import { Seki } from "./Seki";
 //import {Territory} from './Territory';
 import { Ko } from "./Ko";
 import { Ladders } from "./Ladders";
-import { EndingTheGame } from "./EndingTheGame";
+import { EndingTheGame } from "./Sections/Fundamentals/EndingTheGame";
 import { TheBoard } from "./TheBoard";
-import { Intro } from "./Intro";
+import { Intro } from "./Sections/Fundamentals/Intro";
 
 export class FalseEyes extends LearningHubSection {
     static section(): string {
