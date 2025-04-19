@@ -29,7 +29,7 @@ export class Intro extends LearningHubSection {
         return "rules-intro";
     }
     static title(): string {
-        return pgettext("Tutorial section name on rules introduction", "The Game!");
+        return pgettext("Tutorial section name on rules introduction", "The Game of Go");
     }
     static subtext(): string {
         return pgettext(
@@ -47,7 +47,7 @@ class Page1 extends LearningPage {
     text() {
         return _(
             // "You can play a stone on any intersection, even the outer ones. The goal of the game is to surround the largest areas. Stones don't move but can be captured. Make a move to continue",
-            "The game starts with an empty board. Two players, Black and White, take turns placing a stone on the board. Black starts. You can play a stone on any empty intersection, even the outer ones. Make a move to continue",
+            "The game starts with an empty board. Two players, Black and White, take turns placing stones on the board. Black starts. You can play a stone on any empty intersection, even the outer ones. Make a move to continue.",
         );
     }
     config(): PuzzleConfig {
@@ -152,7 +152,7 @@ class Page2 extends LearningPage {
 
     text() {
         return _(
-            "Black has played the first move. Now it is White's turn. Make a move to continue",
+            "Black has played the first move. Now it is White's turn. Make a move to continue.",
         );
     }
     config(): PuzzleConfig {

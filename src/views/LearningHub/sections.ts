@@ -20,15 +20,19 @@ import { LearningHubSection } from "./LearningHubSection";
 import { CaptureStone } from "./Sections/Fundamentals/CaptureStone";
 import { CaptureBlack } from "./Sections/Fundamentals/CaptureBlack";
 import { CaptureWhite } from "./Sections/Fundamentals/CaptureWhite";
-import { CaptureMore } from "./Sections/Fundamentals/CaptureMore";
-import { Defend } from "./Sections/Fundamentals/Defend";
+import { BothAtari } from "./Sections/Fundamentals/BothAtari";
+import { Escape } from "./Sections/Fundamentals/Escape";
+import { FindEscape } from "./Sections/Fundamentals/FindEscape";
+import { CreateOpening } from "./Sections/Fundamentals/CreateOpening";
+import { Connect } from "./Sections/Fundamentals/Connect";
+import { Cut } from "./Sections/Fundamentals/Cut";
 import { SnapBack } from "./SnapBack";
 import { Seki } from "./Seki";
 //import {Territory} from './Territory';
 import { Ko } from "./Ko";
 import { Ladders } from "./Ladders";
 import { EndingTheGame } from "./Sections/Fundamentals/EndingTheGame";
-import { TheBoard } from "./TheBoard";
+import { TheBoard } from "./Sections/Fundamentals/TheBoard";
 import { Intro } from "./Sections/Fundamentals/Intro";
 
 export class FalseEyes extends LearningHubSection {
@@ -157,15 +161,17 @@ export const sections: [string, any[]][] = [
             CaptureStone,
             CaptureWhite,
             CaptureBlack,
-            CaptureMore,
-            Defend,
+            BothAtari,
+            Escape,
+            FindEscape,
+            CreateOpening,
+            Connect,
+            Cut,
             /*Territory, */ EndingTheGame,
+            TheBoard,
         ],
     ],
-    [
-        pgettext("Learning hub section title", "Basic Skills"),
-        [TheBoard, Ladders, SnapBack, Seki, Ko],
-    ],
+    [pgettext("Learning hub section title", "Basic Skills"), [Ladders, SnapBack, Seki, Ko]],
     /*
     [pgettext("Learning hub section title", "Intermediate"),
         [TheBoard, Ladders, SnapBack, FalseEyes, CuttingStones, JumpingStones]],

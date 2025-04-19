@@ -25,16 +25,13 @@ export class CaptureStone extends LearningHubSection {
         return [Page01, Page02, Page03, Page04, Page05, Page06];
     }
     static section(): string {
-        return "exercise_1_5_3";
+        return "capture_stone";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning Exercise_1_5_3", "Capture Stone");
+        return pgettext("Tutorial section name on learning capture", "Capture Stone");
     }
     static subtext(): string {
-        return pgettext(
-            "Tutorial section subtext on learning on Exercise_1_5_3",
-            "Capture a stone",
-        );
+        return pgettext("Tutorial section subtext on learning on capture", "Capture a stone");
     }
 }
 class Page01 extends LearningPage {

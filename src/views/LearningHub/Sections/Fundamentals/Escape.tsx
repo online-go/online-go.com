@@ -20,18 +20,18 @@ import { LearningPage, LearningPageProperties } from "../../LearningPage";
 import { _, pgettext } from "@/lib/translate";
 import { LearningHubSection } from "../../LearningHubSection";
 
-export class CaptureBlack extends LearningHubSection {
+export class Escape extends LearningHubSection {
     static pages(): Array<typeof LearningPage> {
         return [Page01, Page02, Page03, Page04, Page05, Page06];
     }
     static section(): string {
-        return "capture_black";
+        return "escape";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning capture", "Capture Black");
+        return pgettext("Tutorial section name on learning escape", "Escape");
     }
     static subtext(): string {
-        return pgettext("Tutorial section subtext on learning on capture", "Capture black stones");
+        return pgettext("Tutorial section subtext on learning on escape", "Escape from atari");
     }
 }
 class Page01 extends LearningPage {
@@ -40,19 +40,20 @@ class Page01 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Capture one or more black stones.");
+        return _("White to play. Escape with the marked chain that is in atari.");
     }
     config(): PuzzleConfig {
         return {
+            width: 9,
+            height: 9,
             mode: "puzzle",
             initial_player: "white",
             initial_state: {
-                black: "cfcgchehdi",
-                white: "eedgdhei",
+                black: "fcgchdfege",
+                white: "fdgdggfh",
             },
-            width: 9,
-            height: 9,
-            move_tree: this.makePuzzleMoveTree(["ci"], [], 9, 9),
+            marks: { triangle: "gdfd" },
+            move_tree: this.makePuzzleMoveTree(["ed"], [], 9, 9),
         };
     }
 }
@@ -63,19 +64,20 @@ class Page02 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Capture one or more black stones.");
+        return _("White to play. Escape with the marked chain that is in atari.");
     }
     config(): PuzzleConfig {
         return {
+            width: 9,
+            height: 9,
             mode: "puzzle",
             initial_player: "white",
             initial_state: {
-                black: "cgdgggbhci",
-                white: "cfbgahbi",
+                black: "cfefdg",
+                white: "cedf",
             },
-            width: 9,
-            height: 9,
-            move_tree: this.makePuzzleMoveTree(["ch"], [], 9, 9),
+            marks: { triangle: "df" },
+            move_tree: this.makePuzzleMoveTree(["de"], [], 9, 9),
         };
     }
 }
@@ -86,18 +88,19 @@ class Page03 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Capture one or more black stones.");
+        return _("White to play. Escape with the marked chain that is in atari.");
     }
     config(): PuzzleConfig {
         return {
+            width: 9,
+            height: 9,
             mode: "puzzle",
             initial_player: "white",
             initial_state: {
-                black: "eefecgdgegfg",
-                white: "edfddegeff",
+                black: "decfdg",
+                white: "dfff",
             },
-            width: 9,
-            height: 9,
+            marks: { triangle: "df" },
             move_tree: this.makePuzzleMoveTree(["ef"], [], 9, 9),
         };
     }
@@ -109,19 +112,20 @@ class Page04 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Capture one or more black stones.");
+        return _("White to play. Escape with the marked chain that is in atari.");
     }
     config(): PuzzleConfig {
         return {
+            width: 9,
+            height: 9,
             mode: "puzzle",
             initial_player: "white",
             initial_state: {
-                black: "cdcecfefffcg",
-                white: "eefegfegfg",
+                black: "dcfcddfdee",
+                white: "cbdbeced",
             },
-            width: 9,
-            height: 9,
-            move_tree: this.makePuzzleMoveTree(["df"], [], 9, 9),
+            marks: { triangle: "edec" },
+            move_tree: this.makePuzzleMoveTree(["eb"], [], 9, 9),
         };
     }
 }
@@ -132,19 +136,20 @@ class Page05 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Capture one or more black stones.");
+        return _("White to play. Escape with the marked chain that is in atari.");
     }
     config(): PuzzleConfig {
         return {
+            width: 9,
+            height: 9,
             mode: "puzzle",
             initial_player: "white",
             initial_state: {
-                black: "dcfcddfdeegg",
-                white: "cceccdedde",
+                black: "ebfbdcgcddfdgd",
+                white: "cbdbecfcbded",
             },
-            width: 9,
-            height: 9,
-            move_tree: this.makePuzzleMoveTree(["db"], [], 9, 9),
+            marks: { triangle: "edfcec" },
+            move_tree: this.makePuzzleMoveTree(["ee"], [], 9, 9),
         };
     }
 }
@@ -155,19 +160,20 @@ class Page06 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Capture one or more black stones.");
+        return _("White to play. Escape with the marked chain that is in atari.");
     }
     config(): PuzzleConfig {
         return {
+            width: 9,
+            height: 9,
             mode: "puzzle",
             initial_player: "white",
             initial_state: {
-                black: "hfchfhghdieihi",
-                white: "fcceefdhehci",
+                black: "gcfdeege",
+                white: "fegffg",
             },
-            width: 9,
-            height: 9,
-            move_tree: this.makePuzzleMoveTree(["fi"], [], 9, 9),
+            marks: { triangle: "fe" },
+            move_tree: this.makePuzzleMoveTree(["ff"], [], 9, 9),
         };
     }
 }

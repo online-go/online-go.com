@@ -20,18 +20,18 @@ import { LearningPage, LearningPageProperties } from "../../LearningPage";
 import { _, pgettext } from "@/lib/translate";
 import { LearningHubSection } from "../../LearningHubSection";
 
-export class CaptureBlack extends LearningHubSection {
+export class Connect extends LearningHubSection {
     static pages(): Array<typeof LearningPage> {
         return [Page01, Page02, Page03, Page04, Page05, Page06];
     }
     static section(): string {
-        return "capture_black";
+        return "connect";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning capture", "Capture Black");
+        return pgettext("Tutorial section name on learning connect", "Connect");
     }
     static subtext(): string {
-        return pgettext("Tutorial section subtext on learning on capture", "Capture black stones");
+        return pgettext("Tutorial section subtext on learning on connect", "Connect your stones");
     }
 }
 class Page01 extends LearningPage {
@@ -40,19 +40,19 @@ class Page01 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Capture one or more black stones.");
+        return _("White to play. Connect the white stones.");
     }
     config(): PuzzleConfig {
         return {
+            width: 9,
+            height: 9,
             mode: "puzzle",
             initial_player: "white",
             initial_state: {
-                black: "cfcgchehdi",
-                white: "eedgdhei",
+                black: "dcddcfdf",
+                white: "beceee",
             },
-            width: 9,
-            height: 9,
-            move_tree: this.makePuzzleMoveTree(["ci"], [], 9, 9),
+            move_tree: this.makePuzzleMoveTree(["de"], [], 9, 9),
         };
     }
 }
@@ -63,19 +63,19 @@ class Page02 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Capture one or more black stones.");
+        return _("White to play. Connect the white stones.");
     }
     config(): PuzzleConfig {
         return {
+            width: 9,
+            height: 9,
             mode: "puzzle",
             initial_player: "white",
             initial_state: {
-                black: "cgdgggbhci",
-                white: "cfbgahbi",
+                black: "fcgdfegg",
+                white: "ecfdee",
             },
-            width: 9,
-            height: 9,
-            move_tree: this.makePuzzleMoveTree(["ch"], [], 9, 9),
+            move_tree: this.makePuzzleMoveTree(["ed"], [], 9, 9),
         };
     }
 }
@@ -86,19 +86,19 @@ class Page03 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Capture one or more black stones.");
+        return _("White to play. Connect the white stones.");
     }
     config(): PuzzleConfig {
         return {
+            width: 9,
+            height: 9,
             mode: "puzzle",
             initial_player: "white",
             initial_state: {
-                black: "eefecgdgegfg",
-                white: "edfddegeff",
+                black: "cbdbddcg",
+                white: "cceced",
             },
-            width: 9,
-            height: 9,
-            move_tree: this.makePuzzleMoveTree(["ef"], [], 9, 9),
+            move_tree: this.makePuzzleMoveTree(["dc"], [], 9, 9),
         };
     }
 }
@@ -109,19 +109,19 @@ class Page04 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Capture one or more black stones.");
+        return _("White to play. Connect the white stones.");
     }
     config(): PuzzleConfig {
         return {
+            width: 9,
+            height: 9,
             mode: "puzzle",
             initial_player: "white",
             initial_state: {
-                black: "cdcecfefffcg",
-                white: "eefegfegfg",
+                black: "gcfegefg",
+                white: "efgfeg",
             },
-            width: 9,
-            height: 9,
-            move_tree: this.makePuzzleMoveTree(["df"], [], 9, 9),
+            move_tree: this.makePuzzleMoveTree(["ff"], [], 9, 9),
         };
     }
 }
@@ -132,19 +132,19 @@ class Page05 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Capture one or more black stones.");
+        return _("White to play. Connect the white stones.");
     }
     config(): PuzzleConfig {
         return {
+            width: 9,
+            height: 9,
             mode: "puzzle",
             initial_player: "white",
             initial_state: {
-                black: "dcfcddfdeegg",
-                white: "cceccdedde",
+                black: "eefegf",
+                white: "deef",
             },
-            width: 9,
-            height: 9,
-            move_tree: this.makePuzzleMoveTree(["db"], [], 9, 9),
+            move_tree: this.makePuzzleMoveTree(["df", "dg", "cf", "ce", "eg"], [], 9, 9),
         };
     }
 }
@@ -155,19 +155,19 @@ class Page06 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Capture one or more black stones.");
+        return _("White to play. Connect the white stones.");
     }
     config(): PuzzleConfig {
         return {
+            width: 9,
+            height: 9,
             mode: "puzzle",
             initial_player: "white",
             initial_state: {
-                black: "hfchfhghdieihi",
-                white: "fcceefdhehci",
+                black: "efegfg",
+                white: "eeff",
             },
-            width: 9,
-            height: 9,
-            move_tree: this.makePuzzleMoveTree(["fi"], [], 9, 9),
+            move_tree: this.makePuzzleMoveTree(["fe", "ge", "fd", "gf"], [], 9, 9),
         };
     }
 }

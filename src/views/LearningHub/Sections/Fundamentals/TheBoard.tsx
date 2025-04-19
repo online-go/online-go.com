@@ -16,9 +16,9 @@
  */
 
 import { PuzzleConfig } from "goban";
-import { LearningPage, LearningPageProperties } from "./LearningPage";
+import { LearningPage, LearningPageProperties } from "../../LearningPage";
 import { _, pgettext } from "@/lib/translate";
-import { LearningHubSection } from "./LearningHubSection";
+import { LearningHubSection } from "../../LearningHubSection";
 
 export class TheBoard extends LearningHubSection {
     static pages(): Array<typeof LearningPage> {
@@ -29,7 +29,7 @@ export class TheBoard extends LearningHubSection {
         return "the-board";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning about the board", "The Board!");
+        return pgettext("Tutorial section name on learning about the board", "The Board");
     }
     static subtext(): string {
         return pgettext(
