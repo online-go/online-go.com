@@ -18,6 +18,10 @@
 import { pgettext } from "@/lib/translate";
 import { LearningHubSection } from "./LearningHubSection";
 import { Capture } from "./Sections/Fundamentals/Capture";
+import { CaptureStone } from "./Sections/Fundamentals/CaptureStone";
+import { CaptureBlack } from "./Sections/Fundamentals/CaptureBlack";
+import { CaptureWhite } from "./Sections/Fundamentals/CaptureWhite";
+import { CaptureMore } from "./Sections/Fundamentals/CaptureMore";
 import { Defend } from "./Sections/Fundamentals/Defend";
 import { SnapBack } from "./SnapBack";
 import { Seki } from "./Seki";
@@ -149,9 +153,21 @@ export class Terminology extends LearningHubSection {
 export const sections: [string, any[]][] = [
     [
         pgettext("Learning hub section title", "Fundamentals"),
-        [Intro, Capture, Defend, /*Territory, */ EndingTheGame],
+        [
+            Intro,
+            Capture,
+            CaptureStone,
+            CaptureWhite,
+            CaptureBlack,
+            CaptureMore,
+            Defend,
+            /*Territory, */ EndingTheGame,
+        ],
     ],
-    [pgettext("Learning hub section title", "Basics"), [TheBoard, Ladders, SnapBack, Seki, Ko]],
+    [
+        pgettext("Learning hub section title", "Basic Skills"),
+        [TheBoard, Ladders, SnapBack, Seki, Ko],
+    ],
     /*
     [pgettext("Learning hub section title", "Intermediate"),
         [TheBoard, Ladders, SnapBack, FalseEyes, CuttingStones, JumpingStones]],
