@@ -20,6 +20,7 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { ChallengeModalBody } from "./ChallengeModal";
 import { post } from "@/lib/requests";
 import { ChallengeModalProperties } from "@/components/ChallengeModal/ChallengeModal.types";
+import { sanitizeChallengeDetails, sanitizeDemoSettings } from "./ChallengeModal.utils";
 
 // Mock data module
 jest.mock("@/lib/data", () => ({
@@ -300,5 +301,50 @@ describe("ChallengeModalBody", () => {
 
         // Verify the modal was closed
         expect(mockModal.close).toHaveBeenCalled();
+    });
+
+    it("sanitizes legacy data", () => {
+        const demoSettings: any = {
+            name: "test settings 1",
+            rules: "aga",
+            width: 19,
+            height: 19,
+            black_name: "p1",
+            white_name: "p2",
+            white_ranking: 1500,
+            black_ranking: 1500,
+            private: false,
+            komi_auto: "custom",
+        };
+        expect("komi" in sanitizeDemoSettings(demoSettings)).toBeFalsy();
+        demoSettings.komi = "6.5";
+        expect(sanitizeDemoSettings(demoSettings).komi).toBe(6.5);
+
+        const challengeDetails: any = {
+            initialized: false,
+            min_ranking: 20,
+            max_ranking: 30,
+            challenger_color: "automatic",
+            rengo_auto_start: 0,
+            game: {
+                name: "test game 1",
+                rules: "aga",
+                ranked: false,
+                width: 9,
+                height: 9,
+                handicap: "5",
+                komi_auto: "automatic",
+                disable_analysis: false,
+                initial_state: undefined,
+                private: false,
+                rengo: false,
+                rengo_casual_mode: false,
+            },
+        };
+        expect(sanitizeChallengeDetails(challengeDetails).game.handicap).toBe(5);
+        expect("komi" in sanitizeChallengeDetails(challengeDetails)).toBeFalsy();
+
+        challengeDetails.game.komi = "4.5";
+        expect(sanitizeChallengeDetails(challengeDetails).game.komi).toBe(4.5);
     });
 });

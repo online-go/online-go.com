@@ -22,9 +22,11 @@ import { rulesText } from "@/lib/misc";
 import { shortShortTimeControl, timeControlSystemText } from "@/components/TimeControl";
 import {
     ChallengeDetails,
+    DemoSettings,
     RejectionDetails,
 } from "@/components/ChallengeModal/ChallengeModal.types";
 import { rankSelectorIndexToText } from "@/lib/rank_utils";
+import { RuleSet } from "@/lib/types";
 
 export function challenge_text_description(challenge: ChallengeDetails) {
     const c = challenge;
@@ -205,15 +207,49 @@ export function rejectionDetailsToMessage(details: RejectionDetails): string | u
     }
 }
 
-// For legacy reasons, handicap can have a string value
+// For legacy reasons, handicap and komi can have a string value
 // when these challenge details come from local storage.
 export function sanitizeChallengeDetails<T extends ChallengeDetails>(challengeDetails: T): T {
     return {
         ...challengeDetails,
-        game: { ...challengeDetails.game, handicap: Number(challengeDetails.game.handicap) },
+        game: {
+            ...challengeDetails.game,
+            handicap: Number(challengeDetails.game.handicap),
+            ...(challengeDetails.game.komi !== undefined && {
+                komi: Number(challengeDetails.game.komi),
+            }),
+        },
     };
+}
+
+// For legacy reasons, komi can have a string value
+// when these challenge details come from local storage.
+export function sanitizeDemoSettings(
+    settings: ReturnType<typeof data.get<"demo.settings">>,
+): DemoSettings {
+    return { ...settings, ...(settings.komi !== undefined && { komi: Number(settings.komi) }) };
 }
 
 export function getPreferredSettings(): ChallengeDetails[] {
     return data.get("preferred-game-settings", []).map(sanitizeChallengeDetails);
+}
+
+export function getDefaultKomi(rules: RuleSet, has_handicap: boolean): number {
+    switch (rules) {
+        case "japanese":
+        case "korean":
+            return has_handicap ? 0.5 : 6.5;
+        case "chinese":
+        case "aga":
+        case "ing":
+            return has_handicap ? 0.5 : 7.5;
+        case "nz":
+            return has_handicap ? 0 : 7;
+        default:
+            return 0;
+    }
+}
+
+export function isKomiOption(v: string): v is rest_api.KomiOption {
+    return v === "custom" || v === "automatic";
 }

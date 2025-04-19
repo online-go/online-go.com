@@ -102,7 +102,7 @@ export interface ChallengeModalConfig {
             rules: RuleSet;
             ranked: boolean;
             handicap: number;
-            komi_auto: string;
+            komi_auto: rest_api.KomiOption;
             disable_analysis: boolean;
             initial_state: GobanEngineInitialState | null;
             private: boolean;
@@ -151,12 +151,12 @@ export type ChallengeModalChallengeSettings = ChallengeDetails & {
     game: ChallengeModalGameSettings;
 };
 
-export type ChallengeModalDemoSettings = DataSchema["demo.settings"];
+export type DemoSettings = DataSchema["demo.settings"];
 
 export type ChallengeModalState = {
     challenge: ChallengeModalChallengeSettings;
     conf: ChallengeModalConf;
-    demo: ChallengeModalDemoSettings;
+    demo: DemoSettings;
     forking_game: boolean;
     hide_preferred_settings_on_portrait: boolean;
     preferred_settings: ChallengeDetails[];
