@@ -47,14 +47,15 @@ class Page01 extends LearningPage {
     }
     config(): PuzzleConfig {
         return {
+            width: 9,
+            height: 9,
             mode: "puzzle",
             initial_player: "black",
             initial_state: {
                 black: "ah",
                 white: "ai",
             },
-            width: 9,
-            height: 9,
+            marks: { triangle: "ai" },
             move_tree: this.makePuzzleMoveTree(["bi"], [], 9, 9),
         };
     }
@@ -70,14 +71,15 @@ class Page02 extends LearningPage {
     }
     config(): PuzzleConfig {
         return {
+            width: 9,
+            height: 9,
             mode: "puzzle",
             initial_player: "black",
             initial_state: {
                 black: "cfefdg",
                 white: "ccgcdf",
             },
-            width: 9,
-            height: 9,
+            marks: { triangle: "df" },
             move_tree: this.makePuzzleMoveTree(["de"], [], 9, 9),
         };
     }
@@ -93,14 +95,15 @@ class Page03 extends LearningPage {
     }
     config(): PuzzleConfig {
         return {
+            width: 9,
+            height: 9,
             mode: "puzzle",
             initial_player: "black",
             initial_state: {
                 black: "egehdi",
                 white: "fgfhei",
             },
-            width: 9,
-            height: 9,
+            marks: { triangle: "ei" },
             move_tree: this.makePuzzleMoveTree(["fi"], [], 9, 9),
         };
     }
@@ -116,14 +119,15 @@ class Page04 extends LearningPage {
     }
     config(): PuzzleConfig {
         return {
+            width: 9,
+            height: 9,
             mode: "puzzle",
             initial_player: "black",
             initial_state: {
                 black: "eddefe",
                 white: "fdgdee",
             },
-            width: 9,
-            height: 9,
+            marks: { triangle: "ee" },
             move_tree: this.makePuzzleMoveTree(["ef"], [], 9, 9),
         };
     }
@@ -139,14 +143,15 @@ class Page05 extends LearningPage {
     }
     config(): PuzzleConfig {
         return {
+            width: 9,
+            height: 9,
             mode: "puzzle",
             initial_player: "black",
             initial_state: {
                 black: "dgfhghhi",
                 white: "hfgghhii",
             },
-            width: 9,
-            height: 9,
+            marks: { triangle: "ii" },
             move_tree: this.makePuzzleMoveTree(["ih"], [], 9, 9),
         };
     }
@@ -162,14 +167,15 @@ class Page06 extends LearningPage {
     }
     config(): PuzzleConfig {
         return {
+            width: 9,
+            height: 9,
             mode: "puzzle",
             initial_player: "black",
             initial_state: {
                 black: "ecgcfd",
                 white: "dcfced",
             },
-            width: 9,
-            height: 9,
+            marks: { triangle: "fc" },
             move_tree: this.makePuzzleMoveTree(["fb"], [], 9, 9),
         };
     }

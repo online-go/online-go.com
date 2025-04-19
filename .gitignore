@@ -35,3 +35,5 @@ coverage
 /playwright/
 /e2e-tests/playwright/
 .incident_indicator.lock
+submodules/react-dynamic-help
+submodules/goban
