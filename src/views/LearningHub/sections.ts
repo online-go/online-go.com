@@ -17,7 +17,6 @@
 
 import { pgettext } from "@/lib/translate";
 import { LearningHubSection } from "./LearningHubSection";
-import { Capture } from "./Sections/Fundamentals/Capture";
 import { CaptureStone } from "./Sections/Fundamentals/CaptureStone";
 import { CaptureBlack } from "./Sections/Fundamentals/CaptureBlack";
 import { CaptureWhite } from "./Sections/Fundamentals/CaptureWhite";
@@ -155,7 +154,6 @@ export const sections: [string, any[]][] = [
         pgettext("Learning hub section title", "Fundamentals"),
         [
             Intro,
-            Capture,
             CaptureStone,
             CaptureWhite,
             CaptureBlack,
