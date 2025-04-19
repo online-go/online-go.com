@@ -20,7 +20,7 @@ import { LearningHubSection } from "./LearningHubSection";
 import { CaptureStone } from "./Sections/Fundamentals/CaptureStone";
 import { CaptureBlack } from "./Sections/Fundamentals/CaptureBlack";
 import { CaptureWhite } from "./Sections/Fundamentals/CaptureWhite";
-import { BothAtari } from "./Sections/Fundamentals/BothAtari";
+import { Suicide } from "./Sections/Fundamentals/Suicide";
 import { Escape } from "./Sections/Fundamentals/Escape";
 import { FindEscape } from "./Sections/Fundamentals/FindEscape";
 import { CreateOpening } from "./Sections/Fundamentals/CreateOpening";
@@ -161,7 +161,7 @@ export const sections: [string, any[]][] = [
             CaptureStone,
             CaptureWhite,
             CaptureBlack,
-            BothAtari,
+            Suicide,
             Escape,
             FindEscape,
             CreateOpening,

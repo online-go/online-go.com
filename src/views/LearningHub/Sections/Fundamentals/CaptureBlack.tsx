@@ -22,7 +22,7 @@ import { LearningHubSection } from "../../LearningHubSection";
 
 export class CaptureBlack extends LearningHubSection {
     static pages(): Array<typeof LearningPage> {
-        return [Page01, Page02, Page03, Page04, Page05, Page06];
+        return [Page01, Page02, Page03, Page04, Page05, Page06, Page07, Page08, Page09, Page10];
     }
     static section(): string {
         return "capture_black";
@@ -168,6 +168,98 @@ class Page06 extends LearningPage {
             width: 9,
             height: 9,
             move_tree: this.makePuzzleMoveTree(["fi"], [], 9, 9),
+        };
+    }
+}
+
+class Page07 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        return _("White to play. Both players are in atari. Capture one or more black stones.");
+    }
+    config(): PuzzleConfig {
+        return {
+            mode: "puzzle",
+            initial_player: "white",
+            initial_state: {
+                black: "fgggigdhehhhgi",
+                white: "dgegchfhghdi",
+            },
+            width: 9,
+            height: 9,
+            move_tree: this.makePuzzleMoveTree(["ei"], [], 9, 9),
+        };
+    }
+}
+
+class Page08 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        return _("White to play. Both players are in atari. Capture one or more black stones.");
+    }
+    config(): PuzzleConfig {
+        return {
+            mode: "puzzle",
+            initial_player: "white",
+            initial_state: {
+                black: "ffcgdgegfgbhfhdiei",
+                white: "gdgfggdhehghfigi",
+            },
+            width: 9,
+            height: 9,
+            move_tree: this.makePuzzleMoveTree(["ci"], [], 9, 9),
+        };
+    }
+}
+
+class Page09 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        return _("White to play. Both players are in atari. Capture one or more black stones.");
+    }
+    config(): PuzzleConfig {
+        return {
+            mode: "puzzle",
+            initial_player: "white",
+            initial_state: {
+                black: "gcfecfefgfcgdgggehfh",
+                white: "cedebfdfegfgbhchdh",
+            },
+            width: 9,
+            height: 9,
+            move_tree: this.makePuzzleMoveTree(["bg"], [], 9, 9),
+        };
+    }
+}
+
+class Page10 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        return _("White to play. Both players are in atari. Capture one or more black stones.");
+    }
+    config(): PuzzleConfig {
+        return {
+            mode: "puzzle",
+            initial_player: "white",
+            initial_state: {
+                black: "cfeffgggigehhhgi",
+                white: "eeffgfhfhgfhgh",
+            },
+            width: 9,
+            height: 9,
+            move_tree: this.makePuzzleMoveTree(["eg"], [], 9, 9),
         };
     }
 }
