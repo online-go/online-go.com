@@ -26,10 +26,13 @@ import { FindEscape } from "./Sections/Fundamentals/FindEscape";
 import { CreateOpening } from "./Sections/Fundamentals/CreateOpening";
 import { Connect } from "./Sections/Fundamentals/Connect";
 import { Cut } from "./Sections/Fundamentals/Cut";
+import { Eyes } from "./Sections/Fundamentals/Eyes";
+import { MakeAlive } from "./Sections/Fundamentals/MakeAlive";
+import { Kill } from "./Sections/Fundamentals/Kill";
+import { Ko } from "./Sections/Fundamentals/Ko";
 import { SnapBack } from "./SnapBack";
 import { Seki } from "./Seki";
 //import {Territory} from './Territory';
-import { Ko } from "./Ko";
 import { Ladders } from "./Ladders";
 import { EndingTheGame } from "./Sections/Fundamentals/EndingTheGame";
 import { TheBoard } from "./Sections/Fundamentals/TheBoard";
@@ -167,6 +170,10 @@ export const sections: [string, any[]][] = [
             CreateOpening,
             Connect,
             Cut,
+            Eyes,
+            MakeAlive,
+            Kill,
+            Ko,
             /*Territory, */ EndingTheGame,
             TheBoard,
         ],

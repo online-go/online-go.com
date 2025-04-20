@@ -16,47 +16,60 @@
  */
 
 import { PuzzleConfig } from "goban";
-import { LearningPage, LearningPageProperties } from "./LearningPage";
+import { LearningPage, LearningPageProperties } from "../../LearningPage";
 import { _, pgettext } from "@/lib/translate";
-import { LearningHubSection } from "./LearningHubSection";
+import { LearningHubSection } from "../../LearningHubSection";
 
 export class Ko extends LearningHubSection {
     static pages(): Array<typeof LearningPage> {
-        return [
-            Page1,
-            Page2,
-            Page3,
-            Page4,
-            //Page5,
-            //Page6,
-            //Page7,
-        ];
+        return [Page01, Page02, Page03, Page04, Page05];
     }
 
     static section(): string {
         return "ko";
     }
     static title(): string {
-        return pgettext("Tutorial section on ko", "Ko!");
+        return pgettext("Tutorial section on ko", "Ko");
     }
     static subtext(): string {
         return pgettext("Tutorial section on ko", "The recapture rule");
     }
 }
 
-class Page1 extends LearningPage {
+class Page01 extends LearningPage {
     constructor(props: LearningPageProperties) {
         super(props);
     }
 
     text() {
         return _(
-            'To prevent endlessly re-capturing the same space, there\'s a special rule called the "Ko rule" which prevents immediately recapturing the same position.  Capture the white group by exploiting the Ko rule.',
+            'To prevent endlessly re-capturing the same space, there\'s a special rule called the "Ko rule" which prevents immediately recapturing the same position. Black can capture the marked white stone. White is not allowed to recapture the black stone immediately. White has to play elsewhere first. Capture the marked stone',
         );
     }
     config(): PuzzleConfig {
         return {
             mode: "puzzle",
+            initial_player: "black",
+            /* cspell: disable-next-line */
+            initial_state: { black: "e8e6f7", white: "c7d8e7d6" },
+            marks: { triangle: "e7" },
+            move_tree: this.makePuzzleMoveTree(["d7"], []),
+        };
+    }
+}
+
+class Page02 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        return _("Capture the white group by exploiting the Ko rule.");
+    }
+    config(): PuzzleConfig {
+        return {
+            mode: "puzzle",
+            initial_player: "black",
             /* cspell: disable-next-line */
             initial_state: { black: "afbfcfcgdhcidi", white: "agbgahchbi" },
             move_tree: this.makePuzzleMoveTree(["b2d3a1"], []),
@@ -64,7 +77,7 @@ class Page1 extends LearningPage {
     }
 }
 
-class Page2 extends LearningPage {
+class Page03 extends LearningPage {
     constructor(props: LearningPageProperties) {
         super(props);
     }
@@ -75,7 +88,7 @@ class Page2 extends LearningPage {
     config(): PuzzleConfig {
         return {
             mode: "puzzle",
-
+            initial_player: "black",
             /* cspell: disable-next-line */
             initial_state: { black: "ecedeedfegehfh", white: "fdcedefeefgfcgdgfg" },
             move_tree: this.makePuzzleMoveTree(["f4c4e4"], ["c4b4", "g3c4"]),
@@ -83,7 +96,7 @@ class Page2 extends LearningPage {
     }
 }
 
-class Page3 extends LearningPage {
+class Page04 extends LearningPage {
     constructor(props: LearningPageProperties) {
         super(props);
     }
@@ -94,7 +107,7 @@ class Page3 extends LearningPage {
     config(): PuzzleConfig {
         return {
             mode: "puzzle",
-
+            initial_player: "black",
             /* cspell: disable-next-line */
             initial_state: { black: "fcfdgehfggfhgh", white: "edfeefgffgeh" },
             move_tree: this.makePuzzleMoveTree(["f4e3e5"], ["e3d3", "e5d5", "h5f4", "g6f4"]),
@@ -102,7 +115,7 @@ class Page3 extends LearningPage {
     }
 }
 
-class Page4 extends LearningPage {
+class Page05 extends LearningPage {
     constructor(props: LearningPageProperties) {
         super(props);
     }
@@ -117,7 +130,7 @@ class Page4 extends LearningPage {
             mode: "puzzle",
             width: 13,
             height: 13,
-
+            initial_player: "black",
             /* cspell: disable-next-line */
             initial_state: { black: "bgcgchcicjbkalclbm", white: "bebfagbhaibibjak" },
             move_tree: this.makePuzzleMoveTree(
