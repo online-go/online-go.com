@@ -41,7 +41,7 @@ class Page01 extends LearningPage {
 
     text() {
         return _(
-            "Point A is surrounded by white stones; it is called an 'eye'. Black can not play at A (suicide). Point B is also an eye, but black can play at B and capture. Capture the white stones.",
+            "Point A is surrounded by white stones; it is called an 'eye'. Black can not play at A (suicide). Point B is also an eye, but Black can play at B and capture. Capture the white stones.",
         );
     }
     config(): PuzzleConfig {

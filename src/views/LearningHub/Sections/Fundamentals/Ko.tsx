@@ -43,7 +43,7 @@ class Page01 extends LearningPage {
 
     text() {
         return _(
-            'To prevent endlessly re-capturing the same space, there\'s a special rule called the "Ko rule" which prevents immediately recapturing the same position. Black can capture the marked white stone. White is not allowed to recapture the black stone immediately. White has to play elsewhere first. Capture the marked stone',
+            'To prevent endlessly re-capturing the same space, there\'s a special rule called the "Ko rule" which prevents immediately recapturing the same position. Black can capture the marked white stone. White is not allowed to recapture the black stone immediately. White has to play elsewhere first. Capture the marked stone.',
         );
     }
     config(): PuzzleConfig {
@@ -83,7 +83,7 @@ class Page03 extends LearningPage {
     }
 
     text() {
-        return _("Connect your black stones");
+        return _("Connect your black stones.");
     }
     config(): PuzzleConfig {
         return {
@@ -102,7 +102,7 @@ class Page04 extends LearningPage {
     }
 
     text() {
-        return _("Capture two White stones by exploiting the Ko rule");
+        return _("Capture two white stones by exploiting the Ko rule.");
     }
     config(): PuzzleConfig {
         return {
@@ -122,7 +122,7 @@ class Page05 extends LearningPage {
 
     text() {
         return _(
-            'White just captured a stone with A3. Find a place to play where white must capture to move past the ko rule and take whites group at B5. This is called a "ko threat"',
+            'White just captured a stone with A3. Find a place to play where White must capture to move past the ko rule and take whites group at B5. This is called a "ko threat".',
         );
     }
     config(): PuzzleConfig {
