@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+/* cSpell:disable */
 
 import { PuzzleConfig } from "goban";
 import { LearningPage, LearningPageProperties } from "../../LearningPage";
@@ -47,7 +48,9 @@ class Page01 extends LearningPage {
             mode: "puzzle",
             initial_player: "white",
             initial_state: {
+                /* cspell:disable-next-line */
                 black: "cfcgchehdi",
+                /* cspell:disable-next-line */
                 white: "eedgdhei",
             },
             width: 9,
@@ -70,7 +73,9 @@ class Page02 extends LearningPage {
             mode: "puzzle",
             initial_player: "white",
             initial_state: {
+                /* cspell:disable-next-line */
                 black: "cgdgggbhci",
+                /* cspell:disable-next-line */
                 white: "cfbgahbi",
             },
             width: 9,
@@ -93,7 +98,9 @@ class Page03 extends LearningPage {
             mode: "puzzle",
             initial_player: "white",
             initial_state: {
+                /* cspell:disable-next-line */
                 black: "eefecgdgegfg",
+                /* cspell:disable-next-line */
                 white: "edfddegeff",
             },
             width: 9,
@@ -116,7 +123,9 @@ class Page04 extends LearningPage {
             mode: "puzzle",
             initial_player: "white",
             initial_state: {
+                /* cspell:disable-next-line */
                 black: "cdcecfefffcg",
+                /* cspell:disable-next-line */
                 white: "eefegfegfg",
             },
             width: 9,
@@ -139,7 +148,9 @@ class Page05 extends LearningPage {
             mode: "puzzle",
             initial_player: "white",
             initial_state: {
+                /* cspell:disable-next-line */
                 black: "dcfcddfdeegg",
+                /* cspell:disable-next-line */
                 white: "cceccdedde",
             },
             width: 9,
@@ -162,7 +173,9 @@ class Page06 extends LearningPage {
             mode: "puzzle",
             initial_player: "white",
             initial_state: {
+                /* cspell:disable-next-line */
                 black: "hfchfhghdieihi",
+                /* cspell:disable-next-line */
                 white: "fcceefdhehci",
             },
             width: 9,
