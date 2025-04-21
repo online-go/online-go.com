@@ -58,7 +58,6 @@
         align-content: stretch;
         justify-content: space-between;
         align-items: center;
-
     }
 
     .boardSize-picker-list {
@@ -464,7 +463,7 @@
 
 .PlayButton-container {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     gap: 2rem;
 
     .anonymous-container {
@@ -472,10 +471,12 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        margin-top: 2rem;
+        margin-top: 3rem;
         margin-bottom: 2rem;
         font-size: 1.3rem;
-        width: 100%;
+        width: fit-content;
+        padding: 1rem 2rem 1rem 2rem;
+        max-width: max-content;
 
         .Link {
             margin-left: 0.5rem;
