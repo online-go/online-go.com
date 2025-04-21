@@ -58,12 +58,11 @@
         align-content: stretch;
         justify-content: space-between;
         align-items: center;
-
     }
 
     .boardSize-picker-list {
         justify-content: center;
-        display flex;
+        display: flex;
     }
 
     .automatch-row-container {
@@ -220,7 +219,7 @@
                 themed: background-color shade4;
             }
 
-            .DownCarret {
+            .DownCarret { // cspell:disable-line
                 display: inline-block;
                 float: right;
                 padding-left: 1.5rem;
@@ -389,6 +388,7 @@
         right: 0;
         width: 20rem;
         max-width: 90vw;
+        z-index: z.play-buttons + 1;
 
         .ogs-react-select__group-heading {
             text-transform: none;
@@ -464,7 +464,7 @@
 
 .PlayButton-container {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     gap: 2rem;
 
     .anonymous-container {
@@ -472,10 +472,12 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        margin-top: 2rem;
+        margin-top: 3rem;
         margin-bottom: 2rem;
         font-size: 1.3rem;
-        width: 100%;
+        width: fit-content;
+        padding: 1rem 2rem 1rem 2rem;
+        max-width: max-content;
 
         .Link {
             margin-left: 0.5rem;
@@ -555,7 +557,7 @@
         width: 100%;
         left: 0;
         right: 0;
-        z-index: z.dock;
+        z-index: z.play-buttons;
         themed: background-color, bg;
         gap: 1rem;
 

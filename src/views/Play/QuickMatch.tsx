@@ -45,6 +45,7 @@ import { SPEED_OPTIONS } from "./SPEED_OPTIONS";
 import { useHaveActiveGameSearch } from "./hooks";
 import { openPlayPageHelp } from "./PlayPageHelp";
 import { notification_manager, Notification } from "@/components/Notifications/NotificationManager";
+import { Card } from "@/components/material";
 
 moment.relativeTimeThreshold("m", 56);
 export interface SelectOption {
@@ -1158,14 +1159,14 @@ export function QuickMatch(): React.ReactElement {
                     </div>
                 )}
                 {user.anonymous && (
-                    <div className="anonymous-container">
+                    <Card className="anonymous-container">
                         {_("Please sign in to play")}
                         <div>
                             <Link to="/register#/play">{_("Register for Free")}</Link>
                             {" | "}
                             <Link to="/sign-in#/play">{_("Sign in")}</Link>
                         </div>
-                    </div>
+                    </Card>
                 )}
 
                 {!automatch_search_active && !user.anonymous && (
