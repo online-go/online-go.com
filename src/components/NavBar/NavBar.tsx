@@ -43,6 +43,7 @@ import { logout } from "@/lib/auth";
 import { useUser, useData } from "@/lib/hooks";
 import { OmniSearch } from "./OmniSearch";
 import { forwardRef, useId, useState } from "react";
+import { MODERATOR_POWERS } from "@/lib/moderation";
 
 const body = document.body;
 
@@ -359,6 +360,14 @@ export function NavBar(): React.ReactElement {
                                 icon={<i className="fa fa-exclamation-triangle" />}
                             />
 
+                            {(user.is_moderator ||
+                                (user.moderator_powers && MODERATOR_POWERS.AI_DETECTOR)) && (
+                                <MenuLink
+                                    title={_("AI Detection")}
+                                    to="/ai-detection"
+                                    icon={<i className="fa fa-search" />}
+                                />
+                            )}
                             {user.is_moderator && (
                                 <MenuLink
                                     title={_("Moderator Center")}
