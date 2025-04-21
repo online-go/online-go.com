@@ -219,7 +219,7 @@
                 themed: background-color shade4;
             }
 
-            .DownCarret {
+            .DownCarret { // cspell:disable-line
                 display: inline-block;
                 float: right;
                 padding-left: 1.5rem;
@@ -388,6 +388,7 @@
         right: 0;
         width: 20rem;
         max-width: 90vw;
+        z-index: z.play-buttons + 1;
 
         .ogs-react-select__group-heading {
             text-transform: none;
@@ -556,7 +557,7 @@
         width: 100%;
         left: 0;
         right: 0;
-        z-index: z.dock;
+        z-index: z.play-buttons;
         themed: background-color, bg;
         gap: 1rem;
 
