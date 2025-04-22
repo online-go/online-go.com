@@ -1791,7 +1791,11 @@ function sanityCheck(ai_review: JGOFAIReview) {
 function isEqualMoveIntersection(a: JGOFIntersection, b: JGOFIntersection): boolean {
     return a.x === b.x && a.y === b.y;
 }
-function ReviewStrengthIcon({ review }: { review: JGOFAIReview }): React.ReactElement {
+export function ReviewStrengthIcon({
+    review,
+}: {
+    review: JGOFAIReview | rest_api.AIReviewParams;
+}): React.ReactElement {
     let strength: string;
     let content = "";
     if (review.type === "fast") {
