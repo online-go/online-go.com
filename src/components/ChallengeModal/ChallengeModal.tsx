@@ -54,12 +54,15 @@ import {
     challenge_text_description,
     sanitizeChallengeDetails,
     getPreferredSettings,
+    getDefaultKomi,
+    isKomiOption,
+    sanitizeDemoSettings,
 } from "@/components/ChallengeModal/ChallengeModal.utils";
 import {
     ChallengeDetails,
     ChallengeModalChallengeSettings,
     ChallengeModalConf,
-    ChallengeModalDemoSettings,
+    DemoSettings,
     ChallengeModalGameSettings,
     ChallengeModalInput,
     ChallengeModalProperties,
@@ -133,18 +136,20 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
             }),
         );
 
-        const demo = data.get("demo.settings", {
-            name: "",
-            rules: "japanese",
-            width: 19,
-            height: 19,
-            komi_auto: "automatic",
-            black_name: _("Black"),
-            black_ranking: 1039,
-            white_name: _("White"),
-            white_ranking: 1039,
-            private: false,
-        });
+        const demo = sanitizeDemoSettings(
+            data.get("demo.settings", {
+                name: "",
+                rules: "japanese",
+                width: 19,
+                height: 19,
+                komi_auto: "automatic",
+                black_name: _("Black"),
+                black_ranking: 1039,
+                white_name: _("White"),
+                white_ranking: 1039,
+                private: false,
+            }),
+        );
 
         const game_settings = this.props.mode === "demo" ? demo : challenge.game;
 
@@ -754,7 +759,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         this.setState((prev) => ({ conf: update_fn(prev.conf) }));
     update_challenge_settings = (update_fn: UpdateFn<ChallengeModalChallengeSettings>): void =>
         this.setState((prev) => ({ challenge: update_fn(prev.challenge) }));
-    update_demo_settings = (update_fn: UpdateFn<ChallengeModalDemoSettings>): void =>
+    update_demo_settings = (update_fn: UpdateFn<DemoSettings>): void =>
         this.setState((prev) => ({ demo: update_fn(prev.demo) }));
     update_game_settings = (update_fn: UpdateFn<ChallengeModalGameSettings>): void =>
         this.update_challenge_settings((prev) => ({ ...prev, game: update_fn(prev.game) }));
@@ -772,9 +777,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
     update_private_game = (isPrivate: boolean) =>
         this.update_game_settings((prev) => ({ ...prev, private: isPrivate, ranked: false }));
     update_private_demo = (isPrivate: boolean) =>
-        this.update_demo_settings(
-            (prev): ChallengeModalDemoSettings => ({ ...prev, private: isPrivate }),
-        );
+        this.update_demo_settings((prev): DemoSettings => ({ ...prev, private: isPrivate }));
     update_private =
         this.props.mode === "demo" ? this.update_private_demo : this.update_private_game;
 
@@ -823,40 +826,59 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
     update_handicap = (handicap: number) =>
         this.update_game_settings((prev) => ({ ...prev, handicap: handicap }));
 
-    update_komi_auto = (ev: React.ChangeEvent<HTMLSelectElement>) => {
-        const game = this.gameState();
-        if (ev.target.value !== "custom" || game.komi_auto === "custom") {
-            this.upstate(this.gameStateName("komi_auto"), ev);
+    update_komi_option_demo = (komi_option: string) => {
+        if (!isKomiOption(komi_option)) {
+            console.error(`invalid komi option: ${komi_option}`);
             return;
         }
+        this.setState((prev) => {
+            const changedToCustom = komi_option === "custom" && prev.demo.komi_auto !== "custom";
 
-        // Just switched to custom komi.  Set it to the default for the current
-        // rules.
-        let komi: string;
-        const has_handicap = (parseInt(game?.handicap || "0") || 0) > 0;
-        switch (game.rules) {
-            case "japanese":
-            case "korean":
-                komi = has_handicap ? "0.5" : "6.5";
-                break;
-            case "chinese":
-            case "aga":
-            case "ing":
-                komi = has_handicap ? "0.5" : "7.5";
-                break;
-            case "nz":
-                komi = has_handicap ? "0" : "7";
-                break;
-            default:
-                komi = "0";
-                break;
-        }
-
-        this.upstate([
-            [this.gameStateName("komi_auto"), "custom"],
-            [this.gameStateName("komi"), komi],
-        ]);
+            return {
+                demo: {
+                    ...prev.demo,
+                    komi_auto: komi_option,
+                    // If we just switched to custom komi, set it to the default for the current
+                    // rules.
+                    ...(changedToCustom && {
+                        komi: getDefaultKomi(prev.demo.rules, false),
+                    }),
+                },
+            };
+        });
     };
+
+    update_komi_option_game = (komi_option: string) => {
+        if (!isKomiOption(komi_option)) {
+            console.error(`invalid komi option: ${komi_option}`);
+            return;
+        }
+        this.setState((prev) => {
+            const changedToCustom =
+                komi_option === "custom" && prev.challenge.game.komi_auto !== "custom";
+
+            return {
+                challenge: {
+                    ...prev.challenge,
+                    game: {
+                        ...prev.challenge.game,
+                        komi_auto: komi_option,
+                        // If we just switched to custom komi, set it to the default for the current
+                        // rules.
+                        ...(changedToCustom && {
+                            komi: getDefaultKomi(
+                                prev.challenge.game.rules,
+                                prev.challenge.game.handicap > 0,
+                            ),
+                        }),
+                    },
+                },
+            };
+        });
+    };
+
+    update_komi_auto =
+        this.props.mode === "demo" ? this.update_komi_option_demo : this.update_komi_option_game;
 
     update_komi = (ev: React.ChangeEvent<HTMLInputElement>) =>
         this.upstate(this.gameStateName("komi"), ev.target.value || "0");
@@ -1209,7 +1231,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                         <div className="checkbox">
                             <select
                                 value={game.komi_auto}
-                                onChange={this.update_komi_auto}
+                                onChange={(ev) => this.update_komi_auto(ev.target.value)}
                                 className="challenge-dropdown form-control"
                                 id="challenge-komi"
                             >
