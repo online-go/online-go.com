@@ -123,7 +123,7 @@ export interface ChallengePOSTPayload {
     max_ranking?: number;
     challenger_color?: string;
     rengo_auto_start?: number;
-    invite_only?: boolean;    
+    invite_only?: boolean;
     game: {
         name?: string;
         rules?: string;
