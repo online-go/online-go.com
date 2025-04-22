@@ -18,18 +18,18 @@
 import { pgettext } from "@/lib/translate";
 import { LearningHubSection } from "./LearningHubSection";
 import { Intro } from "./Sections/Fundamentals/Intro";
-import { CaptureStone } from "./Sections/Fundamentals/CaptureStone";
-import { CaptureBlack } from "./Sections/Fundamentals/CaptureBlack";
-import { CaptureWhite } from "./Sections/Fundamentals/CaptureWhite";
+import { CaptureStone } from "./Sections/BasicPrinciples/CaptureStone";
+import { CaptureBlack } from "./Sections/BasicPrinciples/CaptureBlack";
+import { CaptureWhite } from "./Sections/BasicPrinciples/CaptureWhite";
 import { SelfCapture } from "./Sections/Fundamentals/SelfCapture";
-import { Escape } from "./Sections/Fundamentals/Escape";
-import { FindEscape } from "./Sections/Fundamentals/FindEscape";
-import { CreateOpening } from "./Sections/Fundamentals/CreateOpening";
-import { Connect } from "./Sections/Fundamentals/Connect";
-import { Cut } from "./Sections/Fundamentals/Cut";
+import { Escape } from "./Sections/BasicPrinciples/Escape";
+import { FindEscape } from "./Sections/BasicPrinciples/FindEscape";
+import { CreateOpening } from "./Sections/BasicPrinciples/CreateOpening";
+import { Connect } from "./Sections/BasicPrinciples/Connect";
+import { Cut } from "./Sections/BasicPrinciples/Cut";
 import { Eyes } from "./Sections/Fundamentals/Eyes";
-import { MakeAlive } from "./Sections/Fundamentals/MakeAlive";
-import { CaptureGroup } from "./Sections/Fundamentals/CaptureGroup";
+import { MakeAlive } from "./Sections/BasicPrinciples/MakeAlive";
+import { CaptureGroup } from "./Sections/BasicPrinciples/CaptureGroup";
 import { Ko } from "./Sections/Fundamentals/Ko";
 import { EndingTheGame } from "./Sections/Fundamentals/EndingTheGame";
 import { TheBoard } from "./Sections/Fundamentals/TheBoard";
@@ -171,7 +171,7 @@ export const sections: [string, any[]][] = [
         [Intro, SelfCapture, Eyes, Ko, /*Territory, */ EndingTheGame, TheBoard],
     ],
     [
-        pgettext("Learning hub section title", "321Go Basic Principles"),
+        pgettext("Learning hub section title", "Basic Principles"),
         [
             CaptureStone,
             CaptureWhite,
@@ -186,7 +186,7 @@ export const sections: [string, any[]][] = [
         ],
     ],
     [
-        pgettext("Learning hub section title", "321Go Basic Skills"),
+        pgettext("Learning hub section title", "Basic Skills"),
         [
             AtariToSide1,
             AtariToSide2,
