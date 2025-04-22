@@ -17,10 +17,11 @@
 
 import { pgettext } from "@/lib/translate";
 import { LearningHubSection } from "./LearningHubSection";
+import { Intro } from "./Sections/Fundamentals/Intro";
 import { CaptureStone } from "./Sections/Fundamentals/CaptureStone";
 import { CaptureBlack } from "./Sections/Fundamentals/CaptureBlack";
 import { CaptureWhite } from "./Sections/Fundamentals/CaptureWhite";
-import { Suicide } from "./Sections/Fundamentals/Suicide";
+import { SelfCapture } from "./Sections/Fundamentals/SelfCapture";
 import { Escape } from "./Sections/Fundamentals/Escape";
 import { FindEscape } from "./Sections/Fundamentals/FindEscape";
 import { CreateOpening } from "./Sections/Fundamentals/CreateOpening";
@@ -28,15 +29,23 @@ import { Connect } from "./Sections/Fundamentals/Connect";
 import { Cut } from "./Sections/Fundamentals/Cut";
 import { Eyes } from "./Sections/Fundamentals/Eyes";
 import { MakeAlive } from "./Sections/Fundamentals/MakeAlive";
-import { Kill } from "./Sections/Fundamentals/Kill";
+import { CaptureGroup } from "./Sections/Fundamentals/CaptureGroup";
 import { Ko } from "./Sections/Fundamentals/Ko";
-import { SnapBack } from "./SnapBack";
-import { Seki } from "./Seki";
-//import {Territory} from './Territory';
-import { Ladders } from "./Ladders";
 import { EndingTheGame } from "./Sections/Fundamentals/EndingTheGame";
 import { TheBoard } from "./Sections/Fundamentals/TheBoard";
-import { Intro } from "./Sections/Fundamentals/Intro";
+
+import { AtariToSide1 } from "./Sections/BasicSkills/AtariToSide1";
+import { AtariToSide2 } from "./Sections/BasicSkills/AtariToSide2";
+import { AtariToStones } from "./Sections/BasicSkills/AtariToStones";
+import { AtariWithCut1 } from "./Sections/BasicSkills/AtariWithCut1";
+import { AtariWithCut2 } from "./Sections/BasicSkills/AtariWithCut2";
+import { AtariCorrectSide } from "./Sections/BasicSkills/AtariCorrectSide";
+import { MakeKo } from "./Sections/BasicSkills/MakeKo";
+
+// import { SnapBack } from "./SnapBack";
+// import { Seki } from "./Seki";
+//import {Territory} from './Territory';
+// import { Ladders } from "./Ladders";
 
 export class FalseEyes extends LearningHubSection {
     static section(): string {
@@ -159,26 +168,39 @@ export class Terminology extends LearningHubSection {
 export const sections: [string, any[]][] = [
     [
         pgettext("Learning hub section title", "Fundamentals"),
+        [Intro, SelfCapture, Eyes, Ko, /*Territory, */ EndingTheGame, TheBoard],
+    ],
+    [
+        pgettext("Learning hub section title", "321Go Basic Principles"),
         [
-            Intro,
             CaptureStone,
             CaptureWhite,
             CaptureBlack,
-            Suicide,
             Escape,
             FindEscape,
             CreateOpening,
             Connect,
             Cut,
-            Eyes,
             MakeAlive,
-            Kill,
-            Ko,
-            /*Territory, */ EndingTheGame,
-            TheBoard,
+            CaptureGroup,
         ],
     ],
-    [pgettext("Learning hub section title", "Basic Skills"), [Ladders, SnapBack, Seki, Ko]],
+    [
+        pgettext("Learning hub section title", "321Go Basic Skills"),
+        [
+            AtariToSide1,
+            AtariToSide2,
+            AtariToStones,
+            AtariWithCut1,
+            AtariWithCut2,
+            AtariCorrectSide,
+            MakeKo,
+            // Ladders,
+            // SnapBack,
+            // Seki,
+        ],
+    ],
+
     /*
     [pgettext("Learning hub section title", "Intermediate"),
         [TheBoard, Ladders, SnapBack, FalseEyes, CuttingStones, JumpingStones]],

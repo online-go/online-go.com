@@ -21,20 +21,20 @@ import { LearningPage, LearningPageProperties } from "../../LearningPage";
 import { _, pgettext } from "@/lib/translate";
 import { LearningHubSection } from "../../LearningHubSection";
 
-export class Suicide extends LearningHubSection {
+export class SelfCapture extends LearningHubSection {
     static pages(): Array<typeof LearningPage> {
         return [Page01, Page02, Page03];
     }
     static section(): string {
-        return "suicide";
+        return "self-capture";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning suicide", "Suicide");
+        return pgettext("Tutorial section name on learning self capture", "Self Capture");
     }
     static subtext(): string {
         return pgettext(
-            "Tutorial section subtext on learning on suicide",
-            "Capture stones is not suicide",
+            "Tutorial section subtext on learning on self capture",
+            "Do not capture your own stones",
         );
     }
 }
@@ -45,7 +45,7 @@ class Page01 extends LearningPage {
 
     text() {
         return _(
-            "White to play. Both players are in atari. Placing a stone where you have no liberties is not allowed (suicide), unless you can capture stones. Capture one or more black stones.",
+            "White to play. Both players are in atari. Placing a stone where you have no liberties is not allowed (self capture), unless you can capture stones. Capture one or more black stones.",
         );
     }
     config(): PuzzleConfig {
@@ -70,7 +70,7 @@ class Page02 extends LearningPage {
 
     text() {
         return _(
-            "White to play. Both players are in atari. Placing a stone where you have no liberties is not allowed (suicide), unless you can capture stones. Capture one or more black stones.",
+            "White to play. Both players are in atari. Placing a stone where you have no liberties is not allowed (self capture), unless you can capture stones. Capture one or more black stones.",
         );
     }
     config(): PuzzleConfig {
@@ -118,7 +118,7 @@ class Page03 extends LearningPage {
 
     text() {
         return _(
-            "White to play. Both players are in atari. Placing a stone where you have no liberties is not allowed (suicide), unless you can capture stones. Capture one or more black stones.",
+            "White to play. Both players are in atari. Placing a stone where you have no liberties is not allowed (self capture), unless you can capture stones. Capture one or more black stones.",
         );
     }
     config(): PuzzleConfig {
