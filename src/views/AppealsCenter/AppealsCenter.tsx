@@ -16,7 +16,6 @@
  */
 
 import * as React from "react";
-import { Link } from "react-router-dom";
 import { Player } from "@/components/Player";
 import { _ } from "@/lib/translate";
 import moment from "moment";
@@ -52,6 +51,13 @@ export function AppealsCenter(): React.ReactElement | null {
                 source={`appeals`}
                 filter={show_all ? {} : { state: "awaiting_moderator_response" }}
                 orderBy={["-updated"]}
+                onRowClick={(X, ev) => {
+                    const target = ev.target as HTMLElement;
+                    // Don't navigate if clicking on Player component
+                    if (!target.closest(".Player")) {
+                        window.location.href = `/appeal/${X.banned_user.id}`;
+                    }
+                }}
                 columns={[
                     {
                         header: _("Updated"),
@@ -77,11 +83,6 @@ export function AppealsCenter(): React.ReactElement | null {
                         header: _("Ban Expiration"),
                         className: () => "ban_expiration",
                         render: (X) => X.ban_expiration && moment(X.ban_expiration).fromNow(),
-                    },
-                    {
-                        header: _(""),
-                        className: () => "view",
-                        render: (X) => <Link to={`/appeal/${X.banned_user.id}`}>{_("View")}</Link>,
                     },
                 ]}
             />
