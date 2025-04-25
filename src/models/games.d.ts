@@ -275,7 +275,10 @@ declare namespace rest_api {
     }
 
     interface GameAIDetection {
-        game_id: number;
+        id: number;
+        length: number;
+        width: number;
+        height: number;
         players: {
             black: games.Player;
             white: games.Player;
