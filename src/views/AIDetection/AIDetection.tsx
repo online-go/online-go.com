@@ -41,7 +41,7 @@ export function AIDetection(): React.ReactElement | null {
                 columns={[
                     {
                         header: _("Game"),
-                        render: (row) => (
+                        render: (row: rest_api.GameAIDetection) => (
                             // Inline styles to avoid messing with Player and ReviewStrengthIcon styles globally
                             <span
                                 style={{
@@ -68,6 +68,16 @@ export function AIDetection(): React.ReactElement | null {
                                 )}
                             </span>
                         ),
+                    },
+                    {
+                        header: "moves",
+                        headerProps: {
+                            style: { textAlign: "center" },
+                        },
+                        render: (row) => row.length,
+                        cellProps: {
+                            style: { textAlign: "center" },
+                        },
                     },
                     {
                         header: _("Black"),
