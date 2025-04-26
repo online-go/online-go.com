@@ -153,6 +153,16 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
             });
     };
 
+    clearWarnings = () => {
+        put(`moderation/clear_warnings/${this.props.playerId}`, {})
+            .then((result) => {
+                console.log(result);
+                const outcome = result.cleared ? "flag cleared" : "there were none";
+                void alert.fire("Done (" + outcome + ")");
+            })
+            .catch(errorAlerter);
+    };
+
     makeOffer = (power_mask: number) => {
         if (this.state.moderator_powers) {
             // They already have some, we can give it direct
@@ -335,104 +345,127 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
                                 </dl>
                             </div>
                         </div>
-                        {moderator.is_superuser && (
-                            <div style={{ textAlign: "center", marginBottom: "0.5rem" }}>
-                                <button className="reject" onClick={this.deleteAccount}>
-                                    Delete account
+                        <div
+                            style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                marginBottom: "0.5rem",
+                            }}
+                        >
+                            <div style={{ textAlign: "center" }}>
+                                <button className="success" onClick={this.clearWarnings}>
+                                    <i className="fa fa-check-circle-o" /> Clear warnings
                                 </button>
                             </div>
-                        )}
-                        <ModerationOfferControl
-                            ability={pgettext(
-                                "Label for a button to let a community moderator handle score cheating",
-                                "Handle Score Cheat",
+                            {moderator.is_superuser && (
+                                <div style={{ textAlign: "center" }}>
+                                    <button className="reject" onClick={this.deleteAccount}>
+                                        Delete account
+                                    </button>
+                                </div>
                             )}
-                            ability_mask={MODERATOR_POWERS.HANDLE_SCORE_CHEAT}
-                            currently_offered={this.state.offered_moderator_powers}
-                            moderator_powers={this.state.moderator_powers}
-                            previously_rejected={this.state.mod_powers_rejected}
-                            onMakeOffer={this.makeOffer}
-                            onRetractOffer={this.retractOffer}
-                            onRemovePower={this.removePower}
-                        />
-                        <ModerationOfferControl
-                            ability={pgettext(
-                                "Label for a button to let a community moderator handle escaping",
-                                "Handle Escaping",
-                            )}
-                            ability_mask={MODERATOR_POWERS.HANDLE_ESCAPING}
-                            currently_offered={this.state.offered_moderator_powers}
-                            moderator_powers={this.state.moderator_powers}
-                            previously_rejected={this.state.mod_powers_rejected}
-                            onMakeOffer={this.makeOffer}
-                            onRetractOffer={this.retractOffer}
-                            onRemovePower={this.removePower}
-                        />
-                        <ModerationOfferControl
-                            ability={pgettext(
-                                "Label for a button to let a community moderator handle stalling",
-                                "Handle Stalling",
-                            )}
-                            ability_mask={MODERATOR_POWERS.HANDLE_STALLING}
-                            currently_offered={this.state.offered_moderator_powers}
-                            moderator_powers={this.state.moderator_powers}
-                            previously_rejected={this.state.mod_powers_rejected}
-                            onMakeOffer={this.makeOffer}
-                            onRetractOffer={this.retractOffer}
-                            onRemovePower={this.removePower}
-                        />
-                        <ModerationOfferControl
-                            ability={pgettext(
-                                "Label for a button to let a community moderator vote for suspension",
-                                "Vote for Suspension",
-                            )}
-                            ability_mask={MODERATOR_POWERS.SUSPEND}
-                            currently_offered={this.state.offered_moderator_powers}
-                            moderator_powers={this.state.moderator_powers}
-                            previously_rejected={this.state.mod_powers_rejected}
-                            onMakeOffer={this.makeOffer}
-                            onRetractOffer={this.retractOffer}
-                            onRemovePower={this.removePower}
-                        />
-                        <ModerationOfferControl
-                            ability={pgettext(
-                                "Label for a button to let a community moderator vote on AI reports",
-                                "Assess AI Reports",
-                            )}
-                            ability_mask={MODERATOR_POWERS.ASSESS_AI_REPORTS}
-                            currently_offered={this.state.offered_moderator_powers}
-                            moderator_powers={this.state.moderator_powers}
-                            previously_rejected={this.state.mod_powers_rejected}
-                            onMakeOffer={this.makeOffer}
-                            onRetractOffer={this.retractOffer}
-                            onRemovePower={this.removePower}
-                        />
-                        <ModerationOfferControl
-                            ability={pgettext(
-                                "Label for a button to let a community moderator vote on AI reports",
-                                "See reported user's banned status",
-                            )}
-                            ability_mask={MODERATOR_POWERS.SEE_REPORTED_USER_BANNED_STATUS}
-                            currently_offered={this.state.offered_moderator_powers}
-                            moderator_powers={this.state.moderator_powers}
-                            previously_rejected={this.state.mod_powers_rejected}
-                            onMakeOffer={this.makeOffer}
-                            onRetractOffer={this.retractOffer}
-                            onRemovePower={this.removePower}
-                        />
-                        <ModerationOfferControl
-                            ability={pgettext(
-                                "Label for a button to let a community moderator join the AI detection team",
-                                "AI detection team",
-                            )}
-                            ability_mask={MODERATOR_POWERS.AI_DETECTOR}
-                            currently_offered={this.state.offered_moderator_powers}
-                            moderator_powers={this.state.moderator_powers}
-                            previously_rejected={this.state.mod_powers_rejected}
-                            onMakeOffer={this.makeOffer}
-                            onRetractOffer={this.retractOffer}
-                            onRemovePower={this.removePower}
-                        />
+                        </div>
+                        <div
+                            style={{
+                                display: "grid",
+                                gridTemplateColumns: "repeat(2, minmax(min-content, max-content))",
+                                columnGap: "2rem",
+                                rowGap: "0.1rem",
+                            }}
+                        >
+                            <ModerationOfferControl
+                                ability={pgettext(
+                                    "Label for a button to let a community moderator handle score cheating",
+                                    "Handle Score Cheat",
+                                )}
+                                ability_mask={MODERATOR_POWERS.HANDLE_SCORE_CHEAT}
+                                currently_offered={this.state.offered_moderator_powers}
+                                moderator_powers={this.state.moderator_powers}
+                                previously_rejected={this.state.mod_powers_rejected}
+                                onMakeOffer={this.makeOffer}
+                                onRetractOffer={this.retractOffer}
+                                onRemovePower={this.removePower}
+                            />
+                            <ModerationOfferControl
+                                ability={pgettext(
+                                    "Label for a button to let a community moderator handle escaping",
+                                    "Handle Escaping",
+                                )}
+                                ability_mask={MODERATOR_POWERS.HANDLE_ESCAPING}
+                                currently_offered={this.state.offered_moderator_powers}
+                                moderator_powers={this.state.moderator_powers}
+                                previously_rejected={this.state.mod_powers_rejected}
+                                onMakeOffer={this.makeOffer}
+                                onRetractOffer={this.retractOffer}
+                                onRemovePower={this.removePower}
+                            />
+                            <ModerationOfferControl
+                                ability={pgettext(
+                                    "Label for a button to let a community moderator handle stalling",
+                                    "Handle Stalling",
+                                )}
+                                ability_mask={MODERATOR_POWERS.HANDLE_STALLING}
+                                currently_offered={this.state.offered_moderator_powers}
+                                moderator_powers={this.state.moderator_powers}
+                                previously_rejected={this.state.mod_powers_rejected}
+                                onMakeOffer={this.makeOffer}
+                                onRetractOffer={this.retractOffer}
+                                onRemovePower={this.removePower}
+                            />
+                            <ModerationOfferControl
+                                ability={pgettext(
+                                    "Label for a button to let a community moderator vote for suspension",
+                                    "Vote for Suspension",
+                                )}
+                                ability_mask={MODERATOR_POWERS.SUSPEND}
+                                currently_offered={this.state.offered_moderator_powers}
+                                moderator_powers={this.state.moderator_powers}
+                                previously_rejected={this.state.mod_powers_rejected}
+                                onMakeOffer={this.makeOffer}
+                                onRetractOffer={this.retractOffer}
+                                onRemovePower={this.removePower}
+                            />
+
+                            <ModerationOfferControl
+                                ability={pgettext(
+                                    "Label for a button to let a community moderator vote on AI reports",
+                                    "Assess AI Reports",
+                                )}
+                                ability_mask={MODERATOR_POWERS.ASSESS_AI_REPORTS}
+                                currently_offered={this.state.offered_moderator_powers}
+                                moderator_powers={this.state.moderator_powers}
+                                previously_rejected={this.state.mod_powers_rejected}
+                                onMakeOffer={this.makeOffer}
+                                onRetractOffer={this.retractOffer}
+                                onRemovePower={this.removePower}
+                            />
+                            <ModerationOfferControl
+                                ability={pgettext(
+                                    "Label for a button to let a community moderator vote on AI reports",
+                                    "See banned status",
+                                )}
+                                ability_mask={MODERATOR_POWERS.SEE_REPORTED_USER_BANNED_STATUS}
+                                currently_offered={this.state.offered_moderator_powers}
+                                moderator_powers={this.state.moderator_powers}
+                                previously_rejected={this.state.mod_powers_rejected}
+                                onMakeOffer={this.makeOffer}
+                                onRetractOffer={this.retractOffer}
+                                onRemovePower={this.removePower}
+                            />
+                            <ModerationOfferControl
+                                ability={pgettext(
+                                    "Label for a button to let a community moderator join the AI detection team",
+                                    "AI detection team",
+                                )}
+                                ability_mask={MODERATOR_POWERS.AI_DETECTOR}
+                                currently_offered={this.state.offered_moderator_powers}
+                                moderator_powers={this.state.moderator_powers}
+                                previously_rejected={this.state.mod_powers_rejected}
+                                onMakeOffer={this.makeOffer}
+                                onRetractOffer={this.retractOffer}
+                                onRemovePower={this.removePower}
+                            />
+                        </div>
                     </div>
                 )}
                 <div className="buttons">
