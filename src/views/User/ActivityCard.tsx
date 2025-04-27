@@ -22,6 +22,7 @@ import { Card } from "@/components/material";
 import { UserVoteActivityGraph } from "./VoteActivityGraph";
 import { CMPieCharts } from "./CMPieCharts";
 import { useUser } from "@/lib/hooks";
+import { WarningSystemMessages } from "@/components/WarningSystemMessages/WarningSystemMessages";
 
 /** Activity card doesn't care about that many user traits */
 interface ActivityCardUser {
@@ -65,6 +66,7 @@ export function ActivityCard({
     online_leagues,
 }: ActivityCardProps) {
     const person_looking = useUser();
+    const [onlyOutstanding, setOnlyOutstanding] = React.useState(false);
     return (
         <Card className="activity-card">
             <h4>
@@ -162,6 +164,24 @@ export function ActivityCard({
             )}
             {person_looking?.is_moderator && (
                 <CMPieCharts user_id={user.id} user_moderator_powers={user.moderator_powers} />
+            )}
+            {person_looking.id === user.id && (
+                <div className="WarningSystemMessage-container">
+                    <div className="warning-system-messages-header">
+                        <h4 className="warning-system-messages-title">
+                            {_("Warning System Messages")}
+                        </h4>
+                        <label className="warning-system-messages-toggle">
+                            {_("Show already acknowledged")}
+                            <input
+                                type="checkbox"
+                                checked={!onlyOutstanding}
+                                onChange={(e) => setOnlyOutstanding(!e.target.checked)}
+                            />
+                        </label>
+                    </div>
+                    <WarningSystemMessages onlyOutstanding={onlyOutstanding} />
+                </div>
             )}
         </Card>
     );
