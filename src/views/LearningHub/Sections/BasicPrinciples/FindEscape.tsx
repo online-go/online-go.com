@@ -23,7 +23,20 @@ import { LearningHubSection } from "../../LearningHubSection";
 
 export class FindEscape extends LearningHubSection {
     static pages(): Array<typeof LearningPage> {
-        return [Page01, Page02, Page03, Page04, Page05, Page06, Page07, Page08, Page09, Page10];
+        return [
+            Page01,
+            Page02,
+            Page03,
+            Page04,
+            Page05,
+            Page06,
+            Page07,
+            Page08,
+            Page09,
+            Page10,
+            Page11,
+            Page12,
+        ];
     }
     static section(): string {
         return "find_escape";
@@ -261,6 +274,52 @@ class Page10 extends LearningPage {
                 white: "gfhfdgfgeh",
             },
             move_tree: this.makePuzzleMoveTree(["ef"], [], 9, 9),
+        };
+    }
+}
+
+class Page11 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        return _("Black to play. Escape with the chain that is in atari.");
+    }
+    config(): PuzzleConfig {
+        return {
+            width: 9,
+            height: 9,
+            mode: "puzzle",
+            initial_player: "black",
+            initial_state: {
+                black: "gfdgfgehgh",
+                white: "fedfefffcgeg",
+            },
+            move_tree: this.makePuzzleMoveTree(["dh"], [], 9, 9),
+        };
+    }
+}
+
+class Page12 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        return _("Black to play. Escape with the chain that is in atari.");
+    }
+    config(): PuzzleConfig {
+        return {
+            width: 9,
+            height: 9,
+            mode: "puzzle",
+            initial_player: "black",
+            initial_state: {
+                black: "dccdcedfffdg",
+                white: "decfefcgbhdhfh",
+            },
+            move_tree: this.makePuzzleMoveTree(["eg"], [], 9, 9),
         };
     }
 }

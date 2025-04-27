@@ -21,6 +21,7 @@ import { Intro } from "./Sections/Fundamentals/Intro";
 import { CaptureStone } from "./Sections/BasicPrinciples/CaptureStone";
 import { CaptureBlack } from "./Sections/BasicPrinciples/CaptureBlack";
 import { CaptureWhite } from "./Sections/BasicPrinciples/CaptureWhite";
+import { BothAtari } from "./Sections/BasicPrinciples/BothAtari";
 import { SelfCapture } from "./Sections/Fundamentals/SelfCapture";
 import { Escape } from "./Sections/BasicPrinciples/Escape";
 import { FindEscape } from "./Sections/BasicPrinciples/FindEscape";
@@ -176,6 +177,7 @@ export const sections: [string, any[]][] = [
             CaptureStone,
             CaptureWhite,
             CaptureBlack,
+            BothAtari,
             Escape,
             FindEscape,
             CreateOpening,

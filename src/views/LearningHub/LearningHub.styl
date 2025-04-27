@@ -258,6 +258,7 @@
     .pages {
         display: flex;
         flex-direction: row;
+        flex-wrap: wrap;
 
         .page {
             flex: 1;
@@ -268,6 +269,8 @@
             themed(border-color, shade4);
             themed(color, shade1);
             cursor: pointer;
+            min-width: 1.2rem;
+
 
             &.active {
                 themed(background-color, primary);
