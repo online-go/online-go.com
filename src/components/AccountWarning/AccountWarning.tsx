@@ -100,18 +100,29 @@ export function AccountWarning() {
 
     const ok = () => {
         setWarning(null);
-        void patch(`me/warning/${warning.id}`, { accept: true });
     };
 
+    return <AccountWarningMessage message={warning} onAck={ok} />;
+}
+
+export function AccountWarningMessage(props: {
+    message: rest_api.warnings.Warning;
+    onAck?: () => void;
+}) {
     const Renderers = {
         warning: WarningModal,
         acknowledgement: AckModal,
         info: AckModal,
     };
 
-    const MessageRenderer = Renderers[warning.severity];
+    const ack = () => {
+        void patch(`me/warning/${props.message.id}`, { accept: true });
+        props.onAck?.();
+    };
 
-    return <MessageRenderer warning={warning} accept={ok} />;
+    const MessageRenderer = Renderers[props.message.severity];
+
+    return <MessageRenderer warning={props.message} accept={ack} />;
 }
 
 // Support warnings that carry messages either as a reference to a a canned message, or explicit text...
@@ -122,7 +133,7 @@ interface MessageTextRenderProps {
 function MessageTextRender(props: MessageTextRenderProps): React.ReactElement {
     if (props.warning.message_id) {
         return (
-            <div className="canned-message">
+            <div className={`canned-message ${props.warning.message_id}`}>
                 {CANNED_MESSAGES[props.warning.message_id](props.warning.interpolation_data)}
             </div>
         );
@@ -167,7 +178,8 @@ function WarningModal(props: WarningModalProps): React.ReactElement {
 
     React.useEffect(() => {
         let interval: NodeJS.Timeout | undefined;
-        if (props.warning) {
+        // a force-them-to-read-it delay, unless they already acknowledged it
+        if (props.warning && props.warning.acknowledged === null) {
             const now = Date.now();
             interval = setInterval(() => {
                 setAcceptTime(BUTTON_COUNTDOWN_TIME - (Date.now() - now));

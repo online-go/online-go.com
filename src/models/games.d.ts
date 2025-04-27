@@ -225,11 +225,44 @@ declare namespace rest_api {
         handicap_out_of_range?: boolean;
     }
 
+    interface AIReviewParams {
+        network_size: string;
+        strength: number;
+        type: "fast" | "full";
+    }
+
+    interface BotDetectionResults {
+        // Parameters of the AI review used for detection
+        ai_review_params: AIReviewParams;
+
+        // List of player IDs suspected of using AI/bots
+        ai_suspected: number[];
+
+        // Composite scores for both players
+        black_composite: number;
+        white_composite: number;
+
+        // List of reasons why the game was flagged for analysis
+        fast_pass_flagged_for: string[];
+
+        // Per-player detailed analysis
+        [playerId: number]: {
+            color: "black" | "white";
+            blur_rate: number; // Rate of moves that are "blurry"
+            has_sgf_downloads: boolean; // Whether the player downloaded the SGF
+            timing_consistency: number; // Measure of move timing consistency
+            AILR: number; // AI Likelihood Ratio
+            composite: number; // Overall composite score
+            average_point_loss: number; // Average point loss per move
+        };
+    }
+
     /**
      * The response from `games/%game_id%`
      */
+
     interface GameDetails extends GameBase {
-        bot_detection_results: null | Record<string, any>;
+        bot_detection_results: null | BotDetectionResults;
         related: {
             reviews: string; // route to reviews
         };
@@ -239,6 +272,18 @@ declare namespace rest_api {
         flags: null | {
             [player_id: string]: GamePlayerFlags;
         };
+    }
+
+    interface GameAIDetection {
+        id: number;
+        length: number;
+        width: number;
+        height: number;
+        players: {
+            black: games.Player;
+            white: games.Player;
+        };
+        bot_detection_results: null | BotDetectionResults;
     }
 
     namespace players.full {

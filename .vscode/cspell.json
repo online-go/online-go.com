@@ -4,6 +4,7 @@
     ],
     "words": [
         "abcdefghjklmnopqrstuvwxyz",
+        "Acked",
         "AFAICT",
         "AILR",
         "aireview",
@@ -50,6 +51,7 @@
         "DOTCSS",
         "DOTJS",
         "droppables",
+        "dropzone",
         "enableable",
         "Errcode",
         "fakelink",

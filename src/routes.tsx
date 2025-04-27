@@ -85,7 +85,7 @@ import * as docs from "@/views/docs";
 import { useData } from "./lib/hooks";
 import { MainSection } from "@/components/MainSection";
 import { AccessibilityMenu } from "@/components/AccessibilityMenu";
-
+import { AIDetection } from "@/views/AIDetection";
 /*** Layout our main view and routes ***/
 function AppLayout(props: { children: any }): React.ReactElement {
     const [user] = useData("config.user");
@@ -238,6 +238,7 @@ export const routes = (
                 <Route path="/appeal/:player_id" element={<Appeal />} />
                 <Route path="/appeal" element={<Appeal />} />
                 <Route path="/appeals-center" element={<AppealsCenter />} />
+                <Route path="/ai-detection" element={<AIDetection />} />
                 <Route path="/reports-center/:category/:report_id" element={<ReportsCenter />} />
                 <Route path="/reports-center/:category" element={<ReportsCenter />} />
                 <Route path="/reports-center" element={<ReportsCenter />} />

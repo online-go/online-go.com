@@ -20,9 +20,11 @@ import { ogsTest } from "@helpers";
 import { cmDontNotifyEscalatedAiTest } from "./cm-dont-notify-escalated-ai";
 import { cmVoteOnOwnReportTest } from "./cm-vote-on-own-report";
 import { cmShowOnlyPostEscalationVotesTest } from "./cm-show-only-post-escalation-votes";
+import { cmVoteWarnNotAITest } from "./cm-vote-warn-not-ai";
 
 ogsTest.describe("@CM Community Moderation Tests", () => {
     ogsTest("CM should be able to vote on their own report", cmVoteOnOwnReportTest);
     ogsTest("We should not notify escalated AI reports", cmDontNotifyEscalatedAiTest);
     ogsTest("We should show only post-escalation votes", cmShowOnlyPostEscalationVotesTest);
+    ogsTest("We should warn when an AI report is unfounded", cmVoteWarnNotAITest);
 });

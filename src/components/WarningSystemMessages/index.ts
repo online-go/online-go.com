@@ -14,30 +14,5 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-.ModerationOfferControl {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
 
-    .moderation-ability {
-        flex: 1;
-        min-width: 0;
-        margin-right: 0.5rem;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .fa {
-        margin-left: 0.2rem;
-    }
-
-    .fa-times-circle-o {
-        color: red;
-    }
-
-    button {
-        font-size: smaller;
-        flex-shrink: 0;
-    }
-}
+export * from "./WarningSystemMessages";
