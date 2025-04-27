@@ -173,7 +173,6 @@ export class EXV6Overview extends React.Component<{}, OverviewState> {
                                     offered_moderator_powers={user.offered_moderator_powers}
                                 />
                             )}
-                            <WarningSystemMessagesPane onlyOutstanding={false} />
                             <ChallengesList onAccept={() => this.refresh()} />
                             <InviteList />
 
