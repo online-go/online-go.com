@@ -66,7 +66,7 @@ export function ActivityCard({
     online_leagues,
 }: ActivityCardProps) {
     const person_looking = useUser();
-    const [onlyOutstanding, setOnlyOutstanding] = React.useState(false);
+    const [onlyOutstanding, setOnlyOutstanding] = React.useState(true);
     return (
         <Card className="activity-card">
             <h4>
