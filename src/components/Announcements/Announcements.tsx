@@ -190,14 +190,20 @@ export class Announcements extends React.PureComponent<{}, AnnouncementsState> {
                                 announcement.link.indexOf("://") > 0 ? (
                                     <a href={announcement.link} target="_blank">
                                         {announcement.text}
+                                        <i>&nbsp; - {announcement.creator.username}</i>
                                     </a>
                                 ) : (
-                                    <Link to={announcement.link}>{announcement.text}</Link>
+                                    <Link to={announcement.link}>
+                                        {announcement.text}
+                                        <i>&nbsp; - {announcement.creator.username}</i>
+                                    </Link>
                                 )
                             ) : (
-                                <span>{announcement.text}</span>
+                                <span>
+                                    {announcement.text}
+                                    <i>&nbsp; - {announcement.creator.username}</i>
+                                </span>
                             )}
-                            <i>&nbsp; - {announcement.creator.username}</i>
                         </div>
                     );
                 })}
