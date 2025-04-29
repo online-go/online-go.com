@@ -197,6 +197,7 @@ export class Announcements extends React.PureComponent<{}, AnnouncementsState> {
                             ) : (
                                 <span>{announcement.text}</span>
                             )}
+                            <i>&nbsp; - {announcement.creator.username}</i>
                         </div>
                     );
                 })}
