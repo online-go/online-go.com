@@ -46,7 +46,7 @@ import { expect } from "@playwright/test";
 
 import { withIncidentIndicatorLock } from "@helpers/report-utils";
 
-export const modAckWarningTest = async ({ browser }: { browser: Browser }, testInfo: TestInfo) => {
+export const cmAckWarningTest = async ({ browser }: { browser: Browser }, testInfo: TestInfo) => {
     await withIncidentIndicatorLock(testInfo, async () => {
         const { userPage: reporterPage } = await prepareNewUser(
             browser,
@@ -97,6 +97,7 @@ export const modAckWarningTest = async ({ browser }: { browser: Browser }, testI
         // The report should no longer be active
         await assertIncidentReportIndicatorInactive(aiAssessorContexts[0].aiCMPage);
 
+        // The reporter should be warned about their crummy report
         await reporterPage.goto("/");
 
         await expect(reporterPage.locator("div.AccountWarning")).toBeVisible();
@@ -109,18 +110,44 @@ export const modAckWarningTest = async ({ browser }: { browser: Browser }, testI
 
         await reporterPage.locator("div.AccountWarning").locator("input[type='checkbox']").click();
 
-        const okButton = reporterPage.locator("div.AccountWarning").locator("button.primary");
+        let okButton = reporterPage.locator("div.AccountWarning").locator("button.primary");
+        await expect(okButton).toBeVisible();
+        await expect(okButton).toBeDisabled();
+
+        // Since its a warning, they should not be able to play
+        await reporterPage.goto("/play");
+
+        const playComputerButton = reporterPage.locator("button.play-button", {
+            hasText: "Play Computer",
+        });
+        await expect(playComputerButton).toBeDisabled();
+
+        const playHumanButton = reporterPage.locator("button.play-button", {
+            hasText: "Play Human",
+        });
+        await expect(playHumanButton).toBeDisabled();
+
+        // The message got reloaded when we went to /play
+        await reporterPage.locator("div.AccountWarning").locator("input[type='checkbox']").click();
+
+        okButton = reporterPage.locator("div.AccountWarning").locator("button.primary");
         await expect(okButton).toBeVisible();
         await expect(okButton).toBeDisabled();
 
         // wait 10 seconds before proceeding
-
         await new Promise((resolve) => setTimeout(resolve, 10000));
 
+        // Now they can accept the warning
         await expect(okButton).toBeEnabled();
 
         await okButton.click();
 
         await expect(reporterPage.locator("div.AccountWarning")).not.toBeVisible();
+
+        // And play again
+        await expect(playComputerButton).toBeVisible();
+        await expect(playHumanButton).toBeVisible();
+        await expect(playComputerButton).toBeEnabled();
+        await expect(playHumanButton).toBeEnabled();
     });
 };

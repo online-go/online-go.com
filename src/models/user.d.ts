@@ -84,6 +84,7 @@ declare namespace rest_api {
         email_validated: boolean | string; // VerifyEmail sets this to a Date string
         is_announcer: boolean;
         has_active_warning_flag?: boolean;
+        has_pending_warnings_system_message?: boolean;
         reports_handled_today?: number;
         last_supporter_trial: string; // Date
     }
@@ -225,7 +226,6 @@ declare namespace rest_api {
         aga_id: null;
         ui_class: string;
         icon: string;
-        has_active_warning_flag?: boolean;
     }
 
     interface MinimalPlayerDetail {
