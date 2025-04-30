@@ -234,6 +234,7 @@ export class ActiveAnnouncements extends React.PureComponent {
                             ) : (
                                 <span>{announcement.text}</span>
                             )}
+                            <i>&nbsp;- {announcement.creator.username}</i>
                             <PopupMenu list={announcement_actions}></PopupMenu>
                         </div>
                     );
