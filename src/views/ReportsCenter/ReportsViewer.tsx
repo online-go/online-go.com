@@ -15,7 +15,7 @@ import { report_manager } from "@/lib/report_manager";
 import { _, pgettext } from "@/lib/translate";
 import * as DynamicHelp from "react-dynamic-help";
 
-import { ViewReport } from "@/views/ReportsCenter/ViewReport";
+import { ViewReport, ReportState } from "@/views/ReportsCenter/ViewReport";
 
 interface ViewReportHeaderProps {
     reports: ReportNotification[];
@@ -31,6 +31,8 @@ export function ModeratorReportsViewer({
     report_id,
     selectReport,
 }: ViewReportHeaderProps): React.ReactElement {
+    const [resolved, setResolved] = React.useState<boolean>(false);
+
     const current_report = reports.find((r) => r.id === report_id);
 
     const next = () => {
@@ -47,6 +49,10 @@ export function ModeratorReportsViewer({
         if (currentIndex > 0) {
             selectReport(reports[currentIndex - 1].id);
         }
+    };
+
+    const updateReportState = (report_state: ReportState) => {
+        setResolved(report_state === "resolved");
     };
 
     if (report_id === 0) {
@@ -74,9 +80,19 @@ export function ModeratorReportsViewer({
                     prev={prev}
                     next={next}
                 />
+
+                {resolved && (
+                    <span className="resolved-report-label">
+                        {pgettext("A label telling moderators the report is resolved", "Resolved")}
+                    </span>
+                )}
             </div>
 
-            <ViewReport report_id={report_id} advanceToNextReport={next} />
+            <ViewReport
+                report_id={report_id}
+                advanceToNextReport={next}
+                onReportState={updateReportState}
+            />
         </div>
     );
 }
@@ -149,10 +165,6 @@ function ReportChooser({ report_id, current_report, reports, prev, next }: Repor
 
     const currentIndex = reports.findIndex((r) => r.id === report_id);
 
-    // assumption here is that if it's not in reports then it's resolved - at least from
-    // the perspective of the current user.
-    const resolved = currentIndex === -1 || reports[currentIndex]?.state === "resolved";
-
     const hasPrev = currentIndex > 0;
     const hasNext = currentIndex + 1 < reports.length;
 
@@ -206,11 +218,6 @@ function ReportChooser({ report_id, current_report, reports, prev, next }: Repor
                 >
                     Ignore
                 </button>
-            )}
-            {resolved && (
-                <span className="resolved-report-label">
-                    {pgettext("A label telling moderators the report is resolved", "Resolved")}
-                </span>
             )}
         </span>
     );

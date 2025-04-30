@@ -66,7 +66,7 @@ export function ActivityCard({
     online_leagues,
 }: ActivityCardProps) {
     const person_looking = useUser();
-    const [onlyOutstanding, setOnlyOutstanding] = React.useState(false);
+    const [onlyOutstanding, setOnlyOutstanding] = React.useState(true);
     return (
         <Card className="activity-card">
             <h4>
@@ -169,7 +169,10 @@ export function ActivityCard({
                 <div className="WarningSystemMessage-container">
                     <div className="warning-system-messages-header">
                         <h4 className="warning-system-messages-title">
-                            {_("Warning System Messages")}
+                            {pgettext(
+                                "The title of the report system messages section",
+                                "Report System Messages",
+                            )}
                         </h4>
                         <label className="warning-system-messages-toggle">
                             {_("Show already acknowledged")}

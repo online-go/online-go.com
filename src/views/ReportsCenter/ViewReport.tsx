@@ -49,14 +49,18 @@ import { useEffect } from "react";
 type ReportDetail = rest_api.moderation.ReportDetail;
 type CommunityModerationAction = rest_api.moderation.CommunityModerationAction;
 
+export type ReportState = "resolved" | "pending" | "claimed"; // SeverToClient.ts
+
 interface ViewReportProps {
     report_id: number;
     advanceToNextReport: () => void;
+    onReportState: (report_state: ReportState) => void;
 }
 
 export function ViewReport({
     report_id,
     advanceToNextReport,
+    onReportState,
 }: ViewReportProps): React.ReactElement {
     const user = useUser();
     const [report, setReport] = React.useState<ReportDetail | null>(null);
@@ -99,6 +103,7 @@ export function ViewReport({
         setReport(report);
         setUsersVote(report?.voters?.find((v) => v.voter_id === user.id)?.action ?? null);
         setModeratorId(report?.moderator?.id ?? null);
+        onReportState(report.state as ReportState);
     };
 
     const fetchAndUpdateReport = async (reportId: number) => {
