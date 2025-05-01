@@ -29,6 +29,7 @@ import { CANNED_MESSAGES } from "./CannedMessages";
 
 const BUTTON_COUNTDOWN_TIME = 10000; // ms;
 
+// This is now better called  "Report System Messages", because it has acks as well as warnings.
 export function AccountWarning() {
     const user = useUser();
     const location = useLocation();
@@ -43,7 +44,7 @@ export function AccountWarning() {
         mainGoban.engine.time_control.speed !== "correspondence";
 
     React.useEffect(() => {
-        if (user && !user.anonymous && user.has_active_warning_flag) {
+        if (user && !user.anonymous && user.has_pending_warnings_system_message) {
             get("me/warning")
                 .then((warning) => {
                     console.log(warning);
@@ -59,7 +60,7 @@ export function AccountWarning() {
         } else {
             setWarning(null);
         }
-    }, [user, user?.has_active_warning_flag]);
+    }, [user, user?.has_pending_warnings_system_message]);
 
     // If a live game is in progress, we'll need to check back later to see if it has
     // finished so we can display the warning...
@@ -86,7 +87,7 @@ export function AccountWarning() {
         return null;
     }
 
-    if (!user || user.anonymous || !user.has_active_warning_flag) {
+    if (!user || user.anonymous || !user.has_pending_warnings_system_message) {
         return null;
     }
 
