@@ -21,23 +21,39 @@ import { LearningPage, LearningPageProperties } from "../../LearningPage";
 import { _, pgettext } from "@/lib/translate";
 import { LearningHubSection } from "../../LearningHubSection";
 
-export class PlayDoubleAtari1 extends LearningHubSection {
+export class PlayDoubleAtari extends LearningHubSection {
     static pages(): Array<typeof LearningPage> {
-        return [Page01, Page02, Page03, Page04, Page05, Page06, Page07, Page08, Page09];
+        return [
+            Page01,
+            Page02,
+            Page03,
+            Page04,
+            Page05,
+            Page06,
+            Page07,
+            Page08,
+            Page09,
+            Page10,
+            Page11,
+            Page12,
+            Page13,
+            Page14,
+            Page15,
+            Page16,
+            Page17,
+            Page18,
+        ];
     }
     static section(): string {
-        return "play_double_atari_1";
+        return "play_double_atari";
     }
     static title(): string {
-        return pgettext(
-            "Tutorial section name on learning play double atari 1",
-            "Play double-atari 1",
-        );
+        return pgettext("Tutorial section name on learning play double atari", "Play double-atari");
     }
     static subtext(): string {
         return pgettext(
-            "Tutorial section subtext on learning on play double atari 1",
-            "Give double atari",
+            "Tutorial section subtext on learning on play double atari",
+            "Put two chains in atari",
         );
     }
 }
@@ -48,7 +64,9 @@ class Page01 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Play double-atari on the marked stones.");
+        return _(
+            "White can put both marked stones in atari with one stone. This is called 'double-atari. Black can only defend one of the stones. Play double-atari on the marked stones.",
+        );
     }
     config(): PuzzleConfig {
         return {
@@ -60,7 +78,7 @@ class Page01 extends LearningPage {
                 black: "ccfecfefdg",
                 white: "geffeggg",
             },
-            marks: { triangle: "effe" },
+            marks: { triangle: "effe", cross: "ee" },
             move_tree: this.makePuzzleMoveTree(["ee"], [], 9, 9),
         };
     }
@@ -254,6 +272,222 @@ class Page09 extends LearningPage {
             },
             marks: { triangle: "gffe" },
             move_tree: this.makePuzzleMoveTree(["ge"], [], 9, 9),
+        };
+    }
+}
+
+class Page10 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        return _("Black to play. Play double-atari on the marked stones.");
+    }
+    config(): PuzzleConfig {
+        return {
+            width: 9,
+            height: 9,
+            mode: "puzzle",
+            initial_player: "black",
+            initial_state: {
+                black: "eccdeddecfcgeg",
+                white: "gbgcfdeedfffdg",
+            },
+            marks: { triangle: "dgdfee" },
+            move_tree: this.makePuzzleMoveTree(["ef"], [], 9, 9),
+        };
+    }
+}
+
+class Page11 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        return _("Black to play. Play double-atari on the marked stones.");
+    }
+    config(): PuzzleConfig {
+        return {
+            width: 9,
+            height: 9,
+            mode: "puzzle",
+            initial_player: "black",
+            initial_state: {
+                black: "bfdfbgcgdgegfh",
+                white: "cedecfeffgehgh",
+            },
+            marks: { triangle: "fgef" },
+            move_tree: this.makePuzzleMoveTree(["ff"], [], 9, 9),
+        };
+    }
+}
+
+class Page12 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        return _("Black to play. Play double-atari on the marked stones.");
+    }
+    config(): PuzzleConfig {
+        return {
+            width: 9,
+            height: 9,
+            mode: "puzzle",
+            initial_player: "black",
+            initial_state: {
+                black: "fdgdeehedfdgeh",
+                white: "fegeefhfegggfh",
+            },
+            marks: { triangle: "egefgefe" },
+            move_tree: this.makePuzzleMoveTree(["ff"], [], 9, 9),
+        };
+    }
+}
+
+class Page13 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        return _("Black to play. Play double-atari on the marked stones.");
+    }
+    config(): PuzzleConfig {
+        return {
+            width: 9,
+            height: 9,
+            mode: "puzzle",
+            initial_player: "black",
+            initial_state: {
+                black: "efffgfdggghh",
+                white: "hfegfghgghih",
+            },
+            marks: { triangle: "ghfgeg" },
+            move_tree: this.makePuzzleMoveTree(["fh"], [], 9, 9),
+        };
+    }
+}
+
+class Page14 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        return _("Black to play. Play double-atari on the marked stones.");
+    }
+    config(): PuzzleConfig {
+        return {
+            width: 9,
+            height: 9,
+            mode: "puzzle",
+            initial_player: "black",
+            initial_state: {
+                black: "efffgfdghg",
+                white: "egggdhfhhh",
+            },
+            marks: { triangle: "ggeg" },
+            move_tree: this.makePuzzleMoveTree(["fg"], [], 9, 9),
+        };
+    }
+}
+
+class Page15 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        return _("Black to play. Play double-atari on the marked stones.");
+    }
+    config(): PuzzleConfig {
+        return {
+            width: 9,
+            height: 9,
+            mode: "puzzle",
+            initial_player: "black",
+            initial_state: {
+                black: "efffgfeghgih",
+                white: "dgfgggchehhh",
+            },
+            marks: { triangle: "hhggfg" },
+            move_tree: this.makePuzzleMoveTree(["gh"], [], 9, 9),
+        };
+    }
+}
+
+class Page16 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        return _("Black to play. Play double-atari on the marked stones.");
+    }
+    config(): PuzzleConfig {
+        return {
+            width: 9,
+            height: 9,
+            mode: "puzzle",
+            initial_player: "black",
+            initial_state: {
+                black: "efffgfhfeghgih",
+                white: "dgfgggigchehhh",
+            },
+            marks: { triangle: "hhggfg" },
+            move_tree: this.makePuzzleMoveTree(["gh"], [], 9, 9),
+        };
+    }
+}
+
+class Page17 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        return _("Black to play. Play double-atari on the marked stones.");
+    }
+    config(): PuzzleConfig {
+        return {
+            width: 9,
+            height: 9,
+            mode: "puzzle",
+            initial_player: "black",
+            initial_state: {
+                black: "dfhfdgfgggeh",
+                white: "defeheefgfeg",
+            },
+            marks: { triangle: "eggfef" },
+            move_tree: this.makePuzzleMoveTree(["ff"], [], 9, 9),
+        };
+    }
+}
+
+class Page18 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        return _("Black to play. Play double-atari on the marked stones.");
+    }
+    config(): PuzzleConfig {
+        return {
+            width: 9,
+            height: 9,
+            mode: "puzzle",
+            initial_player: "black",
+            initial_state: {
+                black: "deeefedfgfbgcgbh",
+                white: "efffdggghgchfhdi",
+            },
+            marks: { triangle: "dgffef" },
+            move_tree: this.makePuzzleMoveTree(["eg"], [], 9, 9),
         };
     }
 }

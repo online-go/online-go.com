@@ -54,7 +54,9 @@ class Page01 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Black has played 1. Make a ko.");
+        return _(
+            "White to play. Black has played 1. White can connect his stones by playing at A, but sometimes it is better to make a ko by playing at B. Make a ko.",
+        );
     }
     config(): PuzzleConfig {
         return {
@@ -66,7 +68,7 @@ class Page01 extends LearningPage {
                 black: "gceegefd",
                 white: "feefgf",
             },
-            marks: { 1: "fd" },
+            marks: { 1: "fd", A: "ff", B: "fg" },
             move_tree: this.makePuzzleMoveTree(["fg"], [], 9, 9),
         };
     }

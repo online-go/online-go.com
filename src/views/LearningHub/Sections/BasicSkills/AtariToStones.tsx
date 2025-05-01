@@ -44,7 +44,9 @@ class Page01 extends LearningPage {
     }
 
     text() {
-        return _("Black to play. Put in atari towards your own stones.");
+        return _(
+            "Black to play. Driving the marked stones towards your own stones helps you capture these stones. Put the marked stones in atari.",
+        );
     }
     config(): PuzzleConfig {
         return {
@@ -56,6 +58,7 @@ class Page01 extends LearningPage {
                 black: "deeegecffffg",
                 white: "cdfdcefedfef",
             },
+            marks: { triangle: "dfef" },
             move_tree: this.makePuzzleMoveTree(["dg"], ["egdgdhcgbgbf"], 9, 9),
         };
     }

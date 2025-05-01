@@ -47,7 +47,9 @@ class Page01 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Put the marked stones in atari at the correct side.");
+        return _(
+            "White can put the marked stones in atari by playing at A or B. Put the marked stones in atari at the correct side.",
+        );
     }
     config(): PuzzleConfig {
         return {
@@ -59,7 +61,7 @@ class Page01 extends LearningPage {
                 black: "ichdidfegeheefegfggg",
                 white: "echcfdgdeeffgfhf",
             },
-            marks: { triangle: "ichdidfegehe" },
+            marks: { A: "ib", B: "ie", triangle: "ichdidfegehe" },
             move_tree: this.makePuzzleMoveTree(["ib"], ["ieif"], 9, 9),
         };
     }

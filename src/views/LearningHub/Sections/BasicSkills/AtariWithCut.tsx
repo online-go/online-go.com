@@ -64,7 +64,7 @@ class Page01 extends LearningPage {
 
     text() {
         return _(
-            "Black to play. Prevent white from connecting and capture one or more white stones.",
+            "Black to play. White can connect the marked stones to the other white stones and escape from being captured. Prevent this by cutting and capture the marked stones.",
         );
     }
     config(): PuzzleConfig {
@@ -77,6 +77,7 @@ class Page01 extends LearningPage {
                 black: "cfffcgfgdhfhei",
                 white: "dbcdcedfdgegeh",
             },
+            marks: { triangle: "dfdgegeh" },
             move_tree: this.makePuzzleMoveTree(["deefee"], ["efde"], 9, 9),
         };
     }
@@ -89,7 +90,7 @@ class Page02 extends LearningPage {
 
     text() {
         return _(
-            "Black to play. Prevent white from connecting and capture one or more white stones.",
+            "Black to play. Prevent White from connecting and capture one or more white stones.",
         );
     }
     config(): PuzzleConfig {
@@ -114,7 +115,7 @@ class Page03 extends LearningPage {
 
     text() {
         return _(
-            "Black to play. Prevent white from connecting and capture one or more white stones.",
+            "Black to play. Prevent White from connecting and capture one or more white stones.",
         );
     }
     config(): PuzzleConfig {
@@ -139,7 +140,7 @@ class Page04 extends LearningPage {
 
     text() {
         return _(
-            "Black to play. Prevent white from connecting and capture one or more white stones.",
+            "Black to play. Prevent White from connecting and capture one or more white stones.",
         );
     }
     config(): PuzzleConfig {
@@ -164,7 +165,7 @@ class Page05 extends LearningPage {
 
     text() {
         return _(
-            "Black to play. Prevent white from connecting and capture one or more white stones.",
+            "Black to play. Prevent White from connecting and capture one or more white stones.",
         );
     }
     config(): PuzzleConfig {
@@ -189,7 +190,7 @@ class Page06 extends LearningPage {
 
     text() {
         return _(
-            "Black to play. Prevent white from connecting and capture one or more white stones.",
+            "Black to play. Prevent White from connecting and capture one or more white stones.",
         );
     }
     config(): PuzzleConfig {
@@ -214,7 +215,7 @@ class Page07 extends LearningPage {
 
     text() {
         return _(
-            "Black to play. Prevent white from connecting and capture one or more white stones.",
+            "Black to play. Prevent White from connecting and capture one or more white stones.",
         );
     }
     config(): PuzzleConfig {
@@ -239,7 +240,7 @@ class Page08 extends LearningPage {
 
     text() {
         return _(
-            "Black to play. Prevent white from connecting and capture one or more white stones.",
+            "Black to play. Prevent White from connecting and capture one or more white stones.",
         );
     }
     config(): PuzzleConfig {
@@ -264,7 +265,7 @@ class Page09 extends LearningPage {
 
     text() {
         return _(
-            "Black to play. Prevent white from connecting and capture one or more white stones.",
+            "Black to play. Prevent White from connecting and capture one or more white stones.",
         );
     }
     config(): PuzzleConfig {
@@ -289,7 +290,7 @@ class Page10 extends LearningPage {
 
     text() {
         return _(
-            "Black to play. Prevent white from connecting and capture one or more white stones.",
+            "Black to play. Prevent White from connecting and capture one or more white stones.",
         );
     }
     config(): PuzzleConfig {
@@ -314,7 +315,7 @@ class Page11 extends LearningPage {
 
     text() {
         return _(
-            "Black to play. Prevent white from connecting and capture one or more white stones.",
+            "Black to play. Prevent White from connecting and capture one or more white stones.",
         );
     }
     config(): PuzzleConfig {
@@ -339,7 +340,7 @@ class Page12 extends LearningPage {
 
     text() {
         return _(
-            "Black to play. Prevent white from connecting and capture one or more white stones.",
+            "Black to play. Prevent White from connecting and capture one or more white stones.",
         );
     }
     config(): PuzzleConfig {
@@ -364,7 +365,7 @@ class Page13 extends LearningPage {
 
     text() {
         return _(
-            "Black to play. Prevent white from connecting and capture one or more white stones.",
+            "Black to play. Prevent White from connecting and capture one or more white stones.",
         );
     }
     config(): PuzzleConfig {
@@ -389,7 +390,7 @@ class Page14 extends LearningPage {
 
     text() {
         return _(
-            "Black to play. Prevent white from connecting and capture one or more white stones.",
+            "Black to play. Prevent White from connecting and capture one or more white stones.",
         );
     }
     config(): PuzzleConfig {
@@ -414,7 +415,7 @@ class Page15 extends LearningPage {
 
     text() {
         return _(
-            "Black to play. Prevent white from connecting and capture one or more white stones.",
+            "Black to play. Prevent White from connecting and capture one or more white stones.",
         );
     }
     config(): PuzzleConfig {
@@ -439,7 +440,7 @@ class Page16 extends LearningPage {
 
     text() {
         return _(
-            "Black to play. Prevent white from connecting and capture one or more white stones.",
+            "Black to play. Prevent White from connecting and capture one or more white stones.",
         );
     }
     config(): PuzzleConfig {
@@ -464,7 +465,7 @@ class Page17 extends LearningPage {
 
     text() {
         return _(
-            "Black to play. Prevent white from connecting and capture one or more white stones.",
+            "Black to play. Prevent White from connecting and capture one or more white stones.",
         );
     }
     config(): PuzzleConfig {
@@ -489,7 +490,7 @@ class Page18 extends LearningPage {
 
     text() {
         return _(
-            "Black to play. Prevent white from connecting and capture one or more white stones.",
+            "Black to play. Prevent White from connecting and capture one or more white stones.",
         );
     }
     config(): PuzzleConfig {

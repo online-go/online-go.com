@@ -34,14 +34,12 @@ import { Ko } from "./Sections/Fundamentals/Ko";
 import { EndingTheGame } from "./Sections/Fundamentals/EndingTheGame";
 import { TheBoard } from "./Sections/Fundamentals/TheBoard";
 
-import { AtariToSide1 } from "./Sections/BasicSkills/AtariToSide1";
-import { AtariToSide2 } from "./Sections/BasicSkills/AtariToSide2";
+import { AtariToSide } from "./Sections/BasicSkills/AtariToSide";
 import { AtariToStones } from "./Sections/BasicSkills/AtariToStones";
 import { AtariWithCut } from "./Sections/BasicSkills/AtariWithCut";
 import { AtariCorrectSide } from "./Sections/BasicSkills/AtariCorrectSide";
 import { MakeKo } from "./Sections/BasicSkills/MakeKo";
-import { PlayDoubleAtari1 } from "./Sections/BasicSkills/PlayDoubleAtari1";
-import { PlayDoubleAtari2 } from "./Sections/BasicSkills/PlayDoubleAtari2";
+import { PlayDoubleAtari } from "./Sections/BasicSkills/PlayDoubleAtari";
 
 // import { SnapBack } from "./SnapBack";
 // import { Seki } from "./Seki";
@@ -188,16 +186,7 @@ export const sections: [string, any[]][] = [
     ],
     [
         pgettext("Learning hub section title", "Basic Skills"),
-        [
-            AtariToSide1,
-            AtariToSide2,
-            AtariToStones,
-            AtariWithCut,
-            AtariCorrectSide,
-            MakeKo,
-            PlayDoubleAtari1,
-            PlayDoubleAtari2,
-        ],
+        [AtariToSide, AtariToStones, AtariWithCut, AtariCorrectSide, MakeKo, PlayDoubleAtari],
     ],
 
     /*
