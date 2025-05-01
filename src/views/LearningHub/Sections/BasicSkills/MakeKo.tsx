@@ -23,7 +23,20 @@ import { LearningHubSection } from "../../LearningHubSection";
 
 export class MakeKo extends LearningHubSection {
     static pages(): Array<typeof LearningPage> {
-        return [Page01, Page02, Page03, Page04, Page05, Page06, Page07, Page08, Page09];
+        return [
+            Page01,
+            Page02,
+            Page03,
+            Page04,
+            Page05,
+            Page06,
+            Page07,
+            Page08,
+            Page09,
+            Page10,
+            Page11,
+            Page12,
+        ];
     }
     static section(): string {
         return "make-ko";
@@ -251,26 +264,74 @@ class Page09 extends LearningPage {
     }
 }
 
-// class Page10 extends LearningPage {
-//     constructor(props: LearningPageProperties) {
-//         super(props);
-//     }
+class Page10 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
 
-//     text() {
-//         return _("White to play. Black has played 1. Make a ko.");
-//     }
-//     config(): PuzzleConfig {
-//         return {
-//             width: 9,
-//             height: 9,
-//             mode: "puzzle",
-//             initial_player: "white",
-//             initial_state: {
-//                 black: "geefffegeheifihi",
-//                 white: "ccgcfggghgfhgi",
-//             },
-//             marks: { 1: "hi" },
-//             move_tree: this.makePuzzleMoveTree(["hh"], [], 9, 9),
-//         };
-//     }
-// }
+    text() {
+        return _("White to play. Black has played 1. Make a ko.");
+    }
+    config(): PuzzleConfig {
+        return {
+            width: 9,
+            height: 9,
+            mode: "puzzle",
+            initial_player: "white",
+            initial_state: {
+                black: "geefffegeheifihi",
+                white: "ccgcfggghgfhgi",
+            },
+            marks: { 1: "hi" },
+            move_tree: this.makePuzzleMoveTree(["hh"], [], 9, 9),
+        };
+    }
+}
+
+class Page11 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        return _("White to play. Black has played 1. Make a ko.");
+    }
+    config(): PuzzleConfig {
+        return {
+            width: 9,
+            height: 9,
+            mode: "puzzle",
+            initial_player: "white",
+            initial_state: {
+                black: "gdhedfefffgfdgdhdieigi",
+                white: "fbcceccehfegfgggehfi",
+            },
+            marks: { 1: "gi" },
+            move_tree: this.makePuzzleMoveTree(["gh"], [], 9, 9),
+        };
+    }
+}
+
+class Page12 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        return _("White to play. Black has played 1. Make a ko.");
+    }
+    config(): PuzzleConfig {
+        return {
+            width: 9,
+            height: 9,
+            mode: "puzzle",
+            initial_player: "white",
+            initial_state: {
+                black: "hfcgegfgggig",
+                white: "gdhgfhghhi",
+            },
+            marks: { 1: "ig" },
+            move_tree: this.makePuzzleMoveTree(["ih"], [], 9, 9),
+        };
+    }
+}

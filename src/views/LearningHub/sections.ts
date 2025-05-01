@@ -19,8 +19,7 @@ import { pgettext } from "@/lib/translate";
 import { LearningHubSection } from "./LearningHubSection";
 import { Intro } from "./Sections/Fundamentals/Intro";
 import { CaptureStone } from "./Sections/BasicPrinciples/CaptureStone";
-import { CaptureBlack } from "./Sections/BasicPrinciples/CaptureBlack";
-import { CaptureWhite } from "./Sections/BasicPrinciples/CaptureWhite";
+import { CaptureChain } from "./Sections/BasicPrinciples/CaptureChain";
 import { BothAtari } from "./Sections/BasicPrinciples/BothAtari";
 import { SelfCapture } from "./Sections/Fundamentals/SelfCapture";
 import { Escape } from "./Sections/BasicPrinciples/Escape";
@@ -29,7 +28,7 @@ import { CreateOpening } from "./Sections/BasicPrinciples/CreateOpening";
 import { Connect } from "./Sections/BasicPrinciples/Connect";
 import { Cut } from "./Sections/BasicPrinciples/Cut";
 import { Eyes } from "./Sections/Fundamentals/Eyes";
-import { MakeAlive } from "./Sections/BasicPrinciples/MakeAlive";
+import { TwoEyes } from "./Sections/BasicPrinciples/TwoEyes";
 import { CaptureGroup } from "./Sections/BasicPrinciples/CaptureGroup";
 import { Ko } from "./Sections/Fundamentals/Ko";
 import { EndingTheGame } from "./Sections/Fundamentals/EndingTheGame";
@@ -38,10 +37,11 @@ import { TheBoard } from "./Sections/Fundamentals/TheBoard";
 import { AtariToSide1 } from "./Sections/BasicSkills/AtariToSide1";
 import { AtariToSide2 } from "./Sections/BasicSkills/AtariToSide2";
 import { AtariToStones } from "./Sections/BasicSkills/AtariToStones";
-import { AtariWithCut1 } from "./Sections/BasicSkills/AtariWithCut1";
-import { AtariWithCut2 } from "./Sections/BasicSkills/AtariWithCut2";
+import { AtariWithCut } from "./Sections/BasicSkills/AtariWithCut";
 import { AtariCorrectSide } from "./Sections/BasicSkills/AtariCorrectSide";
 import { MakeKo } from "./Sections/BasicSkills/MakeKo";
+import { PlayDoubleAtari1 } from "./Sections/BasicSkills/PlayDoubleAtari1";
+import { PlayDoubleAtari2 } from "./Sections/BasicSkills/PlayDoubleAtari2";
 
 // import { SnapBack } from "./SnapBack";
 // import { Seki } from "./Seki";
@@ -175,15 +175,14 @@ export const sections: [string, any[]][] = [
         pgettext("Learning hub section title", "Basic Principles"),
         [
             CaptureStone,
-            CaptureWhite,
-            CaptureBlack,
+            CaptureChain,
             BothAtari,
             Escape,
             FindEscape,
             CreateOpening,
             Connect,
             Cut,
-            MakeAlive,
+            TwoEyes,
             CaptureGroup,
         ],
     ],
@@ -193,13 +192,11 @@ export const sections: [string, any[]][] = [
             AtariToSide1,
             AtariToSide2,
             AtariToStones,
-            AtariWithCut1,
-            AtariWithCut2,
+            AtariWithCut,
             AtariCorrectSide,
             MakeKo,
-            // Ladders,
-            // SnapBack,
-            // Seki,
+            PlayDoubleAtari1,
+            PlayDoubleAtari2,
         ],
     ],
 

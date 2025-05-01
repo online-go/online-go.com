@@ -41,7 +41,9 @@ class Page01 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Escape with the marked chain that is in atari.");
+        return _(
+            "White to play. Escape with the marked chain that is in atari, by lengthening the white chain and creating more liberties.",
+        );
     }
     config(): PuzzleConfig {
         return {

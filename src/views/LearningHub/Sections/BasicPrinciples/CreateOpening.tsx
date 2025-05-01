@@ -57,7 +57,9 @@ class Page01 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Escape with the chain in atari by creating an opening.");
+        return _(
+            "White to play. The marked white chain can not escape by lengthening this chain at A. But white can escape by creating an opening. Capture the marked black stone to create this opening.",
+        );
     }
     config(): PuzzleConfig {
         return {
@@ -69,6 +71,7 @@ class Page01 extends LearningPage {
                 black: "dedfcgegchfhdi",
                 white: "bfcfefdgdheh",
             },
+            marks: { triangle: "dgdheheg", A: "ei" },
             move_tree: this.makePuzzleMoveTree(["fg"], [], 9, 9),
         };
     }

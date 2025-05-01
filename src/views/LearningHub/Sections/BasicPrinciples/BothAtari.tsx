@@ -57,7 +57,9 @@ class Page01 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Capture one or more black stones.");
+        return _(
+            "White to play. The marked white stone is in atari. You can save this stone by capturing the marked black stones. Capture these black stones.",
+        );
     }
     config(): PuzzleConfig {
         return {
@@ -69,6 +71,7 @@ class Page01 extends LearningPage {
                 black: "ceeedfffegeh",
                 white: "eddefegffg",
             },
+            marks: { triangle: "deeeff" },
             move_tree: this.makePuzzleMoveTree(["ef"], [], 9, 9),
         };
     }

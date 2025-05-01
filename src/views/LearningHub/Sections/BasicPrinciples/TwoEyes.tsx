@@ -21,7 +21,7 @@ import { LearningPage, LearningPageProperties } from "../../LearningPage";
 import { _, pgettext } from "@/lib/translate";
 import { LearningHubSection } from "../../LearningHubSection";
 
-export class MakeAlive extends LearningHubSection {
+export class TwoEyes extends LearningHubSection {
     static pages(): Array<typeof LearningPage> {
         return [Page01, Page02, Page03, Page04, Page05, Page06];
     }
@@ -29,10 +29,10 @@ export class MakeAlive extends LearningHubSection {
         return "make-alive";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning make alive", "Make Alive");
+        return pgettext("Tutorial section name on learning make two eyes", "Two Eyes");
     }
     static subtext(): string {
-        return pgettext("Tutorial section subtext on learning on make alive", "Make group alive");
+        return pgettext("Tutorial section subtext on learning on making two eyes", "Make two eyes");
     }
 }
 class Page01 extends LearningPage {
@@ -41,7 +41,9 @@ class Page01 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Make the white group alive.");
+        return _(
+            "The white group is not safe yet. Black can prevent White from making two eyes by playing at A. White to play. Make the white group alive by making two eyes.",
+        );
     }
     config(): PuzzleConfig {
         return {
@@ -53,6 +55,7 @@ class Page01 extends LearningPage {
                 black: "egfggghgigeh",
                 white: "fhghhhihhi",
             },
+            marks: { A: "fi" },
             move_tree: this.makePuzzleMoveTree(["fi"], ["eifigidh"], 9, 9),
         };
     }
@@ -64,7 +67,7 @@ class Page02 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Make the white group alive.");
+        return _("White to play. Make two eyes.");
     }
     config(): PuzzleConfig {
         return {
@@ -87,7 +90,7 @@ class Page03 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Make the white group alive.");
+        return _("White to play. Make two eyes.");
     }
     config(): PuzzleConfig {
         return {
@@ -110,7 +113,7 @@ class Page04 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Make the white group alive.");
+        return _("White to play. Make two eyes.");
     }
     config(): PuzzleConfig {
         return {
@@ -133,7 +136,7 @@ class Page05 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Make the white group alive.");
+        return _("White to play. Make two eyes.");
     }
     config(): PuzzleConfig {
         return {
@@ -156,7 +159,7 @@ class Page06 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Make the white group alive.");
+        return _("White to play. Make two eyes.");
     }
     config(): PuzzleConfig {
         return {

@@ -23,7 +23,20 @@ import { LearningHubSection } from "../../LearningHubSection";
 
 export class AtariToSide2 extends LearningHubSection {
     static pages(): Array<typeof LearningPage> {
-        return [Page01, Page02, Page03, Page04, Page05, Page06, Page07, Page08, Page09];
+        return [
+            Page01,
+            Page02,
+            Page03,
+            Page04,
+            Page05,
+            Page06,
+            Page07,
+            Page08,
+            Page09,
+            Page10,
+            Page11,
+            Page12,
+        ];
     }
     static section(): string {
         return "atari-to-side2";
@@ -254,31 +267,79 @@ class Page09 extends LearningPage {
     }
 }
 
-// class Page10 extends LearningPage {
-//     constructor(props: LearningPageProperties) {
-//         super(props);
-//     }
+class Page10 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
 
-//     text() {
-//         return _("White to play. Capture the marked stones.");
-//     }
-//     config(): PuzzleConfig {
-//         return {
-//             width: 9,
-//             height: 9,
-//             mode: "puzzle",
-//             initial_player: "white",
-//             initial_state: {
-//                 black: "cdcecfdgeg",
-//                 white: "dfefcgdh",
-//             },
-//             marks: { triangle: "egdg" },
-//             move_tree: this.makePuzzleMoveTree(
-//                 ["fgehfh", "fgeheifhgh"],
-//                 ["fgeheifhfigh", "ehfg"],
-//                 9,
-//                 9,
-//             ),
-//         };
-//     }
-// }
+    text() {
+        return _("White to play. Capture the marked stones.");
+    }
+    config(): PuzzleConfig {
+        return {
+            width: 9,
+            height: 9,
+            mode: "puzzle",
+            initial_player: "white",
+            initial_state: {
+                black: "cdcecfdgeg",
+                white: "dfefcgdh",
+            },
+            marks: { triangle: "egdg" },
+            move_tree: this.makePuzzleMoveTree(
+                ["fgehfh", "fgeheifhgh"],
+                ["fgeheifhfigh", "ehfg"],
+                9,
+                9,
+            ),
+        };
+    }
+}
+
+class Page11 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        return _("White to play. Capture the marked stones.");
+    }
+    config(): PuzzleConfig {
+        return {
+            width: 9,
+            height: 9,
+            mode: "puzzle",
+            initial_player: "white",
+            initial_state: {
+                black: "cccfdfcgeg",
+                white: "eeefdgdh",
+            },
+            marks: { triangle: "eg" },
+            move_tree: this.makePuzzleMoveTree(["fgehfh", "fgeheifhgh"], ["fgeheifhfigh"], 9, 9),
+        };
+    }
+}
+
+class Page12 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        return _("White to play. Capture the marked stones.");
+    }
+    config(): PuzzleConfig {
+        return {
+            width: 9,
+            height: 9,
+            mode: "puzzle",
+            initial_player: "white",
+            initial_state: {
+                black: "bfdfdggg",
+                white: "bebgcg",
+            },
+            marks: { triangle: "bf" },
+            move_tree: this.makePuzzleMoveTree(["cf"], ["afcf"], 9, 9),
+        };
+    }
+}

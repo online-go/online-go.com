@@ -41,7 +41,9 @@ class Page01 extends LearningPage {
     }
 
     text() {
-        return _("Black to play. Cut the white stones.");
+        return _(
+            "White can connect the stones by playing at A. Black is to play and can prevent White from connecting these white stones. Cut the white stones.",
+        );
     }
     config(): PuzzleConfig {
         return {
@@ -53,6 +55,7 @@ class Page01 extends LearningPage {
                 black: "abbbcbdbdc",
                 white: "bacaeaebfb",
             },
+            marks: { A: "da" },
             move_tree: this.makePuzzleMoveTree(["da"], [], 9, 9),
         };
     }

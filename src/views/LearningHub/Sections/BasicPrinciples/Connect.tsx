@@ -41,7 +41,9 @@ class Page01 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Connect the white stones.");
+        return _(
+            "Stones can help each other by forming a chain. Chains are harder to capture then single stones. You can form a chain by connecting your stones. Connect the white stones.",
+        );
     }
     config(): PuzzleConfig {
         return {
@@ -53,6 +55,7 @@ class Page01 extends LearningPage {
                 black: "dcddcfdf",
                 white: "beceee",
             },
+            marks: { cross: "de" },
             move_tree: this.makePuzzleMoveTree(["de"], [], 9, 9),
         };
     }

@@ -21,32 +21,34 @@ import { LearningPage, LearningPageProperties } from "../../LearningPage";
 import { _, pgettext } from "@/lib/translate";
 import { LearningHubSection } from "../../LearningHubSection";
 
-export class AtariWithCut2 extends LearningHubSection {
+export class PlayDoubleAtari2 extends LearningHubSection {
     static pages(): Array<typeof LearningPage> {
         return [Page01, Page02, Page03, Page04, Page05, Page06, Page07, Page08, Page09];
     }
     static section(): string {
-        return "atari-with-cut2";
+        return "play_double_atari_2";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning atari with cut", "Atari with Cut 2");
+        return pgettext(
+            "Tutorial section name on learning play double atari 2",
+            "Play double-atari 2",
+        );
     }
     static subtext(): string {
         return pgettext(
-            "Tutorial section subtext on learning on atari with cut",
-            "Put in atari by cutting",
+            "Tutorial section subtext on learning on play double atari 2",
+            "Give double atari",
         );
     }
 }
+
 class Page01 extends LearningPage {
     constructor(props: LearningPageProperties) {
         super(props);
     }
 
     text() {
-        return _(
-            "Black to play. Prevent white from connecting and capture one or more white stones.",
-        );
+        return _("Black to play. Play double-atari on the marked stones.");
     }
     config(): PuzzleConfig {
         return {
@@ -55,10 +57,11 @@ class Page01 extends LearningPage {
             mode: "puzzle",
             initial_player: "black",
             initial_state: {
-                black: "gdcedeeefecfgfggehfh",
-                white: "bdcdbebfdfefffbgcgfg",
+                black: "eccdeddecfcgeg",
+                white: "gbgcfdeedfffdg",
             },
-            move_tree: this.makePuzzleMoveTree(["dg"], ["egdg"], 9, 9),
+            marks: { triangle: "dgdfee" },
+            move_tree: this.makePuzzleMoveTree(["ef"], [], 9, 9),
         };
     }
 }
@@ -69,9 +72,7 @@ class Page02 extends LearningPage {
     }
 
     text() {
-        return _(
-            "Black to play. Prevent white from connecting and capture one or more white stones.",
-        );
+        return _("Black to play. Play double-atari on the marked stones.");
     }
     config(): PuzzleConfig {
         return {
@@ -80,10 +81,11 @@ class Page02 extends LearningPage {
             mode: "puzzle",
             initial_player: "black",
             initial_state: {
-                black: "dfffdgehfhfi",
-                white: "cccecfcgdhdiei",
+                black: "bfdfbgcgdgegfh",
+                white: "cedecfeffgehgh",
             },
-            move_tree: this.makePuzzleMoveTree(["chcibi"], ["cich"], 9, 9),
+            marks: { triangle: "fgef" },
+            move_tree: this.makePuzzleMoveTree(["ff"], [], 9, 9),
         };
     }
 }
@@ -94,9 +96,7 @@ class Page03 extends LearningPage {
     }
 
     text() {
-        return _(
-            "Black to play. Prevent white from connecting and capture one or more white stones.",
-        );
+        return _("Black to play. Play double-atari on the marked stones.");
     }
     config(): PuzzleConfig {
         return {
@@ -105,10 +105,11 @@ class Page03 extends LearningPage {
             mode: "puzzle",
             initial_player: "black",
             initial_state: {
-                black: "fecfcgdgggehfh",
-                white: "dbdccededfegfg",
+                black: "fdgdeehedfdgeh",
+                white: "fegeefhfegggfh",
             },
-            move_tree: this.makePuzzleMoveTree(["efffgf"], ["ffef"], 9, 9),
+            marks: { triangle: "egefgefe" },
+            move_tree: this.makePuzzleMoveTree(["ff"], [], 9, 9),
         };
     }
 }
@@ -119,9 +120,7 @@ class Page04 extends LearningPage {
     }
 
     text() {
-        return _(
-            "Black to play. Prevent white from connecting and capture one or more white stones.",
-        );
+        return _("Black to play. Play double-atari on the marked stones.");
     }
     config(): PuzzleConfig {
         return {
@@ -130,10 +129,11 @@ class Page04 extends LearningPage {
             mode: "puzzle",
             initial_player: "black",
             initial_state: {
-                black: "eefedfgfggchghdieifi",
-                white: "cdcecfefffcgfgdhehfh",
+                black: "efffgfdggghh",
+                white: "hfegfghgghih",
             },
-            move_tree: this.makePuzzleMoveTree(["dg"], [], 9, 9),
+            marks: { triangle: "ghfgeg" },
+            move_tree: this.makePuzzleMoveTree(["fh"], [], 9, 9),
         };
     }
 }
@@ -144,9 +144,7 @@ class Page05 extends LearningPage {
     }
 
     text() {
-        return _(
-            "Black to play. Prevent white from connecting and capture one or more white stones.",
-        );
+        return _("Black to play. Play double-atari on the marked stones.");
     }
     config(): PuzzleConfig {
         return {
@@ -155,10 +153,11 @@ class Page05 extends LearningPage {
             mode: "puzzle",
             initial_player: "black",
             initial_state: {
-                black: "gcdffffgchfhdiei",
-                white: "dccdcecfcgegdheh",
+                black: "efffgfdghg",
+                white: "egggdhfhhh",
             },
-            move_tree: this.makePuzzleMoveTree(["dg"], ["efdg"], 9, 9),
+            marks: { triangle: "ggeg" },
+            move_tree: this.makePuzzleMoveTree(["fg"], [], 9, 9),
         };
     }
 }
@@ -169,9 +168,7 @@ class Page06 extends LearningPage {
     }
 
     text() {
-        return _(
-            "Black to play. Prevent white from connecting and capture one or more white stones.",
-        );
+        return _("Black to play. Play double-atari on the marked stones.");
     }
     config(): PuzzleConfig {
         return {
@@ -180,10 +177,11 @@ class Page06 extends LearningPage {
             mode: "puzzle",
             initial_player: "black",
             initial_state: {
-                black: "cddeeefecfgffg",
-                white: "dfefffbgcggghg",
+                black: "efffgfeghgih",
+                white: "dgfgggchehhh",
             },
-            move_tree: this.makePuzzleMoveTree(["dgegeh"], ["egdg"], 9, 9),
+            marks: { triangle: "hhggfg" },
+            move_tree: this.makePuzzleMoveTree(["gh"], [], 9, 9),
         };
     }
 }
@@ -194,9 +192,7 @@ class Page07 extends LearningPage {
     }
 
     text() {
-        return _(
-            "Black to play. Prevent white from connecting and capture one or more white stones.",
-        );
+        return _("Black to play. Play double-atari on the marked stones.");
     }
     config(): PuzzleConfig {
         return {
@@ -205,10 +201,11 @@ class Page07 extends LearningPage {
             mode: "puzzle",
             initial_player: "black",
             initial_state: {
-                black: "becfdfegfggg",
-                white: "ccbfcgdgehfh",
+                black: "efffgfhfeghgih",
+                white: "dgfgggigchehhh",
             },
-            move_tree: this.makePuzzleMoveTree(["bg"], ["afbg", "dhbhchbgghci"], 9, 9),
+            marks: { triangle: "hhggfg" },
+            move_tree: this.makePuzzleMoveTree(["gh"], [], 9, 9),
         };
     }
 }
@@ -219,9 +216,7 @@ class Page08 extends LearningPage {
     }
 
     text() {
-        return _(
-            "Black to play. Prevent white from connecting and capture one or more white stones.",
-        );
+        return _("Black to play. Play double-atari on the marked stones.");
     }
     config(): PuzzleConfig {
         return {
@@ -230,10 +225,11 @@ class Page08 extends LearningPage {
             mode: "puzzle",
             initial_player: "black",
             initial_state: {
-                black: "cdddcebfbgcgdgfg",
-                white: "bcdcedbedeeecfdf",
+                black: "dfhfdgfgggeh",
+                white: "defeheefgfeg",
             },
-            move_tree: this.makePuzzleMoveTree(["bd"], ["aebd"], 9, 9),
+            marks: { triangle: "eggfef" },
+            move_tree: this.makePuzzleMoveTree(["ff"], [], 9, 9),
         };
     }
 }
@@ -244,9 +240,7 @@ class Page09 extends LearningPage {
     }
 
     text() {
-        return _(
-            "Black to play. Prevent white from connecting and capture one or more white stones.",
-        );
+        return _("Black to play. Play double-atari on the marked stones.");
     }
     config(): PuzzleConfig {
         return {
@@ -255,10 +249,11 @@ class Page09 extends LearningPage {
             mode: "puzzle",
             initial_player: "black",
             initial_state: {
-                black: "gehfcgeggghgfh",
-                white: "ecgchceeheffgf",
+                black: "deeefedfgfbgcgbh",
+                white: "efffdggghgchfhdi",
             },
-            move_tree: this.makePuzzleMoveTree(["hdgdie"], ["iehd", "fegdfdfc", "effe"], 9, 9),
+            marks: { triangle: "dgffef" },
+            move_tree: this.makePuzzleMoveTree(["eg"], [], 9, 9),
         };
     }
 }

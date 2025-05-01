@@ -54,7 +54,9 @@ class Page01 extends LearningPage {
     }
 
     text() {
-        return _("Black to play. Escape with the chain that is in atari.");
+        return _(
+            "Black to play. Find the black chain that is in atari and escape with this chain.",
+        );
     }
     config(): PuzzleConfig {
         return {

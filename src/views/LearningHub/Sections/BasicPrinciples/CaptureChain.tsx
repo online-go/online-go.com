@@ -21,21 +21,180 @@ import { LearningPage, LearningPageProperties } from "../../LearningPage";
 import { _, pgettext } from "@/lib/translate";
 import { LearningHubSection } from "../../LearningHubSection";
 
-export class CaptureBlack extends LearningHubSection {
+export class CaptureChain extends LearningHubSection {
     static pages(): Array<typeof LearningPage> {
-        return [Page01, Page02, Page03, Page04, Page05, Page06, Page07, Page08, Page09, Page10];
+        return [
+            Page01,
+            Page02,
+            Page03,
+            Page04,
+            Page05,
+            Page06,
+            Page07,
+            Page08,
+            Page09,
+            Page10,
+            Page11,
+            Page12,
+            Page13,
+            Page14,
+            Page15,
+            Page16,
+        ];
     }
     static section(): string {
-        return "capture_black";
+        return "capture_chain";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning capture", "Capture Black");
+        return pgettext("Tutorial section name on learning capture chain", "Capture Chain");
     }
     static subtext(): string {
-        return pgettext("Tutorial section subtext on learning on capture", "Capture black stones");
+        return pgettext(
+            "Tutorial section subtext on learning on capture chain",
+            "Capture a chain of stones",
+        );
     }
 }
 class Page01 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        return _("Black to play. The marked white chain is in atari. Capture these stones.");
+    }
+    config(): PuzzleConfig {
+        return {
+            mode: "puzzle",
+            initial_player: "black",
+            initial_state: {
+                black: "dcecfccddeeefe",
+                white: "ddedfdcgdgeggg",
+            },
+            marks: { triangle: "ddedfd" },
+            width: 9,
+            height: 9,
+            move_tree: this.makePuzzleMoveTree(["gd"], [], 9, 9),
+        };
+    }
+}
+
+class Page02 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        return _("Black to play. Capture one or more white stones.");
+    }
+    config(): PuzzleConfig {
+        return {
+            mode: "puzzle",
+            initial_player: "black",
+            initial_state: {
+                black: "dbfbecedee",
+                white: "ebgbfcfdfe",
+            },
+            width: 9,
+            height: 9,
+            move_tree: this.makePuzzleMoveTree(["ea"], [], 9, 9),
+        };
+    }
+}
+
+class Page03 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        return _("Black to play. Capture one or more white stones.");
+    }
+    config(): PuzzleConfig {
+        return {
+            mode: "puzzle",
+            initial_player: "black",
+            initial_state: {
+                black: "dadbeb",
+                white: "eaccdc",
+            },
+            width: 9,
+            height: 9,
+            move_tree: this.makePuzzleMoveTree(["fa"], [], 9, 9),
+        };
+    }
+}
+
+class Page04 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        return _("Black to play. Capture one or more white stones.");
+    }
+    config(): PuzzleConfig {
+        return {
+            mode: "puzzle",
+            initial_player: "black",
+            initial_state: {
+                black: "dfefcgegggfh",
+                white: "cecfdgchehei",
+            },
+            width: 9,
+            height: 9,
+            move_tree: this.makePuzzleMoveTree(["dh"], [], 9, 9),
+        };
+    }
+}
+
+class Page05 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        return _("Black to play. Capture one or more white stones.");
+    }
+    config(): PuzzleConfig {
+        return {
+            mode: "puzzle",
+            initial_player: "black",
+            initial_state: {
+                black: "dddebfcfefff",
+                white: "eedfbgcgegfg",
+            },
+            width: 9,
+            height: 9,
+            move_tree: this.makePuzzleMoveTree(["dg"], [], 9, 9),
+        };
+    }
+}
+
+class Page06 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        return _("Black to play. Capture one or more white stones.");
+    }
+    config(): PuzzleConfig {
+        return {
+            mode: "puzzle",
+            initial_player: "black",
+            initial_state: {
+                black: "efdgbhchbi",
+                white: "decfbgahai",
+            },
+            width: 9,
+            height: 9,
+            move_tree: this.makePuzzleMoveTree(["ag"], [], 9, 9),
+        };
+    }
+}
+
+class Page07 extends LearningPage {
     constructor(props: LearningPageProperties) {
         super(props);
     }
@@ -60,7 +219,7 @@ class Page01 extends LearningPage {
     }
 }
 
-class Page02 extends LearningPage {
+class Page08 extends LearningPage {
     constructor(props: LearningPageProperties) {
         super(props);
     }
@@ -85,7 +244,7 @@ class Page02 extends LearningPage {
     }
 }
 
-class Page03 extends LearningPage {
+class Page09 extends LearningPage {
     constructor(props: LearningPageProperties) {
         super(props);
     }
@@ -110,7 +269,7 @@ class Page03 extends LearningPage {
     }
 }
 
-class Page04 extends LearningPage {
+class Page10 extends LearningPage {
     constructor(props: LearningPageProperties) {
         super(props);
     }
@@ -135,7 +294,7 @@ class Page04 extends LearningPage {
     }
 }
 
-class Page05 extends LearningPage {
+class Page11 extends LearningPage {
     constructor(props: LearningPageProperties) {
         super(props);
     }
@@ -160,7 +319,7 @@ class Page05 extends LearningPage {
     }
 }
 
-class Page06 extends LearningPage {
+class Page12 extends LearningPage {
     constructor(props: LearningPageProperties) {
         super(props);
     }
@@ -185,7 +344,7 @@ class Page06 extends LearningPage {
     }
 }
 
-class Page07 extends LearningPage {
+class Page13 extends LearningPage {
     constructor(props: LearningPageProperties) {
         super(props);
     }
@@ -208,7 +367,7 @@ class Page07 extends LearningPage {
     }
 }
 
-class Page08 extends LearningPage {
+class Page14 extends LearningPage {
     constructor(props: LearningPageProperties) {
         super(props);
     }
@@ -231,7 +390,7 @@ class Page08 extends LearningPage {
     }
 }
 
-class Page09 extends LearningPage {
+class Page15 extends LearningPage {
     constructor(props: LearningPageProperties) {
         super(props);
     }
@@ -254,7 +413,7 @@ class Page09 extends LearningPage {
     }
 }
 
-class Page10 extends LearningPage {
+class Page16 extends LearningPage {
     constructor(props: LearningPageProperties) {
         super(props);
     }

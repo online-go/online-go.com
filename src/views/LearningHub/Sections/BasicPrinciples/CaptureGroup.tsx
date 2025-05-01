@@ -34,7 +34,7 @@ export class CaptureGroup extends LearningHubSection {
     static subtext(): string {
         return pgettext(
             "Tutorial section subtext on learning on capturing a group",
-            "Capture opponent's group",
+            "Prevent two eyes",
         );
     }
 }
@@ -44,7 +44,9 @@ class Page01 extends LearningPage {
     }
 
     text() {
-        return _("Black to play. Capture the white group.");
+        return _(
+            "White can make two eyes by playing at A. Black to play. Capture the white group.",
+        );
     }
     config(): PuzzleConfig {
         return {
@@ -56,6 +58,7 @@ class Page01 extends LearningPage {
                 black: "bgcgdgegfggghgbhhhbi",
                 white: "chdhehfhghcigi",
             },
+            marks: { A: "ei" },
             move_tree: this.makePuzzleMoveTree(["ei"], ["hiei"], 9, 9),
         };
     }
