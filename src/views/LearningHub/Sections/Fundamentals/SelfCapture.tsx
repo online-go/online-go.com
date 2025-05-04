@@ -16,7 +16,7 @@
  */
 /* cSpell:disable */
 
-import { PuzzleConfig } from "goban";
+import { GobanConfig } from "goban";
 import { LearningPage, LearningPageProperties } from "../../LearningPage";
 import { _, pgettext } from "@/lib/translate";
 import { LearningHubSection } from "../../LearningHubSection";
@@ -48,7 +48,7 @@ class Page01 extends LearningPage {
             "White to play. Both players are in atari. Placing a stone where you have no liberties is not allowed (self capture), unless you can capture stones. Capture one or more black stones.",
         );
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             mode: "puzzle",
             initial_player: "white",
@@ -73,7 +73,7 @@ class Page02 extends LearningPage {
             "White to play. Both players are in atari. Placing a stone where you have no liberties is not allowed (self capture), unless you can capture stones. Capture one or more black stones.",
         );
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             mode: "puzzle",
             initial_player: "white",
@@ -96,7 +96,7 @@ class Page02 extends LearningPage {
 //     text() {
 //         return _("White to play. Both players are in atari. Capture one or more black stones.");
 //     }
-//     config(): PuzzleConfig {
+//     config(): GobanConfig {
 //         return {
 //             mode: "puzzle",
 //             initial_player: "white",
@@ -121,7 +121,7 @@ class Page03 extends LearningPage {
             "White to play. Both players are in atari. Placing a stone where you have no liberties is not allowed (self capture), unless you can capture stones. Capture one or more black stones.",
         );
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             mode: "puzzle",
             initial_player: "white",

@@ -16,7 +16,7 @@
  */
 /* cSpell:disable */
 
-import { PuzzleConfig } from "goban";
+import { GobanConfig } from "goban";
 import { LearningPage, LearningPageProperties } from "../../LearningPage";
 import { _, pgettext } from "@/lib/translate";
 import { LearningHubSection } from "../../LearningHubSection";
@@ -51,7 +51,7 @@ class Page01 extends LearningPage {
             "White can put the marked stones in atari by playing at A or B. Put the marked stones in atari at the correct side.",
         );
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -75,7 +75,7 @@ class Page02 extends LearningPage {
     text() {
         return _("White to play. Put the marked stones in atari at the correct side.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -99,7 +99,7 @@ class Page03 extends LearningPage {
     text() {
         return _("White to play. Put the marked stones in atari at the correct side.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -123,7 +123,7 @@ class Page04 extends LearningPage {
     text() {
         return _("White to play. Put the marked stones in atari at the correct side.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -147,7 +147,7 @@ class Page05 extends LearningPage {
     text() {
         return _("White to play. Put the marked stones in atari at the correct side.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -171,7 +171,7 @@ class Page06 extends LearningPage {
     text() {
         return _("White to play. Put the marked stones in atari at the correct side.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,

@@ -16,7 +16,7 @@
  */
 /* cSpell:disable */
 
-import { PuzzleConfig } from "goban";
+import { GobanConfig } from "goban";
 import { LearningPage, LearningPageProperties } from "../../LearningPage";
 import { _, pgettext } from "@/lib/translate";
 import { LearningHubSection } from "../../LearningHubSection";
@@ -58,7 +58,7 @@ class Page01 extends LearningPage {
             "White to play. Black has played 1. White can connect his stones by playing at A, but sometimes it is better to make a ko by playing at B. Make a ko.",
         );
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -82,7 +82,7 @@ class Page02 extends LearningPage {
     text() {
         return _("White to play. Black has played 1. Make a ko.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -106,7 +106,7 @@ class Page03 extends LearningPage {
     text() {
         return _("White to play. Black has played 1. Make a ko.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -130,7 +130,7 @@ class Page04 extends LearningPage {
     text() {
         return _("White to play. Black has played 1. Make a ko.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -154,7 +154,7 @@ class Page05 extends LearningPage {
     text() {
         return _("White to play. Black has played 1. Make a ko.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -178,7 +178,7 @@ class Page06 extends LearningPage {
     text() {
         return _("White to play. Black has played 1. Make a ko.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -202,7 +202,7 @@ class Page07 extends LearningPage {
     text() {
         return _("White to play. Black has played 1. Make a ko.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -226,7 +226,7 @@ class Page08 extends LearningPage {
     text() {
         return _("White to play. Black has played 1. Make a ko.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -250,7 +250,7 @@ class Page09 extends LearningPage {
     text() {
         return _("White to play. Black has played 1. Make a ko.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -274,7 +274,7 @@ class Page10 extends LearningPage {
     text() {
         return _("White to play. Black has played 1. Make a ko.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -298,7 +298,7 @@ class Page11 extends LearningPage {
     text() {
         return _("White to play. Black has played 1. Make a ko.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -322,7 +322,7 @@ class Page12 extends LearningPage {
     text() {
         return _("White to play. Black has played 1. Make a ko.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,

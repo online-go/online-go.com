@@ -16,7 +16,7 @@
  */
 /* cSpell:disable */
 
-import { PuzzleConfig } from "goban";
+import { GobanConfig } from "goban";
 import { LearningPage, LearningPageProperties } from "../../LearningPage";
 import { _, pgettext } from "@/lib/translate";
 import { LearningHubSection } from "../../LearningHubSection";
@@ -63,7 +63,7 @@ class Page01 extends LearningPage {
     text() {
         return _("Black to play. The marked white chain is in atari. Capture these stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             mode: "puzzle",
             initial_player: "black",
@@ -87,7 +87,7 @@ class Page02 extends LearningPage {
     text() {
         return _("Black to play. Capture one or more white stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             mode: "puzzle",
             initial_player: "black",
@@ -110,7 +110,7 @@ class Page03 extends LearningPage {
     text() {
         return _("Black to play. Capture one or more white stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             mode: "puzzle",
             initial_player: "black",
@@ -133,7 +133,7 @@ class Page04 extends LearningPage {
     text() {
         return _("Black to play. Capture one or more white stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             mode: "puzzle",
             initial_player: "black",
@@ -156,7 +156,7 @@ class Page05 extends LearningPage {
     text() {
         return _("Black to play. Capture one or more white stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             mode: "puzzle",
             initial_player: "black",
@@ -179,7 +179,7 @@ class Page06 extends LearningPage {
     text() {
         return _("Black to play. Capture one or more white stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             mode: "puzzle",
             initial_player: "black",
@@ -202,7 +202,7 @@ class Page07 extends LearningPage {
     text() {
         return _("White to play. Capture one or more black stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             mode: "puzzle",
             initial_player: "white",
@@ -227,7 +227,7 @@ class Page08 extends LearningPage {
     text() {
         return _("White to play. Capture one or more black stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             mode: "puzzle",
             initial_player: "white",
@@ -252,7 +252,7 @@ class Page09 extends LearningPage {
     text() {
         return _("White to play. Capture one or more black stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             mode: "puzzle",
             initial_player: "white",
@@ -277,7 +277,7 @@ class Page10 extends LearningPage {
     text() {
         return _("White to play. Capture one or more black stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             mode: "puzzle",
             initial_player: "white",
@@ -302,7 +302,7 @@ class Page11 extends LearningPage {
     text() {
         return _("White to play. Capture one or more black stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             mode: "puzzle",
             initial_player: "white",
@@ -327,7 +327,7 @@ class Page12 extends LearningPage {
     text() {
         return _("White to play. Capture one or more black stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             mode: "puzzle",
             initial_player: "white",
@@ -352,7 +352,7 @@ class Page13 extends LearningPage {
     text() {
         return _("White to play. Both players are in atari. Capture one or more black stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             mode: "puzzle",
             initial_player: "white",
@@ -375,7 +375,7 @@ class Page14 extends LearningPage {
     text() {
         return _("White to play. Both players are in atari. Capture one or more black stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             mode: "puzzle",
             initial_player: "white",
@@ -398,7 +398,7 @@ class Page15 extends LearningPage {
     text() {
         return _("White to play. Both players are in atari. Capture one or more black stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             mode: "puzzle",
             initial_player: "white",
@@ -421,7 +421,7 @@ class Page16 extends LearningPage {
     text() {
         return _("White to play. Both players are in atari. Capture one or more black stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             mode: "puzzle",
             initial_player: "white",

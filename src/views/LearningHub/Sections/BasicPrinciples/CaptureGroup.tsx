@@ -16,7 +16,7 @@
  */
 /* cSpell:disable */
 
-import { PuzzleConfig } from "goban";
+import { GobanConfig } from "goban";
 import { LearningPage, LearningPageProperties } from "../../LearningPage";
 import { _, pgettext } from "@/lib/translate";
 import { LearningHubSection } from "../../LearningHubSection";
@@ -48,7 +48,7 @@ class Page01 extends LearningPage {
             "White can make two eyes by playing at A. Black to play. Capture the white group.",
         );
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -72,7 +72,7 @@ class Page02 extends LearningPage {
     text() {
         return _("Black to play. Capture the white group.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -95,7 +95,7 @@ class Page03 extends LearningPage {
     text() {
         return _("Black to play. Capture the white group.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -118,7 +118,7 @@ class Page04 extends LearningPage {
     text() {
         return _("Black to play. Capture the white group.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -141,7 +141,7 @@ class Page05 extends LearningPage {
     text() {
         return _("Black to play. Capture the white group.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -164,7 +164,7 @@ class Page06 extends LearningPage {
     text() {
         return _("Black to play. Capture the white group.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,

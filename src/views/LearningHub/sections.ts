@@ -40,6 +40,7 @@ import { AtariWithCut } from "./Sections/BasicSkills/AtariWithCut";
 import { AtariCorrectSide } from "./Sections/BasicSkills/AtariCorrectSide";
 import { MakeKo } from "./Sections/BasicSkills/MakeKo";
 import { PlayDoubleAtari } from "./Sections/BasicSkills/PlayDoubleAtari";
+import { PreventDoubleAtari } from "./Sections/BasicSkills/PreventDoubleAtari";
 
 // import { SnapBack } from "./SnapBack";
 // import { Seki } from "./Seki";
@@ -186,7 +187,15 @@ export const sections: [string, any[]][] = [
     ],
     [
         pgettext("Learning hub section title", "Basic Skills"),
-        [AtariToSide, AtariToStones, AtariWithCut, AtariCorrectSide, MakeKo, PlayDoubleAtari],
+        [
+            AtariToSide,
+            AtariToStones,
+            AtariWithCut,
+            AtariCorrectSide,
+            MakeKo,
+            PlayDoubleAtari,
+            PreventDoubleAtari,
+        ],
     ],
 
     /*

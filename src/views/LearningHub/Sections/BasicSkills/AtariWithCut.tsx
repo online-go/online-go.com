@@ -16,7 +16,7 @@
  */
 /* cSpell:disable */
 
-import { PuzzleConfig } from "goban";
+import { GobanConfig } from "goban";
 import { LearningPage, LearningPageProperties } from "../../LearningPage";
 import { _, pgettext } from "@/lib/translate";
 import { LearningHubSection } from "../../LearningHubSection";
@@ -67,7 +67,7 @@ class Page01 extends LearningPage {
             "Black to play. White can connect the marked stones to the other white stones and escape from being captured. Prevent this by cutting and capture the marked stones.",
         );
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -93,7 +93,7 @@ class Page02 extends LearningPage {
             "Black to play. Prevent White from connecting and capture one or more white stones.",
         );
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -118,7 +118,7 @@ class Page03 extends LearningPage {
             "Black to play. Prevent White from connecting and capture one or more white stones.",
         );
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -143,7 +143,7 @@ class Page04 extends LearningPage {
             "Black to play. Prevent White from connecting and capture one or more white stones.",
         );
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -168,7 +168,7 @@ class Page05 extends LearningPage {
             "Black to play. Prevent White from connecting and capture one or more white stones.",
         );
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -193,7 +193,7 @@ class Page06 extends LearningPage {
             "Black to play. Prevent White from connecting and capture one or more white stones.",
         );
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -218,7 +218,7 @@ class Page07 extends LearningPage {
             "Black to play. Prevent White from connecting and capture one or more white stones.",
         );
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -243,7 +243,7 @@ class Page08 extends LearningPage {
             "Black to play. Prevent White from connecting and capture one or more white stones.",
         );
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -268,7 +268,7 @@ class Page09 extends LearningPage {
             "Black to play. Prevent White from connecting and capture one or more white stones.",
         );
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -293,7 +293,7 @@ class Page10 extends LearningPage {
             "Black to play. Prevent White from connecting and capture one or more white stones.",
         );
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -318,7 +318,7 @@ class Page11 extends LearningPage {
             "Black to play. Prevent White from connecting and capture one or more white stones.",
         );
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -343,7 +343,7 @@ class Page12 extends LearningPage {
             "Black to play. Prevent White from connecting and capture one or more white stones.",
         );
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -368,7 +368,7 @@ class Page13 extends LearningPage {
             "Black to play. Prevent White from connecting and capture one or more white stones.",
         );
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -393,7 +393,7 @@ class Page14 extends LearningPage {
             "Black to play. Prevent White from connecting and capture one or more white stones.",
         );
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -418,7 +418,7 @@ class Page15 extends LearningPage {
             "Black to play. Prevent White from connecting and capture one or more white stones.",
         );
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -443,7 +443,7 @@ class Page16 extends LearningPage {
             "Black to play. Prevent White from connecting and capture one or more white stones.",
         );
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -468,7 +468,7 @@ class Page17 extends LearningPage {
             "Black to play. Prevent White from connecting and capture one or more white stones.",
         );
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -493,7 +493,7 @@ class Page18 extends LearningPage {
             "Black to play. Prevent White from connecting and capture one or more white stones.",
         );
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { PuzzleConfig } from "goban";
+import { GobanConfig } from "goban";
 import { LearningPage, LearningPageProperties } from "../../LearningPage";
 import { _, pgettext } from "@/lib/translate";
 import { LearningHubSection } from "../../LearningHubSection";
@@ -50,7 +50,7 @@ class Page1 extends LearningPage {
             "The game starts with an empty board. Two players, Black and White, take turns placing stones on the board. Black starts. You can play a stone on any empty intersection, even the outer ones. Make a move to continue.",
         );
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             mode: "puzzle",
             initial_state: { black: "", white: "" },
@@ -155,7 +155,7 @@ class Page2 extends LearningPage {
             "Black has played the first move. Now it is White's turn. Make a move to continue.",
         );
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             mode: "puzzle",
             initial_player: "white",
@@ -260,7 +260,7 @@ class Page3 extends LearningPage {
             "The points next to a stone are called liberties. Fill one of the liberties of the black stone.",
         );
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             mode: "puzzle",
             initial_player: "white",
@@ -281,7 +281,7 @@ class Page4 extends LearningPage {
             "A stone is captured when all its liberties are occupied by the opponent's stones. Capture the black stone by filling the last liberty of the black stone.",
         );
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             mode: "puzzle",
             initial_player: "white",
@@ -303,7 +303,7 @@ class Page5 extends LearningPage {
             "Stones of the same color next to each other form a chain. Fill one of the liberties of the black chain.",
         );
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             mode: "puzzle",
             initial_player: "white",
@@ -324,7 +324,7 @@ class Page6 extends LearningPage {
             "The black chain has only one liberty left. This is called 'atari'. Capture the black chain that is in atari.",
         );
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             mode: "puzzle",
             initial_player: "white",

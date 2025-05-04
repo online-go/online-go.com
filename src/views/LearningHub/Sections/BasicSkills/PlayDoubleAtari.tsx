@@ -16,7 +16,7 @@
  */
 /* cSpell:disable */
 
-import { PuzzleConfig } from "goban";
+import { GobanConfig } from "goban";
 import { LearningPage, LearningPageProperties } from "../../LearningPage";
 import { _, pgettext } from "@/lib/translate";
 import { LearningHubSection } from "../../LearningHubSection";
@@ -48,7 +48,7 @@ export class PlayDoubleAtari extends LearningHubSection {
         return "play_double_atari";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning play double atari", "Play double-atari");
+        return pgettext("Tutorial section name on learning play double atari", "Play Double-Atari");
     }
     static subtext(): string {
         return pgettext(
@@ -65,10 +65,10 @@ class Page01 extends LearningPage {
 
     text() {
         return _(
-            "White can put both marked stones in atari with one stone. This is called 'double-atari. Black can only defend one of the stones. Play double-atari on the marked stones.",
+            "White can put both marked stones in atari with one stone. This is called 'double-atari'. Black can only defend one of the stones. Play double-atari on the marked stones.",
         );
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -92,7 +92,7 @@ class Page02 extends LearningPage {
     text() {
         return _("White to play. Play double-atari on the marked stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -116,7 +116,7 @@ class Page03 extends LearningPage {
     text() {
         return _("White to play. Play double-atari on the marked stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -140,7 +140,7 @@ class Page04 extends LearningPage {
     text() {
         return _("White to play. Play double-atari on the marked stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -164,7 +164,7 @@ class Page05 extends LearningPage {
     text() {
         return _("White to play. Play double-atari on the marked stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -188,7 +188,7 @@ class Page06 extends LearningPage {
     text() {
         return _("White to play. Play double-atari on the marked stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -212,7 +212,7 @@ class Page07 extends LearningPage {
     text() {
         return _("White to play. Play double-atari on the marked stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -236,7 +236,7 @@ class Page08 extends LearningPage {
     text() {
         return _("White to play. Play double-atari on the marked stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -260,7 +260,7 @@ class Page09 extends LearningPage {
     text() {
         return _("White to play. Play double-atari on the marked stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -284,7 +284,7 @@ class Page10 extends LearningPage {
     text() {
         return _("Black to play. Play double-atari on the marked stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -308,7 +308,7 @@ class Page11 extends LearningPage {
     text() {
         return _("Black to play. Play double-atari on the marked stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -332,7 +332,7 @@ class Page12 extends LearningPage {
     text() {
         return _("Black to play. Play double-atari on the marked stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -356,7 +356,7 @@ class Page13 extends LearningPage {
     text() {
         return _("Black to play. Play double-atari on the marked stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -380,7 +380,7 @@ class Page14 extends LearningPage {
     text() {
         return _("Black to play. Play double-atari on the marked stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -404,7 +404,7 @@ class Page15 extends LearningPage {
     text() {
         return _("Black to play. Play double-atari on the marked stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -428,7 +428,7 @@ class Page16 extends LearningPage {
     text() {
         return _("Black to play. Play double-atari on the marked stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -452,7 +452,7 @@ class Page17 extends LearningPage {
     text() {
         return _("Black to play. Play double-atari on the marked stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -476,7 +476,7 @@ class Page18 extends LearningPage {
     text() {
         return _("Black to play. Play double-atari on the marked stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,

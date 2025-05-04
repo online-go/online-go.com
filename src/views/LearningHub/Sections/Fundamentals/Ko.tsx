@@ -15,10 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { PuzzleConfig } from "goban";
+import { GobanConfig } from "goban";
 import { LearningPage, LearningPageProperties } from "../../LearningPage";
 import { _, pgettext } from "@/lib/translate";
 import { LearningHubSection } from "../../LearningHubSection";
+// import { InstructionalGobanProps } from "../../InstructionalGoban";
 
 export class Ko extends LearningHubSection {
     static pages(): Array<typeof LearningPage> {
@@ -46,7 +47,7 @@ class Page01 extends LearningPage {
             'To prevent endlessly re-capturing the same space, there\'s a special rule called the "Ko rule" which prevents immediately recapturing the same position. Black can capture the marked white stone. White is not allowed to recapture the black stone immediately. White has to play elsewhere first. Capture the marked stone.',
         );
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             mode: "puzzle",
             initial_player: "black",
@@ -66,7 +67,7 @@ class Page02 extends LearningPage {
     text() {
         return _("Capture the white group by exploiting the Ko rule.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             mode: "puzzle",
             initial_player: "black",
@@ -85,7 +86,7 @@ class Page03 extends LearningPage {
     text() {
         return _("Connect your black stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             mode: "puzzle",
             initial_player: "black",
@@ -104,7 +105,7 @@ class Page04 extends LearningPage {
     text() {
         return _("Capture two white stones by exploiting the Ko rule.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             mode: "puzzle",
             initial_player: "black",
@@ -122,15 +123,16 @@ class Page05 extends LearningPage {
 
     text() {
         return _(
-            'White just captured a stone with A3. Find a place to play where White must capture to move past the ko rule and take whites group at B5. This is called a "ko threat".',
+            "White just captured a black stone with the marked stone. To move past the ko rule, find a place to play for Black where White must capture. This is called a 'ko threat'. Next, Black can capture White's group at B5.",
         );
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             mode: "puzzle",
             width: 13,
             height: 13,
             initial_player: "black",
+            bounds: { top: 3, left: 0, bottom: 12, right: 7 },
             /* cspell: disable-next-line */
             initial_state: { black: "bgcgchcicjbkalclbm", white: "bebfagbhaibibjak" },
             move_tree: this.makePuzzleMoveTree(
@@ -139,6 +141,7 @@ class Page05 extends LearningPage {
                 13,
                 13,
             ),
+            marks: { triangle: "a3" },
         };
     }
 }

@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { PuzzleConfig, GobanEngineConfig } from "goban";
+import { GobanConfig, GobanEngineConfig } from "goban";
 import { LearningPage, LearningPageProperties } from "../../LearningPage";
 import { _, pgettext } from "@/lib/translate";
 import { LearningHubSection } from "../../LearningHubSection";
@@ -67,7 +67,7 @@ class Page01 extends LearningPage {
             </div>
         );
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             mode: "puzzle",
             initial_state: {
@@ -97,7 +97,7 @@ class Page02 extends LearningPage {
             'After both players have passed, you enter a "Stone Removal Phase", where you can remove obviously dead stones from play. You could capture these in the game as well, but most players opt not to because it\'s quicker. Remove the dead black stones by clicking them.',
         );
     }
-    config(): PuzzleConfig | GobanEngineConfig {
+    config(): GobanConfig | GobanEngineConfig {
         return {
             mode: "play",
             phase: "stone removal",
@@ -150,7 +150,7 @@ class Page03 extends LearningPage {
             </div>
         );
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             mode: "puzzle",
             initial_state: {

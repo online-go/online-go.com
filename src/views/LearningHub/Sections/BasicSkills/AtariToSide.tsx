@@ -16,7 +16,7 @@
  */
 /* cSpell:disable */
 
-import { PuzzleConfig } from "goban";
+import { GobanConfig } from "goban";
 import { LearningPage, LearningPageProperties } from "../../LearningPage";
 import { _, pgettext } from "@/lib/translate";
 import { LearningHubSection } from "../../LearningHubSection";
@@ -67,7 +67,7 @@ class Page01 extends LearningPage {
             "Black to play. Driving the marked white stone to the side of the board makes it easier to capture it. Choose the point to play to push the marked white stone to the edge, A or B.",
         );
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -93,7 +93,7 @@ class Page02 extends LearningPage {
             "Black to play. Choose the point to play to push the marked white chain to the side, A or B.",
         );
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -119,7 +119,7 @@ class Page03 extends LearningPage {
             "Black to play. Choose the point to play to push the marked white chain to the side, A or B.",
         );
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -145,7 +145,7 @@ class Page04 extends LearningPage {
             "Black to play. Choose the point to play to push the marked white chain to the side, A or B.",
         );
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -171,7 +171,7 @@ class Page05 extends LearningPage {
             "Black to play. Choose the point to play to push the marked white chain to the side, A or B.",
         );
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -197,7 +197,7 @@ class Page06 extends LearningPage {
             "Black to play. Choose the point to play to push the marked white chain to the side, A or B.",
         );
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -221,7 +221,7 @@ class Page07 extends LearningPage {
     text() {
         return _("White to play. Capture the marked stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -245,7 +245,7 @@ class Page08 extends LearningPage {
     text() {
         return _("White to play. Capture the marked stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -269,7 +269,7 @@ class Page09 extends LearningPage {
     text() {
         return _("White to play. Capture the marked stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -293,7 +293,7 @@ class Page10 extends LearningPage {
     text() {
         return _("White to play. Capture the marked stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -317,7 +317,7 @@ class Page11 extends LearningPage {
     text() {
         return _("White to play. Capture the marked stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -341,7 +341,7 @@ class Page12 extends LearningPage {
     text() {
         return _("White to play. Capture the marked stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -365,7 +365,7 @@ class Page13 extends LearningPage {
     text() {
         return _("White to play. Capture the marked stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -389,7 +389,7 @@ class Page14 extends LearningPage {
     text() {
         return _("White to play. Capture the marked stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -413,7 +413,7 @@ class Page15 extends LearningPage {
     text() {
         return _("White to play. Capture the marked stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -437,7 +437,7 @@ class Page16 extends LearningPage {
     text() {
         return _("White to play. Capture the marked stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -466,7 +466,7 @@ class Page17 extends LearningPage {
     text() {
         return _("White to play. Capture the marked stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -490,7 +490,7 @@ class Page18 extends LearningPage {
     text() {
         return _("White to play. Capture the marked stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,

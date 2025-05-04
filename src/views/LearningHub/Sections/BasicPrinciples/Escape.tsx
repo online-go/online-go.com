@@ -16,7 +16,7 @@
  */
 /* cSpell:disable */
 
-import { PuzzleConfig } from "goban";
+import { GobanConfig } from "goban";
 import { LearningPage, LearningPageProperties } from "../../LearningPage";
 import { _, pgettext } from "@/lib/translate";
 import { LearningHubSection } from "../../LearningHubSection";
@@ -45,7 +45,7 @@ class Page01 extends LearningPage {
             "White to play. Escape with the marked chain that is in atari, by lengthening the white chain and creating more liberties.",
         );
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -69,7 +69,7 @@ class Page02 extends LearningPage {
     text() {
         return _("White to play. Escape with the marked chain that is in atari.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -93,7 +93,7 @@ class Page03 extends LearningPage {
     text() {
         return _("White to play. Escape with the marked chain that is in atari.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -117,7 +117,7 @@ class Page04 extends LearningPage {
     text() {
         return _("White to play. Escape with the marked chain that is in atari.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -141,7 +141,7 @@ class Page05 extends LearningPage {
     text() {
         return _("White to play. Escape with the marked chain that is in atari.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -165,7 +165,7 @@ class Page06 extends LearningPage {
     text() {
         return _("White to play. Escape with the marked chain that is in atari.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,

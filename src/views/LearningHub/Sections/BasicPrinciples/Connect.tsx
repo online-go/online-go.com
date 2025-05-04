@@ -16,7 +16,7 @@
  */
 /* cSpell:disable */
 
-import { PuzzleConfig } from "goban";
+import { GobanConfig } from "goban";
 import { LearningPage, LearningPageProperties } from "../../LearningPage";
 import { _, pgettext } from "@/lib/translate";
 import { LearningHubSection } from "../../LearningHubSection";
@@ -45,7 +45,7 @@ class Page01 extends LearningPage {
             "Stones can help each other by forming a chain. Chains are harder to capture then single stones. You can form a chain by connecting your stones. Connect the white stones.",
         );
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -69,7 +69,7 @@ class Page02 extends LearningPage {
     text() {
         return _("White to play. Connect the white stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -92,7 +92,7 @@ class Page03 extends LearningPage {
     text() {
         return _("White to play. Connect the white stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -115,7 +115,7 @@ class Page04 extends LearningPage {
     text() {
         return _("White to play. Connect the white stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -138,7 +138,7 @@ class Page05 extends LearningPage {
     text() {
         return _("White to play. Connect the white stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -161,7 +161,7 @@ class Page06 extends LearningPage {
     text() {
         return _("White to play. Connect the white stones.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,

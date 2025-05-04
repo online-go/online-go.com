@@ -16,7 +16,7 @@
  */
 /* cSpell:disable */
 
-import { PuzzleConfig } from "goban";
+import { GobanConfig } from "goban";
 import { LearningPage, LearningPageProperties } from "../../LearningPage";
 import { _, pgettext } from "@/lib/translate";
 import { LearningHubSection } from "../../LearningHubSection";
@@ -61,7 +61,7 @@ class Page01 extends LearningPage {
             "White to play. The marked white chain can not escape by lengthening this chain at A. But white can escape by creating an opening. Capture the marked black stone to create this opening.",
         );
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -85,7 +85,7 @@ class Page02 extends LearningPage {
     text() {
         return _("White to play. Escape with the chain in atari by creating an opening.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -108,7 +108,7 @@ class Page03 extends LearningPage {
     text() {
         return _("White to play. Escape with the chain in atari by creating an opening.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -131,7 +131,7 @@ class Page04 extends LearningPage {
     text() {
         return _("White to play. Escape with the chain in atari by creating an opening.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -154,7 +154,7 @@ class Page05 extends LearningPage {
     text() {
         return _("White to play. Escape with the chain in atari by creating an opening.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -177,7 +177,7 @@ class Page06 extends LearningPage {
     text() {
         return _("White to play. Escape with the chain in atari by creating an opening.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -200,7 +200,7 @@ class Page07 extends LearningPage {
     text() {
         return _("White to play. Escape with the chain in atari by creating an opening.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -223,7 +223,7 @@ class Page08 extends LearningPage {
     text() {
         return _("White to play. Escape with the chain in atari by creating an opening.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -246,7 +246,7 @@ class Page09 extends LearningPage {
     text() {
         return _("White to play. Escape with the chain in atari by creating an opening.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -269,7 +269,7 @@ class Page10 extends LearningPage {
     text() {
         return _("White to play. Escape with the chain in atari by creating an opening.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -292,7 +292,7 @@ class Page11 extends LearningPage {
     text() {
         return _("White to play. Escape with the chain in atari by creating an opening.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
@@ -315,7 +315,7 @@ class Page12 extends LearningPage {
     text() {
         return _("White to play. Escape with the chain in atari by creating an opening.");
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             width: 9,
             height: 9,
