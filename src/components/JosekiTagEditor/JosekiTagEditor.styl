@@ -1,0 +1,53 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+.joseki-tag-editor {
+    .tags-table-container {
+        max-height: calc(3 * 3rem);
+        width: 50%;
+        overflow-y: auto;
+        margin-bottom: 1rem;
+        themed: border-color shade1;
+        border: 1px solid;
+        border-radius: 5px;
+    }
+
+    .tags-table {
+        width: 100%;
+        border-collapse: collapse;
+
+        th, td {
+            padding: 0.5rem;
+            text-align: left;
+            themed: border-color shade1;
+            border-bottom: 1px solid;
+        }
+
+        th {
+            themed: background bg;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+    }
+    .error {
+        color: red;
+    }
+}

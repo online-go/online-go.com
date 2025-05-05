@@ -21,17 +21,17 @@ import { _ } from "@/lib/translate";
 import * as DynamicHelp from "react-dynamic-help";
 
 import * as player_cache from "@/lib/player_cache";
-import { JosekiTagSelector, JosekiTag } from "../JosekiTagSelector";
+import { JosekiTagSelector, OJEJosekiTag } from "../JosekiTagSelector";
 import { PlayerCacheEntry } from "@/lib/player_cache";
 import { get } from "@/lib/requests";
 
-export type JosekiFilter = { contributor?: number; tags: JosekiTag[]; source?: number };
+export type JosekiFilter = { contributor?: number; tags: OJEJosekiTag[]; source?: number };
 
 interface JosekiVariationFilterProps {
     contributor_list_url: string;
     source_list_url: string;
     set_variation_filter: any;
-    joseki_tags: JosekiTag[];
+    joseki_tags: OJEJosekiTag[];
     current_filter: JosekiFilter;
 }
 
@@ -93,7 +93,7 @@ export function JosekiVariationFilter(props: JosekiVariationFilterProps) {
             });
     }, []);
 
-    const onTagChange = (tags: ReactSelect.MultiValue<JosekiTag>) => {
+    const onTagChange = (tags: ReactSelect.MultiValue<OJEJosekiTag>) => {
         const new_filter = { ...props.current_filter, tags };
 
         props.set_variation_filter(new_filter); // tell parent the filter changed, so the view needs to change

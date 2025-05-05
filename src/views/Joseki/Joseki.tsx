@@ -42,11 +42,15 @@ import { JosekiAdmin } from "@/components/JosekiAdmin";
 import { openModal } from "@/components/Modal";
 import { JosekiSourceModal } from "@/components/JosekiSourceModal";
 import { JosekiVariationFilter, JosekiFilter } from "@/components/JosekiVariationFilter";
-import { JosekiTagSelector, JosekiTag } from "@/components/JosekiTagSelector";
+import { JosekiTagSelector, OJEJosekiTag } from "@/components/JosekiTagSelector";
 import { Throbber } from "@/components/Throbber";
 import { IdType } from "@/lib/types";
 import { GobanContainer } from "@/components/GobanContainer";
+//import { JosekiTagEditor } from "@/components/JosekiTagEditor";
 
+// This is is a relic from when OJE was a separate project, and
+// might have remained on a separate sever.
+// Would be nice to tidy up and use the normal API.
 const server_url = data.get("oje-url", "/oje/");
 
 const prefetch_url = (node_id: string, variation_filter?: JosekiFilter, mode?: string) => {
@@ -200,8 +204,8 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
     goban_opts: any = {};
     goban_container?: HTMLDivElement;
 
-    joseki_tags?: JosekiTag[]; // the list of valid tags, collected from the server
-    the_joseki_tag?: JosekiTag; //  the tag that represents "Joseki Done"
+    joseki_tags?: OJEJosekiTag[]; // the list of valid tags, collected from the server
+    the_joseki_tag?: OJEJosekiTag; //  the tag that represents "Joseki Done"
     last_server_position = ""; // the most recent position that the server returned to us, used in back stepping
     last_placement = "";
     next_moves: Array<any> = []; // these are the moves that the server has told us are available as joseki moves from the current board position
@@ -1524,7 +1528,7 @@ interface ExploreProps {
     comment_count: number;
     can_comment: boolean;
     joseki_source: { url: string; description: string };
-    joseki_tags: JosekiTag[];
+    joseki_tags: OJEJosekiTag[];
     tags: Array<any>;
     set_variation_filter(filter: JosekiFilter): void;
     current_filter: JosekiFilter;
@@ -1848,8 +1852,8 @@ interface PlayProps {
     josekis_completed: number;
     joseki_best_attempt: number;
     joseki_successes: number;
-    the_joseki_tag: JosekiTag;
-    joseki_tags: JosekiTag[];
+    the_joseki_tag: OJEJosekiTag;
+    joseki_tags: OJEJosekiTag[];
     set_variation_filter(filter: JosekiFilter): void;
     current_filter: JosekiFilter;
 }
@@ -2048,7 +2052,7 @@ interface EditProps {
     category: string;
     variation_label: string;
     joseki_source_id: number;
-    available_tags: JosekiTag[];
+    available_tags: OJEJosekiTag[];
     tags: Array<any>; // TBD yuk what is this `any`
     contributor: number;
     save_new_info: (
@@ -2140,7 +2144,7 @@ class EditPane extends React.Component<EditProps, EditState> {
         this.setState({ joseki_source: e.target.value });
     };
 
-    onTagChange = (e: ReactSelect.MultiValue<JosekiTag>) => {
+    onTagChange = (e: ReactSelect.MultiValue<OJEJosekiTag>) => {
         //console.log("changing tags", e);
         this.setState({ tags: e } as any);
     };
