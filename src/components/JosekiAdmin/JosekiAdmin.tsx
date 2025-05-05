@@ -28,6 +28,7 @@ import { Player } from "@/components/Player";
 
 import { JosekiPermissionsPanel } from "@/components/JosekiPermissionsPanel";
 import { JosekiPageVisits, JosekiStatsModal } from "@/components/JosekiStatsModal";
+import { JosekiTagEditor } from "@/components/JosekiTagEditor/JosekiTagEditor";
 
 interface JosekiAdminProps {
     server_url: string;
@@ -52,6 +53,7 @@ interface JosekiAdminState {
     schema_version: string;
     filter_user_id: string;
     filter_position_id: string;
+    filter_tag: string;
     filter_audit_type: string;
     page_visits?: string;
     daily_visits: JosekiPageVisits[];
@@ -89,6 +91,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
             schema_version: "",
             filter_user_id: "",
             filter_position_id: "",
+            filter_tag: "",
             filter_audit_type: "",
             page_visits: undefined,
             daily_visits: [],
@@ -236,6 +239,11 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
         }
     };
 
+    onFilterTagChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const new_tag = e.target.value;
+        this.setState({ filter_tag: new_tag }, this.reloadData);
+    };
+
     renderFilteredPosition = () => {
         this.reloadData();
         this.props.loadPositionToBoard(this.state.filter_position_id);
@@ -276,56 +284,59 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
         const reversions = Array.from(this.state.reversions.values());
 
         return (
-            <div className="audit-container">
+            <div className="admin-container">
                 {this.props.user_can_edit && (
-                    <div className="audit-actions">
-                        <div className="audit-filters">
-                            <div className="audit-filter">
-                                <div>Filter by position:</div>
-                                <input
-                                    value={this.state.filter_position_id}
-                                    onChange={this.onFilterPositionChange}
-                                />
-                            </div>
-                            <div className="audit-filter">
-                                <div>Filter by user (id):</div>
-                                <input
-                                    value={this.state.filter_user_id}
-                                    onChange={this.onUserIdChange}
-                                />
-                                <span>
-                                    (<Player user={parseInt(this.state.filter_user_id)} />)
-                                </span>
-                            </div>
-                            <div
-                                className={
-                                    "hide audit-filter" +
-                                    (this.state.filter_position_id === "" &&
-                                    this.state.filter_user_id === ""
-                                        ? ""
-                                        : " audit-filter-overridden")
-                                }
-                            >
-                                <div>Filter by type:</div>
-                                <select
-                                    value={this.state.filter_audit_type}
-                                    onChange={this.onFilterAuditTypeChange}
+                    <>
+                        <h3>Audit Admin</h3>
+                        <div className="audit-actions">
+                            <div className="audit-filters">
+                                <div className="audit-filter">
+                                    <div>Filter by position:</div>
+                                    <input
+                                        value={this.state.filter_position_id}
+                                        onChange={this.onFilterPositionChange}
+                                    />
+                                </div>
+                                <div className="audit-filter">
+                                    <div>Filter by user (id):</div>
+                                    <input
+                                        value={this.state.filter_user_id}
+                                        onChange={this.onUserIdChange}
+                                    />
+                                    <span>
+                                        (<Player user={parseInt(this.state.filter_user_id)} />)
+                                    </span>
+                                </div>
+                                <div
+                                    className={
+                                        "hide audit-filter" +
+                                        (this.state.filter_position_id === "" &&
+                                        this.state.filter_user_id === ""
+                                            ? ""
+                                            : " audit-filter-overridden")
+                                    }
                                 >
-                                    {audit_type_selections}
-                                </select>
+                                    <div>Filter by type:</div>
+                                    <select
+                                        value={this.state.filter_audit_type}
+                                        onChange={this.onFilterAuditTypeChange}
+                                    >
+                                        {audit_type_selections}
+                                    </select>
+                                </div>
                             </div>
+                            {this.props.user_can_administer && (
+                                <button
+                                    className={
+                                        "btn" + (this.state.any_selected ? " danger" : "disabled")
+                                    }
+                                    onClick={this.revertAllSelectedChanges}
+                                >
+                                    {_("Revert")}
+                                </button>
+                            )}
                         </div>
-                        {this.props.user_can_administer && (
-                            <button
-                                className={
-                                    "btn" + (this.state.any_selected ? " danger" : "disabled")
-                                }
-                                onClick={this.revertAllSelectedChanges}
-                            >
-                                {_("Revert")}
-                            </button>
-                        )}
-                    </div>
+                    </>
                 )}
                 {reversions.length > 0 &&
                     reversions.map((reversion, idx) => <div key={idx}>{reversion}</div>)}
@@ -419,13 +430,15 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
                         )}
                     </button>
                 </div>
-
+                <h3>Tag Editor</h3>
+                <JosekiTagEditor />
                 {this.props.user_can_administer && (
                     <div className="bottom-admin-stuff">
+                        <h3>{_("Permissions Admin")}</h3>
                         <div className="user-admin">
-                            <div>{_("Permissions Admin")}</div>
                             <JosekiPermissionsPanel server_url={this.props.server_url} />
                         </div>
+                        <h3>{_("Misc Admin")}</h3>
                         <div className="misc-admin">
                             <button className={"btn"} onClick={this.toggleLockdown}>
                                 {this.props.db_locked_down ? _("Unlock") : _("Lockdown")}
