@@ -253,3 +253,8 @@ export function getDefaultKomi(rules: RuleSet, has_handicap: boolean): number {
 export function isKomiOption(v: string): v is rest_api.KomiOption {
     return v === "custom" || v === "automatic";
 }
+
+export function parseNumberInput(input: string): number | null {
+    const num = parseInt(input);
+    return Number.isFinite(num) ? num : null;
+}

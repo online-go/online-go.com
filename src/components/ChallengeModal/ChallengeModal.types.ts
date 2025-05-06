@@ -15,7 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { DataSchema } from "@/lib/data_schema";
 import { CreatedChallengeInfo, RuleSet } from "@/lib/types";
 import {
     GobanEngineInitialState,
@@ -23,7 +22,7 @@ import {
     JGOFTimeControlSpeed,
     JGOFTimeControlSystem,
 } from "goban";
-import { TimeControl } from "../TimeControl";
+import { TimeControl, TimeControlTypes } from "../TimeControl";
 import { ViewMode } from "@/views/Game";
 
 export type ChallengeDetails = rest_api.ChallengeDetails;
@@ -140,21 +139,56 @@ export type ChallengeModalConf = {
     restrict_rank: boolean;
 };
 
-export type ChallengeModalGameSettings = ChallengeDetails["game"] & {
+export type GameInput = {
+    name: string;
+    rules: RuleSet;
+    ranked: boolean;
+    width: number | null;
+    height: number | null;
+    handicap: number;
+    komi_auto: rest_api.KomiOption;
+    komi?: number;
+    disable_analysis: boolean;
+    initial_state: {
+        black: string;
+        white: string;
+    };
+    private: boolean;
+    rengo: boolean;
+    rengo_casual_mode: boolean;
+    pause_on_weekends?: boolean;
+    time_control?: TimeControlTypes.TimeControlSystem;
+    time_control_parameters?: TimeControl;
     speed?: JGOFTimeControlSpeed;
 };
 
-export type ChallengeModalChallengeSettings = ChallengeDetails & {
+export type ChallengeInput = {
+    min_ranking: number;
+    max_ranking: number;
+    challenger_color: rest_api.ColorSelectionOptions;
+    rengo_auto_start: number;
     invite_only?: boolean;
     boardWidth?: number;
     boardHeight?: number;
-    game: ChallengeModalGameSettings;
+    game: GameInput;
 };
 
-export type DemoSettings = DataSchema["demo.settings"];
+export type DemoSettings = {
+    name: string;
+    rules: RuleSet;
+    width: number | null;
+    height: number | null;
+    black_name: string;
+    black_ranking: number;
+    white_name: string;
+    white_ranking: number;
+    private: boolean;
+    komi_auto: rest_api.KomiOption;
+    komi?: number;
+};
 
 export type ChallengeModalState = {
-    challenge: ChallengeModalChallengeSettings;
+    challenge: ChallengeInput;
     conf: ChallengeModalConf;
     demo: DemoSettings;
     forking_game: boolean;
