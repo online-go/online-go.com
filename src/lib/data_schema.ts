@@ -20,15 +20,16 @@
  * all the possible keys as well as the associated value types.
  */
 
-import { GroupList, ActiveTournamentList, RuleSet } from "./types";
-import { Announcement } from "@/components/Announcements";
-import { ValidSound, ValidSoundGroup } from "./sfx";
-import { defaults as defaultPreferences, ValidPreference } from "./preferences";
-import { TimeControl, TimeControlTypes } from "@/components/TimeControl";
-import TimeControlSpeed = TimeControlTypes.TimeControlSpeed;
-import TimeControlSystem = TimeControlTypes.TimeControlSystem;
-import { JosekiFilter } from "@/components/JosekiVariationFilter";
-import { Challenge } from "@/lib/challenge_utils";
+import type { GroupList, ActiveTournamentList, RuleSet } from "./types";
+import type { Announcement } from "@/components/Announcements";
+import type { ValidSound, ValidSoundGroup } from "./sfx";
+import type { defaults as defaultPreferences, ValidPreference } from "./preferences";
+import type { TimeControl, TimeControlTypes } from "@/components/TimeControl";
+import type { JosekiFilter } from "@/components/JosekiVariationFilter";
+import type { Challenge } from "@/lib/challenge_utils";
+
+type TimeControlSpeed = TimeControlTypes.TimeControlSpeed;
+type TimeControlSystem = TimeControlTypes.TimeControlSystem;
 
 interface CachedSchema {
     groups: GroupList;
