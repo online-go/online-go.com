@@ -209,6 +209,9 @@ export function GeneralPreferences(props: SettingGroupPageProps): React.ReactEle
     function setWebsocketHost(websocket_host: string) {
         data.set("websocket_host", websocket_host);
         _setWebsocketHost(websocket_host);
+        setTimeout(() => {
+            window.location.reload();
+        }, 100);
     }
 
     // Render...
