@@ -266,6 +266,9 @@ export interface DataSchema
     "reported-games": number[];
     "ui-state.show_incident_list": boolean;
 
+    // Used to override the websocket host
+    websocket_host: string;
+
     // A challenge that the user accepted, but we didn't tell the server yet, because
     // we are busy getting them logged in first.
     pending_accepted_challenge: Challenge;
