@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// Naughtily using the DNEA test data for this test.
+
 // cspell:words CmDontNotRep AIER DNOT DNEA
 
 /*
@@ -44,7 +46,7 @@ import { expect } from "@playwright/test";
 
 import { withIncidentIndicatorLock } from "@helpers/report-utils";
 
-export const cmDontNotifyEscalatedAiTest = async (
+export const cmAiAssessDismissTest = async (
     { browser }: { browser: Browser },
     testInfo: TestInfo,
 ) => {
@@ -65,13 +67,12 @@ export const cmDontNotifyEscalatedAiTest = async (
             "E2E test reporting AI use: I'm sure he cheated!", // min 40 chars
         );
 
-        // Vote the report into moderation queue direct
-        // It only takes 1 AI detector to escalate the report
-
         const aiDetectorUser = "E2E_CM_DNEA_AI_D1";
         const { seededCMPage: aiDetectorCMPage } = await setupSeededCM(browser, aiDetectorUser);
 
-        let indicator = await assertIncidentReportIndicatorActive(aiDetectorCMPage, 1);
+        // The Detector has to vote it for assessment
+
+        const indicator = await assertIncidentReportIndicatorActive(aiDetectorCMPage, 1);
 
         await indicator.click();
 
@@ -83,69 +84,14 @@ export const cmDontNotifyEscalatedAiTest = async (
             aiDetectorCMPage.getByText("E2E test reporting AI use: I'm sure he cheated!"),
         ).toBeVisible();
 
-        // Select the definite AI option...
-        await aiDetectorCMPage.locator('.action-selector input[type="radio"]').first().click();
-
-        // ... then we should be allowed to vote.
-        let voteButton = await expectOGSClickableByName(aiDetectorCMPage, /Vote$/);
-        await voteButton.click();
-
-        // Now we're going to check another CM AI Detector doesn't get notified
-        const { seededCMPage: otherAiCMDetectorPage } = await setupSeededCM(
-            browser,
-            "E2E_CM_DNEA_AI_DETECTOR",
-        );
-
-        await assertIncidentReportIndicatorInactive(otherAiCMDetectorPage);
-
-        // reporter cleans up their report
-        await reporterPage.goto("/reports-center");
-        const myReports = reporterPage.getByText("My Own Reports");
-        await expect(myReports).toBeVisible();
-        await myReports.click();
-
-        const cancelButton = await expectOGSClickableByName(reporterPage, /Cancel$/);
-        await cancelButton.click();
-
-        await assertIncidentReportIndicatorInactive(reporterPage);
-
-        // Now try the "AI Assessment required" path with a fresh report
-
-        await goToUsersGame(reporterPage, "E2E_CM_DNEA_AI_ACCUSED", "E2E CM DNEA Game2");
-
-        await reportUser(
-            reporterPage,
-            "E2E_CM_DNEA_AI_ACCUSED",
-            "ai_use",
-            "E2E test reporting AI use: I'm really sure he cheated!", // min 40 chars
-        );
-
-        // The Detector has to vote it for assessment
-
-        indicator = await assertIncidentReportIndicatorActive(aiDetectorCMPage, 1);
-
-        await indicator.click();
-
-        await expect(
-            aiDetectorCMPage.getByRole("heading", { name: "Reports Center" }),
-        ).toBeVisible();
-
-        await expect(
-            aiDetectorCMPage.getByText("E2E test reporting AI use: I'm really sure he cheated!"),
-        ).toBeVisible();
-
         // Select the "assess" option...
         await aiDetectorCMPage.locator('.action-selector input[type="radio"]').nth(1).click();
 
         // ... then we should be allowed to vote.
-        voteButton = await expectOGSClickableByName(aiDetectorCMPage, /Vote$/);
+        const voteButton = await expectOGSClickableByName(aiDetectorCMPage, /Vote$/);
         await voteButton.click();
 
-        // Now we're going to check another CM AI Detector doesn't get notified
-
-        await assertIncidentReportIndicatorInactive(otherAiCMDetectorPage);
-
-        // Now the CM assessors should see it and have to vote
+        // Now the CM AI assessors should see it and have to vote
         const aiAssessors = ["E2E_CM_DNEA_AI_V1", "E2E_CM_DNEA_AI_V2", "E2E_CM_DNEA_AI_V3"];
 
         const aiAssessorContexts = [];
@@ -155,7 +101,7 @@ export const cmDontNotifyEscalatedAiTest = async (
                 aiUser,
             );
 
-            aiAssessorContexts.push(aiContext); // keep them alive for the duration of the test, for debugging
+            aiAssessorContexts.push({ aiCMPage, aiContext }); // keep them alive for the duration of the test, for debugging
 
             const indicator = await assertIncidentReportIndicatorActive(aiCMPage, 1);
 
@@ -164,11 +110,11 @@ export const cmDontNotifyEscalatedAiTest = async (
             await expect(aiCMPage.getByRole("heading", { name: "Reports Center" })).toBeVisible();
 
             await expect(
-                aiCMPage.getByText("E2E test reporting AI use: I'm really sure he cheated!"),
+                aiCMPage.getByText("E2E test reporting AI use: I'm sure he cheated!"),
             ).toBeVisible();
 
-            // Select the definite AI option...
-            await aiCMPage.locator('.action-selector input[type="radio"]').first().click();
+            // Select the not AI option...
+            await aiCMPage.locator('.action-selector input[type="radio"]').nth(1).click();
 
             // ... then we should be allowed to vote.
 
@@ -176,17 +122,8 @@ export const cmDontNotifyEscalatedAiTest = async (
             await voteButton.click();
         }
 
-        // Now we're going to check that the another CM AI Assessor doesn't get notified
-
-        const { seededCMPage: aiCMPage } = await setupSeededCM(browser, "E2E_CM_DNEA_AI_ASSESSOR");
-
-        await assertIncidentReportIndicatorInactive(aiCMPage);
-
-        // reporter cleans up their report
-        await reporterPage.goto("/reports-center");
-        await expect(myReports).toBeVisible();
-        await myReports.click();
-
-        await cancelButton.click();
+        // the report should be dealt with now
+        await assertIncidentReportIndicatorInactive(aiAssessorContexts[0].aiCMPage);
+        await assertIncidentReportIndicatorInactive(reporterPage);
     });
 };

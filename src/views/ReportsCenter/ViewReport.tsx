@@ -443,9 +443,15 @@ export function ViewReport({
                                     available_actions={report.available_actions ?? []}
                                     vote_counts={report.vote_counts ?? []}
                                     users_vote={usersVote}
-                                    submit={(action, note, dissenter_note) => {
+                                    submit={(action, note, dissenter_note, voter_note) => {
                                         void report_manager
-                                            .vote(report.id, action, note, dissenter_note)
+                                            .vote(
+                                                report.id,
+                                                action,
+                                                note,
+                                                dissenter_note,
+                                                voter_note,
+                                            )
                                             .then(() => advanceToNextReport());
                                     }}
                                     enable={
@@ -481,6 +487,27 @@ export function ViewReport({
                                 <div className="Card">{report.dissenter_note}</div>
                             </div>
                         )}
+                        {report.report_type === "assess_ai_play" &&
+                            report.voter_notes.length > 0 && (
+                                <div className="notes">
+                                    <h4>
+                                        {llm_pgettext("Heading for a paragraph", "Voter notes:")}
+                                    </h4>
+                                    <div className="Card">
+                                        {report.voter_notes.map((voter_note, index) => (
+                                            <div key={voter_note.voter_id}>
+                                                {user.is_moderator && (
+                                                    <span>
+                                                        <Player user={voter_note.voter_id} />
+                                                    </span>
+                                                )}
+                                                {voter_note.voter_note}
+                                                {index < report.voter_notes.length - 1 && <hr />}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                     </div>
 
                     <div className="actions">

@@ -29,7 +29,12 @@ interface ModerationActionSelectorProps {
     users_vote: CommunityModerationAction | null;
     enable: boolean;
     report: Report;
-    submit: (action: CommunityModerationAction, note: string, dissenter_note: string) => void;
+    submit: (
+        action: CommunityModerationAction,
+        note: string,
+        dissenter_note: string,
+        voter_note: string,
+    ) => void;
 }
 
 // Translatable versions of the prompts for Community Moderators.
@@ -329,15 +334,16 @@ Be completely unambiguous with regards to the meaning of the word annul: \
 this means to declare the game invalid, and this is not the same as cancelling a game.",
         "Definitely AI - escalate to moderators for warning or suspension and game annulment.",
     ),
-    check_ai_tools: llm_pgettext(
+    assess_ai_play: llm_pgettext(
         "This phrase to be translated is the label of an option for a moderator of an \
 online Go game server to select: an action to apply to a report about a game of Go. \
 In the phrase you are asked to translate, 'no cheating' is a conclusion meaning the \
 moderator concluded cheating did not occur, rather than an instruction meaning the \
 reader should not cheat. \
 Be completely unambiguous with regards to the meaning of the word annul: \
-this means to declare the game invalid, and this is not the same as cancelling a game.",
-        "Check AI - ask moderators to check with analysis tools for AI use.",
+this means to declare the game invalid, and this is not the same as cancelling a game. \
+'CM' stands for Community Moderator.",
+        "Gameplay assessment needed - send to Dan CMs.",
     ),
     no_ai_use_evident: llm_pgettext(
         "This phrase to be translated is the label of an option for a moderator of an \
@@ -374,6 +380,7 @@ export function ModerationActionSelector({
         users_vote || "",
     );
     const [escalation_note, setEscalationNote] = React.useState("");
+    const [voter_note, setVoterNote] = React.useState("");
     const [dissenter_note, setDissenterNote] = React.useState("");
 
     const updateSelectedAction = (
@@ -392,6 +399,8 @@ export function ModerationActionSelector({
         : ["escalate"];
 
     // If we're in dissent, we'll ask for a "dissent" note
+    // "dissent" is "the number of votes in our option is less than some other option"
+
     const inDissent =
         selectedOption &&
         !!Object.keys(vote_counts).find(
@@ -463,18 +472,33 @@ export function ModerationActionSelector({
                     onChange={(ev) => setEscalationNote(ev.target.value)}
                 />
             )}
-            {inDissent && selectedOption !== "escalate" && (
+            {report.report_type === "assess_ai_play" && (
                 <textarea
-                    id="dissenter-note"
+                    id="assess-ai-play-note"
                     placeholder={llm_pgettext(
-                        "A placeholder prompting community moderators for the reason why they are disagreeing with a vote",
-                        "(Optional) What is it that the other votes do not seem to take into account?",
+                        "A placeholder prompting community moderators for their assessment of the gameplay",
+                        "Gameplay assessment",
                     )}
                     rows={5}
-                    value={dissenter_note}
-                    onChange={(ev) => setDissenterNote(ev.target.value)}
+                    value={voter_note}
+                    onChange={(ev) => setVoterNote(ev.target.value)}
                 />
             )}
+
+            {inDissent &&
+                report.report_type !== "assess_ai_play" &&
+                selectedOption !== "escalate" && (
+                    <textarea
+                        id="dissenter-note"
+                        placeholder={llm_pgettext(
+                            "A placeholder prompting community moderators for the reason why they are disagreeing with a vote",
+                            "(Optional) What is it that the other votes do not seem to take into account?",
+                        )}
+                        rows={5}
+                        value={dissenter_note}
+                        onChange={(ev) => setDissenterNote(ev.target.value)}
+                    />
+                )}
             <span className="action-buttons">
                 {((action_choices && enable) || null) && (
                     <button
@@ -487,7 +511,7 @@ export function ModerationActionSelector({
                         onClick={() => {
                             if (selectedOption) {
                                 setVoted(true);
-                                submit(selectedOption, escalation_note, dissenter_note);
+                                submit(selectedOption, escalation_note, dissenter_note, voter_note);
                             }
                         }}
                     >

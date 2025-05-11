@@ -40,13 +40,15 @@ export function community_mod_has_power(
     const has_handle_score_cheat = (moderator_powers & MODERATOR_POWERS.HANDLE_SCORE_CHEAT) > 0;
     const has_handle_escaping = (moderator_powers & MODERATOR_POWERS.HANDLE_ESCAPING) > 0;
     const has_handle_stalling = (moderator_powers & MODERATOR_POWERS.HANDLE_STALLING) > 0;
-    const has_assess_ai_reports = (moderator_powers & MODERATOR_POWERS.ASSESS_AI_REPORTS) > 0;
+    const has_assess_ai_play = (moderator_powers & MODERATOR_POWERS.ASSESS_AI_PLAY) > 0;
+    const has_ai_detector = (moderator_powers & MODERATOR_POWERS.AI_DETECTOR) > 0;
 
     return (
         (report_type === "score_cheating" && has_handle_score_cheat) ||
         (report_type === "escaping" && has_handle_escaping) ||
         (report_type === "stalling" && has_handle_stalling) ||
-        (report_type === "ai_use" && has_assess_ai_reports)
+        (report_type === "assess_ai_play" && has_assess_ai_play) ||
+        (report_type === "ai_use" && has_ai_detector)
     );
 }
 
@@ -64,10 +66,11 @@ export function community_mod_can_handle(
 
     const they_already_voted = report.voters?.some((vote) => vote.voter_id === user.id);
     const they_can_vote_to_suspend = user.moderator_powers & MODERATOR_POWERS.SUSPEND;
+    const its_an_ai_report =
+        report.report_type === "ai_use" || report.report_type === "assess_ai_play";
     if (
         community_mod_has_power(user.moderator_powers, report.report_type as ReportType) &&
-        (!they_already_voted ||
-            (report.escalated && they_can_vote_to_suspend && !(report.report_type === "ai_use")))
+        (!they_already_voted || (!its_an_ai_report && report.escalated && they_can_vote_to_suspend))
     ) {
         return true;
     }

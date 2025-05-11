@@ -431,7 +431,7 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
                                     "Label for a button to let a community moderator vote on AI reports",
                                     "Assess AI Reports",
                                 )}
-                                ability_mask={MODERATOR_POWERS.ASSESS_AI_REPORTS}
+                                ability_mask={MODERATOR_POWERS.ASSESS_AI_PLAY}
                                 currently_offered={this.state.offered_moderator_powers}
                                 moderator_powers={this.state.moderator_powers}
                                 previously_rejected={this.state.mod_powers_rejected}

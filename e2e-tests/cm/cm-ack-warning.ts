@@ -66,36 +66,28 @@ export const cmAckWarningTest = async ({ browser }: { browser: Browser }, testIn
 
         // Vote to warn the reporter that it was not a good AI report
 
-        const aiAssessors = ["E2E_CM_VWNAI_AI_V1", "E2E_CM_VWNAI_AI_V2", "E2E_CM_VWNAI_AI_V3"];
+        const aiAssessor = "E2E_CM_VWNAI_AI_V1";
 
-        const aiAssessorContexts = [];
-        for (const aiUser of aiAssessors) {
-            const { seededCMPage: aiCMPage, seededCMContext: aiContext } = await setupSeededCM(
-                browser,
-                aiUser,
-            );
+        const { seededCMPage: aiCMPage } = await setupSeededCM(browser, aiAssessor);
 
-            aiAssessorContexts.push({ aiCMPage, aiContext }); // keep them alive for the duration of the test
+        const indicator = await assertIncidentReportIndicatorActive(aiCMPage, 1);
 
-            const indicator = await assertIncidentReportIndicatorActive(aiCMPage, 1);
+        await indicator.click();
 
-            await indicator.click();
+        await expect(aiCMPage.getByRole("heading", { name: "Reports Center" })).toBeVisible();
 
-            await expect(aiCMPage.getByRole("heading", { name: "Reports Center" })).toBeVisible();
+        await expect(
+            aiCMPage.getByText("E2E test reporting AI use: I just have this feeling."),
+        ).toBeVisible();
 
-            await expect(
-                aiCMPage.getByText("E2E test reporting AI use: I just have this feeling."),
-            ).toBeVisible();
+        // Select the not-AI option...
+        await aiCMPage.locator('.action-selector input[type="radio"]').nth(3).click();
 
-            // Select the definite AI option...
-            await aiCMPage.locator('.action-selector input[type="radio"]').nth(3).click();
-
-            const voteButton = await expectOGSClickableByName(aiCMPage, /Vote$/);
-            await voteButton.click();
-        }
+        const voteButton = await expectOGSClickableByName(aiCMPage, /Vote$/);
+        await voteButton.click();
 
         // The report should no longer be active
-        await assertIncidentReportIndicatorInactive(aiAssessorContexts[0].aiCMPage);
+        await assertIncidentReportIndicatorInactive(aiCMPage);
 
         // The reporter should be warned about their crummy report
         await reporterPage.goto("/");

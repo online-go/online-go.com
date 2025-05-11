@@ -37,6 +37,7 @@ export type ReportType =
     | "score_cheating"
     | "harassment"
     | "ai_use"
+    | "assess_ai_play"
     | "sandbagging"
     | "escaping"
     | "appeal"
@@ -51,6 +52,7 @@ export interface ReportDescription {
     game_id_required?: boolean;
     min_description_length?: number;
     moderator_only?: boolean;
+    not_reportable?: boolean;
     check_applicability?: (game_id?: number, reported_user_id?: number) => Promise<string | null>; // string to indicate why its not applicable, null if applicable
 }
 
@@ -187,6 +189,13 @@ export const report_categories: ReportDescription[] = [
         ),
         min_description_length: 20,
         game_id_required: true,
+    },
+    {
+        type: "assess_ai_play",
+        title: pgettext("Assess AI play", "Assess AI play"),
+        description: pgettext("Assess AI play", "Assess AI play"),
+        game_id_required: true,
+        not_reportable: true, // Reports of this type result from the AI detector process, not from a player
     },
     {
         type: "other",
@@ -373,8 +382,8 @@ export function Report(props: ReportProperties): React.ReactElement {
     const show_game_id_required_text = category && category.game_id_required && !game_id;
 
     const available_categories = user.is_moderator
-        ? report_categories
-        : report_categories.filter((x) => !x.moderator_only);
+        ? report_categories.filter((x) => !x.not_reportable)
+        : report_categories.filter((x) => !x.moderator_only && !x.not_reportable);
 
     const more_description_needed =
         category?.min_description_length && note.length < category.min_description_length;

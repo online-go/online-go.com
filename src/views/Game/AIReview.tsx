@@ -138,8 +138,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
         const user = data.get("user");
         const canViewTable =
             user.is_moderator ||
-            ((this.props.reportContext?.moderator_powers ?? 0) &
-                MODERATOR_POWERS.ASSESS_AI_REPORTS) !==
+            ((this.props.reportContext?.moderator_powers ?? 0) & MODERATOR_POWERS.AI_DETECTOR) !==
                 0;
 
         this.setState({
@@ -296,10 +295,15 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
 
     setSelectedAIReview = (ai_review: JGOFAIReview) => {
         close_all_popovers();
+        const user = data.get("user");
+        const canViewTable =
+            user.is_moderator ||
+            ((this.props.reportContext?.moderator_powers ?? 0) & MODERATOR_POWERS.AI_DETECTOR) !==
+                0;
         this.updateAIReviewMetadata(ai_review);
         this.setState({
             selected_ai_review: ai_review,
-            hide_table: false,
+            hide_table: !canViewTable,
         });
         this.props.onAIReviewSelected(ai_review);
         this.syncAIReview();
@@ -1380,6 +1384,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
         const show_become_supporter_text =
             !user.anonymous && !user.supporter && !user.is_moderator && !user.professional;
 
+        console.log("ai review", this.props.reportContext);
         return (
             <div className="AIReview">
                 <UIPush
@@ -1572,8 +1577,8 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                                     {this.renderWorstMoveList(worst_move_list)}
                                     {(user.is_moderator ||
                                         (this.props.reportContext &&
-                                            (data.get("user").moderator_powers &
-                                                MODERATOR_POWERS.ASSESS_AI_REPORTS) !==
+                                            (this.props.reportContext.moderator_powers &
+                                                MODERATOR_POWERS.AI_DETECTOR) !==
                                                 0)) &&
                                         this.ai_review?.engine.includes("katago") && (
                                             <div className="ai-summary-toggler">
@@ -1710,7 +1715,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                 )*/}
                 {(data.get("user").is_moderator ||
                     (this.props.reportContext &&
-                        (data.get("user").moderator_powers & MODERATOR_POWERS.ASSESS_AI_REPORTS) !==
+                        (data.get("user").moderator_powers & MODERATOR_POWERS.AI_DETECTOR) !==
                             0)) &&
                     this.ai_review?.engine.includes("katago") && (
                         <div>
