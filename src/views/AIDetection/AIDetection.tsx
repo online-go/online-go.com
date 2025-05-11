@@ -22,10 +22,12 @@ import * as data from "@/lib/data";
 import { MODERATOR_POWERS } from "@/lib/moderation";
 import { PaginatedTable } from "@/components/PaginatedTable";
 import { ReviewStrengthIcon } from "@/views/Game/AIReview";
+import { PlayerAutocomplete } from "@/components/PlayerAutocomplete";
 //import { alert } from "@/lib/swal_config";
 
 export function AIDetection(): React.ReactElement | null {
     const user = data.get("user");
+    const [player_filter, setPlayerFilter] = React.useState<number>();
 
     if (!user.is_moderator && (user.moderator_powers & MODERATOR_POWERS.AI_DETECTOR) === 0) {
         return null;
@@ -36,11 +38,29 @@ export function AIDetection(): React.ReactElement | null {
     return (
         <div id="AI-Detection">
             <h1>AI Detection</h1>
+            <div className="game-options">
+                <div
+                    className="search"
+                    style={{ display: "flex", alignItems: "center", paddingBottom: "0.5rem" }}
+                >
+                    <i className="fa fa-search"></i>
+                    <PlayerAutocomplete
+                        onComplete={(player) => {
+                            setPlayerFilter(player?.id);
+                        }}
+                    />
+                </div>
+            </div>
             <PaginatedTable
                 name="ai-detection"
                 className="ai-detection"
                 source="games/ai_detection"
                 pageSizeOptions={[10, 25, 50, 100]}
+                filter={{
+                    ...(player_filter !== undefined && {
+                        player: player_filter,
+                    }),
+                }}
                 columns={[
                     {
                         header: _("Game"),
