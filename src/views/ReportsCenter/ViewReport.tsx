@@ -456,7 +456,11 @@ export function ViewReport({
                                     }}
                                     enable={
                                         report.state === "pending" &&
-                                        (!report.escalated ||
+                                        ((!report.escalated &&
+                                            (report.report_type !== "ai_use" ||
+                                                (user.moderator_powers &
+                                                    MODERATOR_POWERS.AI_DETECTOR) !==
+                                                    0)) ||
                                             (!!(user.moderator_powers & MODERATOR_POWERS.SUSPEND) &&
                                                 report.report_type !== "ai_use"))
                                     }
@@ -468,7 +472,7 @@ export function ViewReport({
                                         <h4>
                                             {llm_pgettext(
                                                 "Heading for a paragraph",
-                                                "Dissenting voter notes:",
+                                                "Dissenting voter notes",
                                             )}
                                         </h4>
                                         <div className="Card">{report.dissenter_note}</div>
@@ -480,18 +484,23 @@ export function ViewReport({
                             <div className="notes">
                                 <h4>
                                     {llm_pgettext(
-                                        "Heading for a paragraph",
-                                        "Dissenting voter notes:",
+                                        "Heading the section containing notes from dissenting voters",
+                                        "Dissenting voter notes",
                                     )}
                                 </h4>
                                 <div className="Card">{report.dissenter_note}</div>
                             </div>
                         )}
-                        {report.report_type === "assess_ai_play" &&
-                            report.voter_notes.length > 0 && (
+                        {report.voter_notes.length > 0 &&
+                            (user.is_moderator || user.moderator_powers) && (
                                 <div className="notes">
                                     <h4>
-                                        {llm_pgettext("Heading for a paragraph", "Voter notes:")}
+                                        {llm_pgettext(
+                                            "Heading for the section containing notes from Dan CMs",
+                                            // Note that technically anything could be in voter notes,
+                                            // but at the moment we're only using it for Dan CM notes
+                                            "Dan CM assessment",
+                                        )}
                                     </h4>
                                     <div className="Card">
                                         {report.voter_notes.map((voter_note, index) => (

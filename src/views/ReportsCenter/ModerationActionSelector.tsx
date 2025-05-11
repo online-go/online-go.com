@@ -345,6 +345,26 @@ this means to declare the game invalid, and this is not the same as cancelling a
 'CM' stands for Community Moderator.",
         "Gameplay assessment needed - send to Dan CMs.",
     ),
+    ai_like: llm_pgettext(
+        "This phrase to be translated is the label of an option for a moderator of an \
+online Go game server to select: an action to apply to a report about a game of Go. \
+In the phrase you are asked to translate, 'no cheating' is a conclusion meaning the \
+moderator concluded cheating did not occur, rather than an instruction meaning the \
+reader should not cheat. \
+Be completely unambiguous with regards to the meaning of the word annul: \
+this means to declare the game invalid, and this is not the same as cancelling a game.",
+        "AI like - this game has moves that are most likely coming from an AI.",
+    ),
+    human_like: llm_pgettext(
+        "This phrase to be translated is the label of an option for a moderator of an \
+online Go game server to select: an action to apply to a report about a game of Go. \
+In the phrase you are asked to translate, 'no cheating' is a conclusion meaning the \
+moderator concluded cheating did not occur, rather than an instruction meaning the \
+reader should not cheat. \
+Be completely unambiguous with regards to the meaning of the word annul: \
+this means to declare the game invalid, and this is not the same as cancelling a game.",
+        "Human like - the moves in this game could all be played by a human.",
+    ),
     no_ai_use_evident: llm_pgettext(
         "This phrase to be translated is the label of an option for a moderator of an \
 online Go game server to select: an action to apply to a report about a game of Go. \
@@ -400,9 +420,11 @@ export function ModerationActionSelector({
 
     // If we're in dissent, we'll ask for a "dissent" note
     // "dissent" is "the number of votes in our option is less than some other option"
+    // Votes on "AI Use" are never in dissent because they do not require consensus
 
     const inDissent =
         selectedOption &&
+        report.report_type !== "ai_use" &&
         !!Object.keys(vote_counts).find(
             (k: string) =>
                 k !== selectedOption && (vote_counts[selectedOption] ?? 0) < vote_counts[k],
@@ -429,6 +451,11 @@ export function ModerationActionSelector({
             {!enable && report.state === "resolved" && (
                 <div className="disabled-actions-note">
                     {_("This report was handled after you decided to look at it!")}
+                </div>
+            )}
+            {!enable && report.state === "pending" && (
+                <div className="disabled-actions-note">
+                    {_("No actions available to you for this report.")}
                 </div>
             )}
             {enable &&

@@ -84,6 +84,8 @@ declare namespace rest_api {
             | "suspend_user_and_annul"
             | "escalate"
             | "definitely_ai"
+            | "ai_like"
+            | "human_like"
             | "assess_ai_play"
             | "no_ai_use_evident"
             | "no_ai_use_bad_report";
