@@ -29,11 +29,11 @@ export class SelfCapture extends LearningHubSection {
         return "self-capture";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning self capture", "Self Capture");
+        return pgettext("Tutorial section name on learning self-capture", "Self-capture");
     }
     static subtext(): string {
         return pgettext(
-            "Tutorial section subtext on learning on self capture",
+            "Tutorial section subtext on learning on self-capture",
             "Do not capture your own stones",
         );
     }
@@ -45,7 +45,7 @@ class Page01 extends LearningPage {
 
     text() {
         return _(
-            "White to play. Both players are in atari. Placing a stone where you have no liberties is not allowed (self capture), unless you can capture stones. Capture one or more black stones.",
+            "White to play. Playing at A or B is called 'self-capture' (no liberties for White) and is not allowed. But playing at C is allowed, because it captures the marked stones, creating liberties for White. Capture the marked black stones.",
         );
     }
     config(): GobanConfig {
@@ -53,11 +53,12 @@ class Page01 extends LearningPage {
             mode: "puzzle",
             initial_player: "white",
             initial_state: {
-                black: "ceeedfffegeh",
+                black: "ceeedfffegehhagbibhc",
                 white: "eddefegffg",
             },
             width: 9,
             height: 9,
+            marks: { A: "ia", B: "hb", C: "ef", triangle: "eeff" },
             move_tree: this.makePuzzleMoveTree(["ef"], [], 9, 9),
         };
     }
@@ -70,7 +71,7 @@ class Page02 extends LearningPage {
 
     text() {
         return _(
-            "White to play. Both players are in atari. Placing a stone where you have no liberties is not allowed (self capture), unless you can capture stones. Capture one or more black stones.",
+            "White to play. Both players are in atari. Placing a stone where you have no liberties is not allowed, unless you can capture stones. Capture one or more black stones.",
         );
     }
     config(): GobanConfig {
@@ -118,7 +119,7 @@ class Page03 extends LearningPage {
 
     text() {
         return _(
-            "White to play. Both players are in atari. Placing a stone where you have no liberties is not allowed (self capture), unless you can capture stones. Capture one or more black stones.",
+            "White to play. Both players are in atari. Placing a stone where you have no liberties is not allowed, unless you can capture stones. Capture one or more black stones.",
         );
     }
     config(): GobanConfig {

@@ -123,7 +123,7 @@ class Page05 extends LearningPage {
 
     text() {
         return _(
-            "White just captured a black stone with the marked stone. To move past the ko rule, find a place to play for Black where White must capture. This is called a 'ko threat'. Next, Black can capture White's group at B5.",
+            "White just captured a black stone by playing 1. To move past the ko rule, find a place to play for Black where White must capture. This is called a 'ko threat'. Next, Black can capture White's marked group.",
         );
     }
     config(): GobanConfig {
@@ -141,7 +141,7 @@ class Page05 extends LearningPage {
                 13,
                 13,
             ),
-            marks: { triangle: "a3" },
+            marks: { triangle: "a5b4b5b6", 1: "a3" },
         };
     }
 }

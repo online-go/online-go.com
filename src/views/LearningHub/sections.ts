@@ -41,11 +41,22 @@ import { AtariCorrectSide } from "./Sections/BasicSkills/AtariCorrectSide";
 import { MakeKo } from "./Sections/BasicSkills/MakeKo";
 import { PlayDoubleAtari } from "./Sections/BasicSkills/PlayDoubleAtari";
 import { PreventDoubleAtari } from "./Sections/BasicSkills/PreventDoubleAtari";
-
-// import { SnapBack } from "./SnapBack";
-// import { Seki } from "./Seki";
-//import {Territory} from './Territory';
-// import { Ladders } from "./Ladders";
+import { ConnectedShape } from "./Sections/BasicSkills/ConnectedShape";
+import { BasicSkillsCut } from "./Sections/BasicSkills/BasicSkillsCut";
+import { HangingConnection } from "./Sections/BasicSkills/HangingConnection";
+import { Ladder } from "./Sections/BasicSkills/Ladder";
+import { ShortageLiberties } from "./Sections/BasicSkills/ShortageLiberties";
+import { FalseEye } from "./Sections/BasicSkills/FalseEye";
+import { LargeEye } from "./Sections/BasicSkills/LargeEye";
+import { Snapback } from "./Sections/BasicSkills/Snapback";
+import { Net } from "./Sections/BasicSkills/Net";
+import { CloseTerritory } from "./Sections/BasicSkills/CloseTerritory";
+import { CapturingRace } from "./Sections/BasicSkills/CapturingRace";
+import { CorrectSide } from "./Sections/BasicSkills/CorrectSide";
+import { Capture } from "./Sections/BasicSkills/Capture";
+import { Enclose } from "./Sections/BasicSkills/Enclose";
+import { FirstLine } from "./Sections/BasicSkills/FirstLine";
+import { Liberties } from "./Sections/BasicSkills/Liberties";
 
 export class FalseEyes extends LearningHubSection {
     static section(): string {
@@ -195,6 +206,22 @@ export const sections: [string, any[]][] = [
             MakeKo,
             PlayDoubleAtari,
             PreventDoubleAtari,
+            ConnectedShape,
+            BasicSkillsCut,
+            HangingConnection,
+            Ladder,
+            ShortageLiberties,
+            FalseEye,
+            LargeEye,
+            Snapback,
+            Net,
+            CloseTerritory,
+            CapturingRace,
+            CorrectSide,
+            Capture,
+            Enclose,
+            FirstLine,
+            Liberties,
         ],
     ],
 

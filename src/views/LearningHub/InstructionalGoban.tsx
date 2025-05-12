@@ -68,10 +68,10 @@ export class InstructionalGoban extends React.Component<InstructionalGobanProps>
                 initial_player: "black",
                 player_id: 0,
                 interactive: true,
-                draw_top_labels: this.props.config.draw_top_labels ?? true,
-                draw_bottom_labels: this.props.config.draw_bottom_labels ?? true,
-                draw_left_labels: this.props.config.draw_left_labels ?? true,
-                draw_right_labels: this.props.config.draw_right_labels ?? true,
+                draw_top_labels: this.props.config.draw_top_labels ?? false,
+                draw_bottom_labels: this.props.config.draw_bottom_labels ?? false,
+                draw_left_labels: this.props.config.draw_left_labels ?? false,
+                draw_right_labels: this.props.config.draw_right_labels ?? false,
                 bounds: this.props.config.bounds,
                 display_width:
                     this.props.displayWidth ||
