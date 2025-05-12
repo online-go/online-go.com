@@ -21,7 +21,7 @@ import Select from "react-select";
 
 import * as data from "@/lib/data";
 
-import { _ } from "@/lib/translate";
+import { _, llm_pgettext } from "@/lib/translate";
 import { put } from "@/lib/requests";
 import { errorAlerter, ignore, dev_site } from "@/lib/misc";
 
@@ -35,6 +35,7 @@ import { usePreference } from "@/lib/preferences";
 import { Toggle } from "@/components/Toggle";
 
 import { SettingGroupPageProps, PreferenceLine, PreferenceDropdown } from "@/lib/SettingsCommon";
+import { useData } from "@/lib/hooks";
 
 export function GeneralPreferences(props: SettingGroupPageProps): React.ReactElement {
     const [profanity_filter, _setProfanityFilter]: [Array<string>, (x: Array<string>) => void] =
@@ -73,6 +74,7 @@ export function GeneralPreferences(props: SettingGroupPageProps): React.ReactEle
     const [show_slow_internet_warning, setShowSlowInternetWarning] = usePreference(
         "show-slow-internet-warning",
     );
+    const [current_websocket_host, _setWebsocketHost] = useData("websocket_host");
 
     const user = data.get("user");
     const desktop_notifications_enableable: boolean = typeof Notification !== "undefined";
@@ -196,6 +198,20 @@ export function GeneralPreferences(props: SettingGroupPageProps): React.ReactEle
         preferences.set("language", language_code);
         setCurrentLanguage(language_code);
         window.location.reload();
+    }
+
+    const websocket_host_options = [
+        { value: undefined, label: "Cloudflare" },
+        { value: "wss://wsp.online-go.com", label: "Google" },
+        { value: "wss://wss.online-go.com", label: "Public Internet" },
+    ];
+
+    function setWebsocketHost(websocket_host: string) {
+        data.set("websocket_host", websocket_host);
+        _setWebsocketHost(websocket_host);
+        setTimeout(() => {
+            window.location.reload();
+        }, 100);
     }
 
     // Render...
@@ -332,6 +348,21 @@ export function GeneralPreferences(props: SettingGroupPageProps): React.ReactEle
                     onChange={setShowSlowInternetWarning}
                 />
             </PreferenceLine>
+
+            {window.location.hostname === "online-go.com" && (
+                <PreferenceLine
+                    title={llm_pgettext(
+                        "Which network path to use for websocket connections",
+                        "WebSocket network to use",
+                    )}
+                >
+                    <PreferenceDropdown
+                        value={current_websocket_host}
+                        options={websocket_host_options}
+                        onChange={setWebsocketHost}
+                    />
+                </PreferenceLine>
+            )}
         </div>
     );
 }

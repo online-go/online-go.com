@@ -17,6 +17,7 @@
 
 import { Plugin, defineConfig, ResolvedConfig, ViteDevServer, ProxyOptions } from "vite";
 import react from "@vitejs/plugin-react";
+//import circularDependency from "vite-plugin-circular-dependency";
 import fixReactVirtualized from "esbuild-plugin-react-virtualized";
 import path from "path";
 import { promises as fs } from "fs";
@@ -170,6 +171,7 @@ export default defineConfig({
     plugins: [
         ogs_vite_middleware(),
         react(),
+        //circularDependency(),
         {
             name: "welcome-message",
             configureServer(server) {
