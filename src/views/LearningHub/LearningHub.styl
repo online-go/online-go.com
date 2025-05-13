@@ -89,7 +89,7 @@
                 display: flex;
                 align-items: center;
                 text-decoration: none;
-                width: 23rem;
+                width: 25rem;  /* WB, changed from 23rem to 25rem */
                 height: 5rem;
                 color: #f9f9f9;
                 border-radius: 0.3rem;
@@ -258,6 +258,7 @@
     .pages {
         display: flex;
         flex-direction: row;
+        flex-wrap: wrap;
 
         .page {
             flex: 1;
@@ -268,6 +269,8 @@
             themed(border-color, shade4);
             themed(color, shade1);
             cursor: pointer;
+            min-width: 1.2rem;
+
 
             &.active {
                 themed(background-color, primary);
