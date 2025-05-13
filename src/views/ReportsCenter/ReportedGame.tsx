@@ -25,7 +25,7 @@ import { MiniGoban } from "@/components/MiniGoban";
 import { alert } from "@/lib/swal_config";
 import { post, get } from "@/lib/requests";
 import { errorAlerter, showSecondsResolution } from "@/lib/misc";
-import { doAnnul } from "@/lib/moderation";
+import { doAnnul, MODERATOR_POWERS } from "@/lib/moderation";
 
 import {
     AIReview,
@@ -72,6 +72,8 @@ export function ReportedGame({
     const [timedOutPlayer, setTimedOutPlayer] = React.useState<number | null>(null);
     const [scoringAbandoned, setScoringAbandoned] = React.useState<boolean>(false);
 
+    const user = useUser();
+
     React.useEffect(() => {
         if (goban) {
             goban.on("update", refresh);
@@ -117,6 +119,12 @@ export function ReportedGame({
 
     const winner =
         goban?.engine?.winner === goban?.engine?.config.black_player_id ? "Black" : "White";
+
+    // Get rid of this when bot_detection_results are attached to the ai_review
+    const show_ailr =
+        user.is_moderator ||
+        user.moderator_powers & MODERATOR_POWERS.AI_DETECTOR ||
+        user.moderator_powers & MODERATOR_POWERS.ASSESS_AI_REPORTS;
 
     return (
         <div className="reported-game">
@@ -187,12 +195,38 @@ export function ReportedGame({
                                         (goban.engine.width === 13 && goban.engine.height === 13) ||
                                         (goban.engine.width === 9 && goban.engine.height === 9))) ||
                                     null) && (
-                                    <AIReview
-                                        onAIReviewSelected={(r) => setAiReviewUuid(r?.uuid)}
-                                        game_id={game_id}
-                                        move={cur_move}
-                                        hidden={false}
-                                    />
+                                    <>
+                                        {/* This totally should be part of AIReview, if only bot_detection_results
+                                           were attached to the ai_review and not the game! */}
+                                        {!!show_ailr && (
+                                            <div className="ai-like-rate">
+                                                <h4>Blue/green moves:</h4>
+                                                <div className="player-rates">
+                                                    <div>
+                                                        Black:{" "}
+                                                        {game?.bot_detection_results?.[
+                                                            game.black
+                                                        ]?.AILR?.toFixed(0)}
+                                                        %
+                                                    </div>
+                                                    <div>
+                                                        White:{" "}
+                                                        {game?.bot_detection_results?.[
+                                                            game.white
+                                                        ]?.AILR?.toFixed(0)}
+                                                        %
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        <AIReview
+                                            onAIReviewSelected={(r) => setAiReviewUuid(r?.uuid)}
+                                            game_id={game_id}
+                                            move={cur_move}
+                                            hidden={false}
+                                        />
+                                    </>
                                 )}
                         </div>
 
