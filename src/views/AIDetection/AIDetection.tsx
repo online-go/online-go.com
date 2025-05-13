@@ -33,8 +33,6 @@ export function AIDetection(): React.ReactElement | null {
         return null;
     }
 
-    const hide_bad_data = true;
-
     return (
         <div id="AI-Detection">
             <h1>AI Detection</h1>
@@ -153,34 +151,8 @@ export function AIDetection(): React.ReactElement | null {
                             ) : null,
                     },
                     {
-                        header: _("Composite"),
-                        render: (row) => (
-                            <span style={{ display: "inline-flex", alignItems: "center" }}>
-                                {!hide_bad_data &&
-                                    row.bot_detection_results?.ai_suspected?.includes(
-                                        row.players.black.id,
-                                    ) && (
-                                        <i
-                                            className="fa fa-flag"
-                                            style={{ marginRight: "0.5em", color: "red" }}
-                                        />
-                                    )}
-                                {!hide_bad_data &&
-                                    row.bot_detection_results?.[row.players.black.id]?.composite !=
-                                        null && (
-                                        <span title="AI Detection composite score">
-                                            {row.bot_detection_results[
-                                                row.players.black.id
-                                            ].composite.toFixed(2)}
-                                        </span>
-                                    )}
-                            </span>
-                        ),
-                    },
-                    {
                         header: _("AILR"),
                         render: (row) =>
-                            !hide_bad_data &&
                             row.bot_detection_results?.[row.players.black.id]?.AILR != null ? (
                                 <span title="AI-like moves">
                                     {row.bot_detection_results[row.players.black.id].AILR.toFixed(
@@ -190,6 +162,33 @@ export function AIDetection(): React.ReactElement | null {
                                 </span>
                             ) : null,
                     },
+                    {
+                        header: _("Composite"),
+                        render: (row) => (
+                            <span
+                                style={{ display: "inline-flex", alignItems: "center" }}
+                                title="AI Detection composite score"
+                            >
+                                {row.bot_detection_results?.ai_suspected?.includes(
+                                    row.players.black.id,
+                                ) && (
+                                    <i
+                                        className="fa fa-flag"
+                                        style={{ marginRight: "0.5em", color: "red" }}
+                                    />
+                                )}
+                                {row.bot_detection_results?.[row.players.black.id]?.composite !=
+                                    null && (
+                                    <>
+                                        {row.bot_detection_results[
+                                            row.players.black.id
+                                        ].composite.toFixed(2)}
+                                    </>
+                                )}
+                            </span>
+                        ),
+                    },
+
                     {
                         header: _("White"),
                         render: (row) => <Player user={row.players.white} />,
@@ -241,34 +240,8 @@ export function AIDetection(): React.ReactElement | null {
                             ) : null,
                     },
                     {
-                        header: _("Composite"),
-                        render: (row) => (
-                            <span style={{ display: "inline-flex", alignItems: "center" }}>
-                                {!hide_bad_data &&
-                                    row.bot_detection_results?.ai_suspected?.includes(
-                                        row.players.white.id,
-                                    ) && (
-                                        <i
-                                            className="fa fa-flag"
-                                            style={{ marginRight: "0.5em", color: "red" }}
-                                        />
-                                    )}
-                                {!hide_bad_data &&
-                                    row.bot_detection_results?.[row.players.white.id]?.composite !=
-                                        null && (
-                                        <span title="AI Detection composite score">
-                                            {row.bot_detection_results[
-                                                row.players.white.id
-                                            ].composite.toFixed(2)}
-                                        </span>
-                                    )}
-                            </span>
-                        ),
-                    },
-                    {
                         header: _("AILR"),
                         render: (row) =>
-                            !hide_bad_data &&
                             row.bot_detection_results?.[row.players.white.id]?.AILR != null ? (
                                 <span title="AI-like moves">
                                     {row.bot_detection_results[row.players.white.id].AILR.toFixed(
@@ -277,6 +250,32 @@ export function AIDetection(): React.ReactElement | null {
                                     %
                                 </span>
                             ) : null,
+                    },
+                    {
+                        header: _("Composite"),
+                        render: (row) => (
+                            <span
+                                style={{ display: "inline-flex", alignItems: "center" }}
+                                title="AI Detection composite score"
+                            >
+                                {row.bot_detection_results?.ai_suspected?.includes(
+                                    row.players.white.id,
+                                ) && (
+                                    <i
+                                        className="fa fa-flag"
+                                        style={{ marginRight: "0.5em", color: "red" }}
+                                    />
+                                )}
+                                {row.bot_detection_results?.[row.players.white.id]?.composite !=
+                                    null && (
+                                    <>
+                                        {row.bot_detection_results[
+                                            row.players.white.id
+                                        ].composite.toFixed(2)}
+                                    </>
+                                )}
+                            </span>
+                        ),
                     },
                 ]}
             />
