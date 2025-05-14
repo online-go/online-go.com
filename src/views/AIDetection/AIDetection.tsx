@@ -24,12 +24,23 @@ import { PaginatedTable } from "@/components/PaginatedTable";
 import { ReviewStrengthIcon } from "@/views/Game/AIReview";
 import { PlayerAutocomplete } from "@/components/PlayerAutocomplete";
 import { useSearchParams } from "react-router-dom";
+import { getGameResultRichText } from "../User/GameHistoryTable";
 //import { alert } from "@/lib/swal_config";
+
+const MIN_ANALYZER_VERSION = "2025-05-13-04";
+const BROKEN_DATA = "😿";
+
+type GroomedGameAIDetection = rest_api.GameAIDetection & {
+    first_column_player: number;
+    second_column_player: number;
+    is_old_version: boolean;
+    outcome: string;
+};
 
 export function AIDetection(): React.ReactElement | null {
     const user = data.get("user");
     const [player_filter, setPlayerFilter] = React.useState<number>();
-    // This lets us normally hide dubious analysis columns, not still be able
+    // This lets us normally hide dubious analysis columns, but still be able
     // to see them if we need to while debugging them.
     const [searchParams] = useSearchParams();
     const show_all = searchParams.get("show_all") === "true";
@@ -37,10 +48,6 @@ export function AIDetection(): React.ReactElement | null {
     if (!user.is_moderator && (user.moderator_powers & MODERATOR_POWERS.AI_DETECTOR) === 0) {
         return null;
     }
-
-    const current_analyzer = (analyzer_version: string | undefined) => {
-        return analyzer_version && analyzer_version > "2025-05-13-00";
-    };
 
     return (
         <div id="AI-Detection">
@@ -70,20 +77,21 @@ export function AIDetection(): React.ReactElement | null {
                 }}
                 // If we're filtering by a player, put that person always in the first column,
                 // so that we can scan down their data easily.
-                groom={(data) => {
-                    return data.map((row) => {
-                        return {
-                            ...row,
-                            first_column_player: player_filter
-                                ? player_filter
-                                : row.players.black.id,
-                            second_column_player: player_filter
-                                ? player_filter === row.players.black.id
-                                    ? row.players.white.id
-                                    : row.players.black.id
-                                : row.players.white.id,
-                        };
-                    });
+                groom={(data: rest_api.GameAIDetection[]): GroomedGameAIDetection[] => {
+                    return data.map((row) => ({
+                        ...row,
+                        first_column_player: player_filter ? player_filter : row.players.black.id,
+                        second_column_player: player_filter
+                            ? player_filter === row.players.black.id
+                                ? row.players.white.id
+                                : row.players.black.id
+                            : row.players.white.id,
+                        is_old_version:
+                            !row.bot_detection_results ||
+                            !row.bot_detection_results.analyzer_version ||
+                            row.bot_detection_results.analyzer_version < MIN_ANALYZER_VERSION,
+                        outcome: row.outcome,
+                    }));
                 }}
                 columns={[
                     {
@@ -118,21 +126,49 @@ export function AIDetection(): React.ReactElement | null {
                     {
                         header: "moves",
                         headerProps: {
-                            style: { textAlign: "center" },
+                            style: {
+                                textAlign: "center",
+                                width: "4rem",
+                                maxWidth: "4rem",
+                            },
                         },
-                        render: (row) => row.bot_detection_results?.move_count,
+                        render: (row) => <span style={{ margin: 0 }}>{row.final_move_count}</span>,
                         cellProps: {
-                            style: { textAlign: "center" },
+                            style: {
+                                textAlign: "center",
+                                width: "4rem",
+                                maxWidth: "4rem",
+                                margin: 0,
+                            },
                         },
                     },
                     {
                         header: _(""),
-                        render: (row) => <Player user={row.first_column_player} />,
+                        render: (row) => {
+                            const isBlack = row.players.black.id === row.first_column_player;
+                            const won = isBlack ? !row.black_lost : !row.white_lost;
+                            return (
+                                <span
+                                    style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
+                                >
+                                    {won && (
+                                        <i className="fa fa-trophy" style={{ color: "#FFD700" }} />
+                                    )}
+                                    <Player user={row.first_column_player} />
+                                </span>
+                            );
+                        },
+                        cellProps: {
+                            style: {
+                                "max-width": "7rem",
+                            },
+                        },
                     },
+
                     {
                         header: _("APL"),
-                        render: (row) =>
-                            !!show_all &&
+                        render: (row: GroomedGameAIDetection) =>
+                            !row.is_old_version &&
                             row.bot_detection_results?.[row.first_column_player]
                                 ?.average_point_loss != null ? (
                                 <span title="Average point loss per move">
@@ -142,9 +178,10 @@ export function AIDetection(): React.ReactElement | null {
                                 </span>
                             ) : null,
                     },
+
                     {
                         header: _("Blur"),
-                        render: (row) =>
+                        render: (row: GroomedGameAIDetection) =>
                             row.bot_detection_results?.[row.first_column_player]?.blur_rate !=
                             null ? (
                                 <span title="Window blur rate - percentage of time spent with window not in focus">
@@ -158,7 +195,7 @@ export function AIDetection(): React.ReactElement | null {
                     },
                     {
                         header: _("SGF"),
-                        render: (row) => (
+                        render: (row: GroomedGameAIDetection) => (
                             <span title="SGF downloads">
                                 {row.bot_detection_results?.[row.first_column_player]
                                     ?.has_sgf_downloads ? (
@@ -167,68 +204,100 @@ export function AIDetection(): React.ReactElement | null {
                             </span>
                         ),
                     },
-                    {
-                        header: _("Timing"),
-                        render: (row) =>
-                            !!show_all &&
-                            row.bot_detection_results?.[row.first_column_player]
-                                ?.timing_consistency != null ? (
-                                <span title="Timing consistency score">
-                                    {row.bot_detection_results[
-                                        row.first_column_player
-                                    ].timing_consistency.toFixed(0)}
-                                </span>
-                            ) : null,
-                    },
+                    ...(show_all
+                        ? [
+                              {
+                                  header: _("Timing"),
+                                  render: (row: GroomedGameAIDetection) =>
+                                      row.bot_detection_results?.[row.first_column_player]
+                                          ?.timing_consistency != null ? (
+                                          <span title="Timing consistency score">
+                                              {row.bot_detection_results[
+                                                  row.first_column_player
+                                              ].timing_consistency.toFixed(0)}
+                                          </span>
+                                      ) : null,
+                              },
+                          ]
+                        : []),
                     {
                         header: _("AILR"),
-                        render: (row) =>
-                            current_analyzer(row.bot_detection_results?.analyzer_version) &&
-                            row.bot_detection_results?.[row.first_column_player]?.AILR != null ? (
+                        render: (row: GroomedGameAIDetection) =>
+                            row.is_old_version ? null : row.bot_detection_results?.[
+                                  row.first_column_player
+                              ]?.AILR != null ? (
                                 <span title="AI-like moves">
                                     {row.bot_detection_results[
                                         row.first_column_player
                                     ].AILR.toFixed(0)}
                                     %
                                 </span>
-                            ) : null,
+                            ) : (
+                                BROKEN_DATA
+                            ),
                     },
-                    {
-                        header: _("Composite"),
-                        render: (row) =>
-                            current_analyzer(row.bot_detection_results?.analyzer_version) ? (
-                                <span
-                                    style={{ display: "inline-flex", alignItems: "center" }}
-                                    title="AI Detection composite score"
-                                >
-                                    {row.bot_detection_results?.ai_suspected?.includes(
-                                        row.first_column_player,
-                                    ) && (
-                                        <i
-                                            className="fa fa-flag"
-                                            style={{ marginRight: "0.5em", color: "red" }}
-                                        />
-                                    )}
-                                    {row.bot_detection_results?.[row.first_column_player]
-                                        ?.composite != null && (
-                                        <>
-                                            {row.bot_detection_results[
-                                                row.first_column_player
-                                            ].composite.toFixed(2)}
-                                        </>
-                                    )}
-                                </span>
-                            ) : null,
-                    },
+                    ...(show_all
+                        ? [
+                              {
+                                  header: _("Composite"),
+                                  render: (row: GroomedGameAIDetection) =>
+                                      !row.is_old_version ? (
+                                          <span
+                                              style={{
+                                                  display: "inline-flex",
+                                                  alignItems: "center",
+                                              }}
+                                              title="AI Detection composite score"
+                                          >
+                                              {row.bot_detection_results?.ai_suspected?.includes(
+                                                  row.first_column_player,
+                                              ) && (
+                                                  <i
+                                                      className="fa fa-flag"
+                                                      style={{ marginRight: "0.5em", color: "red" }}
+                                                  />
+                                              )}
+                                              {row.bot_detection_results?.[row.first_column_player]
+                                                  ?.composite != null && (
+                                                  <>
+                                                      {row.bot_detection_results[
+                                                          row.first_column_player
+                                                      ].composite.toFixed(2)}
+                                                  </>
+                                              )}
+                                          </span>
+                                      ) : null,
+                              },
+                          ]
+                        : []),
 
                     {
                         header: _(""),
-                        render: (row) => <Player user={row.second_column_player} />,
+                        render: (row: GroomedGameAIDetection) => {
+                            const isBlack = row.players.black.id === row.second_column_player;
+                            const won = isBlack ? !row.black_lost : !row.white_lost;
+                            return (
+                                <span
+                                    style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
+                                >
+                                    {won && (
+                                        <i className="fa fa-trophy" style={{ color: "#FFD700" }} />
+                                    )}
+                                    <Player user={row.second_column_player} />
+                                </span>
+                            );
+                        },
+                        cellProps: {
+                            style: {
+                                "max-width": "7rem",
+                            },
+                        },
                     },
+
                     {
                         header: _("APL"),
-                        render: (row) =>
-                            !!show_all &&
+                        render: (row: GroomedGameAIDetection) =>
+                            !row.is_old_version &&
                             row.bot_detection_results?.[row.second_column_player]
                                 ?.average_point_loss != null ? (
                                 <span title="Average point loss per move">
@@ -237,9 +306,10 @@ export function AIDetection(): React.ReactElement | null {
                                 </span>
                             ) : null,
                     },
+
                     {
                         header: _("Blur"),
-                        render: (row) =>
+                        render: (row: GroomedGameAIDetection) =>
                             row.bot_detection_results?.[row.second_column_player]?.blur_rate !=
                             null ? (
                                 <span title="Window blur rate - percentage of time spent with window not in focus">
@@ -253,7 +323,7 @@ export function AIDetection(): React.ReactElement | null {
                     },
                     {
                         header: _("SGF"),
-                        render: (row) => (
+                        render: (row: GroomedGameAIDetection) => (
                             <span title="SGF downloads">
                                 {row.bot_detection_results?.[row.second_column_player]
                                     ?.has_sgf_downloads ? (
@@ -262,58 +332,93 @@ export function AIDetection(): React.ReactElement | null {
                             </span>
                         ),
                     },
-                    {
-                        header: _("Timing"),
-                        render: (row) =>
-                            !!show_all &&
-                            row.bot_detection_results?.[row.second_column_player]
-                                ?.timing_consistency != null ? (
-                                <span title="Timing consistency score">
-                                    {row.bot_detection_results[
-                                        row.second_column_player
-                                    ].timing_consistency.toFixed(0)}
-                                </span>
-                            ) : null,
-                    },
+                    ...(show_all
+                        ? [
+                              {
+                                  header: _("Timing"),
+                                  render: (row: GroomedGameAIDetection) =>
+                                      row.bot_detection_results?.[row.second_column_player]
+                                          ?.timing_consistency != null ? (
+                                          <span title="Timing consistency score">
+                                              {row.bot_detection_results[
+                                                  row.second_column_player
+                                              ].timing_consistency.toFixed(0)}
+                                          </span>
+                                      ) : null,
+                              },
+                          ]
+                        : []),
                     {
                         header: _("AILR"),
-                        render: (row) =>
-                            current_analyzer(row.bot_detection_results?.analyzer_version) &&
-                            row.bot_detection_results?.[row.second_column_player]?.AILR != null ? (
+                        render: (row: GroomedGameAIDetection) =>
+                            row.is_old_version ? null : row.bot_detection_results?.[
+                                  row.second_column_player
+                              ]?.AILR != null ? (
                                 <span title="AI-like moves">
                                     {row.bot_detection_results[
                                         row.second_column_player
                                     ].AILR.toFixed(0)}
                                     %
                                 </span>
-                            ) : null,
+                            ) : (
+                                BROKEN_DATA
+                            ),
                     },
+                    ...(show_all
+                        ? [
+                              {
+                                  header: _("Composite"),
+                                  render: (row: GroomedGameAIDetection) =>
+                                      !row.is_old_version ? (
+                                          <span
+                                              style={{
+                                                  display: "inline-flex",
+                                                  alignItems: "center",
+                                              }}
+                                              title="AI Detection composite score"
+                                          >
+                                              {row.bot_detection_results?.ai_suspected?.includes(
+                                                  row.second_column_player,
+                                              ) && (
+                                                  <i
+                                                      className="fa fa-flag"
+                                                      style={{ marginRight: "0.5em", color: "red" }}
+                                                  />
+                                              )}
+                                              {row.bot_detection_results?.[row.second_column_player]
+                                                  ?.composite != null && (
+                                                  <>
+                                                      {row.bot_detection_results[
+                                                          row.second_column_player
+                                                      ].composite.toFixed(2)}
+                                                  </>
+                                              )}
+                                          </span>
+                                      ) : null,
+                              },
+                          ]
+                        : []),
                     {
-                        header: _("Composite"),
-                        render: (row) =>
-                            current_analyzer(row.bot_detection_results?.analyzer_version) ? (
-                                <span
-                                    style={{ display: "inline-flex", alignItems: "center" }}
-                                    title="AI Detection composite score"
-                                >
-                                    {row.bot_detection_results?.ai_suspected?.includes(
-                                        row.second_column_player,
-                                    ) && (
-                                        <i
-                                            className="fa fa-flag"
-                                            style={{ marginRight: "0.5em", color: "red" }}
-                                        />
-                                    )}
-                                    {row.bot_detection_results?.[row.second_column_player]
-                                        ?.composite != null && (
-                                        <>
-                                            {row.bot_detection_results[
-                                                row.second_column_player
-                                            ].composite.toFixed(2)}
-                                        </>
-                                    )}
-                                </span>
-                            ) : null,
+                        header: _("Outcome"),
+                        headerProps: {
+                            style: { textAlign: "center" },
+                        },
+                        render: (row: GroomedGameAIDetection) => (
+                            <span
+                                style={{
+                                    display: "inline-block",
+                                    maxWidth: "5rem",
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                    whiteSpace: "nowrap",
+                                }}
+                            >
+                                {getGameResultRichText(row as any)}
+                            </span>
+                        ),
+                        cellProps: {
+                            style: { textAlign: "center" },
+                        },
                     },
                     {
                         header: _("Analyzer Version"),
@@ -323,7 +428,8 @@ export function AIDetection(): React.ReactElement | null {
                                 "font-size": "smaller",
                             },
                         },
-                        render: (row) => row.bot_detection_results?.analyzer_version,
+                        render: (row: GroomedGameAIDetection) =>
+                            row.bot_detection_results?.analyzer_version,
                         cellProps: {
                             style: {
                                 "font-size": "smaller",

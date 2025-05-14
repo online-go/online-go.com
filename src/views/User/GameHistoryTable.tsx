@@ -490,7 +490,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
     );
 }
 
-function getGameResultRichText(game: rest_api.Game) {
+export function getGameResultRichText(game: rest_api.Game) {
     let resultText = getGameResultText(game.outcome, game.white_lost, game.black_lost);
 
     if (game.ranked) {
