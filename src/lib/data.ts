@@ -98,8 +98,8 @@
  */
 
 import { TypedEventEmitter } from "@/lib/TypedEventEmitter";
-import { DataSchema } from "@/lib/data_schema";
-import { protocol } from "goban";
+import type { DataSchema } from "@/lib/data_schema";
+import type { protocol } from "goban";
 
 interface DataEvents {
     remote_data_sync_complete: never;

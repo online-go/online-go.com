@@ -16,31 +16,31 @@
  */
 
 import * as React from "react";
-import { PuzzleConfig, GobanEngineConfig } from "goban";
-import { LearningPage, LearningPageProperties } from "./LearningPage";
+import { GobanConfig, GobanEngineConfig } from "goban";
+import { LearningPage, LearningPageProperties } from "../../LearningPage";
 import { _, pgettext } from "@/lib/translate";
-import { LearningHubSection } from "./LearningHubSection";
+import { LearningHubSection } from "../../LearningHubSection";
 
 export class EndingTheGame extends LearningHubSection {
     static pages(): Array<typeof LearningPage> {
-        return [Page1, Page2];
+        return [Page01, Page02, Page03];
     }
 
     static section(): string {
         return "ending-the-game";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning how to end the game", "End the game!");
+        return pgettext("Tutorial section name on learning how to end the game", "End of the Game");
     }
     static subtext(): string {
         return pgettext(
             "Tutorial section subtext on learning how to end the game",
-            "Pass and pass",
+            "Both players pass",
         );
     }
 }
 
-class Page1 extends LearningPage {
+class Page01 extends LearningPage {
     pass_pressed = false;
 
     constructor(props: LearningPageProperties) {
@@ -49,7 +49,7 @@ class Page1 extends LearningPage {
 
     text() {
         return _(
-            "When you don't think there are any more good moves to make, to end the game both players pass their turns. This game is finished. Click pass to end it.",
+            "You are not obliged to place a stone on the board when it is your turn. You can instead pass. When they don't think there are any more good moves to make, to end the game both players pass their turns. This game is finished. Click pass to end it.",
         );
     }
     button() {
@@ -67,7 +67,7 @@ class Page1 extends LearningPage {
             </div>
         );
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             mode: "puzzle",
             initial_state: {
@@ -85,7 +85,7 @@ class Page1 extends LearningPage {
     }
 }
 
-class Page2 extends LearningPage {
+class Page02 extends LearningPage {
     success = false;
 
     constructor(props: LearningPageProperties) {
@@ -94,10 +94,10 @@ class Page2 extends LearningPage {
 
     text() {
         return _(
-            'After both players have passed, you enter a "Stone Removal Phase", where you can remove obviously dead stones from play. You could capture these in game as well, but most players opt not to because it\'s quicker. Remove the dead black stones by clicking them. ',
+            'After both players have passed, you enter a "Stone Removal Phase", where you can remove obviously dead stones from play. You could capture these in the game as well, but most players opt not to because it\'s quicker. Remove the dead black stones by clicking them.',
         );
     }
-    config(): PuzzleConfig | GobanEngineConfig {
+    config(): GobanConfig | GobanEngineConfig {
         return {
             mode: "play",
             phase: "stone removal",
@@ -120,5 +120,50 @@ class Page2 extends LearningPage {
 
     complete() {
         return this.success;
+    }
+}
+
+class Page03 extends LearningPage {
+    pass_pressed = false;
+
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        return _(
+            "After removing the dead stones, the sizes of the black and white territories are counted. The size of the black territory is 24 points. White has 18 territory points. The captured 4 dead stones are added to this resulting in 22 points for White. So, Black has won the game. Click Finish to end the game.",
+        );
+    }
+    button() {
+        return (
+            <div>
+                <button
+                    className="primary"
+                    onClick={() => {
+                        this.pass_pressed = true;
+                        this.onUpdate();
+                    }}
+                >
+                    {_("Finish")}
+                </button>
+            </div>
+        );
+    }
+    config(): GobanConfig {
+        return {
+            mode: "puzzle",
+            initial_state: {
+                /* cspell:disable-next-line */
+                black: "gdhdcedeheiebfdfefgfhfagcgegfggg",
+                /* cspell:disable-next-line */
+                white: "eahaebibbcccecfcgchcicadcdddfdidaebeeefegeafff",
+            },
+            move_tree: this.makePuzzleMoveTree(["b6" /* dummy to trigger fail */], []),
+        };
+    }
+
+    complete() {
+        return this.pass_pressed;
     }
 }
