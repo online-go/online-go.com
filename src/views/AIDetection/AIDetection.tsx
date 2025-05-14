@@ -27,7 +27,7 @@ import { useSearchParams } from "react-router-dom";
 import { getGameResultRichText } from "../User/GameHistoryTable";
 //import { alert } from "@/lib/swal_config";
 
-const MIN_ANALYZER_VERSION = "2025-05-13-03";
+const MIN_ANALYZER_VERSION = "2025-05-13-04";
 const BROKEN_DATA = "😿";
 
 type GroomedGameAIDetection = rest_api.GameAIDetection & {
@@ -144,29 +144,41 @@ export function AIDetection(): React.ReactElement | null {
                     },
                     {
                         header: _(""),
-                        render: (row) => <Player user={row.first_column_player} />,
+                        render: (row) => {
+                            const isBlack = row.players.black.id === row.first_column_player;
+                            const won = isBlack ? !row.black_lost : !row.white_lost;
+                            return (
+                                <span
+                                    style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
+                                >
+                                    {won && (
+                                        <i className="fa fa-trophy" style={{ color: "#FFD700" }} />
+                                    )}
+                                    <Player user={row.first_column_player} />
+                                </span>
+                            );
+                        },
                         cellProps: {
                             style: {
                                 "max-width": "7rem",
                             },
                         },
                     },
-                    ...(show_all
-                        ? [
-                              {
-                                  header: _("APL"),
-                                  render: (row: GroomedGameAIDetection) =>
-                                      row.bot_detection_results?.[row.first_column_player]
-                                          ?.average_point_loss != null ? (
-                                          <span title="Average point loss per move">
-                                              {row.bot_detection_results[
-                                                  row.first_column_player
-                                              ].average_point_loss.toFixed(2)}
-                                          </span>
-                                      ) : null,
-                              },
-                          ]
-                        : []),
+
+                    {
+                        header: _("APL"),
+                        render: (row: GroomedGameAIDetection) =>
+                            !row.is_old_version &&
+                            row.bot_detection_results?.[row.first_column_player]
+                                ?.average_point_loss != null ? (
+                                <span title="Average point loss per move">
+                                    {row.bot_detection_results[
+                                        row.first_column_player
+                                    ].average_point_loss.toFixed(2)}
+                                </span>
+                            ) : null,
+                    },
+
                     {
                         header: _("Blur"),
                         render: (row: GroomedGameAIDetection) =>
@@ -261,30 +273,40 @@ export function AIDetection(): React.ReactElement | null {
 
                     {
                         header: _(""),
-                        render: (row: GroomedGameAIDetection) => (
-                            <Player user={row.second_column_player} />
-                        ),
+                        render: (row: GroomedGameAIDetection) => {
+                            const isBlack = row.players.black.id === row.second_column_player;
+                            const won = isBlack ? !row.black_lost : !row.white_lost;
+                            return (
+                                <span
+                                    style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
+                                >
+                                    {won && (
+                                        <i className="fa fa-trophy" style={{ color: "#FFD700" }} />
+                                    )}
+                                    <Player user={row.second_column_player} />
+                                </span>
+                            );
+                        },
                         cellProps: {
                             style: {
                                 "max-width": "7rem",
                             },
                         },
                     },
-                    ...(show_all
-                        ? [
-                              {
-                                  header: _("APL"),
-                                  render: (row: GroomedGameAIDetection) =>
-                                      row.bot_detection_results?.[row.second_column_player]
-                                          ?.average_point_loss != null ? (
-                                          <span title="Average point loss per move">
-                                              {(-row.bot_detection_results[row.second_column_player]
-                                                  .average_point_loss).toFixed(2)}
-                                          </span>
-                                      ) : null,
-                              },
-                          ]
-                        : []),
+
+                    {
+                        header: _("APL"),
+                        render: (row: GroomedGameAIDetection) =>
+                            !row.is_old_version &&
+                            row.bot_detection_results?.[row.second_column_player]
+                                ?.average_point_loss != null ? (
+                                <span title="Average point loss per move">
+                                    {(-row.bot_detection_results[row.second_column_player]
+                                        .average_point_loss).toFixed(2)}
+                                </span>
+                            ) : null,
+                    },
+
                     {
                         header: _("Blur"),
                         render: (row: GroomedGameAIDetection) =>
