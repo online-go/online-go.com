@@ -124,7 +124,7 @@ export function ReportedGame({
     const show_ailr =
         user.is_moderator ||
         user.moderator_powers & MODERATOR_POWERS.AI_DETECTOR ||
-        user.moderator_powers & MODERATOR_POWERS.ASSESS_AI_REPORTS;
+        user.moderator_powers & MODERATOR_POWERS.ASSESS_AI_PLAY;
 
     return (
         <div className="reported-game">

@@ -53,8 +53,8 @@ export const MOD_POWER_NAMES: { [key in MODERATOR_POWERS]: string } = {
     ),
     [MODERATOR_POWERS.SUSPEND]: pgettext("A label for a moderator power", "Vote for Suspension"),
     [MODERATOR_POWERS.ASSESS_AI_PLAY]: pgettext(
-        "A label for a moderator power",
-        "Assess AI Reports",
+        "A label for a moderator power, to assess gameplay for ai-like moves",
+        "Assess AI Play",
     ),
     [MODERATOR_POWERS.SEE_REPORTED_USER_BANNED_STATUS]: pgettext(
         "A label for a moderator power",
