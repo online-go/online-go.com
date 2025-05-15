@@ -1,24 +1,11 @@
+#cspell: words gocom maint autotranslations gsutil webm setmeta gcloud
+
 -include Makefile.passwords
-
-#cspell: words gocom maint
-
 
 RELEASE=$(shell git describe --long | sed 's@\([0-9.]\{1,\}\).*@\1@')
 VERSION=$(shell git describe --long)
 OGS_HASH=$(shell md5sum dist/ogs.js | awk '{print $$1}')
 OGS_VERSION_HASH=$(VERSION)-$(OGS_HASH)
-SLACK_WEBHOOK=$(shell cat ../ogs/.slack-webhook)
-
-
-todo:
-	cd src; grep -r 'TODO: Implement' views components lib | grep -v gen.py | sort | grep --color -E '^[^:]*:'
-	cd src; grep -r 'TODO: Implement' views components lib | grep -v gen.py | wc -l
-
-todo-all:
-	cd src; grep -r TODO views components lib | grep --color -E '^[^:]*:'
-	cd src; grep -r TODO views components lib | wc -l
-
-
 
 LANGUAGE_VERSION=`md5sum i18n/locale/*.js | sort | md5sum | awk '{print $$1}'`
 SUPPORTED_LANGUAGES=`python -c 'import json; print(json.dumps(json.loads(open("i18n/languages.json", "r").read())))'`
@@ -33,54 +20,51 @@ DEV_INDEX_HEADERS=$(BASE_INDEX_HEADERS) -H "X-OGS-Index-Auth: $(DEV_INDEX_AUTH)"
 BETA_INDEX_HEADERS=$(BASE_INDEX_HEADERS) -H "X-OGS-Index-Auth: $(BETA_INDEX_AUTH)"
 PROD_INDEX_HEADERS=$(BASE_INDEX_HEADERS) -H "X-OGS-Index-Auth: $(PROD_INDEX_AUTH)"
 	
+
+### Common ### 
+
+## Primary deployment targets
+deploy-to-beta: build sync-translations build-i18n create-unified-pot audit-translations jsonify-po-files push-cdn upload-sentry-source-maps save-translation-artifacts
+	OGS_VERSION_HASH=$(OGS_VERSION_HASH) npm run minify-index --silent | curl -X PUT $(BETA_INDEX_HEADERS) -d @- https://beta.online-go.com/_index
+	make beta-notify-slack
+
+deploy-to-production: load-translation-artifacts build push-cdn
+	OGS_VERSION_HASH=$(OGS_VERSION_HASH) npm run minify-index --silent | curl -X PUT $(PROD_INDEX_HEADERS) -d @- https://online-go.com/_index
+	make live-notify-slack
+	
+
+save-translation-artifacts:	
+	cd i18n; scp $(POOTLE_SSH_OPTIONS) locale/*.js $(POOTLE_USER)@$(POOTLE_HOST):artifacts-for-github-actions/locale
+	cd i18n; scp $(POOTLE_SSH_OPTIONS) autotranslations.json keys.json languages.json llm-keys-cache.json $(POOTLE_USER)@$(POOTLE_HOST):artifacts-for-github-actions
+
+load-translation-artifacts:	
+	@echo "Loading translation artifacts"
+	@mkdir -p i18n/locale
+	@if [ ! -f i18n/autotranslations.json ]; then \
+		cd i18n; \
+		scp $(POOTLE_SSH_OPTIONS) $(POOTLE_USER)@$(POOTLE_HOST):'artifacts-for-github-actions/*.json' .; \
+		scp $(POOTLE_SSH_OPTIONS) $(POOTLE_USER)@$(POOTLE_HOST):'artifacts-for-github-actions/locale/*.js' locale/; \
+	fi
+
+
+## Helper targets
 minify-index:	
 	@echo "Testing index minification"
 	OGS_VERSION_HASH=$(OGS_VERSION_HASH)  npm run minify-index --silent | wc -c
 
-#dev-put: push-cdn
-dev-put:
-	OGS_VERSION_HASH=$(OGS_VERSION_HASH) npm run minify-index --silent | curl -X PUT $(DEV_INDEX_HEADERS) -d @- http://localhost:1080/_index
-
-dev-del:
-	curl -X DELETE $(BETA_INDEX_HEADERS)  http://localhost:1080/_index
-
-beta-put: build sync-translations build-i18n create-unified-pot audit-translations jsonify-po-files push-cdn upload-sentry-source-maps
-	OGS_VERSION_HASH=$(OGS_VERSION_HASH) npm run minify-index --silent | curl -X PUT $(BETA_INDEX_HEADERS) -d @- https://beta.online-go.com/_index
-	make beta-notify-slack
-
-live-put: confirm-go-live build push-cdn
-	OGS_VERSION_HASH=$(OGS_VERSION_HASH) npm run minify-index --silent | curl -X PUT $(PROD_INDEX_HEADERS) -d @- https://online-go.com/_index
-	make live-notify-slack
-
-live-maint: confirm-go-live 
-	curl -X PUT $(PROD_INDEX_HEADERS) -T src/maint.html  https://online-go.com/_index
-
-beta-notify-slack:
-	MSG=`git log -1 --pretty="%B" | sed s/\"//g | sed s/\'//g `; \
-	VERSION=`git describe --long`; \
-	echo $$VERSION $$MSG; \
-	curl -X POST -H 'Content-type: application/json' --data '{"text":"'"[BETA UI] $$VERSION $$MSG"'"}' $(SLACK_WEBHOOK)
-
-live-notify-slack:
-	MSG=`git log -1 --pretty="%B" | sed s/\"//g | sed s/\'//g `; \
-	VERSION=`git describe --long`; \
-	echo $$VERSION $$MSG; \
-	curl -X POST -H 'Content-type: application/json' --data '{"text":"'"[PRODUCTION UI] $$VERSION $$MSG"'"}' $(SLACK_WEBHOOK)
-
-confirm-go-live:
-	@read -p "Go live? " yesno; \
-	test $$yesno == 'yes';
-
-
 push: push-cdn
 
+# gsutil -m rsync -r deployment-staging-area/$(RELEASE) gs://ogs-site-files/$(RELEASE)/
+# gsutil -m setmeta -h "Content-Type:audio/webm" 'gs://ogs-site-files/$(RELEASE)/sound/*.webm'
 push-cdn: prepare-cdn-files
-	gsutil -m rsync -r deployment-staging-area/$(RELEASE) gs://ogs-site-files/$(RELEASE)/
-	gsutil -m setmeta -h "Content-Type:audio/webm" 'gs://ogs-site-files/$(RELEASE)/sound/*.webm'
+	gcloud storage rsync -r deployment-staging-area/$(RELEASE) gs://ogs-site-files/$(RELEASE)/
+	gcloud storage objects update 'gs://ogs-site-files/$(RELEASE)/sound/*.webm' --content-type='audio/webm'
 
-sync-translations:
-	cd i18n/build/; ssh pootle@pootle "bash -c 'cd online-go.com/i18n/build; tar jcf - *'" | tar jxf -
-	cd i18n/locale/; ssh pootle@pootle "bash -c 'cd online-go.com/i18n/locale; tar jcf - *'" | tar jxf -
+sync-translations: load-translation-artifacts
+	mkdir -p i18n/build
+	mkdir -p i18n/locale
+	cd i18n/build/; ssh $(POOTLE_SSH_OPTIONS) $(POOTLE_USER)@$(POOTLE_HOST) "bash -c 'cd online-go.com/i18n/build; tar jcf - *'" | tar jxf -
+	cd i18n/locale/; ssh $(POOTLE_SSH_OPTIONS) $(POOTLE_USER)@$(POOTLE_HOST) "bash -c 'cd online-go.com/i18n/locale; tar jcf - *'" | tar jxf -
 
 create-unified-pot:
 	# This is run on the pootle server and here, the pootle server does most of the work,
@@ -126,6 +110,46 @@ dist/ogs.$(VERSION).css: dist/ogs.min.css
 	cp $<.map $@.map
 
 
+
+
+
+
+
+### Targets for local development
+
+#dev-put: push-cdn
+dev-put:
+	OGS_VERSION_HASH=$(OGS_VERSION_HASH) npm run minify-index --silent | curl -X PUT $(DEV_INDEX_HEADERS) -d @- http://localhost:1080/_index
+
+dev-del:
+	curl -X DELETE $(DEV_INDEX_HEADERS)  http://localhost:1080/_index
+
+beta-put: deploy-to-beta
+
+live-put: confirm-go-live  deploy-to-production
+
+#live-maint: confirm-go-live 
+#	curl -X PUT $(PROD_INDEX_HEADERS) -T src/maint.html  https://online-go.com/_index
+
+beta-notify-slack:
+	MSG=`git log -1 --pretty="%B" | sed s/\"//g | sed s/\'//g `; \
+	VERSION=`git describe --long`; \
+	echo $$VERSION $$MSG; \
+	curl -X POST -H 'Content-type: application/json' --data '{"text":"'"[BETA UI] $$VERSION $$MSG"'"}' $(SLACK_WEBHOOK_URL)
+
+live-notify-slack:
+	MSG=`git log -1 --pretty="%B" | sed s/\"//g | sed s/\'//g `; \
+	VERSION=`git describe --long`; \
+	echo $$VERSION $$MSG; \
+	curl -X POST -H 'Content-type: application/json' --data '{"text":"'"[PRODUCTION UI] $$VERSION $$MSG"'"}' $(SLACK_WEBHOOK_URL)
+
+confirm-go-live:
+	@read -p "Go live? " yesno; \
+	test $$yesno == 'yes';
+
+
+
+	
 
 
 .PHONY: dev stats todo update install default server dist push-cdn sync-translations
