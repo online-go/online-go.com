@@ -165,14 +165,22 @@ export function JosekiVariationFilter(props: JosekiVariationFilterProps) {
 
             <div className="filter-set">
                 <div className="filter-label">{_("Filter by Contributor")}</div>
-                <select value={current_contributor} onChange={onContributorChange}>
+                <select
+                    value={current_contributor}
+                    onChange={onContributorChange}
+                    className={current_contributor !== "none" ? "filter-active" : ""}
+                >
                     {contributors}
                 </select>
             </div>
 
             <div className="filter-set">
                 <div className="filter-label">{_("Filter by Source")}</div>
-                <select value={current_source} onChange={onSourceChange}>
+                <select
+                    value={current_source}
+                    onChange={onSourceChange}
+                    className={current_source !== "none" ? "filter-active" : ""}
+                >
                     {sources}
                 </select>
             </div>
