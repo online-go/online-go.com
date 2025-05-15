@@ -234,7 +234,6 @@ declare namespace rest_api {
     interface BotDetectionResults {
         // Parameters of the AI review used for detection
         ai_review_params: AIReviewParams;
-        move_count?: number;
         analyzer_version?: string;
 
         // List of player IDs suspected of using AI/bots
@@ -276,14 +275,8 @@ declare namespace rest_api {
         };
     }
 
-    interface GameAIDetection {
-        id: number;
-        width: number;
-        height: number;
-        players: {
-            black: games.Player;
-            white: games.Player;
-        };
+    interface GameAIDetection extends GameBase {
+        final_move_count: number;
         bot_detection_results: null | BotDetectionResults;
     }
 
