@@ -222,19 +222,27 @@ export function AIDetection(): React.ReactElement | null {
                         : []),
                     {
                         header: _("AILR"),
-                        render: (row: GroomedGameAIDetection) =>
-                            row.is_old_version ? null : row.bot_detection_results?.[
-                                  row.first_column_player
-                              ]?.AILR != null ? (
+                        render: (row: GroomedGameAIDetection) => {
+                            if (
+                                row.bot_detection_results?.ai_review_params?.type !== "full" ||
+                                row.is_old_version
+                            ) {
+                                return null;
+                            }
+                            if (
+                                row.bot_detection_results?.[row.first_column_player]?.AILR == null
+                            ) {
+                                return BROKEN_DATA;
+                            }
+                            return (
                                 <span title="AI-like moves">
                                     {row.bot_detection_results[
                                         row.first_column_player
                                     ].AILR.toFixed(0)}
                                     %
                                 </span>
-                            ) : (
-                                BROKEN_DATA
-                            ),
+                            );
+                        },
                     },
                     ...(show_all
                         ? [
@@ -350,19 +358,27 @@ export function AIDetection(): React.ReactElement | null {
                         : []),
                     {
                         header: _("AILR"),
-                        render: (row: GroomedGameAIDetection) =>
-                            row.is_old_version ? null : row.bot_detection_results?.[
-                                  row.second_column_player
-                              ]?.AILR != null ? (
+                        render: (row: GroomedGameAIDetection) => {
+                            if (
+                                row.bot_detection_results?.ai_review_params?.type !== "full" ||
+                                row.is_old_version
+                            ) {
+                                return null;
+                            }
+                            if (
+                                row.bot_detection_results?.[row.second_column_player]?.AILR == null
+                            ) {
+                                return BROKEN_DATA;
+                            }
+                            return (
                                 <span title="AI-like moves">
                                     {row.bot_detection_results[
                                         row.second_column_player
                                     ].AILR.toFixed(0)}
                                     %
                                 </span>
-                            ) : (
-                                BROKEN_DATA
-                            ),
+                            );
+                        },
                     },
                     ...(show_all
                         ? [
