@@ -37,6 +37,8 @@ type GroomedGameAIDetection = rest_api.GameAIDetection & {
     outcome: string;
     first_player_is_bot: boolean;
     second_player_is_bot: boolean;
+    first_player_is_banned: boolean;
+    second_player_is_banned: boolean;
     first_player_filter_match: boolean;
     second_player_filter_match: boolean;
     broken_data: boolean;
@@ -140,15 +142,6 @@ export function AIDetection(): React.ReactElement | null {
                 groom={(data: rest_api.GameAIDetection[]): GroomedGameAIDetection[] => {
                     return data
                         .map((row) => {
-                            const firstPlayerIsBot =
-                                row.players.black.id === (player_filter || row.players.black.id)
-                                    ? row.players.black.ui_class === "bot"
-                                    : row.players.white.ui_class === "bot";
-                            const secondPlayerIsBot =
-                                row.players.black.id === (player_filter || row.players.black.id)
-                                    ? row.players.white.ui_class === "bot"
-                                    : row.players.black.ui_class === "bot";
-
                             const firstColumnPlayer = player_filter
                                 ? player_filter
                                 : row.players.black.id;
@@ -157,6 +150,24 @@ export function AIDetection(): React.ReactElement | null {
                                     ? row.players.white.id
                                     : row.players.black.id
                                 : row.players.white.id;
+
+                            const firstPlayerIsBot =
+                                firstColumnPlayer === row.players.black.id
+                                    ? row.players.black.ui_class === "bot"
+                                    : row.players.white.ui_class === "bot";
+                            const secondPlayerIsBot =
+                                secondColumnPlayer === row.players.black.id
+                                    ? row.players.black.ui_class === "bot"
+                                    : row.players.white.ui_class === "bot";
+
+                            const firstPlayerIsBanned =
+                                firstColumnPlayer === row.players.black.id
+                                    ? row.black_banned
+                                    : row.white_banned;
+                            const secondPlayerIsBanned =
+                                secondColumnPlayer === row.players.black.id
+                                    ? row.black_banned
+                                    : row.white_banned;
 
                             const firstPlayerResults =
                                 row.bot_detection_results?.[firstColumnPlayer];
@@ -205,6 +216,8 @@ export function AIDetection(): React.ReactElement | null {
                                 second_player_is_bot: secondPlayerIsBot,
                                 first_player_filter_match: firstPlayerFilterMatch,
                                 second_player_filter_match: secondPlayerFilterMatch,
+                                first_player_is_banned: firstPlayerIsBanned,
+                                second_player_is_banned: secondPlayerIsBanned,
                                 broken_data,
                             };
                         })
@@ -296,7 +309,10 @@ export function AIDetection(): React.ReactElement | null {
                                     }}
                                 >
                                     <div style={{ minWidth: 0, flex: 1, overflow: "hidden" }}>
-                                        <Player user={row.first_column_player} />
+                                        <Player
+                                            user={row.first_column_player}
+                                            showAsBanned={row.first_player_is_banned}
+                                        />
                                     </div>
                                 </span>
                             );
@@ -495,7 +511,10 @@ export function AIDetection(): React.ReactElement | null {
                                     }}
                                 >
                                     <div style={{ minWidth: 0, flex: 1, overflow: "hidden" }}>
-                                        <Player user={row.second_column_player} />
+                                        <Player
+                                            user={row.second_column_player}
+                                            showAsBanned={row.second_player_is_banned}
+                                        />
                                     </div>
                                 </span>
                             );
