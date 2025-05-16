@@ -37,6 +37,8 @@ type GroomedGameAIDetection = rest_api.GameAIDetection & {
     outcome: string;
     first_player_is_bot: boolean;
     second_player_is_bot: boolean;
+    first_player_is_banned: boolean;
+    second_player_is_banned: boolean;
     first_player_filter_match: boolean;
     second_player_filter_match: boolean;
     broken_data: boolean;
@@ -140,15 +142,6 @@ export function AIDetection(): React.ReactElement | null {
                 groom={(data: rest_api.GameAIDetection[]): GroomedGameAIDetection[] => {
                     return data
                         .map((row) => {
-                            const firstPlayerIsBot =
-                                row.players.black.id === (player_filter || row.players.black.id)
-                                    ? row.players.black.ui_class === "bot"
-                                    : row.players.white.ui_class === "bot";
-                            const secondPlayerIsBot =
-                                row.players.black.id === (player_filter || row.players.black.id)
-                                    ? row.players.white.ui_class === "bot"
-                                    : row.players.black.ui_class === "bot";
-
                             const firstColumnPlayer = player_filter
                                 ? player_filter
                                 : row.players.black.id;
@@ -157,6 +150,24 @@ export function AIDetection(): React.ReactElement | null {
                                     ? row.players.white.id
                                     : row.players.black.id
                                 : row.players.white.id;
+
+                            const firstPlayerIsBot =
+                                firstColumnPlayer === row.players.black.id
+                                    ? row.players.black.ui_class === "bot"
+                                    : row.players.white.ui_class === "bot";
+                            const secondPlayerIsBot =
+                                secondColumnPlayer === row.players.black.id
+                                    ? row.players.black.ui_class === "bot"
+                                    : row.players.white.ui_class === "bot";
+
+                            const firstPlayerIsBanned =
+                                firstColumnPlayer === row.players.black.id
+                                    ? row.black_banned
+                                    : row.white_banned;
+                            const secondPlayerIsBanned =
+                                secondColumnPlayer === row.players.black.id
+                                    ? row.black_banned
+                                    : row.white_banned;
 
                             const firstPlayerResults =
                                 row.bot_detection_results?.[firstColumnPlayer];
@@ -205,6 +216,8 @@ export function AIDetection(): React.ReactElement | null {
                                 second_player_is_bot: secondPlayerIsBot,
                                 first_player_filter_match: firstPlayerFilterMatch,
                                 second_player_filter_match: secondPlayerFilterMatch,
+                                first_player_is_banned: firstPlayerIsBanned,
+                                second_player_is_banned: secondPlayerIsBanned,
                                 broken_data,
                             };
                         })
@@ -254,6 +267,12 @@ export function AIDetection(): React.ReactElement | null {
                                 {!row.bot_detection_results?.ai_review_params && (
                                     <i className="fa fa-question-circle" />
                                 )}
+                                {row.game_speed === "correspondence" && (
+                                    <i className="fa fa-envelope" title="Correspondence game" />
+                                )}
+                                {!row.ranked && (
+                                    <i className="fa fa-minus-square-o" title="Unranked game" />
+                                )}
                             </span>
                         ),
                     },
@@ -279,8 +298,6 @@ export function AIDetection(): React.ReactElement | null {
                     {
                         header: _(""),
                         render: (row) => {
-                            const isBlack = row.players.black.id === row.first_column_player;
-                            const won = isBlack ? !row.black_lost : !row.white_lost;
                             return (
                                 <span
                                     style={{
@@ -291,25 +308,34 @@ export function AIDetection(): React.ReactElement | null {
                                         minWidth: 0,
                                     }}
                                 >
-                                    {won && (
-                                        <i
-                                            className="fa fa-trophy"
-                                            style={{ color: "#FFD700", flexShrink: 0 }}
+                                    <div style={{ minWidth: 0, flex: 1, overflow: "hidden" }}>
+                                        <Player
+                                            user={row.first_column_player}
+                                            showAsBanned={row.first_player_is_banned}
                                         />
-                                    )}
-                                    <div style={{ minWidth: 0, flex: 1 }}>
-                                        <Player user={row.first_column_player} />
                                     </div>
                                 </span>
                             );
                         },
                         cellProps: {
                             style: {
-                                "max-width": "8rem",
+                                maxWidth: "8rem",
                             },
                         },
                     },
-
+                    {
+                        header: "",
+                        render: (row) => {
+                            const isBlack = row.players.black.id === row.first_column_player;
+                            const won = isBlack ? !row.black_lost : !row.white_lost;
+                            return won ? (
+                                <i className="fa fa-trophy" style={{ color: "#FFD700" }} />
+                            ) : null;
+                        },
+                        cellProps: {
+                            style: { textAlign: "center", paddingLeft: "0.5rem" },
+                        },
+                    },
                     {
                         header: _("APL"),
                         render: (row: GroomedGameAIDetection) =>
@@ -473,8 +499,6 @@ export function AIDetection(): React.ReactElement | null {
                     {
                         header: _(""),
                         render: (row: GroomedGameAIDetection) => {
-                            const isBlack = row.players.black.id === row.second_column_player;
-                            const won = isBlack ? !row.black_lost : !row.white_lost;
                             return (
                                 <span
                                     style={{
@@ -483,27 +507,38 @@ export function AIDetection(): React.ReactElement | null {
                                         gap: "0.5rem",
                                         width: "100%",
                                         minWidth: 0,
+                                        overflow: "hidden",
                                     }}
                                 >
-                                    {won && (
-                                        <i
-                                            className="fa fa-trophy"
-                                            style={{ color: "#FFD700", flexShrink: 0 }}
+                                    <div style={{ minWidth: 0, flex: 1, overflow: "hidden" }}>
+                                        <Player
+                                            user={row.second_column_player}
+                                            showAsBanned={row.second_player_is_banned}
                                         />
-                                    )}
-                                    <div style={{ minWidth: 0, flex: 1 }}>
-                                        <Player user={row.second_column_player} />
                                     </div>
                                 </span>
                             );
                         },
                         cellProps: {
                             style: {
-                                "max-width": "8rem",
+                                maxWidth: "8rem",
+                                overflow: "hidden",
                             },
                         },
                     },
-
+                    {
+                        header: "",
+                        render: (row) => {
+                            const isBlack = row.players.black.id === row.second_column_player;
+                            const won = isBlack ? !row.black_lost : !row.white_lost;
+                            return won ? (
+                                <i className="fa fa-trophy" style={{ color: "#FFD700" }} />
+                            ) : null;
+                        },
+                        cellProps: {
+                            style: { textAlign: "center", paddingLeft: "0.5rem" },
+                        },
+                    },
                     {
                         header: _("APL"),
                         render: (row: GroomedGameAIDetection) =>
