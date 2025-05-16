@@ -37,14 +37,21 @@ type GroomedGameAIDetection = rest_api.GameAIDetection & {
     outcome: string;
     first_player_is_bot: boolean;
     second_player_is_bot: boolean;
+    first_player_filter_match: boolean;
+    second_player_filter_match: boolean;
+    broken_data: boolean;
 };
 
 export function AIDetection(): React.ReactElement | null {
+    const apl_off = 100;
+    const ailr_off = 0;
+    const blur_off = 0;
+
     const user = data.get("user");
     const [player_filter, setPlayerFilter] = React.useState<number>();
-    const [apl_threshold, setAplThreshold] = React.useState<number>(100);
-    const [ailr_threshold, setAilrThreshold] = React.useState<number>(0);
-    const [blur_threshold, setBlurThreshold] = React.useState<number>(0);
+    const [apl_threshold, setAplThreshold] = React.useState<number>(apl_off);
+    const [ailr_threshold, setAilrThreshold] = React.useState<number>(ailr_off);
+    const [blur_threshold, setBlurThreshold] = React.useState<number>(blur_off);
     const [apply_filters, setApplyFilters] = React.useState<boolean>(false);
     const [searchParams] = useSearchParams();
     const show_all = searchParams.get("show_all") === "true";
@@ -57,6 +64,9 @@ export function AIDetection(): React.ReactElement | null {
     if (!user.is_moderator && (user.moderator_powers & MODERATOR_POWERS.AI_DETECTOR) === 0) {
         return null;
     }
+
+    const filters_off =
+        apl_threshold === apl_off && ailr_threshold === ailr_off && blur_threshold === blur_off;
 
     return (
         <div id="AI-Detection">
@@ -83,35 +93,32 @@ export function AIDetection(): React.ReactElement | null {
                         />
                         <label htmlFor="apply-filters">full reviews with:</label>
                     </div>
-                    <div style={{ opacity: apply_filters ? 1 : 0.5 }}>
-                        <label>APL ≤ </label>
+                    <div>
+                        <label>APL {"<"} </label>
                         <input
                             type="number"
                             value={apl_threshold}
                             onChange={(e) => setAplThreshold(Number(e.target.value))}
                             style={{ width: "4rem" }}
-                            disabled={!apply_filters}
                         />
                     </div>
-                    <div style={{ opacity: apply_filters ? 1 : 0.5 }}>
-                        <label>Blur ≥ </label>
+                    <div>
+                        <label>Blur {">"} </label>
                         <input
                             type="number"
                             value={blur_threshold}
                             onChange={(e) => setBlurThreshold(Number(e.target.value))}
                             style={{ width: "4rem" }}
-                            disabled={!apply_filters}
                         />
                         <span>%</span>
                     </div>
-                    <div style={{ opacity: apply_filters ? 1 : 0.5 }}>
-                        <label>AILR ≥ </label>
+                    <div>
+                        <label>AILR {">"} </label>
                         <input
                             type="number"
                             value={ailr_threshold}
                             onChange={(e) => setAilrThreshold(Number(e.target.value))}
                             style={{ width: "4rem" }}
-                            disabled={!apply_filters}
                         />
                         <span>%</span>
                     </div>
@@ -142,16 +149,52 @@ export function AIDetection(): React.ReactElement | null {
                                     ? row.players.white.ui_class === "bot"
                                     : row.players.black.ui_class === "bot";
 
+                            const firstColumnPlayer = player_filter
+                                ? player_filter
+                                : row.players.black.id;
+                            const secondColumnPlayer = player_filter
+                                ? player_filter === row.players.black.id
+                                    ? row.players.white.id
+                                    : row.players.black.id
+                                : row.players.white.id;
+
+                            const firstPlayerResults =
+                                row.bot_detection_results?.[firstColumnPlayer];
+                            const secondPlayerResults =
+                                row.bot_detection_results?.[secondColumnPlayer];
+
+                            const firstPlayerApl = Math.abs(
+                                firstPlayerResults?.average_point_loss || 0,
+                            );
+                            const secondPlayerApl = Math.abs(
+                                secondPlayerResults?.average_point_loss || 0,
+                            );
+                            const firstPlayerAilr = firstPlayerResults?.AILR || 0;
+                            const secondPlayerAilr = secondPlayerResults?.AILR || 0;
+                            const firstPlayerBlur = firstPlayerResults?.blur_rate || 0;
+                            const secondPlayerBlur = secondPlayerResults?.blur_rate || 0;
+
+                            const broken_data =
+                                row.bot_detection_results?.ai_review_params?.type === "full" &&
+                                (row.bot_detection_results?.[firstColumnPlayer]?.AILR == null ||
+                                    row.bot_detection_results?.[secondColumnPlayer]?.AILR == null);
+
+                            const firstPlayerFilterMatch =
+                                !broken_data &&
+                                firstPlayerApl < apl_threshold &&
+                                firstPlayerAilr > ailr_threshold &&
+                                firstPlayerBlur > blur_threshold;
+
+                            const secondPlayerFilterMatch =
+                                !broken_data &&
+                                secondPlayerApl < apl_threshold &&
+                                secondPlayerAilr > ailr_threshold &&
+                                secondPlayerBlur > blur_threshold;
+
                             return {
                                 ...row,
-                                first_column_player: player_filter
-                                    ? player_filter
-                                    : row.players.black.id,
-                                second_column_player: player_filter
-                                    ? player_filter === row.players.black.id
-                                        ? row.players.white.id
-                                        : row.players.black.id
-                                    : row.players.white.id,
+                                first_column_player: firstColumnPlayer,
+                                second_column_player: secondColumnPlayer,
                                 is_old_version:
                                     !row.bot_detection_results ||
                                     !row.bot_detection_results.analyzer_version ||
@@ -160,6 +203,9 @@ export function AIDetection(): React.ReactElement | null {
                                 outcome: row.outcome,
                                 first_player_is_bot: firstPlayerIsBot,
                                 second_player_is_bot: secondPlayerIsBot,
+                                first_player_filter_match: firstPlayerFilterMatch,
+                                second_player_filter_match: secondPlayerFilterMatch,
+                                broken_data,
                             };
                         })
                         .filter((row) => {
@@ -174,45 +220,11 @@ export function AIDetection(): React.ReactElement | null {
                                 return false;
                             }
 
-                            const firstPlayerResults =
-                                row.bot_detection_results[row.first_column_player];
-                            const secondPlayerResults =
-                                row.bot_detection_results[row.second_column_player];
-
-                            if (!firstPlayerResults || !secondPlayerResults) {
-                                return false;
-                            }
-
-                            // Filter out rows where either player is missing AILR
-                            if (
-                                firstPlayerResults.AILR == null ||
-                                secondPlayerResults.AILR == null
-                            ) {
-                                return false;
-                            }
-
-                            const firstPlayerApl = Math.abs(
-                                firstPlayerResults.average_point_loss || 0,
+                            // Only show rows where at least one player has an exclamation mark
+                            return (
+                                (!row.first_player_is_bot && row.first_player_filter_match) ||
+                                (!row.second_player_is_bot && row.second_player_filter_match)
                             );
-                            const secondPlayerApl = Math.abs(
-                                secondPlayerResults.average_point_loss || 0,
-                            );
-                            const firstPlayerAilr = firstPlayerResults.AILR || 0;
-                            const secondPlayerAilr = secondPlayerResults.AILR || 0;
-                            const firstPlayerBlur = firstPlayerResults.blur_rate || 0;
-                            const secondPlayerBlur = secondPlayerResults.blur_rate || 0;
-
-                            const should_show =
-                                !apply_filters ||
-                                ((row.first_player_is_bot ||
-                                    (firstPlayerApl <= apl_threshold &&
-                                        firstPlayerAilr >= ailr_threshold &&
-                                        firstPlayerBlur >= blur_threshold)) &&
-                                    (row.second_player_is_bot ||
-                                        (secondPlayerApl <= apl_threshold &&
-                                            secondPlayerAilr >= ailr_threshold &&
-                                            secondPlayerBlur >= blur_threshold)));
-                            return should_show;
                         });
                 }}
                 columns={[
@@ -271,18 +283,29 @@ export function AIDetection(): React.ReactElement | null {
                             const won = isBlack ? !row.black_lost : !row.white_lost;
                             return (
                                 <span
-                                    style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
+                                    style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: "0.5rem",
+                                        width: "100%",
+                                        minWidth: 0,
+                                    }}
                                 >
                                     {won && (
-                                        <i className="fa fa-trophy" style={{ color: "#FFD700" }} />
+                                        <i
+                                            className="fa fa-trophy"
+                                            style={{ color: "#FFD700", flexShrink: 0 }}
+                                        />
                                     )}
-                                    <Player user={row.first_column_player} />
+                                    <div style={{ minWidth: 0, flex: 1 }}>
+                                        <Player user={row.first_column_player} />
+                                    </div>
                                 </span>
                             );
                         },
                         cellProps: {
                             style: {
-                                "max-width": "7rem",
+                                "max-width": "8rem",
                             },
                         },
                     },
@@ -297,11 +320,10 @@ export function AIDetection(): React.ReactElement | null {
                                     title="Average point loss per move"
                                     style={{ color: row.first_player_is_bot ? "#666" : undefined }}
                                 >
-                                    {
-                                        -row.bot_detection_results[
-                                            row.first_column_player
-                                        ].average_point_loss.toFixed(2)
-                                    }
+                                    {Math.abs(
+                                        row.bot_detection_results[row.first_column_player]
+                                            .average_point_loss,
+                                    ).toFixed(2)}
                                 </span>
                             ) : null,
                     },
@@ -369,22 +391,45 @@ export function AIDetection(): React.ReactElement | null {
                             ) {
                                 return null;
                             }
-                            if (
-                                row.bot_detection_results?.[row.first_column_player]?.AILR == null
-                            ) {
-                                return BROKEN_DATA;
+                            const ailr = row.bot_detection_results?.[row.first_column_player]?.AILR;
+                            if (ailr == null) {
+                                return null;
                             }
                             return (
                                 <span
                                     title="AI-like moves"
                                     style={{ color: row.first_player_is_bot ? "#666" : undefined }}
                                 >
-                                    {row.bot_detection_results[
-                                        row.first_column_player
-                                    ].AILR.toFixed(0)}
-                                    %
+                                    {ailr.toFixed(0)}%
                                 </span>
                             );
+                        },
+                    },
+                    {
+                        header: _("Match"),
+                        headerProps: {
+                            style: { textAlign: "center" },
+                        },
+                        render: (row: GroomedGameAIDetection) => (
+                            <span
+                                title="AI detection criteria met"
+                                style={{
+                                    display: "flex",
+                                    justifyContent: "center",
+                                }}
+                            >
+                                {row.broken_data ? (
+                                    BROKEN_DATA
+                                ) : !filters_off &&
+                                  row.bot_detection_results?.ai_review_params?.type === "full" &&
+                                  !row.first_player_is_bot &&
+                                  row.first_player_filter_match ? (
+                                    <i className="fa fa-exclamation-circle" />
+                                ) : null}
+                            </span>
+                        ),
+                        cellProps: {
+                            style: { textAlign: "center" },
                         },
                     },
                     ...(show_all
@@ -432,18 +477,29 @@ export function AIDetection(): React.ReactElement | null {
                             const won = isBlack ? !row.black_lost : !row.white_lost;
                             return (
                                 <span
-                                    style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
+                                    style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: "0.5rem",
+                                        width: "100%",
+                                        minWidth: 0,
+                                    }}
                                 >
                                     {won && (
-                                        <i className="fa fa-trophy" style={{ color: "#FFD700" }} />
+                                        <i
+                                            className="fa fa-trophy"
+                                            style={{ color: "#FFD700", flexShrink: 0 }}
+                                        />
                                     )}
-                                    <Player user={row.second_column_player} />
+                                    <div style={{ minWidth: 0, flex: 1 }}>
+                                        <Player user={row.second_column_player} />
+                                    </div>
                                 </span>
                             );
                         },
                         cellProps: {
                             style: {
-                                "max-width": "7rem",
+                                "max-width": "8rem",
                             },
                         },
                     },
@@ -458,8 +514,10 @@ export function AIDetection(): React.ReactElement | null {
                                     title="Average point loss per move"
                                     style={{ color: row.second_player_is_bot ? "#666" : undefined }}
                                 >
-                                    {(-row.bot_detection_results[row.second_column_player]
-                                        .average_point_loss).toFixed(2)}
+                                    {Math.abs(
+                                        row.bot_detection_results[row.second_column_player]
+                                            .average_point_loss,
+                                    ).toFixed(2)}
                                 </span>
                             ) : null,
                     },
@@ -527,22 +585,46 @@ export function AIDetection(): React.ReactElement | null {
                             ) {
                                 return null;
                             }
-                            if (
-                                row.bot_detection_results?.[row.second_column_player]?.AILR == null
-                            ) {
-                                return BROKEN_DATA;
+                            const ailr =
+                                row.bot_detection_results?.[row.second_column_player]?.AILR;
+                            if (ailr == null) {
+                                return null;
                             }
                             return (
                                 <span
                                     title="AI-like moves"
                                     style={{ color: row.second_player_is_bot ? "#666" : undefined }}
                                 >
-                                    {row.bot_detection_results[
-                                        row.second_column_player
-                                    ].AILR.toFixed(0)}
-                                    %
+                                    {ailr.toFixed(0)}%
                                 </span>
                             );
+                        },
+                    },
+                    {
+                        header: _("Match"),
+                        headerProps: {
+                            style: { textAlign: "center" },
+                        },
+                        render: (row: GroomedGameAIDetection) => (
+                            <span
+                                title="AI detection criteria met"
+                                style={{
+                                    display: "flex",
+                                    justifyContent: "center",
+                                }}
+                            >
+                                {row.broken_data ? (
+                                    BROKEN_DATA
+                                ) : !filters_off &&
+                                  row.bot_detection_results?.ai_review_params?.type === "full" &&
+                                  !row.second_player_is_bot &&
+                                  row.second_player_filter_match ? (
+                                    <i className="fa fa-exclamation-circle" />
+                                ) : null}
+                            </span>
+                        ),
+                        cellProps: {
+                            style: { textAlign: "center" },
                         },
                     },
                     ...(show_all
