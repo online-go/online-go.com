@@ -42,7 +42,7 @@ type GroomedGameAIDetection = rest_api.GameAIDetection & {
 export function AIDetection(): React.ReactElement | null {
     const user = data.get("user");
     const [player_filter, setPlayerFilter] = React.useState<number>();
-    const [apl_threshold, setAplThreshold] = React.useState<number>(-100);
+    const [apl_threshold, setAplThreshold] = React.useState<number>(100);
     const [ailr_threshold, setAilrThreshold] = React.useState<number>(0);
     const [blur_threshold, setBlurThreshold] = React.useState<number>(0);
     const [apply_filters, setApplyFilters] = React.useState<boolean>(false);
@@ -83,32 +83,35 @@ export function AIDetection(): React.ReactElement | null {
                         />
                         <label htmlFor="apply-filters">full reviews with:</label>
                     </div>
-                    <div>
-                        <label>APL ≥ </label>
+                    <div style={{ opacity: apply_filters ? 1 : 0.5 }}>
+                        <label>APL ≤ </label>
                         <input
                             type="number"
                             value={apl_threshold}
                             onChange={(e) => setAplThreshold(Number(e.target.value))}
                             style={{ width: "4rem" }}
+                            disabled={!apply_filters}
                         />
                     </div>
-                    <div>
+                    <div style={{ opacity: apply_filters ? 1 : 0.5 }}>
                         <label>Blur ≥ </label>
                         <input
                             type="number"
                             value={blur_threshold}
                             onChange={(e) => setBlurThreshold(Number(e.target.value))}
                             style={{ width: "4rem" }}
+                            disabled={!apply_filters}
                         />
                         <span>%</span>
                     </div>
-                    <div>
+                    <div style={{ opacity: apply_filters ? 1 : 0.5 }}>
                         <label>AILR ≥ </label>
                         <input
                             type="number"
                             value={ailr_threshold}
                             onChange={(e) => setAilrThreshold(Number(e.target.value))}
                             style={{ width: "4rem" }}
+                            disabled={!apply_filters}
                         />
                         <span>%</span>
                     </div>
@@ -201,14 +204,14 @@ export function AIDetection(): React.ReactElement | null {
 
                             const should_show =
                                 !apply_filters ||
-                                row.first_player_is_bot ||
-                                (firstPlayerApl >= apl_threshold &&
-                                    firstPlayerAilr >= ailr_threshold &&
-                                    firstPlayerBlur >= blur_threshold) ||
-                                row.second_player_is_bot ||
-                                (secondPlayerApl >= apl_threshold &&
-                                    secondPlayerAilr >= ailr_threshold &&
-                                    secondPlayerBlur >= blur_threshold);
+                                ((row.first_player_is_bot ||
+                                    (firstPlayerApl <= apl_threshold &&
+                                        firstPlayerAilr >= ailr_threshold &&
+                                        firstPlayerBlur >= blur_threshold)) &&
+                                    (row.second_player_is_bot ||
+                                        (secondPlayerApl <= apl_threshold &&
+                                            secondPlayerAilr >= ailr_threshold &&
+                                            secondPlayerBlur >= blur_threshold)));
                             return should_show;
                         });
                 }}
@@ -294,9 +297,11 @@ export function AIDetection(): React.ReactElement | null {
                                     title="Average point loss per move"
                                     style={{ color: row.first_player_is_bot ? "#666" : undefined }}
                                 >
-                                    {row.bot_detection_results[
-                                        row.first_column_player
-                                    ].average_point_loss.toFixed(2)}
+                                    {
+                                        -row.bot_detection_results[
+                                            row.first_column_player
+                                        ].average_point_loss.toFixed(2)
+                                    }
                                 </span>
                             ) : null,
                     },

@@ -71,7 +71,7 @@ declare namespace rest_api {
      * One element of `results` from `player/%player_id%/games`
      */
     interface Game extends GameBase {
-        bot_detection_results: null | Record<string, any>;
+        bot_detection_results: null | BotDetectionResults;
         related: {
             detail: string; // route to full game info
         };
