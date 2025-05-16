@@ -277,6 +277,9 @@ declare namespace rest_api {
 
     interface GameAIDetection extends GameBase {
         final_move_count: number;
+        black_banned: boolean;
+        white_banned: boolean;
+        game_speed: "blitz" | "live" | "correspondence" | "error";
         bot_detection_results: null | BotDetectionResults;
     }
 
