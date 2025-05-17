@@ -40,7 +40,9 @@ export function JosekiTagSelector(props: JosekiTagSelectorProps) {
 
     return (
         <Select
-            className="joseki-tag-selector"
+            className={
+                "joseki-tag-selector " + (props.selected_tags.length > 0 ? "filter-active" : "")
+            }
             classNamePrefix="ogs-react-select"
             value={props.selected_tags}
             options={props.available_tags}

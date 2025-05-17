@@ -1728,7 +1728,7 @@ class ExplorePane extends React.Component<ExploreProps, ExploreState> {
                     )}
                 </div>
                 <div className={"extra-info-column extra-info-open"}>
-                    <div className="btn-group extra-info-selector">
+                    <div className={"btn-group extra-info-selector"}>
                         <button
                             className={
                                 "btn s " +
@@ -1742,7 +1742,13 @@ class ExplorePane extends React.Component<ExploreProps, ExploreState> {
                                     : this.showFilterSelector
                             }
                         >
-                            <span>{_("Filter")}</span>
+                            <span>
+                                {_("Filter") +
+                                    (this.state.extra_info_selected !== "variation-filter" &&
+                                    filter_active
+                                        ? " *"
+                                        : "")}
+                            </span>
                             {this.state.extra_info_selected === "variation-filter" ? (
                                 <i className={"fa fa-filter hide"} />
                             ) : (
@@ -1828,7 +1834,9 @@ class ExplorePane extends React.Component<ExploreProps, ExploreState> {
                     )}
 
                     {this.state.extra_info_selected === "variation-filter" && (
-                        <div className="filter-container">
+                        <div
+                            className={"filter-container" + (filter_active ? " filter-active" : "")}
+                        >
                             <JosekiVariationFilter
                                 contributor_list_url={server_url + "contributors"}
                                 source_list_url={server_url + "josekisources"}

@@ -397,6 +397,20 @@
                 themed: background-color shade4;
             }
 
+            .filter-container.filter-active {
+                .joseki-tag-selector.filter-active {
+                    .ogs-react-select__value-container {
+                        themed: background shade0;
+                    }
+                }
+            }
+
+            .joseki-variation-filter {
+                select.filter-active {
+                    themed: background shade0;
+                }
+            }
+
             .discussion-container {
                 display: flex;
                 flex-direction: column;
@@ -463,6 +477,12 @@
 
                 div {
                     margin-left: 0.5rem;
+                }
+            }
+
+            .extra-info-selector.filter-active {
+                .ogs-react-select__value-container {
+                    themed: background shade0;
                 }
             }
         }
