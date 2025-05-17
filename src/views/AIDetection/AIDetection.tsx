@@ -96,33 +96,33 @@ export function AIDetection(): React.ReactElement | null {
                         <label htmlFor="apply-filters">full reviews with:</label>
                     </div>
                     <div>
-                        <label>APL {"<"} </label>
+                        <label style={{ opacity: filters_off ? 0.5 : 1 }}>APL {"<"} </label>
                         <input
                             type="number"
                             value={apl_threshold}
                             onChange={(e) => setAplThreshold(Number(e.target.value))}
-                            style={{ width: "4rem" }}
+                            style={{ width: "4rem", opacity: filters_off ? 0.5 : 1 }}
                         />
                     </div>
                     <div>
-                        <label>Blur {">"} </label>
+                        <label style={{ opacity: filters_off ? 0.5 : 1 }}>Blur ≥ </label>
                         <input
                             type="number"
                             value={blur_threshold}
                             onChange={(e) => setBlurThreshold(Number(e.target.value))}
-                            style={{ width: "4rem" }}
+                            style={{ width: "4rem", opacity: filters_off ? 0.5 : 1 }}
                         />
-                        <span>%</span>
+                        <span style={{ opacity: filters_off ? 0.5 : 1 }}>%</span>
                     </div>
                     <div>
-                        <label>AILR {">"} </label>
+                        <label style={{ opacity: filters_off ? 0.5 : 1 }}>AILR ≥ </label>
                         <input
                             type="number"
                             value={ailr_threshold}
                             onChange={(e) => setAilrThreshold(Number(e.target.value))}
-                            style={{ width: "4rem" }}
+                            style={{ width: "4rem", opacity: filters_off ? 0.5 : 1 }}
                         />
-                        <span>%</span>
+                        <span style={{ opacity: filters_off ? 0.5 : 1 }}>%</span>
                     </div>
                 </div>
             </div>
@@ -180,10 +180,10 @@ export function AIDetection(): React.ReactElement | null {
                             const secondPlayerApl = Math.abs(
                                 secondPlayerResults?.average_point_loss || 0,
                             );
-                            const firstPlayerAilr = firstPlayerResults?.AILR || 0;
-                            const secondPlayerAilr = secondPlayerResults?.AILR || 0;
-                            const firstPlayerBlur = firstPlayerResults?.blur_rate || 0;
-                            const secondPlayerBlur = secondPlayerResults?.blur_rate || 0;
+                            const firstPlayerAilr = firstPlayerResults?.AILR ?? 0;
+                            const secondPlayerAilr = secondPlayerResults?.AILR ?? 0;
+                            const firstPlayerBlur = firstPlayerResults?.blur_rate ?? 0;
+                            const secondPlayerBlur = secondPlayerResults?.blur_rate ?? 0;
 
                             const broken_data =
                                 row.bot_detection_results?.ai_review_params?.type === "full" &&
@@ -193,14 +193,14 @@ export function AIDetection(): React.ReactElement | null {
                             const firstPlayerFilterMatch =
                                 !broken_data &&
                                 firstPlayerApl < apl_threshold &&
-                                firstPlayerAilr > ailr_threshold &&
-                                firstPlayerBlur > blur_threshold;
+                                firstPlayerAilr >= ailr_threshold &&
+                                firstPlayerBlur >= blur_threshold;
 
                             const secondPlayerFilterMatch =
                                 !broken_data &&
                                 secondPlayerApl < apl_threshold &&
-                                secondPlayerAilr > ailr_threshold &&
-                                secondPlayerBlur > blur_threshold;
+                                secondPlayerAilr >= ailr_threshold &&
+                                secondPlayerBlur >= blur_threshold;
 
                             return {
                                 ...row,
