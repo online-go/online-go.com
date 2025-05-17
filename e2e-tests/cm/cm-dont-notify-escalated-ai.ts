@@ -98,6 +98,13 @@ export const cmDontNotifyEscalatedAiTest = async (
 
         await assertIncidentReportIndicatorInactive(otherAiCMDetectorPage);
 
+        // and check that the CM AI Assessor doesn't get notified
+        const { seededCMPage: otherAiCMAssessorPage } = await setupSeededCM(
+            browser,
+            "E2E_CM_DNEA_AI_ASSESSOR",
+        );
+
+        await assertIncidentReportIndicatorInactive(otherAiCMAssessorPage);
         // reporter cleans up their report
         await reporterPage.goto("/reports-center");
         const myReports = reporterPage.getByText("My Own Reports");

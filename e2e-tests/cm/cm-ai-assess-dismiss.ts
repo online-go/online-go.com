@@ -91,6 +91,9 @@ export const cmAiAssessDismissTest = async (
         const voteButton = await expectOGSClickableByName(aiDetectorCMPage, /Vote$/);
         await voteButton.click();
 
+        // It should have gone to the assessor queue
+        await assertIncidentReportIndicatorInactive(aiDetectorCMPage);
+
         // Now the CM AI assessors should see it and have to vote
         const aiAssessors = ["E2E_CM_DNEA_AI_V1", "E2E_CM_DNEA_AI_V2", "E2E_CM_DNEA_AI_V3"];
 
@@ -122,8 +125,26 @@ export const cmAiAssessDismissTest = async (
             await voteButton.click();
         }
 
-        // the report should be dealt with now
+        // the report should be dealt with now from their perspective
         await assertIncidentReportIndicatorInactive(aiAssessorContexts[0].aiCMPage);
+
+        // it should be back in the AI Detection queue
+
+        await assertIncidentReportIndicatorActive(aiDetectorCMPage, 1);
+
+        // and the reporter should see it still
+        await reporterPage.goto("/reports-center");
+        await expect(reporterPage.getByText("My Own Reports")).toBeVisible();
+
+        // the AI Detector should be able to dismiss it
+
+        // Select the "dismiss" option...
+        await aiDetectorCMPage.locator('.action-selector input[type="radio"]').nth(2).click();
+
+        await voteButton.click();
+
+        // it should be gone
+        await assertIncidentReportIndicatorInactive(aiDetectorCMPage);
         await assertIncidentReportIndicatorInactive(reporterPage);
     });
 };
