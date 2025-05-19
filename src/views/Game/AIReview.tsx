@@ -126,6 +126,13 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
         window.aireview = this;
     }
 
+    powerToSeeTable(moderator_powers: number | undefined) {
+        return (
+            ((moderator_powers ?? 0) & MODERATOR_POWERS.AI_DETECTOR) !== 0 ||
+            ((moderator_powers ?? 0) & MODERATOR_POWERS.ASSESS_AI_PLAY) !== 0
+        );
+    }
+
     componentDidMount() {
         this.getAIReviewList();
         const ai_table_out = this.AiSummaryTableRowList();
@@ -137,10 +144,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
 
         const user = data.get("user");
         const canViewTable =
-            user.is_moderator ||
-            ((this.props.reportContext?.moderator_powers ?? 0) &
-                MODERATOR_POWERS.ASSESS_AI_REPORTS) !==
-                0;
+            user.is_moderator || this.powerToSeeTable(this.props.reportContext?.moderator_powers);
 
         this.setState({
             hide_table: !canViewTable,
@@ -296,10 +300,13 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
 
     setSelectedAIReview = (ai_review: JGOFAIReview) => {
         close_all_popovers();
+        const user = data.get("user");
+        const canViewTable =
+            user.is_moderator || this.powerToSeeTable(this.props.reportContext?.moderator_powers);
         this.updateAIReviewMetadata(ai_review);
         this.setState({
             selected_ai_review: ai_review,
-            hide_table: false,
+            hide_table: !canViewTable,
         });
         this.props.onAIReviewSelected(ai_review);
         this.syncAIReview();
@@ -1388,6 +1395,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
         const show_become_supporter_text =
             !user.anonymous && !user.supporter && !user.is_moderator && !user.professional;
 
+        console.log("ai review", this.props.reportContext);
         return (
             <div className="AIReview">
                 <UIPush
@@ -1579,10 +1587,9 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                                 <div className="worst-moves-summary-toggle-container">
                                     {this.renderWorstMoveList(worst_move_list)}
                                     {(user.is_moderator ||
-                                        (this.props.reportContext &&
-                                            (data.get("user").moderator_powers &
-                                                MODERATOR_POWERS.ASSESS_AI_REPORTS) !==
-                                                0)) &&
+                                        this.powerToSeeTable(
+                                            this.props.reportContext?.moderator_powers,
+                                        )) &&
                                         this.ai_review?.engine.includes("katago") && (
                                             <div className="ai-summary-toggler">
                                                 <span>
@@ -1717,9 +1724,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                     </div>
                 )*/}
                 {(data.get("user").is_moderator ||
-                    (this.props.reportContext &&
-                        (data.get("user").moderator_powers & MODERATOR_POWERS.ASSESS_AI_REPORTS) !==
-                            0)) &&
+                    this.powerToSeeTable(this.props.reportContext?.moderator_powers)) &&
                     this.ai_review?.engine.includes("katago") && (
                         <div>
                             <AiSummaryTable

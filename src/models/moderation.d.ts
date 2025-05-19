@@ -84,16 +84,23 @@ declare namespace rest_api {
             | "suspend_user_and_annul"
             | "escalate"
             | "definitely_ai"
-            | "check_ai_tools"
+            | "ai_like"
+            | "human_like"
+            | "assess_ai_play"
             | "no_ai_use_evident"
             | "no_ai_use_bad_report";
 
         // Regrettably, there's another definition of Vote in goban ServerToClient.ts
-        // I wonder how we unity the rest_api and goban interfaces...
+        // I wonder how we unify the rest_api and goban interfaces...
         export interface CommunityModeratorVote {
             voter_id: number;
             action: CommunityModerationAction;
             updated: string;
+        }
+
+        interface VoterNote {
+            voter_id: number;
+            voter_note: string;
         }
         export interface ReportDetail {
             // It's the full information we get from Django when we ask for a report by id
@@ -139,6 +146,7 @@ declare namespace rest_api {
             voters: CommunityModeratorVote[];
             escalation_note: string;
             dissenter_note: string;
+            voter_notes: VoterNote[];
         }
     }
 }

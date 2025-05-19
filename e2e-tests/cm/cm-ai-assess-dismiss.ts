@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// Naughtily using the DNEA test data for this test.
+
 // cspell:words CmDontNotRep AIER DNOT DNEA
 
 /*
@@ -44,7 +46,7 @@ import { expect } from "@playwright/test";
 
 import { withIncidentIndicatorLock } from "@helpers/report-utils";
 
-export const cmDontNotifyEscalatedAiTest = async (
+export const cmAiAssessDismissTest = async (
     { browser }: { browser: Browser },
     testInfo: TestInfo,
 ) => {
@@ -65,11 +67,10 @@ export const cmDontNotifyEscalatedAiTest = async (
             "E2E test reporting AI use: I'm sure he cheated!", // min 40 chars
         );
 
-        // Vote the report into moderation queue direct
-        // It only takes 1 AI detector to escalate the report
-
         const aiDetectorUser = "E2E_CM_DNEA_AI_D1";
         const { seededCMPage: aiDetectorCMPage } = await setupSeededCM(browser, aiDetectorUser);
+
+        // The Detector has to vote it for assessment
 
         const indicator = await assertIncidentReportIndicatorActive(aiDetectorCMPage, 1);
 
@@ -83,37 +84,67 @@ export const cmDontNotifyEscalatedAiTest = async (
             aiDetectorCMPage.getByText("E2E test reporting AI use: I'm sure he cheated!"),
         ).toBeVisible();
 
-        // Select the definite AI option...
-        await aiDetectorCMPage.locator('.action-selector input[type="radio"]').first().click();
+        // Select the "assess" option...
+        await aiDetectorCMPage.locator('.action-selector input[type="radio"]').nth(1).click();
 
         // ... then we should be allowed to vote.
         const voteButton = await expectOGSClickableByName(aiDetectorCMPage, /Vote$/);
         await voteButton.click();
 
-        // Now we're going to check another CM AI Detector doesn't get notified
-        const { seededCMPage: otherAiCMDetectorPage } = await setupSeededCM(
-            browser,
-            "E2E_CM_DNEA_AI_DETECTOR",
-        );
+        // It should have gone to the assessor queue
+        await assertIncidentReportIndicatorInactive(aiDetectorCMPage);
 
-        await assertIncidentReportIndicatorInactive(otherAiCMDetectorPage);
+        // Now the CM AI assessors should see it and have to vote
+        const aiAssessors = ["E2E_CM_DNEA_AI_V1", "E2E_CM_DNEA_AI_V2", "E2E_CM_DNEA_AI_V3"];
 
-        // and check that the CM AI Assessor doesn't get notified
-        const { seededCMPage: otherAiCMAssessorPage } = await setupSeededCM(
-            browser,
-            "E2E_CM_DNEA_AI_ASSESSOR",
-        );
+        const aiAssessorContexts = [];
+        for (const aiUser of aiAssessors) {
+            const { seededCMPage: aiCMPage, seededCMContext: aiContext } = await setupSeededCM(
+                browser,
+                aiUser,
+            );
 
-        await assertIncidentReportIndicatorInactive(otherAiCMAssessorPage);
-        // reporter cleans up their report
+            aiAssessorContexts.push({ aiCMPage, aiContext }); // keep them alive for the duration of the test, for debugging
+
+            const indicator = await assertIncidentReportIndicatorActive(aiCMPage, 1);
+
+            await indicator.click();
+
+            await expect(aiCMPage.getByRole("heading", { name: "Reports Center" })).toBeVisible();
+
+            await expect(
+                aiCMPage.getByText("E2E test reporting AI use: I'm sure he cheated!"),
+            ).toBeVisible();
+
+            // Select the not AI option...
+            await aiCMPage.locator('.action-selector input[type="radio"]').nth(1).click();
+
+            // ... then we should be allowed to vote.
+
+            const voteButton = await expectOGSClickableByName(aiCMPage, /Vote$/);
+            await voteButton.click();
+        }
+
+        // the report should be dealt with now from their perspective
+        await assertIncidentReportIndicatorInactive(aiAssessorContexts[0].aiCMPage);
+
+        // it should be back in the AI Detection queue
+
+        await assertIncidentReportIndicatorActive(aiDetectorCMPage, 1);
+
+        // and the reporter should see it still
         await reporterPage.goto("/reports-center");
-        const myReports = reporterPage.getByText("My Own Reports");
-        await expect(myReports).toBeVisible();
-        await myReports.click();
+        await expect(reporterPage.getByText("My Own Reports")).toBeVisible();
 
-        const cancelButton = await expectOGSClickableByName(reporterPage, /Cancel$/);
-        await cancelButton.click();
+        // the AI Detector should be able to dismiss it
 
+        // Select the "dismiss" option...
+        await aiDetectorCMPage.locator('.action-selector input[type="radio"]').nth(2).click();
+
+        await voteButton.click();
+
+        // it should be gone
+        await assertIncidentReportIndicatorInactive(aiDetectorCMPage);
         await assertIncidentReportIndicatorInactive(reporterPage);
     });
 };

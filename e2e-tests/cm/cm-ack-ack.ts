@@ -88,6 +88,9 @@ export const cmAckAcknowledgementTest = async (
         // The report should no longer be active
         await assertIncidentReportIndicatorInactive(cmAssessorContexts[0].CMPage);
 
+        // The reporters should no longer have the report active either
+        await assertIncidentReportIndicatorInactive(reporterPage);
+
         // The reporter should see an acknowledgement
         await reporterPage.goto("/");
 

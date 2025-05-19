@@ -21,7 +21,7 @@
  * Uses init_e2e data:
  * - E2E_CM_VWNAI_ACCUSED : user supposedly used AI
  * - "E2E CM VWNAI Game" : game in which the AI use supposedly occurred
- * - E2E_CM_VWNAI_AI_V1, E2E_CM_VWNAI_AI_V2, E2E_CM_VWNAI_AI_V3 : AI assessors who vote
+ * - E2E_CM_VWNAI_AI_V1: AI assessor who votes
  */
 
 import { Browser, TestInfo } from "@playwright/test";
@@ -64,35 +64,29 @@ export const cmVoteWarnNotAITest = async (
 
         // Vote to warn the reporter that it was not a good AI report
 
-        const aiAssessors = ["E2E_CM_VWNAI_AI_V1", "E2E_CM_VWNAI_AI_V2", "E2E_CM_VWNAI_AI_V3"];
+        const aiAssessor = "E2E_CM_VWNAI_AI_V1";
 
-        const aiAssessorContexts = [];
-        for (const aiUser of aiAssessors) {
-            const { seededCMPage: aiCMPage, seededCMContext: aiContext } = await setupSeededCM(
-                browser,
-                aiUser,
-            );
+        const { seededCMPage: aiCMPage } = await setupSeededCM(browser, aiAssessor);
 
-            aiAssessorContexts.push({ aiCMPage, aiContext }); // keep them alive for the duration of the test
+        const indicator = await assertIncidentReportIndicatorActive(aiCMPage, 1);
 
-            const indicator = await assertIncidentReportIndicatorActive(aiCMPage, 1);
+        await indicator.click();
 
-            await indicator.click();
+        await expect(aiCMPage.getByRole("heading", { name: "Reports Center" })).toBeVisible();
 
-            await expect(aiCMPage.getByRole("heading", { name: "Reports Center" })).toBeVisible();
+        await expect(
+            aiCMPage.getByText("E2E test reporting AI use: I just have this feeling."),
+        ).toBeVisible();
 
-            await expect(
-                aiCMPage.getByText("E2E test reporting AI use: I just have this feeling."),
-            ).toBeVisible();
+        // Select the not-AI option...
+        await aiCMPage.locator('.action-selector input[type="radio"]').nth(3).click();
 
-            // Select the definite AI option...
-            await aiCMPage.locator('.action-selector input[type="radio"]').nth(3).click();
-
-            const voteButton = await expectOGSClickableByName(aiCMPage, /Vote$/);
-            await voteButton.click();
-        }
+        const voteButton = await expectOGSClickableByName(aiCMPage, /Vote$/);
+        await voteButton.click();
 
         // The report should no longer be active
-        await assertIncidentReportIndicatorInactive(aiAssessorContexts[0].aiCMPage);
+        await assertIncidentReportIndicatorInactive(aiCMPage);
+
+        // checking the warning is delivered is in cm-ack-warning.ts
     });
 };

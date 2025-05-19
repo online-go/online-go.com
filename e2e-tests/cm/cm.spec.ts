@@ -23,6 +23,7 @@ import { cmShowOnlyPostEscalationVotesTest } from "./cm-show-only-post-escalatio
 import { cmVoteWarnNotAITest } from "./cm-vote-warn-not-ai";
 import { cmAckWarningTest } from "./cm-ack-warning";
 import { cmAckAcknowledgementTest } from "./cm-ack-ack";
+import { cmAiAssessDismissTest } from "./cm-ai-assess-dismiss";
 
 ogsTest.describe("@CM Community Moderation Tests", () => {
     ogsTest("CM should be able to vote on their own report", cmVoteOnOwnReportTest);
@@ -31,4 +32,5 @@ ogsTest.describe("@CM Community Moderation Tests", () => {
     ogsTest("We should warn when an AI report is unfounded", cmVoteWarnNotAITest);
     ogsTest("We should be able to acknowledge warnings", cmAckWarningTest);
     ogsTest("We should be able to acknowledge acknowledgements", cmAckAcknowledgementTest);
+    ogsTest("AI Assessors should be able to dismiss AI reports", cmAiAssessDismissTest);
 });
