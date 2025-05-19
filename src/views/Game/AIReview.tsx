@@ -310,7 +310,12 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
         if (user.anonymous) {
             void alert.fire(_("Please sign in first"));
         } else {
-            if (user.supporter || user.professional || user.is_moderator) {
+            if (
+                user.supporter ||
+                user.professional ||
+                user.is_moderator ||
+                (user.moderator_powers & MODERATOR_POWERS.AI_DETECTOR) !== 0
+            ) {
                 post(`games/${this.getGameId()}/ai_reviews`, {
                     type: analysis_type,
                     engine: engine,
@@ -1331,7 +1336,10 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                 user.id === goban.engine.players.white.id
             ) {
                 show_full_ai_review_button = true;
-            } else if (user.is_moderator) {
+            } else if (
+                user.is_moderator ||
+                (user.moderator_powers & MODERATOR_POWERS.AI_DETECTOR) !== 0
+            ) {
                 show_full_ai_review_button = true;
             } else {
                 show_full_ai_review_button = null;
