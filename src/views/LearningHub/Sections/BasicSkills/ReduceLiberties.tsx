@@ -21,7 +21,7 @@ import { LearningPage, LearningPageProperties } from "../../LearningPage";
 import { _, pgettext } from "@/lib/translate";
 import { LearningHubSection } from "../../LearningHubSection";
 
-export class Liberties extends LearningHubSection {
+export class ReduceLiberties extends LearningHubSection {
     static pages(): Array<typeof LearningPage> {
         return [
             Page01,
@@ -49,10 +49,10 @@ export class Liberties extends LearningHubSection {
         ];
     }
     static section(): string {
-        return "liberties";
+        return "reduce-liberties";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning reduce liberties", "Liberties");
+        return pgettext("Tutorial section name on learning reduce liberties", "Reduce Liberties");
     }
     static subtext(): string {
         return pgettext(
@@ -69,7 +69,7 @@ class Page01 extends LearningPage {
 
     text() {
         return _(
-            "You can attack a chain by taking away a liberty. In doing so, try to accomplish other goals as well, such as connecting your stones or protecting territory. White to play. Choose the best way to reduce liberties, A, B or C.",
+            "You can attack a chain by taking away a liberty. In doing so, try to achieve other goals as well, such as connecting your stones or protecting territory. White to play. Choose the best way to reduce liberties, A, B or C.",
         );
     }
     config(): GobanConfig {

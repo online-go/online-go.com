@@ -200,7 +200,7 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
         return ret;
     }
 
-    abstract text(): string;
+    abstract text(): string | React.ReactElement;
     abstract config(): GobanConfig;
     button(): any {
         return null;
