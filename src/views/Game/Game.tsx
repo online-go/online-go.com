@@ -1767,7 +1767,8 @@ export function Game(): React.ReactElement | null {
                         {view_mode === "portrait" &&
                             !zen_mode &&
                             user_is_player &&
-                            phase !== "finished" && <CancelButton className="bold reject" />}
+                            mode === "play" &&
+                            phase === "play" && <CancelButton className="bold reject" />}
 
                         {view_mode === "portrait" && !zen_mode && (
                             <GameDock
