@@ -25,6 +25,7 @@ import { ReviewStrengthIcon } from "@/views/Game/AIReview";
 import { PlayerAutocomplete } from "@/components/PlayerAutocomplete";
 import { useSearchParams } from "react-router-dom";
 import { getGameResultRichText } from "../User/GameHistoryTable";
+import { fetch, lookup } from "@/lib/player_cache";
 //import { alert } from "@/lib/swal_config";
 
 const MIN_ANALYZER_VERSION = "2025-05-13-04";
@@ -50,17 +51,137 @@ export function AIDetection(): React.ReactElement | null {
     const blur_off = 0;
 
     const user = data.get("user");
-    const [player_filter, setPlayerFilter] = React.useState<number>();
-    const [apl_threshold, setAplThreshold] = React.useState<number>(apl_off);
-    const [ailr_threshold, setAilrThreshold] = React.useState<number>(ailr_off);
-    const [blur_threshold, setBlurThreshold] = React.useState<number>(blur_off);
-    const [apply_filters, setApplyFilters] = React.useState<boolean>(false);
-    const [searchParams] = useSearchParams();
+    const [searchParams, setSearchParams] = useSearchParams();
     const show_all = searchParams.get("show_all") === "true";
     const tableRef = React.useRef<{ refresh: () => void }>(null);
 
+    // Initialize state from URL params
+    const [player_filter, setPlayerFilter] = React.useState<number | undefined>(
+        searchParams.get("player") ? Number(searchParams.get("player")) : undefined,
+    );
+    const [player_data_ready, setPlayerDataReady] = React.useState(false);
+    const player_fetch_ref = React.useRef<Promise<any> | null>(null);
+    const [apl_threshold, setAplThreshold] = React.useState<number>(
+        searchParams.get("apl") ? Number(searchParams.get("apl")) : apl_off,
+    );
+    const [ailr_threshold, setAilrThreshold] = React.useState<number>(
+        searchParams.get("ailr") ? Number(searchParams.get("ailr")) : ailr_off,
+    );
+    const [blur_threshold, setBlurThreshold] = React.useState<number>(
+        searchParams.get("blur") ? Number(searchParams.get("blur")) : blur_off,
+    );
+    const [apply_filters, setApplyFilters] = React.useState<boolean>(
+        searchParams.get("apply_filters") === "true",
+    );
+
+    // Derive filter values to ensure they're stable between renders
+    const filterValues = React.useMemo(
+        () => ({
+            apl_threshold,
+            ailr_threshold,
+            blur_threshold,
+            apply_filters,
+        }),
+        [apl_threshold, ailr_threshold, blur_threshold, apply_filters],
+    );
+
+    // Fetch player data when component mounts with a player ID
     React.useEffect(() => {
-        tableRef.current?.refresh();
+        if (player_filter) {
+            console.log("Fetching player data for ID:", player_filter);
+            setPlayerDataReady(false);
+            player_fetch_ref.current = fetch(player_filter)
+                .then((player) => {
+                    console.log("Player data fetched:", player);
+                    setPlayerDataReady(true);
+                    return player;
+                })
+                .catch((err) => {
+                    console.error("Error fetching player:", err);
+                    setPlayerDataReady(true); // Still set to true so we don't block rendering
+                    throw err;
+                });
+        } else {
+            setPlayerDataReady(true);
+            player_fetch_ref.current = null;
+        }
+    }, [player_filter]);
+
+    // Update URL when filters change
+    React.useEffect(() => {
+        const updateUrl = async () => {
+            const newParams = new URLSearchParams(searchParams);
+
+            if (player_filter !== undefined) {
+                // Wait for player fetch to complete if it's in progress
+                if (player_fetch_ref.current) {
+                    try {
+                        console.log("Waiting for player fetch to complete...");
+                        const player = await player_fetch_ref.current;
+                        console.log("Player fetch completed:", player);
+                    } catch (err) {
+                        console.error("Error in player fetch:", err);
+                    }
+                }
+                newParams.set("player", player_filter.toString());
+            } else {
+                newParams.delete("player");
+            }
+
+            if (apl_threshold !== apl_off) {
+                newParams.set("apl", apl_threshold.toString());
+            } else {
+                newParams.delete("apl");
+            }
+
+            if (ailr_threshold !== ailr_off) {
+                newParams.set("ailr", ailr_threshold.toString());
+            } else {
+                newParams.delete("ailr");
+            }
+
+            if (blur_threshold !== blur_off) {
+                newParams.set("blur", blur_threshold.toString());
+            } else {
+                newParams.delete("blur");
+            }
+
+            if (apply_filters) {
+                newParams.set("apply_filters", "true");
+            } else {
+                newParams.delete("apply_filters");
+            }
+
+            setSearchParams(newParams);
+        };
+
+        void updateUrl();
+    }, [
+        player_filter,
+        apl_threshold,
+        ailr_threshold,
+        blur_threshold,
+        apply_filters,
+        setSearchParams,
+    ]);
+
+    // Log when player_filter changes
+    React.useEffect(() => {
+        console.log("player_filter changed to:", player_filter);
+        if (player_filter) {
+            const cached_player = lookup(player_filter);
+            console.log("Cached player data:", cached_player);
+        }
+    }, [player_filter]);
+
+    // Refresh table when filter values change
+    React.useEffect(() => {
+        if (tableRef.current) {
+            // Use setTimeout to ensure this runs after the data processing
+            setTimeout(() => {
+                tableRef.current?.refresh();
+            }, 0);
+        }
     }, [apl_threshold, ailr_threshold, blur_threshold, apply_filters]);
 
     if (!user.is_moderator && (user.moderator_powers & MODERATOR_POWERS.AI_DETECTOR) === 0) {
@@ -79,11 +200,14 @@ export function AIDetection(): React.ReactElement | null {
                     style={{ display: "flex", alignItems: "center", paddingBottom: "0.5rem" }}
                 >
                     <i className="fa fa-search"></i>
-                    <PlayerAutocomplete
-                        onComplete={(player) => {
-                            setPlayerFilter(player?.id);
-                        }}
-                    />
+                    {player_data_ready && (
+                        <PlayerAutocomplete
+                            onComplete={(player) => {
+                                setPlayerFilter(player?.id);
+                            }}
+                            playerId={player_filter}
+                        />
+                    )}
                 </div>
                 <div style={{ display: "flex", gap: "1rem", marginBottom: "1rem" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
@@ -192,15 +316,15 @@ export function AIDetection(): React.ReactElement | null {
 
                             const firstPlayerFilterMatch =
                                 !broken_data &&
-                                firstPlayerApl < apl_threshold &&
-                                firstPlayerAilr >= ailr_threshold &&
-                                firstPlayerBlur >= blur_threshold;
+                                firstPlayerApl < filterValues.apl_threshold &&
+                                firstPlayerAilr >= filterValues.ailr_threshold &&
+                                firstPlayerBlur >= filterValues.blur_threshold;
 
                             const secondPlayerFilterMatch =
                                 !broken_data &&
-                                secondPlayerApl < apl_threshold &&
-                                secondPlayerAilr >= ailr_threshold &&
-                                secondPlayerBlur >= blur_threshold;
+                                secondPlayerApl < filterValues.apl_threshold &&
+                                secondPlayerAilr >= filterValues.ailr_threshold &&
+                                secondPlayerBlur >= filterValues.blur_threshold;
 
                             return {
                                 ...row,
@@ -222,13 +346,13 @@ export function AIDetection(): React.ReactElement | null {
                             };
                         })
                         .filter((row) => {
-                            if (!apply_filters) {
+                            if (!filterValues.apply_filters) {
                                 return true;
                             }
 
                             if (
                                 !row.bot_detection_results ||
-                                row.bot_detection_results.ai_review_params.type !== "full"
+                                row.bot_detection_results.ai_review_params?.type !== "full"
                             ) {
                                 return false;
                             }
