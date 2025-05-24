@@ -258,3 +258,7 @@ export function parseNumberInput(input: string): number | null {
     const num = parseInt(input);
     return Number.isFinite(num) ? num : null;
 }
+
+export function isRuleSet(v: string): v is RuleSet {
+    return ["japanese", "chinese", "aga", "korean", "nz", "ing"].includes(v);
+}

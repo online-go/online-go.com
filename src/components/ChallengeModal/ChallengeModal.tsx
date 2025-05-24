@@ -58,6 +58,7 @@ import {
     isKomiOption,
     sanitizeDemoSettings,
     parseNumberInput,
+    isRuleSet,
 } from "@/components/ChallengeModal/ChallengeModal.utils";
 import {
     ChallengeDetails,
@@ -828,8 +829,17 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
             ? this.update_demo_settings((prev) => ({ ...prev, height: height }))
             : this.update_game_settings((prev) => ({ ...prev, height: height }));
 
-    update_rules = (ev: React.ChangeEvent<HTMLSelectElement>) =>
-        this.upstate(this.gameStateName("rules"), ev);
+    update_rules = (rules: string) => {
+        if (!isRuleSet(rules)) {
+            return;
+        }
+        if (this.props.mode === "demo") {
+            // Note: I wasn't able to see a rules input in the challenge computer modal
+            this.update_demo_settings((prev) => ({ ...prev, rules: rules }));
+        } else {
+            this.update_game_settings((prev) => ({ ...prev, rules: rules }));
+        }
+    };
     update_handicap = (handicap: number) =>
         this.update_game_settings((prev) => ({ ...prev, handicap: handicap }));
 
@@ -1179,7 +1189,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                             <select
                                 id="challenge-rules"
                                 value={this.gameState().rules}
-                                onChange={this.update_rules}
+                                onChange={(ev) => this.update_rules(ev.target.value)}
                                 className="challenge-dropdown form-control"
                             >
                                 <option value="aga">{_("AGA")}</option>
