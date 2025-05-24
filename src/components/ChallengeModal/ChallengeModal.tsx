@@ -59,6 +59,7 @@ import {
     sanitizeDemoSettings,
     parseNumberInput,
     isRuleSet,
+    isColorSelectionOption,
 } from "@/components/ChallengeModal/ChallengeModal.utils";
 import {
     ChallengeDetails,
@@ -901,8 +902,12 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         this.props.mode === "demo"
             ? this.update_demo_settings((prev) => ({ ...prev, komi: komi }))
             : this.update_game_settings((prev) => ({ ...prev, komi: komi }));
-    update_challenge_color = (ev: React.ChangeEvent<HTMLSelectElement>) =>
-        this.upstate("challenge.challenger_color", ev);
+    update_challenge_color = (color_selection: string) => {
+        if (!isColorSelectionOption(color_selection)) {
+            return;
+        }
+        this.update_challenge_settings((prev) => ({ ...prev, challenger_color: color_selection }));
+    };
     update_disable_analysis = (ev: React.ChangeEvent<HTMLInputElement>) =>
         this.upstate("challenge.game.disable_analysis", ev);
     update_restrict_rank = (ev: React.ChangeEvent<HTMLInputElement>) =>
@@ -1580,7 +1585,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                             <div className="checkbox">
                                 <select
                                     value={this.state.challenge.challenger_color}
-                                    onChange={this.update_challenge_color}
+                                    onChange={(ev) => this.update_challenge_color(ev.target.value)}
                                     id="challenge-color"
                                     className="challenge-dropdown form-control"
                                 >

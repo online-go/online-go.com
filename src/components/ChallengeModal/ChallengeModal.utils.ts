@@ -262,3 +262,7 @@ export function parseNumberInput(input: string): number | null {
 export function isRuleSet(v: string): v is RuleSet {
     return ["japanese", "chinese", "aga", "korean", "nz", "ing"].includes(v);
 }
+
+export function isColorSelectionOption(v: string): v is rest_api.ColorSelectionOptions {
+    return ["black", "white", "automatic", "random"].includes(v);
+}
