@@ -94,7 +94,7 @@ class Page02 extends LearningPage {
 
     text() {
         return _(
-            'After both players have passed, you enter a "Stone Removal Phase", where you can remove obviously dead stones from play. You could capture these in the game as well, but most players opt not to because it\'s quicker. Remove the dead black stones by clicking them.',
+            'After both players have passed, you enter a "Stone Removal Phase", where you can remove obviously dead stones from play. Remove the dead black stones by clicking them.',
         );
     }
     config(): GobanConfig | GobanEngineConfig {
