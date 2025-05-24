@@ -897,8 +897,10 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
     update_komi_auto =
         this.props.mode === "demo" ? this.update_komi_option_demo : this.update_komi_option_game;
 
-    update_komi = (ev: React.ChangeEvent<HTMLInputElement>) =>
-        this.upstate(this.gameStateName("komi"), ev.target.value || "0");
+    update_komi = (komi: number | null) =>
+        this.props.mode === "demo"
+            ? this.update_demo_settings((prev) => ({ ...prev, komi: komi }))
+            : this.update_game_settings((prev) => ({ ...prev, komi: komi }));
     update_challenge_color = (ev: React.ChangeEvent<HTMLSelectElement>) =>
         this.upstate("challenge.challenger_color", ev);
     update_disable_analysis = (ev: React.ChangeEvent<HTMLInputElement>) =>
@@ -1267,8 +1269,10 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                             <div className="checkbox">
                                 <input
                                     type="number"
-                                    value={game.komi || 0}
-                                    onChange={this.update_komi}
+                                    value={game.komi ?? ""}
+                                    onChange={(ev) =>
+                                        this.update_komi(parseNumberInput(ev.target.value))
+                                    }
                                     className="form-control"
                                     style={{ width: "4em" }}
                                     step="0.5"

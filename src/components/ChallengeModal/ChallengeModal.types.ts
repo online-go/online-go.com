@@ -147,7 +147,7 @@ export type GameInput = {
     height: number | null;
     handicap: number;
     komi_auto: rest_api.KomiOption;
-    komi?: number;
+    komi?: number | null;
     disable_analysis: boolean;
     initial_state: {
         black: string;
@@ -184,7 +184,7 @@ export type DemoSettings = {
     white_ranking: number;
     private: boolean;
     komi_auto: rest_api.KomiOption;
-    komi?: number;
+    komi?: number | null;
 };
 
 export type ChallengeModalState = {

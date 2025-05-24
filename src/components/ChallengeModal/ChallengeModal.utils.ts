@@ -255,8 +255,8 @@ export function isKomiOption(v: string): v is rest_api.KomiOption {
 }
 
 export function parseNumberInput(input: string): number | null {
-    const num = parseInt(input);
-    return Number.isFinite(num) ? num : null;
+    const num = Number(input);
+    return input === "" || !Number.isFinite(num) ? null : num;
 }
 
 export function isRuleSet(v: string): v is RuleSet {
