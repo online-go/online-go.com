@@ -20,25 +20,29 @@ import { pgettext } from "@/lib/translate";
 
 import Select, { MultiValue } from "react-select";
 
-export interface JosekiTag {
+// I have no idea why this is different to the back end type
+// It gets mapped to this from the backend type :shrug:
+export interface OJEJosekiTag {
     value: string;
     label: string;
 }
 
 interface JosekiTagSelectorProps {
-    available_tags: JosekiTag[];
-    selected_tags: JosekiTag[];
-    on_tag_update: (new_value: MultiValue<JosekiTag>) => void;
+    available_tags: OJEJosekiTag[];
+    selected_tags: OJEJosekiTag[];
+    on_tag_update: (new_value: MultiValue<OJEJosekiTag>) => void;
 }
 
 export function JosekiTagSelector(props: JosekiTagSelectorProps) {
-    const onTagChange = (e: MultiValue<JosekiTag>) => {
+    const onTagChange = (e: MultiValue<OJEJosekiTag>) => {
         props.on_tag_update(e);
     };
 
     return (
         <Select
-            className="joseki-tag-selector"
+            className={
+                "joseki-tag-selector " + (props.selected_tags.length > 0 ? "filter-active" : "")
+            }
             classNamePrefix="ogs-react-select"
             value={props.selected_tags}
             options={props.available_tags}

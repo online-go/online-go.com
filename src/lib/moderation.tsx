@@ -32,7 +32,7 @@ export enum MODERATOR_POWERS {
     HANDLE_ESCAPING = 0b010,
     HANDLE_STALLING = 0b100,
     SUSPEND = 0b1000,
-    ASSESS_AI_REPORTS = 0b10000,
+    ASSESS_AI_PLAY = 0b10000,
     SEE_REPORTED_USER_BANNED_STATUS = 0b100000,
     AI_DETECTOR = 0b1000000,
 }
@@ -52,9 +52,9 @@ export const MOD_POWER_NAMES: { [key in MODERATOR_POWERS]: string } = {
         "Handle Stalling Reports",
     ),
     [MODERATOR_POWERS.SUSPEND]: pgettext("A label for a moderator power", "Vote for Suspension"),
-    [MODERATOR_POWERS.ASSESS_AI_REPORTS]: pgettext(
-        "A label for a moderator power",
-        "Assess AI Reports",
+    [MODERATOR_POWERS.ASSESS_AI_PLAY]: pgettext(
+        "A label for a moderator power, to assess gameplay for ai-like moves",
+        "Assess AI Play",
     ),
     [MODERATOR_POWERS.SEE_REPORTED_USER_BANNED_STATUS]: pgettext(
         "A label for a moderator power",

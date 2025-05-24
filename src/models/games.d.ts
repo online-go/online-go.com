@@ -71,7 +71,7 @@ declare namespace rest_api {
      * One element of `results` from `player/%player_id%/games`
      */
     interface Game extends GameBase {
-        bot_detection_results: null | Record<string, any>;
+        bot_detection_results: null | BotDetectionResults;
         related: {
             detail: string; // route to full game info
         };
@@ -234,11 +234,12 @@ declare namespace rest_api {
     interface BotDetectionResults {
         // Parameters of the AI review used for detection
         ai_review_params: AIReviewParams;
+        analyzer_version?: string;
 
         // List of player IDs suspected of using AI/bots
         ai_suspected: number[];
 
-        // Composite scores for both players
+        // Composite scores for both players (seems redundant with the per-player composite scores)
         black_composite: number;
         white_composite: number;
 
@@ -251,7 +252,7 @@ declare namespace rest_api {
             blur_rate: number; // Rate of moves that are "blurry"
             has_sgf_downloads: boolean; // Whether the player downloaded the SGF
             timing_consistency: number; // Measure of move timing consistency
-            AILR: number; // AI Likelihood Ratio
+            AILR: number; // AI-like move Ratio
             composite: number; // Overall composite score
             average_point_loss: number; // Average point loss per move
         };
@@ -274,12 +275,11 @@ declare namespace rest_api {
         };
     }
 
-    interface GameAIDetection {
-        game_id: number;
-        players: {
-            black: games.Player;
-            white: games.Player;
-        };
+    interface GameAIDetection extends GameBase {
+        final_move_count: number;
+        black_banned: boolean;
+        white_banned: boolean;
+        game_speed: "blitz" | "live" | "correspondence" | "error";
         bot_detection_results: null | BotDetectionResults;
     }
 

@@ -34,6 +34,7 @@ const REPORT_TYPE_SELECTIONS: ReportTypeGroup[] = [
             { value: "harassment", label: "Harassment" },
             { value: "sandbagging", label: "Sandbagging" },
             { value: "ai_use", label: "AI Use" },
+            { value: "assess_ai_play", label: "Assess AI Play" },
             { value: "other", label: "Other" },
         ],
     },

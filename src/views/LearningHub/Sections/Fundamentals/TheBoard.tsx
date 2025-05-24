@@ -15,10 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { PuzzleConfig } from "goban";
-import { LearningPage, LearningPageProperties } from "./LearningPage";
+import { GobanConfig } from "goban";
+import { LearningPage, LearningPageProperties } from "../../LearningPage";
 import { _, pgettext } from "@/lib/translate";
-import { LearningHubSection } from "./LearningHubSection";
+import { LearningHubSection } from "../../LearningHubSection";
 
 export class TheBoard extends LearningHubSection {
     static pages(): Array<typeof LearningPage> {
@@ -29,7 +29,7 @@ export class TheBoard extends LearningHubSection {
         return "the-board";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning about the board", "The Board!");
+        return pgettext("Tutorial section name on learning about the board", "The Board");
     }
     static subtext(): string {
         return pgettext(
@@ -49,7 +49,7 @@ class Page1 extends LearningPage {
             "You can play anywhere, but a good general strategy is to focus on the corners first, then sides, then the middle. Play a stone in the upper right hand corner.",
         );
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             mode: "puzzle",
             initial_state: { black: "", white: "" },
@@ -89,7 +89,7 @@ class Page2 extends LearningPage {
             "Go can be played on any size board, but the most common are 9x9 (which you should start on), 13x13, and the most popular, 19x19. Play on the right side of the board (not in a corner)",
         );
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             mode: "puzzle",
             initial_state: { black: "", white: "" },
@@ -137,7 +137,7 @@ class Page3 extends LearningPage {
             'You will note that there are several circles on the board, these are called "Star Points". These are not particularly special, they are just useful for orienting yourself with the board. Play on a star point',
         );
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             mode: "puzzle",
             initial_state: { black: "", white: "" },

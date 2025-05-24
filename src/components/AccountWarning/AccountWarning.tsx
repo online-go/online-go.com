@@ -29,6 +29,7 @@ import { CANNED_MESSAGES } from "./CannedMessages";
 
 const BUTTON_COUNTDOWN_TIME = 10000; // ms;
 
+// This is now better called  "Report System Messages", because it has acks as well as warnings.
 export function AccountWarning() {
     const user = useUser();
     const location = useLocation();
@@ -43,7 +44,7 @@ export function AccountWarning() {
         mainGoban.engine.time_control.speed !== "correspondence";
 
     React.useEffect(() => {
-        if (user && !user.anonymous && user.has_active_warning_flag) {
+        if (user && !user.anonymous && user.has_pending_warnings_system_message) {
             get("me/warning")
                 .then((warning) => {
                     console.log(warning);
@@ -59,7 +60,7 @@ export function AccountWarning() {
         } else {
             setWarning(null);
         }
-    }, [user, user?.has_active_warning_flag]);
+    }, [user, user?.has_pending_warnings_system_message]);
 
     // If a live game is in progress, we'll need to check back later to see if it has
     // finished so we can display the warning...
@@ -86,7 +87,7 @@ export function AccountWarning() {
         return null;
     }
 
-    if (!user || user.anonymous || !user.has_active_warning_flag) {
+    if (!user || user.anonymous || !user.has_pending_warnings_system_message) {
         return null;
     }
 
@@ -100,18 +101,29 @@ export function AccountWarning() {
 
     const ok = () => {
         setWarning(null);
-        void patch(`me/warning/${warning.id}`, { accept: true });
     };
 
+    return <AccountWarningMessage message={warning} onAck={ok} />;
+}
+
+export function AccountWarningMessage(props: {
+    message: rest_api.warnings.Warning;
+    onAck?: () => void;
+}) {
     const Renderers = {
         warning: WarningModal,
         acknowledgement: AckModal,
         info: AckModal,
     };
 
-    const MessageRenderer = Renderers[warning.severity];
+    const ack = () => {
+        void patch(`me/warning/${props.message.id}`, { accept: true });
+        props.onAck?.();
+    };
 
-    return <MessageRenderer warning={warning} accept={ok} />;
+    const MessageRenderer = Renderers[props.message.severity];
+
+    return <MessageRenderer warning={props.message} accept={ack} />;
 }
 
 // Support warnings that carry messages either as a reference to a a canned message, or explicit text...
@@ -122,7 +134,7 @@ interface MessageTextRenderProps {
 function MessageTextRender(props: MessageTextRenderProps): React.ReactElement {
     if (props.warning.message_id) {
         return (
-            <div className="canned-message">
+            <div className={`canned-message ${props.warning.message_id}`}>
                 {CANNED_MESSAGES[props.warning.message_id](props.warning.interpolation_data)}
             </div>
         );
@@ -167,7 +179,8 @@ function WarningModal(props: WarningModalProps): React.ReactElement {
 
     React.useEffect(() => {
         let interval: NodeJS.Timeout | undefined;
-        if (props.warning) {
+        // a force-them-to-read-it delay, unless they already acknowledged it
+        if (props.warning && props.warning.acknowledged === null) {
             const now = Date.now();
             interval = setInterval(() => {
                 setAcceptTime(BUTTON_COUNTDOWN_TIME - (Date.now() - now));

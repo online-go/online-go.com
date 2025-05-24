@@ -3464,7 +3464,15 @@ function renderEliminationEdges(
         return getWhiteBottom(obj);
     };
 
+    const MAX_DRAW_LINES_COUNT = 50000;
+    let failsafe = 0;
+
     const drawLines = (obj: any) => {
+        if (failsafe > MAX_DRAW_LINES_COUNT) {
+            return;
+        }
+        failsafe++;
+
         if (obj.black_src) {
             drawLines(obj.black_src);
             if (
@@ -3537,6 +3545,10 @@ function renderEliminationEdges(
 
     for (const k in last_cur_bucket) {
         drawLines(last_cur_bucket[k]);
+    }
+
+    if (failsafe > MAX_DRAW_LINES_COUNT) {
+        console.warn("Failed to draw all lines, too many lines");
     }
 }
 function layoutEliminationGraph(

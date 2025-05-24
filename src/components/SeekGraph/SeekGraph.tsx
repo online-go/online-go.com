@@ -894,7 +894,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
             list.appendChild(e);
         }
 
-        document.body.appendChild(list);
+        appendModalElement(list);
         this.moveChallengeList(ev);
     }
     closeChallengeList() {
@@ -935,11 +935,23 @@ function createModal(close_callback: () => void, priority: number): SeekGraphMod
     const binding = kb_bind("escape", onClose, priority);
     modal = { modal: elt, binding: binding };
     elt.style.zIndex = priority.toString();
-    document.body.appendChild(elt);
+    appendModalElement(elt);
     return modal;
 }
 
 function removeModal(modal: SeekGraphModal) {
     kb_unbind(modal.binding);
     modal.modal.remove();
+}
+
+function appendModalElement(elt: HTMLElement): HTMLElement {
+    const customGamesElt = document.getElementById("CustomGames");
+    if (!customGamesElt) {
+        return document.body.appendChild(elt);
+    }
+    const seekGraphContainerElt = customGamesElt.querySelector(".seek-graph-container");
+    if (!seekGraphContainerElt) {
+        return document.body.appendChild(elt);
+    }
+    return seekGraphContainerElt.appendChild(elt);
 }

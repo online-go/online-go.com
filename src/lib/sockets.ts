@@ -21,7 +21,20 @@ import { lookingAtOurLiveGame } from "@/components/TimeControl/util";
 
 const debug = new Debug("sockets");
 
-export const socket = new GobanSocket(window.websocket_host ?? window.location.origin);
+let main_websocket_host: string = window.websocket_host ?? window.location.origin;
+try {
+    // can't use `data` here because of a dependency loop
+    if (typeof localStorage !== "undefined" && localStorage.getItem("ogs.websocket_host")) {
+        main_websocket_host = JSON.parse(localStorage.getItem("ogs.websocket_host") as string);
+        console.log("Websocket host overridden to:", main_websocket_host);
+    } else {
+        console.log("Websocket host not overridden");
+    }
+} catch (e) {
+    console.error(e);
+}
+
+export const socket = new GobanSocket(main_websocket_host);
 
 // Updated to be more helpful (shorter) when we know latencies
 socket.options.ping_interval = 10000;

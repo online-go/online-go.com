@@ -72,6 +72,7 @@ export interface PlayerProperties {
     shownotesindicator?: boolean /* add the notes icon if the player has notes */;
     disableCacheUpdate?: boolean;
     forceShowRank?: boolean;
+    showAsBanned?: boolean; // client can request us to render as banned (we can't find out here)
 }
 
 export function Player(props: PlayerProperties): React.ReactElement {
@@ -319,6 +320,10 @@ export function Player(props: PlayerProperties): React.ReactElement {
 
     if (is_black_player) {
         main_attrs.className += " black-player";
+    }
+
+    if (props.showAsBanned) {
+        main_attrs.className += " suspended-player";
     }
 
     if (props.rank !== false) {

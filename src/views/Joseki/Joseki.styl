@@ -397,6 +397,20 @@
                 themed: background-color shade4;
             }
 
+            .filter-container.filter-active {
+                .joseki-tag-selector.filter-active {
+                    .ogs-react-select__value-container {
+                        themed: background shade0;
+                    }
+                }
+            }
+
+            .joseki-variation-filter {
+                select.filter-active {
+                    themed: background shade0;
+                }
+            }
+
             .discussion-container {
                 display: flex;
                 flex-direction: column;
@@ -465,6 +479,12 @@
                     margin-left: 0.5rem;
                 }
             }
+
+            .extra-info-selector.filter-active {
+                .ogs-react-select__value-container {
+                    themed: background shade0;
+                }
+            }
         }
 
         .hide {
@@ -473,7 +493,7 @@
 
         .move-attributes {
             display: grid;
-            // grid-template-colums: 1fr 1fr;
+            // grid-template-columns: 1fr 1fr;
             grid-template-rows: auto;
             grid-row-gap: 1em;
             margin-top: 1em;

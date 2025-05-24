@@ -128,8 +128,18 @@
                     margin-right: 0.8rem;
                 }
 
-                h1, h2, h3 {
+                h1 {
                     margin: 0;
+                    font-size: 1.8rem;  
+                }
+
+                h2 {
+                    margin: 0;
+                }
+
+                h3 {
+                    margin: 0;
+                    font-size: 1rem;  
                 }
 
                 cursor: pointer;
@@ -258,6 +268,7 @@
     .pages {
         display: flex;
         flex-direction: row;
+        flex-wrap: wrap;
 
         .page {
             flex: 1;
@@ -268,6 +279,8 @@
             themed(border-color, shade4);
             themed(color, shade1);
             cursor: pointer;
+            min-width: 1.2rem;
+
 
             &.active {
                 themed(background-color, primary);

@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { decodeMoves, PuzzleConfig } from "goban";
+import { decodeMoves, GobanConfig } from "goban";
 import { sfx } from "@/lib/sfx";
 import { InstructionalGoban } from "./InstructionalGoban";
 import { browserHistory } from "@/lib/ogsHistory";
@@ -200,8 +200,8 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
         return ret;
     }
 
-    abstract text(): string;
-    abstract config(): PuzzleConfig;
+    abstract text(): string | React.ReactElement;
+    abstract config(): GobanConfig;
     button(): any {
         return null;
     }
@@ -321,7 +321,7 @@ export class DummyPage extends LearningPage {
     text() {
         return "Dummy page";
     }
-    config(): PuzzleConfig {
+    config(): GobanConfig {
         return {
             initial_state: {
                 black: "d5e6f5",
