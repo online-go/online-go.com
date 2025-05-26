@@ -1,0 +1,100 @@
+name: Deploy to beta
+
+on:
+    push:
+        branches:
+            - devel
+    workflow_dispatch:
+        inputs:
+            pull_request:
+                type: string
+                description: "Pull request number or branch name to deploy (optional - leave empty for devel)"
+                required: true
+                default: "devel"
+
+jobs:
+    deployment:
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+
+        steps:
+            # Checks-out the repository under $GITHUB_WORKSPACE
+            - uses: actions/checkout@v4
+              with:
+                  ref: ${{ inputs.pull_request || github.ref }}
+                  submodules: recursive
+                  fetch-depth: 0
+                  fetch-tags: true
+                  lfs: true
+
+            - name: Show deployment info
+              run: |
+                  echo "Branch/PR: ${{ inputs.pull_request || github.ref }}"
+                  echo "Current commit:"
+                  git log -1 --oneline
+
+            - name: Version
+              run: |
+                  git describe --long
+
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: "22"
+
+            - name: Setup Sentry CLI
+              uses: matbour/setup-sentry-cli@v1
+              with:
+                  version: latest # optional if 'latest'
+                  token: ${{ secrets.SENTRY_TOKEN }} # from GitHub secrets
+                  organization: online-gocom
+                  project: online-gocom
+
+            - id: "auth"
+              uses: "google-github-actions/auth@v2"
+              with:
+                  credentials_json: ${{ secrets.GCP_CREDENTIALS_JSON }}
+
+            - name: "Set up Cloud SDK"
+              uses: "google-github-actions/setup-gcloud@v2"
+              with:
+                  project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+            - name: GCloud info
+              run: gcloud info
+
+            - name: Cache node modules
+              id: cache-node-modules
+              uses: actions/cache@v4
+              with:
+                  path: node_modules
+                  key: ${{ runner.os }}-node-modules
+
+            - name: yarn install
+              uses: nick-fields/retry@v3
+              with:
+                  timeout_minutes: 10
+                  max_attempts: 3
+                  command: yarn install
+
+            - name: Deploy
+              run: |
+                  echo "${{ secrets.POOTLE_SSH_KEY }}" > /tmp/ssh-key
+                  chmod 600 /tmp/ssh-key
+                  make deploy-to-beta
+              env:
+                  POOTLE_SSH_OPTIONS: "-o StrictHostKeyChecking=no -i /tmp/ssh-key"
+                  BETA_INDEX_AUTH: ${{ secrets.BETA_INDEX_AUTH }}
+                  POOTLE_HOST: ${{ secrets.POOTLE_HOST }}
+                  POOTLE_USER: ${{ secrets.POOTLE_SSH_USER }}
+                  SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+            - uses: ravsamhq/notify-slack-action@v2
+              if: always()
+              with:
+                  status: ${{ job.status }}
+                  token: ${{ secrets.GITHUB_TOKEN }}
+                  notification_title: "{workflow} has {status_message}"
+                  message_format: "{emoji} *{workflow}* {status_message} in <{repo_url}|{repo}> - Branch: ${{ inputs.pull_request || github.ref_name }}"
+                  footer: "Linked Repo <{repo_url}|{repo}> | <{workflow_url}|View Workflow>"
+              env:
+                  SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
