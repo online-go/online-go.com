@@ -192,6 +192,7 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
                 show_correct: false,
                 show_wrong: false,
                 editing: false,
+                hintsOn: false,
             });
             this.fetchPuzzle(parseInt(this.props.match.params.puzzle_id));
         }
