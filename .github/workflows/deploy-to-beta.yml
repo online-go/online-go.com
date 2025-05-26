@@ -1,16 +1,7 @@
 name: Deploy to beta
 
 on:
-    #push:
-    #    branches:
-    #        - devel
     workflow_dispatch:
-        inputs:
-            pull_request:
-                type: string
-                description: "Pull request number (e.g., '123') or branch name to deploy. Leave empty to deploy 'devel' branch."
-                required: false
-                default: ""
 
 jobs:
     deployment:
@@ -18,25 +9,9 @@ jobs:
         timeout-minutes: 10
 
         steps:
-            # Determine the ref to checkout
-            - name: Determine checkout ref
-              id: checkout-ref
-              run: |
-                  if [[ -z "${{ inputs.pull_request }}" ]]; then
-                    echo "ref=devel" >> $GITHUB_OUTPUT
-                    echo "display_name=devel" >> $GITHUB_OUTPUT
-                  elif [[ "${{ inputs.pull_request }}" =~ ^[0-9]+$ ]]; then
-                    echo "ref=refs/pull/${{ inputs.pull_request }}/head" >> $GITHUB_OUTPUT
-                    echo "display_name=PR #${{ inputs.pull_request }}" >> $GITHUB_OUTPUT
-                  else
-                    echo "ref=${{ inputs.pull_request }}" >> $GITHUB_OUTPUT
-                    echo "display_name=${{ inputs.pull_request }}" >> $GITHUB_OUTPUT
-                  fi
-
             # Checks-out the repository under $GITHUB_WORKSPACE
             - uses: actions/checkout@v4
               with:
-                  ref: ${{ steps.checkout-ref.outputs.ref }}
                   submodules: recursive
                   fetch-depth: 0
                   fetch-tags: true
@@ -44,7 +19,7 @@ jobs:
 
             - name: Show deployment info
               run: |
-                  echo "Deploying: ${{ steps.checkout-ref.outputs.display_name }}"
+                  echo "Deploying branch: ${{ github.ref_name }}"
                   echo "Current commit:"
                   git log -1 --oneline
 
@@ -109,7 +84,7 @@ jobs:
                   status: ${{ job.status }}
                   token: ${{ secrets.GITHUB_TOKEN }}
                   notification_title: "{workflow} has {status_message}"
-                  message_format: "{emoji} *{workflow}* {status_message} in <{repo_url}|{repo}> - Deployed: ${{ steps.checkout-ref.outputs.display_name }}"
+                  message_format: "{emoji} *{workflow}* {status_message} in <{repo_url}|{repo}> - Branch: ${{ github.ref_name }}"
                   footer: "Linked Repo <{repo_url}|{repo}> | <{workflow_url}|View Workflow>"
               env:
                   SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
