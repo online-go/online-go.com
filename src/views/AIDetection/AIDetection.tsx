@@ -379,6 +379,10 @@ export function AIDetection(): React.ReactElement | null {
                                     href={`/game/${row.id}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
+                                    style={{
+                                        textDecoration: row.annulled ? "line-through" : "none",
+                                        fontStyle: row.annulled ? "italic" : "normal",
+                                    }}
                                 >
                                     #{row.id}
                                 </a>
