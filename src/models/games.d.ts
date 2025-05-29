@@ -239,22 +239,12 @@ declare namespace rest_api {
         // List of player IDs suspected of using AI/bots
         ai_suspected: number[];
 
-        // Composite scores for both players (seems redundant with the per-player composite scores)
-        black_composite: number;
-        white_composite: number;
-
         // List of reasons why the game was flagged for analysis
         fast_pass_flagged_for: string[];
 
         // Per-player detailed analysis
         [playerId: number]: {
-            color: "black" | "white";
-            blur_rate: number; // Rate of moves that are "blurry"
-            has_sgf_downloads: boolean; // Whether the player downloaded the SGF
-            timing_consistency: number; // Measure of move timing consistency
-            AILR: number; // AI-like move Ratio
             composite: number; // Overall composite score
-            average_point_loss: number; // Average point loss per move
         };
     }
 
@@ -273,14 +263,6 @@ declare namespace rest_api {
         flags: null | {
             [player_id: string]: GamePlayerFlags;
         };
-    }
-
-    interface GameAIDetection extends GameBase {
-        final_move_count: number;
-        black_banned: boolean;
-        white_banned: boolean;
-        game_speed: "blitz" | "live" | "correspondence" | "error";
-        bot_detection_results: null | BotDetectionResults;
     }
 
     namespace players.full {
