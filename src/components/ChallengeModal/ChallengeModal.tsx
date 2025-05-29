@@ -57,13 +57,16 @@ import {
     getDefaultKomi,
     isKomiOption,
     sanitizeDemoSettings,
+    parseNumberInput,
+    isRuleSet,
+    isColorSelectionOption,
 } from "@/components/ChallengeModal/ChallengeModal.utils";
 import {
     ChallengeDetails,
-    ChallengeModalChallengeSettings,
+    ChallengeInput,
     ChallengeModalConf,
     DemoSettings,
-    ChallengeModalGameSettings,
+    GameInput,
     ChallengeModalInput,
     ChallengeModalProperties,
     ChallengeModalState,
@@ -757,11 +760,11 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
     /* nested fn updates */
     update_conf = (update_fn: UpdateFn<ChallengeModalConf>): void =>
         this.setState((prev) => ({ conf: update_fn(prev.conf) }));
-    update_challenge_settings = (update_fn: UpdateFn<ChallengeModalChallengeSettings>): void =>
+    update_challenge_settings = (update_fn: UpdateFn<ChallengeInput>): void =>
         this.setState((prev) => ({ challenge: update_fn(prev.challenge) }));
     update_demo_settings = (update_fn: UpdateFn<DemoSettings>): void =>
         this.setState((prev) => ({ demo: update_fn(prev.demo) }));
-    update_game_settings = (update_fn: UpdateFn<ChallengeModalGameSettings>): void =>
+    update_game_settings = (update_fn: UpdateFn<GameInput>): void =>
         this.update_challenge_settings((prev) => ({ ...prev, game: update_fn(prev.game) }));
 
     /* direct fn updates */
@@ -817,12 +820,27 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         this.syncBoardSize(ev.target.value);
     };
 
-    update_board_width = (ev: React.ChangeEvent<HTMLInputElement>) =>
-        this.upstate(this.gameStateName("width"), parseInt(ev.target.value));
-    update_board_height = (ev: React.ChangeEvent<HTMLInputElement>) =>
-        this.upstate(this.gameStateName("height"), parseInt(ev.target.value));
-    update_rules = (ev: React.ChangeEvent<HTMLSelectElement>) =>
-        this.upstate(this.gameStateName("rules"), ev);
+    update_board_width = (width: number | null) =>
+        this.props.mode === "demo"
+            ? this.update_demo_settings((prev) => ({ ...prev, width: width }))
+            : this.update_game_settings((prev) => ({ ...prev, width: width }));
+
+    update_board_height = (height: number | null) =>
+        this.props.mode === "demo"
+            ? this.update_demo_settings((prev) => ({ ...prev, height: height }))
+            : this.update_game_settings((prev) => ({ ...prev, height: height }));
+
+    update_rules = (rules: string) => {
+        if (!isRuleSet(rules)) {
+            return;
+        }
+        if (this.props.mode === "demo") {
+            // Note: I wasn't able to see a rules input in the challenge computer modal
+            this.update_demo_settings((prev) => ({ ...prev, rules: rules }));
+        } else {
+            this.update_game_settings((prev) => ({ ...prev, rules: rules }));
+        }
+    };
     update_handicap = (handicap: number) =>
         this.update_game_settings((prev) => ({ ...prev, handicap: handicap }));
 
@@ -880,10 +898,16 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
     update_komi_auto =
         this.props.mode === "demo" ? this.update_komi_option_demo : this.update_komi_option_game;
 
-    update_komi = (ev: React.ChangeEvent<HTMLInputElement>) =>
-        this.upstate(this.gameStateName("komi"), ev.target.value || "0");
-    update_challenge_color = (ev: React.ChangeEvent<HTMLSelectElement>) =>
-        this.upstate("challenge.challenger_color", ev);
+    update_komi = (komi: number | null) =>
+        this.props.mode === "demo"
+            ? this.update_demo_settings((prev) => ({ ...prev, komi: komi }))
+            : this.update_game_settings((prev) => ({ ...prev, komi: komi }));
+    update_challenge_color = (color_selection: string) => {
+        if (!isColorSelectionOption(color_selection)) {
+            return;
+        }
+        this.update_challenge_settings((prev) => ({ ...prev, challenger_color: color_selection }));
+    };
     update_disable_analysis = (ev: React.ChangeEvent<HTMLInputElement>) =>
         this.upstate("challenge.game.disable_analysis", ev);
     update_restrict_rank = (ev: React.ChangeEvent<HTMLInputElement>) =>
@@ -1172,7 +1196,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                             <select
                                 id="challenge-rules"
                                 value={this.gameState().rules}
-                                onChange={this.update_rules}
+                                onChange={(ev) => this.update_rules(ev.target.value)}
                                 className="challenge-dropdown form-control"
                             >
                                 <option value="aga">{_("AGA")}</option>
@@ -1250,8 +1274,10 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                             <div className="checkbox">
                                 <input
                                     type="number"
-                                    value={game.komi || 0}
-                                    onChange={this.update_komi}
+                                    value={game.komi ?? ""}
+                                    onChange={(ev) =>
+                                        this.update_komi(parseNumberInput(ev.target.value))
+                                    }
                                     className="form-control"
                                     style={{ width: "4em" }}
                                     step="0.5"
@@ -1344,8 +1370,10 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                             <div className="checkbox">
                                 <input
                                     type="number"
-                                    value={this.gameState().width}
-                                    onChange={this.update_board_width}
+                                    value={this.gameState().width ?? ""}
+                                    onChange={(ev) =>
+                                        this.update_board_width(parseNumberInput(ev.target.value))
+                                    }
                                     id="challenge-goban-width"
                                     className="form-control"
                                     style={{ width: "3em" }}
@@ -1355,8 +1383,10 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                                 x
                                 <input
                                     type="number"
-                                    value={this.gameState().height}
-                                    onChange={this.update_board_height}
+                                    value={this.gameState().height ?? ""}
+                                    onChange={(ev) =>
+                                        this.update_board_height(parseNumberInput(ev.target.value))
+                                    }
                                     id="challenge-goban-height"
                                     className="form-control"
                                     style={{ width: "3em" }}
@@ -1555,7 +1585,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                             <div className="checkbox">
                                 <select
                                     value={this.state.challenge.challenger_color}
-                                    onChange={this.update_challenge_color}
+                                    onChange={(ev) => this.update_challenge_color(ev.target.value)}
                                     id="challenge-color"
                                     className="challenge-dropdown form-control"
                                 >
@@ -1817,8 +1847,8 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
 
             const settings = {
                 rank: user.ranking,
-                width: this.state.challenge.game.width,
-                height: this.state.challenge.game.height,
+                width: this.state.challenge.game.width ?? -1,
+                height: this.state.challenge.game.height ?? -1,
                 ranked: true,
                 handicap: this.state.challenge.game.handicap !== 0,
                 system: this.state.time_control.system,

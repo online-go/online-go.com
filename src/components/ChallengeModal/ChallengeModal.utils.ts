@@ -253,3 +253,16 @@ export function getDefaultKomi(rules: RuleSet, has_handicap: boolean): number {
 export function isKomiOption(v: string): v is rest_api.KomiOption {
     return v === "custom" || v === "automatic";
 }
+
+export function parseNumberInput(input: string): number | null {
+    const num = Number(input);
+    return input === "" || !Number.isFinite(num) ? null : num;
+}
+
+export function isRuleSet(v: string): v is RuleSet {
+    return ["japanese", "chinese", "aga", "korean", "nz", "ing"].includes(v);
+}
+
+export function isColorSelectionOption(v: string): v is rest_api.ColorSelectionOptions {
+    return ["black", "white", "automatic", "random"].includes(v);
+}
