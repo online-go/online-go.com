@@ -22,10 +22,6 @@ import { put } from "@/lib/requests";
 interface PlayerData {
     color: string;
     composite: number;
-    blur_rate: number;
-    has_sgf_downloads: boolean;
-    timing_consistency: number;
-    AILR: number;
 }
 
 interface BotDetectionResultsProperties {
@@ -91,22 +87,6 @@ export function BotDetectionResults({
                                     <tr>
                                         <td>Composite:</td>
                                         <td>{player.composite}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Blur rate:</td>
-                                        <td>{player.blur_rate}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>SGF Downloads:</td>
-                                        <td>{player.has_sgf_downloads.toString()}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Timing Consistency:</td>
-                                        <td>{player.timing_consistency}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>AILR:</td>
-                                        <td>{player.AILR}</td>
                                     </tr>
                                 </tbody>
                             </table>
