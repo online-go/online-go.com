@@ -1163,6 +1163,11 @@ export function GoResources(): React.ReactElement {
                             />,
                             <BasicResource
                                 countries={["_cat"]}
+                                title="La Pedra"
+                                href="https://baduk.club/club/la-pedra"
+                            />,
+                            <BasicResource
+                                countries={["ro"]}
                                 title="Asociatia Dorna GO"
                                 href="https://asociatiadornago.com/"
                             />,
