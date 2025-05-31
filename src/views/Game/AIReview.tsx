@@ -51,6 +51,28 @@ import { GobanContext } from "./goban_context";
 import { ReportContext } from "@/contexts/ReportContext";
 import { MODERATOR_POWERS } from "@/lib/moderation";
 
+type MoveCategory = "Excellent" | "Great" | "Good" | "Inaccuracy" | "Mistake" | "Blunder";
+type FastCategory = Extract<MoveCategory, "Good" | "Inaccuracy" | "Mistake" | "Blunder">;
+
+const fullCategories: MoveCategory[] = [
+    "Excellent",
+    "Great",
+    "Good",
+    "Inaccuracy",
+    "Mistake",
+    "Blunder",
+];
+const fastCategories: FastCategory[] = ["Good", "Inaccuracy", "Mistake", "Blunder"];
+
+type PlayerMoveCounts = {
+    [K in MoveCategory]: number;
+};
+
+type MoveCounters = {
+    black: PlayerMoveCounts;
+    white: PlayerMoveCounts;
+};
+
 export interface AIReviewEntry {
     move_number: number;
     win_rate: number;
@@ -281,7 +303,10 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
             ai_table_rows.splice(0, 2);
             summary_moves_list.splice(0, 2);
             const num_rows = ai_table_rows.length;
-            const move_counters = Array(2 * num_rows).fill(0);
+            const move_counters: MoveCounters = {
+                black: { Excellent: 0, Great: 0, Good: 0, Inaccuracy: 0, Mistake: 0, Blunder: 0 },
+                white: { Excellent: 0, Great: 0, Good: 0, Inaccuracy: 0, Mistake: 0, Blunder: 0 },
+            };
             const other_counters = Array(2).fill(0);
             let w_total = 0;
             let b_total = 0;
@@ -296,32 +321,28 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
             for (let j = h_offset; j < scores.length - 1; j++) {
                 let score_diff = scores[j + 1] - scores[j];
                 const is_b_player = move_player_list[j] === JGOFNumericPlayerColor.BLACK;
-                const offset = is_b_player ? 0 : num_rows;
+                const player = is_b_player ? "black" : "white";
                 const player_index = is_b_player ? 0 : 1;
                 score_diff = is_b_player ? -1 * score_diff : score_diff;
                 avg_score_loss[player_index] += score_diff;
                 score_loss_list[player_index].push(score_diff);
 
                 if (score_diff < 1) {
-                    move_counters[offset] += 1;
-                    //console.log("good");
+                    move_counters[player].Good += 1;
                 } else if (score_diff < 2) {
-                    move_counters[offset + 1] += 1;
-                    //console.log("inaccuracy");
+                    move_counters[player].Inaccuracy += 1;
                 } else if (score_diff < 5) {
-                    move_counters[offset + 2] += 1;
-                    //console.log("mistake");
+                    move_counters[player].Mistake += 1;
                 } else if (score_diff >= 5) {
-                    move_counters[offset + 3] += 1;
-                    //console.log("blunder");
+                    move_counters[player].Blunder += 1;
                 } else {
                     other_counters[player_index] += 1;
                 }
             }
 
-            for (let j = 0; j < num_rows; j++) {
-                b_total += move_counters[j];
-                w_total += move_counters[num_rows + j];
+            for (const cat of fastCategories) {
+                b_total += move_counters.black[cat];
+                w_total += move_counters.white[cat];
             }
 
             avg_score_loss[0] = b_total > 0 ? Number((avg_score_loss[0] / b_total).toFixed(1)) : 0;
@@ -344,12 +365,13 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                     : 0;
 
             for (let j = 0; j < num_rows; j++) {
-                summary_moves_list[j][0] = move_counters[j].toString();
+                const cat = fastCategories[j];
+                summary_moves_list[j][0] = move_counters.black[cat].toString();
                 summary_moves_list[j][1] =
-                    b_total > 0 ? ((100 * move_counters[j]) / b_total).toFixed(1) : "";
-                summary_moves_list[j][2] = move_counters[num_rows + j].toString();
+                    b_total > 0 ? ((100 * move_counters.black[cat]) / b_total).toFixed(1) : "";
+                summary_moves_list[j][2] = move_counters.white[cat].toString();
                 summary_moves_list[j][3] =
-                    w_total > 0 ? ((100 * move_counters[num_rows + j]) / w_total).toFixed(1) : "";
+                    w_total > 0 ? ((100 * move_counters.white[cat]) / w_total).toFixed(1) : "";
             }
 
             for (let j = 0; j < ai_table_rows.length; j++) {
@@ -368,6 +390,15 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
             };
         } else if (this.ai_review?.type === "full") {
             const num_rows = ai_table_rows.length;
+            const move_counters: MoveCounters = {
+                black: { Excellent: 0, Great: 0, Good: 0, Inaccuracy: 0, Mistake: 0, Blunder: 0 },
+                white: { Excellent: 0, Great: 0, Good: 0, Inaccuracy: 0, Mistake: 0, Blunder: 0 },
+            };
+            const other_counters = Array(2).fill(0);
+            let w_total = 0;
+            let b_total = 0;
+            const score_loss_list: [number[], number[]] = [[], []];
+
             const move_keys = Object.keys(this.ai_review?.moves);
             const is_uploaded = goban.config.original_sgf !== undefined;
             // should be one more ai review score and move branches for empty board.
@@ -394,13 +425,8 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
             }
 
             max_entries = this.ai_review.scores.length;
-            const move_counters = Array(2 * num_rows).fill(0);
-            const other_counters = Array(2).fill(0);
-            let w_total = 0;
-            let b_total = 0;
-            const score_loss_list: [number[], number[]] = [[], []];
 
-            for (let j = h_offset; j < this.ai_review?.scores.length - 1; j++) {
+            for (let j = h_offset; j < (this.ai_review?.scores?.length ?? 0) - 1; j++) {
                 if (
                     this.ai_review?.moves[j] === undefined ||
                     this.ai_review?.moves[j + 1] === undefined
@@ -413,7 +439,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                 const current_branches = this.ai_review?.moves[j].branches.slice(0, 6);
                 const blue_move = current_branches[0].moves[0];
                 const is_b_player = move_player_list[j] === JGOFNumericPlayerColor.BLACK;
-                const offset = is_b_player ? 0 : num_rows;
+                const player = is_b_player ? "black" : "white";
                 const player_index = is_b_player ? 0 : 1;
                 let score_diff =
                     (this.ai_review?.moves[j + 1].score ?? 0) -
@@ -429,7 +455,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                     //console.log("pass etc");
                 } else {
                     if (isEqualMoveIntersection(blue_move, player_move)) {
-                        move_counters[offset] += 1;
+                        move_counters[player].Excellent += 1;
                         //console.log("blue Excellent");
                     } else if (
                         current_branches.some((branch, index) => {
@@ -445,19 +471,19 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                             return check;
                         })
                     ) {
-                        move_counters[offset + 1] += 1;
+                        move_counters[player].Great += 1;
                         //console.log("green Great");
                     } else if (score_diff < 1) {
-                        move_counters[offset + 2] += 1;
+                        move_counters[player].Good += 1;
                         //console.log("good");
                     } else if (score_diff < 2) {
-                        move_counters[offset + 3] += 1;
+                        move_counters[player].Inaccuracy += 1;
                         //console.log("inaccuracy");
                     } else if (score_diff < 5) {
-                        move_counters[offset + 4] += 1;
+                        move_counters[player].Mistake += 1;
                         //console.log("mistake");
                     } else if (score_diff >= 5) {
-                        move_counters[offset + 5] += 1;
+                        move_counters[player].Blunder += 1;
                         //console.log("blunder");
                     } else {
                         other_counters[player_index] += 1;
@@ -465,9 +491,9 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                 }
             }
 
-            for (let j = 0; j < num_rows; j++) {
-                b_total += move_counters[j];
-                w_total += move_counters[num_rows + j];
+            for (const cat of fullCategories) {
+                b_total += move_counters.black[cat];
+                w_total += move_counters.white[cat];
             }
 
             avg_score_loss[0] = b_total > 0 ? Number((avg_score_loss[0] / b_total).toFixed(1)) : 0;
@@ -490,12 +516,13 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                     : 0;
 
             for (let j = 0; j < num_rows; j++) {
-                summary_moves_list[j][0] = move_counters[j].toString();
+                const cat = fullCategories[j];
+                summary_moves_list[j][0] = move_counters.black[cat].toString();
                 summary_moves_list[j][1] =
-                    b_total > 0 ? ((100 * move_counters[j]) / b_total).toFixed(1) : "";
-                summary_moves_list[j][2] = move_counters[num_rows + j].toString();
+                    b_total > 0 ? ((100 * move_counters.black[cat]) / b_total).toFixed(1) : "";
+                summary_moves_list[j][2] = move_counters.white[cat].toString();
                 summary_moves_list[j][3] =
-                    w_total > 0 ? ((100 * move_counters[num_rows + j]) / w_total).toFixed(1) : "";
+                    w_total > 0 ? ((100 * move_counters.white[cat]) / w_total).toFixed(1) : "";
             }
 
             for (let j = 0; j < ai_table_rows.length; j++) {
