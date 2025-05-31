@@ -75,7 +75,7 @@ interface AIReviewState {
     selected_ai_review?: JGOFAIReview;
     update_count: number;
     worst_moves_shown: number;
-    hide_table: boolean;
+    show_table: boolean;
     table_hidden: boolean;
 }
 
@@ -119,7 +119,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
             // TODO: allow users to view more than 3 of these key moves
             // See https://forums.online-go.com/t/top-3-moves-score-a-better-metric/32702/15
             worst_moves_shown: 6,
-            hide_table: false,
+            show_table: true,
             table_hidden: preferences.get("ai-summary-table-show"),
         };
         this.state = state;
@@ -147,7 +147,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
             user.is_moderator || this.powerToSeeTable(this.props.reportContext?.moderator_powers);
 
         this.setState({
-            hide_table: !canViewTable,
+            show_table: canViewTable,
         });
     }
 
@@ -155,7 +155,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
         if (this.getGameId() !== this.getGameId(prevProps)) {
             this.getAIReviewList();
         }
-        if (!this.state.hide_table) {
+        if (this.state.show_table) {
             const ai_table_out = this.AiSummaryTableRowList();
             this.table_rows = ai_table_out.ai_table_rows;
             this.avg_score_loss = ai_table_out.avg_score_loss;
@@ -306,7 +306,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
         this.updateAIReviewMetadata(ai_review);
         this.setState({
             selected_ai_review: ai_review,
-            hide_table: !canViewTable,
+            show_table: canViewTable,
         });
         this.props.onAIReviewSelected(ai_review);
         this.syncAIReview();
@@ -984,7 +984,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
 
         if (!this.ai_review?.engine.includes("katago")) {
             this.setState({
-                hide_table: true,
+                show_table: false,
             });
             return {
                 ai_table_rows: default_table_rows,
@@ -1120,7 +1120,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
             }
 
             this.setState({
-                hide_table: true,
+                show_table: false,
             });
 
             return {
@@ -1267,7 +1267,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
 
             if (!check1 && !check2) {
                 this.setState({
-                    hide_table: true,
+                    show_table: false,
                 });
             }
 
