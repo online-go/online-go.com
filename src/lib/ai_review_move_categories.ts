@@ -350,11 +350,11 @@ export function calculateAiSummaryTableData(
                     (ai_review?.moves[j + 1].score ?? 0) - (ai_review?.moves[j].score ?? 0);
                 score_loss = is_b_player ? -1 * score_loss : score_loss;
 
-                // Only add positive score losses to APL sum
+                // Only add positive score losses to APL sum and score loss list
                 if (score_loss > 0) {
                     avg_score_loss[player_index] += score_loss;
+                    score_loss_list[player].push(score_loss);
                 }
-                score_loss_list[player].push(score_loss);
 
                 // Categorize based on score_loss thresholds
                 if (score_loss < 0.2) {
