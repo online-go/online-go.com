@@ -26,6 +26,7 @@ import { getWindowWidth } from "./device";
 export const defaults = {
     "ai-review-enabled": true,
     "ai-review-use-score": true,
+    "ai-review-categorization-method": "old" as "old" | "new",
     "ai-summary-table-show": false,
     "always-disable-analysis": false,
     "asked-to-enable-desktop-notifications": false,

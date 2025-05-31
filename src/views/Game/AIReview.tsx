@@ -35,21 +35,20 @@ import {
     MoveTree,
     JGOFAIReview,
     JGOFAIReviewMove,
-    JGOFIntersection,
     JGOFNumericPlayerColor,
     ColoredCircle,
     getWorstMoves,
     AIReviewWorstMoveEntry,
-    Goban,
     encodeMoves,
     encodeMove,
-    GobanRenderer,
 } from "goban";
 import { game_control } from "./game_control";
 import { alert } from "@/lib/swal_config";
 import { GobanContext } from "./goban_context";
 import { ReportContext } from "@/contexts/ReportContext";
 import { MODERATOR_POWERS } from "@/lib/moderation";
+import { calculateAiSummaryTableData, CategorizationMethod } from "@/lib/ai_review_move_categories";
+import { sameIntersection } from "@/lib/misc";
 
 export interface AIReviewEntry {
     move_number: number;
@@ -73,10 +72,11 @@ interface AIReviewState {
     use_score: boolean;
     ai_reviews: Array<JGOFAIReview>;
     selected_ai_review?: JGOFAIReview;
-    update_count: number;
+    rerender: number;
     worst_moves_shown: number;
-    hide_table: boolean;
+    show_table: boolean;
     table_hidden: boolean;
+    categorization_method: CategorizationMethod;
 }
 
 // We need this wrapped because we want to access two contexts,
@@ -107,6 +107,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
     median_score_loss!: number[];
     moves_pending!: number;
     max_entries!: number;
+    strong_move_rate!: number[];
 
     constructor(props: AIReviewProperties) {
         super(props);
@@ -114,13 +115,12 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
             loading: true,
             reviewing: false,
             ai_reviews: [],
-            update_count: 0,
+            rerender: 0,
             use_score: preferences.get("ai-review-use-score"),
-            // TODO: allow users to view more than 3 of these key moves
-            // See https://forums.online-go.com/t/top-3-moves-score-a-better-metric/32702/15
             worst_moves_shown: 6,
-            hide_table: false,
+            show_table: true,
             table_hidden: preferences.get("ai-summary-table-show"),
+            categorization_method: preferences.get("ai-review-categorization-method") || "old",
         };
         this.state = state;
         window.aireview = this;
@@ -135,19 +135,20 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
 
     componentDidMount() {
         this.getAIReviewList();
-        const ai_table_out = this.AiSummaryTableRowList();
-        this.table_rows = ai_table_out.ai_table_rows;
-        this.avg_score_loss = ai_table_out.avg_score_loss;
-        this.median_score_loss = ai_table_out.median_score_loss;
-        this.moves_pending = ai_table_out.moves_pending;
-        this.max_entries = ai_table_out.max_entries;
+        const ai_table_out = calculateAiSummaryTableData(
+            this.ai_review,
+            this.props.gobanContext,
+            this.state.loading,
+            this.state.categorization_method,
+        );
+        this.updateTableState(ai_table_out);
 
         const user = data.get("user");
         const canViewTable =
             user.is_moderator || this.powerToSeeTable(this.props.reportContext?.moderator_powers);
 
         this.setState({
-            hide_table: !canViewTable,
+            show_table: canViewTable,
         });
     }
 
@@ -155,13 +156,37 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
         if (this.getGameId() !== this.getGameId(prevProps)) {
             this.getAIReviewList();
         }
-        if (!this.state.hide_table) {
-            const ai_table_out = this.AiSummaryTableRowList();
-            this.table_rows = ai_table_out.ai_table_rows;
-            this.avg_score_loss = ai_table_out.avg_score_loss;
-            this.median_score_loss = ai_table_out.median_score_loss;
-            this.moves_pending = ai_table_out.moves_pending;
-            this.max_entries = ai_table_out.max_entries;
+        if (this.state.show_table) {
+            const ai_table_out = calculateAiSummaryTableData(
+                this.ai_review,
+                this.props.gobanContext,
+                this.state.loading,
+                this.state.categorization_method,
+            );
+            this.updateTableState(ai_table_out);
+        }
+    }
+
+    private updateTableState(ai_table_out: {
+        ai_table_rows: string[][];
+        avg_score_loss: number[];
+        median_score_loss: number[];
+        moves_pending: number;
+        max_entries: number;
+        should_show_table: boolean;
+        strong_move_rate: number[];
+    }) {
+        this.table_rows = ai_table_out.ai_table_rows;
+        this.avg_score_loss = ai_table_out.avg_score_loss;
+        this.median_score_loss = ai_table_out.median_score_loss;
+        this.moves_pending = ai_table_out.moves_pending;
+        this.max_entries = ai_table_out.max_entries;
+        this.strong_move_rate = ai_table_out.strong_move_rate;
+
+        if (this.state.show_table !== ai_table_out.should_show_table) {
+            this.setState({
+                show_table: ai_table_out.should_show_table,
+            });
         }
     }
 
@@ -243,22 +268,10 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
             .catch(errorLogger);
     }
 
-    private static handicapOffset(goban: GobanRenderer): number {
-        if (
-            goban &&
-            goban.engine &&
-            goban.engine.free_handicap_placement &&
-            goban.engine.handicap > 0
-        ) {
-            return goban.engine.handicap;
-        }
-        return 0;
-    }
-
     syncAIReview() {
         if (!this.ai_review || !this.state.selected_ai_review) {
             this.setState({
-                update_count: this.state.update_count + 1,
+                rerender: this.state.rerender + 1,
             });
             return;
         }
@@ -294,7 +307,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
             //blunders: blunders,
             //queue_position: this.state.selected_ai_review.queue.position,
             //queue_pending: this.state.selected_ai_review.queue.pending,
-            update_count: this.state.update_count + 1,
+            rerender: this.state.rerender + 1,
         });
     }
 
@@ -306,7 +319,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
         this.updateAIReviewMetadata(ai_review);
         this.setState({
             selected_ai_review: ai_review,
-            hide_table: !canViewTable,
+            show_table: canViewTable,
         });
         this.props.onAIReviewSelected(ai_review);
         this.syncAIReview();
@@ -355,7 +368,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
             }
         }
         this.setState({
-            update_count: this.state.update_count + 1,
+            rerender: this.state.rerender + 1,
         });
     }
 
@@ -417,7 +430,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                     sanityCheck(this.ai_review);
                 }
                 this.setState({
-                    update_count: this.state.update_count + 1,
+                    rerender: this.state.rerender + 1,
                 });
                 this.syncAIReview();
             }, 100);
@@ -576,7 +589,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                     if (branch.moves.length === 0) {
                         continue;
                     }
-                    if (next_move && isEqualMoveIntersection(branch.moves[0], next_move)) {
+                    if (next_move && sameIntersection(branch.moves[0], next_move)) {
                         found_next_move = true;
                         branch.win_rate = next_win_rate;
                         branch.score = next_score;
@@ -652,7 +665,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                         mv &&
                         (i === 0 ||
                             //true || // debugging
-                            (next_move && isEqualMoveIntersection(branch.moves[0], next_move)) ||
+                            (next_move && sameIntersection(branch.moves[0], next_move)) ||
                             branch.visits >= Math.min(50, 0.1 * strength))
                     ) {
                         if (parseFloat(key).toPrecision(2).length < key.length) {
@@ -666,7 +679,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                         color: "rgba(0,0,0,0)",
                     };
 
-                    if (next_move && isEqualMoveIntersection(branch.moves[0], next_move)) {
+                    if (next_move && sameIntersection(branch.moves[0], next_move)) {
                         goban.setMark(mv.x, mv.y, "sub_triangle", true);
                         goban.setMark(mv.x, mv.y, "blue_move", true);
 
@@ -921,374 +934,6 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
         return false;
     }
 
-    private static getPlayerColorsMoveList(goban: Goban) {
-        const init_move = goban.engine.move_tree;
-        const move_list: any[] = [];
-        let cur_move = init_move.trunk_next;
-
-        while (cur_move !== undefined) {
-            move_list.push(cur_move.player);
-            cur_move = cur_move.trunk_next;
-        }
-        return move_list;
-    }
-
-    private medianList(numbers: number[]): number {
-        const mid = numbers.length === 0 ? undefined : Math.floor(numbers.length / 2);
-        if (mid === undefined) {
-            return -1;
-        }
-
-        const median =
-            numbers.length % 2 !== 0 ? numbers[mid] : (numbers[mid] + numbers[mid - 1]) / 2;
-        return median;
-    }
-
-    private AiSummaryTableRowList() {
-        const goban = this.props.gobanContext;
-        if (!goban) {
-            throw new Error("goban not set");
-        }
-
-        const summary_moves_list = [
-            ["", "", "", ""],
-            ["", "", "", ""],
-            ["", "", "", ""],
-            ["", "", "", ""],
-            ["", "", "", ""],
-            ["", "", "", ""],
-        ];
-        const ai_table_rows = [
-            [_("Excellent")],
-            [_("Great")],
-            [_("Good")],
-            [_("Inaccuracy")],
-            [_("Mistake")],
-            [_("Blunder")],
-        ];
-        const default_table_rows = [["", "", "", "", ""]];
-        const avg_score_loss = [0, 0];
-        const median_score_loss = [0, 0];
-        let moves_missing = 0;
-        let max_entries = 0;
-
-        if (!this.ai_review) {
-            return {
-                ai_table_rows: default_table_rows,
-                avg_score_loss,
-                median_score_loss,
-                moves_pending: moves_missing,
-                max_entries,
-            };
-        }
-
-        if (!this.ai_review?.engine.includes("katago")) {
-            this.setState({
-                hide_table: true,
-            });
-            return {
-                ai_table_rows: default_table_rows,
-                avg_score_loss,
-                median_score_loss,
-                moves_pending: moves_missing,
-                max_entries,
-            };
-        }
-
-        const handicap = goban.engine.handicap;
-        //only useful when there's free placement, handicap = 1 no offset needed.
-        let h_offset = AIReviewClass.handicapOffset(goban);
-        h_offset = h_offset === 1 ? 0 : h_offset;
-        const b_player = h_offset > 0 || handicap > 1 ? 1 : 0;
-        const move_player_list = AIReviewClass.getPlayerColorsMoveList(goban);
-
-        if (this.ai_review?.type === "fast") {
-            const scores = this.ai_review?.scores;
-            const is_uploaded = goban.config.original_sgf !== undefined;
-            //one more ai review point than moves in the game, since initial board gets a score.
-
-            if (scores === undefined) {
-                return {
-                    ai_table_rows: default_table_rows,
-                    avg_score_loss,
-                    median_score_loss,
-                    moves_pending: moves_missing,
-                    max_entries,
-                };
-            }
-            const check1 =
-                !is_uploaded &&
-                goban.config.moves?.length !== (this.ai_review?.scores?.length ?? -1) - 1;
-            // extra initial ! in all_moves which matches extra empty board score, except in handicap games for some reason.
-            // so subtract 1 if black goes second == b_player
-            const check2 =
-                is_uploaded &&
-                (goban.config as any)["all_moves"]?.split("!").length - b_player !==
-                    this.ai_review?.scores?.length;
-
-            // if there's less than 4 moves the worst moves doesn't seem to return 3 moves, otherwise look for these three moves.
-            const check3 =
-                this.ai_review?.moves === undefined ||
-                (Object.keys(this.ai_review?.moves).length !== 3 && scores.length > 4);
-            if (check1 || check2 || check3) {
-                return {
-                    ai_table_rows: default_table_rows,
-                    avg_score_loss,
-                    median_score_loss,
-                    moves_pending: moves_missing,
-                    max_entries,
-                };
-            }
-
-            // we don't need the first two rows, as they're for full reviews.
-            ai_table_rows.splice(0, 2);
-            summary_moves_list.splice(0, 2);
-            const num_rows = ai_table_rows.length;
-            const move_counters = Array(2 * num_rows).fill(0);
-            const other_counters = Array(2).fill(0);
-            let w_total = 0;
-            let b_total = 0;
-            const score_loss_list: [number[], number[]] = [[], []];
-            const worst_move_keys = Object.keys(this.ai_review?.moves);
-
-            for (let j = 0; j < worst_move_keys.length; j++) {
-                (scores as any)[worst_move_keys[j]] =
-                    this.ai_review?.moves[worst_move_keys[j]].score;
-            }
-
-            for (let j = h_offset; j < scores.length - 1; j++) {
-                let score_diff = scores[j + 1] - scores[j];
-                const is_b_player = move_player_list[j] === JGOFNumericPlayerColor.BLACK;
-                const offset = is_b_player ? 0 : num_rows;
-                const player_index = is_b_player ? 0 : 1;
-                score_diff = is_b_player ? -1 * score_diff : score_diff;
-                avg_score_loss[player_index] += score_diff;
-                score_loss_list[player_index].push(score_diff);
-
-                if (score_diff < 1) {
-                    move_counters[offset] += 1;
-                    //console.log("good");
-                } else if (score_diff < 2) {
-                    move_counters[offset + 1] += 1;
-                    //console.log("inaccuracy");
-                } else if (score_diff < 5) {
-                    move_counters[offset + 2] += 1;
-                    //console.log("mistake");
-                } else if (score_diff >= 5) {
-                    move_counters[offset + 3] += 1;
-                    //console.log("blunder");
-                } else {
-                    other_counters[player_index] += 1;
-                }
-            }
-
-            for (let j = 0; j < num_rows; j++) {
-                b_total += move_counters[j];
-                w_total += move_counters[num_rows + j];
-            }
-
-            avg_score_loss[0] = b_total > 0 ? Number((avg_score_loss[0] / b_total).toFixed(1)) : 0;
-            avg_score_loss[1] = w_total > 0 ? Number((avg_score_loss[1] / w_total).toFixed(1)) : 0;
-
-            score_loss_list[0].sort((a, b) => {
-                return a - b;
-            });
-            score_loss_list[1].sort((a, b) => {
-                return a - b;
-            });
-
-            median_score_loss[0] =
-                this.medianList(score_loss_list[0]) !== undefined
-                    ? Number(this.medianList(score_loss_list[0]).toFixed(1))
-                    : 0;
-            median_score_loss[1] =
-                this.medianList(score_loss_list[1]) !== undefined
-                    ? Number(this.medianList(score_loss_list[1]).toFixed(1))
-                    : 0;
-
-            for (let j = 0; j < num_rows; j++) {
-                summary_moves_list[j][0] = move_counters[j].toString();
-                summary_moves_list[j][1] =
-                    b_total > 0 ? ((100 * move_counters[j]) / b_total).toFixed(1) : "";
-                summary_moves_list[j][2] = move_counters[num_rows + j].toString();
-                summary_moves_list[j][3] =
-                    w_total > 0 ? ((100 * move_counters[num_rows + j]) / w_total).toFixed(1) : "";
-            }
-
-            for (let j = 0; j < ai_table_rows.length; j++) {
-                ai_table_rows[j] = ai_table_rows[j].concat(summary_moves_list[j]);
-            }
-
-            this.setState({
-                hide_table: true,
-            });
-
-            return {
-                ai_table_rows,
-                avg_score_loss,
-                median_score_loss,
-                moves_pending: moves_missing,
-                max_entries,
-            };
-        } else if (this.ai_review?.type === "full") {
-            const num_rows = ai_table_rows.length;
-            const move_keys = Object.keys(this.ai_review?.moves);
-            const is_uploaded = goban.config.original_sgf !== undefined;
-            // should be one more ai review score and move branches for empty board.
-            const check1 = !is_uploaded && goban.config.moves?.length !== move_keys.length - 1;
-            // extra initial ! in all_moves which matches extra empty board score, except in handicap games for some reason.
-            // so subtract 1 if black goes second == b_player
-            const check2 =
-                is_uploaded &&
-                (goban.config as any)["all_moves"].split("!").length - b_player !==
-                    move_keys.length;
-
-            if (this.state.loading || this.ai_review.scores === undefined) {
-                for (let j = 0; j < ai_table_rows.length; j++) {
-                    ai_table_rows[j] = ai_table_rows[j].concat(summary_moves_list[j]);
-                }
-                return {
-                    ai_table_rows,
-                    avg_score_loss,
-                    median_score_loss,
-                    moves_pending: moves_missing,
-                    max_entries,
-                };
-            }
-
-            max_entries = this.ai_review.scores.length;
-            const move_counters = Array(2 * num_rows).fill(0);
-            const other_counters = Array(2).fill(0);
-            let w_total = 0;
-            let b_total = 0;
-            const score_loss_list: [number[], number[]] = [[], []];
-
-            for (let j = h_offset; j < this.ai_review?.scores.length - 1; j++) {
-                if (
-                    this.ai_review?.moves[j] === undefined ||
-                    this.ai_review?.moves[j + 1] === undefined
-                ) {
-                    moves_missing += 1;
-                    continue;
-                }
-                const player_move = this.ai_review?.moves[j + 1].move;
-                //the current ai review shows top six playouts on the board, so matching that.
-                const current_branches = this.ai_review?.moves[j].branches.slice(0, 6);
-                const blue_move = current_branches[0].moves[0];
-                const is_b_player = move_player_list[j] === JGOFNumericPlayerColor.BLACK;
-                const offset = is_b_player ? 0 : num_rows;
-                const player_index = is_b_player ? 0 : 1;
-                let score_diff =
-                    (this.ai_review?.moves[j + 1].score ?? 0) -
-                    (this.ai_review?.moves[j].score ?? 0);
-                score_diff = is_b_player ? -1 * score_diff : score_diff;
-                avg_score_loss[player_index] += score_diff;
-                score_loss_list[player_index].push(score_diff);
-
-                if (blue_move === undefined) {
-                    other_counters[player_index] += 1;
-                } else if (player_move.x === -1) {
-                    other_counters[player_index] += 1;
-                    //console.log("pass etc");
-                } else {
-                    if (isEqualMoveIntersection(blue_move, player_move)) {
-                        move_counters[offset] += 1;
-                        //console.log("blue Excellent");
-                    } else if (
-                        current_branches.some((branch, index) => {
-                            if (!branch.moves.length) {
-                                return false;
-                            }
-
-                            const check =
-                                index > 0 &&
-                                isEqualMoveIntersection(branch.moves[0], player_move) &&
-                                branch.visits >=
-                                    Math.min(50, 0.1 * (this.ai_review?.strength ?? 0));
-                            return check;
-                        })
-                    ) {
-                        move_counters[offset + 1] += 1;
-                        //console.log("green Great");
-                    } else if (score_diff < 1) {
-                        move_counters[offset + 2] += 1;
-                        //console.log("good");
-                    } else if (score_diff < 2) {
-                        move_counters[offset + 3] += 1;
-                        //console.log("inaccuracy");
-                    } else if (score_diff < 5) {
-                        move_counters[offset + 4] += 1;
-                        //console.log("mistake");
-                    } else if (score_diff >= 5) {
-                        move_counters[offset + 5] += 1;
-                        //console.log("blunder");
-                    } else {
-                        other_counters[player_index] += 1;
-                    }
-                }
-            }
-
-            for (let j = 0; j < num_rows; j++) {
-                b_total += move_counters[j];
-                w_total += move_counters[num_rows + j];
-            }
-
-            avg_score_loss[0] = b_total > 0 ? Number((avg_score_loss[0] / b_total).toFixed(1)) : 0;
-            avg_score_loss[1] = w_total > 0 ? Number((avg_score_loss[1] / w_total).toFixed(1)) : 0;
-
-            score_loss_list[0].sort((a, b) => {
-                return a - b;
-            });
-            score_loss_list[1].sort((a, b) => {
-                return a - b;
-            });
-
-            median_score_loss[0] =
-                this.medianList(score_loss_list[0]) !== undefined
-                    ? Number(this.medianList(score_loss_list[0]).toFixed(1))
-                    : 0;
-            median_score_loss[1] =
-                this.medianList(score_loss_list[1]) !== undefined
-                    ? Number(this.medianList(score_loss_list[1]).toFixed(1))
-                    : 0;
-
-            for (let j = 0; j < num_rows; j++) {
-                summary_moves_list[j][0] = move_counters[j].toString();
-                summary_moves_list[j][1] =
-                    b_total > 0 ? ((100 * move_counters[j]) / b_total).toFixed(1) : "";
-                summary_moves_list[j][2] = move_counters[num_rows + j].toString();
-                summary_moves_list[j][3] =
-                    w_total > 0 ? ((100 * move_counters[num_rows + j]) / w_total).toFixed(1) : "";
-            }
-
-            for (let j = 0; j < ai_table_rows.length; j++) {
-                ai_table_rows[j] = ai_table_rows[j].concat(summary_moves_list[j]);
-            }
-
-            if (!check1 && !check2) {
-                this.setState({
-                    hide_table: true,
-                });
-            }
-
-            return {
-                ai_table_rows,
-                avg_score_loss,
-                median_score_loss,
-                moves_pending: moves_missing,
-                max_entries,
-            };
-        } else {
-            return {
-                ai_table_rows: default_table_rows,
-                avg_score_loss,
-                median_score_loss,
-                moves_pending: moves_missing,
-                max_entries,
-            };
-        }
-    }
-
     public render(): React.ReactElement | null {
         if (this.state.loading) {
             return null;
@@ -1395,7 +1040,6 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
         const show_become_supporter_text =
             !user.anonymous && !user.supporter && !user.is_moderator && !user.professional;
 
-        console.log("ai review", this.props.reportContext);
         return (
             <div className="AIReview">
                 <UIPush
@@ -1575,7 +1219,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                                     ai_review={this.ai_review}
                                     entries={ai_review_chart_entries}
                                     variation_entries={ai_review_chart_variation_entries}
-                                    update_count={this.state.update_count}
+                                    update_count={this.state.rerender}
                                     move_number={move_number}
                                     variation_move_number={variation_move_number}
                                     set_move={(num: number) => game_control.emit("gotoMove", num)}
@@ -1584,72 +1228,157 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                                         .slice(0, this.state.worst_moves_shown)
                                         .map((m) => m.move_number - 1)}
                                 />
-                                <div className="worst-moves-summary-toggle-container">
+                                <div className="worst-moves-container">
                                     {this.renderWorstMoveList(worst_move_list)}
-                                    {(user.is_moderator ||
-                                        this.powerToSeeTable(
-                                            this.props.reportContext?.moderator_powers,
-                                        )) &&
-                                        this.ai_review?.engine.includes("katago") && (
-                                            <div className="ai-summary-toggler">
-                                                <span>
-                                                    <i className="fa fa-table"></i>
-                                                </span>
-                                                <span>
-                                                    <Toggle
-                                                        checked={this.state.table_hidden}
-                                                        onChange={(b) => {
-                                                            preferences.set(
-                                                                "ai-summary-table-show",
-                                                                b,
-                                                            );
-                                                            this.setState({ table_hidden: b });
-                                                            //console.log(this.state.table_hidden);
-                                                        }}
-                                                    />
-                                                </span>
-                                            </div>
-                                        )}
                                 </div>
                                 {this.ai_review.scores && (
-                                    <div className="win-score-toggler">
-                                        <span
-                                            className="win-toggle"
-                                            onClick={() => {
-                                                preferences.set("ai-review-use-score", false);
-                                                this.setState({ use_score: false });
-                                            }}
-                                        >
-                                            {pgettext(
-                                                "Display the win % that the AI estimates",
-                                                "Win %",
-                                            )}
-                                        </span>
-
-                                        <span>
-                                            <Toggle
-                                                checked={this.state.use_score}
-                                                onChange={(b) => {
-                                                    preferences.set("ai-review-use-score", b);
-                                                    this.setState({ use_score: b });
+                                    <div className="ai-review-togglers">
+                                        <div className="left-section"></div>
+                                        <div className="middle-section">
+                                            <span
+                                                className="win-toggle"
+                                                onClick={() => {
+                                                    preferences.set("ai-review-use-score", false);
+                                                    this.setState({ use_score: false });
                                                 }}
-                                            />
-                                        </span>
+                                            >
+                                                {pgettext(
+                                                    "Display the win % that the AI estimates",
+                                                    "Win %",
+                                                )}
+                                            </span>
 
-                                        <span
-                                            className="score-toggle"
-                                            onClick={() => {
-                                                preferences.set("ai-review-use-score", true);
-                                                this.setState({ use_score: true });
-                                            }}
-                                        >
-                                            {pgettext(
-                                                "Display the game score that the AI estimates",
-                                                "Score",
-                                            )}
-                                        </span>
+                                            <span>
+                                                <Toggle
+                                                    checked={this.state.use_score}
+                                                    onChange={(b) => {
+                                                        preferences.set("ai-review-use-score", b);
+                                                        this.setState({ use_score: b });
+                                                    }}
+                                                />
+                                            </span>
+
+                                            <span
+                                                className="score-toggle"
+                                                onClick={() => {
+                                                    preferences.set("ai-review-use-score", true);
+                                                    this.setState({ use_score: true });
+                                                }}
+                                            >
+                                                {pgettext(
+                                                    "Display the game score that the AI estimates",
+                                                    "Score",
+                                                )}
+                                            </span>
+                                        </div>
+                                        <div className="right-section">
+                                            {(user.is_moderator ||
+                                                this.powerToSeeTable(
+                                                    this.props.reportContext?.moderator_powers,
+                                                )) &&
+                                                this.ai_review?.engine.includes("katago") && (
+                                                    <div className="ai-summary-toggler">
+                                                        <span>
+                                                            <i className="fa fa-table"></i>
+                                                        </span>
+                                                        <span>
+                                                            <Toggle
+                                                                checked={!this.state.table_hidden}
+                                                                onChange={(b) => {
+                                                                    preferences.set(
+                                                                        "ai-summary-table-show",
+                                                                        !b,
+                                                                    );
+                                                                    this.setState({
+                                                                        table_hidden: !b,
+                                                                    });
+                                                                }}
+                                                            />
+                                                        </span>
+                                                    </div>
+                                                )}
+                                        </div>
                                     </div>
                                 )}
+
+                                {(data.get("user").is_moderator ||
+                                    this.powerToSeeTable(
+                                        this.props.reportContext?.moderator_powers,
+                                    )) &&
+                                    this.ai_review?.engine.includes("katago") && (
+                                        <div>
+                                            <AiSummaryTable
+                                                heading_list={[
+                                                    _("Type"),
+                                                    _("Black"),
+                                                    "%",
+                                                    _("White"),
+                                                    "%",
+                                                ]}
+                                                body_list={this.table_rows}
+                                                avg_loss={this.avg_score_loss}
+                                                median_score_loss={this.median_score_loss}
+                                                table_hidden={this.state.table_hidden}
+                                                pending_entries={this.moves_pending}
+                                                max_entries={this.max_entries}
+                                                strong_move_rate={this.strong_move_rate}
+                                            />
+                                            {!this.state.table_hidden && (
+                                                <div className="categorization-toggler">
+                                                    <span className="toggle-label">
+                                                        {pgettext(
+                                                            "Use the original categorization method",
+                                                            "Original",
+                                                        )}
+                                                    </span>
+                                                    <Toggle
+                                                        checked={
+                                                            this.state.categorization_method ===
+                                                            "new"
+                                                        }
+                                                        onChange={(b) => {
+                                                            const new_method = b ? "new" : "old";
+                                                            preferences.set(
+                                                                "ai-review-categorization-method",
+                                                                new_method,
+                                                            );
+                                                            this.setState(
+                                                                {
+                                                                    categorization_method:
+                                                                        new_method,
+                                                                    rerender:
+                                                                        this.state.rerender + 1,
+                                                                    show_table: true,
+                                                                },
+                                                                () => {
+                                                                    if (this.state.show_table) {
+                                                                        const ai_table_out =
+                                                                            calculateAiSummaryTableData(
+                                                                                this.ai_review,
+                                                                                this.props
+                                                                                    .gobanContext,
+                                                                                this.state.loading,
+                                                                                this.state
+                                                                                    .categorization_method,
+                                                                            );
+                                                                        this.updateTableState(
+                                                                            ai_table_out,
+                                                                        );
+                                                                    }
+                                                                },
+                                                            );
+                                                        }}
+                                                    />
+                                                    <span className="toggle-label">
+                                                        {pgettext(
+                                                            "Use the new categorization method",
+                                                            "New",
+                                                        )}
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
                             </React.Fragment>
                         )}
 
@@ -1723,21 +1452,6 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                         </span>
                     </div>
                 )*/}
-                {(data.get("user").is_moderator ||
-                    this.powerToSeeTable(this.props.reportContext?.moderator_powers)) &&
-                    this.ai_review?.engine.includes("katago") && (
-                        <div>
-                            <AiSummaryTable
-                                heading_list={[_("Type"), _("Black"), "%", _("White"), "%"]}
-                                body_list={this.table_rows}
-                                avg_loss={this.avg_score_loss}
-                                median_score_loss={this.median_score_loss}
-                                table_hidden={this.state.table_hidden}
-                                pending_entries={this.moves_pending}
-                                max_entries={this.max_entries}
-                            />
-                        </div>
-                    )}
             </div>
         );
     }
@@ -1801,9 +1515,6 @@ function sanityCheck(ai_review: JGOFAIReview) {
     }
 }
 
-function isEqualMoveIntersection(a: JGOFIntersection, b: JGOFIntersection): boolean {
-    return a.x === b.x && a.y === b.y;
-}
 export function ReviewStrengthIcon({
     review,
 }: {
@@ -1885,7 +1596,7 @@ class AiSummaryTable extends React.Component<AiSummaryTableProperties, AiSummary
             <div className="ai-summary-container">
                 <table
                     className="ai-summary-table"
-                    style={{ display: this.props.table_hidden ? "block" : "none" }}
+                    style={{ display: this.props.table_hidden ? "none" : "block" }}
                 >
                     <thead>
                         <tr>
@@ -1944,6 +1655,17 @@ class AiSummaryTable extends React.Component<AiSummaryTableProperties, AiSummary
                             <td colSpan={2}>{"White"}</td>
                             <td colSpan={3}>{this.props.median_score_loss[1]}</td>
                         </tr>
+                        <tr>
+                            <td colSpan={5}>{"Strong Move Rate"}</td>
+                        </tr>
+                        <tr>
+                            <td colSpan={2}>{"Black"}</td>
+                            <td colSpan={3}>{this.props.strong_move_rate[0]}%</td>
+                        </tr>
+                        <tr>
+                            <td colSpan={2}>{"White"}</td>
+                            <td colSpan={3}>{this.props.strong_move_rate[1]}%</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -1961,6 +1683,7 @@ interface AiSummaryTableProperties {
     /** values for the average score loss */
     avg_loss: number[];
     median_score_loss: number[];
+    strong_move_rate: number[];
     table_hidden: boolean;
     pending_entries: number;
     max_entries: number;
