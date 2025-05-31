@@ -73,6 +73,16 @@ type MoveCounters = {
     white: PlayerMoveCounts;
 };
 
+type OtherCounters = {
+    black: number;
+    white: number;
+};
+
+type ScoreLossList = {
+    black: number[];
+    white: number[];
+};
+
 export interface AIReviewEntry {
     move_number: number;
     win_rate: number;
@@ -307,10 +317,10 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                 black: { Excellent: 0, Great: 0, Good: 0, Inaccuracy: 0, Mistake: 0, Blunder: 0 },
                 white: { Excellent: 0, Great: 0, Good: 0, Inaccuracy: 0, Mistake: 0, Blunder: 0 },
             };
-            const other_counters = Array(2).fill(0);
+            const other_counters: OtherCounters = { black: 0, white: 0 };
             let w_total = 0;
             let b_total = 0;
-            const score_loss_list: [number[], number[]] = [[], []];
+            const score_loss_list: ScoreLossList = { black: [], white: [] };
             const worst_move_keys = Object.keys(this.ai_review?.moves);
 
             for (let j = 0; j < worst_move_keys.length; j++) {
@@ -325,7 +335,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                 const player_index = is_b_player ? 0 : 1;
                 score_diff = is_b_player ? -1 * score_diff : score_diff;
                 avg_score_loss[player_index] += score_diff;
-                score_loss_list[player_index].push(score_diff);
+                score_loss_list[player].push(score_diff);
 
                 if (score_diff < 1) {
                     move_counters[player].Good += 1;
@@ -336,7 +346,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                 } else if (score_diff >= 5) {
                     move_counters[player].Blunder += 1;
                 } else {
-                    other_counters[player_index] += 1;
+                    other_counters[player] += 1;
                 }
             }
 
@@ -348,20 +358,16 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
             avg_score_loss[0] = b_total > 0 ? Number((avg_score_loss[0] / b_total).toFixed(1)) : 0;
             avg_score_loss[1] = w_total > 0 ? Number((avg_score_loss[1] / w_total).toFixed(1)) : 0;
 
-            score_loss_list[0].sort((a, b) => {
-                return a - b;
-            });
-            score_loss_list[1].sort((a, b) => {
-                return a - b;
-            });
+            score_loss_list.black.sort((a, b) => a - b);
+            score_loss_list.white.sort((a, b) => a - b);
 
             median_score_loss[0] =
-                this.medianList(score_loss_list[0]) !== undefined
-                    ? Number(this.medianList(score_loss_list[0]).toFixed(1))
+                this.medianList(score_loss_list.black) !== undefined
+                    ? Number(this.medianList(score_loss_list.black).toFixed(1))
                     : 0;
             median_score_loss[1] =
-                this.medianList(score_loss_list[1]) !== undefined
-                    ? Number(this.medianList(score_loss_list[1]).toFixed(1))
+                this.medianList(score_loss_list.white) !== undefined
+                    ? Number(this.medianList(score_loss_list.white).toFixed(1))
                     : 0;
 
             for (let j = 0; j < num_rows; j++) {
@@ -394,10 +400,10 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                 black: { Excellent: 0, Great: 0, Good: 0, Inaccuracy: 0, Mistake: 0, Blunder: 0 },
                 white: { Excellent: 0, Great: 0, Good: 0, Inaccuracy: 0, Mistake: 0, Blunder: 0 },
             };
-            const other_counters = Array(2).fill(0);
+            const other_counters: OtherCounters = { black: 0, white: 0 };
             let w_total = 0;
             let b_total = 0;
-            const score_loss_list: [number[], number[]] = [[], []];
+            const score_loss_list: ScoreLossList = { black: [], white: [] };
 
             const move_keys = Object.keys(this.ai_review?.moves);
             const is_uploaded = goban.config.original_sgf !== undefined;
@@ -446,12 +452,12 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                     (this.ai_review?.moves[j].score ?? 0);
                 score_diff = is_b_player ? -1 * score_diff : score_diff;
                 avg_score_loss[player_index] += score_diff;
-                score_loss_list[player_index].push(score_diff);
+                score_loss_list[player].push(score_diff);
 
                 if (blue_move === undefined) {
-                    other_counters[player_index] += 1;
+                    other_counters[player] += 1;
                 } else if (player_move.x === -1) {
-                    other_counters[player_index] += 1;
+                    other_counters[player] += 1;
                     //console.log("pass etc");
                 } else {
                     if (isEqualMoveIntersection(blue_move, player_move)) {
@@ -486,7 +492,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                         move_counters[player].Blunder += 1;
                         //console.log("blunder");
                     } else {
-                        other_counters[player_index] += 1;
+                        other_counters[player] += 1;
                     }
                 }
             }
@@ -499,20 +505,16 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
             avg_score_loss[0] = b_total > 0 ? Number((avg_score_loss[0] / b_total).toFixed(1)) : 0;
             avg_score_loss[1] = w_total > 0 ? Number((avg_score_loss[1] / w_total).toFixed(1)) : 0;
 
-            score_loss_list[0].sort((a, b) => {
-                return a - b;
-            });
-            score_loss_list[1].sort((a, b) => {
-                return a - b;
-            });
+            score_loss_list.black.sort((a, b) => a - b);
+            score_loss_list.white.sort((a, b) => a - b);
 
             median_score_loss[0] =
-                this.medianList(score_loss_list[0]) !== undefined
-                    ? Number(this.medianList(score_loss_list[0]).toFixed(1))
+                this.medianList(score_loss_list.black) !== undefined
+                    ? Number(this.medianList(score_loss_list.black).toFixed(1))
                     : 0;
             median_score_loss[1] =
-                this.medianList(score_loss_list[1]) !== undefined
-                    ? Number(this.medianList(score_loss_list[1]).toFixed(1))
+                this.medianList(score_loss_list.white) !== undefined
+                    ? Number(this.medianList(score_loss_list.white).toFixed(1))
                     : 0;
 
             for (let j = 0; j < num_rows; j++) {
