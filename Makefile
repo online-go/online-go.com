@@ -28,12 +28,12 @@ pretty prettier lint-fix:
 	npm run lint:fix
 	
 
-analyze:
-	ANALYZE=true npm run analyze
+analyze visualizer bundle-visualizer:
+	npm run bundle-visualizer
 
 test:
 	npm run test
 
-.PHONY: dev build test analyze pretty prettier lint-fix .husky
+.PHONY: dev build test analyze pretty prettier lint-fix .husky visualizer bundle-visualizer
 
 -include Makefile.production
