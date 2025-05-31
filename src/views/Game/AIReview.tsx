@@ -1283,14 +1283,14 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                                                         </span>
                                                         <span>
                                                             <Toggle
-                                                                checked={this.state.table_hidden}
+                                                                checked={!this.state.table_hidden}
                                                                 onChange={(b) => {
                                                                     preferences.set(
                                                                         "ai-summary-table-show",
-                                                                        b,
+                                                                        !b,
                                                                     );
                                                                     this.setState({
-                                                                        table_hidden: b,
+                                                                        table_hidden: !b,
                                                                     });
                                                                 }}
                                                             />
