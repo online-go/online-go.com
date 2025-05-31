@@ -35,55 +35,22 @@ import {
     MoveTree,
     JGOFAIReview,
     JGOFAIReviewMove,
-    JGOFIntersection,
     JGOFNumericPlayerColor,
     ColoredCircle,
     getWorstMoves,
     AIReviewWorstMoveEntry,
-    Goban,
     encodeMoves,
     encodeMove,
-    GobanRenderer,
 } from "goban";
 import { game_control } from "./game_control";
 import { alert } from "@/lib/swal_config";
 import { GobanContext } from "./goban_context";
 import { ReportContext } from "@/contexts/ReportContext";
 import { MODERATOR_POWERS } from "@/lib/moderation";
+import { calculateAiSummaryTableData } from "@/lib/ai_review_move_categories";
+import { sameIntersection } from "@/lib/misc";
 
-type MoveCategory = "Excellent" | "Great" | "Good" | "Inaccuracy" | "Mistake" | "Blunder";
-type FastCategory = Extract<MoveCategory, "Good" | "Inaccuracy" | "Mistake" | "Blunder">;
-
-const fullCategories: MoveCategory[] = [
-    "Excellent",
-    "Great",
-    "Good",
-    "Inaccuracy",
-    "Mistake",
-    "Blunder",
-];
-const fastCategories: FastCategory[] = ["Good", "Inaccuracy", "Mistake", "Blunder"];
-
-type PlayerMoveCounts = {
-    [K in MoveCategory]: number;
-};
-
-type MoveCounters = {
-    black: PlayerMoveCounts;
-    white: PlayerMoveCounts;
-};
-
-type OtherCounters = {
-    black: number;
-    white: number;
-};
-
-type ScoreLossList = {
-    black: number[];
-    white: number[];
-};
-
-export interface AIReviewEntry {
+interface AIReviewEntry {
     move_number: number;
     win_rate: number;
     score: number;
@@ -167,7 +134,11 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
 
     componentDidMount() {
         this.getAIReviewList();
-        const ai_table_out = this.calculateAiSummaryTableData();
+        const ai_table_out = calculateAiSummaryTableData(
+            this.ai_review,
+            this.props.gobanContext,
+            this.state.loading,
+        );
         this.updateTableState(ai_table_out);
 
         const user = data.get("user");
@@ -184,7 +155,11 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
             this.getAIReviewList();
         }
         if (this.state.show_table) {
-            const ai_table_out = this.calculateAiSummaryTableData();
+            const ai_table_out = calculateAiSummaryTableData(
+                this.ai_review,
+                this.props.gobanContext,
+                this.state.loading,
+            );
             this.updateTableState(ai_table_out);
         }
     }
@@ -207,351 +182,6 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
             this.setState({
                 show_table: ai_table_out.should_show_table,
             });
-        }
-    }
-
-    private calculateAiSummaryTableData() {
-        const goban = this.props.gobanContext;
-        if (!goban) {
-            throw new Error("goban not set");
-        }
-
-        const summary_moves_list = [
-            ["", "", "", ""],
-            ["", "", "", ""],
-            ["", "", "", ""],
-            ["", "", "", ""],
-            ["", "", "", ""],
-            ["", "", "", ""],
-        ];
-        const ai_table_rows = [
-            [_("Excellent")],
-            [_("Great")],
-            [_("Good")],
-            [_("Inaccuracy")],
-            [_("Mistake")],
-            [_("Blunder")],
-        ];
-        const default_table_rows = [["", "", "", "", ""]];
-        const avg_score_loss = [0, 0];
-        const median_score_loss = [0, 0];
-        let moves_missing = 0;
-        let max_entries = 0;
-        let should_show_table = true;
-
-        if (!this.ai_review) {
-            return {
-                ai_table_rows: default_table_rows,
-                avg_score_loss,
-                median_score_loss,
-                moves_pending: moves_missing,
-                max_entries,
-                should_show_table,
-            };
-        }
-
-        if (!this.ai_review?.engine.includes("katago")) {
-            should_show_table = false;
-            return {
-                ai_table_rows: default_table_rows,
-                avg_score_loss,
-                median_score_loss,
-                moves_pending: moves_missing,
-                max_entries,
-                should_show_table,
-            };
-        }
-
-        const handicap = goban.engine.handicap;
-        //only useful when there's free placement, handicap = 1 no offset needed.
-        let h_offset = AIReviewClass.handicapOffset(goban);
-        h_offset = h_offset === 1 ? 0 : h_offset;
-        const b_player = h_offset > 0 || handicap > 1 ? 1 : 0;
-        const move_player_list = AIReviewClass.getPlayerColorsMoveList(goban);
-
-        if (this.ai_review?.type === "fast") {
-            const scores = this.ai_review?.scores;
-            const is_uploaded = goban.config.original_sgf !== undefined;
-            //one more ai review point than moves in the game, since initial board gets a score.
-
-            if (scores === undefined) {
-                return {
-                    ai_table_rows: default_table_rows,
-                    avg_score_loss,
-                    median_score_loss,
-                    moves_pending: moves_missing,
-                    max_entries,
-                    should_show_table,
-                };
-            }
-            const check1 =
-                !is_uploaded &&
-                goban.config.moves?.length !== (this.ai_review?.scores?.length ?? -1) - 1;
-            // extra initial ! in all_moves which matches extra empty board score, except in handicap games for some reason.
-            // so subtract 1 if black goes second == b_player
-            const check2 =
-                is_uploaded &&
-                (goban.config as any)["all_moves"]?.split("!").length - b_player !==
-                    this.ai_review?.scores?.length;
-
-            // if there's less than 4 moves the worst moves doesn't seem to return 3 moves, otherwise look for these three moves.
-            const check3 =
-                this.ai_review?.moves === undefined ||
-                (Object.keys(this.ai_review?.moves).length !== 3 && scores.length > 4);
-            if (check1 || check2 || check3) {
-                return {
-                    ai_table_rows: default_table_rows,
-                    avg_score_loss,
-                    median_score_loss,
-                    moves_pending: moves_missing,
-                    max_entries,
-                    should_show_table,
-                };
-            }
-
-            // we don't need the first two rows, as they're for full reviews.
-            ai_table_rows.splice(0, 2);
-            summary_moves_list.splice(0, 2);
-            const num_rows = ai_table_rows.length;
-            const move_counters: MoveCounters = {
-                black: { Excellent: 0, Great: 0, Good: 0, Inaccuracy: 0, Mistake: 0, Blunder: 0 },
-                white: { Excellent: 0, Great: 0, Good: 0, Inaccuracy: 0, Mistake: 0, Blunder: 0 },
-            };
-            const other_counters: OtherCounters = { black: 0, white: 0 };
-            let w_total = 0;
-            let b_total = 0;
-            const score_loss_list: ScoreLossList = { black: [], white: [] };
-            const worst_move_keys = Object.keys(this.ai_review?.moves);
-
-            for (let j = 0; j < worst_move_keys.length; j++) {
-                (scores as any)[worst_move_keys[j]] =
-                    this.ai_review?.moves[worst_move_keys[j]].score;
-            }
-
-            for (let j = h_offset; j < scores.length - 1; j++) {
-                let score_diff = scores[j + 1] - scores[j];
-                const is_b_player = move_player_list[j] === JGOFNumericPlayerColor.BLACK;
-                const player = is_b_player ? "black" : "white";
-                const player_index = is_b_player ? 0 : 1;
-                score_diff = is_b_player ? -1 * score_diff : score_diff;
-                avg_score_loss[player_index] += score_diff;
-                score_loss_list[player].push(score_diff);
-
-                if (score_diff < 1) {
-                    move_counters[player].Good += 1;
-                } else if (score_diff < 2) {
-                    move_counters[player].Inaccuracy += 1;
-                } else if (score_diff < 5) {
-                    move_counters[player].Mistake += 1;
-                } else if (score_diff >= 5) {
-                    move_counters[player].Blunder += 1;
-                } else {
-                    other_counters[player] += 1;
-                }
-            }
-
-            for (const cat of fastCategories) {
-                b_total += move_counters.black[cat];
-                w_total += move_counters.white[cat];
-            }
-
-            avg_score_loss[0] = b_total > 0 ? Number((avg_score_loss[0] / b_total).toFixed(1)) : 0;
-            avg_score_loss[1] = w_total > 0 ? Number((avg_score_loss[1] / w_total).toFixed(1)) : 0;
-
-            score_loss_list.black.sort((a, b) => a - b);
-            score_loss_list.white.sort((a, b) => a - b);
-
-            median_score_loss[0] =
-                this.medianList(score_loss_list.black) !== undefined
-                    ? Number(this.medianList(score_loss_list.black).toFixed(1))
-                    : 0;
-            median_score_loss[1] =
-                this.medianList(score_loss_list.white) !== undefined
-                    ? Number(this.medianList(score_loss_list.white).toFixed(1))
-                    : 0;
-
-            for (let j = 0; j < num_rows; j++) {
-                const cat = fastCategories[j];
-                summary_moves_list[j][0] = move_counters.black[cat].toString();
-                summary_moves_list[j][1] =
-                    b_total > 0 ? ((100 * move_counters.black[cat]) / b_total).toFixed(1) : "";
-                summary_moves_list[j][2] = move_counters.white[cat].toString();
-                summary_moves_list[j][3] =
-                    w_total > 0 ? ((100 * move_counters.white[cat]) / w_total).toFixed(1) : "";
-            }
-
-            for (let j = 0; j < ai_table_rows.length; j++) {
-                ai_table_rows[j] = ai_table_rows[j].concat(summary_moves_list[j]);
-            }
-
-            should_show_table = false;
-
-            return {
-                ai_table_rows,
-                avg_score_loss,
-                median_score_loss,
-                moves_pending: moves_missing,
-                max_entries,
-                should_show_table,
-            };
-        } else if (this.ai_review?.type === "full") {
-            const num_rows = ai_table_rows.length;
-            const move_counters: MoveCounters = {
-                black: { Excellent: 0, Great: 0, Good: 0, Inaccuracy: 0, Mistake: 0, Blunder: 0 },
-                white: { Excellent: 0, Great: 0, Good: 0, Inaccuracy: 0, Mistake: 0, Blunder: 0 },
-            };
-            const other_counters: OtherCounters = { black: 0, white: 0 };
-            let w_total = 0;
-            let b_total = 0;
-            const score_loss_list: ScoreLossList = { black: [], white: [] };
-
-            const move_keys = Object.keys(this.ai_review?.moves);
-            const is_uploaded = goban.config.original_sgf !== undefined;
-            // should be one more ai review score and move branches for empty board.
-            const check1 = !is_uploaded && goban.config.moves?.length !== move_keys.length - 1;
-            // extra initial ! in all_moves which matches extra empty board score, except in handicap games for some reason.
-            // so subtract 1 if black goes second == b_player
-            const check2 =
-                is_uploaded &&
-                (goban.config as any)["all_moves"].split("!").length - b_player !==
-                    move_keys.length;
-
-            if (this.state.loading || this.ai_review.scores === undefined) {
-                for (let j = 0; j < ai_table_rows.length; j++) {
-                    ai_table_rows[j] = ai_table_rows[j].concat(summary_moves_list[j]);
-                }
-                return {
-                    ai_table_rows,
-                    avg_score_loss,
-                    median_score_loss,
-                    moves_pending: moves_missing,
-                    max_entries,
-                    should_show_table,
-                };
-            }
-
-            max_entries = this.ai_review.scores.length;
-
-            for (let j = h_offset; j < (this.ai_review?.scores?.length ?? 0) - 1; j++) {
-                if (
-                    this.ai_review?.moves[j] === undefined ||
-                    this.ai_review?.moves[j + 1] === undefined
-                ) {
-                    moves_missing += 1;
-                    continue;
-                }
-                const player_move = this.ai_review?.moves[j + 1].move;
-                //the current ai review shows top six playouts on the board, so matching that.
-                const current_branches = this.ai_review?.moves[j].branches.slice(0, 6);
-                const blue_move = current_branches[0].moves[0];
-                const is_b_player = move_player_list[j] === JGOFNumericPlayerColor.BLACK;
-                const player = is_b_player ? "black" : "white";
-                const player_index = is_b_player ? 0 : 1;
-                let score_diff =
-                    (this.ai_review?.moves[j + 1].score ?? 0) -
-                    (this.ai_review?.moves[j].score ?? 0);
-                score_diff = is_b_player ? -1 * score_diff : score_diff;
-                avg_score_loss[player_index] += score_diff;
-                score_loss_list[player].push(score_diff);
-
-                if (blue_move === undefined) {
-                    other_counters[player] += 1;
-                } else if (player_move.x === -1) {
-                    other_counters[player] += 1;
-                    //console.log("pass etc");
-                } else {
-                    if (isEqualMoveIntersection(blue_move, player_move)) {
-                        move_counters[player].Excellent += 1;
-                        //console.log("blue Excellent");
-                    } else if (
-                        current_branches.some((branch, index) => {
-                            if (!branch.moves.length) {
-                                return false;
-                            }
-
-                            const check =
-                                index > 0 &&
-                                isEqualMoveIntersection(branch.moves[0], player_move) &&
-                                branch.visits >=
-                                    Math.min(50, 0.1 * (this.ai_review?.strength ?? 0));
-                            return check;
-                        })
-                    ) {
-                        move_counters[player].Great += 1;
-                        //console.log("green Great");
-                    } else if (score_diff < 1) {
-                        move_counters[player].Good += 1;
-                        //console.log("good");
-                    } else if (score_diff < 2) {
-                        move_counters[player].Inaccuracy += 1;
-                        //console.log("inaccuracy");
-                    } else if (score_diff < 5) {
-                        move_counters[player].Mistake += 1;
-                        //console.log("mistake");
-                    } else if (score_diff >= 5) {
-                        move_counters[player].Blunder += 1;
-                        //console.log("blunder");
-                    } else {
-                        other_counters[player] += 1;
-                    }
-                }
-            }
-
-            for (const cat of fullCategories) {
-                b_total += move_counters.black[cat];
-                w_total += move_counters.white[cat];
-            }
-
-            avg_score_loss[0] = b_total > 0 ? Number((avg_score_loss[0] / b_total).toFixed(1)) : 0;
-            avg_score_loss[1] = w_total > 0 ? Number((avg_score_loss[1] / w_total).toFixed(1)) : 0;
-
-            score_loss_list.black.sort((a, b) => a - b);
-            score_loss_list.white.sort((a, b) => a - b);
-
-            median_score_loss[0] =
-                this.medianList(score_loss_list.black) !== undefined
-                    ? Number(this.medianList(score_loss_list.black).toFixed(1))
-                    : 0;
-            median_score_loss[1] =
-                this.medianList(score_loss_list.white) !== undefined
-                    ? Number(this.medianList(score_loss_list.white).toFixed(1))
-                    : 0;
-
-            for (let j = 0; j < num_rows; j++) {
-                const cat = fullCategories[j];
-                summary_moves_list[j][0] = move_counters.black[cat].toString();
-                summary_moves_list[j][1] =
-                    b_total > 0 ? ((100 * move_counters.black[cat]) / b_total).toFixed(1) : "";
-                summary_moves_list[j][2] = move_counters.white[cat].toString();
-                summary_moves_list[j][3] =
-                    w_total > 0 ? ((100 * move_counters.white[cat]) / w_total).toFixed(1) : "";
-            }
-
-            for (let j = 0; j < ai_table_rows.length; j++) {
-                ai_table_rows[j] = ai_table_rows[j].concat(summary_moves_list[j]);
-            }
-
-            if (!check1 && !check2) {
-                should_show_table = false;
-            }
-
-            return {
-                ai_table_rows,
-                avg_score_loss,
-                median_score_loss,
-                moves_pending: moves_missing,
-                max_entries,
-                should_show_table,
-            };
-        } else {
-            return {
-                ai_table_rows: default_table_rows,
-                avg_score_loss,
-                median_score_loss,
-                moves_pending: moves_missing,
-                max_entries,
-                should_show_table,
-            };
         }
     }
 
@@ -631,18 +261,6 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                 }
             })
             .catch(errorLogger);
-    }
-
-    private static handicapOffset(goban: GobanRenderer): number {
-        if (
-            goban &&
-            goban.engine &&
-            goban.engine.free_handicap_placement &&
-            goban.engine.handicap > 0
-        ) {
-            return goban.engine.handicap;
-        }
-        return 0;
     }
 
     syncAIReview() {
@@ -966,7 +584,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                     if (branch.moves.length === 0) {
                         continue;
                     }
-                    if (next_move && isEqualMoveIntersection(branch.moves[0], next_move)) {
+                    if (next_move && sameIntersection(branch.moves[0], next_move)) {
                         found_next_move = true;
                         branch.win_rate = next_win_rate;
                         branch.score = next_score;
@@ -1042,7 +660,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                         mv &&
                         (i === 0 ||
                             //true || // debugging
-                            (next_move && isEqualMoveIntersection(branch.moves[0], next_move)) ||
+                            (next_move && sameIntersection(branch.moves[0], next_move)) ||
                             branch.visits >= Math.min(50, 0.1 * strength))
                     ) {
                         if (parseFloat(key).toPrecision(2).length < key.length) {
@@ -1056,7 +674,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                         color: "rgba(0,0,0,0)",
                     };
 
-                    if (next_move && isEqualMoveIntersection(branch.moves[0], next_move)) {
+                    if (next_move && sameIntersection(branch.moves[0], next_move)) {
                         goban.setMark(mv.x, mv.y, "sub_triangle", true);
                         goban.setMark(mv.x, mv.y, "blue_move", true);
 
@@ -1309,29 +927,6 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
         }
 
         return false;
-    }
-
-    private static getPlayerColorsMoveList(goban: Goban) {
-        const init_move = goban.engine.move_tree;
-        const move_list: any[] = [];
-        let cur_move = init_move.trunk_next;
-
-        while (cur_move !== undefined) {
-            move_list.push(cur_move.player);
-            cur_move = cur_move.trunk_next;
-        }
-        return move_list;
-    }
-
-    private medianList(numbers: number[]): number {
-        const mid = numbers.length === 0 ? undefined : Math.floor(numbers.length / 2);
-        if (mid === undefined) {
-            return -1;
-        }
-
-        const median =
-            numbers.length % 2 !== 0 ? numbers[mid] : (numbers[mid] + numbers[mid - 1]) / 2;
-        return median;
     }
 
     public render(): React.ReactElement | null {
@@ -1845,9 +1440,6 @@ function sanityCheck(ai_review: JGOFAIReview) {
     }
 }
 
-function isEqualMoveIntersection(a: JGOFIntersection, b: JGOFIntersection): boolean {
-    return a.x === b.x && a.y === b.y;
-}
 export function ReviewStrengthIcon({
     review,
 }: {

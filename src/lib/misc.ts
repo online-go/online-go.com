@@ -123,6 +123,15 @@ export function deepEqual(a: any, b: any) {
         return a === b;
     }
 }
+
+// You'd think goban would provide this...
+export function sameIntersection(
+    a: { x: number; y: number },
+    b: { x: number; y: number },
+): boolean {
+    return a.x === b.x && a.y === b.y;
+}
+
 export function getRandomInt(min: number, max: number) {
     return Math.floor(Math.random() * (max - min)) + min;
 }
