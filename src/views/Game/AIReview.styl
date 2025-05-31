@@ -214,15 +214,35 @@
         }
     }
 
-    .win-score-toggler {
-        display: inline-flex;
-        width: 100%;
-        padding-top: 0.5rem;
-        padding-bottom: 0;
+    .ai-review-togglers {
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+        display: flex;
+        justify-content: space-between;
+
+        .left-section {
+            flex: 0.8;
+        }
+
+        .middle-section {
+            flex: 1.4;
+            display: flex;
+            justify-content: center;
+        }
+
+        .right-section {
+            flex: 0.8;
+            display: flex;
+            justify-content: flex-end;
+        }
 
         span {
-            padding-left: 0.5rem;
-            padding-right: 0.5rem;
+            padding-left: 0.25rem;
+            padding-right: 0.25rem;
+        }
+
+        .ai-summary-toggler {
+            display: flex;
         }
 
         .win-toggle {
@@ -262,6 +282,23 @@
             cursor: pointer;
             flex: 1;
         }
+    }
+
+    .ai-summary-container {
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+
+        .ai-summary-table {
+            th, td {
+                text-align: center;
+            }
+        }
+    }
+
+    .worst-moves-container {
+        display: inline-flex;
+        width: 100%;
     }
 
     .become-a-site-supporter-line {
@@ -330,28 +367,4 @@
 
 .ai-review-list-container {
     border: 1px solid red;
-}
-
-.ai-summary-table {
-    text-align: center;
-
-}
-
-.ai-summary-container {
-    display: flex;
-    align-items: center;
-    flex-direction: column;
-}
-
-.ai-summary-toggler {
-    display: flex;
-
-    span {
-        margin-left: 0.5rem;
-    }
-}
-
-.worst-moves-summary-toggle-container {
-    display: inline-flex;
-    width: 100%;
 }
