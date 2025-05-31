@@ -1395,7 +1395,6 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
         const show_become_supporter_text =
             !user.anonymous && !user.supporter && !user.is_moderator && !user.professional;
 
-        console.log("ai review", this.props.reportContext);
         return (
             <div className="AIReview">
                 <UIPush
