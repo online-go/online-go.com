@@ -36,6 +36,9 @@ export function GamePreferences(): React.ReactElement {
         preferences.get("dock-delay"),
     );
     const [ai_review_enabled, _setAiReviewEnabled] = usePreference("ai-review-enabled");
+    const [ai_review_categorization_method, setAiReviewCategorizationMethod] = usePreference(
+        "ai-review-categorization-method",
+    );
     const [variations_in_chat, _setVariationsInChat] = usePreference("variations-in-chat-enabled");
     const [_live_submit_mode, _setLiveSubmitMode]: [string, (x: string) => void] = React.useState(
         getSubmitMode("live"),
@@ -196,12 +199,22 @@ export function GamePreferences(): React.ReactElement {
             </PreferenceLine>
 
             <PreferenceLine
-                title={_("Disable AI review")}
-                description={_(
-                    "This will enable or disable the artificial intelligence reviews at the end of a game.",
-                )}
+                title={_("Enable AI review")}
+                description={_("Enable AI review for your games")}
             >
                 <Toggle checked={!ai_review_enabled} onChange={toggleAIReview} />
+            </PreferenceLine>
+
+            <PreferenceLine
+                title={_("Use new AI review categorization")}
+                description={_(
+                    "Use the new categorization method for AI reviews, which only counts positive score losses in the average score loss calculation",
+                )}
+            >
+                <Toggle
+                    checked={ai_review_categorization_method === "new"}
+                    onChange={(checked) => setAiReviewCategorizationMethod(checked ? "new" : "old")}
+                />
             </PreferenceLine>
 
             <PreferenceLine
@@ -227,10 +240,8 @@ export function GamePreferences(): React.ReactElement {
             </PreferenceLine>
 
             <PreferenceLine
-                title={_("Disable clickable variations in chat")}
-                description={_(
-                    "This will enable or disable the hoverable and clickable variations displayed in a game or review chat.",
-                )}
+                title={_("Variations in chat")}
+                description={_("Enable variations in chat")}
             >
                 <Toggle checked={!variations_in_chat} onChange={toggleVariationsInChat} />
             </PreferenceLine>

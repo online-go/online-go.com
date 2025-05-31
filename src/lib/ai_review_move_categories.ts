@@ -58,7 +58,10 @@ export interface AiSummaryTableData {
     moves_pending: number;
     max_entries: number;
     should_show_table: boolean; // used to signal that we don't have enough data yet
+    strong_move_rate: number[]; // [black_smr, white_smr]
 }
+
+export type CategorizationMethod = "old" | "new";
 
 function medianList(numbers: number[]): number {
     const mid = numbers.length === 0 ? undefined : Math.floor(numbers.length / 2);
@@ -98,6 +101,7 @@ export function calculateAiSummaryTableData(
     ai_review: JGOFAIReview | undefined,
     goban: GobanRenderer | null | undefined,
     loading: boolean,
+    categorization_method: CategorizationMethod = "old",
 ): AiSummaryTableData {
     if (!goban) {
         return {
@@ -107,6 +111,7 @@ export function calculateAiSummaryTableData(
             moves_pending: 0,
             max_entries: 0,
             should_show_table: false,
+            strong_move_rate: [0, 0],
         };
     }
 
@@ -141,6 +146,7 @@ export function calculateAiSummaryTableData(
             moves_pending: moves_missing,
             max_entries,
             should_show_table,
+            strong_move_rate: [0, 0],
         };
     }
 
@@ -153,6 +159,7 @@ export function calculateAiSummaryTableData(
             moves_pending: moves_missing,
             max_entries,
             should_show_table,
+            strong_move_rate: [0, 0],
         };
     }
 
@@ -176,6 +183,7 @@ export function calculateAiSummaryTableData(
                 moves_pending: moves_missing,
                 max_entries,
                 should_show_table,
+                strong_move_rate: [0, 0],
             };
         }
         const check1 =
@@ -199,6 +207,7 @@ export function calculateAiSummaryTableData(
                 moves_pending: moves_missing,
                 max_entries,
                 should_show_table,
+                strong_move_rate: [0, 0],
             };
         }
 
@@ -285,6 +294,7 @@ export function calculateAiSummaryTableData(
             moves_pending: moves_missing,
             max_entries,
             should_show_table,
+            strong_move_rate: [0, 0],
         };
     } else if (ai_review?.type === "full") {
         const num_rows = ai_table_rows.length;
@@ -296,6 +306,7 @@ export function calculateAiSummaryTableData(
         let w_total = 0;
         let b_total = 0;
         const score_loss_list: ScoreLossList = { black: [], white: [] };
+        const strong_move_rate = [0, 0]; // [black_smr, white_smr]
 
         const move_keys = Object.keys(ai_review?.moves);
         const is_uploaded = goban.config.original_sgf !== undefined;
@@ -318,6 +329,7 @@ export function calculateAiSummaryTableData(
                 moves_pending: moves_missing,
                 max_entries,
                 should_show_table,
+                strong_move_rate,
             };
         }
 
@@ -329,49 +341,79 @@ export function calculateAiSummaryTableData(
                 continue;
             }
             const player_move = ai_review?.moves[j + 1].move;
-            //the current ai review shows top six playouts on the board, so matching that.
-            const current_branches = ai_review?.moves[j].branches.slice(0, 6);
-            const blue_move = current_branches[0].moves[0];
             const is_b_player = move_player_list[j] === JGOFNumericPlayerColor.BLACK;
             const player = is_b_player ? "black" : "white";
             const player_index = is_b_player ? 0 : 1;
-            let score_diff =
-                (ai_review?.moves[j + 1].score ?? 0) - (ai_review?.moves[j].score ?? 0);
-            score_diff = is_b_player ? -1 * score_diff : score_diff;
-            avg_score_loss[player_index] += score_diff;
-            score_loss_list[player].push(score_diff);
 
-            if (blue_move === undefined) {
-                other_counters[player] += 1;
-            } else if (player_move.x === -1) {
-                other_counters[player] += 1;
-            } else {
-                if (sameIntersection(blue_move, player_move)) {
+            if (categorization_method === "new") {
+                console.log("new categorization method");
+                let score_loss =
+                    (ai_review?.moves[j + 1].score ?? 0) - (ai_review?.moves[j].score ?? 0);
+                score_loss = is_b_player ? -1 * score_loss : score_loss;
+
+                // Only add positive score losses to APL sum
+                if (score_loss > 0) {
+                    avg_score_loss[player_index] += score_loss;
+                }
+                score_loss_list[player].push(score_loss);
+
+                // Categorize based on score_loss thresholds
+                if (score_loss < 0.2) {
                     move_counters[player].Excellent += 1;
-                } else if (
-                    current_branches.some((branch, index) => {
-                        if (!branch.moves.length) {
-                            return false;
-                        }
-
-                        const check =
-                            index > 0 &&
-                            sameIntersection(branch.moves[0], player_move) &&
-                            branch.visits >= Math.min(50, 0.1 * (ai_review?.strength ?? 0));
-                        return check;
-                    })
-                ) {
+                } else if (score_loss < 0.6) {
                     move_counters[player].Great += 1;
-                } else if (score_diff < 1) {
+                } else if (score_loss < 1.0) {
                     move_counters[player].Good += 1;
-                } else if (score_diff < 2) {
+                } else if (score_loss < 2.0) {
                     move_counters[player].Inaccuracy += 1;
-                } else if (score_diff < 5) {
+                } else if (score_loss < 5.0) {
                     move_counters[player].Mistake += 1;
-                } else if (score_diff >= 5) {
-                    move_counters[player].Blunder += 1;
                 } else {
+                    move_counters[player].Blunder += 1;
+                }
+            } else {
+                console.log("old categorization method");
+                // Original categorization logic
+                const current_branches = ai_review?.moves[j].branches.slice(0, 6);
+                const blue_move = current_branches[0].moves[0];
+                let score_diff =
+                    (ai_review?.moves[j + 1].score ?? 0) - (ai_review?.moves[j].score ?? 0);
+                score_diff = is_b_player ? -1 * score_diff : score_diff;
+                avg_score_loss[player_index] += score_diff;
+                score_loss_list[player].push(score_diff);
+
+                if (blue_move === undefined) {
                     other_counters[player] += 1;
+                } else if (player_move.x === -1) {
+                    other_counters[player] += 1;
+                } else {
+                    if (sameIntersection(blue_move, player_move)) {
+                        move_counters[player].Excellent += 1;
+                    } else if (
+                        current_branches.some((branch, index) => {
+                            if (!branch.moves.length) {
+                                return false;
+                            }
+
+                            const check =
+                                index > 0 &&
+                                sameIntersection(branch.moves[0], player_move) &&
+                                branch.visits >= Math.min(50, 0.1 * (ai_review?.strength ?? 0));
+                            return check;
+                        })
+                    ) {
+                        move_counters[player].Great += 1;
+                    } else if (score_diff < 1) {
+                        move_counters[player].Good += 1;
+                    } else if (score_diff < 2) {
+                        move_counters[player].Inaccuracy += 1;
+                    } else if (score_diff < 5) {
+                        move_counters[player].Mistake += 1;
+                    } else if (score_diff >= 5) {
+                        move_counters[player].Blunder += 1;
+                    } else {
+                        other_counters[player] += 1;
+                    }
                 }
             }
         }
@@ -380,6 +422,32 @@ export function calculateAiSummaryTableData(
             b_total += move_counters.black[cat];
             w_total += move_counters.white[cat];
         }
+
+        // Calculate strong move rate (Excellent + Great + Good) / total moves
+        strong_move_rate[0] =
+            b_total > 0
+                ? Number(
+                      (
+                          ((move_counters.black.Excellent +
+                              move_counters.black.Great +
+                              move_counters.black.Good) /
+                              b_total) *
+                          100
+                      ).toFixed(1),
+                  )
+                : 0;
+        strong_move_rate[1] =
+            w_total > 0
+                ? Number(
+                      (
+                          ((move_counters.white.Excellent +
+                              move_counters.white.Great +
+                              move_counters.white.Good) /
+                              w_total) *
+                          100
+                      ).toFixed(1),
+                  )
+                : 0;
 
         avg_score_loss[0] = b_total > 0 ? Number((avg_score_loss[0] / b_total).toFixed(1)) : 0;
         avg_score_loss[1] = w_total > 0 ? Number((avg_score_loss[1] / w_total).toFixed(1)) : 0;
@@ -421,6 +489,7 @@ export function calculateAiSummaryTableData(
             moves_pending: moves_missing,
             max_entries,
             should_show_table,
+            strong_move_rate,
         };
     } else {
         return {
@@ -430,6 +499,7 @@ export function calculateAiSummaryTableData(
             moves_pending: moves_missing,
             max_entries,
             should_show_table,
+            strong_move_rate: [0, 0],
         };
     }
 }
