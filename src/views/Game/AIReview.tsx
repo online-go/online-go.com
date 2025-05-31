@@ -50,7 +50,7 @@ import { MODERATOR_POWERS } from "@/lib/moderation";
 import { calculateAiSummaryTableData, CategorizationMethod } from "@/lib/ai_review_move_categories";
 import { sameIntersection } from "@/lib/misc";
 
-interface AIReviewEntry {
+export interface AIReviewEntry {
     move_number: number;
     win_rate: number;
     score: number;
@@ -72,7 +72,7 @@ interface AIReviewState {
     use_score: boolean;
     ai_reviews: Array<JGOFAIReview>;
     selected_ai_review?: JGOFAIReview;
-    update_count: number;
+    rerender: number;
     worst_moves_shown: number;
     show_table: boolean;
     table_hidden: boolean;
@@ -115,7 +115,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
             loading: true,
             reviewing: false,
             ai_reviews: [],
-            update_count: 0,
+            rerender: 0,
             use_score: preferences.get("ai-review-use-score"),
             worst_moves_shown: 6,
             show_table: true,
@@ -157,14 +157,12 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
             this.getAIReviewList();
         }
         if (this.state.show_table) {
-            console.log("Calculating table data with method:", this.state.categorization_method);
             const ai_table_out = calculateAiSummaryTableData(
                 this.ai_review,
                 this.props.gobanContext,
                 this.state.loading,
                 this.state.categorization_method,
             );
-            console.log("Table data calculated:", ai_table_out);
             this.updateTableState(ai_table_out);
         }
     }
@@ -178,7 +176,6 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
         should_show_table: boolean;
         strong_move_rate: number[];
     }) {
-        console.log("Updating table state with:", ai_table_out);
         this.table_rows = ai_table_out.ai_table_rows;
         this.avg_score_loss = ai_table_out.avg_score_loss;
         this.median_score_loss = ai_table_out.median_score_loss;
@@ -274,7 +271,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
     syncAIReview() {
         if (!this.ai_review || !this.state.selected_ai_review) {
             this.setState({
-                update_count: this.state.update_count + 1,
+                rerender: this.state.rerender + 1,
             });
             return;
         }
@@ -310,7 +307,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
             //blunders: blunders,
             //queue_position: this.state.selected_ai_review.queue.position,
             //queue_pending: this.state.selected_ai_review.queue.pending,
-            update_count: this.state.update_count + 1,
+            rerender: this.state.rerender + 1,
         });
     }
 
@@ -371,7 +368,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
             }
         }
         this.setState({
-            update_count: this.state.update_count + 1,
+            rerender: this.state.rerender + 1,
         });
     }
 
@@ -433,7 +430,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                     sanityCheck(this.ai_review);
                 }
                 this.setState({
-                    update_count: this.state.update_count + 1,
+                    rerender: this.state.rerender + 1,
                 });
                 this.syncAIReview();
             }, 100);
@@ -1222,7 +1219,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                                     ai_review={this.ai_review}
                                     entries={ai_review_chart_entries}
                                     variation_entries={ai_review_chart_variation_entries}
-                                    update_count={this.state.update_count}
+                                    update_count={this.state.rerender}
                                     move_number={move_number}
                                     variation_move_number={variation_move_number}
                                     set_move={(num: number) => game_control.emit("gotoMove", num)}
@@ -1328,160 +1325,33 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                                             />
                                             {!this.state.table_hidden && (
                                                 <div className="categorization-toggler">
-                                                    <span
-                                                        className="old-toggle"
-                                                        onClick={() => {
-                                                            preferences.set(
-                                                                "ai-review-categorization-method",
-                                                                "old",
-                                                            );
-                                                            this.setState(
-                                                                {
-                                                                    categorization_method: "old",
-                                                                    update_count:
-                                                                        this.state.update_count + 1,
-                                                                    show_table: true,
-                                                                },
-                                                                () => {
-                                                                    console.log(
-                                                                        "setState callback executed",
-                                                                    );
-                                                                    console.log(
-                                                                        "show_table in callback:",
-                                                                        this.state.show_table,
-                                                                    );
-                                                                    if (this.state.show_table) {
-                                                                        console.log(
-                                                                            "Forcing table data recalculation",
-                                                                        );
-                                                                        const ai_table_out =
-                                                                            calculateAiSummaryTableData(
-                                                                                this.ai_review,
-                                                                                this.props
-                                                                                    .gobanContext,
-                                                                                this.state.loading,
-                                                                                this.state
-                                                                                    .categorization_method,
-                                                                            );
-                                                                        console.log(
-                                                                            "New table data:",
-                                                                            ai_table_out,
-                                                                        );
-                                                                        this.updateTableState(
-                                                                            ai_table_out,
-                                                                        );
-                                                                    } else {
-                                                                        console.log(
-                                                                            "Not recalculating - show_table is false",
-                                                                        );
-                                                                    }
-                                                                },
-                                                            );
-                                                        }}
-                                                    >
+                                                    <span className="toggle-label">
                                                         {pgettext(
                                                             "Use the original categorization method",
                                                             "Original",
                                                         )}
                                                     </span>
-
-                                                    <span>
-                                                        <Toggle
-                                                            checked={
-                                                                this.state.categorization_method ===
-                                                                "new"
-                                                            }
-                                                            onChange={(b) => {
-                                                                const new_method = b
-                                                                    ? "new"
-                                                                    : "old";
-                                                                console.log(
-                                                                    "Toggle changed to:",
-                                                                    new_method,
-                                                                );
-                                                                console.log(
-                                                                    "Current show_table state:",
-                                                                    this.state.show_table,
-                                                                );
-                                                                preferences.set(
-                                                                    "ai-review-categorization-method",
-                                                                    new_method,
-                                                                );
-                                                                this.setState(
-                                                                    {
-                                                                        categorization_method:
-                                                                            new_method,
-                                                                        update_count:
-                                                                            this.state
-                                                                                .update_count + 1,
-                                                                        show_table: true,
-                                                                    },
-                                                                    () => {
-                                                                        console.log(
-                                                                            "setState callback executed",
-                                                                        );
-                                                                        console.log(
-                                                                            "show_table in callback:",
-                                                                            this.state.show_table,
-                                                                        );
-                                                                        if (this.state.show_table) {
-                                                                            console.log(
-                                                                                "Forcing table data recalculation",
-                                                                            );
-                                                                            const ai_table_out =
-                                                                                calculateAiSummaryTableData(
-                                                                                    this.ai_review,
-                                                                                    this.props
-                                                                                        .gobanContext,
-                                                                                    this.state
-                                                                                        .loading,
-                                                                                    this.state
-                                                                                        .categorization_method,
-                                                                                );
-                                                                            console.log(
-                                                                                "New table data:",
-                                                                                ai_table_out,
-                                                                            );
-                                                                            this.updateTableState(
-                                                                                ai_table_out,
-                                                                            );
-                                                                        } else {
-                                                                            console.log(
-                                                                                "Not recalculating - show_table is false",
-                                                                            );
-                                                                        }
-                                                                    },
-                                                                );
-                                                            }}
-                                                        />
-                                                    </span>
-
-                                                    <span
-                                                        className="new-toggle"
-                                                        onClick={() => {
+                                                    <Toggle
+                                                        checked={
+                                                            this.state.categorization_method ===
+                                                            "new"
+                                                        }
+                                                        onChange={(b) => {
+                                                            const new_method = b ? "new" : "old";
                                                             preferences.set(
                                                                 "ai-review-categorization-method",
-                                                                "new",
+                                                                new_method,
                                                             );
                                                             this.setState(
                                                                 {
-                                                                    categorization_method: "new",
-                                                                    update_count:
-                                                                        this.state.update_count + 1,
+                                                                    categorization_method:
+                                                                        new_method,
+                                                                    rerender:
+                                                                        this.state.rerender + 1,
                                                                     show_table: true,
                                                                 },
                                                                 () => {
-                                                                    console.log(
-                                                                        "setState callback executed",
-                                                                    );
-                                                                    console.log(
-                                                                        "show_table in callback:",
-                                                                        this.state.show_table,
-                                                                    );
                                                                     if (this.state.show_table) {
-                                                                        console.log(
-                                                                            "Forcing table data recalculation",
-                                                                        );
                                                                         const ai_table_out =
                                                                             calculateAiSummaryTableData(
                                                                                 this.ai_review,
@@ -1491,22 +1361,15 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                                                                                 this.state
                                                                                     .categorization_method,
                                                                             );
-                                                                        console.log(
-                                                                            "New table data:",
-                                                                            ai_table_out,
-                                                                        );
                                                                         this.updateTableState(
                                                                             ai_table_out,
-                                                                        );
-                                                                    } else {
-                                                                        console.log(
-                                                                            "Not recalculating - show_table is false",
                                                                         );
                                                                     }
                                                                 },
                                                             );
                                                         }}
-                                                    >
+                                                    />
+                                                    <span className="toggle-label">
                                                         {pgettext(
                                                             "Use the new categorization method",
                                                             "New",

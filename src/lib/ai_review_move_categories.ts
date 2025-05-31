@@ -346,7 +346,6 @@ export function calculateAiSummaryTableData(
             const player_index = is_b_player ? 0 : 1;
 
             if (categorization_method === "new") {
-                console.log("new categorization method");
                 let score_loss =
                     (ai_review?.moves[j + 1].score ?? 0) - (ai_review?.moves[j].score ?? 0);
                 score_loss = is_b_player ? -1 * score_loss : score_loss;
@@ -372,7 +371,6 @@ export function calculateAiSummaryTableData(
                     move_counters[player].Blunder += 1;
                 }
             } else {
-                console.log("old categorization method");
                 // Original categorization logic
                 const current_branches = ai_review?.moves[j].branches.slice(0, 6);
                 const blue_move = current_branches[0].moves[0];
