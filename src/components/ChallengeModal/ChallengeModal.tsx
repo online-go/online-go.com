@@ -937,18 +937,30 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
     update_demo_white_ranking = (rank: number) =>
         this.update_demo_settings((prev) => ({ ...prev, white_ranking: rank }));
 
-    update_selected_demo_player_black = (ev: React.ChangeEvent<HTMLSelectElement>) => {
-        const idx = parseInt(ev.target.value);
-        this.upstate("demo.black_name", this.props.playersList?.[idx].name);
-        this.upstate("demo.black_ranking", this.props.playersList?.[idx].rank);
+    update_selected_demo_player_black = (
+        idx: number,
+        players: { name: string; rank: number }[],
+    ) => {
+        const player = players[idx];
+        this.update_demo_settings((prev) => ({
+            ...prev,
+            black_name: player.name,
+            black_ranking: player.rank,
+        }));
         this.setState({
             selected_demo_player_black: idx,
         });
     };
-    update_selected_demo_player_white = (ev: React.ChangeEvent<HTMLSelectElement>) => {
-        const idx = parseInt(ev.target.value);
-        this.upstate("demo.white_name", this.props.playersList?.[idx].name);
-        this.upstate("demo.white_ranking", this.props.playersList?.[idx].rank);
+    update_selected_demo_player_white = (
+        idx: number,
+        players: { name: string; rank: number }[],
+    ) => {
+        const player = players[idx];
+        this.update_demo_settings((prev) => ({
+            ...prev,
+            white_name: player.name,
+            white_ranking: player.rank,
+        }));
         this.setState({
             selected_demo_player_white: idx,
         });
@@ -1434,7 +1446,12 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                             {this.props.playersList ? (
                                 <select
                                     value={this.state.selected_demo_player_black}
-                                    onChange={this.update_selected_demo_player_black}
+                                    onChange={(ev) =>
+                                        this.update_selected_demo_player_black(
+                                            parseInt(ev.target.value),
+                                            this.props.playersList!,
+                                        )
+                                    }
                                 >
                                     {this.props.playersList.map((player, idx) => (
                                         <option key={idx} value={idx}>
@@ -1492,7 +1509,12 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                             {this.props.playersList ? (
                                 <select
                                     value={this.state.selected_demo_player_white}
-                                    onChange={this.update_selected_demo_player_white}
+                                    onChange={(ev) =>
+                                        this.update_selected_demo_player_white(
+                                            parseInt(ev.target.value),
+                                            this.props.playersList!,
+                                        )
+                                    }
                                 >
                                     {this.props.playersList.map((player, idx) => (
                                         <option key={idx} value={idx}>
