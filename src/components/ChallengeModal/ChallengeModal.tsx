@@ -908,36 +908,26 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         }
         this.update_challenge_settings((prev) => ({ ...prev, challenger_color: color_selection }));
     };
-    update_disable_analysis = (ev: React.ChangeEvent<HTMLInputElement>) =>
-        this.upstate("challenge.game.disable_analysis", ev);
-    update_restrict_rank = (ev: React.ChangeEvent<HTMLInputElement>) =>
-        this.upstate("conf.restrict_rank", ev);
-    update_min_rank = (ev: React.ChangeEvent<HTMLSelectElement>) => {
-        const min_ranking = parseInt(ev.target.value);
-        let max_ranking = this.state.challenge.max_ranking;
-        if (min_ranking > max_ranking) {
-            max_ranking = min_ranking;
-        }
-        this.setState({
-            challenge: Object.assign({}, this.state.challenge, {
-                min_ranking: min_ranking,
-                max_ranking: max_ranking,
-            }),
-        });
-    };
-    update_max_rank = (ev: React.ChangeEvent<HTMLSelectElement>) => {
-        let min_ranking = this.state.challenge.min_ranking;
-        const max_ranking = parseInt(ev.target.value);
-        if (max_ranking < min_ranking) {
-            min_ranking = max_ranking;
-        }
-        this.setState({
-            challenge: Object.assign({}, this.state.challenge, {
-                min_ranking: min_ranking,
-                max_ranking: max_ranking,
-            }),
-        });
-    };
+    update_disable_analysis = (disable_analysis: boolean) =>
+        this.update_game_settings((prev) => ({ ...prev, disable_analysis: disable_analysis }));
+    update_restrict_rank = (restrict_rank: boolean) =>
+        this.update_conf((prev) => ({ ...prev, restrict_rank: restrict_rank }));
+    update_min_rank = (min_rank: number) =>
+        this.setState((state) => ({
+            challenge: {
+                ...state.challenge,
+                min_ranking: min_rank,
+                max_ranking: Math.max(state.challenge.max_ranking, min_rank),
+            },
+        }));
+    update_max_rank = (max_rank: number) =>
+        this.setState((state) => ({
+            challenge: {
+                ...state.challenge,
+                min_ranking: Math.min(state.challenge.min_ranking, max_rank),
+                max_ranking: max_rank,
+            },
+        }));
     update_demo_black_name = (ev: React.ChangeEvent<HTMLInputElement>) =>
         this.upstate("demo.black_name", ev);
     update_demo_white_name = (ev: React.ChangeEvent<HTMLInputElement>) =>
@@ -1607,7 +1597,9 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                                 <div className="checkbox">
                                     <input
                                         checked={game.disable_analysis}
-                                        onChange={this.update_disable_analysis}
+                                        onChange={(ev) =>
+                                            this.update_disable_analysis(ev.target.checked)
+                                        }
                                         id="challenge-disable-analysis"
                                         type="checkbox"
                                     />{" "}
@@ -1629,7 +1621,9 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                                         <div className="checkbox">
                                             <input
                                                 checked={this.state.conf.restrict_rank}
-                                                onChange={this.update_restrict_rank}
+                                                onChange={(ev) =>
+                                                    this.update_restrict_rank(ev.target.checked)
+                                                }
                                                 id="challenge-restrict-rank"
                                                 type="checkbox"
                                             />
@@ -1649,7 +1643,11 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                                                 <div className="checkbox">
                                                     <select
                                                         value={this.state.challenge.min_ranking}
-                                                        onChange={this.update_min_rank}
+                                                        onChange={(ev) =>
+                                                            this.update_min_rank(
+                                                                parseInt(ev.target.value),
+                                                            )
+                                                        }
                                                         id="challenge-min-rank"
                                                         className="challenge-dropdown form-control"
                                                     >
@@ -1674,7 +1672,11 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                                                 <div className="checkbox">
                                                     <select
                                                         value={this.state.challenge.max_ranking}
-                                                        onChange={this.update_max_rank}
+                                                        onChange={(ev) =>
+                                                            this.update_max_rank(
+                                                                parseInt(ev.target.value),
+                                                            )
+                                                        }
                                                         id="challenge-max-rank"
                                                         className="challenge-dropdown form-control"
                                                     >
