@@ -296,25 +296,6 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         this.setState({ preferred_settings: preferred_settings.map(sanitizeChallengeDetails) });
     };
 
-    syncBoardSize(value: string) {
-        let width: number;
-        let height: number;
-        if (value === "custom") {
-            width = this.gameState().width;
-            height = this.gameState().height;
-        } else {
-            const sizes = value.split("x");
-            width = parseInt(sizes[0]);
-            height = parseInt(sizes[1]);
-        }
-
-        this.upstate([
-            ["conf.selected_board_size", value],
-            [this.gameStateName("width"), width],
-            [this.gameStateName("height"), height],
-        ]);
-    }
-
     setRanked(tf: boolean) {
         const next = this.nextState();
 
@@ -817,7 +798,19 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
 
     update_ranked = (ev: React.ChangeEvent<HTMLInputElement>) => this.setRanked(ev.target.checked);
     update_board_size = (ev: React.ChangeEvent<HTMLSelectElement>) => {
-        this.syncBoardSize(ev.target.value);
+        const selection = ev.target.value;
+        this.update_conf((prev) => ({ ...prev, selected_board_size: selection }));
+
+        if (selection === "custom") {
+            return;
+        }
+
+        const sizes = selection.split("x");
+        const width = parseInt(sizes[0]);
+        const height = parseInt(sizes[1]);
+
+        this.update_board_width(width);
+        this.update_board_height(height);
     };
 
     update_board_width = (width: number | null) =>
@@ -2169,39 +2162,6 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
     }
     componentDidUpdate() {
         this.upstate_object = null;
-    }
-    bulkUpstate(arr: Array<Array<any>>) {
-        const next_state: any = this.nextState();
-        const state_update: any = {};
-
-        for (const elt of arr) {
-            const key = elt[0];
-            const event_or_value = elt[1];
-
-            let value = null;
-            if (typeof event_or_value === "object" && "target" in event_or_value) {
-                const target = event_or_value.target;
-                value = target.type === "checkbox" ? target.checked : target.value;
-            } else {
-                value = event_or_value;
-            }
-            const components = key.split(".");
-            const primary_key = components[0];
-            let cur = next_state;
-            while (components.length > 1) {
-                cur = cur[components[0]];
-                components.shift();
-            }
-            cur[components[0]] = value;
-            state_update[primary_key] = next_state[primary_key];
-        }
-        this.setState(state_update);
-    }
-    upstate(key: string | Array<Array<any>>, event_or_value?: any) {
-        if (!event_or_value && Array.isArray(key)) {
-            return this.bulkUpstate(key);
-        }
-        return this.bulkUpstate([[key, event_or_value]]);
     }
 
     toggleComputerSettings = () => {
