@@ -22,6 +22,12 @@ const compat = new FlatCompat({
 
 export default [
     {
+        files: [
+            "src/**/*.ts",
+            "src/**/*.tsx",
+            "submodules/moderator-ui/**/*.ts",
+            "submodules/moderator-ui/**/*.tsx",
+        ],
         ignores: [
             "**/node_modules",
             "**/dist",
@@ -211,6 +217,22 @@ export default [
         languageOptions: {
             globals: {
                 ...globals.browser,
+            },
+        },
+    },
+    {
+        files: ["**/submodules/**/*.ts", "**/submodules/**/*.tsx"],
+        languageOptions: {
+            parserOptions: {
+                project: null,
+            },
+        },
+    },
+    {
+        files: ["**/*.mjs"],
+        languageOptions: {
+            parserOptions: {
+                project: null,
             },
         },
     },

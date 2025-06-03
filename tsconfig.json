@@ -19,7 +19,12 @@
             "goscorer": ["submodules/goban/src/third_party/goscorer/goscorer"],
             "react-dynamic-help": ["submodules/react-dynamic-help/src"],
             "@helpers/*": ["e2e-tests/helpers/*"],
-            "@helpers": ["e2e-tests/helpers"]
+            "@helpers": ["e2e-tests/helpers"],
+            "@stubs/*": ["src/stubs/*"],
+            "@moderator-ui/*": [
+                "src/stubs/moderator-ui/*",
+                "submodules/moderator-ui/*"
+            ]
         },
 
         "forceConsistentCasingInFileNames": true,
@@ -46,6 +51,6 @@
         "./vite.config.ts",
         "./playwright.config.ts"
     ],
-    "include": ["src", "e2e-tests"],
+    "include": ["src", "e2e-tests", "submodules/moderator-ui"],
     "exclude": ["node_modules", "dist"]
 }
