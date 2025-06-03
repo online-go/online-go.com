@@ -932,10 +932,10 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         this.update_demo_settings((prev) => ({ ...prev, black_name: name }));
     update_demo_white_name = (name: string) =>
         this.update_demo_settings((prev) => ({ ...prev, white_name: name }));
-    update_demo_black_ranking = (ev: React.ChangeEvent<HTMLSelectElement>) =>
-        this.upstate("demo.black_ranking", ev);
-    update_demo_white_ranking = (ev: React.ChangeEvent<HTMLSelectElement>) =>
-        this.upstate("demo.white_ranking", ev);
+    update_demo_black_ranking = (rank: number) =>
+        this.update_demo_settings((prev) => ({ ...prev, black_ranking: rank }));
+    update_demo_white_ranking = (rank: number) =>
+        this.update_demo_settings((prev) => ({ ...prev, white_ranking: rank }));
 
     update_selected_demo_player_black = (ev: React.ChangeEvent<HTMLSelectElement>) => {
         const idx = parseInt(ev.target.value);
@@ -1465,7 +1465,11 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                                 <div className="checkbox">
                                     <select
                                         value={this.state.demo.black_ranking}
-                                        onChange={this.update_demo_black_ranking}
+                                        onChange={(ev) =>
+                                            this.update_demo_black_ranking(
+                                                parseInt(ev.target.value),
+                                            )
+                                        }
                                         className="challenge-dropdown form-control"
                                     >
                                         {demo_ranks.map((r, idx) => (
@@ -1519,7 +1523,11 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                                 <div className="checkbox">
                                     <select
                                         value={this.state.demo.white_ranking}
-                                        onChange={this.update_demo_white_ranking}
+                                        onChange={(ev) =>
+                                            this.update_demo_white_ranking(
+                                                parseInt(ev.target.value),
+                                            )
+                                        }
                                         className="challenge-dropdown form-control"
                                     >
                                         {demo_ranks.map((r, idx) => (
