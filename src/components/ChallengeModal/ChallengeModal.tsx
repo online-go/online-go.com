@@ -928,10 +928,10 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                 max_ranking: max_rank,
             },
         }));
-    update_demo_black_name = (ev: React.ChangeEvent<HTMLInputElement>) =>
-        this.upstate("demo.black_name", ev);
-    update_demo_white_name = (ev: React.ChangeEvent<HTMLInputElement>) =>
-        this.upstate("demo.white_name", ev);
+    update_demo_black_name = (name: string) =>
+        this.update_demo_settings((prev) => ({ ...prev, black_name: name }));
+    update_demo_white_name = (name: string) =>
+        this.update_demo_settings((prev) => ({ ...prev, white_name: name }));
     update_demo_black_ranking = (ev: React.ChangeEvent<HTMLSelectElement>) =>
         this.upstate("demo.black_ranking", ev);
     update_demo_white_ranking = (ev: React.ChangeEvent<HTMLSelectElement>) =>
@@ -1448,7 +1448,9 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                                         type="text"
                                         className="form-control"
                                         value={this.state.demo.black_name}
-                                        onChange={this.update_demo_black_name}
+                                        onChange={(ev) =>
+                                            this.update_demo_black_name(ev.target.value)
+                                        }
                                     />
                                 </div>
                             )}
@@ -1500,7 +1502,9 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                                         type="text"
                                         className="form-control"
                                         value={this.state.demo.white_name}
-                                        onChange={this.update_demo_white_name}
+                                        onChange={(ev) =>
+                                            this.update_demo_white_name(ev.target.value)
+                                        }
                                     />
                                 </div>
                             )}
