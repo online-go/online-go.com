@@ -296,25 +296,6 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         this.setState({ preferred_settings: preferred_settings.map(sanitizeChallengeDetails) });
     };
 
-    syncBoardSize(value: string) {
-        let width: number;
-        let height: number;
-        if (value === "custom") {
-            width = this.gameState().width;
-            height = this.gameState().height;
-        } else {
-            const sizes = value.split("x");
-            width = parseInt(sizes[0]);
-            height = parseInt(sizes[1]);
-        }
-
-        this.upstate([
-            ["conf.selected_board_size", value],
-            [this.gameStateName("width"), width],
-            [this.gameStateName("height"), height],
-        ]);
-    }
-
     setRanked(tf: boolean) {
         const next = this.nextState();
 
@@ -817,7 +798,19 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
 
     update_ranked = (ev: React.ChangeEvent<HTMLInputElement>) => this.setRanked(ev.target.checked);
     update_board_size = (ev: React.ChangeEvent<HTMLSelectElement>) => {
-        this.syncBoardSize(ev.target.value);
+        const selection = ev.target.value;
+        this.update_conf((prev) => ({ ...prev, selected_board_size: selection }));
+
+        if (selection === "custom") {
+            return;
+        }
+
+        const sizes = selection.split("x");
+        const width = parseInt(sizes[0]);
+        const height = parseInt(sizes[1]);
+
+        this.update_board_width(width);
+        this.update_board_height(height);
     };
 
     update_board_width = (width: number | null) =>
@@ -908,57 +901,59 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         }
         this.update_challenge_settings((prev) => ({ ...prev, challenger_color: color_selection }));
     };
-    update_disable_analysis = (ev: React.ChangeEvent<HTMLInputElement>) =>
-        this.upstate("challenge.game.disable_analysis", ev);
-    update_restrict_rank = (ev: React.ChangeEvent<HTMLInputElement>) =>
-        this.upstate("conf.restrict_rank", ev);
-    update_min_rank = (ev: React.ChangeEvent<HTMLSelectElement>) => {
-        const min_ranking = parseInt(ev.target.value);
-        let max_ranking = this.state.challenge.max_ranking;
-        if (min_ranking > max_ranking) {
-            max_ranking = min_ranking;
-        }
-        this.setState({
-            challenge: Object.assign({}, this.state.challenge, {
-                min_ranking: min_ranking,
-                max_ranking: max_ranking,
-            }),
-        });
-    };
-    update_max_rank = (ev: React.ChangeEvent<HTMLSelectElement>) => {
-        let min_ranking = this.state.challenge.min_ranking;
-        const max_ranking = parseInt(ev.target.value);
-        if (max_ranking < min_ranking) {
-            min_ranking = max_ranking;
-        }
-        this.setState({
-            challenge: Object.assign({}, this.state.challenge, {
-                min_ranking: min_ranking,
-                max_ranking: max_ranking,
-            }),
-        });
-    };
-    update_demo_black_name = (ev: React.ChangeEvent<HTMLInputElement>) =>
-        this.upstate("demo.black_name", ev);
-    update_demo_white_name = (ev: React.ChangeEvent<HTMLInputElement>) =>
-        this.upstate("demo.white_name", ev);
-    update_demo_black_ranking = (ev: React.ChangeEvent<HTMLSelectElement>) =>
-        this.upstate("demo.black_ranking", ev);
-    update_demo_white_ranking = (ev: React.ChangeEvent<HTMLSelectElement>) =>
-        this.upstate("demo.white_ranking", ev);
+    update_disable_analysis = (disable_analysis: boolean) =>
+        this.update_game_settings((prev) => ({ ...prev, disable_analysis: disable_analysis }));
+    update_restrict_rank = (restrict_rank: boolean) =>
+        this.update_conf((prev) => ({ ...prev, restrict_rank: restrict_rank }));
+    update_min_rank = (min_rank: number) =>
+        this.setState((state) => ({
+            challenge: {
+                ...state.challenge,
+                min_ranking: min_rank,
+                max_ranking: Math.max(state.challenge.max_ranking, min_rank),
+            },
+        }));
+    update_max_rank = (max_rank: number) =>
+        this.setState((state) => ({
+            challenge: {
+                ...state.challenge,
+                min_ranking: Math.min(state.challenge.min_ranking, max_rank),
+                max_ranking: max_rank,
+            },
+        }));
+    update_demo_black_name = (name: string) =>
+        this.update_demo_settings((prev) => ({ ...prev, black_name: name }));
+    update_demo_white_name = (name: string) =>
+        this.update_demo_settings((prev) => ({ ...prev, white_name: name }));
+    update_demo_black_ranking = (rank: number) =>
+        this.update_demo_settings((prev) => ({ ...prev, black_ranking: rank }));
+    update_demo_white_ranking = (rank: number) =>
+        this.update_demo_settings((prev) => ({ ...prev, white_ranking: rank }));
 
-    update_selected_demo_player_black = (ev: React.ChangeEvent<HTMLSelectElement>) => {
-        const idx = parseInt(ev.target.value);
-        this.upstate("demo.black_name", this.props.playersList?.[idx].name);
-        this.upstate("demo.black_ranking", this.props.playersList?.[idx].rank);
+    update_selected_demo_player_black = (
+        idx: number,
+        players: { name: string; rank: number }[],
+    ) => {
+        const player = players[idx];
+        this.update_demo_settings((prev) => ({
+            ...prev,
+            black_name: player.name,
+            black_ranking: player.rank,
+        }));
         this.setState({
             selected_demo_player_black: idx,
         });
     };
-    update_selected_demo_player_white = (ev: React.ChangeEvent<HTMLSelectElement>) => {
-        const idx = parseInt(ev.target.value);
-        this.upstate("demo.white_name", this.props.playersList?.[idx].name);
-        this.upstate("demo.white_ranking", this.props.playersList?.[idx].rank);
+    update_selected_demo_player_white = (
+        idx: number,
+        players: { name: string; rank: number }[],
+    ) => {
+        const player = players[idx];
+        this.update_demo_settings((prev) => ({
+            ...prev,
+            white_name: player.name,
+            white_ranking: player.rank,
+        }));
         this.setState({
             selected_demo_player_white: idx,
         });
@@ -1444,7 +1439,12 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                             {this.props.playersList ? (
                                 <select
                                     value={this.state.selected_demo_player_black}
-                                    onChange={this.update_selected_demo_player_black}
+                                    onChange={(ev) =>
+                                        this.update_selected_demo_player_black(
+                                            parseInt(ev.target.value),
+                                            this.props.playersList!,
+                                        )
+                                    }
                                 >
                                     {this.props.playersList.map((player, idx) => (
                                         <option key={idx} value={idx}>
@@ -1458,7 +1458,9 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                                         type="text"
                                         className="form-control"
                                         value={this.state.demo.black_name}
-                                        onChange={this.update_demo_black_name}
+                                        onChange={(ev) =>
+                                            this.update_demo_black_name(ev.target.value)
+                                        }
                                     />
                                 </div>
                             )}
@@ -1473,7 +1475,11 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                                 <div className="checkbox">
                                     <select
                                         value={this.state.demo.black_ranking}
-                                        onChange={this.update_demo_black_ranking}
+                                        onChange={(ev) =>
+                                            this.update_demo_black_ranking(
+                                                parseInt(ev.target.value),
+                                            )
+                                        }
                                         className="challenge-dropdown form-control"
                                     >
                                         {demo_ranks.map((r, idx) => (
@@ -1496,7 +1502,12 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                             {this.props.playersList ? (
                                 <select
                                     value={this.state.selected_demo_player_white}
-                                    onChange={this.update_selected_demo_player_white}
+                                    onChange={(ev) =>
+                                        this.update_selected_demo_player_white(
+                                            parseInt(ev.target.value),
+                                            this.props.playersList!,
+                                        )
+                                    }
                                 >
                                     {this.props.playersList.map((player, idx) => (
                                         <option key={idx} value={idx}>
@@ -1510,7 +1521,9 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                                         type="text"
                                         className="form-control"
                                         value={this.state.demo.white_name}
-                                        onChange={this.update_demo_white_name}
+                                        onChange={(ev) =>
+                                            this.update_demo_white_name(ev.target.value)
+                                        }
                                     />
                                 </div>
                             )}
@@ -1525,7 +1538,11 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                                 <div className="checkbox">
                                     <select
                                         value={this.state.demo.white_ranking}
-                                        onChange={this.update_demo_white_ranking}
+                                        onChange={(ev) =>
+                                            this.update_demo_white_ranking(
+                                                parseInt(ev.target.value),
+                                            )
+                                        }
                                         className="challenge-dropdown form-control"
                                     >
                                         {demo_ranks.map((r, idx) => (
@@ -1607,7 +1624,9 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                                 <div className="checkbox">
                                     <input
                                         checked={game.disable_analysis}
-                                        onChange={this.update_disable_analysis}
+                                        onChange={(ev) =>
+                                            this.update_disable_analysis(ev.target.checked)
+                                        }
                                         id="challenge-disable-analysis"
                                         type="checkbox"
                                     />{" "}
@@ -1629,7 +1648,9 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                                         <div className="checkbox">
                                             <input
                                                 checked={this.state.conf.restrict_rank}
-                                                onChange={this.update_restrict_rank}
+                                                onChange={(ev) =>
+                                                    this.update_restrict_rank(ev.target.checked)
+                                                }
                                                 id="challenge-restrict-rank"
                                                 type="checkbox"
                                             />
@@ -1649,7 +1670,11 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                                                 <div className="checkbox">
                                                     <select
                                                         value={this.state.challenge.min_ranking}
-                                                        onChange={this.update_min_rank}
+                                                        onChange={(ev) =>
+                                                            this.update_min_rank(
+                                                                parseInt(ev.target.value),
+                                                            )
+                                                        }
                                                         id="challenge-min-rank"
                                                         className="challenge-dropdown form-control"
                                                     >
@@ -1674,7 +1699,11 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                                                 <div className="checkbox">
                                                     <select
                                                         value={this.state.challenge.max_ranking}
-                                                        onChange={this.update_max_rank}
+                                                        onChange={(ev) =>
+                                                            this.update_max_rank(
+                                                                parseInt(ev.target.value),
+                                                            )
+                                                        }
                                                         id="challenge-max-rank"
                                                         className="challenge-dropdown form-control"
                                                     >
@@ -2133,39 +2162,6 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
     }
     componentDidUpdate() {
         this.upstate_object = null;
-    }
-    bulkUpstate(arr: Array<Array<any>>) {
-        const next_state: any = this.nextState();
-        const state_update: any = {};
-
-        for (const elt of arr) {
-            const key = elt[0];
-            const event_or_value = elt[1];
-
-            let value = null;
-            if (typeof event_or_value === "object" && "target" in event_or_value) {
-                const target = event_or_value.target;
-                value = target.type === "checkbox" ? target.checked : target.value;
-            } else {
-                value = event_or_value;
-            }
-            const components = key.split(".");
-            const primary_key = components[0];
-            let cur = next_state;
-            while (components.length > 1) {
-                cur = cur[components[0]];
-                components.shift();
-            }
-            cur[components[0]] = value;
-            state_update[primary_key] = next_state[primary_key];
-        }
-        this.setState(state_update);
-    }
-    upstate(key: string | Array<Array<any>>, event_or_value?: any) {
-        if (!event_or_value && Array.isArray(key)) {
-            return this.bulkUpstate(key);
-        }
-        return this.bulkUpstate([[key, event_or_value]]);
     }
 
     toggleComputerSettings = () => {
