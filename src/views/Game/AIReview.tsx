@@ -1319,7 +1319,8 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                                     </div>
                                 )}
 
-                                {(data.get("user").is_moderator ||
+                                {(user.is_moderator ||
+                                    (user.moderator_powers & MODERATOR_POWERS.AI_DETECTOR) !== 0 ||
                                     this.powerToSeeTable(
                                         this.props.reportContext?.moderator_powers,
                                     )) &&
