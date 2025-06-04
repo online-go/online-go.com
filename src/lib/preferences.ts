@@ -27,6 +27,13 @@ export const defaults = {
     "ai-review-enabled": true,
     "ai-review-use-score": true,
     "ai-review-categorization-method": "old" as "old" | "new",
+    "ai-review-score-diff-thresholds": {
+        Excellent: 0.2,
+        Great: 0.6,
+        Good: 1.0,
+        Inaccuracy: 2.0,
+        Mistake: 5.0,
+    },
     "ai-summary-table-show": false,
     "always-disable-analysis": false,
     "asked-to-enable-desktop-notifications": false,
