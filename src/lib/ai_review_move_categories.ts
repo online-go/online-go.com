@@ -63,6 +63,14 @@ export interface AiSummaryTableData {
 
 export type CategorizationMethod = "old" | "new";
 
+export type ScoreDiffThresholds = {
+    Excellent: number;
+    Great: number;
+    Good: number;
+    Inaccuracy: number;
+    Mistake: number;
+};
+
 function medianList(numbers: number[]): number {
     const mid = numbers.length === 0 ? undefined : Math.floor(numbers.length / 2);
     if (mid === undefined) {
@@ -102,6 +110,7 @@ export function calculateAiSummaryTableData(
     goban: GobanRenderer | null | undefined,
     loading: boolean,
     categorization_method: CategorizationMethod = "old",
+    scoreDiffThresholds?: ScoreDiffThresholds,
 ): AiSummaryTableData {
     if (!goban) {
         return {
@@ -238,13 +247,20 @@ export function calculateAiSummaryTableData(
             avg_score_loss[player_index] += score_diff;
             score_loss_list[player].push(score_diff);
 
-            if (score_diff < 1) {
+            // Use thresholds if provided, otherwise defaults
+            const thresholds = {
+                Good: scoreDiffThresholds?.Good ?? 1,
+                Inaccuracy: scoreDiffThresholds?.Inaccuracy ?? 2,
+                Mistake: scoreDiffThresholds?.Mistake ?? 5,
+            };
+
+            if (score_diff < thresholds.Good) {
                 move_counters[player].Good += 1;
-            } else if (score_diff < 2) {
+            } else if (score_diff < thresholds.Inaccuracy) {
                 move_counters[player].Inaccuracy += 1;
-            } else if (score_diff < 5) {
+            } else if (score_diff < thresholds.Mistake) {
                 move_counters[player].Mistake += 1;
-            } else if (score_diff >= 5) {
+            } else if (score_diff >= thresholds.Mistake) {
                 move_counters[player].Blunder += 1;
             } else {
                 other_counters[player] += 1;
@@ -356,16 +372,24 @@ export function calculateAiSummaryTableData(
                     score_loss_list[player].push(score_loss);
                 }
 
-                // Categorize based on score_loss thresholds
-                if (score_loss < 0.2) {
+                // Use thresholds if provided, otherwise defaults
+                const thresholds = {
+                    Excellent: scoreDiffThresholds?.Excellent ?? 0.2,
+                    Great: scoreDiffThresholds?.Great ?? 0.6,
+                    Good: scoreDiffThresholds?.Good ?? 1.0,
+                    Inaccuracy: scoreDiffThresholds?.Inaccuracy ?? 2.0,
+                    Mistake: scoreDiffThresholds?.Mistake ?? 5.0,
+                };
+
+                if (score_loss < thresholds.Excellent) {
                     move_counters[player].Excellent += 1;
-                } else if (score_loss < 0.6) {
+                } else if (score_loss < thresholds.Great) {
                     move_counters[player].Great += 1;
-                } else if (score_loss < 1.0) {
+                } else if (score_loss < thresholds.Good) {
                     move_counters[player].Good += 1;
-                } else if (score_loss < 2.0) {
+                } else if (score_loss < thresholds.Inaccuracy) {
                     move_counters[player].Inaccuracy += 1;
-                } else if (score_loss < 5.0) {
+                } else if (score_loss < thresholds.Mistake) {
                     move_counters[player].Mistake += 1;
                 } else {
                     move_counters[player].Blunder += 1;
@@ -401,16 +425,24 @@ export function calculateAiSummaryTableData(
                         })
                     ) {
                         move_counters[player].Great += 1;
-                    } else if (score_diff < 1) {
-                        move_counters[player].Good += 1;
-                    } else if (score_diff < 2) {
-                        move_counters[player].Inaccuracy += 1;
-                    } else if (score_diff < 5) {
-                        move_counters[player].Mistake += 1;
-                    } else if (score_diff >= 5) {
-                        move_counters[player].Blunder += 1;
                     } else {
-                        other_counters[player] += 1;
+                        // Use thresholds if provided, otherwise defaults
+                        const thresholds = {
+                            Good: scoreDiffThresholds?.Good ?? 1,
+                            Inaccuracy: scoreDiffThresholds?.Inaccuracy ?? 2,
+                            Mistake: scoreDiffThresholds?.Mistake ?? 5,
+                        };
+                        if (score_diff < thresholds.Good) {
+                            move_counters[player].Good += 1;
+                        } else if (score_diff < thresholds.Inaccuracy) {
+                            move_counters[player].Inaccuracy += 1;
+                        } else if (score_diff < thresholds.Mistake) {
+                            move_counters[player].Mistake += 1;
+                        } else if (score_diff >= thresholds.Mistake) {
+                            move_counters[player].Blunder += 1;
+                        } else {
+                            other_counters[player] += 1;
+                        }
                     }
                 }
             }

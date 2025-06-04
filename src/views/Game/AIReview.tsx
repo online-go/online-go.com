@@ -49,6 +49,7 @@ import { ReportContext } from "@/contexts/ReportContext";
 import { MODERATOR_POWERS } from "@/lib/moderation";
 import { calculateAiSummaryTableData, CategorizationMethod } from "@/lib/ai_review_move_categories";
 import { sameIntersection } from "@/lib/misc";
+import type { ScoreDiffThresholds } from "@/lib/ai_review_move_categories";
 
 export interface AIReviewEntry {
     move_number: number;
@@ -77,7 +78,16 @@ interface AIReviewState {
     show_table: boolean;
     table_hidden: boolean;
     categorization_method: CategorizationMethod;
+    scoreDiffThresholds: ScoreDiffThresholds;
 }
+
+const DEFAULT_SCORE_DIFF_THRESHOLDS: ScoreDiffThresholds = {
+    Excellent: 0.2,
+    Great: 0.6,
+    Good: 1.0,
+    Inaccuracy: 2.0,
+    Mistake: 5.0,
+};
 
 // We need this wrapped because we want to access two contexts,
 // and we can't do that in a function component.
@@ -111,6 +121,8 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
 
     constructor(props: AIReviewProperties) {
         super(props);
+        const method = preferences.get("ai-review-categorization-method") || "old";
+        const current_thresholds = preferences.get("ai-review-score-diff-thresholds") || {};
         const state: AIReviewState = {
             loading: true,
             reviewing: false,
@@ -120,7 +132,8 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
             worst_moves_shown: 6,
             show_table: true,
             table_hidden: preferences.get("ai-summary-table-show"),
-            categorization_method: preferences.get("ai-review-categorization-method") || "old",
+            categorization_method: method,
+            scoreDiffThresholds: { ...DEFAULT_SCORE_DIFF_THRESHOLDS, ...current_thresholds },
         };
         this.state = state;
         window.aireview = this;
@@ -140,6 +153,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
             this.props.gobanContext,
             this.state.loading,
             this.state.categorization_method,
+            this.state.scoreDiffThresholds,
         );
         this.updateTableState(ai_table_out);
 
@@ -162,6 +176,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                 this.props.gobanContext,
                 this.state.loading,
                 this.state.categorization_method,
+                this.state.scoreDiffThresholds,
             );
             this.updateTableState(ai_table_out);
         }
@@ -1322,6 +1337,12 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                                                 pending_entries={this.moves_pending}
                                                 max_entries={this.max_entries}
                                                 strong_move_rate={this.strong_move_rate}
+                                                scoreDiffThresholds={this.state.scoreDiffThresholds}
+                                                categorization_method={
+                                                    this.state.categorization_method
+                                                }
+                                                onThresholdChange={this.handleThresholdChange}
+                                                onResetThresholds={this.handleResetThresholds}
                                             />
                                             {!this.state.table_hidden && (
                                                 <div className="categorization-toggler">
@@ -1360,6 +1381,8 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                                                                                 this.state.loading,
                                                                                 this.state
                                                                                     .categorization_method,
+                                                                                this.state
+                                                                                    .scoreDiffThresholds,
                                                                             );
                                                                         this.updateTableState(
                                                                             ai_table_out,
@@ -1502,6 +1525,44 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
             </div>
         );
     }
+
+    handleThresholdChange = (category: string, value: number) => {
+        this.setState(
+            (prevState) => {
+                const updated = {
+                    ...prevState.scoreDiffThresholds,
+                    [category]: value,
+                };
+                // Always store all keys for consistency
+                preferences.set("ai-review-score-diff-thresholds", updated);
+                return { scoreDiffThresholds: updated };
+            },
+            () => {
+                const ai_table_out = calculateAiSummaryTableData(
+                    this.ai_review,
+                    this.props.gobanContext,
+                    this.state.loading,
+                    this.state.categorization_method,
+                    this.state.scoreDiffThresholds,
+                );
+                this.updateTableState(ai_table_out);
+            },
+        );
+    };
+
+    handleResetThresholds = () => {
+        preferences.set("ai-review-score-diff-thresholds", DEFAULT_SCORE_DIFF_THRESHOLDS);
+        this.setState({ scoreDiffThresholds: { ...DEFAULT_SCORE_DIFF_THRESHOLDS } }, () => {
+            const ai_table_out = calculateAiSummaryTableData(
+                this.ai_review,
+                this.props.gobanContext,
+                this.state.loading,
+                this.state.categorization_method,
+                DEFAULT_SCORE_DIFF_THRESHOLDS,
+            );
+            this.updateTableState(ai_table_out);
+        });
+    };
 }
 
 function sanityCheck(ai_review: JGOFAIReview) {
@@ -1592,6 +1653,27 @@ class AiSummaryTable extends React.Component<AiSummaryTableProperties, AiSummary
     }
 
     render(): React.ReactElement {
+        // Determine which categories should have editable thresholds
+        const { scoreDiffThresholds, categorization_method, onThresholdChange, onResetThresholds } =
+            this.props;
+        // For 'old', only Good, Inaccuracy, Mistake, Blunder; for 'new', all
+        const editableCategories =
+            categorization_method === "new"
+                ? ["Excellent", "Great", "Good", "Inaccuracy", "Mistake", "Blunder"]
+                : ["Good", "Inaccuracy", "Mistake", "Blunder"];
+        // Default values for display (should match those in ai_review_move_categories)
+        const defaultThresholds: { [k: string]: number } = {
+            Excellent: 0.2,
+            Great: 0.6,
+            Good: 1.0,
+            Inaccuracy: 2.0,
+            Mistake: 5.0,
+        };
+        if (categorization_method === "old") {
+            defaultThresholds.Good = 1;
+            defaultThresholds.Inaccuracy = 2;
+            defaultThresholds.Mistake = 5;
+        }
         return (
             <div className="ai-summary-container">
                 <table
@@ -1603,15 +1685,79 @@ class AiSummaryTable extends React.Component<AiSummaryTableProperties, AiSummary
                             {this.props.heading_list.map((head, index) => {
                                 return <th key={index}>{head}</th>;
                             })}
+                            <th className="centered">Δs &lt;</th>
                         </tr>
                     </thead>
                     <tbody>
                         {this.props.body_list.map((body, b_index) => {
+                            // Use the translation function to get the English key
+                            // (since body[0] is translated)
+                            // We'll map by index instead:
+                            const catKey = [
+                                "Excellent",
+                                "Great",
+                                "Good",
+                                "Inaccuracy",
+                                "Mistake",
+                                "Blunder",
+                            ][b_index];
                             return (
                                 <tr key={b_index}>
                                     {body.map((element, e_index) => {
                                         return <td key={e_index}>{element}</td>;
                                     })}
+                                    <td className="centered">
+                                        {editableCategories.includes(catKey) &&
+                                        catKey !== "Blunder" ? (
+                                            <input
+                                                type="number"
+                                                style={{
+                                                    width: 60,
+                                                    textAlign: "center",
+                                                    display: "block",
+                                                    margin: "0 auto",
+                                                    color:
+                                                        scoreDiffThresholds[
+                                                            catKey as keyof ScoreDiffThresholds
+                                                        ] !==
+                                                        defaultThresholds[
+                                                            catKey as keyof ScoreDiffThresholds
+                                                        ]
+                                                            ? "#e67c00"
+                                                            : undefined,
+                                                }}
+                                                value={
+                                                    scoreDiffThresholds[
+                                                        catKey as keyof ScoreDiffThresholds
+                                                    ] !== undefined
+                                                        ? scoreDiffThresholds[
+                                                              catKey as keyof ScoreDiffThresholds
+                                                          ]
+                                                        : defaultThresholds[
+                                                              catKey as keyof ScoreDiffThresholds
+                                                          ]
+                                                }
+                                                onChange={(e) => {
+                                                    const v = parseFloat(e.target.value);
+                                                    if (!isNaN(v)) {
+                                                        onThresholdChange(catKey, v);
+                                                    }
+                                                }}
+                                            />
+                                        ) : null}
+                                        {catKey === "Blunder" && (
+                                            <button
+                                                style={{
+                                                    marginLeft: 8,
+                                                    fontSize: "0.8em",
+                                                    padding: "2px 6px",
+                                                }}
+                                                onClick={onResetThresholds}
+                                            >
+                                                ^ reset
+                                            </button>
+                                        )}
+                                    </td>
                                 </tr>
                             );
                         })}
@@ -1620,6 +1766,7 @@ class AiSummaryTable extends React.Component<AiSummaryTableProperties, AiSummary
                                 <tr>
                                     <td colSpan={2}>{"Moves Pending"}</td>
                                     <td colSpan={3}>{this.props.pending_entries}</td>
+                                    <td></td>
                                 </tr>
                                 <tr>
                                     <td colSpan={5}>
@@ -1630,41 +1777,51 @@ class AiSummaryTable extends React.Component<AiSummaryTableProperties, AiSummary
                                             max={this.props.max_entries}
                                         ></progress>
                                     </td>
+                                    <td></td>
                                 </tr>
                             </React.Fragment>
                         )}
                         <tr>
                             <td colSpan={5}>{"Average score loss per move"}</td>
+                            <td></td>
                         </tr>
                         <tr>
                             <td colSpan={2}>{"Black"}</td>
                             <td colSpan={3}>{this.props.avg_loss[0]}</td>
+                            <td></td>
                         </tr>
                         <tr>
                             <td colSpan={2}>{"White"}</td>
                             <td colSpan={3}>{this.props.avg_loss[1]}</td>
+                            <td></td>
                         </tr>
                         <tr>
                             <td colSpan={5}>{"Median score loss per move"}</td>
+                            <td></td>
                         </tr>
                         <tr>
                             <td colSpan={2}>{"Black"}</td>
                             <td colSpan={3}>{this.props.median_score_loss[0]}</td>
+                            <td></td>
                         </tr>
                         <tr>
                             <td colSpan={2}>{"White"}</td>
                             <td colSpan={3}>{this.props.median_score_loss[1]}</td>
+                            <td></td>
                         </tr>
                         <tr>
                             <td colSpan={5}>{"Strong Move Rate"}</td>
+                            <td></td>
                         </tr>
                         <tr>
                             <td colSpan={2}>{"Black"}</td>
                             <td colSpan={3}>{this.props.strong_move_rate[0]}%</td>
+                            <td></td>
                         </tr>
                         <tr>
                             <td colSpan={2}>{"White"}</td>
                             <td colSpan={3}>{this.props.strong_move_rate[1]}%</td>
+                            <td></td>
                         </tr>
                     </tbody>
                 </table>
@@ -1687,4 +1844,8 @@ interface AiSummaryTableProperties {
     table_hidden: boolean;
     pending_entries: number;
     max_entries: number;
+    scoreDiffThresholds: ScoreDiffThresholds;
+    categorization_method: CategorizationMethod;
+    onThresholdChange: (category: string, value: number) => void;
+    onResetThresholds: () => void;
 }
