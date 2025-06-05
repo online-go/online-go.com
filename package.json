@@ -168,10 +168,11 @@
         ]
     },
     "overrides": {
-        "react": "$react",
-        "react-dom": "$react-dom",
-        "@types/react": "$@types/react",
-        "@types/react-dom": "$@types/react-dom"
+        "react": "19.1.0",
+        "react-dom": "19.1.0",
+        "react-router-dom": "=7.6.2",
+        "@types/react": "19.1.6",
+        "@types/react-dom": "19.1.6"
     },
     "resolutions": {
         "**/react": "19.1.0",
