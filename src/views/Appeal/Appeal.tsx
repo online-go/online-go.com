@@ -22,7 +22,7 @@ import { Card } from "@/components/material";
 import { post, get, patch } from "@/lib/requests";
 import { _, pgettext, interpolate } from "@/lib/translate";
 import { errorAlerter } from "@/lib/misc";
-import { useParams } from "react-router";
+import { useParams } from "react-router-dom";
 import { Player } from "@/components/Player";
 import { AutoTranslate } from "@/components/AutoTranslate";
 import { UIPush } from "@/components/UIPush";

@@ -24,7 +24,7 @@ import { _, pgettext } from "@/lib/translate";
 import { get, patch } from "@/lib/requests";
 import { useMainGoban, useUser } from "@/lib/hooks";
 import { AutoTranslate } from "@/components/AutoTranslate";
-import { useLocation } from "react-router";
+import { useLocation } from "react-router-dom";
 import { CANNED_MESSAGES } from "./CannedMessages";
 
 const BUTTON_COUNTDOWN_TIME = 10000; // ms;

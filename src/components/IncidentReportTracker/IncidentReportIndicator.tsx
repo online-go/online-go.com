@@ -48,7 +48,7 @@ export function IncidentReportIndicator(): React.ReactElement | null {
     function toggleList() {
         if (!prefer_incident_list && (user.is_moderator || user.moderator_powers)) {
             signalUsed("incident-report-indicator");
-            navigate("/reports-center/");
+            void navigate("/reports-center/");
         } else {
             data.set("ui-state.show_incident_list", !show_incident_list);
         }

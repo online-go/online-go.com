@@ -217,7 +217,7 @@ export function Player(props: PlayerProperties): React.ReactElement {
             close_all_popovers();
             close_friend_list();
             browserHistory.push(`/player/${player_id}/`);
-            //navigate(`/player/${player_id}/`);
+            //void navigate(`/player/${player_id}/`);
             return;
         } else {
             let chat_id: string | null = null;

@@ -79,7 +79,7 @@ export function OnlineLeaguePlayerLanding(): React.ReactElement {
             key: linked_challenge_key,
         } as any);
         // Go to sign in, and come back to this page after signing in
-        navigate("/sign-in#/online-league/league-player", { replace: true });
+        void navigate("/sign-in#/online-league/league-player", { replace: true });
     };
 
     const signThemUp = () => {
@@ -89,7 +89,7 @@ export function OnlineLeaguePlayerLanding(): React.ReactElement {
             side: side,
             key: linked_challenge_key,
         } as any);
-        navigate("/register#/online-league/league-player", { replace: true });
+        void navigate("/register#/online-league/league-player", { replace: true });
     };
 
     const toggleReadiness = () => {
@@ -103,7 +103,7 @@ export function OnlineLeaguePlayerLanding(): React.ReactElement {
             .then((matchStatus) => {
                 if (matchStatus.started) {
                     console.log("OOL game started!", matchStatus);
-                    navigate(`/game/${matchStatus.game}`, { replace: true });
+                    void navigate(`/game/${matchStatus.game}`, { replace: true });
                 } else {
                     set_match(matchStatus);
                 }
@@ -113,7 +113,7 @@ export function OnlineLeaguePlayerLanding(): React.ReactElement {
                 // The server is expected to provide a sensible error message in those cases.
                 alert.close();
                 errorAlerter(err);
-                navigate("/", { replace: true });
+                void navigate("/", { replace: true });
             });
 
         set_im_ready(!im_ready);
@@ -121,7 +121,7 @@ export function OnlineLeaguePlayerLanding(): React.ReactElement {
 
     const jumpToGame = (details: any) => {
         if (details.matchId === match?.id) {
-            navigate(`/game/${details.gameId}`, { replace: true });
+            void navigate(`/game/${details.gameId}`, { replace: true });
         }
     };
 

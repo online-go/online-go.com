@@ -40,7 +40,7 @@ export function Register(): React.ReactElement {
     const [submitLoading, setSubmitLoading] = React.useState(false);
 
     if (!user.anonymous) {
-        navigate("/");
+        void navigate("/");
     }
 
     const onSubmit = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {

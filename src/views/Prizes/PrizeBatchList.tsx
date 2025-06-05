@@ -39,7 +39,7 @@ export function PrizeBatchList(): React.ReactElement {
 
     useEffect(() => {
         if (!user.is_superuser) {
-            navigate("/");
+            void navigate("/");
         }
         get("prizes/batches")
             .then((data: PrizeBatch[]) => setPrizeBatches(data))
@@ -61,7 +61,7 @@ export function PrizeBatchList(): React.ReactElement {
         })
             .then((res) => {
                 const url = "/prize-batches/" + res.id;
-                navigate(url);
+                void navigate(url);
             })
             .catch((error: any) => console.error("Error creating prize batch:", error));
     };
