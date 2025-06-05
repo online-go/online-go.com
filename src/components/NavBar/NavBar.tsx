@@ -377,7 +377,7 @@ export function NavBar(): React.ReactElement {
                                 (user.moderator_powers & MODERATOR_POWERS.AI_DETECTOR) !== 0) && (
                                 <MenuLink
                                     title={_("AI Detection")}
-                                    to="/ai-detection"
+                                    to="/moderator/ai-detection"
                                     icon={<i className="fa fa-search" />}
                                 />
                             )}
