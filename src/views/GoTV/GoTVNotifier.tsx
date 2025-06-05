@@ -155,7 +155,7 @@ export function GoTVNotifier({ streams }: GoTVNotifierProps): React.ReactElement
     };
 
     const handleNotificationClick = (streamId: string) => {
-        navigate("/gotv", { state: { streamId } });
+        void navigate("/gotv", { state: { streamId } });
         dismissAllNotifications();
     };
 

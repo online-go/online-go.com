@@ -91,7 +91,7 @@ export function SignIn(): React.ReactElement {
     const ref_password = React.useRef<HTMLInputElement>(null);
 
     if (!user.anonymous) {
-        navigate("/");
+        void navigate("/");
     }
 
     const onSubmit = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {

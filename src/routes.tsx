@@ -18,17 +18,11 @@
 /* cspell: words groupadmin cotsen */
 
 import * as React from "react";
-import {
-    unstable_HistoryRouter as Router,
-    Route,
-    Routes,
-    Navigate,
-    useNavigate,
-} from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes, Navigate, useNavigate } from "react-router-dom";
 
 import * as data from "@/lib/data";
 import { _ } from "@/lib/translate";
-import { browserHistory } from "@/lib/ogsHistory";
+import { useOGSNavigationInitializer } from "@/lib/ogsHistory";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { NavBar } from "@/components/NavBar";
@@ -88,6 +82,7 @@ import { AccessibilityMenu } from "@/components/AccessibilityMenu";
 
 /*** Layout our main view and routes ***/
 function AppLayout(props: { children: any }): React.ReactElement {
+    useOGSNavigationInitializer();
     const [user] = useData("config.user");
     let username_needs_to_be_updated = false;
 
@@ -219,16 +214,16 @@ function WaitForUser(): React.ReactElement | null {
             return;
         }
         if (window.location.hash && window.location.hash[1] === "/") {
-            navigate(window.location.hash.substring(1), { replace: true });
+            void navigate(window.location.hash.substring(1), { replace: true });
         } else {
-            navigate("/", { replace: true });
+            void navigate("/", { replace: true });
         }
     });
     return null;
 }
 
 export const routes = (
-    <Router history={browserHistory}>
+    <Router>
         <AppLayout>
             <Routes>
                 <Route path="/sign-in" element={<SignIn />} />
@@ -341,9 +336,9 @@ export const routes = (
                 <Route path="/prize-batches/:id" element={<PrizeBatch />} />
                 <Route path="/prize-batches" element={<PrizeBatchList />} />
                 {/*
-            <Route path="/admin/tournament-scheduler/:schedule_id" element={<TournamentModify />}/>
-            <Route path="/admin/tournament-schedule-list" element={<AdminTournamentScheduleList />}/>
-            */}
+                  <Route path="/admin/tournament-scheduler/:schedule_id" element={<TournamentModify />}/>
+                  <Route path="/admin/tournament-schedule-list" element={<AdminTournamentScheduleList />}/>
+                */}
                 <Route path="/moderator" element={<Moderator />} />
                 <Route path="/learning-hub/:section/:page" element={<LearningHub />} />
                 <Route path="/learning-hub/:section" element={<LearningHub />} />
@@ -356,7 +351,7 @@ export const routes = (
                 <Route path="/docs/learn-to-play-go" element={<LearningHub />} />
                 <Route path="/gotv" element={<GoTV />} />
                 {/* these aren't meant to be linked anywhere, just entered by hand
-                for developers looking to test and play with things */}
+                    for developers looking to test and play with things */}
                 <Route path="/dev/styling" element={<Styling />} />
                 <Route path="/docs/about" element={<docs.About />} />
                 <Route path="/docs/privacy-policy" element={<docs.PrivacyPolicy />} />

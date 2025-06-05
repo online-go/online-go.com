@@ -156,7 +156,7 @@ export default defineConfig({
      */
     css: {
         postcss: {
-            plugins: [atImport(), inline_svg(), autoprefixer()],
+            plugins: [atImport(), inline_svg(), autoprefixer() as any],
         },
         preprocessorMaxWorkers: true,
         devSourcemap: true,

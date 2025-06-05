@@ -208,6 +208,6 @@ function getSuggestionValue(suggestion: SuggestionEntry): string {
     return suggestion.username;
 }
 
-function renderSuggestion(suggestion: SuggestionEntry): React.ReactElement {
+function renderSuggestion(suggestion: SuggestionEntry) {
     return <div>{suggestion.username}</div>;
 }

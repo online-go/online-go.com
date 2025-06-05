@@ -18,7 +18,7 @@
 import { MODERATOR_POWERS } from "@/lib/moderation";
 import { ReportType } from "@/components/Report";
 
-import type { ServerToClient } from "submodules/goban/src/engine/protocol/ServerToClient";
+import type { ServerToClient } from "@/../submodules/goban/src/engine/protocol/ServerToClient";
 
 export type ReportNotification = ServerToClient["incident-report"] extends (data: infer T) => void
     ? T

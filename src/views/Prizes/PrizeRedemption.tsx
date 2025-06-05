@@ -44,7 +44,7 @@ export function PrizeRedemption(): React.ReactElement {
     const user = useUser();
 
     if (user.anonymous) {
-        navigate("/sign-in");
+        void navigate("/sign-in");
     }
 
     const handleCodeChange = (event: any, index: number) => {
@@ -137,7 +137,7 @@ export function PrizeRedemption(): React.ReactElement {
     };
 
     const onCancel = () => {
-        navigate("/");
+        void navigate("/");
     };
 
     const getSupportTier = (support_level: number) => {

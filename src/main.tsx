@@ -173,7 +173,6 @@ import moment from "moment";
 import { get_device_id } from "@/views/SignIn";
 
 import { ConfigSchema } from "@/lib/data_schema";
-import * as history from "history";
 import "debug";
 import "@/ogs.styl";
 
@@ -300,11 +299,8 @@ init_wasm_ownership_estimator()
 /*** Generic error handling from the server ***/
 sockets.socket.on("ERROR", errorAlerter);
 
-browserHistory.listen(({ action /*, location */ }) => {
+browserHistory.listen(() => {
     try {
-        if (action !== history.Action.Replace) {
-            window.document.title = "OGS";
-        }
         close_all_popovers();
     } catch (e) {
         console.log(e);

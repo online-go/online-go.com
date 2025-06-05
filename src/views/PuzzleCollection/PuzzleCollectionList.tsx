@@ -26,7 +26,7 @@ import { StarRating } from "@/components/StarRating";
 import { Player } from "@/components/Player";
 import { MiniGoban } from "@/components/MiniGoban";
 import { alert } from "@/lib/swal_config";
-import { useParams } from "react-router";
+import { useParams } from "react-router-dom";
 
 export function PuzzleCollectionList(): React.ReactElement {
     const { player_id } = useParams();

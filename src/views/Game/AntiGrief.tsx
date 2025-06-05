@@ -87,7 +87,7 @@ function checkForLeavingLiveGame(pathname: string) {
         console.error(e);
     }
 }
-browserHistory.listen((obj) => {
+browserHistory.listen((obj: any) => {
     checkForLeavingLiveGame(obj?.location?.pathname);
 });
 

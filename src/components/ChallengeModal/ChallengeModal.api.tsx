@@ -20,7 +20,7 @@ import { CreatedChallengeInfo } from "@/lib/types";
 import {
     ChallengeModalConfig,
     ChallengeModes,
-} from "src/components/ChallengeModal/ChallengeModal.types";
+} from "@/components/ChallengeModal/ChallengeModal.types";
 import { openModal } from "@/components/Modal";
 import { ChallengeModal, isStandardBoardSize } from "@/components/ChallengeModal/ChallengeModal";
 import { GobanEngineConfig, GobanEnginePlayerEntry, GobanRenderer } from "goban";

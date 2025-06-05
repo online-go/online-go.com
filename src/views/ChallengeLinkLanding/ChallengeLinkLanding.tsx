@@ -65,9 +65,9 @@ export function ChallengeLinkLanding(): React.ReactElement {
                 .then(() => {
                     alert.close();
                     if (challenge.invite_only) {
-                        navigate("/", { replace: true });
+                        void navigate("/", { replace: true });
                     } else {
-                        navigate(`/play#rengo:${challenge.challenge_id}`, {
+                        void navigate(`/play#rengo:${challenge.challenge_id}`, {
                             replace: true,
                         });
                     }
@@ -80,7 +80,7 @@ export function ChallengeLinkLanding(): React.ReactElement {
             post(`challenges/${challenge.challenge_id}/accept`, {})
                 .then(() => {
                     alert.close();
-                    navigate(`/game/${challenge.game_id}`, { replace: true });
+                    void navigate(`/game/${challenge.game_id}`, { replace: true });
                 })
                 .catch((err) => {
                     alert.close();
@@ -98,7 +98,7 @@ export function ChallengeLinkLanding(): React.ReactElement {
             // We need to save the challenge info in this way for when we come back after logging in.
             data.set("pending_accepted_challenge", linked_challenge);
             // Go to sign in, and come back to this page ("welcome") after signing in
-            navigate("/sign-in#/welcome/accepted", { replace: true });
+            void navigate("/sign-in#/welcome/accepted", { replace: true });
         }
     };
 

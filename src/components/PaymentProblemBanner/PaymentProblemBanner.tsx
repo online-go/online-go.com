@@ -42,7 +42,7 @@ export function PaymentProblemBanner(): React.ReactElement | null {
         _setDismissed(Date.now());
     };
     const goToPaymentSettings = () => {
-        navigate("/settings/supporter");
+        void navigate("/settings/supporter");
     };
 
     return (

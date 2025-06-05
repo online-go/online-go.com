@@ -50,7 +50,7 @@ export function OnlineLeagueSpectatorLanding(): React.ReactElement {
         console.log("Jump to game?", details, match);
         if (details.matchId === match?.id) {
             console.log("yes, jumping...");
-            navigate(`/game/${details.gameId}`, { replace: true });
+            void navigate(`/game/${details.gameId}`, { replace: true });
         }
     };
 
@@ -65,7 +65,7 @@ export function OnlineLeagueSpectatorLanding(): React.ReactElement {
             get(`online_league/match/${match_id}`)
                 .then((match: rest_api.online_league.MatchStatus) => {
                     if (match.started) {
-                        navigate(`/game/${match.game}`, { replace: true });
+                        void navigate(`/game/${match.game}`, { replace: true });
                     }
                     set_match(match);
                     set_loading(false);

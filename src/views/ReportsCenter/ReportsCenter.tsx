@@ -108,7 +108,7 @@ export function ReportsCenter(): React.ReactElement | null {
 
     React.useEffect(() => {
         if (!category) {
-            navigateTo("/reports-center/all");
+            void navigateTo("/reports-center/all");
             return;
         }
 
@@ -119,7 +119,7 @@ export function ReportsCenter(): React.ReactElement | null {
                 if (reports.length) {
                     for (let i = 0; i < reports.length; ++i) {
                         if (reports[i].report_type === category || category === "all") {
-                            navigateTo(`/reports-center/${category}/${reports[i].id}`, {
+                            void navigateTo(`/reports-center/${category}/${reports[i].id}`, {
                                 replace: true,
                             });
                             return;
@@ -144,14 +144,14 @@ export function ReportsCenter(): React.ReactElement | null {
     }, [category, report_id]);
 
     const setCategory = React.useCallback((category: string) => {
-        navigateTo(`/reports-center/${category}`);
+        void navigateTo(`/reports-center/${category}`);
     }, []);
 
     const selectReport = (report_id: number) => {
         if (report_id) {
-            navigateTo(`/reports-center/${category}/${report_id}`);
+            void navigateTo(`/reports-center/${category}/${report_id}`);
         } else {
-            navigateTo(`/reports-center/${category}`);
+            void navigateTo(`/reports-center/${category}`);
         }
     };
 

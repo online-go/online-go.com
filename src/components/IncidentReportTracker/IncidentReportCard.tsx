@@ -94,7 +94,7 @@ export function IncidentReportCard({ report }: IncidentReportCardProps): React.R
         report_id_button = (
             <button
                 onClick={(_e) => {
-                    navigateTo(`/reports-center/all/${report.id}`);
+                    void navigateTo(`/reports-center/all/${report.id}`);
                 }}
                 className="small"
             >
