@@ -79,6 +79,7 @@ import * as docs from "@/views/docs";
 import { useData } from "./lib/hooks";
 import { MainSection } from "@/components/MainSection";
 import { AccessibilityMenu } from "@/components/AccessibilityMenu";
+import { AIDetection } from "@moderator-ui/AIDetection";
 
 /*** Layout our main view and routes ***/
 function AppLayout(props: { children: any }): React.ReactElement {
@@ -326,6 +327,7 @@ export const routes = (
                     element={<OnlineLeagueSpectatorLanding />}
                 />
                 <Route path="/developer" element={<Developer />} />
+                <Route path="/moderator/ai-detection" element={<AIDetection />} />
                 <Route path="/admin/merchant_log" element={<MerchantLog />} />
                 <Route path="/admin/firewall" element={<Firewall />} />
                 <Route path="/admin/flagged_games" element={<FlaggedGames />} />

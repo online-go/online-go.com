@@ -20,7 +20,7 @@ import react from "@vitejs/plugin-react";
 //import circularDependency from "vite-plugin-circular-dependency";
 import fixReactVirtualized from "esbuild-plugin-react-virtualized";
 import path from "path";
-import { promises as fs } from "fs";
+import { promises as fs, accessSync } from "fs";
 import { IncomingMessage } from "http";
 import http from "http";
 import checker from "vite-plugin-checker";
@@ -169,6 +169,37 @@ export default defineConfig({
         CLIENT: true,
     },
     plugins: [
+        {
+            name: "moderator-ui-resolver",
+            resolveId(id: string) {
+                if (id.startsWith("@moderator-ui/")) {
+                    const moduleName = id.replace("@moderator-ui/", "");
+                    const submodulePath = path.resolve(
+                        __dirname,
+                        `submodules/moderator-ui/${moduleName}/index.ts`,
+                    );
+                    const stubPath = path.resolve(
+                        __dirname,
+                        `src/stubs/moderator-ui/${moduleName}/index.ts`,
+                    );
+
+                    // Check if submodule exists first
+                    try {
+                        accessSync(submodulePath);
+                        return submodulePath;
+                    } catch {
+                        // Try stub
+                        try {
+                            accessSync(stubPath);
+                            return stubPath;
+                        } catch {
+                            return null;
+                        }
+                    }
+                }
+                return null;
+            },
+        },
         ogs_vite_middleware(),
         react(),
         //circularDependency(),
@@ -209,6 +240,8 @@ export default defineConfig({
     resolve: {
         alias: Object.assign(
             {
+                "@stubs/*": path.resolve(__dirname, "src/stubs/*"),
+                "@moderator-ui/*": path.resolve(__dirname, "src/stubs/moderator-ui/*"),
                 "@": path.resolve(__dirname, "src"),
                 goban: path.resolve(__dirname, "submodules/goban/src"),
                 goscorer: path.resolve(

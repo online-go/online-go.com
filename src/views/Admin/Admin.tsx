@@ -20,6 +20,7 @@ import { Link } from "react-router-dom";
 import { post } from "@/lib/requests";
 import { getPrintableError } from "@/lib/misc";
 import { alert } from "@/lib/swal_config";
+import { ExampleMod } from "@moderator-ui/ExampleMod";
 
 interface AdminState {
     results: any[];
@@ -154,6 +155,13 @@ export class Admin extends React.PureComponent<{}, AdminState> {
                                 <pre key={idx}>{res}</pre>
                             ))}
                         </div>
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col-sm-6">
+                        <React.Suspense fallback={<div>Loading ...</div>}>
+                            <ExampleMod test="test" />
+                        </React.Suspense>
                     </div>
                 </div>
             </div>
