@@ -53,9 +53,7 @@ export function format_message(props: MessageProps): string {
         case "tournamentname_offensive":
         case "puzzlename_offensive":
         case "puzzlecollectionname_offensive":
-            return _(
-                "Sorry that name might be offensive to some players, please pick a different one",
-            );
+            return _("Sorry that name is not allowed, please pick a different one");
 
         case "username_reserved":
         case "username_unavailable":
@@ -98,7 +96,6 @@ export function format_message(props: MessageProps): string {
             }
             break;
 
-        case "komi_invalid":
             return _("Komi setting is invalid");
 
         // break omitted
