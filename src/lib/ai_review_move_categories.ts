@@ -53,12 +53,12 @@ export type ScoreLossList = {
 
 export interface AiSummaryTableData {
     ai_table_rows: string[][];
-    avg_score_loss: number[];
+    avg_score_loss: { black: number; white: number };
     median_score_loss: number[];
     moves_pending: number;
     max_entries: number;
     should_show_table: boolean; // used to signal that we don't have enough data yet
-    strong_move_rate: number[]; // [black_smr, white_smr]
+    strong_move_rate: { black: number; white: number };
 }
 
 export type CategorizationMethod = "old" | "new";
@@ -115,22 +115,22 @@ export function calculateAiSummaryTableData(
     if (!goban) {
         return {
             ai_table_rows: [["", "", "", "", ""]],
-            avg_score_loss: [0, 0],
+            avg_score_loss: { black: 0, white: 0 },
             median_score_loss: [0, 0],
             moves_pending: 0,
             max_entries: 0,
             should_show_table: false,
-            strong_move_rate: [0, 0],
+            strong_move_rate: { black: 0, white: 0 },
         };
     }
 
     const summary_moves_list = [
-        ["", "", "", ""],
-        ["", "", "", ""],
-        ["", "", "", ""],
-        ["", "", "", ""],
-        ["", "", "", ""],
-        ["", "", "", ""],
+        { blackCount: "", blackPercent: "", whiteCount: "", whitePercent: "" },
+        { blackCount: "", blackPercent: "", whiteCount: "", whitePercent: "" },
+        { blackCount: "", blackPercent: "", whiteCount: "", whitePercent: "" },
+        { blackCount: "", blackPercent: "", whiteCount: "", whitePercent: "" },
+        { blackCount: "", blackPercent: "", whiteCount: "", whitePercent: "" },
+        { blackCount: "", blackPercent: "", whiteCount: "", whitePercent: "" },
     ];
     const ai_table_rows = [
         [_("Excellent")],
@@ -141,7 +141,8 @@ export function calculateAiSummaryTableData(
         [_("Blunder")],
     ];
     const default_table_rows = [["", "", "", "", ""]];
-    const avg_score_loss = [0, 0];
+    const avg_score_loss = { black: 0, white: 0 };
+    const net_score_loss = { black: 0, white: 0 };
     const median_score_loss = [0, 0];
     let moves_missing = 0;
     let max_entries = 0;
@@ -155,7 +156,7 @@ export function calculateAiSummaryTableData(
             moves_pending: moves_missing,
             max_entries,
             should_show_table,
-            strong_move_rate: [0, 0],
+            strong_move_rate: { black: 0, white: 0 },
         };
     }
 
@@ -168,15 +169,15 @@ export function calculateAiSummaryTableData(
             moves_pending: moves_missing,
             max_entries,
             should_show_table,
-            strong_move_rate: [0, 0],
+            strong_move_rate: { black: 0, white: 0 },
         };
     }
 
     const handicap = goban.engine.handicap;
     //only useful when there's free placement, handicap = 1 no offset needed.
-    let h_offset = handicapOffset(goban);
-    h_offset = h_offset === 1 ? 0 : h_offset;
-    const b_player = h_offset > 0 || handicap > 1 ? 1 : 0;
+    let handicap_offset = handicapOffset(goban);
+    handicap_offset = handicap_offset === 1 ? 0 : handicap_offset;
+    const b_player = handicap_offset > 0 || handicap > 1 ? 1 : 0;
     const move_player_list = getPlayerColorsMoveList(goban);
 
     if (ai_review?.type === "fast") {
@@ -192,7 +193,7 @@ export function calculateAiSummaryTableData(
                 moves_pending: moves_missing,
                 max_entries,
                 should_show_table,
-                strong_move_rate: [0, 0],
+                strong_move_rate: { black: 0, white: 0 },
             };
         }
         const check1 =
@@ -216,7 +217,7 @@ export function calculateAiSummaryTableData(
                 moves_pending: moves_missing,
                 max_entries,
                 should_show_table,
-                strong_move_rate: [0, 0],
+                strong_move_rate: { black: 0, white: 0 },
             };
         }
 
@@ -229,8 +230,7 @@ export function calculateAiSummaryTableData(
             white: { Excellent: 0, Great: 0, Good: 0, Inaccuracy: 0, Mistake: 0, Blunder: 0 },
         };
         const other_counters: OtherCounters = { black: 0, white: 0 };
-        let w_total = 0;
-        let b_total = 0;
+
         const score_loss_list: ScoreLossList = { black: [], white: [] };
         const worst_move_keys = Object.keys(ai_review?.moves);
 
@@ -238,13 +238,12 @@ export function calculateAiSummaryTableData(
             (scores as any)[worst_move_keys[j]] = ai_review?.moves[worst_move_keys[j]].score;
         }
 
-        for (let j = h_offset; j < scores.length - 1; j++) {
+        for (let j = handicap_offset; j < scores.length - 1; j++) {
             let score_diff = scores[j + 1] - scores[j];
             const is_b_player = move_player_list[j] === JGOFNumericPlayerColor.BLACK;
             const player = is_b_player ? "black" : "white";
-            const player_index = is_b_player ? 0 : 1;
             score_diff = is_b_player ? -1 * score_diff : score_diff;
-            avg_score_loss[player_index] += score_diff;
+            net_score_loss[player] += score_diff;
             score_loss_list[player].push(score_diff);
 
             // Use thresholds if provided, otherwise defaults
@@ -267,13 +266,23 @@ export function calculateAiSummaryTableData(
             }
         }
 
+        let w_total_moves = 0;
+        let b_total_moves = 0;
+
         for (const cat of currentFastCategories) {
-            b_total += move_counters.black[cat];
-            w_total += move_counters.white[cat];
+            b_total_moves += move_counters.black[cat];
+            w_total_moves += move_counters.white[cat];
         }
 
-        avg_score_loss[0] = b_total > 0 ? Number((avg_score_loss[0] / b_total).toFixed(1)) : 0;
-        avg_score_loss[1] = w_total > 0 ? Number((avg_score_loss[1] / w_total).toFixed(1)) : 0;
+        console.log("Black score lost each move", net_score_loss.black);
+        console.log("Black total moves", b_total_moves);
+        console.log("White score lost each move", net_score_loss.white);
+        console.log("White total moves", w_total_moves);
+
+        avg_score_loss.black =
+            b_total_moves > 0 ? Number((net_score_loss.black / b_total_moves).toFixed(1)) : 0;
+        avg_score_loss.white =
+            w_total_moves > 0 ? Number((net_score_loss.white / w_total_moves).toFixed(1)) : 0;
 
         score_loss_list.black.sort((a, b) => a - b);
         score_loss_list.white.sort((a, b) => a - b);
@@ -289,16 +298,25 @@ export function calculateAiSummaryTableData(
 
         for (let j = 0; j < num_rows; j++) {
             const cat = currentFastCategories[j];
-            summary_moves_list[j][0] = move_counters.black[cat].toString();
-            summary_moves_list[j][1] =
-                b_total > 0 ? ((100 * move_counters.black[cat]) / b_total).toFixed(1) : "";
-            summary_moves_list[j][2] = move_counters.white[cat].toString();
-            summary_moves_list[j][3] =
-                w_total > 0 ? ((100 * move_counters.white[cat]) / w_total).toFixed(1) : "";
+            summary_moves_list[j].blackCount = move_counters.black[cat].toString();
+            summary_moves_list[j].blackPercent =
+                b_total_moves > 0
+                    ? ((100 * move_counters.black[cat]) / b_total_moves).toFixed(1)
+                    : "";
+            summary_moves_list[j].whiteCount = move_counters.white[cat].toString();
+            summary_moves_list[j].whitePercent =
+                w_total_moves > 0
+                    ? ((100 * move_counters.white[cat]) / w_total_moves).toFixed(1)
+                    : "";
         }
 
         for (let j = 0; j < ai_table_rows.length; j++) {
-            ai_table_rows[j] = ai_table_rows[j].concat(summary_moves_list[j]);
+            ai_table_rows[j] = ai_table_rows[j].concat([
+                summary_moves_list[j].blackCount,
+                summary_moves_list[j].blackPercent,
+                summary_moves_list[j].whiteCount,
+                summary_moves_list[j].whitePercent,
+            ]);
         }
 
         should_show_table = false;
@@ -310,7 +328,7 @@ export function calculateAiSummaryTableData(
             moves_pending: moves_missing,
             max_entries,
             should_show_table,
-            strong_move_rate: [0, 0],
+            strong_move_rate: { black: 0, white: 0 },
         };
     } else if (ai_review?.type === "full") {
         const num_rows = ai_table_rows.length;
@@ -319,10 +337,8 @@ export function calculateAiSummaryTableData(
             white: { Excellent: 0, Great: 0, Good: 0, Inaccuracy: 0, Mistake: 0, Blunder: 0 },
         };
         const other_counters: OtherCounters = { black: 0, white: 0 };
-        let w_total = 0;
-        let b_total = 0;
         const score_loss_list: ScoreLossList = { black: [], white: [] };
-        const strong_move_rate = [0, 0]; // [black_smr, white_smr]
+        const strong_move_rate = { black: 0, white: 0 };
 
         const move_keys = Object.keys(ai_review?.moves);
         const is_uploaded = goban.config.original_sgf !== undefined;
@@ -336,7 +352,12 @@ export function calculateAiSummaryTableData(
 
         if (loading || ai_review.scores === undefined) {
             for (let j = 0; j < ai_table_rows.length; j++) {
-                ai_table_rows[j] = ai_table_rows[j].concat(summary_moves_list[j]);
+                ai_table_rows[j] = ai_table_rows[j].concat([
+                    summary_moves_list[j].blackCount,
+                    summary_moves_list[j].blackPercent,
+                    summary_moves_list[j].whiteCount,
+                    summary_moves_list[j].whitePercent,
+                ]);
             }
             return {
                 ai_table_rows,
@@ -351,24 +372,31 @@ export function calculateAiSummaryTableData(
 
         max_entries = ai_review.scores.length;
 
-        for (let j = h_offset; j < (ai_review?.scores?.length ?? 0) - 1; j++) {
-            if (ai_review?.moves[j] === undefined || ai_review?.moves[j + 1] === undefined) {
+        for (
+            let current_move = handicap_offset;
+            current_move < (ai_review?.scores?.length ?? 0) - 1;
+            current_move++
+        ) {
+            if (
+                ai_review?.moves[current_move] === undefined ||
+                ai_review?.moves[current_move + 1] === undefined
+            ) {
                 moves_missing += 1;
                 continue;
             }
-            const player_move = ai_review?.moves[j + 1].move;
-            const is_b_player = move_player_list[j] === JGOFNumericPlayerColor.BLACK;
+            const player_move = ai_review?.moves[current_move + 1].move;
+            const is_b_player = move_player_list[current_move] === JGOFNumericPlayerColor.BLACK;
             const player = is_b_player ? "black" : "white";
-            const player_index = is_b_player ? 0 : 1;
 
             if (categorization_method === "new") {
                 let score_loss =
-                    (ai_review?.moves[j + 1].score ?? 0) - (ai_review?.moves[j].score ?? 0);
+                    (ai_review?.moves[current_move + 1].score ?? 0) -
+                    (ai_review?.moves[current_move].score ?? 0);
                 score_loss = is_b_player ? -1 * score_loss : score_loss;
 
                 // Only add positive score losses to APL sum and score loss list
                 if (score_loss > 0) {
-                    avg_score_loss[player_index] += score_loss;
+                    avg_score_loss[player] += score_loss;
                     score_loss_list[player].push(score_loss);
                 }
 
@@ -396,12 +424,13 @@ export function calculateAiSummaryTableData(
                 }
             } else {
                 // Original categorization logic
-                const current_branches = ai_review?.moves[j].branches.slice(0, 6);
+                const current_branches = ai_review?.moves[current_move].branches.slice(0, 6);
                 const blue_move = current_branches[0].moves[0];
                 let score_diff =
-                    (ai_review?.moves[j + 1].score ?? 0) - (ai_review?.moves[j].score ?? 0);
+                    (ai_review?.moves[current_move + 1].score ?? 0) -
+                    (ai_review?.moves[current_move].score ?? 0);
                 score_diff = is_b_player ? -1 * score_diff : score_diff;
-                avg_score_loss[player_index] += score_diff;
+                avg_score_loss[player] += score_diff;
                 score_loss_list[player].push(score_diff);
 
                 if (blue_move === undefined) {
@@ -448,40 +477,55 @@ export function calculateAiSummaryTableData(
             }
         }
 
+        // Add up the number of moves we actually counted
+
+        let w_total_moves = 0;
+        let b_total_moves = 0;
+
         for (const cat of currentFullCategories) {
-            b_total += move_counters.black[cat];
-            w_total += move_counters.white[cat];
+            b_total_moves += move_counters.black[cat];
+            w_total_moves += move_counters.white[cat];
         }
 
         // Calculate strong move rate (Excellent + Great + Good) / total moves
-        strong_move_rate[0] =
-            b_total > 0
+        strong_move_rate.black =
+            b_total_moves > 0
                 ? Number(
                       (
                           ((move_counters.black.Excellent +
                               move_counters.black.Great +
                               move_counters.black.Good) /
-                              b_total) *
+                              b_total_moves) *
                           100
                       ).toFixed(1),
                   )
                 : 0;
-        strong_move_rate[1] =
-            w_total > 0
+        strong_move_rate.white =
+            w_total_moves > 0
                 ? Number(
                       (
                           ((move_counters.white.Excellent +
                               move_counters.white.Great +
                               move_counters.white.Good) /
-                              w_total) *
+                              w_total_moves) *
                           100
                       ).toFixed(1),
                   )
                 : 0;
 
-        avg_score_loss[0] = b_total > 0 ? Number((avg_score_loss[0] / b_total).toFixed(1)) : 0;
-        avg_score_loss[1] = w_total > 0 ? Number((avg_score_loss[1] / w_total).toFixed(1)) : 0;
+        // Calculate average score loss
 
+        console.log("Black score lost each move", net_score_loss.black);
+        console.log("Black total moves", b_total_moves);
+        console.log("White score lost each move", net_score_loss.white);
+        console.log("White total moves", w_total_moves);
+
+        avg_score_loss.black =
+            b_total_moves > 0 ? Number((avg_score_loss.black / b_total_moves).toFixed(1)) : 0;
+        avg_score_loss.white =
+            w_total_moves > 0 ? Number((avg_score_loss.white / w_total_moves).toFixed(1)) : 0;
+
+        // Calculate median score loss
         score_loss_list.black.sort((a, b) => a - b);
         score_loss_list.white.sort((a, b) => a - b);
 
@@ -494,18 +538,28 @@ export function calculateAiSummaryTableData(
                 ? Number(medianList(score_loss_list.white).toFixed(1))
                 : 0;
 
+        // Assemble the categorisation data into the format needed for tabular display
         for (let j = 0; j < num_rows; j++) {
             const cat = currentFullCategories[j];
-            summary_moves_list[j][0] = move_counters.black[cat].toString();
-            summary_moves_list[j][1] =
-                b_total > 0 ? ((100 * move_counters.black[cat]) / b_total).toFixed(1) : "";
-            summary_moves_list[j][2] = move_counters.white[cat].toString();
-            summary_moves_list[j][3] =
-                w_total > 0 ? ((100 * move_counters.white[cat]) / w_total).toFixed(1) : "";
+            summary_moves_list[j].blackCount = move_counters.black[cat].toString();
+            summary_moves_list[j].blackPercent =
+                b_total_moves > 0
+                    ? ((100 * move_counters.black[cat]) / b_total_moves).toFixed(1)
+                    : "";
+            summary_moves_list[j].whiteCount = move_counters.white[cat].toString();
+            summary_moves_list[j].whitePercent =
+                w_total_moves > 0
+                    ? ((100 * move_counters.white[cat]) / w_total_moves).toFixed(1)
+                    : "";
         }
 
         for (let j = 0; j < ai_table_rows.length; j++) {
-            ai_table_rows[j] = ai_table_rows[j].concat(summary_moves_list[j]);
+            ai_table_rows[j] = ai_table_rows[j].concat([
+                summary_moves_list[j].blackCount,
+                summary_moves_list[j].blackPercent,
+                summary_moves_list[j].whiteCount,
+                summary_moves_list[j].whitePercent,
+            ]);
         }
 
         if (!check1 && !check2) {
@@ -529,7 +583,7 @@ export function calculateAiSummaryTableData(
             moves_pending: moves_missing,
             max_entries,
             should_show_table,
-            strong_move_rate: [0, 0],
+            strong_move_rate: { black: 0, white: 0 },
         };
     }
 }

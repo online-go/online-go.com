@@ -113,11 +113,11 @@ export function AIReview(props: AIReviewProperties) {
 class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
     ai_review?: JGOFAIReview;
     table_rows!: string[][];
-    avg_score_loss!: number[];
+    avg_score_loss!: { black: number; white: number };
     median_score_loss!: number[];
     moves_pending!: number;
     max_entries!: number;
-    strong_move_rate!: number[];
+    strong_move_rate!: { black: number; white: number };
 
     constructor(props: AIReviewProperties) {
         super(props);
@@ -184,12 +184,12 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
 
     private updateTableState(ai_table_out: {
         ai_table_rows: string[][];
-        avg_score_loss: number[];
+        avg_score_loss: { black: number; white: number };
         median_score_loss: number[];
         moves_pending: number;
         max_entries: number;
         should_show_table: boolean;
-        strong_move_rate: number[];
+        strong_move_rate: { black: number; white: number };
     }) {
         this.table_rows = ai_table_out.ai_table_rows;
         this.avg_score_loss = ai_table_out.avg_score_loss;
@@ -1791,12 +1791,12 @@ class AiSummaryTable extends React.Component<AiSummaryTableProperties, AiSummary
                         </tr>
                         <tr>
                             <td colSpan={2}>{"Black"}</td>
-                            <td colSpan={3}>{this.props.avg_loss[0]}</td>
+                            <td colSpan={3}>{this.props.avg_loss.black}</td>
                             <td></td>
                         </tr>
                         <tr>
                             <td colSpan={2}>{"White"}</td>
-                            <td colSpan={3}>{this.props.avg_loss[1]}</td>
+                            <td colSpan={3}>{this.props.avg_loss.white}</td>
                             <td></td>
                         </tr>
                         <tr>
@@ -1819,12 +1819,12 @@ class AiSummaryTable extends React.Component<AiSummaryTableProperties, AiSummary
                         </tr>
                         <tr>
                             <td colSpan={2}>{"Black"}</td>
-                            <td colSpan={3}>{this.props.strong_move_rate[0]}%</td>
+                            <td colSpan={3}>{this.props.strong_move_rate.black}%</td>
                             <td></td>
                         </tr>
                         <tr>
                             <td colSpan={2}>{"White"}</td>
-                            <td colSpan={3}>{this.props.strong_move_rate[1]}%</td>
+                            <td colSpan={3}>{this.props.strong_move_rate.white}%</td>
                             <td></td>
                         </tr>
                     </tbody>
@@ -1842,9 +1842,9 @@ interface AiSummaryTableProperties {
     /** the body of the table excluding the average score loss part */
     body_list: string[][];
     /** values for the average score loss */
-    avg_loss: number[];
+    avg_loss: { black: number; white: number };
     median_score_loss: number[];
-    strong_move_rate: number[];
+    strong_move_rate: { black: number; white: number };
     table_hidden: boolean;
     pending_entries: number;
     max_entries: number;
