@@ -166,6 +166,7 @@ function categorizeFullReviewNew(
     handicap_offset: number,
     move_player_list: any[],
     scoreDiffThresholds?: ScoreDiffThresholds,
+    includeNegativeScores: boolean = false,
 ): {
     move_counters: MoveCounters;
     score_loss_list: ScoreLossList;
@@ -198,7 +199,7 @@ function categorizeFullReviewNew(
             (ai_review?.moves[move_index].score ?? 0);
         score_loss = is_b_player ? -1 * score_loss : score_loss;
 
-        if (score_loss >= 0) {
+        if (includeNegativeScores || score_loss >= 0) {
             total_score_loss[player] += score_loss;
             score_loss_list[player].push(score_loss);
         } else {
@@ -404,6 +405,7 @@ export function calculateAiSummaryTableData(
     loading: boolean,
     categorization_method: CategorizationMethod = "old",
     scoreDiffThresholds?: ScoreDiffThresholds,
+    includeNegativeScores: boolean = false,
 ): AiSummaryTableData {
     if (!goban) {
         return {
@@ -495,6 +497,7 @@ export function calculateAiSummaryTableData(
                     handicap_offset,
                     move_player_list,
                     scoreDiffThresholds,
+                    includeNegativeScores,
                 )
               : categorizeFullReviewOld(
                     ai_review,

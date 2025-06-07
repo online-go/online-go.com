@@ -79,6 +79,7 @@ interface AIReviewState {
     table_hidden: boolean;
     categorization_method: CategorizationMethod;
     scoreDiffThresholds: ScoreDiffThresholds;
+    includeNegativeScores: boolean;
 }
 
 const DEFAULT_SCORE_DIFF_THRESHOLDS: ScoreDiffThresholds = {
@@ -134,6 +135,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
             table_hidden: preferences.get("ai-summary-table-show"),
             categorization_method: method,
             scoreDiffThresholds: { ...DEFAULT_SCORE_DIFF_THRESHOLDS, ...current_thresholds },
+            includeNegativeScores: false,
         };
         this.state = state;
         window.aireview = this;
@@ -168,6 +170,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                 this.state.loading,
                 this.state.categorization_method,
                 this.state.scoreDiffThresholds,
+                this.state.includeNegativeScores,
             );
             this.updateTableState(ai_table_out);
         }
@@ -337,6 +340,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                     this.state.loading,
                     this.state.categorization_method,
                     this.state.scoreDiffThresholds,
+                    this.state.includeNegativeScores,
                 );
                 this.updateTableState(ai_table_out);
             },
@@ -1352,6 +1356,12 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                                                 }
                                                 onThresholdChange={this.handleThresholdChange}
                                                 onResetThresholds={this.handleResetThresholds}
+                                                includeNegativeScores={
+                                                    this.state.includeNegativeScores
+                                                }
+                                                onToggleNegativeScores={
+                                                    this.handleToggleNegativeScores
+                                                }
                                             />
                                             {!this.state.table_hidden && (
                                                 <div className="categorization-toggler">
@@ -1392,6 +1402,8 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                                                                                     .categorization_method,
                                                                                 this.state
                                                                                     .scoreDiffThresholds,
+                                                                                this.state
+                                                                                    .includeNegativeScores,
                                                                             );
                                                                         this.updateTableState(
                                                                             ai_table_out,
@@ -1553,6 +1565,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                     this.state.loading,
                     this.state.categorization_method,
                     this.state.scoreDiffThresholds,
+                    this.state.includeNegativeScores,
                 );
                 this.updateTableState(ai_table_out);
             },
@@ -1568,9 +1581,29 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                 this.state.loading,
                 this.state.categorization_method,
                 DEFAULT_SCORE_DIFF_THRESHOLDS,
+                this.state.includeNegativeScores,
             );
             this.updateTableState(ai_table_out);
         });
+    };
+
+    handleToggleNegativeScores = () => {
+        this.setState(
+            (prevState) => ({
+                includeNegativeScores: !prevState.includeNegativeScores,
+            }),
+            () => {
+                const ai_table_out = calculateAiSummaryTableData(
+                    this.ai_review,
+                    this.props.gobanContext,
+                    this.state.loading,
+                    this.state.categorization_method,
+                    this.state.scoreDiffThresholds,
+                    this.state.includeNegativeScores,
+                );
+                this.updateTableState(ai_table_out);
+            },
+        );
     };
 }
 
@@ -1798,7 +1831,22 @@ class AiSummaryTable extends React.Component<AiSummaryTableProperties, AiSummary
                         )}
                         <tr>
                             <td colSpan={5}>{"Average score loss per move"}</td>
-                            <td></td>
+                            <td>
+                                <button
+                                    style={{
+                                        fontSize: "0.8em",
+                                        padding: "2px 6px",
+                                        marginLeft: 8,
+                                        color: this.props.includeNegativeScores
+                                            ? "#e67c00"
+                                            : undefined,
+                                    }}
+                                    onClick={this.props.onToggleNegativeScores}
+                                    title="Include negative score changes in the total"
+                                >
+                                    {"Δs " + (this.props.includeNegativeScores ? "±" : "+")}
+                                </button>
+                            </td>
                         </tr>
                         <tr>
                             <td colSpan={2}>{"Black"}</td>
@@ -1863,4 +1911,6 @@ interface AiSummaryTableProperties {
     categorization_method: CategorizationMethod;
     onThresholdChange: (category: string, value: number) => void;
     onResetThresholds: () => void;
+    includeNegativeScores: boolean;
+    onToggleNegativeScores: () => void;
 }
