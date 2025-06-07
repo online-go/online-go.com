@@ -148,15 +148,6 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
 
     componentDidMount() {
         this.getAIReviewList();
-        const ai_table_out = calculateAiSummaryTableData(
-            this.ai_review,
-            this.props.gobanContext,
-            this.state.loading,
-            this.state.categorization_method,
-            this.state.scoreDiffThresholds,
-        );
-        this.updateTableState(ai_table_out);
-
         const user = data.get("user");
         const canViewTable =
             user.is_moderator || this.powerToSeeTable(this.props.reportContext?.moderator_powers);
@@ -331,11 +322,25 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
         const user = data.get("user");
         const canViewTable =
             user.is_moderator || this.powerToSeeTable(this.props.reportContext?.moderator_powers);
+
         this.updateAIReviewMetadata(ai_review);
-        this.setState({
-            selected_ai_review: ai_review,
-            show_table: canViewTable,
-        });
+        this.setState(
+            {
+                selected_ai_review: ai_review,
+                show_table: canViewTable,
+            },
+            () => {
+                // Calculate table data after state is updated, regardless of show_table
+                const ai_table_out = calculateAiSummaryTableData(
+                    this.ai_review,
+                    this.props.gobanContext,
+                    this.state.loading,
+                    this.state.categorization_method,
+                    this.state.scoreDiffThresholds,
+                );
+                this.updateTableState(ai_table_out);
+            },
+        );
         this.props.onAIReviewSelected(ai_review);
         this.syncAIReview();
     };
@@ -1678,6 +1683,12 @@ class AiSummaryTable extends React.Component<AiSummaryTableProperties, AiSummary
             defaultThresholds.Inaccuracy = 2;
             defaultThresholds.Mistake = 5;
         }
+
+        // Add defensive check for required props
+        if (!this.props.body_list || !this.props.heading_list) {
+            return <div className="ai-summary-container" />;
+        }
+
         return (
             <div className="ai-summary-container">
                 <table
