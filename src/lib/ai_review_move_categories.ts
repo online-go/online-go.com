@@ -215,19 +215,32 @@ function categorizeFullReviewNew(
             Mistake: scoreDiffThresholds?.Mistake ?? 5.0,
         };
 
+        let category: MoveCategory;
         if (score_loss < thresholds.Excellent) {
+            category = "Excellent";
             move_counters[player].Excellent += 1;
         } else if (score_loss < thresholds.Great) {
+            category = "Great";
             move_counters[player].Great += 1;
         } else if (score_loss < thresholds.Good) {
+            category = "Good";
             move_counters[player].Good += 1;
         } else if (score_loss < thresholds.Inaccuracy) {
+            category = "Inaccuracy";
             move_counters[player].Inaccuracy += 1;
         } else if (score_loss < thresholds.Mistake) {
+            category = "Mistake";
             move_counters[player].Mistake += 1;
         } else {
+            category = "Blunder";
             move_counters[player].Blunder += 1;
         }
+
+        console.log(
+            `Move ${move_index}: ${player} - Score loss: ${score_loss.toFixed(
+                2,
+            )} - Category: ${category}`,
+        );
     }
 
     return { move_counters, score_loss_list, total_score_loss };
