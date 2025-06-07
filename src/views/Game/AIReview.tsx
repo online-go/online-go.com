@@ -113,11 +113,11 @@ export function AIReview(props: AIReviewProperties) {
 class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
     ai_review?: JGOFAIReview;
     table_rows!: string[][];
-    avg_score_loss!: number[];
-    median_score_loss!: number[];
+    avg_score_loss!: { black: number; white: number };
+    median_score_loss!: { black: number; white: number };
     moves_pending!: number;
     max_entries!: number;
-    strong_move_rate!: number[];
+    strong_move_rate!: { black: number; white: number };
 
     constructor(props: AIReviewProperties) {
         super(props);
@@ -148,15 +148,6 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
 
     componentDidMount() {
         this.getAIReviewList();
-        const ai_table_out = calculateAiSummaryTableData(
-            this.ai_review,
-            this.props.gobanContext,
-            this.state.loading,
-            this.state.categorization_method,
-            this.state.scoreDiffThresholds,
-        );
-        this.updateTableState(ai_table_out);
-
         const user = data.get("user");
         const canViewTable =
             user.is_moderator || this.powerToSeeTable(this.props.reportContext?.moderator_powers);
@@ -184,12 +175,12 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
 
     private updateTableState(ai_table_out: {
         ai_table_rows: string[][];
-        avg_score_loss: number[];
-        median_score_loss: number[];
+        avg_score_loss: { black: number; white: number };
+        median_score_loss: { black: number; white: number };
         moves_pending: number;
         max_entries: number;
         should_show_table: boolean;
-        strong_move_rate: number[];
+        strong_move_rate: { black: number; white: number };
     }) {
         this.table_rows = ai_table_out.ai_table_rows;
         this.avg_score_loss = ai_table_out.avg_score_loss;
@@ -331,11 +322,25 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
         const user = data.get("user");
         const canViewTable =
             user.is_moderator || this.powerToSeeTable(this.props.reportContext?.moderator_powers);
+
         this.updateAIReviewMetadata(ai_review);
-        this.setState({
-            selected_ai_review: ai_review,
-            show_table: canViewTable,
-        });
+        this.setState(
+            {
+                selected_ai_review: ai_review,
+                show_table: canViewTable,
+            },
+            () => {
+                // Calculate table data after state is updated, regardless of show_table
+                const ai_table_out = calculateAiSummaryTableData(
+                    this.ai_review,
+                    this.props.gobanContext,
+                    this.state.loading,
+                    this.state.categorization_method,
+                    this.state.scoreDiffThresholds,
+                );
+                this.updateTableState(ai_table_out);
+            },
+        );
         this.props.onAIReviewSelected(ai_review);
         this.syncAIReview();
     };
@@ -1678,6 +1683,12 @@ class AiSummaryTable extends React.Component<AiSummaryTableProperties, AiSummary
             defaultThresholds.Inaccuracy = 2;
             defaultThresholds.Mistake = 5;
         }
+
+        // Add defensive check for required props
+        if (!this.props.body_list || !this.props.heading_list) {
+            return <div className="ai-summary-container" />;
+        }
+
         return (
             <div className="ai-summary-container">
                 <table
@@ -1791,12 +1802,12 @@ class AiSummaryTable extends React.Component<AiSummaryTableProperties, AiSummary
                         </tr>
                         <tr>
                             <td colSpan={2}>{"Black"}</td>
-                            <td colSpan={3}>{this.props.avg_loss[0]}</td>
+                            <td colSpan={3}>{this.props.avg_loss.black}</td>
                             <td></td>
                         </tr>
                         <tr>
                             <td colSpan={2}>{"White"}</td>
-                            <td colSpan={3}>{this.props.avg_loss[1]}</td>
+                            <td colSpan={3}>{this.props.avg_loss.white}</td>
                             <td></td>
                         </tr>
                         <tr>
@@ -1805,12 +1816,12 @@ class AiSummaryTable extends React.Component<AiSummaryTableProperties, AiSummary
                         </tr>
                         <tr>
                             <td colSpan={2}>{"Black"}</td>
-                            <td colSpan={3}>{this.props.median_score_loss[0]}</td>
+                            <td colSpan={3}>{this.props.median_score_loss.black}</td>
                             <td></td>
                         </tr>
                         <tr>
                             <td colSpan={2}>{"White"}</td>
-                            <td colSpan={3}>{this.props.median_score_loss[1]}</td>
+                            <td colSpan={3}>{this.props.median_score_loss.white}</td>
                             <td></td>
                         </tr>
                         <tr>
@@ -1819,12 +1830,12 @@ class AiSummaryTable extends React.Component<AiSummaryTableProperties, AiSummary
                         </tr>
                         <tr>
                             <td colSpan={2}>{"Black"}</td>
-                            <td colSpan={3}>{this.props.strong_move_rate[0]}%</td>
+                            <td colSpan={3}>{this.props.strong_move_rate.black}%</td>
                             <td></td>
                         </tr>
                         <tr>
                             <td colSpan={2}>{"White"}</td>
-                            <td colSpan={3}>{this.props.strong_move_rate[1]}%</td>
+                            <td colSpan={3}>{this.props.strong_move_rate.white}%</td>
                             <td></td>
                         </tr>
                     </tbody>
@@ -1842,9 +1853,9 @@ interface AiSummaryTableProperties {
     /** the body of the table excluding the average score loss part */
     body_list: string[][];
     /** values for the average score loss */
-    avg_loss: number[];
-    median_score_loss: number[];
-    strong_move_rate: number[];
+    avg_loss: { black: number; white: number };
+    median_score_loss: { black: number; white: number };
+    strong_move_rate: { black: number; white: number };
     table_hidden: boolean;
     pending_entries: number;
     max_entries: number;
