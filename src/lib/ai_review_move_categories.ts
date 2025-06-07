@@ -198,7 +198,7 @@ function categorizeFullReviewNew(
             (ai_review?.moves[move_index].score ?? 0);
         score_loss = is_b_player ? -1 * score_loss : score_loss;
 
-        if (score_loss > 0) {
+        if (score_loss >= 0) {
             total_score_loss[player] += score_loss;
             score_loss_list[player].push(score_loss);
         }
@@ -225,11 +225,6 @@ function categorizeFullReviewNew(
             move_counters[player].Blunder += 1;
         }
     }
-
-    console.log("Black score loss list", score_loss_list.black);
-    console.log("Black total score lost", total_score_loss.black);
-    console.log("White score loss list", score_loss_list.white);
-    console.log("White total score lost", total_score_loss.white);
 
     return { move_counters, score_loss_list, total_score_loss };
 }
@@ -510,6 +505,13 @@ export function calculateAiSummaryTableData(
     const categories = ai_review.type === "fast" ? currentFastCategories : currentFullCategories;
 
     // Calculate average score loss
+    console.log("black total_score_loss", total_score_loss.black);
+    console.log("black score_loss_list length", score_loss_list.black.length);
+    console.log("black score_loss_list", score_loss_list.black);
+    console.log("white total_score_loss", total_score_loss.white);
+    console.log("white score_loss_list length", score_loss_list.white.length);
+    console.log("white score_loss_list", score_loss_list.white);
+
     avg_score_loss.black =
         score_loss_list.black.length > 0
             ? Number((total_score_loss.black / score_loss_list.black.length).toFixed(1))
