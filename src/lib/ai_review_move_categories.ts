@@ -201,6 +201,9 @@ function categorizeFullReviewNew(
         if (score_loss >= 0) {
             total_score_loss[player] += score_loss;
             score_loss_list[player].push(score_loss);
+        } else {
+            // treat it as zero
+            score_loss_list[player].push(0);
         }
 
         const thresholds = {
