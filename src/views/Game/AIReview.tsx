@@ -114,7 +114,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
     ai_review?: JGOFAIReview;
     table_rows!: string[][];
     avg_score_loss!: { black: number; white: number };
-    median_score_loss!: number[];
+    median_score_loss!: { black: number; white: number };
     moves_pending!: number;
     max_entries!: number;
     strong_move_rate!: { black: number; white: number };
@@ -185,7 +185,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
     private updateTableState(ai_table_out: {
         ai_table_rows: string[][];
         avg_score_loss: { black: number; white: number };
-        median_score_loss: number[];
+        median_score_loss: { black: number; white: number };
         moves_pending: number;
         max_entries: number;
         should_show_table: boolean;
@@ -1805,12 +1805,12 @@ class AiSummaryTable extends React.Component<AiSummaryTableProperties, AiSummary
                         </tr>
                         <tr>
                             <td colSpan={2}>{"Black"}</td>
-                            <td colSpan={3}>{this.props.median_score_loss[0]}</td>
+                            <td colSpan={3}>{this.props.median_score_loss.black}</td>
                             <td></td>
                         </tr>
                         <tr>
                             <td colSpan={2}>{"White"}</td>
-                            <td colSpan={3}>{this.props.median_score_loss[1]}</td>
+                            <td colSpan={3}>{this.props.median_score_loss.white}</td>
                             <td></td>
                         </tr>
                         <tr>
@@ -1843,7 +1843,7 @@ interface AiSummaryTableProperties {
     body_list: string[][];
     /** values for the average score loss */
     avg_loss: { black: number; white: number };
-    median_score_loss: number[];
+    median_score_loss: { black: number; white: number };
     strong_move_rate: { black: number; white: number };
     table_hidden: boolean;
     pending_entries: number;
