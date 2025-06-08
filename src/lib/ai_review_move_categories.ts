@@ -166,6 +166,7 @@ function categorizeFullReviewNew(
     handicap_offset: number,
     move_player_list: any[],
     scoreDiffThresholds?: ScoreDiffThresholds,
+    includeNegativeScores: boolean = false,
 ): {
     move_counters: MoveCounters;
     score_loss_list: ScoreLossList;
@@ -198,7 +199,7 @@ function categorizeFullReviewNew(
             (ai_review?.moves[move_index].score ?? 0);
         score_loss = is_b_player ? -1 * score_loss : score_loss;
 
-        if (score_loss >= 0) {
+        if (includeNegativeScores || score_loss >= 0) {
             total_score_loss[player] += score_loss;
             score_loss_list[player].push(score_loss);
         } else {
@@ -214,19 +215,32 @@ function categorizeFullReviewNew(
             Mistake: scoreDiffThresholds?.Mistake ?? 5.0,
         };
 
+        let category: MoveCategory;
         if (score_loss < thresholds.Excellent) {
+            category = "Excellent";
             move_counters[player].Excellent += 1;
         } else if (score_loss < thresholds.Great) {
+            category = "Great";
             move_counters[player].Great += 1;
         } else if (score_loss < thresholds.Good) {
+            category = "Good";
             move_counters[player].Good += 1;
         } else if (score_loss < thresholds.Inaccuracy) {
+            category = "Inaccuracy";
             move_counters[player].Inaccuracy += 1;
         } else if (score_loss < thresholds.Mistake) {
+            category = "Mistake";
             move_counters[player].Mistake += 1;
         } else {
+            category = "Blunder";
             move_counters[player].Blunder += 1;
         }
+
+        console.log(
+            `Move ${move_index}: ${player} - Score loss: ${score_loss.toFixed(
+                2,
+            )} - Category: ${category}`,
+        );
     }
 
     return { move_counters, score_loss_list, total_score_loss };
@@ -404,6 +418,7 @@ export function calculateAiSummaryTableData(
     loading: boolean,
     categorization_method: CategorizationMethod = "old",
     scoreDiffThresholds?: ScoreDiffThresholds,
+    includeNegativeScores: boolean = false,
 ): AiSummaryTableData {
     if (!goban) {
         return {
@@ -495,6 +510,7 @@ export function calculateAiSummaryTableData(
                     handicap_offset,
                     move_player_list,
                     scoreDiffThresholds,
+                    includeNegativeScores,
                 )
               : categorizeFullReviewOld(
                     ai_review,
