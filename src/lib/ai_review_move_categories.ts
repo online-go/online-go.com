@@ -125,6 +125,7 @@ function categorizeFastReview(
     score_loss_list: ScoreLossList;
     total_score_loss: { black: number; white: number };
     categorized_moves: MoveNumbers;
+    moves_missing: number;
 } {
     const scores = ai_review.scores;
     if (!scores) {
@@ -176,7 +177,13 @@ function categorizeFastReview(
         }
     }
 
-    return { move_counters, score_loss_list, total_score_loss, categorized_moves };
+    return {
+        move_counters,
+        score_loss_list,
+        total_score_loss,
+        categorized_moves,
+        moves_missing: 0,
+    };
 }
 
 function categorizeFullReviewNew(
@@ -190,6 +197,7 @@ function categorizeFullReviewNew(
     score_loss_list: ScoreLossList;
     total_score_loss: { black: number; white: number };
     categorized_moves: MoveNumbers;
+    moves_missing: number;
 } {
     const move_counters: MoveCounters = {
         black: { Excellent: 0, Great: 0, Good: 0, Inaccuracy: 0, Mistake: 0, Blunder: 0 },
@@ -202,6 +210,7 @@ function categorizeFullReviewNew(
         white: { Excellent: [], Great: [], Good: [], Inaccuracy: [], Mistake: [], Blunder: [] },
     };
 
+    let moves_missing = 0;
     for (
         let move_index = handicap_offset;
         move_index < (ai_review?.scores?.length ?? 0) - 1;
@@ -211,6 +220,7 @@ function categorizeFullReviewNew(
             ai_review?.moves[move_index] === undefined ||
             ai_review?.moves[move_index + 1] === undefined
         ) {
+            moves_missing++;
             continue;
         }
 
@@ -272,7 +282,7 @@ function categorizeFullReviewNew(
         );
     }
 
-    return { move_counters, score_loss_list, total_score_loss, categorized_moves };
+    return { move_counters, score_loss_list, total_score_loss, categorized_moves, moves_missing };
 }
 
 function categorizeFullReviewOld(
@@ -285,6 +295,7 @@ function categorizeFullReviewOld(
     score_loss_list: ScoreLossList;
     total_score_loss: { black: number; white: number };
     categorized_moves: MoveNumbers;
+    moves_missing: number;
 } {
     const move_counters: MoveCounters = {
         black: { Excellent: 0, Great: 0, Good: 0, Inaccuracy: 0, Mistake: 0, Blunder: 0 },
@@ -297,6 +308,7 @@ function categorizeFullReviewOld(
         white: { Excellent: [], Great: [], Good: [], Inaccuracy: [], Mistake: [], Blunder: [] },
     };
 
+    let moves_missing = 0;
     for (
         let current_move = handicap_offset;
         current_move < (ai_review?.scores?.length ?? 0) - 1;
@@ -306,6 +318,7 @@ function categorizeFullReviewOld(
             ai_review?.moves[current_move] === undefined ||
             ai_review?.moves[current_move + 1] === undefined
         ) {
+            moves_missing++;
             continue;
         }
 
@@ -368,7 +381,7 @@ function categorizeFullReviewOld(
         }
     }
 
-    return { move_counters, score_loss_list, total_score_loss, categorized_moves };
+    return { move_counters, score_loss_list, total_score_loss, categorized_moves, moves_missing };
 }
 
 function validateReviewData(
@@ -476,7 +489,8 @@ export function categorizeAiReview(
                     scoreDiffThresholds,
                 );
 
-    const { move_counters, score_loss_list, total_score_loss, categorized_moves } = result;
+    const { move_counters, score_loss_list, total_score_loss, categorized_moves, moves_missing } =
+        result;
 
     // Calculate average score loss
     const avg_score_loss = {
@@ -524,12 +538,6 @@ export function categorizeAiReview(
               }
             : { black: 0, white: 0 };
 
-    // Calculate moves_pending - the number of moves that haven't been analyzed yet
-    const total_moves = goban.engine.move_tree.move_number;
-    const analyzed_moves = Object.keys(ai_review.moves).length;
-    const moves_pending = Math.max(0, total_moves - analyzed_moves);
-    console.log("Calculating moves_pending:", { total_moves, analyzed_moves, moves_pending });
-
     return {
         move_counters,
         score_loss_list,
@@ -538,6 +546,6 @@ export function categorizeAiReview(
         avg_score_loss,
         median_score_loss,
         strong_move_rate,
-        moves_pending,
+        moves_pending: moves_missing,
     };
 }
