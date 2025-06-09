@@ -101,6 +101,7 @@ export class AiSummaryTable extends React.Component<AiSummaryTableProperties, Ai
                             {this.props.heading_list.map((head, index) => {
                                 return <th key={index}>{head}</th>;
                             })}
+                            <th className="spacer-column" style={{ width: "10px" }}></th>
                             <th className="centered">Δs &lt;</th>
                         </tr>
                     </thead>
@@ -120,7 +121,7 @@ export class AiSummaryTable extends React.Component<AiSummaryTableProperties, Ai
                             return (
                                 <tr key={b_index}>
                                     {body.map((element, e_index) => {
-                                        if (e_index === 1 || e_index === 3) {
+                                        if (e_index === 1 || e_index === 4) {
                                             // Black and White count columns
                                             const color = e_index === 1 ? "black" : "white";
                                             const moves =
@@ -138,11 +139,6 @@ export class AiSummaryTable extends React.Component<AiSummaryTableProperties, Ai
                                                                     : ""
                                                             }`}
                                                             onClick={() => {
-                                                                console.log("Button clicked", {
-                                                                    moves,
-                                                                    catKey,
-                                                                    color,
-                                                                });
                                                                 if (moves.length > 0) {
                                                                     this.setState({
                                                                         showMoveList: true,
@@ -178,8 +174,18 @@ export class AiSummaryTable extends React.Component<AiSummaryTableProperties, Ai
                                                 </td>
                                             );
                                         }
+                                        if (e_index === 3) {
+                                            return (
+                                                <td
+                                                    key={e_index}
+                                                    className="spacer-column"
+                                                    style={{ width: "10px" }}
+                                                ></td>
+                                            );
+                                        }
                                         return <td key={e_index}>{element}</td>;
                                     })}
+                                    <td className="spacer-column" style={{ width: "10px" }}></td>
                                     <td className="centered">
                                         {editableCategories.includes(catKey) &&
                                         catKey !== "Blunder" ? (

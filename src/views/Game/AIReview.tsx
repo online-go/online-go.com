@@ -1345,6 +1345,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                                                     _("Type"),
                                                     _("Black"),
                                                     "%",
+                                                    "", // Spacer column
                                                     _("White"),
                                                     "%",
                                                 ]}

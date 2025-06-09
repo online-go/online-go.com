@@ -668,6 +668,7 @@ export function formatAiSummaryTableData(
         ai_table_rows[j] = ai_table_rows[j].concat([
             summary_moves_list[j].blackCount,
             summary_moves_list[j].blackPercent,
+            "", // Spacer column
             summary_moves_list[j].whiteCount,
             summary_moves_list[j].whitePercent,
         ]);
