@@ -36,9 +36,18 @@ export type PlayerMoveCounts = {
     [K in MoveCategory]: number;
 };
 
+export type PlayerMoveNumbers = {
+    [K in MoveCategory]: number[];
+};
+
 export type MoveCounters = {
     black: PlayerMoveCounts;
     white: PlayerMoveCounts;
+};
+
+export type MoveNumbers = {
+    black: PlayerMoveNumbers;
+    white: PlayerMoveNumbers;
 };
 
 export type OtherCounters = {
@@ -59,6 +68,7 @@ export interface AiSummaryTableData {
     max_entries: number;
     should_show_table: boolean; // used to signal that we don't have enough data yet
     strong_move_rate: { black: number; white: number };
+    categorized_moves: MoveNumbers;
 }
 
 export type CategorizationMethod = "old" | "new";
@@ -429,6 +439,24 @@ export function calculateAiSummaryTableData(
             max_entries: 0,
             should_show_table: false,
             strong_move_rate: { black: 0, white: 0 },
+            categorized_moves: {
+                black: {
+                    Excellent: [],
+                    Great: [],
+                    Good: [],
+                    Inaccuracy: [],
+                    Mistake: [],
+                    Blunder: [],
+                },
+                white: {
+                    Excellent: [],
+                    Great: [],
+                    Good: [],
+                    Inaccuracy: [],
+                    Mistake: [],
+                    Blunder: [],
+                },
+            },
         };
     }
 
@@ -443,8 +471,26 @@ export function calculateAiSummaryTableData(
             median_score_loss: { black: 0, white: 0 },
             moves_pending: 0,
             max_entries: 0,
-            should_show_table: true, // not sure why, it's just always been like this
+            should_show_table: true,
             strong_move_rate: { black: 0, white: 0 },
+            categorized_moves: {
+                black: {
+                    Excellent: [],
+                    Great: [],
+                    Good: [],
+                    Inaccuracy: [],
+                    Mistake: [],
+                    Blunder: [],
+                },
+                white: {
+                    Excellent: [],
+                    Great: [],
+                    Good: [],
+                    Inaccuracy: [],
+                    Mistake: [],
+                    Blunder: [],
+                },
+            },
         };
     }
 
@@ -465,6 +511,24 @@ export function calculateAiSummaryTableData(
             max_entries: 0,
             should_show_table: shouldShowTable,
             strong_move_rate: { black: 0, white: 0 },
+            categorized_moves: {
+                black: {
+                    Excellent: [],
+                    Great: [],
+                    Good: [],
+                    Inaccuracy: [],
+                    Mistake: [],
+                    Blunder: [],
+                },
+                white: {
+                    Excellent: [],
+                    Great: [],
+                    Good: [],
+                    Inaccuracy: [],
+                    Mistake: [],
+                    Blunder: [],
+                },
+            },
         };
     }
 
@@ -491,6 +555,24 @@ export function calculateAiSummaryTableData(
             max_entries,
             should_show_table: shouldShowTable,
             strong_move_rate: { black: 0, white: 0 },
+            categorized_moves: {
+                black: {
+                    Excellent: [],
+                    Great: [],
+                    Good: [],
+                    Inaccuracy: [],
+                    Mistake: [],
+                    Blunder: [],
+                },
+                white: {
+                    Excellent: [],
+                    Great: [],
+                    Good: [],
+                    Inaccuracy: [],
+                    Mistake: [],
+                    Blunder: [],
+                },
+            },
         };
     }
 
@@ -523,14 +605,64 @@ export function calculateAiSummaryTableData(
 
     const categories = ai_review.type === "fast" ? currentFastCategories : currentFullCategories;
 
-    // Calculate average score loss
-    console.log("black total_score_loss", total_score_loss.black);
-    console.log("black score_loss_list length", score_loss_list.black.length);
-    console.log("black score_loss_list", score_loss_list.black);
-    console.log("white total_score_loss", total_score_loss.white);
-    console.log("white score_loss_list length", score_loss_list.white.length);
-    console.log("white score_loss_list", score_loss_list.white);
+    // Initialize categorized moves
+    const categorized_moves: MoveNumbers = {
+        black: { Excellent: [], Great: [], Good: [], Inaccuracy: [], Mistake: [], Blunder: [] },
+        white: { Excellent: [], Great: [], Good: [], Inaccuracy: [], Mistake: [], Blunder: [] },
+    };
 
+    // Track moves for each category
+    for (
+        let move_index = handicap_offset;
+        move_index < (ai_review?.scores?.length ?? 0) - 1;
+        move_index++
+    ) {
+        if (
+            ai_review?.moves[move_index] === undefined ||
+            ai_review?.moves[move_index + 1] === undefined
+        ) {
+            continue;
+        }
+
+        const is_b_player = move_player_list[move_index] === JGOFNumericPlayerColor.BLACK;
+        const player = is_b_player ? "black" : "white";
+
+        let score_loss =
+            (ai_review?.moves[move_index + 1].score ?? 0) -
+            (ai_review?.moves[move_index].score ?? 0);
+        score_loss = is_b_player ? -1 * score_loss : score_loss;
+
+        if (!includeNegativeScores && score_loss < 0) {
+            continue;
+        }
+
+        const thresholds = {
+            Excellent: scoreDiffThresholds?.Excellent ?? 0.2,
+            Great: scoreDiffThresholds?.Great ?? 0.6,
+            Good: scoreDiffThresholds?.Good ?? 1.0,
+            Inaccuracy: scoreDiffThresholds?.Inaccuracy ?? 2.0,
+            Mistake: scoreDiffThresholds?.Mistake ?? 5.0,
+        };
+
+        let category: MoveCategory;
+        if (score_loss < thresholds.Excellent) {
+            category = "Excellent";
+        } else if (score_loss < thresholds.Great) {
+            category = "Great";
+        } else if (score_loss < thresholds.Good) {
+            category = "Good";
+        } else if (score_loss < thresholds.Inaccuracy) {
+            category = "Inaccuracy";
+        } else if (score_loss < thresholds.Mistake) {
+            category = "Mistake";
+        } else {
+            category = "Blunder";
+        }
+
+        categorized_moves[player][category].push(move_index + 1);
+    }
+
+    // Calculate average score loss
     avg_score_loss.black =
         score_loss_list.black.length > 0
             ? Number((total_score_loss.black / score_loss_list.black.length).toFixed(1))
@@ -558,8 +690,6 @@ export function calculateAiSummaryTableData(
             (((counters.Excellent + counters.Great + counters.Good) / totalMoves) * 100).toFixed(1),
         );
     };
-
-    // SMR
 
     const totalMoves = {
         black: Object.values(move_counters.black).reduce((sum, count) => sum + count, 0),
@@ -605,5 +735,6 @@ export function calculateAiSummaryTableData(
         max_entries,
         should_show_table: shouldShowTable,
         strong_move_rate,
+        categorized_moves,
     };
 }

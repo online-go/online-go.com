@@ -47,7 +47,12 @@ import { alert } from "@/lib/swal_config";
 import { GobanContext } from "./goban_context";
 import { ReportContext } from "@/contexts/ReportContext";
 import { MODERATOR_POWERS } from "@/lib/moderation";
-import { calculateAiSummaryTableData, CategorizationMethod } from "@/lib/ai_review_move_categories";
+import {
+    calculateAiSummaryTableData,
+    CategorizationMethod,
+    MoveNumbers,
+    MoveCategory,
+} from "@/lib/ai_review_move_categories";
 import { sameIntersection } from "@/lib/misc";
 import type { ScoreDiffThresholds } from "@/lib/ai_review_move_categories";
 
@@ -119,6 +124,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
     moves_pending!: number;
     max_entries!: number;
     strong_move_rate!: { black: number; white: number };
+    categorized_moves!: MoveNumbers;
 
     constructor(props: AIReviewProperties) {
         super(props);
@@ -184,6 +190,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
         max_entries: number;
         should_show_table: boolean;
         strong_move_rate: { black: number; white: number };
+        categorized_moves: MoveNumbers;
     }) {
         this.table_rows = ai_table_out.ai_table_rows;
         this.avg_score_loss = ai_table_out.avg_score_loss;
@@ -191,6 +198,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
         this.moves_pending = ai_table_out.moves_pending;
         this.max_entries = ai_table_out.max_entries;
         this.strong_move_rate = ai_table_out.strong_move_rate;
+        this.categorized_moves = ai_table_out.categorized_moves;
 
         if (this.state.show_table !== ai_table_out.should_show_table) {
             this.setState({
@@ -1362,6 +1370,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                                                 onToggleNegativeScores={
                                                     this.handleToggleNegativeScores
                                                 }
+                                                categorized_moves={this.categorized_moves}
                                             />
                                             {!this.state.table_hidden && (
                                                 <div className="categorization-toggler">
@@ -1689,7 +1698,81 @@ function extractShortNetworkVersion(network: string): string {
     return network.substr(0, 6);
 }
 
+interface AiSummaryTableProperties {
+    /** headings for ai review table */
+    heading_list: string[];
+    /** the body of the table excluding the average score loss part */
+    body_list: string[][];
+    /** values for the average score loss */
+    avg_loss: { black: number; white: number };
+    median_score_loss: { black: number; white: number };
+    strong_move_rate: { black: number; white: number };
+    table_hidden: boolean;
+    pending_entries: number;
+    max_entries: number;
+    scoreDiffThresholds: ScoreDiffThresholds;
+    categorization_method: CategorizationMethod;
+    onThresholdChange: (category: string, value: number) => void;
+    onResetThresholds: () => void;
+    includeNegativeScores: boolean;
+    onToggleNegativeScores: () => void;
+    categorized_moves: MoveNumbers;
+}
+
+interface MoveListPopoverProps {
+    moves: number[];
+    category: string;
+    color: "black" | "white";
+    onClose: () => void;
+}
+
+function MoveListPopover({
+    moves,
+    category,
+    color,
+    onClose,
+}: MoveListPopoverProps): React.ReactElement {
+    return (
+        <div className="category-move-popover">
+            <div className="category-move-header">
+                <span>
+                    {category} Moves ({color})
+                </span>
+                <button className="close-button" onClick={onClose}>
+                    <i className="fa fa-times" />
+                </button>
+            </div>
+            <div className="category-move-content">
+                {moves.length > 0 ? (
+                    <div className="move-numbers">
+                        {moves.map((move) => (
+                            <span
+                                key={move}
+                                className="move-number"
+                                onClick={() => {
+                                    game_control.emit("gotoMove", move - 1);
+                                    onClose();
+                                }}
+                            >
+                                {move}
+                            </span>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="no-moves">No moves in this category</div>
+                )}
+            </div>
+        </div>
+    );
+}
+
 class AiSummaryTable extends React.Component<AiSummaryTableProperties, AiSummaryTableState> {
+    state = {
+        showMoveList: false,
+        selectedCategory: "",
+        selectedColor: "black" as "black" | "white",
+    };
+
     constructor(props: AiSummaryTableProperties) {
         super(props);
     }
@@ -1752,6 +1835,43 @@ class AiSummaryTable extends React.Component<AiSummaryTableProperties, AiSummary
                             return (
                                 <tr key={b_index}>
                                     {body.map((element, e_index) => {
+                                        if (e_index === 1 || e_index === 3) {
+                                            // Black and White count columns
+                                            const color = e_index === 1 ? "black" : "white";
+                                            const moves =
+                                                this.props.categorized_moves[color][
+                                                    catKey as MoveCategory
+                                                ];
+                                            return (
+                                                <td key={e_index}>
+                                                    <div className="move-count-container">
+                                                        {element}
+                                                        <button
+                                                            className={`move-list-button ${
+                                                                moves.length === 0
+                                                                    ? "invisible"
+                                                                    : ""
+                                                            }`}
+                                                            onClick={() =>
+                                                                moves.length > 0 &&
+                                                                this.setState({
+                                                                    showMoveList: true,
+                                                                    selectedCategory: catKey,
+                                                                    selectedColor: color,
+                                                                })
+                                                            }
+                                                            title={
+                                                                moves.length > 0
+                                                                    ? `Show ${color} ${catKey} moves`
+                                                                    : `No ${color} ${catKey} moves`
+                                                            }
+                                                        >
+                                                            <i className="fa fa-chevron-down" />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            );
+                                        }
                                         return <td key={e_index}>{element}</td>;
                                     })}
                                     <td className="centered">
@@ -1831,22 +1951,7 @@ class AiSummaryTable extends React.Component<AiSummaryTableProperties, AiSummary
                         )}
                         <tr>
                             <td colSpan={5}>{"Average score loss per move"}</td>
-                            <td>
-                                <button
-                                    style={{
-                                        fontSize: "0.8em",
-                                        padding: "2px 6px",
-                                        marginLeft: 8,
-                                        color: this.props.includeNegativeScores
-                                            ? "#e67c00"
-                                            : undefined,
-                                    }}
-                                    onClick={this.props.onToggleNegativeScores}
-                                    title="Include negative score changes in the total"
-                                >
-                                    {"Δs " + (this.props.includeNegativeScores ? "±" : "+")}
-                                </button>
-                            </td>
+                            <td></td>
                         </tr>
                         <tr>
                             <td colSpan={2}>{"Black"}</td>
@@ -1888,29 +1993,21 @@ class AiSummaryTable extends React.Component<AiSummaryTableProperties, AiSummary
                         </tr>
                     </tbody>
                 </table>
+                {this.state.showMoveList && (
+                    <MoveListPopover
+                        moves={
+                            this.props.categorized_moves[this.state.selectedColor][
+                                this.state.selectedCategory as MoveCategory
+                            ]
+                        }
+                        category={this.state.selectedCategory}
+                        color={this.state.selectedColor}
+                        onClose={() => this.setState({ showMoveList: false })}
+                    />
+                )}
             </div>
         );
     }
 }
 
 interface AiSummaryTableState {}
-
-interface AiSummaryTableProperties {
-    /** headings for ai review table */
-    heading_list: string[];
-    /** the body of the table excluding the average score loss part */
-    body_list: string[][];
-    /** values for the average score loss */
-    avg_loss: { black: number; white: number };
-    median_score_loss: { black: number; white: number };
-    strong_move_rate: { black: number; white: number };
-    table_hidden: boolean;
-    pending_entries: number;
-    max_entries: number;
-    scoreDiffThresholds: ScoreDiffThresholds;
-    categorization_method: CategorizationMethod;
-    onThresholdChange: (category: string, value: number) => void;
-    onResetThresholds: () => void;
-    includeNegativeScores: boolean;
-    onToggleNegativeScores: () => void;
-}
