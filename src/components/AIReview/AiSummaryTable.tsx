@@ -367,6 +367,22 @@ export class AiSummaryTable extends React.Component<AiSummaryTableProperties, Ai
                                 </tr>
                             );
                         })}
+                        {this.props.categorization &&
+                            this.props.categorization.moves_pending > 0 && (
+                                <tbody>
+                                    {(() => {
+                                        console.log(
+                                            "Rendering 'Moves pending' row with value:",
+                                            this.props.categorization.moves_pending,
+                                        );
+                                        return null;
+                                    })()}
+                                    <tr>
+                                        <td colSpan={5}>{"Moves pending"}</td>
+                                        <td>{this.props.categorization.moves_pending}</td>
+                                    </tr>
+                                </tbody>
+                            )}
                         <tr>
                             <td colSpan={5}>{"Average score loss per move"}</td>
                             <td></td>

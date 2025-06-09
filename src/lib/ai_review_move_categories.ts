@@ -420,6 +420,7 @@ export interface AiReviewCategorization {
     avg_score_loss: { black: number; white: number };
     median_score_loss: { black: number; white: number };
     strong_move_rate: { black: number; white: number };
+    moves_pending: number;
 }
 
 export function categorizeAiReview(
@@ -523,6 +524,12 @@ export function categorizeAiReview(
               }
             : { black: 0, white: 0 };
 
+    // Calculate moves_pending - the number of moves that haven't been analyzed yet
+    const total_moves = goban.engine.move_tree.move_number;
+    const analyzed_moves = Object.keys(ai_review.moves).length;
+    const moves_pending = Math.max(0, total_moves - analyzed_moves);
+    console.log("Calculating moves_pending:", { total_moves, analyzed_moves, moves_pending });
+
     return {
         move_counters,
         score_loss_list,
@@ -531,5 +538,6 @@ export function categorizeAiReview(
         avg_score_loss,
         median_score_loss,
         strong_move_rate,
+        moves_pending,
     };
 }

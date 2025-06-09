@@ -375,6 +375,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
     deferred_queue?: { [key: string]: any };
 
     updateAiReview = (data: any) => {
+        console.log("updateAiReview received data:", data?.metadata?.scores?.length);
         if (this.deferred_queue) {
             for (const key in data) {
                 this.deferred_queue[key] = data[key];
