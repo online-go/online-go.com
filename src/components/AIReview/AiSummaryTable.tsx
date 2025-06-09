@@ -369,12 +369,12 @@ export class AiSummaryTable extends React.Component<AiSummaryTableProperties, Ai
                         })}
                         {this.props.categorization &&
                             this.props.categorization.moves_pending > 0 && (
-                                <tbody>
-                                    <tr>
-                                        <td colSpan={5}>{"Moves pending"}</td>
-                                        <td>{this.props.categorization.moves_pending}</td>
-                                    </tr>
-                                </tbody>
+                                <tr>
+                                    <td colSpan={5} style={{ textAlign: "right" }}>
+                                        {"Moves pending"}
+                                    </td>
+                                    <td>{this.props.categorization.moves_pending}</td>
+                                </tr>
                             )}
                         <tr>
                             <td colSpan={7}>{"Average score loss per move"}</td>
@@ -395,12 +395,12 @@ export class AiSummaryTable extends React.Component<AiSummaryTableProperties, Ai
                         </tr>
                         <tr>
                             <td colSpan={3}>{"Black"}</td>
-                            <td colSpan={3}>{formatted.avg_loss.black}</td>
+                            <td colSpan={2}>{formatted.avg_loss.black}</td>
                             <td></td>
                         </tr>
                         <tr>
                             <td colSpan={3}>{"White"}</td>
-                            <td colSpan={3}>{formatted.avg_loss.white}</td>
+                            <td colSpan={2}>{formatted.avg_loss.white}</td>
                             <td></td>
                         </tr>
                         <tr>
@@ -409,12 +409,12 @@ export class AiSummaryTable extends React.Component<AiSummaryTableProperties, Ai
                         </tr>
                         <tr>
                             <td colSpan={3}>{"Black"}</td>
-                            <td colSpan={3}>{formatted.median_score_loss.black}</td>
+                            <td colSpan={2}>{formatted.median_score_loss.black}</td>
                             <td></td>
                         </tr>
                         <tr>
                             <td colSpan={3}>{"White"}</td>
-                            <td colSpan={3}>{formatted.median_score_loss.white}</td>
+                            <td colSpan={2}>{formatted.median_score_loss.white}</td>
                             <td></td>
                         </tr>
                         <tr>
@@ -423,12 +423,12 @@ export class AiSummaryTable extends React.Component<AiSummaryTableProperties, Ai
                         </tr>
                         <tr>
                             <td colSpan={3}>{"Black"}</td>
-                            <td colSpan={3}>{formatted.strong_move_rate.black}%</td>
+                            <td colSpan={2}>{formatted.strong_move_rate.black}%</td>
                             <td></td>
                         </tr>
                         <tr>
                             <td colSpan={3}>{"White"}</td>
-                            <td colSpan={3}>{formatted.strong_move_rate.white}%</td>
+                            <td colSpan={2}>{formatted.strong_move_rate.white}%</td>
                             <td></td>
                         </tr>
                     </tbody>
