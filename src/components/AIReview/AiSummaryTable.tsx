@@ -34,6 +34,7 @@ interface AiSummaryTableProperties {
     onResetThresholds: () => void;
     includeNegativeScores: boolean;
     onToggleNegativeScores: () => void;
+    onPopupMovesChange?: (moves: number[]) => void;
 }
 
 interface AiSummaryTableState {
@@ -257,12 +258,22 @@ export class AiSummaryTable extends React.Component<AiSummaryTableProperties, Ai
                                                                         selectedCategory: catKey,
                                                                         selectedColor: color,
                                                                     });
+                                                                    if (
+                                                                        this.props
+                                                                            .onPopupMovesChange
+                                                                    ) {
+                                                                        this.props.onPopupMovesChange(
+                                                                            moves.map(
+                                                                                (move) => move - 1,
+                                                                            ),
+                                                                        );
+                                                                    }
                                                                 }
                                                             }}
                                                             title={
                                                                 moves.length > 0
                                                                     ? `Show ${color} ${catKey} moves`
-                                                                    : `No ${color} ${catKey} moves`
+                                                                    : ""
                                                             }
                                                         >
                                                             <i className="fa fa-chevron-down" />
@@ -275,11 +286,14 @@ export class AiSummaryTable extends React.Component<AiSummaryTableProperties, Ai
                                                                     moves={moves}
                                                                     category={catKey}
                                                                     color={color}
-                                                                    onClose={() =>
+                                                                    onClose={() => {
                                                                         this.setState({
                                                                             showMoveList: false,
-                                                                        })
-                                                                    }
+                                                                        });
+                                                                        this.props.onPopupMovesChange?.(
+                                                                            [],
+                                                                        );
+                                                                    }}
                                                                 />
                                                             )}
                                                     </div>

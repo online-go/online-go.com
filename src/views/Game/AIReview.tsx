@@ -81,6 +81,7 @@ interface AIReviewState {
     categorization_method: CategorizationMethod;
     scoreDiffThresholds: ScoreDiffThresholds;
     includeNegativeScores: boolean;
+    current_popup_moves: number[];
 }
 
 const DEFAULT_SCORE_DIFF_THRESHOLDS: ScoreDiffThresholds = {
@@ -131,6 +132,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
             categorization_method: method,
             scoreDiffThresholds: { ...DEFAULT_SCORE_DIFF_THRESHOLDS, ...current_thresholds },
             includeNegativeScores: false,
+            current_popup_moves: [],
         };
         this.state = state;
         window.aireview = this;
@@ -1221,9 +1223,13 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                                     variation_move_number={variation_move_number}
                                     set_move={(num: number) => game_control.emit("gotoMove", num)}
                                     use_score={this.state.use_score}
-                                    highlighted_moves={worst_move_list
-                                        .slice(0, this.state.worst_moves_shown)
-                                        .map((m) => m.move_number - 1)}
+                                    highlighted_moves={
+                                        this.state.current_popup_moves.length > 0
+                                            ? this.state.current_popup_moves
+                                            : worst_move_list
+                                                  .slice(0, this.state.worst_moves_shown)
+                                                  .map((m) => m.move_number - 1)
+                                    }
                                 />
                                 <div className="worst-moves-container">
                                     {this.renderWorstMoveList(worst_move_list)}
@@ -1332,6 +1338,16 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                                                 onToggleNegativeScores={
                                                     this.handleToggleNegativeScores
                                                 }
+                                                onPopupMovesChange={(moves) => {
+                                                    this.setState(
+                                                        { current_popup_moves: moves },
+                                                        () => {
+                                                            this.setState({
+                                                                rerender: this.state.rerender + 1,
+                                                            });
+                                                        },
+                                                    );
+                                                }}
                                             />
                                             {!this.state.table_hidden && (
                                                 <div className="categorization-toggler">
