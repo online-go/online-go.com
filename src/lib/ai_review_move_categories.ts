@@ -422,76 +422,30 @@ function setupTableData(reviewType: "fast" | "full"): {
     };
 }
 
-export function calculateAiSummaryTableData(
+export interface AiReviewCategorization {
+    move_counters: MoveCounters;
+    score_loss_list: ScoreLossList;
+    total_score_loss: { black: number; white: number };
+    categorized_moves: MoveNumbers;
+    avg_score_loss: { black: number; white: number };
+    median_score_loss: { black: number; white: number };
+    strong_move_rate: { black: number; white: number };
+}
+
+export function categorizeAiReview(
     ai_review: JGOFAIReview | undefined,
     goban: GobanRenderer | null | undefined,
-    loading: boolean,
     categorization_method: CategorizationMethod = "old",
     scoreDiffThresholds?: ScoreDiffThresholds,
     includeNegativeScores: boolean = false,
-): AiSummaryTableData {
-    if (!goban) {
-        return {
-            ai_table_rows: [["", "", "", "", ""]],
-            avg_score_loss: { black: 0, white: 0 },
-            median_score_loss: { black: 0, white: 0 },
-            moves_pending: 0,
-            max_entries: 0,
-            should_show_table: false,
-            strong_move_rate: { black: 0, white: 0 },
-            categorized_moves: {
-                black: {
-                    Excellent: [],
-                    Great: [],
-                    Good: [],
-                    Inaccuracy: [],
-                    Mistake: [],
-                    Blunder: [],
-                },
-                white: {
-                    Excellent: [],
-                    Great: [],
-                    Good: [],
-                    Inaccuracy: [],
-                    Mistake: [],
-                    Blunder: [],
-                },
-            },
-        };
-    }
-
+): AiReviewCategorization | null {
     if (
+        !goban ||
         !ai_review ||
         !ai_review.engine.includes("katago") ||
         !["fast", "full"].includes(ai_review.type)
     ) {
-        return {
-            ai_table_rows: [["", "", "", "", ""]],
-            avg_score_loss: { black: 0, white: 0 },
-            median_score_loss: { black: 0, white: 0 },
-            moves_pending: 0,
-            max_entries: 0,
-            should_show_table: true,
-            strong_move_rate: { black: 0, white: 0 },
-            categorized_moves: {
-                black: {
-                    Excellent: [],
-                    Great: [],
-                    Good: [],
-                    Inaccuracy: [],
-                    Mistake: [],
-                    Blunder: [],
-                },
-                white: {
-                    Excellent: [],
-                    Great: [],
-                    Good: [],
-                    Inaccuracy: [],
-                    Mistake: [],
-                    Blunder: [],
-                },
-            },
-        };
+        return null;
     }
 
     // Make sure the review is valid
@@ -501,79 +455,9 @@ export function calculateAiSummaryTableData(
     const b_player = handicap_offset > 0 || handicap > 1 ? 1 : 0;
     const move_player_list = getPlayerColorsMoveList(goban);
 
-    const { isValid, shouldShowTable } = validateReviewData(ai_review, goban, b_player);
+    const { isValid } = validateReviewData(ai_review, goban, b_player);
     if (!isValid) {
-        return {
-            ai_table_rows: [["", "", "", "", ""]],
-            avg_score_loss: { black: 0, white: 0 },
-            median_score_loss: { black: 0, white: 0 },
-            moves_pending: 0,
-            max_entries: 0,
-            should_show_table: shouldShowTable,
-            strong_move_rate: { black: 0, white: 0 },
-            categorized_moves: {
-                black: {
-                    Excellent: [],
-                    Great: [],
-                    Good: [],
-                    Inaccuracy: [],
-                    Mistake: [],
-                    Blunder: [],
-                },
-                white: {
-                    Excellent: [],
-                    Great: [],
-                    Good: [],
-                    Inaccuracy: [],
-                    Mistake: [],
-                    Blunder: [],
-                },
-            },
-        };
-    }
-
-    const { ai_table_rows, summary_moves_list, num_rows } = setupTableData(ai_review.type);
-    const avg_score_loss = { black: 0, white: 0 };
-    const median_score_loss = { black: 0, white: 0 };
-    const moves_missing = 0;
-    const max_entries = ai_review.scores?.length ?? 0;
-
-    if (loading) {
-        for (let j = 0; j < ai_table_rows.length; j++) {
-            ai_table_rows[j] = ai_table_rows[j].concat([
-                summary_moves_list[j].blackCount,
-                summary_moves_list[j].blackPercent,
-                summary_moves_list[j].whiteCount,
-                summary_moves_list[j].whitePercent,
-            ]);
-        }
-        return {
-            ai_table_rows,
-            avg_score_loss,
-            median_score_loss,
-            moves_pending: moves_missing,
-            max_entries,
-            should_show_table: shouldShowTable,
-            strong_move_rate: { black: 0, white: 0 },
-            categorized_moves: {
-                black: {
-                    Excellent: [],
-                    Great: [],
-                    Good: [],
-                    Inaccuracy: [],
-                    Mistake: [],
-                    Blunder: [],
-                },
-                white: {
-                    Excellent: [],
-                    Great: [],
-                    Good: [],
-                    Inaccuracy: [],
-                    Mistake: [],
-                    Blunder: [],
-                },
-            },
-        };
+        return null;
     }
 
     // OK, we can do the actual categorization now
@@ -602,8 +486,6 @@ export function calculateAiSummaryTableData(
                 );
 
     const { move_counters, score_loss_list, total_score_loss } = result;
-
-    const categories = ai_review.type === "fast" ? currentFastCategories : currentFullCategories;
 
     // Initialize categorized moves
     const categorized_moves: MoveNumbers = {
@@ -663,14 +545,16 @@ export function calculateAiSummaryTableData(
     }
 
     // Calculate average score loss
-    avg_score_loss.black =
-        score_loss_list.black.length > 0
-            ? Number((total_score_loss.black / score_loss_list.black.length).toFixed(1))
-            : 0;
-    avg_score_loss.white =
-        score_loss_list.white.length > 0
-            ? Number((total_score_loss.white / score_loss_list.white.length).toFixed(1))
-            : 0;
+    const avg_score_loss = {
+        black:
+            score_loss_list.black.length > 0
+                ? Number((total_score_loss.black / score_loss_list.black.length).toFixed(1))
+                : 0,
+        white:
+            score_loss_list.white.length > 0
+                ? Number((total_score_loss.white / score_loss_list.white.length).toFixed(1))
+                : 0,
+    };
 
     // Calculate median score loss
     const sortedScoreLoss = {
@@ -678,10 +562,17 @@ export function calculateAiSummaryTableData(
         white: [...score_loss_list.white].sort((a, b) => a - b),
     };
 
-    median_score_loss.black = Number(medianList(sortedScoreLoss.black).toFixed(1));
-    median_score_loss.white = Number(medianList(sortedScoreLoss.white).toFixed(1));
+    const median_score_loss = {
+        black: Number(medianList(sortedScoreLoss.black).toFixed(1)),
+        white: Number(medianList(sortedScoreLoss.white).toFixed(1)),
+    };
 
-    // Helper function to calculate strong move rate for a player
+    // Calculate strong move rate
+    const totalMoves = {
+        black: Object.values(move_counters.black).reduce((sum, count) => sum + count, 0),
+        white: Object.values(move_counters.white).reduce((sum, count) => sum + count, 0),
+    };
+
     const calculateStrongMoveRate = (counters: PlayerMoveCounts, totalMoves: number): number => {
         if (totalMoves === 0) {
             return 0;
@@ -691,10 +582,6 @@ export function calculateAiSummaryTableData(
         );
     };
 
-    const totalMoves = {
-        black: Object.values(move_counters.black).reduce((sum, count) => sum + count, 0),
-        white: Object.values(move_counters.white).reduce((sum, count) => sum + count, 0),
-    };
     const strong_move_rate =
         ai_review.type === "full"
             ? {
@@ -703,18 +590,77 @@ export function calculateAiSummaryTableData(
               }
             : { black: 0, white: 0 };
 
-    //  Assemble table data
+    return {
+        move_counters,
+        score_loss_list,
+        total_score_loss,
+        categorized_moves,
+        avg_score_loss,
+        median_score_loss,
+        strong_move_rate,
+    };
+}
+
+export function formatAiSummaryTableData(
+    categorization: AiReviewCategorization | null,
+    reviewType: "fast" | "full",
+): AiSummaryTableData {
+    if (!categorization) {
+        return {
+            ai_table_rows: [["", "", "", "", ""]],
+            avg_score_loss: { black: 0, white: 0 },
+            median_score_loss: { black: 0, white: 0 },
+            moves_pending: 0,
+            max_entries: 0,
+            should_show_table: true,
+            strong_move_rate: { black: 0, white: 0 },
+            categorized_moves: {
+                black: {
+                    Excellent: [],
+                    Great: [],
+                    Good: [],
+                    Inaccuracy: [],
+                    Mistake: [],
+                    Blunder: [],
+                },
+                white: {
+                    Excellent: [],
+                    Great: [],
+                    Good: [],
+                    Inaccuracy: [],
+                    Mistake: [],
+                    Blunder: [],
+                },
+            },
+        };
+    }
+
+    const { ai_table_rows, summary_moves_list, num_rows } = setupTableData(reviewType);
+    const categories = reviewType === "fast" ? currentFastCategories : currentFullCategories;
+
+    const totalMoves = {
+        black: Object.values(categorization.move_counters.black).reduce(
+            (sum, count) => sum + count,
+            0,
+        ),
+        white: Object.values(categorization.move_counters.white).reduce(
+            (sum, count) => sum + count,
+            0,
+        ),
+    };
+
+    // Assemble table data
     for (let j = 0; j < num_rows; j++) {
         const cat = categories[j];
-        summary_moves_list[j].blackCount = move_counters.black[cat].toString();
+        summary_moves_list[j].blackCount = categorization.move_counters.black[cat].toString();
         summary_moves_list[j].blackPercent =
             totalMoves.black > 0
-                ? ((100 * move_counters.black[cat]) / totalMoves.black).toFixed(1)
+                ? ((100 * categorization.move_counters.black[cat]) / totalMoves.black).toFixed(1)
                 : "";
-        summary_moves_list[j].whiteCount = move_counters.white[cat].toString();
+        summary_moves_list[j].whiteCount = categorization.move_counters.white[cat].toString();
         summary_moves_list[j].whitePercent =
             totalMoves.white > 0
-                ? ((100 * move_counters.white[cat]) / totalMoves.white).toFixed(1)
+                ? ((100 * categorization.move_counters.white[cat]) / totalMoves.white).toFixed(1)
                 : "";
     }
 
@@ -729,12 +675,31 @@ export function calculateAiSummaryTableData(
 
     return {
         ai_table_rows,
-        avg_score_loss,
-        median_score_loss,
-        moves_pending: moves_missing,
-        max_entries,
-        should_show_table: shouldShowTable,
-        strong_move_rate,
-        categorized_moves,
+        avg_score_loss: categorization.avg_score_loss,
+        median_score_loss: categorization.median_score_loss,
+        moves_pending: 0,
+        max_entries: 0,
+        should_show_table: false,
+        strong_move_rate: categorization.strong_move_rate,
+        categorized_moves: categorization.categorized_moves,
     };
+}
+
+export function calculateAiSummaryTableData(
+    ai_review: JGOFAIReview | undefined,
+    goban: GobanRenderer | null | undefined,
+    loading: boolean,
+    categorization_method: CategorizationMethod = "old",
+    scoreDiffThresholds?: ScoreDiffThresholds,
+    includeNegativeScores: boolean = false,
+): AiSummaryTableData {
+    const categorization = categorizeAiReview(
+        ai_review,
+        goban,
+        categorization_method,
+        scoreDiffThresholds,
+        includeNegativeScores,
+    );
+
+    return formatAiSummaryTableData(categorization, ai_review?.type === "fast" ? "fast" : "full");
 }
