@@ -18,31 +18,22 @@
 import * as React from "react";
 import {
     MoveCategory,
-    MoveNumbers,
     ScoreDiffThresholds,
     CategorizationMethod,
+    AiReviewCategorization,
 } from "@/lib/ai_review_move_categories";
 import { MoveListPopover } from "@/components/AIReview/MoveListPopover";
 
 interface AiSummaryTableProperties {
-    /** headings for ai review table */
-    heading_list: string[];
-    /** the body of the table excluding the average score loss part */
-    body_list: string[][];
-    /** values for the average score loss */
-    avg_loss: { black: number; white: number };
-    median_score_loss: { black: number; white: number };
-    strong_move_rate: { black: number; white: number };
+    categorization: AiReviewCategorization | null;
+    reviewType: "fast" | "full";
     table_hidden: boolean;
-    pending_entries: number;
-    max_entries: number;
     scoreDiffThresholds: ScoreDiffThresholds;
     categorization_method: CategorizationMethod;
     onThresholdChange: (category: string, value: number) => void;
     onResetThresholds: () => void;
     includeNegativeScores: boolean;
     onToggleNegativeScores: () => void;
-    categorized_moves: MoveNumbers;
 }
 
 interface AiSummaryTableState {
@@ -58,20 +49,145 @@ export class AiSummaryTable extends React.Component<AiSummaryTableProperties, Ai
         selectedColor: "black" as "black" | "white",
     };
 
-    constructor(props: AiSummaryTableProperties) {
-        super(props);
+    private formatTableData() {
+        if (!this.props.categorization) {
+            return {
+                heading_list: ["Type", "Black", "%", "", "White", "%"],
+                body_list: [["", "", "", "", ""]],
+                avg_loss: { black: 0, white: 0 },
+                median_score_loss: { black: 0, white: 0 },
+                strong_move_rate: { black: 0, white: 0 },
+                categorized_moves: {
+                    black: {
+                        Excellent: [],
+                        Great: [],
+                        Good: [],
+                        Inaccuracy: [],
+                        Mistake: [],
+                        Blunder: [],
+                    },
+                    white: {
+                        Excellent: [],
+                        Great: [],
+                        Good: [],
+                        Inaccuracy: [],
+                        Mistake: [],
+                        Blunder: [],
+                    },
+                },
+            };
+        }
+
+        const { ai_table_rows, summary_moves_list, num_rows } = this.setupTableData(
+            this.props.reviewType,
+        );
+        const categories =
+            this.props.reviewType === "fast"
+                ? this.currentFastCategories
+                : this.currentFullCategories;
+
+        const totalMoves = {
+            black: Object.values(this.props.categorization.move_counters.black).reduce(
+                (sum, count) => sum + count,
+                0,
+            ),
+            white: Object.values(this.props.categorization.move_counters.white).reduce(
+                (sum, count) => sum + count,
+                0,
+            ),
+        };
+
+        // Assemble table data
+        for (let j = 0; j < num_rows; j++) {
+            const cat = categories[j] as MoveCategory;
+            summary_moves_list[j].blackCount =
+                this.props.categorization.move_counters.black[cat].toString();
+            summary_moves_list[j].blackPercent =
+                totalMoves.black > 0
+                    ? (
+                          (100 * this.props.categorization.move_counters.black[cat]) /
+                          totalMoves.black
+                      ).toFixed(1)
+                    : "";
+            summary_moves_list[j].whiteCount =
+                this.props.categorization.move_counters.white[cat].toString();
+            summary_moves_list[j].whitePercent =
+                totalMoves.white > 0
+                    ? (
+                          (100 * this.props.categorization.move_counters.white[cat]) /
+                          totalMoves.white
+                      ).toFixed(1)
+                    : "";
+        }
+
+        for (let j = 0; j < ai_table_rows.length; j++) {
+            ai_table_rows[j] = ai_table_rows[j].concat([
+                summary_moves_list[j].blackCount,
+                summary_moves_list[j].blackPercent,
+                "", // Spacer column
+                summary_moves_list[j].whiteCount,
+                summary_moves_list[j].whitePercent,
+            ]);
+        }
+
+        return {
+            heading_list: ["Type", "Black", "%", "", "White", "%"],
+            body_list: ai_table_rows,
+            avg_loss: this.props.categorization.avg_score_loss,
+            median_score_loss: this.props.categorization.median_score_loss,
+            strong_move_rate: this.props.categorization.strong_move_rate,
+            categorized_moves: this.props.categorization.categorized_moves,
+        };
     }
 
+    private setupTableData(reviewType: "fast" | "full") {
+        const ai_table_rows: string[][] = [];
+        const summary_moves_list: {
+            blackCount: string;
+            blackPercent: string;
+            whiteCount: string;
+            whitePercent: string;
+        }[] = [];
+
+        const categories =
+            reviewType === "fast" ? this.currentFastCategories : this.currentFullCategories;
+        const num_rows = categories.length;
+
+        for (let j = 0; j < num_rows; j++) {
+            ai_table_rows.push([categories[j]]);
+            summary_moves_list.push({
+                blackCount: "",
+                blackPercent: "",
+                whiteCount: "",
+                whitePercent: "",
+            });
+        }
+
+        return { ai_table_rows, summary_moves_list, num_rows };
+    }
+
+    private readonly currentFastCategories = ["Good", "Inaccuracy", "Mistake", "Blunder"];
+    private readonly currentFullCategories = [
+        "Excellent",
+        "Great",
+        "Good",
+        "Inaccuracy",
+        "Mistake",
+        "Blunder",
+    ];
+
     render(): React.ReactElement {
-        // Determine which categories should have editable thresholds
+        const formatted = this.formatTableData();
         const { scoreDiffThresholds, categorization_method, onThresholdChange, onResetThresholds } =
             this.props;
-        // For 'old', only Good, Inaccuracy, Mistake, Blunder; for 'new', all
+
+        // Determine which categories should have editable thresholds
         const editableCategories =
             categorization_method === "new"
                 ? ["Excellent", "Great", "Good", "Inaccuracy", "Mistake", "Blunder"]
                 : ["Good", "Inaccuracy", "Mistake", "Blunder"];
-        // Default values for display (should match those in ai_review_move_categories)
+
+        // Default values for display
         const defaultThresholds: { [k: string]: number } = {
             Excellent: 0.2,
             Great: 0.6,
@@ -86,7 +202,7 @@ export class AiSummaryTable extends React.Component<AiSummaryTableProperties, Ai
         }
 
         // Add defensive check for required props
-        if (!this.props.body_list || !this.props.heading_list) {
+        if (!formatted.body_list || !formatted.heading_list) {
             return <div className="ai-summary-container" />;
         }
 
@@ -98,7 +214,7 @@ export class AiSummaryTable extends React.Component<AiSummaryTableProperties, Ai
                 >
                     <thead>
                         <tr>
-                            {this.props.heading_list.map((head, index) => {
+                            {formatted.heading_list.map((head, index) => {
                                 return <th key={index}>{head}</th>;
                             })}
                             <th className="spacer-column" style={{ width: "10px" }}></th>
@@ -106,10 +222,7 @@ export class AiSummaryTable extends React.Component<AiSummaryTableProperties, Ai
                         </tr>
                     </thead>
                     <tbody>
-                        {this.props.body_list.map((body, b_index) => {
-                            // Use the translation function to get the English key
-                            // (since body[0] is translated)
-                            // We'll map by index instead:
+                        {formatted.body_list.map((body, b_index) => {
                             const catKey = [
                                 "Excellent",
                                 "Great",
@@ -122,10 +235,9 @@ export class AiSummaryTable extends React.Component<AiSummaryTableProperties, Ai
                                 <tr key={b_index}>
                                     {body.map((element, e_index) => {
                                         if (e_index === 1 || e_index === 4) {
-                                            // Black and White count columns
                                             const color = e_index === 1 ? "black" : "white";
                                             const moves =
-                                                this.props.categorized_moves[color][
+                                                formatted.categorized_moves[color][
                                                     catKey as MoveCategory
                                                 ];
                                             return (
@@ -241,38 +353,18 @@ export class AiSummaryTable extends React.Component<AiSummaryTableProperties, Ai
                                 </tr>
                             );
                         })}
-                        {this.props.pending_entries > 0 && (
-                            <React.Fragment>
-                                <tr>
-                                    <td colSpan={2}>{"Moves Pending"}</td>
-                                    <td colSpan={3}>{this.props.pending_entries}</td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td colSpan={5}>
-                                        <progress
-                                            value={
-                                                this.props.max_entries - this.props.pending_entries
-                                            }
-                                            max={this.props.max_entries}
-                                        ></progress>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                            </React.Fragment>
-                        )}
                         <tr>
                             <td colSpan={5}>{"Average score loss per move"}</td>
                             <td></td>
                         </tr>
                         <tr>
                             <td colSpan={2}>{"Black"}</td>
-                            <td colSpan={3}>{this.props.avg_loss.black}</td>
+                            <td colSpan={3}>{formatted.avg_loss.black}</td>
                             <td></td>
                         </tr>
                         <tr>
                             <td colSpan={2}>{"White"}</td>
-                            <td colSpan={3}>{this.props.avg_loss.white}</td>
+                            <td colSpan={3}>{formatted.avg_loss.white}</td>
                             <td></td>
                         </tr>
                         <tr>
@@ -281,12 +373,12 @@ export class AiSummaryTable extends React.Component<AiSummaryTableProperties, Ai
                         </tr>
                         <tr>
                             <td colSpan={2}>{"Black"}</td>
-                            <td colSpan={3}>{this.props.median_score_loss.black}</td>
+                            <td colSpan={3}>{formatted.median_score_loss.black}</td>
                             <td></td>
                         </tr>
                         <tr>
                             <td colSpan={2}>{"White"}</td>
-                            <td colSpan={3}>{this.props.median_score_loss.white}</td>
+                            <td colSpan={3}>{formatted.median_score_loss.white}</td>
                             <td></td>
                         </tr>
                         <tr>
@@ -295,12 +387,12 @@ export class AiSummaryTable extends React.Component<AiSummaryTableProperties, Ai
                         </tr>
                         <tr>
                             <td colSpan={2}>{"Black"}</td>
-                            <td colSpan={3}>{this.props.strong_move_rate.black}%</td>
+                            <td colSpan={3}>{formatted.strong_move_rate.black}%</td>
                             <td></td>
                         </tr>
                         <tr>
                             <td colSpan={2}>{"White"}</td>
-                            <td colSpan={3}>{this.props.strong_move_rate.white}%</td>
+                            <td colSpan={3}>{formatted.strong_move_rate.white}%</td>
                             <td></td>
                         </tr>
                     </tbody>

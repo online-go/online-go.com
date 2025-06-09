@@ -47,11 +47,7 @@ import { alert } from "@/lib/swal_config";
 import { GobanContext } from "./goban_context";
 import { ReportContext } from "@/contexts/ReportContext";
 import { MODERATOR_POWERS } from "@/lib/moderation";
-import {
-    calculateAiSummaryTableData,
-    CategorizationMethod,
-    MoveNumbers,
-} from "@/lib/ai_review_move_categories";
+import { CategorizationMethod, categorizeAiReview } from "@/lib/ai_review_move_categories";
 import { sameIntersection } from "@/lib/misc";
 import type { ScoreDiffThresholds } from "@/lib/ai_review_move_categories";
 import { AiSummaryTable } from "@/components/AIReview/AiSummaryTable";
@@ -118,13 +114,6 @@ export function AIReview(props: AIReviewProperties) {
 
 class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
     ai_review?: JGOFAIReview;
-    table_rows!: string[][];
-    avg_score_loss!: { black: number; white: number };
-    median_score_loss!: { black: number; white: number };
-    moves_pending!: number;
-    max_entries!: number;
-    strong_move_rate!: { black: number; white: number };
-    categorized_moves!: MoveNumbers;
 
     constructor(props: AIReviewProperties) {
         super(props);
@@ -175,38 +164,17 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
     }
 
     private calculateAndUpdateTableData() {
-        const ai_table_out = calculateAiSummaryTableData(
+        const categorization = categorizeAiReview(
             this.ai_review,
             this.props.gobanContext,
-            this.state.loading,
             this.state.categorization_method,
             this.state.scoreDiffThresholds,
             this.state.includeNegativeScores,
         );
-        this.updateTableState(ai_table_out);
-    }
 
-    private updateTableState(ai_table_out: {
-        ai_table_rows: string[][];
-        avg_score_loss: { black: number; white: number };
-        median_score_loss: { black: number; white: number };
-        moves_pending: number;
-        max_entries: number;
-        should_show_table: boolean;
-        strong_move_rate: { black: number; white: number };
-        categorized_moves: MoveNumbers;
-    }) {
-        this.table_rows = ai_table_out.ai_table_rows;
-        this.avg_score_loss = ai_table_out.avg_score_loss;
-        this.median_score_loss = ai_table_out.median_score_loss;
-        this.moves_pending = ai_table_out.moves_pending;
-        this.max_entries = ai_table_out.max_entries;
-        this.strong_move_rate = ai_table_out.strong_move_rate;
-        this.categorized_moves = ai_table_out.categorized_moves;
-
-        if (this.state.show_table !== ai_table_out.should_show_table) {
+        if (this.state.show_table !== !categorization) {
             this.setState({
-                show_table: ai_table_out.should_show_table,
+                show_table: !categorization,
             });
         }
     }
@@ -1341,21 +1309,17 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                                     this.ai_review?.engine.includes("katago") && (
                                         <div>
                                             <AiSummaryTable
-                                                heading_list={[
-                                                    _("Type"),
-                                                    _("Black"),
-                                                    "%",
-                                                    "", // Spacer column
-                                                    _("White"),
-                                                    "%",
-                                                ]}
-                                                body_list={this.table_rows}
-                                                avg_loss={this.avg_score_loss}
-                                                median_score_loss={this.median_score_loss}
+                                                categorization={categorizeAiReview(
+                                                    this.ai_review,
+                                                    this.props.gobanContext,
+                                                    this.state.categorization_method,
+                                                    this.state.scoreDiffThresholds,
+                                                    this.state.includeNegativeScores,
+                                                )}
+                                                reviewType={
+                                                    this.ai_review.type === "fast" ? "fast" : "full"
+                                                }
                                                 table_hidden={this.state.table_hidden}
-                                                pending_entries={this.moves_pending}
-                                                max_entries={this.max_entries}
-                                                strong_move_rate={this.strong_move_rate}
                                                 scoreDiffThresholds={this.state.scoreDiffThresholds}
                                                 categorization_method={
                                                     this.state.categorization_method
@@ -1368,7 +1332,6 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                                                 onToggleNegativeScores={
                                                     this.handleToggleNegativeScores
                                                 }
-                                                categorized_moves={this.categorized_moves}
                                             />
                                             {!this.state.table_hidden && (
                                                 <div className="categorization-toggler">
