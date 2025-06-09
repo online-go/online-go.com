@@ -80,7 +80,7 @@ interface AIReviewState {
     table_hidden: boolean;
     categorization_method: CategorizationMethod;
     scoreDiffThresholds: ScoreDiffThresholds;
-    includeNegativeScores: boolean;
+    includeNegativeScoreLoss: boolean;
     current_popup_moves: number[];
 }
 
@@ -131,7 +131,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
             table_hidden: preferences.get("ai-summary-table-show"),
             categorization_method: method,
             scoreDiffThresholds: { ...DEFAULT_SCORE_DIFF_THRESHOLDS, ...current_thresholds },
-            includeNegativeScores: false,
+            includeNegativeScoreLoss: false,
             current_popup_moves: [],
         };
         this.state = state;
@@ -171,7 +171,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
             this.props.gobanContext,
             this.state.categorization_method,
             this.state.scoreDiffThresholds,
-            this.state.includeNegativeScores,
+            this.state.includeNegativeScoreLoss,
         );
 
         if (this.state.show_table !== !categorization) {
@@ -375,7 +375,6 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
     deferred_queue?: { [key: string]: any };
 
     updateAiReview = (data: any) => {
-        console.log("updateAiReview received data:", data?.metadata?.scores?.length);
         if (this.deferred_queue) {
             for (const key in data) {
                 this.deferred_queue[key] = data[key];
@@ -1321,7 +1320,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                                                     this.props.gobanContext,
                                                     this.state.categorization_method,
                                                     this.state.scoreDiffThresholds,
-                                                    this.state.includeNegativeScores,
+                                                    this.state.includeNegativeScoreLoss,
                                                 )}
                                                 reviewType={
                                                     this.ai_review.type === "fast" ? "fast" : "full"
@@ -1334,7 +1333,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                                                 onThresholdChange={this.handleThresholdChange}
                                                 onResetThresholds={this.handleResetThresholds}
                                                 includeNegativeScores={
-                                                    this.state.includeNegativeScores
+                                                    this.state.includeNegativeScoreLoss
                                                 }
                                                 onToggleNegativeScores={
                                                     this.handleToggleNegativeScores
@@ -1545,7 +1544,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
     handleToggleNegativeScores = () => {
         this.setState(
             (prevState) => ({
-                includeNegativeScores: !prevState.includeNegativeScores,
+                includeNegativeScoreLoss: !prevState.includeNegativeScoreLoss,
             }),
             () => {
                 this.calculateAndUpdateTableData();
