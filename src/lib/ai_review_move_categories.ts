@@ -125,6 +125,7 @@ function categorizeFastReview(
     move_counters: MoveCounters;
     score_loss_list: ScoreLossList;
     total_score_loss: { black: number; white: number };
+    categorized_moves: MoveNumbers;
 } {
     const scores = ai_review.scores;
     if (!scores) {
@@ -137,6 +138,10 @@ function categorizeFastReview(
     };
     const score_loss_list: ScoreLossList = { black: [], white: [] };
     const total_score_loss = { black: 0, white: 0 };
+    const categorized_moves: MoveNumbers = {
+        black: { Excellent: [], Great: [], Good: [], Inaccuracy: [], Mistake: [], Blunder: [] },
+        white: { Excellent: [], Great: [], Good: [], Inaccuracy: [], Mistake: [], Blunder: [] },
+    };
     const worst_move_keys = Object.keys(ai_review.moves);
 
     for (let j = 0; j < worst_move_keys.length; j++) {
@@ -159,16 +164,20 @@ function categorizeFastReview(
 
         if (score_diff < thresholds.Good) {
             move_counters[player].Good += 1;
+            categorized_moves[player].Good.push(move_index + 1);
         } else if (score_diff < thresholds.Inaccuracy) {
             move_counters[player].Inaccuracy += 1;
+            categorized_moves[player].Inaccuracy.push(move_index + 1);
         } else if (score_diff < thresholds.Mistake) {
             move_counters[player].Mistake += 1;
+            categorized_moves[player].Mistake.push(move_index + 1);
         } else if (score_diff >= thresholds.Mistake) {
             move_counters[player].Blunder += 1;
+            categorized_moves[player].Blunder.push(move_index + 1);
         }
     }
 
-    return { move_counters, score_loss_list, total_score_loss };
+    return { move_counters, score_loss_list, total_score_loss, categorized_moves };
 }
 
 function categorizeFullReviewNew(
@@ -181,6 +190,7 @@ function categorizeFullReviewNew(
     move_counters: MoveCounters;
     score_loss_list: ScoreLossList;
     total_score_loss: { black: number; white: number };
+    categorized_moves: MoveNumbers;
 } {
     const move_counters: MoveCounters = {
         black: { Excellent: 0, Great: 0, Good: 0, Inaccuracy: 0, Mistake: 0, Blunder: 0 },
@@ -188,6 +198,10 @@ function categorizeFullReviewNew(
     };
     const score_loss_list: ScoreLossList = { black: [], white: [] };
     const total_score_loss = { black: 0, white: 0 };
+    const categorized_moves: MoveNumbers = {
+        black: { Excellent: [], Great: [], Good: [], Inaccuracy: [], Mistake: [], Blunder: [] },
+        white: { Excellent: [], Great: [], Good: [], Inaccuracy: [], Mistake: [], Blunder: [] },
+    };
 
     for (
         let move_index = handicap_offset;
@@ -229,21 +243,27 @@ function categorizeFullReviewNew(
         if (score_loss < thresholds.Excellent) {
             category = "Excellent";
             move_counters[player].Excellent += 1;
+            categorized_moves[player].Excellent.push(move_index + 1);
         } else if (score_loss < thresholds.Great) {
             category = "Great";
             move_counters[player].Great += 1;
+            categorized_moves[player].Great.push(move_index + 1);
         } else if (score_loss < thresholds.Good) {
             category = "Good";
             move_counters[player].Good += 1;
+            categorized_moves[player].Good.push(move_index + 1);
         } else if (score_loss < thresholds.Inaccuracy) {
             category = "Inaccuracy";
             move_counters[player].Inaccuracy += 1;
+            categorized_moves[player].Inaccuracy.push(move_index + 1);
         } else if (score_loss < thresholds.Mistake) {
             category = "Mistake";
             move_counters[player].Mistake += 1;
+            categorized_moves[player].Mistake.push(move_index + 1);
         } else {
             category = "Blunder";
             move_counters[player].Blunder += 1;
+            categorized_moves[player].Blunder.push(move_index + 1);
         }
 
         console.log(
@@ -253,7 +273,7 @@ function categorizeFullReviewNew(
         );
     }
 
-    return { move_counters, score_loss_list, total_score_loss };
+    return { move_counters, score_loss_list, total_score_loss, categorized_moves };
 }
 
 function categorizeFullReviewOld(
@@ -265,6 +285,7 @@ function categorizeFullReviewOld(
     move_counters: MoveCounters;
     score_loss_list: ScoreLossList;
     total_score_loss: { black: number; white: number };
+    categorized_moves: MoveNumbers;
 } {
     const move_counters: MoveCounters = {
         black: { Excellent: 0, Great: 0, Good: 0, Inaccuracy: 0, Mistake: 0, Blunder: 0 },
@@ -272,6 +293,10 @@ function categorizeFullReviewOld(
     };
     const score_loss_list: ScoreLossList = { black: [], white: [] };
     const total_score_loss = { black: 0, white: 0 };
+    const categorized_moves: MoveNumbers = {
+        black: { Excellent: [], Great: [], Good: [], Inaccuracy: [], Mistake: [], Blunder: [] },
+        white: { Excellent: [], Great: [], Good: [], Inaccuracy: [], Mistake: [], Blunder: [] },
+    };
 
     for (
         let current_move = handicap_offset;
@@ -305,6 +330,7 @@ function categorizeFullReviewOld(
         } else {
             if (sameIntersection(blue_move, player_move)) {
                 move_counters[player].Excellent += 1;
+                categorized_moves[player].Excellent.push(current_move + 1);
             } else if (
                 current_branches.some((branch, index) => {
                     if (!branch.moves.length) {
@@ -319,6 +345,7 @@ function categorizeFullReviewOld(
                 })
             ) {
                 move_counters[player].Great += 1;
+                categorized_moves[player].Great.push(current_move + 1);
             } else {
                 const thresholds = {
                     Good: scoreDiffThresholds?.Good ?? 1,
@@ -327,18 +354,22 @@ function categorizeFullReviewOld(
                 };
                 if (score_diff < thresholds.Good) {
                     move_counters[player].Good += 1;
+                    categorized_moves[player].Good.push(current_move + 1);
                 } else if (score_diff < thresholds.Inaccuracy) {
                     move_counters[player].Inaccuracy += 1;
+                    categorized_moves[player].Inaccuracy.push(current_move + 1);
                 } else if (score_diff < thresholds.Mistake) {
                     move_counters[player].Mistake += 1;
+                    categorized_moves[player].Mistake.push(current_move + 1);
                 } else if (score_diff >= thresholds.Mistake) {
                     move_counters[player].Blunder += 1;
+                    categorized_moves[player].Blunder.push(current_move + 1);
                 }
             }
         }
     }
 
-    return { move_counters, score_loss_list, total_score_loss };
+    return { move_counters, score_loss_list, total_score_loss, categorized_moves };
 }
 
 function validateReviewData(
@@ -485,64 +516,7 @@ export function categorizeAiReview(
                     scoreDiffThresholds,
                 );
 
-    const { move_counters, score_loss_list, total_score_loss } = result;
-
-    // Initialize categorized moves
-    const categorized_moves: MoveNumbers = {
-        black: { Excellent: [], Great: [], Good: [], Inaccuracy: [], Mistake: [], Blunder: [] },
-        white: { Excellent: [], Great: [], Good: [], Inaccuracy: [], Mistake: [], Blunder: [] },
-    };
-
-    // Track moves for each category
-    for (
-        let move_index = handicap_offset;
-        move_index < (ai_review?.scores?.length ?? 0) - 1;
-        move_index++
-    ) {
-        if (
-            ai_review?.moves[move_index] === undefined ||
-            ai_review?.moves[move_index + 1] === undefined
-        ) {
-            continue;
-        }
-
-        const is_b_player = move_player_list[move_index] === JGOFNumericPlayerColor.BLACK;
-        const player = is_b_player ? "black" : "white";
-
-        let score_loss =
-            (ai_review?.moves[move_index + 1].score ?? 0) -
-            (ai_review?.moves[move_index].score ?? 0);
-        score_loss = is_b_player ? -1 * score_loss : score_loss;
-
-        if (!includeNegativeScores && score_loss < 0) {
-            continue;
-        }
-
-        const thresholds = {
-            Excellent: scoreDiffThresholds?.Excellent ?? 0.2,
-            Great: scoreDiffThresholds?.Great ?? 0.6,
-            Good: scoreDiffThresholds?.Good ?? 1.0,
-            Inaccuracy: scoreDiffThresholds?.Inaccuracy ?? 2.0,
-            Mistake: scoreDiffThresholds?.Mistake ?? 5.0,
-        };
-
-        let category: MoveCategory;
-        if (score_loss < thresholds.Excellent) {
-            category = "Excellent";
-        } else if (score_loss < thresholds.Great) {
-            category = "Great";
-        } else if (score_loss < thresholds.Good) {
-            category = "Good";
-        } else if (score_loss < thresholds.Inaccuracy) {
-            category = "Inaccuracy";
-        } else if (score_loss < thresholds.Mistake) {
-            category = "Mistake";
-        } else {
-            category = "Blunder";
-        }
-
-        categorized_moves[player][category].push(move_index + 1);
-    }
+    const { move_counters, score_loss_list, total_score_loss, categorized_moves } = result;
 
     // Calculate average score loss
     const avg_score_loss = {
