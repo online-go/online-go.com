@@ -47,9 +47,10 @@ import { alert } from "@/lib/swal_config";
 import { GobanContext } from "./goban_context";
 import { ReportContext } from "@/contexts/ReportContext";
 import { MODERATOR_POWERS } from "@/lib/moderation";
-import { calculateAiSummaryTableData, CategorizationMethod } from "@/lib/ai_review_move_categories";
+import { CategorizationMethod, categorizeAiReview } from "@/lib/ai_review_move_categories";
 import { sameIntersection } from "@/lib/misc";
 import type { ScoreDiffThresholds } from "@/lib/ai_review_move_categories";
+import { AiSummaryTable } from "@/components/AIReview/AiSummaryTable";
 
 export interface AIReviewEntry {
     move_number: number;
@@ -79,7 +80,8 @@ interface AIReviewState {
     table_hidden: boolean;
     categorization_method: CategorizationMethod;
     scoreDiffThresholds: ScoreDiffThresholds;
-    includeNegativeScores: boolean;
+    includeNegativeScoreLoss: boolean;
+    current_popup_moves: number[];
 }
 
 const DEFAULT_SCORE_DIFF_THRESHOLDS: ScoreDiffThresholds = {
@@ -113,12 +115,6 @@ export function AIReview(props: AIReviewProperties) {
 
 class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
     ai_review?: JGOFAIReview;
-    table_rows!: string[][];
-    avg_score_loss!: { black: number; white: number };
-    median_score_loss!: { black: number; white: number };
-    moves_pending!: number;
-    max_entries!: number;
-    strong_move_rate!: { black: number; white: number };
 
     constructor(props: AIReviewProperties) {
         super(props);
@@ -135,7 +131,8 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
             table_hidden: preferences.get("ai-summary-table-show"),
             categorization_method: method,
             scoreDiffThresholds: { ...DEFAULT_SCORE_DIFF_THRESHOLDS, ...current_thresholds },
-            includeNegativeScores: false,
+            includeNegativeScoreLoss: false,
+            current_popup_moves: [],
         };
         this.state = state;
         window.aireview = this;
@@ -164,37 +161,22 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
             this.getAIReviewList();
         }
         if (this.state.show_table) {
-            const ai_table_out = calculateAiSummaryTableData(
-                this.ai_review,
-                this.props.gobanContext,
-                this.state.loading,
-                this.state.categorization_method,
-                this.state.scoreDiffThresholds,
-                this.state.includeNegativeScores,
-            );
-            this.updateTableState(ai_table_out);
+            this.calculateAndUpdateTableData();
         }
     }
 
-    private updateTableState(ai_table_out: {
-        ai_table_rows: string[][];
-        avg_score_loss: { black: number; white: number };
-        median_score_loss: { black: number; white: number };
-        moves_pending: number;
-        max_entries: number;
-        should_show_table: boolean;
-        strong_move_rate: { black: number; white: number };
-    }) {
-        this.table_rows = ai_table_out.ai_table_rows;
-        this.avg_score_loss = ai_table_out.avg_score_loss;
-        this.median_score_loss = ai_table_out.median_score_loss;
-        this.moves_pending = ai_table_out.moves_pending;
-        this.max_entries = ai_table_out.max_entries;
-        this.strong_move_rate = ai_table_out.strong_move_rate;
+    private calculateAndUpdateTableData() {
+        const categorization = categorizeAiReview(
+            this.ai_review,
+            this.props.gobanContext,
+            this.state.categorization_method,
+            this.state.scoreDiffThresholds,
+            this.state.includeNegativeScoreLoss,
+        );
 
-        if (this.state.show_table !== ai_table_out.should_show_table) {
+        if (this.state.show_table !== !categorization) {
             this.setState({
-                show_table: ai_table_out.should_show_table,
+                show_table: !categorization,
             });
         }
     }
@@ -333,16 +315,9 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                 show_table: canViewTable,
             },
             () => {
-                // Calculate table data after state is updated, regardless of show_table
-                const ai_table_out = calculateAiSummaryTableData(
-                    this.ai_review,
-                    this.props.gobanContext,
-                    this.state.loading,
-                    this.state.categorization_method,
-                    this.state.scoreDiffThresholds,
-                    this.state.includeNegativeScores,
-                );
-                this.updateTableState(ai_table_out);
+                if (this.state.show_table) {
+                    this.calculateAndUpdateTableData();
+                }
             },
         );
         this.props.onAIReviewSelected(ai_review);
@@ -1248,9 +1223,13 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                                     variation_move_number={variation_move_number}
                                     set_move={(num: number) => game_control.emit("gotoMove", num)}
                                     use_score={this.state.use_score}
-                                    highlighted_moves={worst_move_list
-                                        .slice(0, this.state.worst_moves_shown)
-                                        .map((m) => m.move_number - 1)}
+                                    highlighted_moves={
+                                        this.state.current_popup_moves.length > 0
+                                            ? this.state.current_popup_moves
+                                            : worst_move_list
+                                                  .slice(0, this.state.worst_moves_shown)
+                                                  .map((m) => m.move_number - 1)
+                                    }
                                 />
                                 <div className="worst-moves-container">
                                     {this.renderWorstMoveList(worst_move_list)}
@@ -1336,20 +1315,17 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                                     this.ai_review?.engine.includes("katago") && (
                                         <div>
                                             <AiSummaryTable
-                                                heading_list={[
-                                                    _("Type"),
-                                                    _("Black"),
-                                                    "%",
-                                                    _("White"),
-                                                    "%",
-                                                ]}
-                                                body_list={this.table_rows}
-                                                avg_loss={this.avg_score_loss}
-                                                median_score_loss={this.median_score_loss}
+                                                categorization={categorizeAiReview(
+                                                    this.ai_review,
+                                                    this.props.gobanContext,
+                                                    this.state.categorization_method,
+                                                    this.state.scoreDiffThresholds,
+                                                    this.state.includeNegativeScoreLoss,
+                                                )}
+                                                reviewType={
+                                                    this.ai_review.type === "fast" ? "fast" : "full"
+                                                }
                                                 table_hidden={this.state.table_hidden}
-                                                pending_entries={this.moves_pending}
-                                                max_entries={this.max_entries}
-                                                strong_move_rate={this.strong_move_rate}
                                                 scoreDiffThresholds={this.state.scoreDiffThresholds}
                                                 categorization_method={
                                                     this.state.categorization_method
@@ -1357,11 +1333,21 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                                                 onThresholdChange={this.handleThresholdChange}
                                                 onResetThresholds={this.handleResetThresholds}
                                                 includeNegativeScores={
-                                                    this.state.includeNegativeScores
+                                                    this.state.includeNegativeScoreLoss
                                                 }
                                                 onToggleNegativeScores={
                                                     this.handleToggleNegativeScores
                                                 }
+                                                onPopupMovesChange={(moves) => {
+                                                    this.setState(
+                                                        { current_popup_moves: moves },
+                                                        () => {
+                                                            this.setState({
+                                                                rerender: this.state.rerender + 1,
+                                                            });
+                                                        },
+                                                    );
+                                                }}
                                             />
                                             {!this.state.table_hidden && (
                                                 <div className="categorization-toggler">
@@ -1392,22 +1378,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                                                                 },
                                                                 () => {
                                                                     if (this.state.show_table) {
-                                                                        const ai_table_out =
-                                                                            calculateAiSummaryTableData(
-                                                                                this.ai_review,
-                                                                                this.props
-                                                                                    .gobanContext,
-                                                                                this.state.loading,
-                                                                                this.state
-                                                                                    .categorization_method,
-                                                                                this.state
-                                                                                    .scoreDiffThresholds,
-                                                                                this.state
-                                                                                    .includeNegativeScores,
-                                                                            );
-                                                                        this.updateTableState(
-                                                                            ai_table_out,
-                                                                        );
+                                                                        this.calculateAndUpdateTableData();
                                                                     }
                                                                 },
                                                             );
@@ -1554,20 +1525,11 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                     ...prevState.scoreDiffThresholds,
                     [category]: value,
                 };
-                // Always store all keys for consistency
                 preferences.set("ai-review-score-diff-thresholds", updated);
                 return { scoreDiffThresholds: updated };
             },
             () => {
-                const ai_table_out = calculateAiSummaryTableData(
-                    this.ai_review,
-                    this.props.gobanContext,
-                    this.state.loading,
-                    this.state.categorization_method,
-                    this.state.scoreDiffThresholds,
-                    this.state.includeNegativeScores,
-                );
-                this.updateTableState(ai_table_out);
+                this.calculateAndUpdateTableData();
             },
         );
     };
@@ -1575,33 +1537,17 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
     handleResetThresholds = () => {
         preferences.set("ai-review-score-diff-thresholds", DEFAULT_SCORE_DIFF_THRESHOLDS);
         this.setState({ scoreDiffThresholds: { ...DEFAULT_SCORE_DIFF_THRESHOLDS } }, () => {
-            const ai_table_out = calculateAiSummaryTableData(
-                this.ai_review,
-                this.props.gobanContext,
-                this.state.loading,
-                this.state.categorization_method,
-                DEFAULT_SCORE_DIFF_THRESHOLDS,
-                this.state.includeNegativeScores,
-            );
-            this.updateTableState(ai_table_out);
+            this.calculateAndUpdateTableData();
         });
     };
 
     handleToggleNegativeScores = () => {
         this.setState(
             (prevState) => ({
-                includeNegativeScores: !prevState.includeNegativeScores,
+                includeNegativeScoreLoss: !prevState.includeNegativeScoreLoss,
             }),
             () => {
-                const ai_table_out = calculateAiSummaryTableData(
-                    this.ai_review,
-                    this.props.gobanContext,
-                    this.state.loading,
-                    this.state.categorization_method,
-                    this.state.scoreDiffThresholds,
-                    this.state.includeNegativeScores,
-                );
-                this.updateTableState(ai_table_out);
+                this.calculateAndUpdateTableData();
             },
         );
     };
@@ -1687,230 +1633,4 @@ function extractShortNetworkVersion(network: string): string {
         network = network.match(/[^-]*[-]([^-]*)/)?.[1] || "xxxxxx";
     }
     return network.substr(0, 6);
-}
-
-class AiSummaryTable extends React.Component<AiSummaryTableProperties, AiSummaryTableState> {
-    constructor(props: AiSummaryTableProperties) {
-        super(props);
-    }
-
-    render(): React.ReactElement {
-        // Determine which categories should have editable thresholds
-        const { scoreDiffThresholds, categorization_method, onThresholdChange, onResetThresholds } =
-            this.props;
-        // For 'old', only Good, Inaccuracy, Mistake, Blunder; for 'new', all
-        const editableCategories =
-            categorization_method === "new"
-                ? ["Excellent", "Great", "Good", "Inaccuracy", "Mistake", "Blunder"]
-                : ["Good", "Inaccuracy", "Mistake", "Blunder"];
-        // Default values for display (should match those in ai_review_move_categories)
-        const defaultThresholds: { [k: string]: number } = {
-            Excellent: 0.2,
-            Great: 0.6,
-            Good: 1.0,
-            Inaccuracy: 2.0,
-            Mistake: 5.0,
-        };
-        if (categorization_method === "old") {
-            defaultThresholds.Good = 1;
-            defaultThresholds.Inaccuracy = 2;
-            defaultThresholds.Mistake = 5;
-        }
-
-        // Add defensive check for required props
-        if (!this.props.body_list || !this.props.heading_list) {
-            return <div className="ai-summary-container" />;
-        }
-
-        return (
-            <div className="ai-summary-container">
-                <table
-                    className="ai-summary-table"
-                    style={{ display: this.props.table_hidden ? "none" : "block" }}
-                >
-                    <thead>
-                        <tr>
-                            {this.props.heading_list.map((head, index) => {
-                                return <th key={index}>{head}</th>;
-                            })}
-                            <th className="centered">Δs &lt;</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {this.props.body_list.map((body, b_index) => {
-                            // Use the translation function to get the English key
-                            // (since body[0] is translated)
-                            // We'll map by index instead:
-                            const catKey = [
-                                "Excellent",
-                                "Great",
-                                "Good",
-                                "Inaccuracy",
-                                "Mistake",
-                                "Blunder",
-                            ][b_index];
-                            return (
-                                <tr key={b_index}>
-                                    {body.map((element, e_index) => {
-                                        return <td key={e_index}>{element}</td>;
-                                    })}
-                                    <td className="centered">
-                                        {editableCategories.includes(catKey) &&
-                                        catKey !== "Blunder" ? (
-                                            <input
-                                                type="number"
-                                                style={{
-                                                    width: 60,
-                                                    textAlign: "center",
-                                                    display: "block",
-                                                    margin: "0 auto",
-                                                    color:
-                                                        scoreDiffThresholds[
-                                                            catKey as keyof ScoreDiffThresholds
-                                                        ] !==
-                                                        defaultThresholds[
-                                                            catKey as keyof ScoreDiffThresholds
-                                                        ]
-                                                            ? "#e67c00"
-                                                            : undefined,
-                                                }}
-                                                value={
-                                                    scoreDiffThresholds[
-                                                        catKey as keyof ScoreDiffThresholds
-                                                    ] !== undefined
-                                                        ? scoreDiffThresholds[
-                                                              catKey as keyof ScoreDiffThresholds
-                                                          ]
-                                                        : defaultThresholds[
-                                                              catKey as keyof ScoreDiffThresholds
-                                                          ]
-                                                }
-                                                onChange={(e) => {
-                                                    const v = parseFloat(e.target.value);
-                                                    if (!isNaN(v)) {
-                                                        onThresholdChange(catKey, v);
-                                                    }
-                                                }}
-                                            />
-                                        ) : null}
-                                        {catKey === "Blunder" && (
-                                            <button
-                                                style={{
-                                                    marginLeft: 8,
-                                                    fontSize: "0.8em",
-                                                    padding: "2px 6px",
-                                                }}
-                                                onClick={onResetThresholds}
-                                            >
-                                                ^ reset
-                                            </button>
-                                        )}
-                                    </td>
-                                </tr>
-                            );
-                        })}
-                        {this.props.pending_entries > 0 && (
-                            <React.Fragment>
-                                <tr>
-                                    <td colSpan={2}>{"Moves Pending"}</td>
-                                    <td colSpan={3}>{this.props.pending_entries}</td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td colSpan={5}>
-                                        <progress
-                                            value={
-                                                this.props.max_entries - this.props.pending_entries
-                                            }
-                                            max={this.props.max_entries}
-                                        ></progress>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                            </React.Fragment>
-                        )}
-                        <tr>
-                            <td colSpan={5}>{"Average score loss per move"}</td>
-                            <td>
-                                <button
-                                    style={{
-                                        fontSize: "0.8em",
-                                        padding: "2px 6px",
-                                        marginLeft: 8,
-                                        color: this.props.includeNegativeScores
-                                            ? "#e67c00"
-                                            : undefined,
-                                    }}
-                                    onClick={this.props.onToggleNegativeScores}
-                                    title="Include negative score changes in the total"
-                                >
-                                    {"Δs " + (this.props.includeNegativeScores ? "±" : "+")}
-                                </button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td colSpan={2}>{"Black"}</td>
-                            <td colSpan={3}>{this.props.avg_loss.black}</td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td colSpan={2}>{"White"}</td>
-                            <td colSpan={3}>{this.props.avg_loss.white}</td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td colSpan={5}>{"Median score loss per move"}</td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td colSpan={2}>{"Black"}</td>
-                            <td colSpan={3}>{this.props.median_score_loss.black}</td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td colSpan={2}>{"White"}</td>
-                            <td colSpan={3}>{this.props.median_score_loss.white}</td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td colSpan={5}>{"Strong Move Rate"}</td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td colSpan={2}>{"Black"}</td>
-                            <td colSpan={3}>{this.props.strong_move_rate.black}%</td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td colSpan={2}>{"White"}</td>
-                            <td colSpan={3}>{this.props.strong_move_rate.white}%</td>
-                            <td></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        );
-    }
-}
-
-interface AiSummaryTableState {}
-
-interface AiSummaryTableProperties {
-    /** headings for ai review table */
-    heading_list: string[];
-    /** the body of the table excluding the average score loss part */
-    body_list: string[][];
-    /** values for the average score loss */
-    avg_loss: { black: number; white: number };
-    median_score_loss: { black: number; white: number };
-    strong_move_rate: { black: number; white: number };
-    table_hidden: boolean;
-    pending_entries: number;
-    max_entries: number;
-    scoreDiffThresholds: ScoreDiffThresholds;
-    categorization_method: CategorizationMethod;
-    onThresholdChange: (category: string, value: number) => void;
-    onResetThresholds: () => void;
-    includeNegativeScores: boolean;
-    onToggleNegativeScores: () => void;
 }
