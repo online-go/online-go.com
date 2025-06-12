@@ -18,6 +18,14 @@
 import { JGOFAIReview, JGOFNumericPlayerColor, GobanRenderer } from "goban";
 import { sameIntersection } from "@/lib/misc";
 
+export const DEFAULT_SCORE_DIFF_THRESHOLDS: ScoreDiffThresholds = {
+    Excellent: 0.2,
+    Great: 0.6,
+    Good: 1.2,
+    Inaccuracy: 2.0,
+    Mistake: 5.0,
+};
+
 export type MoveCategory = "Excellent" | "Great" | "Good" | "Inaccuracy" | "Mistake" | "Blunder";
 export type FastCategory = Extract<MoveCategory, "Good" | "Inaccuracy" | "Mistake" | "Blunder">;
 
@@ -157,9 +165,9 @@ function categorizeFastReview(
         score_loss_list[player].push(score_diff);
 
         const thresholds = {
-            Good: scoreDiffThresholds?.Good ?? 1,
-            Inaccuracy: scoreDiffThresholds?.Inaccuracy ?? 2,
-            Mistake: scoreDiffThresholds?.Mistake ?? 5,
+            Good: scoreDiffThresholds?.Good ?? DEFAULT_SCORE_DIFF_THRESHOLDS.Good,
+            Inaccuracy: scoreDiffThresholds?.Inaccuracy ?? DEFAULT_SCORE_DIFF_THRESHOLDS.Inaccuracy,
+            Mistake: scoreDiffThresholds?.Mistake ?? DEFAULT_SCORE_DIFF_THRESHOLDS.Mistake,
         };
 
         if (score_diff < thresholds.Good) {
@@ -241,11 +249,11 @@ function categorizeFullReviewNew(
         }
 
         const thresholds = {
-            Excellent: scoreDiffThresholds?.Excellent ?? 0.2,
-            Great: scoreDiffThresholds?.Great ?? 0.6,
-            Good: scoreDiffThresholds?.Good ?? 1.0,
-            Inaccuracy: scoreDiffThresholds?.Inaccuracy ?? 2.0,
-            Mistake: scoreDiffThresholds?.Mistake ?? 5.0,
+            Excellent: scoreDiffThresholds?.Excellent ?? DEFAULT_SCORE_DIFF_THRESHOLDS.Excellent,
+            Great: scoreDiffThresholds?.Great ?? DEFAULT_SCORE_DIFF_THRESHOLDS.Great,
+            Good: scoreDiffThresholds?.Good ?? DEFAULT_SCORE_DIFF_THRESHOLDS.Good,
+            Inaccuracy: scoreDiffThresholds?.Inaccuracy ?? DEFAULT_SCORE_DIFF_THRESHOLDS.Inaccuracy,
+            Mistake: scoreDiffThresholds?.Mistake ?? DEFAULT_SCORE_DIFF_THRESHOLDS.Mistake,
         };
 
         if (score_loss < thresholds.Excellent) {
@@ -347,9 +355,10 @@ function categorizeFullReviewOld(
                 categorized_moves[player].Great.push(current_move + 1);
             } else {
                 const thresholds = {
-                    Good: scoreDiffThresholds?.Good ?? 1,
-                    Inaccuracy: scoreDiffThresholds?.Inaccuracy ?? 2,
-                    Mistake: scoreDiffThresholds?.Mistake ?? 5,
+                    Good: scoreDiffThresholds?.Good ?? DEFAULT_SCORE_DIFF_THRESHOLDS.Good,
+                    Inaccuracy:
+                        scoreDiffThresholds?.Inaccuracy ?? DEFAULT_SCORE_DIFF_THRESHOLDS.Inaccuracy,
+                    Mistake: scoreDiffThresholds?.Mistake ?? DEFAULT_SCORE_DIFF_THRESHOLDS.Mistake,
                 };
                 if (score_diff < thresholds.Good) {
                     move_counters[player].Good += 1;
@@ -479,15 +488,17 @@ export function categorizeAiReview(
     const { move_counters, score_loss_list, total_score_loss, categorized_moves, moves_missing } =
         result;
 
+    console.log("score loss by move:", score_loss_list);
+
     // Calculate average score loss
     const avg_score_loss = {
         black:
             score_loss_list.black.length > 0
-                ? Number((total_score_loss.black / score_loss_list.black.length).toFixed(1))
+                ? Number(total_score_loss.black / score_loss_list.black.length)
                 : 0,
         white:
             score_loss_list.white.length > 0
-                ? Number((total_score_loss.white / score_loss_list.white.length).toFixed(1))
+                ? Number(total_score_loss.white / score_loss_list.white.length)
                 : 0,
     };
 
@@ -498,8 +509,8 @@ export function categorizeAiReview(
     };
 
     const median_score_loss = {
-        black: Number(medianList(sortedScoreLoss.black).toFixed(1)),
-        white: Number(medianList(sortedScoreLoss.white).toFixed(1)),
+        black: Number(medianList(sortedScoreLoss.black)),
+        white: Number(medianList(sortedScoreLoss.white)),
     };
 
     // Calculate strong move rate
@@ -512,9 +523,7 @@ export function categorizeAiReview(
         if (totalMoves === 0) {
             return 0;
         }
-        return Number(
-            (((counters.Excellent + counters.Great + counters.Good) / totalMoves) * 100).toFixed(1),
-        );
+        return Number(((counters.Excellent + counters.Great + counters.Good) / totalMoves) * 100);
     };
 
     const strong_move_rate =

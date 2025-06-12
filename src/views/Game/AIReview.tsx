@@ -47,7 +47,11 @@ import { alert } from "@/lib/swal_config";
 import { GobanContext } from "./goban_context";
 import { ReportContext } from "@/contexts/ReportContext";
 import { MODERATOR_POWERS } from "@/lib/moderation";
-import { CategorizationMethod, categorizeAiReview } from "@/lib/ai_review_move_categories";
+import {
+    CategorizationMethod,
+    categorizeAiReview,
+    DEFAULT_SCORE_DIFF_THRESHOLDS,
+} from "@/lib/ai_review_move_categories";
 import { sameIntersection } from "@/lib/misc";
 import type { ScoreDiffThresholds } from "@/lib/ai_review_move_categories";
 import { AiSummaryTable } from "@/components/AIReview/AiSummaryTable";
@@ -83,14 +87,6 @@ interface AIReviewState {
     includeNegativeScoreLoss: boolean;
     current_popup_moves: number[];
 }
-
-const DEFAULT_SCORE_DIFF_THRESHOLDS: ScoreDiffThresholds = {
-    Excellent: 0.2,
-    Great: 0.6,
-    Good: 1.0,
-    Inaccuracy: 2.0,
-    Mistake: 5.0,
-};
 
 // We need this wrapped because we want to access two contexts,
 // and we can't do that in a function component.
