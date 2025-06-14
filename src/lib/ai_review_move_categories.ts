@@ -63,8 +63,8 @@ export type OtherCounters = {
 };
 
 export type ScoreLossList = {
-    black: number[];
-    white: number[];
+    black: { move: number; scoreLoss: number }[];
+    white: { move: number; scoreLoss: number }[];
 };
 
 export interface AiSummaryTableData {
@@ -88,13 +88,16 @@ export type ScoreDiffThresholds = {
     Mistake: number;
 };
 
-function medianList(numbers: number[]): number {
+function medianList(numbers: { scoreLoss: number }[]): number {
     const mid = numbers.length === 0 ? undefined : Math.floor(numbers.length / 2);
     if (mid === undefined) {
         return -1;
     }
 
-    const median = numbers.length % 2 !== 0 ? numbers[mid] : (numbers[mid] + numbers[mid - 1]) / 2;
+    const median =
+        numbers.length % 2 !== 0
+            ? numbers[mid].scoreLoss
+            : (numbers[mid].scoreLoss + numbers[mid - 1].scoreLoss) / 2;
     return median;
 }
 
@@ -162,7 +165,7 @@ function categorizeFastReview(
         const player = is_b_player ? "black" : "white";
         score_diff = is_b_player ? -1 * score_diff : score_diff;
         total_score_loss[player] += score_diff;
-        score_loss_list[player].push(score_diff);
+        score_loss_list[player].push({ move: move_index + 1, scoreLoss: score_diff });
 
         const thresholds = {
             Good: scoreDiffThresholds?.Good ?? DEFAULT_SCORE_DIFF_THRESHOLDS.Good,
@@ -240,12 +243,14 @@ function categorizeFullReviewNew(
             (ai_review?.moves[move_index].score ?? 0);
         score_loss = is_b_player ? -1 * score_loss : score_loss;
 
+        console.log("Player", player, "Move index", move_index, "score_loss", score_loss);
+
         if (includeNegativeScoreLoss || score_loss >= 0) {
             total_score_loss[player] += score_loss;
-            score_loss_list[player].push(score_loss);
+            score_loss_list[player].push({ move: move_index + 1, scoreLoss: score_loss });
         } else {
             // treat it as zero
-            score_loss_list[player].push(0);
+            score_loss_list[player].push({ move: move_index + 1, scoreLoss: 0 });
         }
 
         const thresholds = {
@@ -328,7 +333,7 @@ function categorizeFullReviewOld(
             (ai_review?.moves[current_move].score ?? 0);
         score_diff = is_b_player ? -1 * score_diff : score_diff;
         total_score_loss[player] += score_diff;
-        score_loss_list[player].push(score_diff);
+        score_loss_list[player].push({ move: current_move + 1, scoreLoss: score_diff });
 
         if (blue_move === undefined) {
             continue;
@@ -430,6 +435,7 @@ export interface AiReviewCategorization {
     median_score_loss: { black: number; white: number };
     strong_move_rate: { black: number; white: number };
     moves_pending: number;
+    uuid: string;
 }
 
 export function categorizeAiReview(
@@ -494,18 +500,24 @@ export function categorizeAiReview(
     const avg_score_loss = {
         black:
             score_loss_list.black.length > 0
-                ? Number(total_score_loss.black / score_loss_list.black.length)
+                ? Number(
+                      score_loss_list.black.reduce((sum, item) => sum + item.scoreLoss, 0) /
+                          score_loss_list.black.length,
+                  )
                 : 0,
         white:
             score_loss_list.white.length > 0
-                ? Number(total_score_loss.white / score_loss_list.white.length)
+                ? Number(
+                      score_loss_list.white.reduce((sum, item) => sum + item.scoreLoss, 0) /
+                          score_loss_list.white.length,
+                  )
                 : 0,
     };
 
     // Calculate median score loss
     const sortedScoreLoss = {
-        black: [...score_loss_list.black].sort((a, b) => a - b),
-        white: [...score_loss_list.white].sort((a, b) => a - b),
+        black: [...score_loss_list.black].sort((a, b) => a.scoreLoss - b.scoreLoss),
+        white: [...score_loss_list.white].sort((a, b) => a.scoreLoss - b.scoreLoss),
     };
 
     const median_score_loss = {
@@ -543,5 +555,6 @@ export function categorizeAiReview(
         median_score_loss,
         strong_move_rate,
         moves_pending: moves_missing,
+        uuid: ai_review.uuid,
     };
 }
