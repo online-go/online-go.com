@@ -21,6 +21,7 @@ import {
     ScoreDiffThresholds,
     CategorizationMethod,
     AiReviewCategorization,
+    DEFAULT_SCORE_DIFF_THRESHOLDS,
 } from "@/lib/ai_review_move_categories";
 import { MoveListPopover } from "@/components/AIReview/MoveListPopover";
 
@@ -189,13 +190,7 @@ export class AiSummaryTable extends React.Component<AiSummaryTableProperties, Ai
                 : ["Good", "Inaccuracy", "Mistake", "Blunder"];
 
         // Default values for display
-        const defaultThresholds: { [k: string]: number } = {
-            Excellent: 0.2,
-            Great: 0.6,
-            Good: 1.0,
-            Inaccuracy: 2.0,
-            Mistake: 5.0,
-        };
+        const defaultThresholds: { [k: string]: number } = { ...DEFAULT_SCORE_DIFF_THRESHOLDS };
         if (categorization_method === "old") {
             defaultThresholds.Good = 1;
             defaultThresholds.Inaccuracy = 2;
@@ -395,12 +390,12 @@ export class AiSummaryTable extends React.Component<AiSummaryTableProperties, Ai
                         </tr>
                         <tr>
                             <td colSpan={3}>{"Black"}</td>
-                            <td colSpan={2}>{formatted.avg_loss.black}</td>
+                            <td colSpan={2}>{formatted.avg_loss.black.toFixed(1)}</td>
                             <td></td>
                         </tr>
                         <tr>
                             <td colSpan={3}>{"White"}</td>
-                            <td colSpan={2}>{formatted.avg_loss.white}</td>
+                            <td colSpan={2}>{formatted.avg_loss.white.toFixed(1)}</td>
                             <td></td>
                         </tr>
                         <tr>
@@ -409,12 +404,12 @@ export class AiSummaryTable extends React.Component<AiSummaryTableProperties, Ai
                         </tr>
                         <tr>
                             <td colSpan={3}>{"Black"}</td>
-                            <td colSpan={2}>{formatted.median_score_loss.black}</td>
+                            <td colSpan={2}>{formatted.median_score_loss.black.toFixed(1)}</td>
                             <td></td>
                         </tr>
                         <tr>
                             <td colSpan={3}>{"White"}</td>
-                            <td colSpan={2}>{formatted.median_score_loss.white}</td>
+                            <td colSpan={2}>{formatted.median_score_loss.white.toFixed(1)}</td>
                             <td></td>
                         </tr>
                         <tr>
@@ -423,12 +418,18 @@ export class AiSummaryTable extends React.Component<AiSummaryTableProperties, Ai
                         </tr>
                         <tr>
                             <td colSpan={3}>{"Black"}</td>
-                            <td colSpan={2}>{formatted.strong_move_rate.black}%</td>
+                            <td colSpan={2}>{formatted.strong_move_rate.black.toFixed(0)}%</td>
                             <td></td>
                         </tr>
                         <tr>
                             <td colSpan={3}>{"White"}</td>
-                            <td colSpan={2}>{formatted.strong_move_rate.white}%</td>
+                            <td colSpan={2}>{formatted.strong_move_rate.white.toFixed(0)}%</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td colSpan={7} style={{ fontSize: "0.8em", color: "#666" }}>
+                                Review ID: {this.props.categorization?.uuid || "not available"}
+                            </td>
                             <td></td>
                         </tr>
                     </tbody>

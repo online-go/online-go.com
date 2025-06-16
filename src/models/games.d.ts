@@ -226,6 +226,7 @@ declare namespace rest_api {
     }
 
     interface AIReviewParams {
+        uuid: string;
         network_size: string;
         strength: number;
         type: "fast" | "full";
