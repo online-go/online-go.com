@@ -221,6 +221,7 @@ function categorizeFullReviewNew(
         white: { Excellent: [], Great: [], Good: [], Inaccuracy: [], Mistake: [], Blunder: [] },
     };
 
+    console.log("full review new categorisation... handicap_offset", handicap_offset);
     let moves_missing = 0;
     for (
         let move_index = handicap_offset;
@@ -238,12 +239,24 @@ function categorizeFullReviewNew(
         const is_b_player = move_player_list[move_index] === JGOFNumericPlayerColor.BLACK;
         const player = is_b_player ? "black" : "white";
 
-        let score_loss =
-            (ai_review?.moves[move_index + 1].score ?? 0) -
-            (ai_review?.moves[move_index].score ?? 0);
-        score_loss = is_b_player ? -1 * score_loss : score_loss;
+        const score_after_last_move = ai_review.moves[move_index].score!;
+        const score_after_blue_move = ai_review.moves[move_index].branches[0].score!;
 
-        console.log("Player", player, "Move index", move_index, "score_loss", score_loss);
+        const blue_scoreloss = score_after_last_move - score_after_blue_move;
+
+        const score_after_players_move = ai_review.moves[move_index + 1].score!;
+
+        const effective_score_loss =
+            score_after_last_move - score_after_players_move - blue_scoreloss;
+
+        const score_loss = is_b_player ? effective_score_loss : -1 * effective_score_loss;
+
+        console.log("Player", player, "to play at move index", move_index);
+        console.log("- score after last move", score_after_last_move.toFixed(3));
+        console.log("- score after blue move", score_after_blue_move.toFixed(3));
+        console.log("- blue scoreloss", blue_scoreloss.toFixed(3));
+        console.log("- score_after_players_move", score_after_players_move.toFixed(3));
+        console.log("- effective player score loss", score_loss.toFixed(3));
 
         if (includeNegativeScoreLoss || score_loss >= 0) {
             total_score_loss[player] += score_loss;
