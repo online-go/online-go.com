@@ -135,6 +135,7 @@
         "rollups",
         "roundrobin",
         "rrule",
+        "scoreloss",
         "seekgraph",
         "Seki",
         "semeai",
