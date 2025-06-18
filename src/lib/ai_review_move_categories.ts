@@ -251,12 +251,24 @@ function categorizeFullReviewNew(
 
         const score_loss = is_b_player ? effective_score_loss : -1 * effective_score_loss;
 
-        console.log("Player", player, "to play at move index", move_index);
-        console.log("- score after last move", score_after_last_move.toFixed(3));
-        console.log("- score after blue move", score_after_blue_move.toFixed(3));
-        console.log("- blue scoreloss", blue_scoreloss.toFixed(3));
-        console.log("- score_after_players_move", score_after_players_move.toFixed(3));
-        console.log("- effective player score loss", score_loss.toFixed(3));
+        console.log("------Player", player, "to play at move index", move_index, " ------");
+        console.log(
+            `(1) score after last move -> \nai_review.moves[${move_index}].score: `,
+            score_after_last_move.toFixed(3),
+        );
+        console.log(
+            ` (2) score after blue move would be played -> \nai_review.moves[${move_index}].branches[0].score: `,
+            score_after_blue_move.toFixed(3),
+        );
+        console.log(
+            `- blue scoreloss for move ${move_index + 1} ->\n (1) - (2): `,
+            blue_scoreloss.toFixed(3),
+        );
+        console.log(
+            `(3) score_after_players_move ->\n ai_review.moves[${move_index + 1}].score: `,
+            score_after_players_move.toFixed(3),
+        );
+        console.log(" => effective player score loss ->\n (1) - (3) - (2):", score_loss.toFixed(3));
 
         if (includeNegativeScoreLoss || score_loss >= 0) {
             total_score_loss[player] += score_loss;
