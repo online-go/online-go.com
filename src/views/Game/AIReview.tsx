@@ -586,8 +586,6 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                     }
                     if (next_move && sameIntersection(branch.moves[0], next_move)) {
                         found_next_move = true;
-                        branch.win_rate = next_win_rate;
-                        branch.score = next_score;
                         break;
                     }
                 }
@@ -640,15 +638,23 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                                 : JGOFNumericPlayerColor.BLACK;
                     }
 
+                    // Use local variables for display values
+                    let display_win_rate = branch.win_rate;
+                    let display_score = branch.score;
+                    if (next_move && sameIntersection(branch.moves[0], next_move)) {
+                        display_win_rate = next_win_rate;
+                        display_score = next_score;
+                    }
+
                     const delta: number =
                         this.state.use_score && this.ai_review.scores
                             ? next_player === JGOFNumericPlayerColor.WHITE
-                                ? (ai_review_move.score ?? 0) - (branch.score ?? 0)
-                                : (branch.score ?? 0) - (ai_review_move.score ?? 0)
+                                ? (ai_review_move.score ?? 0) - (display_score ?? 0)
+                                : (display_score ?? 0) - (ai_review_move.score ?? 0)
                             : 100 *
                               (next_player === JGOFNumericPlayerColor.WHITE
-                                  ? ai_review_move.win_rate - branch.win_rate
-                                  : branch.win_rate - ai_review_move.win_rate);
+                                  ? ai_review_move.win_rate - display_win_rate
+                                  : display_win_rate - ai_review_move.win_rate);
 
                     let key = delta.toFixed(1);
                     if (key === "0.0" || key === "-0.0") {
