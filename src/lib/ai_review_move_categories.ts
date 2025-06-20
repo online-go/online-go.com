@@ -259,6 +259,7 @@ function categorizeFullReviewNew(
         console.log(
             ` (2) score after blue move would be played -> \nai_review.moves[${move_index}].branches[0].score: `,
             score_after_blue_move.toFixed(3),
+            `(${ai_review.moves[move_index].branches[0].moves[0]["x"]},${ai_review.moves[move_index].branches[0].moves[0]["y"]})`,
         );
         console.log(
             `- blue scoreloss for move ${move_index + 1} ->\n (1) - (2): `,
@@ -267,6 +268,9 @@ function categorizeFullReviewNew(
         console.log(
             `(3) score_after_players_move ->\n ai_review.moves[${move_index + 1}].score: `,
             score_after_players_move.toFixed(3),
+            `(${ai_review.moves[move_index + 1].move["x"]},${
+                ai_review.moves[move_index + 1].move["y"]
+            })`,
         );
         console.log(" => effective player score loss ->\n (1) - (3) - (2):", score_loss.toFixed(3));
 
