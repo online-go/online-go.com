@@ -43,6 +43,7 @@
         "DATETIME",
         "dedup",
         "deepl",
+        "deepwiki",
         "deinit",
         "deinitialize",
         "devel",
