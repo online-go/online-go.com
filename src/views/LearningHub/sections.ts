@@ -70,134 +70,172 @@ import { Capture } from "./Sections/BasicSkills/Capture";
 import { BSEscape } from "./Sections/BasicSkills/BSEscape";
 import { Enclose } from "./Sections/BasicSkills/Enclose";
 import { FirstLine } from "./Sections/BasicSkills/FirstLine";
-import { ReduceLiberties } from "./Sections/BasicSkills/ReduceLiberties";
+import { BSLiberties } from "./Sections/BasicSkills/Liberties";
 import { Territory } from "./Sections/Fundamentals/Territory";
 
-export class FalseEyes extends LearningHubSection {
-    static section(): string {
-        return "false-eyes";
-    }
-    static title(): string {
-        return pgettext("Tutorial section on false eyes", "False Eyes");
-    }
-    static subtext(): string {
-        return pgettext("Tutorial section on false eyes", "Some eyes aren't really eyes");
-    }
-}
-export class CuttingStones extends LearningHubSection {
-    static section(): string {
-        return "cutting-stones";
-    }
-    static title(): string {
-        return pgettext("Tutorial section on cutting stones", "Cutting Stones");
-    }
-    static subtext(): string {
-        return pgettext("Tutorial section on cutting stones", "");
-    }
-}
-export class JumpingStones extends LearningHubSection {
-    static section(): string {
-        return "jumping-stones";
-    }
-    static title(): string {
-        return pgettext("Tutorial section on jumping stones", "Jumping Stones");
-    }
-    static subtext(): string {
-        return pgettext("Tutorial section on jumping stones", "");
-    }
-}
+import { BL1Atari } from "./Sections/BeginnerLevel1/Atari";
+import { EscapeFromNet } from "./Sections/BeginnerLevel1/EscapeFromNet";
+import { BL1CalculateEscape } from "./Sections/BeginnerLevel1/CalculateEscape";
+import { BL1Ladder } from "./Sections/BeginnerLevel1/Ladder";
+import { BL1CalculateLadder } from "./Sections/BeginnerLevel1/CalculateLadder";
+import { BL1DoubleAtari } from "./Sections/BeginnerLevel1/DoubleAtari";
+import { BL1Snapback } from "./Sections/BeginnerLevel1/Snapback";
+import { BL1Net } from "./Sections/BeginnerLevel1/Net";
+import { BL1ChaseDown } from "./Sections/BeginnerLevel1/ChaseDown";
+import { BL1Capture1 } from "./Sections/BeginnerLevel1/Capture1";
+import { BL1Capture2 } from "./Sections/BeginnerLevel1/Capture2";
+import { BL1Capture3 } from "./Sections/BeginnerLevel1/Capture3";
+import { BL1Capture4 } from "./Sections/BeginnerLevel1/Capture4";
+import { BL1Connect } from "./Sections/BeginnerLevel1/Connect";
+import { BL1Cut } from "./Sections/BeginnerLevel1/Cut";
+import { BL1CancelCut } from "./Sections/BeginnerLevel1/CancelCut";
+import { BL1Eye } from "./Sections/BeginnerLevel1/Eye";
+import { BL1FalseEye } from "./Sections/BeginnerLevel1/FalseEye";
+import { BL1CountEyes } from "./Sections/BeginnerLevel1/CountEyes";
+import { BL1CloseTerritory } from "./Sections/BeginnerLevel1/CloseTerritory";
+import { BL1ReduceTerritory } from "./Sections/BeginnerLevel1/ReduceTerritory";
+import { BL1CapturingRace1 } from "./Sections/BeginnerLevel1/CapturingRace1";
+import { BL1CapturingRace2 } from "./Sections/BeginnerLevel1/CapturingRace2";
+import { BL1Seki1 } from "./Sections/BeginnerLevel1/Seki1";
+import { BL1Seki2 } from "./Sections/BeginnerLevel1/Seki2";
+import { BL1LifeDeath1 } from "./Sections/BeginnerLevel1/LifeDeath1";
+import { BL1LifeDeath2 } from "./Sections/BeginnerLevel1/LifeDeath2";
+import { BL1LifeDeath3 } from "./Sections/BeginnerLevel1/LifeDeath3";
+import { BL1LifeDeath4 } from "./Sections/BeginnerLevel1/LifeDeath4";
+import { BL1LifeDeath5 } from "./Sections/BeginnerLevel1/LifeDeath5";
+import { BL1LifeDeath6 } from "./Sections/BeginnerLevel1/LifeDeath6";
+import { BL1LifeDeath7 } from "./Sections/BeginnerLevel1/LifeDeath7";
+import { BL1SerialAtari } from "./Sections/BeginnerLevel1/SerialAtari";
+import { BL1Ko } from "./Sections/BeginnerLevel1/Ko";
+import { BL1GoodPlay } from "./Sections/BeginnerLevel1/GoodPlay";
+import { BL1Block } from "./Sections/BeginnerLevel1/Block";
+import { BL1Stretch } from "./Sections/BeginnerLevel1/Stretch";
 
-export class Semeai extends LearningHubSection {
-    static section(): string {
-        return "semeai";
-    }
-    static title(): string {
-        return pgettext("Tutorial section on semeai", "Semeai");
-    }
-    static subtext(): string {
-        return pgettext("Tutorial section on semeai", "Attacking each other");
-    }
-}
-export class CountingLiberties extends LearningHubSection {
-    static section(): string {
-        return "counting-liberties";
-    }
-    static title(): string {
-        return pgettext("Tutorial section on counting liberties", "Counting Liberties");
-    }
-    static subtext(): string {
-        return pgettext(
-            "Tutorial section on counting liberties",
-            "Known when you can win a battle",
-        );
-    }
-}
-export class WhatIsGo extends LearningHubSection {
-    static section(): string {
-        return "what-is-go";
-    }
-    static title(): string {
-        return pgettext("Tutorial section on what is go", "What is Go?");
-    }
-    static subtext(): string {
-        return pgettext("Tutorial section on what is go", "");
-    }
-}
-export class SportOfGoAndGoAsArt extends LearningHubSection {
-    static section(): string {
-        return "sport-of-go-and-go-as-art";
-    }
-    static title(): string {
-        return pgettext("Tutorial section on the sport of Go", "Sport of Go");
-    }
-    static subtext(): string {
-        return pgettext("Tutorial section on the sport of Go", "Go as Art");
-    }
-}
-export class BenefitsOfLearningGo extends LearningHubSection {
-    static section(): string {
-        return "benefits-of-learning-go";
-    }
-    static title(): string {
-        return pgettext("Tutorial section on benefits to learning go", "Benefits of learning Go");
-    }
-    static subtext(): string {
-        return pgettext(
-            "Tutorial section on benefits to learning go",
-            "It's more than just a game!",
-        );
-    }
-}
-export class BasicMannersOfGo extends LearningHubSection {
-    static section(): string {
-        return "basic-manners-of-go";
-    }
-    static title(): string {
-        return pgettext("Tutorial section on the manners in the game", "Basic manners of Go");
-    }
-    static subtext(): string {
-        return pgettext("Tutorial section on the manners in the game", "Be polite, it's Go!");
-    }
-}
-export class Terminology extends LearningHubSection {
-    static section(): string {
-        return "terminology";
-    }
-    static title(): string {
-        return pgettext("Tutorial section on terminology", "Terminology");
-    }
-    static subtext(): string {
-        return pgettext("Tutorial section on terminology", "Say what now?");
-    }
-}
+// export class FalseEyes extends LearningHubSection {
+//     static section(): string {
+//         return "false-eyes";
+//     }
+//     static title(): string {
+//         return pgettext("Tutorial section on false eyes", "False Eyes");
+//     }
+//     static subtext(): string {
+//         return pgettext("Tutorial section on false eyes", "Some eyes aren't really eyes");
+//     }
+// }
+// export class CuttingStones extends LearningHubSection {
+//     static section(): string {
+//         return "cutting-stones";
+//     }
+//     static title(): string {
+//         return pgettext("Tutorial section on cutting stones", "Cutting Stones");
+//     }
+//     static subtext(): string {
+//         return pgettext("Tutorial section on cutting stones", "");
+//     }
+// }
+// export class JumpingStones extends LearningHubSection {
+//     static section(): string {
+//         return "jumping-stones";
+//     }
+//     static title(): string {
+//         return pgettext("Tutorial section on jumping stones", "Jumping Stones");
+//     }
+//     static subtext(): string {
+//         return pgettext("Tutorial section on jumping stones", "");
+//     }
+// }
+
+// export class Semeai extends LearningHubSection {
+//     static section(): string {
+//         return "semeai";
+//     }
+//     static title(): string {
+//         return pgettext("Tutorial section on semeai", "Semeai");
+//     }
+//     static subtext(): string {
+//         return pgettext("Tutorial section on semeai", "Attacking each other");
+//     }
+// }
+// export class CountingLiberties extends LearningHubSection {
+//     static section(): string {
+//         return "counting-liberties";
+//     }
+//     static title(): string {
+//         return pgettext("Tutorial section on counting liberties", "Counting Liberties");
+//     }
+//     static subtext(): string {
+//         return pgettext(
+//             "Tutorial section on counting liberties",
+//             "Known when you can win a battle",
+//         );
+//     }
+// }
+// export class WhatIsGo extends LearningHubSection {
+//     static section(): string {
+//         return "what-is-go";
+//     }
+//     static title(): string {
+//         return pgettext("Tutorial section on what is go", "What is Go?");
+//     }
+//     static subtext(): string {
+//         return pgettext("Tutorial section on what is go", "");
+//     }
+// }
+// export class SportOfGoAndGoAsArt extends LearningHubSection {
+//     static section(): string {
+//         return "sport-of-go-and-go-as-art";
+//     }
+//     static title(): string {
+//         return pgettext("Tutorial section on the sport of Go", "Sport of Go");
+//     }
+//     static subtext(): string {
+//         return pgettext("Tutorial section on the sport of Go", "Go as Art");
+//     }
+// }
+// export class BenefitsOfLearningGo extends LearningHubSection {
+//     static section(): string {
+//         return "benefits-of-learning-go";
+//     }
+//     static title(): string {
+//         return pgettext("Tutorial section on benefits to learning go", "Benefits of learning Go");
+//     }
+//     static subtext(): string {
+//         return pgettext(
+//             "Tutorial section on benefits to learning go",
+//             "It's more than just a game!",
+//         );
+//     }
+// }
+// export class BasicMannersOfGo extends LearningHubSection {
+//     static section(): string {
+//         return "basic-manners-of-go";
+//     }
+//     static title(): string {
+//         return pgettext("Tutorial section on the manners in the game", "Basic manners of Go");
+//     }
+//     static subtext(): string {
+//         return pgettext("Tutorial section on the manners in the game", "Be polite, it's Go!");
+//     }
+// }
+// export class Terminology extends LearningHubSection {
+//     static section(): string {
+//         return "terminology";
+//     }
+//     static title(): string {
+//         return pgettext("Tutorial section on terminology", "Terminology");
+//     }
+//     static subtext(): string {
+//         return pgettext("Tutorial section on terminology", "Say what now?");
+//     }
+// }
 
 export const sections: [string, any[]][] = [
     [
-        pgettext("Learning hub section title", "Fundamentals"),
+        pgettext("Learning hub section title", "1 Fundamentals"),
         [Intro, SelfCapture, Eyes, Ko, Territory, EndingTheGame, TheBoard],
     ],
     [
-        pgettext("Learning hub section title", "Basic Principles"),
+        pgettext("Learning hub section title", "2 Basic Principles"),
         [
             CountLiberties,
             CountChains,
@@ -220,7 +258,7 @@ export const sections: [string, any[]][] = [
         ],
     ],
     [
-        pgettext("Learning hub section title", "Basic Skills"),
+        pgettext("Learning hub section title", "3 Basic Skills"),
         [
             AtariToSide,
             AtariToStones,
@@ -248,9 +286,51 @@ export const sections: [string, any[]][] = [
             CorrectSide,
             Capture,
             BSEscape,
-            ReduceLiberties,
+            BSLiberties,
             Enclose,
             FirstLine,
+        ],
+    ],
+    [
+        pgettext("Learning hub section title", "4 Beginner Level 1"),
+        [
+            BL1Atari,
+            EscapeFromNet,
+            BL1CalculateEscape,
+            BL1CalculateLadder,
+            BL1Ladder,
+            BL1DoubleAtari,
+            BL1Snapback,
+            BL1Net,
+            BL1ChaseDown,
+            BL1Capture1,
+            BL1Capture2,
+            BL1Capture3,
+            BL1Capture4,
+            BL1Connect,
+            BL1Cut,
+            BL1CancelCut,
+            BL1Eye,
+            BL1FalseEye,
+            BL1CountEyes,
+            BL1CloseTerritory,
+            BL1ReduceTerritory,
+            BL1CapturingRace1,
+            BL1CapturingRace2,
+            BL1Seki1,
+            BL1Seki2,
+            BL1LifeDeath1,
+            BL1LifeDeath2,
+            BL1LifeDeath3,
+            BL1LifeDeath4,
+            BL1LifeDeath5,
+            BL1LifeDeath6,
+            BL1LifeDeath7,
+            BL1SerialAtari,
+            BL1Ko,
+            BL1GoodPlay,
+            BL1Block,
+            BL1Stretch,
         ],
     ],
 

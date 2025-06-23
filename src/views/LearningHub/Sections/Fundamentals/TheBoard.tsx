@@ -34,7 +34,7 @@ export class TheBoard extends LearningHubSection {
     static subtext(): string {
         return pgettext(
             "Tutorial section subtext on learning about the board",
-            "Corners, sides, and middle",
+            "Corners, sides and middle",
         );
     }
 }
@@ -86,7 +86,7 @@ class Page2 extends LearningPage {
 
     text() {
         return _(
-            "Go can be played on any size board, but the most common are 9x9 (which you should start on), 13x13, and the most popular, 19x19. Play on the right side of the board (not in a corner)",
+            "Go can be played on any size board, but the most common are 9x9 (which you should start on), 13x13, and the most popular, 19x19. Play on the right side of the board (not in a corner).",
         );
     }
     config(): GobanConfig {
@@ -134,7 +134,7 @@ class Page3 extends LearningPage {
 
     text() {
         return _(
-            'You will note that there are several circles on the board, these are called "Star Points". These are not particularly special, they are just useful for orienting yourself with the board. Play on a star point',
+            'You will note that there are several circles on the board, these are called "Star Points". These are not particularly special, they are just useful for orienting yourself with the board. Play on a star point.',
         );
     }
     config(): GobanConfig {

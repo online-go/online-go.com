@@ -20,10 +20,9 @@ import { GobanConfig } from "goban";
 import { LearningPage, LearningPageProperties } from "../../LearningPage";
 import { _, pgettext } from "@/lib/translate";
 import { LearningHubSection } from "../../LearningHubSection";
-
 import React from "react";
 
-export class EscapePossible extends LearningHubSection {
+export class BL1CalculateEscape extends LearningHubSection {
     static pages(): Array<typeof LearningPage> {
         return [
             Page01,
@@ -44,17 +43,26 @@ export class EscapePossible extends LearningHubSection {
             Page16,
             Page17,
             Page18,
+            Page19,
+            Page20,
+            Page21,
+            Page22,
+            Page23,
+            Page24,
         ];
     }
     static section(): string {
-        return "escape-possible";
+        return "bl1-calculate-escape";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning can you escape", "Escape Possible");
+        return pgettext(
+            "Tutorial section name on learning can white escape",
+            "4.3 Calculate Escape",
+        );
     }
     static subtext(): string {
         return pgettext(
-            "Tutorial section subtext on learning on can you escape",
+            "Tutorial section subtext on learning on can white escape",
             "Can you escape?",
         );
     }
@@ -79,7 +87,7 @@ class Page01 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "yes") {
+                if (selectedValue === "no") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -88,11 +96,7 @@ class Page01 extends LearningPage {
 
             return (
                 <div>
-                    <p>
-                        {_(
-                            "If your stones are under attack, you would like to escape. Before you try to escape, make sure you can save your stones. If not, you should not add stones to a lost group. White to play. Can White escape with the marked chain?",
-                        )}
-                    </p>
+                    <p>{_("White to play. Can the marked stones escape?")}</p>
                     <label>
                         <input
                             type="radio"
@@ -125,10 +129,10 @@ class Page01 extends LearningPage {
             height: 9,
             mode: "puzzle",
             initial_state: {
-                black: "egdhei",
-                white: "ggeh",
+                black: "deeecfffcgfg",
+                white: "cdcebfdfef",
             },
-            marks: { triangle: "eh" },
+            marks: { triangle: "efdf" },
             phase: "finished",
         };
     }
@@ -162,7 +166,7 @@ class Page02 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("White to play. Can White escape with the marked chain?")}</p>
+                    <p>{_("White to play. Can the marked stones escape?")}</p>
                     <label>
                         <input
                             type="radio"
@@ -195,10 +199,10 @@ class Page02 extends LearningPage {
             height: 9,
             mode: "puzzle",
             initial_state: {
-                black: "ccdgfgeh",
-                white: "gfeggg",
+                black: "cefecfffdgegggfh",
+                white: "bfdfefbgcgdheh",
             },
-            marks: { triangle: "eg" },
+            marks: { triangle: "efdf" },
             phase: "finished",
         };
     }
@@ -232,7 +236,7 @@ class Page03 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("White to play. Can White escape with the marked chain?")}</p>
+                    <p>{_("White to play. Can the marked stones escape?")}</p>
                     <label>
                         <input
                             type="radio"
@@ -265,86 +269,16 @@ class Page03 extends LearningPage {
             height: 9,
             mode: "puzzle",
             initial_state: {
-                black: "ccdgegdhfh",
-                white: "fgggehhh",
+                black: "ceahbhdh",
+                white: "aibici",
             },
-            marks: { triangle: "eh" },
+            marks: { triangle: "cibiai" },
             phase: "finished",
         };
     }
 }
 
 class Page04 extends LearningPage {
-    constructor(props: LearningPageProperties) {
-        super(props);
-    }
-
-    text() {
-        return (
-            <MultipleChoice
-                onCorrectAnswer={this.onCorrectAnswer}
-                onWrongAnswer={this.onWrongAnswer}
-            />
-        );
-        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
-            const [value, setValue] = React.useState<string>("");
-
-            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-                const selectedValue = event.target.value;
-                setValue(selectedValue);
-
-                if (selectedValue === "no") {
-                    props.onCorrectAnswer();
-                } else if (selectedValue !== "") {
-                    props.onWrongAnswer();
-                }
-            };
-
-            return (
-                <div>
-                    <p>{_("White to play. Can White escape with the marked chain?")}</p>
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="yes"
-                            checked={value === "yes"}
-                            onChange={handleChange}
-                        />
-                        yes
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="no"
-                            checked={value === "no"}
-                            onChange={handleChange}
-                        />
-                        no
-                    </label>
-                    <br />
-                </div>
-            );
-        }
-    }
-    config(): GobanConfig {
-        return {
-            width: 9,
-            height: 9,
-            mode: "puzzle",
-            initial_state: {
-                black: "ccdgegchfhdi",
-                white: "fgggdhehhh",
-            },
-            marks: { triangle: "ehdh" },
-            phase: "finished",
-        };
-    }
-}
-
-class Page05 extends LearningPage {
     constructor(props: LearningPageProperties) {
         super(props);
     }
@@ -372,7 +306,7 @@ class Page05 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("White to play. Can White escape with the marked chain?")}</p>
+                    <p>{_("White to play. Can the marked stones escape?")}</p>
                     <label>
                         <input
                             type="radio"
@@ -405,10 +339,80 @@ class Page05 extends LearningPage {
             height: 9,
             mode: "puzzle",
             initial_state: {
-                black: "eigi",
-                white: "fi",
+                black: "cecfefcgdheh",
+                white: "gcgedfgfdg",
             },
-            marks: { triangle: "fi" },
+            marks: { triangle: "dgdf" },
+            phase: "finished",
+        };
+    }
+}
+
+class Page05 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        return (
+            <MultipleChoice
+                onCorrectAnswer={this.onCorrectAnswer}
+                onWrongAnswer={this.onWrongAnswer}
+            />
+        );
+        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
+            const [value, setValue] = React.useState<string>("");
+
+            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+                const selectedValue = event.target.value;
+                setValue(selectedValue);
+
+                if (selectedValue === "no") {
+                    props.onCorrectAnswer();
+                } else if (selectedValue !== "") {
+                    props.onWrongAnswer();
+                }
+            };
+
+            return (
+                <div>
+                    <p>{_("White to play. Can the marked stones escape?")}</p>
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="yes"
+                            checked={value === "yes"}
+                            onChange={handleChange}
+                        />
+                        yes
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="no"
+                            checked={value === "no"}
+                            onChange={handleChange}
+                        />
+                        no
+                    </label>
+                    <br />
+                </div>
+            );
+        }
+    }
+    config(): GobanConfig {
+        return {
+            width: 9,
+            height: 9,
+            mode: "puzzle",
+            initial_state: {
+                black: "fgdhfheifi",
+                white: "efegehdi",
+            },
+            marks: { triangle: "di" },
             phase: "finished",
         };
     }
@@ -442,7 +446,7 @@ class Page06 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("White to play. Can White escape with the marked chain?")}</p>
+                    <p>{_("White to play. Can the marked stones escape?")}</p>
                     <label>
                         <input
                             type="radio"
@@ -475,10 +479,10 @@ class Page06 extends LearningPage {
             height: 9,
             mode: "puzzle",
             initial_state: {
-                black: "ccehfhei",
-                white: "ggghfi",
+                black: "ccddbedebfdfcgdg",
+                white: "bccdcecfbgbhch",
             },
-            marks: { triangle: "fi" },
+            marks: { triangle: "cfcecd" },
             phase: "finished",
         };
     }
@@ -503,7 +507,7 @@ class Page07 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "yes") {
+                if (selectedValue === "no") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -512,7 +516,7 @@ class Page07 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("White to play. Can White escape with the marked chain?")}</p>
+                    <p>{_("White to play. Can the marked stones escape?")}</p>
                     <label>
                         <input
                             type="radio"
@@ -545,10 +549,10 @@ class Page07 extends LearningPage {
             height: 9,
             mode: "puzzle",
             initial_state: {
-                black: "ccceehfhdi",
-                white: "gggheifi",
+                black: "dedfbgcgegeh",
+                white: "cdcecfdgdh",
             },
-            marks: { triangle: "fiei" },
+            marks: { triangle: "dhdg" },
             phase: "finished",
         };
     }
@@ -582,7 +586,7 @@ class Page08 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("White to play. Can White escape with the marked chain?")}</p>
+                    <p>{_("White to play. Can the marked stones escape?")}</p>
                     <label>
                         <input
                             type="radio"
@@ -615,10 +619,10 @@ class Page08 extends LearningPage {
             height: 9,
             mode: "puzzle",
             initial_state: {
-                black: "ccehfhdi",
-                white: "ggeifi",
+                black: "cbdbcdddbeeecfff",
+                white: "bcbdedfdcedege",
             },
-            marks: { triangle: "fiei" },
+            marks: { triangle: "dece" },
             phase: "finished",
         };
     }
@@ -652,7 +656,7 @@ class Page09 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("White to play. Can White escape with the marked chain?")}</p>
+                    <p>{_("White to play. Can the marked stones escape?")}</p>
                     <label>
                         <input
                             type="radio"
@@ -685,10 +689,10 @@ class Page09 extends LearningPage {
             height: 9,
             mode: "puzzle",
             initial_state: {
-                black: "ccefdgfgdhfh",
-                white: "gfegggehgh",
+                black: "dfefbgcgegbheh",
+                white: "cdcecfdgchdh",
             },
-            marks: { triangle: "eheg" },
+            marks: { triangle: "dhchdg" },
             phase: "finished",
         };
     }
@@ -722,7 +726,7 @@ class Page10 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("White to play. Can White escape with the marked chain?")}</p>
+                    <p>{_("White to play. Can the marked stones escape?")}</p>
                     <label>
                         <input
                             type="radio"
@@ -755,10 +759,10 @@ class Page10 extends LearningPage {
             height: 9,
             mode: "puzzle",
             initial_state: {
-                black: "ecgceeffdgfgeh",
-                white: "gegfegggfhgh",
+                black: "gcffgfegggeh",
+                white: "dfefcgfgfh",
             },
-            marks: { triangle: "eg" },
+            marks: { triangle: "fhfg" },
             phase: "finished",
         };
     }
@@ -783,7 +787,7 @@ class Page11 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "yes") {
+                if (selectedValue === "no") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -792,7 +796,7 @@ class Page11 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("White to play. Can White escape with the marked chain?")}</p>
+                    <p>{_("White to play. Can the marked stones escape?")}</p>
                     <label>
                         <input
                             type="radio"
@@ -825,10 +829,10 @@ class Page11 extends LearningPage {
             height: 9,
             mode: "puzzle",
             initial_state: {
-                black: "egehgheigi",
-                white: "gdgffhfi",
+                black: "fccededfffcgegch",
+                white: "cccdbebfcfdgdh",
             },
-            marks: { triangle: "fifh" },
+            marks: { triangle: "dhdg" },
             phase: "finished",
         };
     }
@@ -862,7 +866,7 @@ class Page12 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("White to play. Can White escape with the marked chain?")}</p>
+                    <p>{_("White to play. Can the marked stones escape?")}</p>
                     <label>
                         <input
                             type="radio"
@@ -895,10 +899,10 @@ class Page12 extends LearningPage {
             height: 9,
             mode: "puzzle",
             initial_state: {
-                black: "egggehgheigi",
-                white: "gcgdgffhfi",
+                black: "dfffcgegchehci",
+                white: "cecfdgdhfhdi",
             },
-            marks: { triangle: "fifh" },
+            marks: { triangle: "didhdg" },
             phase: "finished",
         };
     }
@@ -932,7 +936,7 @@ class Page13 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("White to play. Can White escape with the marked chain?")}</p>
+                    <p>{_("Black to play. Can the marked stones escape?")}</p>
                     <label>
                         <input
                             type="radio"
@@ -965,10 +969,10 @@ class Page13 extends LearningPage {
             height: 9,
             mode: "puzzle",
             initial_state: {
-                black: "efdgfgdhfh",
-                white: "gcgeegeh",
+                black: "bcccddcedecg",
+                white: "bbacdcecbdcd",
             },
-            marks: { triangle: "eheg" },
+            marks: { triangle: "ccbc" },
             phase: "finished",
         };
     }
@@ -993,7 +997,7 @@ class Page14 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "yes") {
+                if (selectedValue === "no") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -1002,7 +1006,7 @@ class Page14 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("White to play. Can White escape with the marked chain?")}</p>
+                    <p>{_("Black to play. Can the marked stones escape?")}</p>
                     <label>
                         <input
                             type="radio"
@@ -1035,10 +1039,10 @@ class Page14 extends LearningPage {
             height: 9,
             mode: "puzzle",
             initial_state: {
-                black: "eeefgfegggfh",
-                white: "hdgeffhffg",
+                black: "gchcedfdefgg",
+                white: "ecfcddgdeege",
             },
-            marks: { triangle: "fgff" },
+            marks: { triangle: "fded" },
             phase: "finished",
         };
     }
@@ -1072,7 +1076,7 @@ class Page15 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("White to play. Can White escape with the marked chain?")}</p>
+                    <p>{_("Black to play. Can the marked stones escape?")}</p>
                     <label>
                         <input
                             type="radio"
@@ -1105,86 +1109,16 @@ class Page15 extends LearningPage {
             height: 9,
             mode: "puzzle",
             initial_state: {
-                black: "ccefffdgggehgh",
-                white: "gegfegfghghh",
+                black: "ecgcbdcddfef",
+                white: "cefecfffdgeg",
             },
-            marks: { triangle: "fgeg" },
+            marks: { triangle: "efdf" },
             phase: "finished",
         };
     }
 }
 
 class Page16 extends LearningPage {
-    constructor(props: LearningPageProperties) {
-        super(props);
-    }
-
-    text() {
-        return (
-            <MultipleChoice
-                onCorrectAnswer={this.onCorrectAnswer}
-                onWrongAnswer={this.onWrongAnswer}
-            />
-        );
-        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
-            const [value, setValue] = React.useState<string>("");
-
-            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-                const selectedValue = event.target.value;
-                setValue(selectedValue);
-
-                if (selectedValue === "yes") {
-                    props.onCorrectAnswer();
-                } else if (selectedValue !== "") {
-                    props.onWrongAnswer();
-                }
-            };
-
-            return (
-                <div>
-                    <p>{_("White to play. Can White escape with the marked chain?")}</p>
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="yes"
-                            checked={value === "yes"}
-                            onChange={handleChange}
-                        />
-                        yes
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="no"
-                            checked={value === "no"}
-                            onChange={handleChange}
-                        />
-                        no
-                    </label>
-                    <br />
-                </div>
-            );
-        }
-    }
-    config(): GobanConfig {
-        return {
-            width: 9,
-            height: 9,
-            mode: "puzzle",
-            initial_state: {
-                black: "ccffdgggehfhgh",
-                white: "eegegfegfghghh",
-            },
-            marks: { triangle: "fgeg" },
-            phase: "finished",
-        };
-    }
-}
-
-class Page17 extends LearningPage {
     constructor(props: LearningPageProperties) {
         super(props);
     }
@@ -1212,7 +1146,7 @@ class Page17 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("White to play. Can White escape with the marked chain?")}</p>
+                    <p>{_("Black to play. Can the marked stones escape?")}</p>
                     <label>
                         <input
                             type="radio"
@@ -1245,10 +1179,80 @@ class Page17 extends LearningPage {
             height: 9,
             mode: "puzzle",
             initial_state: {
-                black: "dfefcgfgggeh",
-                white: "ffgfhfeghg",
+                black: "eefeffcgdggggh",
+                white: "edfddegegfegfg",
             },
-            marks: { triangle: "eg" },
+            marks: { triangle: "fffeee" },
+            phase: "finished",
+        };
+    }
+}
+
+class Page17 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        return (
+            <MultipleChoice
+                onCorrectAnswer={this.onCorrectAnswer}
+                onWrongAnswer={this.onWrongAnswer}
+            />
+        );
+        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
+            const [value, setValue] = React.useState<string>("");
+
+            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+                const selectedValue = event.target.value;
+                setValue(selectedValue);
+
+                if (selectedValue === "yes") {
+                    props.onCorrectAnswer();
+                } else if (selectedValue !== "") {
+                    props.onWrongAnswer();
+                }
+            };
+
+            return (
+                <div>
+                    <p>{_("Black to play. Can the marked stones escape?")}</p>
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="yes"
+                            checked={value === "yes"}
+                            onChange={handleChange}
+                        />
+                        yes
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="no"
+                            checked={value === "no"}
+                            onChange={handleChange}
+                        />
+                        no
+                    </label>
+                    <br />
+                </div>
+            );
+        }
+    }
+    config(): GobanConfig {
+        return {
+            width: 9,
+            height: 9,
+            mode: "puzzle",
+            initial_state: {
+                black: "bdcdddbfcgeggg",
+                white: "bcccecbecedeee",
+            },
+            marks: { triangle: "ddcdbd" },
             phase: "finished",
         };
     }
@@ -1282,7 +1286,7 @@ class Page18 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("White to play. Can White escape with the marked chain?")}</p>
+                    <p>{_("Black to play. Can the marked stones escape?")}</p>
                     <label>
                         <input
                             type="radio"
@@ -1315,10 +1319,430 @@ class Page18 extends LearningPage {
             height: 9,
             mode: "puzzle",
             initial_state: {
-                black: "dgfgdhfhei",
-                white: "ecgcegeh",
+                black: "cbccddeddecfcg",
+                white: "dceccdceeedfef",
             },
-            marks: { triangle: "eheg" },
+            marks: { triangle: "deeddd" },
+            phase: "finished",
+        };
+    }
+}
+
+class Page19 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        return (
+            <MultipleChoice
+                onCorrectAnswer={this.onCorrectAnswer}
+                onWrongAnswer={this.onWrongAnswer}
+            />
+        );
+        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
+            const [value, setValue] = React.useState<string>("");
+
+            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+                const selectedValue = event.target.value;
+                setValue(selectedValue);
+
+                if (selectedValue === "no") {
+                    props.onCorrectAnswer();
+                } else if (selectedValue !== "") {
+                    props.onWrongAnswer();
+                }
+            };
+
+            return (
+                <div>
+                    <p>{_("Black to play. Can the marked stones escape?")}</p>
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="yes"
+                            checked={value === "yes"}
+                            onChange={handleChange}
+                        />
+                        yes
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="no"
+                            checked={value === "no"}
+                            onChange={handleChange}
+                        />
+                        no
+                    </label>
+                    <br />
+                </div>
+            );
+        }
+    }
+    config(): GobanConfig {
+        return {
+            width: 9,
+            height: 9,
+            mode: "puzzle",
+            initial_state: {
+                black: "gbccdcgcedfdfecg",
+                white: "ecfcddgdbecegeff",
+            },
+            marks: { triangle: "fefded" },
+            phase: "finished",
+        };
+    }
+}
+
+class Page20 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        return (
+            <MultipleChoice
+                onCorrectAnswer={this.onCorrectAnswer}
+                onWrongAnswer={this.onWrongAnswer}
+            />
+        );
+        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
+            const [value, setValue] = React.useState<string>("");
+
+            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+                const selectedValue = event.target.value;
+                setValue(selectedValue);
+
+                if (selectedValue === "no") {
+                    props.onCorrectAnswer();
+                } else if (selectedValue !== "") {
+                    props.onWrongAnswer();
+                }
+            };
+
+            return (
+                <div>
+                    <p>{_("Black to play. Can the marked stones escape?")}</p>
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="yes"
+                            checked={value === "yes"}
+                            onChange={handleChange}
+                        />
+                        yes
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="no"
+                            checked={value === "no"}
+                            onChange={handleChange}
+                        />
+                        no
+                    </label>
+                    <br />
+                </div>
+            );
+        }
+    }
+    config(): GobanConfig {
+        return {
+            width: 9,
+            height: 9,
+            mode: "puzzle",
+            initial_state: {
+                black: "deeebfcfdfegdhehdi",
+                white: "efffbgcgdgfgfheifi",
+            },
+            marks: { triangle: "diehdheg" },
+            phase: "finished",
+        };
+    }
+}
+
+class Page21 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        return (
+            <MultipleChoice
+                onCorrectAnswer={this.onCorrectAnswer}
+                onWrongAnswer={this.onWrongAnswer}
+            />
+        );
+        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
+            const [value, setValue] = React.useState<string>("");
+
+            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+                const selectedValue = event.target.value;
+                setValue(selectedValue);
+
+                if (selectedValue === "no") {
+                    props.onCorrectAnswer();
+                } else if (selectedValue !== "") {
+                    props.onWrongAnswer();
+                }
+            };
+
+            return (
+                <div>
+                    <p>{_("Black to play. Can the marked stones escape?")}</p>
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="yes"
+                            checked={value === "yes"}
+                            onChange={handleChange}
+                        />
+                        yes
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="no"
+                            checked={value === "no"}
+                            onChange={handleChange}
+                        />
+                        no
+                    </label>
+                    <br />
+                </div>
+            );
+        }
+    }
+    config(): GobanConfig {
+        return {
+            width: 9,
+            height: 9,
+            mode: "puzzle",
+            initial_state: {
+                black: "fbgcedfdeedfffgfdgehhh",
+                white: "dcddgddefegeefhfegfggh",
+            },
+            marks: { triangle: "gfff" },
+            phase: "finished",
+        };
+    }
+}
+
+class Page22 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        return (
+            <MultipleChoice
+                onCorrectAnswer={this.onCorrectAnswer}
+                onWrongAnswer={this.onWrongAnswer}
+            />
+        );
+        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
+            const [value, setValue] = React.useState<string>("");
+
+            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+                const selectedValue = event.target.value;
+                setValue(selectedValue);
+
+                if (selectedValue === "no") {
+                    props.onCorrectAnswer();
+                } else if (selectedValue !== "") {
+                    props.onWrongAnswer();
+                }
+            };
+
+            return (
+                <div>
+                    <p>{_("Black to play. Can the marked stones escape?")}</p>
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="yes"
+                            checked={value === "yes"}
+                            onChange={handleChange}
+                        />
+                        yes
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="no"
+                            checked={value === "no"}
+                            onChange={handleChange}
+                        />
+                        no
+                    </label>
+                    <br />
+                </div>
+            );
+        }
+    }
+    config(): GobanConfig {
+        return {
+            width: 9,
+            height: 9,
+            mode: "puzzle",
+            initial_state: {
+                black: "cbccdddeeecfffcg",
+                white: "dcfccdcefedfefeh",
+            },
+            marks: { triangle: "eededd" },
+            phase: "finished",
+        };
+    }
+}
+
+class Page23 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        return (
+            <MultipleChoice
+                onCorrectAnswer={this.onCorrectAnswer}
+                onWrongAnswer={this.onWrongAnswer}
+            />
+        );
+        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
+            const [value, setValue] = React.useState<string>("");
+
+            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+                const selectedValue = event.target.value;
+                setValue(selectedValue);
+
+                if (selectedValue === "yes") {
+                    props.onCorrectAnswer();
+                } else if (selectedValue !== "") {
+                    props.onWrongAnswer();
+                }
+            };
+
+            return (
+                <div>
+                    <p>{_("Black to play. Can the marked stones escape?")}</p>
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="yes"
+                            checked={value === "yes"}
+                            onChange={handleChange}
+                        />
+                        yes
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="no"
+                            checked={value === "no"}
+                            onChange={handleChange}
+                        />
+                        no
+                    </label>
+                    <br />
+                </div>
+            );
+        }
+    }
+    config(): GobanConfig {
+        return {
+            width: 9,
+            height: 9,
+            mode: "puzzle",
+            initial_state: {
+                black: "dbdcgchchegf",
+                white: "fbgbecgdhdfe",
+            },
+            marks: { triangle: "hcgc" },
+            phase: "finished",
+        };
+    }
+}
+
+class Page24 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        return (
+            <MultipleChoice
+                onCorrectAnswer={this.onCorrectAnswer}
+                onWrongAnswer={this.onWrongAnswer}
+            />
+        );
+        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
+            const [value, setValue] = React.useState<string>("");
+
+            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+                const selectedValue = event.target.value;
+                setValue(selectedValue);
+
+                if (selectedValue === "yes") {
+                    props.onCorrectAnswer();
+                } else if (selectedValue !== "") {
+                    props.onWrongAnswer();
+                }
+            };
+
+            return (
+                <div>
+                    <p>{_("Black to play. Can the marked stones escape?")}</p>
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="yes"
+                            checked={value === "yes"}
+                            onChange={handleChange}
+                        />
+                        yes
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="no"
+                            checked={value === "no"}
+                            onChange={handleChange}
+                        />
+                        no
+                    </label>
+                    <br />
+                </div>
+            );
+        }
+    }
+    config(): GobanConfig {
+        return {
+            width: 9,
+            height: 9,
+            mode: "puzzle",
+            initial_state: {
+                black: "gcgfhfegfg",
+                white: "fdgeffgghg",
+            },
+            marks: { triangle: "hfgf" },
             phase: "finished",
         };
     }

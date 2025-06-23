@@ -20,10 +20,9 @@ import { GobanConfig } from "goban";
 import { LearningPage, LearningPageProperties } from "../../LearningPage";
 import { _, pgettext } from "@/lib/translate";
 import { LearningHubSection } from "../../LearningHubSection";
-
 import React from "react";
 
-export class EscapePossible extends LearningHubSection {
+export class BL1Seki1 extends LearningHubSection {
     static pages(): Array<typeof LearningPage> {
         return [
             Page01,
@@ -40,23 +39,16 @@ export class EscapePossible extends LearningHubSection {
             Page12,
             Page13,
             Page14,
-            Page15,
-            Page16,
-            Page17,
-            Page18,
         ];
     }
     static section(): string {
-        return "escape-possible";
+        return "bl1-seki-1";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning can you escape", "Escape Possible");
+        return pgettext("Tutorial section name on learning is it seki", "4.24 Seki");
     }
     static subtext(): string {
-        return pgettext(
-            "Tutorial section subtext on learning on can you escape",
-            "Can you escape?",
-        );
+        return pgettext("Tutorial section subtext on learning on is it seki", "Is this seki?");
     }
 }
 
@@ -79,7 +71,7 @@ class Page01 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "yes") {
+                if (selectedValue === "seki") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -90,29 +82,43 @@ class Page01 extends LearningPage {
                 <div>
                     <p>
                         {_(
-                            "If your stones are under attack, you would like to escape. Before you try to escape, make sure you can save your stones. If not, you should not add stones to a lost group. White to play. Can White escape with the marked chain?",
+                            "Both marked chains have two liberties. If White or Black plays at A or B, he puts his own chain in atari. So, both players will not play at A or B. This is called 'seki'. The position stays as it is on the board. When the game is finished, neither group is dead. The empty points in between will stay empty. These points do not count as territory for either of the players.",
                         )}
+                    </p>
+                    <p>
+                        {_("If White is to play, who will win this capturing race, or is it seki?")}
                     </p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="yes"
-                            checked={value === "yes"}
+                            value="Black"
+                            checked={value === "Black"}
                             onChange={handleChange}
                         />
-                        yes
+                        Black
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="no"
-                            checked={value === "no"}
+                            value="White"
+                            checked={value === "White"}
                             onChange={handleChange}
                         />
-                        no
+                        White
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="seki"
+                            checked={value === "seki"}
+                            onChange={handleChange}
+                        />
+                        seki
                     </label>
                     <br />
                 </div>
@@ -121,14 +127,15 @@ class Page01 extends LearningPage {
     }
     config(): GobanConfig {
         return {
-            width: 9,
-            height: 9,
+            width: 19,
+            height: 19,
             mode: "puzzle",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "egdhei",
-                white: "ggeh",
+                black: "cpcqcrcsdpepfqfrfs",
+                white: "dqdrdseqfpgpgqgrgs",
             },
-            marks: { triangle: "eh" },
+            marks: { triangle: "dqdrdseqfqfrfs", A: "er", B: "es" },
             phase: "finished",
         };
     }
@@ -153,7 +160,7 @@ class Page02 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "yes") {
+                if (selectedValue === "seki") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -162,27 +169,43 @@ class Page02 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("White to play. Can White escape with the marked chain?")}</p>
+                    <p>
+                        {_(
+                            "Here, both marked chains have one eye and they share a common liberty at A. If White or Black plays at A, he puts his own chain in atari. So, both players will not play at A. This is again seki.",
+                        )}
+                    </p>
+                    <p>{_("White to play. Who will win this capturing race, or is it seki?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="yes"
-                            checked={value === "yes"}
+                            value="Black"
+                            checked={value === "Black"}
                             onChange={handleChange}
                         />
-                        yes
+                        Black
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="no"
-                            checked={value === "no"}
+                            value="White"
+                            checked={value === "White"}
                             onChange={handleChange}
                         />
-                        no
+                        White
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="seki"
+                            checked={value === "seki"}
+                            onChange={handleChange}
+                        />
+                        seki
                     </label>
                     <br />
                 </div>
@@ -191,14 +214,15 @@ class Page02 extends LearningPage {
     }
     config(): GobanConfig {
         return {
-            width: 9,
-            height: 9,
+            width: 19,
+            height: 19,
             mode: "puzzle",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "ccdgfgeh",
-                white: "gfeggg",
+                black: "alarblbrbsclcmcncocpcqdqeqfqgqgrgs",
+                white: "amaoaqbmbnbobpbqcrdrdserfrfs",
             },
-            marks: { triangle: "eg" },
+            marks: { triangle: "arbrbscrdrdserfrfs", A: "cs" },
             phase: "finished",
         };
     }
@@ -223,7 +247,7 @@ class Page03 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "no") {
+                if (selectedValue === "seki") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -232,27 +256,38 @@ class Page03 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("White to play. Can White escape with the marked chain?")}</p>
+                    <p>{_("White to play. Who will win this capturing race, or is it seki?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="yes"
-                            checked={value === "yes"}
+                            value="Black"
+                            checked={value === "Black"}
                             onChange={handleChange}
                         />
-                        yes
+                        Black
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="no"
-                            checked={value === "no"}
+                            value="White"
+                            checked={value === "White"}
                             onChange={handleChange}
                         />
-                        no
+                        White
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="seki"
+                            checked={value === "seki"}
+                            onChange={handleChange}
+                        />
+                        seki
                     </label>
                     <br />
                 </div>
@@ -261,14 +296,15 @@ class Page03 extends LearningPage {
     }
     config(): GobanConfig {
         return {
-            width: 9,
-            height: 9,
+            width: 19,
+            height: 19,
             mode: "puzzle",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "ccdgegdhfh",
-                white: "fgggehhh",
+                black: "cpdpepfpbqfqbrerbses",
+                white: "cqdqeqgqcrfrhrcsfs",
             },
-            marks: { triangle: "eh" },
+            marks: { triangle: "escsercreqdqcq" },
             phase: "finished",
         };
     }
@@ -293,7 +329,7 @@ class Page04 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "no") {
+                if (selectedValue === "seki") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -302,27 +338,38 @@ class Page04 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("White to play. Can White escape with the marked chain?")}</p>
+                    <p>{_("White to play. Who will win this capturing race, or is it seki?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="yes"
-                            checked={value === "yes"}
+                            value="Black"
+                            checked={value === "Black"}
                             onChange={handleChange}
                         />
-                        yes
+                        Black
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="no"
-                            checked={value === "no"}
+                            value="White"
+                            checked={value === "White"}
                             onChange={handleChange}
                         />
-                        no
+                        White
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="seki"
+                            checked={value === "seki"}
+                            onChange={handleChange}
+                        />
+                        seki
                     </label>
                     <br />
                 </div>
@@ -331,14 +378,15 @@ class Page04 extends LearningPage {
     }
     config(): GobanConfig {
         return {
-            width: 9,
-            height: 9,
+            width: 19,
+            height: 19,
             mode: "puzzle",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "ccdgegchfhdi",
-                white: "fgggdhehhh",
+                black: "codoeocpfpcqfqcrfrcsfs",
+                white: "fogodpepgpdqgqdrgrdsgs",
             },
-            marks: { triangle: "ehdh" },
+            marks: { triangle: "fsdsfrdrfqdqfpepdp" },
             phase: "finished",
         };
     }
@@ -363,7 +411,7 @@ class Page05 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "yes") {
+                if (selectedValue === "seki") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -372,27 +420,38 @@ class Page05 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("White to play. Can White escape with the marked chain?")}</p>
+                    <p>{_("White to play. Who will win this capturing race, or is it seki?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="yes"
-                            checked={value === "yes"}
+                            value="Black"
+                            checked={value === "Black"}
                             onChange={handleChange}
                         />
-                        yes
+                        Black
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="no"
-                            checked={value === "no"}
+                            value="White"
+                            checked={value === "White"}
                             onChange={handleChange}
                         />
-                        no
+                        White
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="seki"
+                            checked={value === "seki"}
+                            onChange={handleChange}
+                        />
+                        seki
                     </label>
                     <br />
                 </div>
@@ -401,14 +460,15 @@ class Page05 extends LearningPage {
     }
     config(): GobanConfig {
         return {
-            width: 9,
-            height: 9,
+            width: 19,
+            height: 19,
             mode: "puzzle",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "eigi",
-                white: "fi",
+                black: "codpaqbqcqdrerfrdsfs",
+                white: "dqeqfqgqarbrcrgrbsgs",
             },
-            marks: { triangle: "fi" },
+            marks: { triangle: "fsdsbsfrerdrcrbrar" },
             phase: "finished",
         };
     }
@@ -433,7 +493,7 @@ class Page06 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "yes") {
+                if (selectedValue === "seki") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -442,27 +502,38 @@ class Page06 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("White to play. Can White escape with the marked chain?")}</p>
+                    <p>{_("White to play. Who will win this capturing race, or is it seki?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="yes"
-                            checked={value === "yes"}
+                            value="Black"
+                            checked={value === "Black"}
                             onChange={handleChange}
                         />
-                        yes
+                        Black
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="no"
-                            checked={value === "no"}
+                            value="White"
+                            checked={value === "White"}
                             onChange={handleChange}
                         />
-                        no
+                        White
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="seki"
+                            checked={value === "seki"}
+                            onChange={handleChange}
+                        />
+                        seki
                     </label>
                     <br />
                 </div>
@@ -471,14 +542,15 @@ class Page06 extends LearningPage {
     }
     config(): GobanConfig {
         return {
-            width: 9,
-            height: 9,
+            width: 19,
+            height: 19,
             mode: "puzzle",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "ccehfhei",
-                white: "ggghfi",
+                black: "eofogodpgpdqeqgqcrdrgrcsgs",
+                white: "codocpepfpcqfqbrfrbsesfs",
             },
-            marks: { triangle: "fi" },
+            marks: { triangle: "fsescsfrdrcrfqeqdqfpepdp" },
             phase: "finished",
         };
     }
@@ -503,7 +575,7 @@ class Page07 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "yes") {
+                if (selectedValue === "White") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -512,27 +584,38 @@ class Page07 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("White to play. Can White escape with the marked chain?")}</p>
+                    <p>{_("White to play. Who will win this capturing race, or is it seki?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="yes"
-                            checked={value === "yes"}
+                            value="Black"
+                            checked={value === "Black"}
                             onChange={handleChange}
                         />
-                        yes
+                        Black
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="no"
-                            checked={value === "no"}
+                            value="White"
+                            checked={value === "White"}
                             onChange={handleChange}
                         />
-                        no
+                        White
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="seki"
+                            checked={value === "seki"}
+                            onChange={handleChange}
+                        />
+                        seki
                     </label>
                     <br />
                 </div>
@@ -541,14 +624,15 @@ class Page07 extends LearningPage {
     }
     config(): GobanConfig {
         return {
-            width: 9,
-            height: 9,
+            width: 19,
+            height: 19,
             mode: "puzzle",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "ccceehfhdi",
-                white: "gggheifi",
+                black: "bqcqdqbrerbses",
+                white: "eqfqgqdrgrdsgs",
             },
-            marks: { triangle: "fiei" },
+            marks: { triangle: "esdserdr" },
             phase: "finished",
         };
     }
@@ -573,7 +657,7 @@ class Page08 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "no") {
+                if (selectedValue === "White") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -582,27 +666,38 @@ class Page08 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("White to play. Can White escape with the marked chain?")}</p>
+                    <p>{_("White to play. Who will win this capturing race, or is it seki?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="yes"
-                            checked={value === "yes"}
+                            value="Black"
+                            checked={value === "Black"}
                             onChange={handleChange}
                         />
-                        yes
+                        Black
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="no"
-                            checked={value === "no"}
+                            value="White"
+                            checked={value === "White"}
                             onChange={handleChange}
                         />
-                        no
+                        White
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="seki"
+                            checked={value === "seki"}
+                            onChange={handleChange}
+                        />
+                        seki
                     </label>
                     <br />
                 </div>
@@ -611,14 +706,15 @@ class Page08 extends LearningPage {
     }
     config(): GobanConfig {
         return {
-            width: 9,
-            height: 9,
+            width: 19,
+            height: 19,
             mode: "puzzle",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "ccehfhdi",
-                white: "ggeifi",
+                black: "doeodpfpbqcqdqfqbrfrgrbsgs",
+                white: "fogoepgpeqhqcrdrerhrcseshs",
             },
-            marks: { triangle: "fiei" },
+            marks: { triangle: "gsescsgrfrerdrcrfqeqfpep" },
             phase: "finished",
         };
     }
@@ -643,7 +739,7 @@ class Page09 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "no") {
+                if (selectedValue === "Black") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -652,27 +748,38 @@ class Page09 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("White to play. Can White escape with the marked chain?")}</p>
+                    <p>{_("White to play. Who will win this capturing race, or is it seki?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="yes"
-                            checked={value === "yes"}
+                            value="Black"
+                            checked={value === "Black"}
                             onChange={handleChange}
                         />
-                        yes
+                        Black
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="no"
-                            checked={value === "no"}
+                            value="White"
+                            checked={value === "White"}
                             onChange={handleChange}
                         />
-                        no
+                        White
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="seki"
+                            checked={value === "seki"}
+                            onChange={handleChange}
+                        />
+                        seki
                     </label>
                     <br />
                 </div>
@@ -681,14 +788,15 @@ class Page09 extends LearningPage {
     }
     config(): GobanConfig {
         return {
-            width: 9,
-            height: 9,
+            width: 19,
+            height: 19,
             mode: "puzzle",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "ccefdgfgdhfh",
-                white: "gfegggehgh",
+                black: "cpdpbqeqbrerbses",
+                white: "epfpcqdqfqcrgrcsgs",
             },
-            marks: { triangle: "eheg" },
+            marks: { triangle: "escsercreqdqcq" },
             phase: "finished",
         };
     }
@@ -713,7 +821,7 @@ class Page10 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "no") {
+                if (selectedValue === "White") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -722,27 +830,38 @@ class Page10 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("White to play. Can White escape with the marked chain?")}</p>
+                    <p>{_("White to play. Who will win this capturing race, or is it seki?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="yes"
-                            checked={value === "yes"}
+                            value="Black"
+                            checked={value === "Black"}
                             onChange={handleChange}
                         />
-                        yes
+                        Black
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="no"
-                            checked={value === "no"}
+                            value="White"
+                            checked={value === "White"}
                             onChange={handleChange}
                         />
-                        no
+                        White
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="seki"
+                            checked={value === "seki"}
+                            onChange={handleChange}
+                        />
+                        seki
                     </label>
                     <br />
                 </div>
@@ -751,14 +870,15 @@ class Page10 extends LearningPage {
     }
     config(): GobanConfig {
         return {
-            width: 9,
-            height: 9,
+            width: 19,
+            height: 19,
             mode: "puzzle",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "ecgceeffdgfgeh",
-                white: "gegfegggfhgh",
+                black: "bocpdpbqeqfqbrfrgrhrbsfs",
+                white: "epfpcqdqgqhqiqcrerircsdshs",
             },
-            marks: { triangle: "eg" },
+            marks: { triangle: "fsdscshrgrfrercrfqeqdqcq" },
             phase: "finished",
         };
     }
@@ -783,7 +903,7 @@ class Page11 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "yes") {
+                if (selectedValue === "seki") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -792,27 +912,38 @@ class Page11 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("White to play. Can White escape with the marked chain?")}</p>
+                    <p>{_("White to play. Who will win this capturing race, or is it seki?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="yes"
-                            checked={value === "yes"}
+                            value="Black"
+                            checked={value === "Black"}
                             onChange={handleChange}
                         />
-                        yes
+                        Black
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="no"
-                            checked={value === "no"}
+                            value="White"
+                            checked={value === "White"}
                             onChange={handleChange}
                         />
-                        no
+                        White
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="seki"
+                            checked={value === "seki"}
+                            onChange={handleChange}
+                        />
+                        seki
                     </label>
                     <br />
                 </div>
@@ -821,14 +952,15 @@ class Page11 extends LearningPage {
     }
     config(): GobanConfig {
         return {
-            width: 9,
-            height: 9,
+            width: 19,
+            height: 19,
             mode: "puzzle",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "egehgheigi",
-                white: "gdgffhfi",
+                black: "aqbqcqcrdrercses",
+                white: "doapbpcpdqeqfqarfrbsfs",
             },
-            marks: { triangle: "fifh" },
+            marks: { triangle: "escsbserdrcrarcqbqaq" },
             phase: "finished",
         };
     }
@@ -853,7 +985,7 @@ class Page12 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "no") {
+                if (selectedValue === "Black") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -862,27 +994,38 @@ class Page12 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("White to play. Can White escape with the marked chain?")}</p>
+                    <p>{_("White to play. Who will win this capturing race, or is it seki?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="yes"
-                            checked={value === "yes"}
+                            value="Black"
+                            checked={value === "Black"}
                             onChange={handleChange}
                         />
-                        yes
+                        Black
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="no"
-                            checked={value === "no"}
+                            value="White"
+                            checked={value === "White"}
                             onChange={handleChange}
                         />
-                        no
+                        White
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="seki"
+                            checked={value === "seki"}
+                            onChange={handleChange}
+                        />
+                        seki
                     </label>
                     <br />
                 </div>
@@ -891,14 +1034,15 @@ class Page12 extends LearningPage {
     }
     config(): GobanConfig {
         return {
-            width: 9,
-            height: 9,
+            width: 19,
+            height: 19,
             mode: "puzzle",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "egggehgheigi",
-                white: "gcgdgffhfi",
+                black: "aobocodobpdpfpgpbqeqgqhqbrerhrbseshs",
+                white: "bncndneneocpepcqdqfqcrfrcsfs",
             },
-            marks: { triangle: "fifh" },
+            marks: { triangle: "escsercreqdqcqcp" },
             phase: "finished",
         };
     }
@@ -923,7 +1067,7 @@ class Page13 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "no") {
+                if (selectedValue === "White") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -932,27 +1076,38 @@ class Page13 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("White to play. Can White escape with the marked chain?")}</p>
+                    <p>{_("White to play. Who will win this capturing race, or is it seki?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="yes"
-                            checked={value === "yes"}
+                            value="Black"
+                            checked={value === "Black"}
                             onChange={handleChange}
                         />
-                        yes
+                        Black
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="no"
-                            checked={value === "no"}
+                            value="White"
+                            checked={value === "White"}
                             onChange={handleChange}
                         />
-                        no
+                        White
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="seki"
+                            checked={value === "seki"}
+                            onChange={handleChange}
+                        />
+                        seki
                     </label>
                     <br />
                 </div>
@@ -961,14 +1116,15 @@ class Page13 extends LearningPage {
     }
     config(): GobanConfig {
         return {
-            width: 9,
-            height: 9,
+            width: 19,
+            height: 19,
             mode: "puzzle",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "efdgfgdhfh",
-                white: "gcgeegeh",
+                black: "eqfqgqhqbrcrdrhrhs",
+                white: "aqbqcqdqarerfrgras",
             },
-            marks: { triangle: "eheg" },
+            marks: { triangle: "grfrerdrcrbr" },
             phase: "finished",
         };
     }
@@ -993,7 +1149,7 @@ class Page14 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "yes") {
+                if (selectedValue === "seki") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -1002,97 +1158,38 @@ class Page14 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("White to play. Can White escape with the marked chain?")}</p>
+                    <p>{_("White to play. Who will win this capturing race, or is it seki?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="yes"
-                            checked={value === "yes"}
+                            value="Black"
+                            checked={value === "Black"}
                             onChange={handleChange}
                         />
-                        yes
+                        Black
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="no"
-                            checked={value === "no"}
+                            value="White"
+                            checked={value === "White"}
                             onChange={handleChange}
                         />
-                        no
-                    </label>
-                    <br />
-                </div>
-            );
-        }
-    }
-    config(): GobanConfig {
-        return {
-            width: 9,
-            height: 9,
-            mode: "puzzle",
-            initial_state: {
-                black: "eeefgfegggfh",
-                white: "hdgeffhffg",
-            },
-            marks: { triangle: "fgff" },
-            phase: "finished",
-        };
-    }
-}
-
-class Page15 extends LearningPage {
-    constructor(props: LearningPageProperties) {
-        super(props);
-    }
-
-    text() {
-        return (
-            <MultipleChoice
-                onCorrectAnswer={this.onCorrectAnswer}
-                onWrongAnswer={this.onWrongAnswer}
-            />
-        );
-        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
-            const [value, setValue] = React.useState<string>("");
-
-            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-                const selectedValue = event.target.value;
-                setValue(selectedValue);
-
-                if (selectedValue === "no") {
-                    props.onCorrectAnswer();
-                } else if (selectedValue !== "") {
-                    props.onWrongAnswer();
-                }
-            };
-
-            return (
-                <div>
-                    <p>{_("White to play. Can White escape with the marked chain?")}</p>
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="yes"
-                            checked={value === "yes"}
-                            onChange={handleChange}
-                        />
-                        yes
+                        White
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="no"
-                            checked={value === "no"}
+                            value="seki"
+                            checked={value === "seki"}
                             onChange={handleChange}
                         />
-                        no
+                        seki
                     </label>
                     <br />
                 </div>
@@ -1101,224 +1198,15 @@ class Page15 extends LearningPage {
     }
     config(): GobanConfig {
         return {
-            width: 9,
-            height: 9,
+            width: 19,
+            height: 19,
             mode: "puzzle",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "ccefffdgggehgh",
-                white: "gegfegfghghh",
+                black: "cpdpcqeqfqgqarbrcrergrbsfs",
+                white: "bocodobpepfpgphpaqbqdqhqdrhrdsgshs",
             },
-            marks: { triangle: "fgeg" },
-            phase: "finished",
-        };
-    }
-}
-
-class Page16 extends LearningPage {
-    constructor(props: LearningPageProperties) {
-        super(props);
-    }
-
-    text() {
-        return (
-            <MultipleChoice
-                onCorrectAnswer={this.onCorrectAnswer}
-                onWrongAnswer={this.onWrongAnswer}
-            />
-        );
-        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
-            const [value, setValue] = React.useState<string>("");
-
-            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-                const selectedValue = event.target.value;
-                setValue(selectedValue);
-
-                if (selectedValue === "yes") {
-                    props.onCorrectAnswer();
-                } else if (selectedValue !== "") {
-                    props.onWrongAnswer();
-                }
-            };
-
-            return (
-                <div>
-                    <p>{_("White to play. Can White escape with the marked chain?")}</p>
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="yes"
-                            checked={value === "yes"}
-                            onChange={handleChange}
-                        />
-                        yes
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="no"
-                            checked={value === "no"}
-                            onChange={handleChange}
-                        />
-                        no
-                    </label>
-                    <br />
-                </div>
-            );
-        }
-    }
-    config(): GobanConfig {
-        return {
-            width: 9,
-            height: 9,
-            mode: "puzzle",
-            initial_state: {
-                black: "ccffdgggehfhgh",
-                white: "eegegfegfghghh",
-            },
-            marks: { triangle: "fgeg" },
-            phase: "finished",
-        };
-    }
-}
-
-class Page17 extends LearningPage {
-    constructor(props: LearningPageProperties) {
-        super(props);
-    }
-
-    text() {
-        return (
-            <MultipleChoice
-                onCorrectAnswer={this.onCorrectAnswer}
-                onWrongAnswer={this.onWrongAnswer}
-            />
-        );
-        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
-            const [value, setValue] = React.useState<string>("");
-
-            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-                const selectedValue = event.target.value;
-                setValue(selectedValue);
-
-                if (selectedValue === "no") {
-                    props.onCorrectAnswer();
-                } else if (selectedValue !== "") {
-                    props.onWrongAnswer();
-                }
-            };
-
-            return (
-                <div>
-                    <p>{_("White to play. Can White escape with the marked chain?")}</p>
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="yes"
-                            checked={value === "yes"}
-                            onChange={handleChange}
-                        />
-                        yes
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="no"
-                            checked={value === "no"}
-                            onChange={handleChange}
-                        />
-                        no
-                    </label>
-                    <br />
-                </div>
-            );
-        }
-    }
-    config(): GobanConfig {
-        return {
-            width: 9,
-            height: 9,
-            mode: "puzzle",
-            initial_state: {
-                black: "dfefcgfgggeh",
-                white: "ffgfhfeghg",
-            },
-            marks: { triangle: "eg" },
-            phase: "finished",
-        };
-    }
-}
-
-class Page18 extends LearningPage {
-    constructor(props: LearningPageProperties) {
-        super(props);
-    }
-
-    text() {
-        return (
-            <MultipleChoice
-                onCorrectAnswer={this.onCorrectAnswer}
-                onWrongAnswer={this.onWrongAnswer}
-            />
-        );
-        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
-            const [value, setValue] = React.useState<string>("");
-
-            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-                const selectedValue = event.target.value;
-                setValue(selectedValue);
-
-                if (selectedValue === "yes") {
-                    props.onCorrectAnswer();
-                } else if (selectedValue !== "") {
-                    props.onWrongAnswer();
-                }
-            };
-
-            return (
-                <div>
-                    <p>{_("White to play. Can White escape with the marked chain?")}</p>
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="yes"
-                            checked={value === "yes"}
-                            onChange={handleChange}
-                        />
-                        yes
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="no"
-                            checked={value === "no"}
-                            onChange={handleChange}
-                        />
-                        no
-                    </label>
-                    <br />
-                </div>
-            );
-        }
-    }
-    config(): GobanConfig {
-        return {
-            width: 9,
-            height: 9,
-            mode: "puzzle",
-            initial_state: {
-                black: "dgfgdhfhei",
-                white: "ecgcegeh",
-            },
-            marks: { triangle: "eheg" },
+            marks: { triangle: "fsdsbsgrerdrcrbrargqfqeqdqcqdpcp" },
             phase: "finished",
         };
     }

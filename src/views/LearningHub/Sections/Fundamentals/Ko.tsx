@@ -44,7 +44,7 @@ class Page01 extends LearningPage {
 
     text() {
         return _(
-            'To prevent endlessly re-capturing the same space, there\'s a special rule called the "Ko rule" which prevents immediately recapturing the same position. Black can capture the marked white stone. White is not allowed to recapture the black stone immediately. White has to play elsewhere first. Capture the marked stone.',
+            "To prevent endlessly recapturing the same space, there is a special rule called the 'Ko rule' which prevents immediately recapturing the same position. Black can capture the marked white stone. White is not allowed to recapture the black stone immediately. White has to play elsewhere first. Capture the marked stone.",
         );
     }
     config(): GobanConfig {
