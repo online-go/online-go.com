@@ -19,8 +19,7 @@ import * as React from "react";
 import { useUser } from "@/lib/hooks";
 import { usePreference } from "@/lib/preferences";
 import { Player } from "@/components/Player";
-import { ModTools } from "@/views/User";
-import { ModLog } from "@/views/User";
+import { ModTools, ModLog } from "@moderator-ui/ModTools";
 
 export function UserHistory({
     target_user: target_user,
