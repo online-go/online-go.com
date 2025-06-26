@@ -42,9 +42,8 @@ import {
     encodeMoves,
     encodeMove,
 } from "goban";
-import { game_control } from "./game_control";
 import { alert } from "@/lib/swal_config";
-import { GobanContext } from "./goban_context";
+import { GameControllerContext } from "./goban_context";
 import { ReportContext } from "@/contexts/ReportContext";
 import { MODERATOR_POWERS } from "@/lib/moderation";
 import {
@@ -69,7 +68,7 @@ interface AIReviewProperties {
     hidden: boolean;
     onAIReviewSelected: (ai_review: JGOFAIReview) => void;
     reportContext?: React.ContextType<typeof ReportContext>;
-    gobanContext?: React.ContextType<typeof GobanContext>;
+    gameControllerContext?: React.ContextType<typeof GameControllerContext>;
     bot_detection_results?: any;
 }
 
@@ -96,15 +95,15 @@ export function AIReview(props: AIReviewProperties) {
     return (
         <ReportContext.Consumer>
             {(reportContext) => (
-                <GobanContext.Consumer>
-                    {(gobanContext) => (
+                <GameControllerContext.Consumer>
+                    {(gameControllerContext) => (
                         <AIReviewClass
                             {...props}
                             reportContext={reportContext}
-                            gobanContext={gobanContext}
+                            gameControllerContext={gameControllerContext}
                         />
                     )}
-                </GobanContext.Consumer>
+                </GameControllerContext.Consumer>
             )}
         </ReportContext.Consumer>
     );
@@ -163,9 +162,15 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
     }
 
     private calculateAndUpdateTableData() {
+        const gameController = this.props.gameControllerContext;
+        if (!gameController) {
+            return;
+        }
+        const goban = gameController.goban;
+
         const categorization = categorizeAiReview(
             this.ai_review,
-            this.props.gobanContext,
+            goban,
             this.state.categorization_method,
             this.state.scoreDiffThresholds,
             this.state.includeNegativeScoreLoss,
@@ -484,7 +489,11 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
             throw new Error("ai_review not set");
         }
 
-        const goban = this.props.gobanContext;
+        const gameController = this.props.gameControllerContext;
+        if (!gameController) {
+            throw new Error("gameController not set");
+        }
+        const goban = gameController.goban;
 
         if (!goban) {
             throw new Error("goban not set");
@@ -811,7 +820,11 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
     }
 
     private requestAnalysisOfVariation(cur_move: MoveTree, trunk_move: MoveTree): boolean {
-        const goban = this.props.gobanContext;
+        const game_controller = this.props.gameControllerContext;
+        if (!game_controller) {
+            return false;
+        }
+        const goban = game_controller.goban;
         if (!goban) {
             return false;
         }
@@ -828,7 +841,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
 
         const black_id = goban?.engine?.config?.black_player_id;
         const white_id = goban?.engine?.config?.white_player_id;
-        const creator_id = game_control.creator_id;
+        const creator_id = game_controller.creator_id;
 
         if (user.id !== black_id && user.id !== white_id && user.id !== creator_id) {
             //console.debug("Not performing analysis of variation for non player");
@@ -874,7 +887,11 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
             throw new Error("ai_review not set");
         }
 
-        const goban = this.props.gobanContext;
+        const game_controller = this.props.gameControllerContext;
+        if (!game_controller) {
+            throw new Error("game_controller not set");
+        }
+        const goban = game_controller.goban;
 
         if (!goban) {
             throw new Error("goban not set");
@@ -935,7 +952,11 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
             return null;
         }
 
-        const goban = this.props.gobanContext;
+        const game_controller = this.props.gameControllerContext;
+        if (!game_controller) {
+            return null;
+        }
+        const goban = game_controller.goban;
 
         if (!goban || !goban.engine) {
             return null;
@@ -979,7 +1000,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
 
         try {
             if (
-                user.id === game_control.creator_id ||
+                user.id === game_controller.creator_id ||
                 user.id === goban.engine.players.black.id ||
                 user.id === goban.engine.players.white.id
             ) {
@@ -1235,7 +1256,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                                     update_count={this.state.rerender}
                                     move_number={move_number}
                                     variation_move_number={variation_move_number}
-                                    set_move={(num: number) => game_control.emit("gotoMove", num)}
+                                    set_move={(num: number) => game_controller.nav_goto_move(num)}
                                     use_score={this.state.use_score}
                                     highlighted_moves={
                                         this.state.current_popup_moves.length > 0
@@ -1331,7 +1352,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                                             <AiSummaryTable
                                                 categorization={categorizeAiReview(
                                                     this.ai_review,
-                                                    this.props.gobanContext,
+                                                    goban,
                                                     this.state.categorization_method,
                                                     this.state.scoreDiffThresholds,
                                                     this.state.includeNegativeScoreLoss,
@@ -1486,7 +1507,11 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
     }
 
     public renderWorstMoveList(lst: AIReviewWorstMoveEntry[]): React.ReactElement | null {
-        const goban = this.props.gobanContext;
+        const game_controller = this.props.gameControllerContext;
+        if (!game_controller) {
+            return null;
+        }
+        const goban = game_controller.goban;
         if (!goban?.engine.move_tree || !this.ai_review) {
             return null;
         }
@@ -1508,7 +1533,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                                         ? "move black-background"
                                         : "move white-background"
                                 }
-                                onClick={() => game_control.emit("gotoMove", de.move_number - 1)}
+                                onClick={() => game_controller.nav_goto_move(de.move_number - 1)}
                             >
                                 {pretty_coords}
                             </span>

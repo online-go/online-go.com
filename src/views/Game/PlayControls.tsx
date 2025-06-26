@@ -28,13 +28,12 @@ import {
     GobanModes,
     GobanEnginePhase,
     AnalysisTool,
-    MoveTree,
     PlayerColor,
     JGOFSealingIntersection,
     GobanEngine,
     color_blend,
+    MoveTree,
 } from "goban";
-import { game_control } from "./game_control";
 import { alert } from "@/lib/swal_config";
 import { challengeRematch } from "@/components/ChallengeModal";
 import { Clock } from "@/components/Clock";
@@ -44,7 +43,6 @@ import { Link } from "react-router-dom";
 import { Resizable } from "@/components/Resizable";
 import { ChatMode } from "./GameChat";
 import { toast } from "@/lib/toast";
-import { errorAlerter } from "@/lib/misc";
 import { close_all_popovers } from "@/lib/popover";
 import { setExtraActionCallback, Player } from "@/components/Player";
 import { PlayButtons } from "./PlayButtons";
@@ -56,7 +54,7 @@ import {
     useUserIsParticipant,
     usePlayerToMove,
 } from "./GameHooks";
-import { useGoban } from "./goban_context";
+import { useGameController } from "./goban_context";
 import { is_valid_url } from "@/lib/url_validation";
 import { enableTouchAction } from "./touch_actions";
 import { ConditionalMoveTreeDisplay } from "./ConditionalMoveTreeDisplay";
@@ -64,6 +62,7 @@ import { useUser } from "@/lib/hooks";
 import { AntiGrief } from "./AntiGrief";
 
 import moment from "moment";
+import { EstimateScore } from "./fragments";
 
 const MAX_SEALING_LOCATIONS_TO_LIST = 5;
 
@@ -82,24 +81,16 @@ interface PlayControlsProps {
     title: string;
     show_title: boolean;
 
-    renderEstimateScore: () => React.ReactElement;
-    renderAnalyzeButtonBar: () => React.ReactElement;
     setMoveTreeContainer: (r: Resizable) => void;
 
-    // TODO: turn this into one render prop so that we don't have to pass these
-    // props to both PlayControls and ReviewControls (at this time ReviewControls
-    // doesn't exist, but we will extract frag_review_controls for this purpose)
     onShareAnalysis: () => void;
     variation_name: string;
     updateVariationName: React.ChangeEventHandler<HTMLInputElement>;
     variationKeyPress: React.KeyboardEventHandler<HTMLInputElement>;
 
-    annulled: boolean;
     annulment_reason: null | rest_api.AnnulmentReason;
 
     zen_mode: boolean;
-
-    selected_chat_log: ChatMode;
 
     stopEstimatingScore: () => void;
 }
@@ -117,13 +108,9 @@ export function PlayControls({
     phase,
     title,
     show_title,
-    renderEstimateScore,
-    annulled,
     annulment_reason,
-    renderAnalyzeButtonBar,
     setMoveTreeContainer,
     zen_mode,
-    selected_chat_log,
     onShareAnalysis,
     variation_name,
     updateVariationName,
@@ -131,7 +118,8 @@ export function PlayControls({
     stopEstimatingScore,
 }: PlayControlsProps): React.ReactElement {
     const user = useUser();
-    const goban = useGoban();
+    const game_controller = useGameController();
+    const goban = game_controller.goban;
     const engine = goban.engine;
     const { registerTargetItem, triggerFlow, signalUsed } = React.useContext(DynamicHelp.Api);
     const { ref: game_state_pane, active: gameStatePaneActive } =
@@ -146,6 +134,10 @@ export function PlayControls({
     const need_to_seal = needs_sealing && needs_sealing.length > 0;
     const [autoscoring_in_progress, setAutoScoringInProgress] = React.useState(false);
     const [autoscoring_taking_too_long, setAutoscoringTakingTooLong] = React.useState(false);
+    const [annulled, set_annulled] = React.useState(game_controller.annulled);
+    const [selected_chat_log, set_selected_chat_log] = React.useState<ChatMode>(
+        game_controller.selected_chat_log,
+    );
 
     const user_is_active_player = [engine.players.black.id, engine.players.white.id].includes(
         user.id,
@@ -175,6 +167,15 @@ export function PlayControls({
             syncStoneRemovalAcceptance,
         );
     }, [goban]);
+
+    React.useEffect(() => {
+        game_controller.on("annulled", set_annulled);
+        game_controller.on("selected_chat_log", set_selected_chat_log);
+        return () => {
+            game_controller.off("annulled", set_annulled);
+            game_controller.off("selected_chat_log", set_selected_chat_log);
+        };
+    }, [game_controller]);
 
     React.useEffect(() => {
         const syncNeedsSealing = (locs?: JGOFSealingIntersection[]) => {
@@ -362,7 +363,7 @@ export function PlayControls({
 
                 {(mode === "conditional" || null) && <span>{_("Conditional Move Planner")}</span>}
 
-                {(mode === "score estimation" || null) && renderEstimateScore()}
+                {(mode === "score estimation" || null) && <EstimateScore />}
 
                 {((mode === "play" && phase === "finished") || null) && (
                     <>
@@ -657,7 +658,7 @@ export function PlayControls({
             )}
             {(mode === "analyze" || null) && (
                 <div>
-                    {renderAnalyzeButtonBar()}
+                    <AnalyzeButtonBar />
 
                     <Resizable
                         id="move-tree-container"
@@ -719,60 +720,49 @@ export function PlayControls({
     );
 }
 
-interface EstimateScoreProps {
-    score_estimate_winner?: string;
-    score_estimate_amount?: number;
-}
-export function EstimateScore({
-    score_estimate_winner,
-    score_estimate_amount,
-}: EstimateScoreProps) {
-    return (
-        <span>
-            {(score_estimate_winner || null) && (
-                <span>
-                    {interpolate(_("{{winner}} by {{score}}"), {
-                        winner: score_estimate_winner,
-                        score: score_estimate_amount?.toFixed(1),
-                    })}
-                </span>
-            )}
-            {(!score_estimate_winner || null) && <span>{_("Estimating...")}</span>}
-        </span>
-    );
-}
-
-interface AnalyzeButtonBarProps {
-    setAnalyzeTool: (tool: AnalysisTool, subtool: string) => boolean;
-    setAnalyzePencilColor: (color: string) => void;
-    analyze_pencil_color: string;
-    is_review: boolean;
-    mode: GobanModes;
-    copied_node: React.MutableRefObject<MoveTree | undefined>;
-}
-export function AnalyzeButtonBar({
-    setAnalyzeTool,
-    setAnalyzePencilColor,
-    analyze_pencil_color,
-    is_review,
-    mode,
-    copied_node,
-}: AnalyzeButtonBarProps) {
+export function AnalyzeButtonBar(): React.ReactElement {
+    const game_controller = useGameController();
+    const setAnalyzeTool = game_controller.setAnalyzeTool;
+    const setAnalyzePencilColor = game_controller.setAnalyzePencilColor;
+    const analyze_pencil_color = game_controller.analyze_pencil_color;
     const [analyze_tool, set_analyze_tool] = React.useState<AnalysisTool>();
     const [analyze_subtool, set_analyze_subtool] = React.useState<string>();
     const [analyze_score_color, setAnalyzeScoreColor] =
         preferences.usePreference("analysis.score-color");
+    const [is_review, set_is_review] = React.useState(!!game_controller.goban.review_id);
+    const [mode, set_mode] = React.useState<GobanModes>();
+    const [copied_node, set_copied_node] = React.useState<MoveTree | undefined>(undefined);
 
-    const goban = useGoban();
+    const goban = game_controller.goban;
 
     React.useEffect(() => {
-        goban.on("load", () => {
+        if (!goban) {
+            return;
+        }
+
+        const onLoad = () => {
             set_analyze_tool(goban.analyze_tool);
             set_analyze_subtool(goban.analyze_subtool);
-        });
+        };
+
+        set_is_review(!!goban.review_id);
+        set_mode(goban.mode);
+        set_copied_node(game_controller.copied_node);
+
+        goban.on("load", onLoad);
         goban.on("analyze_tool", set_analyze_tool);
         goban.on("analyze_subtool", set_analyze_subtool);
-    });
+        goban.on("mode", set_mode);
+        game_controller.on("copied_node", set_copied_node);
+
+        return () => {
+            goban.off("load", onLoad);
+            goban.off("analyze_tool", set_analyze_tool);
+            goban.off("analyze_subtool", set_analyze_subtool);
+            goban.off("mode", set_mode);
+            game_controller.off("copied_node", set_copied_node);
+        };
+    }, [goban]);
 
     const setPencilColor = (ev: React.ChangeEvent<HTMLInputElement>) => {
         const color = ev.target.value;
@@ -895,20 +885,17 @@ export function AnalyzeButtonBar({
 
             {/* Copy/paste */}
             <div className="btn-group">
-                <button
-                    onClick={() => copyBranch(goban, copied_node, mode)}
-                    title={_("Copy this branch")}
-                >
+                <button onClick={() => game_controller.copyBranch()} title={_("Copy this branch")}>
                     <i className="fa fa-clone"></i>
                 </button>
                 <button
-                    disabled={copied_node.current === null}
-                    onClick={() => pasteBranch(goban, copied_node, mode)}
+                    disabled={copied_node === null}
+                    onClick={() => game_controller.pasteBranch()}
                     title={_("Paste branch")}
                 >
                     <i className="fa fa-clipboard"></i>
                 </button>
-                <button onClick={() => deleteBranch(goban, mode)} title={_("Delete branch")}>
+                <button onClick={game_controller.deleteBranch} title={_("Delete branch")}>
                     <i className="fa fa-trash"></i>
                 </button>
             </div>
@@ -1071,114 +1058,9 @@ export function AnalyzeButtonBar({
     );
 }
 
-export function copyBranch(
-    goban: GobanRenderer,
-    copied_node: React.MutableRefObject<MoveTree | undefined>,
-    mode: GobanModes,
-) {
-    if (mode !== "analyze") {
-        return;
-    }
-
-    try {
-        /* Don't try to copy branches when the user is selecting stuff somewhere on the page */
-        if (!window.getSelection()?.isCollapsed) {
-            return;
-        }
-    } catch {
-        // ignore error
-    }
-
-    copied_node.current = goban.engine.cur_move;
-    toast(<div>{_("Branch copied")}</div>, 1000);
-}
-export function pasteBranch(
-    goban: GobanRenderer,
-    copied_node: React.MutableRefObject<MoveTree | undefined>,
-    mode: GobanModes,
-) {
-    if (mode !== "analyze") {
-        return;
-    }
-
-    try {
-        /* Don't try to paste branches when the user is selecting stuff somewhere on the page */
-        if (!window.getSelection()?.isCollapsed) {
-            return;
-        }
-    } catch {
-        // ignore error
-    }
-
-    if (copied_node.current) {
-        const paste = (base: MoveTree, source: MoveTree) => {
-            goban.engine.jumpTo(base);
-            if (source.edited) {
-                goban.engine.editPlace(source.x, source.y, source.player, false);
-            } else {
-                goban.engine.place(source.x, source.y, false, false, true, false, false);
-            }
-            const cur = goban.engine.cur_move;
-
-            if (source.trunk_next) {
-                paste(cur, source.trunk_next);
-            }
-            for (const branch of source.branches) {
-                paste(cur, branch);
-            }
-        };
-
-        try {
-            paste(goban.engine.cur_move, copied_node.current);
-        } catch {
-            errorAlerter(_("A move conflict has been detected"));
-        }
-        goban.syncReviewMove();
-    } else {
-        console.log("Nothing copied or cut to paste");
-    }
-}
-
-export function deleteBranch(goban: GobanRenderer, mode: GobanModes) {
-    if (mode !== "analyze") {
-        return;
-    }
-
-    try {
-        /* Don't try to delete branches when the user is selecting stuff somewhere on the page */
-        if (!window.getSelection()?.isCollapsed) {
-            return;
-        }
-    } catch {
-        // ignore error
-    }
-
-    if (goban.engine.cur_move.trunk) {
-        void alert.fire({
-            text: _(
-                "The current position is not an explored branch, so there is nothing to delete",
-            ),
-        });
-    } else {
-        void alert
-            .fire({
-                text: _("Are you sure you wish to remove this move branch?"),
-                showCancelButton: true,
-            })
-            .then(({ value: accept }) => {
-                if (accept) {
-                    goban.deleteBranch();
-                    goban.syncReviewMove();
-                }
-            });
-    }
-}
-
 interface ReviewControlsProps {
     mode: GobanModes;
     review_id: number;
-    renderEstimateScore: () => React.ReactElement;
-    renderAnalyzeButtonBar: () => React.ReactElement;
     setMoveTreeContainer: (r: Resizable) => void;
 
     // TODO: turn this into one render prop so that we don't have to pass these
@@ -1189,8 +1071,6 @@ interface ReviewControlsProps {
     variationKeyPress: React.KeyboardEventHandler<HTMLInputElement>;
 
     stopEstimatingScore: () => void;
-
-    selected_chat_log: ChatMode;
 }
 
 const useReviewOwnerId = generateGobanHook(
@@ -1202,44 +1082,82 @@ const useReviewControllerId = generateGobanHook(
     ["review_controller_id"],
 );
 
-let review_out_of_sync = false;
-
-const useReviewOutOfSync = generateGobanHook(
-    (goban: Goban) => {
-        if (game_control.in_pushed_analysis) {
-            return review_out_of_sync;
-        }
-        const engine = goban.engine;
-        review_out_of_sync = !!(
-            engine.cur_move &&
-            engine.cur_review_move &&
-            engine.cur_move.id !== engine.cur_review_move.id
-        );
-
-        return review_out_of_sync;
-    },
-    ["cur_move", "review.updated"],
-);
-
 export function ReviewControls({
     mode,
     review_id,
-    renderAnalyzeButtonBar,
-    renderEstimateScore,
     setMoveTreeContainer,
     onShareAnalysis,
     variation_name,
     updateVariationName,
     variationKeyPress,
     stopEstimatingScore,
-    selected_chat_log,
 }: ReviewControlsProps) {
     const user = data.get("user");
-    const goban = useGoban();
+    const game_controller = useGameController();
+
+    const goban = game_controller.goban;
+    const [in_pushed_analysis, set_in_pushed_analysis] = React.useState(
+        game_controller.in_pushed_analysis,
+    );
+    const [selected_chat_log, set_selected_chat_log] = React.useState<ChatMode>(
+        game_controller.selected_chat_log,
+    );
+    React.useEffect(() => {
+        if (game_controller) {
+            game_controller.on("selected_chat_log", set_selected_chat_log);
+            return () => {
+                game_controller.off("selected_chat_log", set_selected_chat_log);
+            };
+        }
+        return;
+    }, [game_controller]);
+
+    const [review_out_of_sync, set_review_out_of_sync] = React.useState(false);
+    React.useEffect(() => {
+        if (goban) {
+            const updateReviewOutOfSync = () => {
+                const engine = goban.engine;
+                set_review_out_of_sync(
+                    !!(
+                        engine.cur_move &&
+                        engine.cur_review_move &&
+                        engine.cur_move.id !== engine.cur_review_move.id
+                    ),
+                );
+            };
+            goban.on("cur_move", updateReviewOutOfSync);
+            goban.on("review.updated", updateReviewOutOfSync);
+            return () => {
+                goban.off("cur_move", updateReviewOutOfSync);
+                goban.off("review.updated", updateReviewOutOfSync);
+            };
+        }
+        return;
+    }, [goban]);
+
+    React.useEffect(() => {
+        if (goban) {
+            const engine = goban.engine;
+            set_review_out_of_sync(
+                !!(
+                    engine.cur_move &&
+                    engine.cur_review_move &&
+                    engine.cur_move.id !== engine.cur_review_move.id
+                ),
+            );
+        }
+    }, [goban, in_pushed_analysis]);
 
     const review_owner_id = useReviewOwnerId(goban);
     const review_controller_id = useReviewControllerId(goban);
-    const review_out_of_sync = useReviewOutOfSync(goban);
+
+    React.useEffect(() => {
+        game_controller.on("in_pushed_analysis", set_in_pushed_analysis);
+        return () => {
+            game_controller.off("in_pushed_analysis", set_in_pushed_analysis);
+        };
+    }, [game_controller]);
+
     React.useEffect(() => {
         const renderExtraPlayerActions = (player_id: number): React.ReactElement | null => {
             const user = data.get("user");
@@ -1342,11 +1260,15 @@ export function ReviewControls({
                     </div>
                 )}
 
-                {(mode === "score estimation" || null) && <div>{renderEstimateScore()}</div>}
+                {(mode === "score estimation" || null) && (
+                    <div>
+                        <EstimateScore />
+                    </div>
+                )}
             </div>
             {(mode === "analyze" || null) && (
                 <div>
-                    {renderAnalyzeButtonBar()}
+                    <AnalyzeButtonBar />
 
                     <div className="space-around">
                         {review_controller_id &&

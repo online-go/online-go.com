@@ -30,19 +30,18 @@ import { doAnnul } from "@/lib/moderation";
 import {
     AIReview,
     GameTimings,
-    ChatMode,
     GameChat,
-    GobanContext,
+    GameControllerContext,
     useCurrentMove,
-    game_control,
     GameLog,
-    useGoban,
+    useGameController,
 } from "@/views/Game";
 import { GobanRenderer } from "goban";
 import { Resizable } from "@/components/Resizable";
 
 import { Player } from "@/components/Player";
 import { useUser } from "@/lib/hooks";
+import { GameController } from "../Game/GameController";
 export function ReportedGame({
     game_id,
     reported_at,
@@ -55,12 +54,13 @@ export function ReportedGame({
     onGobanCreated?: (goban: GobanRenderer) => void;
 }): React.ReactElement | null {
     const [goban, setGoban] = React.useState<GobanRenderer | null>(null);
-    const [selectedChatLog, setSelectedChatLog] = React.useState<ChatMode>("main");
+    const [game_controller, setGameController] = React.useState<GameController | null>(null);
     const refresh = useRefresh();
     const handleGobanCreated = React.useCallback(
         (goban: GobanRenderer) => {
             setGoban(goban);
             onGobanCreated?.(goban);
+            setGameController(new GameController(goban));
         },
         [onGobanCreated],
     );
@@ -77,6 +77,7 @@ export function ReportedGame({
             goban.on("update", refresh);
         }
 
+        /*
         const gotoMove = (move_number?: number) => {
             if (typeof move_number !== "number") {
                 return;
@@ -92,11 +93,12 @@ export function ReportedGame({
         };
 
         game_control.on("gotoMove", gotoMove);
+        */
         return () => {
             if (goban) {
                 goban.off("update", refresh);
             }
-            game_control.off("gotoMove", gotoMove);
+            //game_control.off("gotoMove", gotoMove);
         };
     }, [goban]);
 
@@ -131,7 +133,7 @@ export function ReportedGame({
                         chat={true}
                     />
                     {goban && goban.engine && (
-                        <GobanContext.Provider value={goban}>
+                        <GameControllerContext.Provider value={game_controller}>
                             <Resizable
                                 id="move-tree-container"
                                 className="vertically-resizable"
@@ -150,11 +152,11 @@ export function ReportedGame({
                                 goban={goban}
                                 annulled={annulled}
                             />
-                        </GobanContext.Provider>
+                        </GameControllerContext.Provider>
                     )}
                 </div>
                 {goban && goban.engine && (
-                    <GobanContext.Provider value={goban}>
+                    <GameControllerContext.Provider value={game_controller}>
                         <div className="reported-game-element reported-game-info">
                             <h3>
                                 Game: <Link to={`/game/${game_id}`}>#{game_id}</Link>
@@ -220,14 +222,9 @@ export function ReportedGame({
                         </div>
 
                         <div className="reported-game-element reported-game-chat">
-                            <GameChat
-                                selected_chat_log={selectedChatLog}
-                                onSelectedChatModeChange={setSelectedChatLog}
-                                channel={`game-${game_id}`}
-                                game_id={game_id}
-                            />
+                            <GameChat channel={`game-${game_id}`} game_id={game_id} />
                         </div>
-                    </GobanContext.Provider>
+                    </GameControllerContext.Provider>
                 )}
             </div>
         </div>
@@ -334,7 +331,8 @@ function GameOutcomeSummary({
     annulled,
     scoringAbandoned,
 }: GameOutcomeSummaryProps): React.ReactElement {
-    const goban = useGoban();
+    const game_controller = useGameController();
+    const goban = game_controller.goban;
     return (
         <div className="GameSummary">
             <div>
