@@ -9,9 +9,10 @@ import { render, screen } from "@testing-library/react";
 import * as React from "react";
 import * as data from "@/lib/data";
 import { MemoryRouter as Router } from "react-router-dom";
-import { GobanContext } from "./goban_context";
+import { GameControllerContext } from "./goban_context";
 import { act } from "react";
 import { OgsHelpProvider } from "@/components/OgsHelpProvider";
+import { GameController } from "./GameController";
 const TEST_USER = {
     anonymous: false,
     id: 123,
@@ -83,10 +84,13 @@ const PLAY_CONTROLS_DEFAULTS = {
 } as const;
 
 function WrapTest(props: { goban: GobanRenderer; children: any }): React.ReactElement {
+    const gameController = new GameController(props.goban);
     return (
         <OgsHelpProvider>
             <Router>
-                <GobanContext.Provider value={props.goban}>{props.children}</GobanContext.Provider>
+                <GameControllerContext.Provider value={gameController}>
+                    {props.children}
+                </GameControllerContext.Provider>
             </Router>
         </OgsHelpProvider>
     );

@@ -8,8 +8,9 @@ import { CancelButton, PlayButtons } from "./PlayButtons";
 import { act, cleanup, fireEvent, render, screen /* waitFor */ } from "@testing-library/react";
 import * as React from "react";
 import * as data from "@/lib/data";
-import { GobanContext } from "./goban_context";
+import { GameControllerContext } from "./goban_context";
 import { OgsHelpProvider } from "@/components/OgsHelpProvider";
+import { GameController } from "./GameController";
 
 const LOGGED_IN_USER = {
     anonymous: false,
@@ -72,11 +73,12 @@ afterEach(() => {
 describe("CancelButton", () => {
     test('says "Cancel game" in the first 6 moves.', () => {
         const goban = createGoban(LESS_THAN_SIX_MOVES);
+        const gameController = new GameController(goban);
 
         render(
-            <GobanContext.Provider value={goban}>
+            <GameControllerContext.Provider value={gameController}>
                 <CancelButton />
-            </GobanContext.Provider>,
+            </GameControllerContext.Provider>,
         );
 
         expect(screen.getByText("Cancel game")).toBeDefined();
@@ -85,11 +87,12 @@ describe("CancelButton", () => {
 
     test('says "Resign" after 6 moves', () => {
         const goban = createGoban(MORE_THAN_SIX_MOVES);
+        const gameController = new GameController(goban);
 
         render(
-            <GobanContext.Provider value={goban}>
+            <GameControllerContext.Provider value={gameController}>
                 <CancelButton />
-            </GobanContext.Provider>,
+            </GameControllerContext.Provider>,
         );
 
         expect(screen.getByText("Resign")).toBeDefined();
@@ -111,11 +114,12 @@ describe("CancelButton", () => {
                 white: { id: 456, username: "test_user2" },
             },
         });
+        const gameController = new GameController(goban);
 
         render(
-            <GobanContext.Provider value={goban}>
+            <GameControllerContext.Provider value={gameController}>
                 <CancelButton />
-            </GobanContext.Provider>,
+            </GameControllerContext.Provider>,
         );
 
         act(() => {
@@ -224,9 +228,12 @@ describe("CancelButton", () => {
 });
 
 function WrapTest(props: { goban: GobanRenderer; children: any }): React.ReactElement {
+    const gameController = new GameController(props.goban);
     return (
         <OgsHelpProvider>
-            <GobanContext.Provider value={props.goban}>{props.children}</GobanContext.Provider>
+            <GameControllerContext.Provider value={gameController}>
+                {props.children}
+            </GameControllerContext.Provider>
         </OgsHelpProvider>
     );
 }

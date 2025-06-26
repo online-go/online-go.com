@@ -31,7 +31,7 @@ import { _, interpolate, ngettext } from "@/lib/translate";
 import * as data from "@/lib/data";
 import { generateGobanHook, usePlayerToMove } from "./GameHooks";
 import { get_network_latency, get_clock_drift } from "@/lib/sockets";
-import { useGoban } from "./goban_context";
+import { useGameController } from "./goban_context";
 import { usePreference } from "@/lib/preferences";
 import { browserHistory } from "@/lib/ogsHistory";
 import { player_is_ignored } from "@/components/BlockPlayer";
@@ -61,7 +61,8 @@ export function PlayerCards({
     black_ai_suspected,
     white_ai_suspected,
 }: PlayerCardsProps): React.ReactElement {
-    const goban = useGoban();
+    const game_controller = useGameController();
+    const goban = game_controller.goban;
 
     const orig_marks = React.useRef<string | null>(null);
     const showing_scores = React.useRef<boolean>(false);

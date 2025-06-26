@@ -17,9 +17,9 @@
 
 import * as React from "react";
 import { Goban } from "goban";
-import { game_control } from "./game_control";
 import { GobanEvents } from "goban";
 import * as data from "@/lib/data";
+import { useGameController } from "./goban_context";
 
 /**
  * Generates a custom react hook that can return a prop that is derived from a
@@ -80,13 +80,25 @@ export function useShowUndoRequested(goban: Goban): boolean {
             goban.engine.undo_requested === goban.engine.last_official_move.move_number &&
             goban.engine.undo_requested === goban.engine.cur_move.move_number,
     );
+    const game_controller = useGameController();
+    const [in_pushed_analysis, set_in_pushed_analysis] = React.useState(
+        game_controller.in_pushed_analysis,
+    );
+
+    React.useEffect(() => {
+        game_controller.on("in_pushed_analysis", set_in_pushed_analysis);
+        return () => {
+            game_controller.off("in_pushed_analysis", set_in_pushed_analysis);
+        };
+    }, [game_controller]);
+
     React.useEffect(() => {
         if (!goban) {
             return;
         }
 
         const syncShowUndoRequested = () => {
-            if (game_control.in_pushed_analysis) {
+            if (in_pushed_analysis) {
                 return;
             }
 
@@ -110,7 +122,7 @@ export function useShowUndoRequested(goban: Goban): boolean {
             goban.off("last_official_move", syncShowUndoRequested);
             goban.off("cur_move", syncShowUndoRequested);
         };
-    }, [goban, game_control.in_pushed_analysis]);
+    }, [goban, in_pushed_analysis]);
 
     return show_undo_requested;
 }
