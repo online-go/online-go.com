@@ -1,0 +1,77 @@
+name: Test
+
+on:
+    workflow_dispatch:
+    workflow_call:
+
+env:
+    PLAYWRIGHT_DOCKER: mcr.microsoft.com/playwright:v1.51.0-noble
+
+jobs:
+    test:
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  submodules: recursive
+                  lfs: true
+
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: "20"
+
+            - name: Cache node modules
+              id: cache-node-modules
+              uses: actions/cache@v4
+              with:
+                  path: node_modules
+                  key: ${{ runner.os }}-node-modules-${{ hashFiles('**/yarn.lock') }}
+                  restore-keys: |
+                      ${{ runner.os }}-node-modules-
+
+            - name: yarn install
+              if: steps.cache-node-modules.outputs.cache-hit != 'true'
+              uses: nick-fields/retry@v3
+              with:
+                  timeout_minutes: 10
+                  max_attempts: 3
+                  command: yarn install
+
+            - name: Start frontend server for e2e tests
+              run: yarn vite &
+
+            - name: Check docker image cache presence
+              id: cache-docker-image
+              uses: actions/cache@v4
+              with:
+                  path: /tmp/playwright-image.tar
+                  key: docker-playwright-${{ env.PLAYWRIGHT_DOCKER }}
+
+            - name: Pull Playwright image if its not cached
+              if: steps.cache-docker-image.outputs.cache-hit != 'true'
+              run: docker pull ${{ env.PLAYWRIGHT_DOCKER }}
+
+            - name: Save Docker image in cache
+              if: steps.cache-docker-image.outputs.cache-hit != 'true'
+              run: docker save ${{ env.PLAYWRIGHT_DOCKER }} > /tmp/playwright-image.tar
+
+            - name: Load Docker image
+              if: steps.cache-docker-image.outputs.cache-hit == 'true'
+              run: docker load < /tmp/playwright-image.tar
+
+            - name: Check server ready, wait if needed
+              run: curl -s --retry 30 --retry-delay 1 --retry-all-errors http://localhost:8080 > /dev/null
+
+            - name: Run tests
+              run: yarn test:ci
+
+            - name: Upload e2e test failure results (if any)
+              if: always()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: test-results
+                  path: test-results/
+                  retention-days: 7
+                  if-no-files-found: ignore
