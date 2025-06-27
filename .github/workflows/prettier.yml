@@ -9,8 +9,7 @@ on:
     workflow_dispatch:
 
 jobs:
-    run:
-        name: Prettier
+    prettier:
         runs-on: ubuntu-latest
         timeout-minutes: 5
 

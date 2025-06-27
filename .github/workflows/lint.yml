@@ -1,4 +1,6 @@
 name: Lint
+run-name: Lint
+
 on:
     push:
         branches: [devel]
@@ -7,8 +9,7 @@ on:
     workflow_dispatch:
 
 jobs:
-    run:
-        name: Lint
+    lint:
         runs-on: ubuntu-latest
         timeout-minutes: 5
 

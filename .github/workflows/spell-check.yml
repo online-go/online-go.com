@@ -9,8 +9,7 @@ on:
     workflow_dispatch:
 
 jobs:
-    run:
-        name: Spell check
+    spell-check:
         runs-on: ubuntu-latest
         timeout-minutes: 5
 
