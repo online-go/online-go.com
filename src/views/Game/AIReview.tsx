@@ -162,12 +162,11 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
     }
 
     private calculateAndUpdateTableData() {
-        const gameController = this.props.gameControllerContext;
-        if (!gameController) {
+        const game_controller = this.props.gameControllerContext;
+        if (!game_controller) {
             return;
         }
-        const goban = gameController.goban;
-
+        const goban = game_controller.goban;
         const categorization = categorizeAiReview(
             this.ai_review,
             goban,
@@ -489,11 +488,11 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
             throw new Error("ai_review not set");
         }
 
-        const gameController = this.props.gameControllerContext;
-        if (!gameController) {
-            throw new Error("gameController not set");
+        const game_controller = this.props.gameControllerContext;
+        if (!game_controller) {
+            throw new Error("game_controller not set");
         }
-        const goban = gameController.goban;
+        const goban = game_controller.goban;
 
         if (!goban) {
             throw new Error("goban not set");
