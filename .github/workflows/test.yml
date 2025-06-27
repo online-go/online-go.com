@@ -1,5 +1,4 @@
 name: Test
-run-name: Test
 
 on:
     push:
@@ -12,7 +11,8 @@ env:
     PLAYWRIGHT_DOCKER: mcr.microsoft.com/playwright:v1.51.0-noble
 
 jobs:
-    test:
+    run:
+        name: Playwright tests
         runs-on: ubuntu-latest
         timeout-minutes: 10
 

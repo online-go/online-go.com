@@ -1,5 +1,4 @@
 name: Type Check
-run-name: Type Check
 
 on:
     push:
@@ -9,7 +8,8 @@ on:
     workflow_dispatch:
 
 jobs:
-    type-check:
+    run:
+        name: Type check
         runs-on: ubuntu-latest
         timeout-minutes: 5
 
