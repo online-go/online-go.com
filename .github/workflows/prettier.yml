@@ -1,11 +1,15 @@
 name: Prettier
+run-name: Prettier
 
 on:
+    push:
+        branches: [devel]
+    pull_request:
+        branches: [devel]
     workflow_dispatch:
-    workflow_call:
 
 jobs:
-    run:
+    prettier:
         runs-on: ubuntu-latest
         timeout-minutes: 5
 
