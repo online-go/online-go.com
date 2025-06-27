@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import { useGameController } from "./goban_context";
-import { useShowTitle, useTitle } from "./GameHooks";
+import { useShowTitle, useTitle, useCurrentMove } from "./GameHooks";
 import { _, interpolate } from "@/lib/translate";
 import { rulesText } from "@/lib/misc";
 import { KBShortcut } from "@/components/KBShortcut";
@@ -183,7 +183,7 @@ export function GameKeyboardShortcuts() {
 export function FragAIReview() {
     const game_controller = useGameController();
     const goban = game_controller.goban;
-    const cur_move = goban?.engine?.cur_move;
+    const cur_move = useCurrentMove(goban);
     const game_id = goban?.engine?.game_id;
     const review_id = goban?.review_id;
     const ai_review_enabled = game_controller.ai_review_enabled;
