@@ -76,44 +76,42 @@ export const defaultChallengeSettings: ChallengeModalFields = {
 // Define all valid fields for each interface
 const validFields: Record<string, readonly string[]> = {
     ChallengePOSTPayload: [
-        'initialized',
-        'min_ranking',
-        'max_ranking',
-        'challenger_color',
-        'rengo_auto_start',
-        'invite_only',
-        'game',
-        'aga_ranked'
+        "initialized",
+        "min_ranking",
+        "max_ranking",
+        "challenger_color",
+        "rengo_auto_start",
+        "invite_only",
+        "game",
+        "aga_ranked",
     ] as const,
     DemoBoardPOSTPayload: [
-        'name',
-        'rules',
-        'width',
-        'height',
-        'komi_auto',
-        'black_name',
-        'black_ranking',
-        'white_name',
-        'white_ranking',
-        'private',
-        'black_pro',
-        'white_pro'
-    ] as const
+        "name",
+        "rules",
+        "width",
+        "height",
+        "komi_auto",
+        "black_name",
+        "black_ranking",
+        "white_name",
+        "white_ranking",
+        "private",
+        "black_pro",
+        "white_pro",
+    ] as const,
 };
 
 // Helper function to check for unexpected fields in the request body
 const checkForUnexpectedFields = <T extends keyof typeof validFields>(
     requestBody: any,
-    interfaceName: T
+    interfaceName: T,
 ) => {
     const expectedFields = validFields[interfaceName];
     const unexpectedFields = Object.keys(requestBody).filter(
-        (field) => !expectedFields.includes(field)
+        (field) => !expectedFields.includes(field),
     );
     if (unexpectedFields.length > 0) {
-        throw new Error(
-            `Unexpected fields found in request body: ${unexpectedFields.join(", ")}`
-        );
+        throw new Error(`Unexpected fields found in request body: ${unexpectedFields.join(", ")}`);
     }
 };
 
@@ -168,7 +166,6 @@ interface DemoBoardPOSTPayload {
     black_pro?: number;
     white_pro?: number;
 }
-
 
 // Maps rank text to their corresponding select option indices
 // (see src/lib/rank_utils.ts for the reverse)
@@ -514,7 +511,7 @@ export const testChallengePOSTPayload = async (
             console.log("Challenge POST payload:", JSON.stringify(requestBody, null, 2));
         }
 
-        checkForUnexpectedFields(requestBody, 'ChallengePOSTPayload');
+        checkForUnexpectedFields(requestBody, "ChallengePOSTPayload");
 
         // Verify top-level fields
         if (expectedPayload.initialized !== undefined) {
@@ -621,8 +618,6 @@ export const reloadChallengeModal = async (page: Page) => {
     await expect(page.locator(".header")).toContainText("Custom Game");
 };
 
-
-
 export const testDemoBoardPOSTPayload = async (
     page: Page,
     expectedPayload: DemoBoardPOSTPayload,
@@ -636,7 +631,7 @@ export const testDemoBoardPOSTPayload = async (
             console.log("Demo POST payload:", JSON.stringify(requestBody, null, 2));
         }
 
-        checkForUnexpectedFields(requestBody, 'DemoBoardPOSTPayload');
+        checkForUnexpectedFields(requestBody, "DemoBoardPOSTPayload");
 
         // Verify demo board specific fields
         if (expectedPayload.name !== undefined) {
@@ -669,7 +664,7 @@ export const testDemoBoardPOSTPayload = async (
         if (expectedPayload.private !== undefined) {
             expect(requestBody.private).toBe(expectedPayload.private);
         }
-        
+
         if (expectedPayload.black_pro !== undefined) {
             expect(requestBody.black_pro).toBe(expectedPayload.black_pro);
         }
