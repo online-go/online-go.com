@@ -240,9 +240,9 @@ function categorizeFullReviewNew(
         const player = is_b_player ? "black" : "white";
 
         const score_after_last_move = ai_review.moves[move_index].score!;
-        const score_after_blue_move = ai_review.moves[move_index].branches[0].score!;
+        const predicted_score_after_blue_move = ai_review.moves[move_index].branches[0].score!;
 
-        const blue_scoreloss = score_after_last_move - score_after_blue_move;
+        const blue_scoreloss = score_after_last_move - predicted_score_after_blue_move;
 
         const score_after_players_move = ai_review.moves[move_index + 1].score!;
 
@@ -258,7 +258,7 @@ function categorizeFullReviewNew(
         );
         console.log(
             ` (2) score after blue move would be played -> \nai_review.moves[${move_index}].branches[0].score: `,
-            score_after_blue_move.toFixed(3),
+            predicted_score_after_blue_move.toFixed(3),
         );
         console.log(
             `- blue scoreloss for move ${move_index + 1} ->\n (1) - (2): `,
