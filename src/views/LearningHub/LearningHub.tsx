@@ -102,10 +102,16 @@ class Index extends React.PureComponent<{}, any> {
                 <div id="LearningHub-list">
                     {sections.map((arr) => (
                         <div key={arr[0]} className="section">
-                            <h2>{arr[0]}</h2>
+                            <h2>
+                                <span className="section-number">{arr[1][0].sectionIndex + 1}</span>
+                                {arr[0]}
+                            </h2>
                             <div className="contents">
                                 {arr[1].map((S) => {
                                     const className = getSectionClassName(S.section());
+                                    const sectionNumber = `${S.sectionIndex + 1}.${
+                                        S.lessonIndex + 1
+                                    }`;
                                     const p = new (S.pages()[0])();
                                     const config = p.config();
                                     if (!config.width) {
@@ -129,7 +135,12 @@ class Index extends React.PureComponent<{}, any> {
                                                 black={undefined}
                                             />
                                             <div>
-                                                <h1>{S.title()}</h1>
+                                                <h1>
+                                                    <span className="lesson-number">
+                                                        {sectionNumber}
+                                                    </span>
+                                                    {S.title()}
+                                                </h1>
                                                 <h3>{S.subtext()}</h3>
                                             </div>
                                             {className !== "todo" ? (
@@ -231,16 +242,23 @@ class SectionNav extends React.Component<{}, any> {
                 {sections.map((arr) => (
                     <div key={arr[0]} className="section">
                         <Link to={`/learn-to-play-go/${arr[1][0].section()}`}>
-                            <h2>{arr[0]}</h2>
+                            <h2>
+                                <span className="section-number">{arr[1][0].sectionIndex + 1}</span>
+                                {arr[0]}
+                            </h2>
                         </Link>
                         {arr[1].reduce((acc, v) => acc + (v.section() === section_name ? 1 : 0), 0) // is our active section?
                             ? arr[1].map((S) => {
+                                  const sectionNumber = `${S.sectionIndex + 1}.${
+                                      S.lessonIndex + 1
+                                  }`;
                                   return (
                                       <Link
                                           key={S.section()}
                                           className={S.section() === section_name ? "active" : ""}
                                           to={`/learn-to-play-go/${S.section()}`}
                                       >
+                                          <span className="lesson-number">{sectionNumber}</span>
                                           {S.title()}
                                           {this.getProgressText(S.section())}
                                       </Link>

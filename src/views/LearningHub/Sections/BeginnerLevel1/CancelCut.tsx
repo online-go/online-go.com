@@ -29,7 +29,7 @@ export class BL1CancelCut extends LearningHubSection {
         return "bl1-cancel-cut";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning capture cutting stone", "4.16 Cut");
+        return pgettext("Tutorial section name on learning capture cutting stone", "Cut");
     }
     static subtext(): string {
         return pgettext(

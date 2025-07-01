@@ -45,7 +45,7 @@ export class BL1Eye extends LearningHubSection {
         return "bl1-eye";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning real or false eye", "4.17 Eye");
+        return pgettext("Tutorial section name on learning real or false eye", "Eye");
     }
     static subtext(): string {
         return pgettext(

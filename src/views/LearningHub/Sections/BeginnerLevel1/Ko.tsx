@@ -54,7 +54,7 @@ export class BL1Ko extends LearningHubSection {
         return "bl1-ko";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning play ko", "4.34 Ko");
+        return pgettext("Tutorial section name on learning play ko", "Ko");
     }
     static subtext(): string {
         return pgettext("Tutorial section subtext on learning on play ko 1", "Make a ko");

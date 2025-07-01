@@ -42,7 +42,7 @@ export class BL1LifeDeath7 extends LearningHubSection {
         return "bl1-life-death-7";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning reduce eye space", "4.32 Life&Death");
+        return pgettext("Tutorial section name on learning reduce eye space", "Life&Death");
     }
     static subtext(): string {
         return pgettext(

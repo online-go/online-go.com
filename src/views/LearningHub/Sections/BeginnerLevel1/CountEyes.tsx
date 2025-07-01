@@ -43,7 +43,7 @@ export class BL1CountEyes extends LearningHubSection {
         return "bl1-count-eyes";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning count eyes", "4.19 Count Eyes");
+        return pgettext("Tutorial section name on learning count eyes", "Count Eyes");
     }
     static subtext(): string {
         return pgettext(

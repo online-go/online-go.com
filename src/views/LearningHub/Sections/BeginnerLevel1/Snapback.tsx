@@ -42,7 +42,7 @@ export class BL1Snapback extends LearningHubSection {
         return "bl1-snapback";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning capture with snapback", "4.7 Snapback");
+        return pgettext("Tutorial section name on learning capture with snapback", "Snapback");
     }
     static subtext(): string {
         return pgettext(

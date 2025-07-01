@@ -30,7 +30,7 @@ export class BL1GoodPlay extends LearningHubSection {
         return "bl1-good-play";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning good play", "3.35 Good Play");
+        return pgettext("Tutorial section name on learning good play", "Good Play");
     }
     static subtext(): string {
         return pgettext(

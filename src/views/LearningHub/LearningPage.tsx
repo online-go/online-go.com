@@ -30,6 +30,8 @@ export interface LearningPageProperties {
     curPage: number;
     section: string;
     nextSection: string;
+    sectionIndex?: number;
+    lessonIndex?: number;
 }
 
 export abstract class LearningPage extends React.Component<LearningPageProperties> {
@@ -254,6 +256,12 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
         const correct: boolean = this.correct_answer_triggered || this.complete();
         const fail: boolean = this.error_triggered || this.wrong_answer_triggered || this.failed();
 
+        // Get section number
+        const sectionNumber =
+            this.props.sectionIndex !== undefined && this.props.lessonIndex !== undefined
+                ? `${this.props.sectionIndex + 1}.${this.props.lessonIndex + 1}`
+                : "";
+
         return (
             <div className="LearningPage">
                 <InstructionalGoban
@@ -264,6 +272,7 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
 
                 <div className="LearningPage-pages">
                     <div className="header">
+                        {sectionNumber && <div className="section-number">{sectionNumber}</div>}
                         <h1>{this.props.title}</h1>
                     </div>
 

@@ -43,7 +43,7 @@ export class BL1Block extends LearningHubSection {
         return "bl1-block";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning block", "3.36 Block");
+        return pgettext("Tutorial section name on learning block", "Block");
     }
     static subtext(): string {
         return pgettext("Tutorial section subtext on learning on block", "Block opponent's stones");

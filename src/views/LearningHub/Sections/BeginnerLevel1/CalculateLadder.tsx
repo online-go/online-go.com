@@ -30,7 +30,7 @@ export class BL1CalculateLadder extends LearningHubSection {
         return "bl1-calculate-ladder";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning does the ladder work", "4.4 Ladder");
+        return pgettext("Tutorial section name on learning does the ladder work", "Ladder");
     }
     static subtext(): string {
         return pgettext(

@@ -42,7 +42,7 @@ export class BL1DoubleAtari extends LearningHubSection {
         return "bl1-double-atari";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning play double-atari", "4.6 Double-Atari");
+        return pgettext("Tutorial section name on learning play double-atari", "Double-Atari");
     }
     static subtext(): string {
         return pgettext(

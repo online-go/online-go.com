@@ -54,7 +54,7 @@ export class BL1Net extends LearningHubSection {
         return "bl1-net";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning capture in a net", "4.8 Net");
+        return pgettext("Tutorial section name on learning capture in a net", "Net");
     }
     static subtext(): string {
         return pgettext(

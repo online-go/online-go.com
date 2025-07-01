@@ -29,7 +29,7 @@ export class BL1ReduceTerritory extends LearningHubSection {
         return "bl1-reduce-territory";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning reduce territory", "4.21 Territory");
+        return pgettext("Tutorial section name on learning reduce territory", "Territory");
     }
     static subtext(): string {
         return pgettext(

@@ -43,7 +43,7 @@ export class BL1Stretch extends LearningHubSection {
         return "bl1-stretch";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning stretch", "3.37 Stretch");
+        return pgettext("Tutorial section name on learning stretch", "Stretch");
     }
     static subtext(): string {
         return pgettext(
