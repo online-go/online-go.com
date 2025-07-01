@@ -10,6 +10,9 @@
  */
 
 import { Page } from "@playwright/test";
+import { expect } from "@playwright/test";
+
+type BoardSize = "19x19" | "13x13" | "9x9";
 
 export const clickInTheMiddle = async (page: Page) => {
     // Wait for the Goban to be visible
@@ -30,8 +33,30 @@ export const clickInTheMiddle = async (page: Page) => {
     await page.mouse.click(centerX, centerY);
 };
 
-export const clickOnGobanIntersection = async (page: Page, coord: string) => {
-    const letters = "ABCDEFGHJKLMNOPQRST"; // No "I" cspell:disable-line
+export const clickOnGobanIntersection = async (
+    page: Page,
+    coord: string,
+    boardSize: BoardSize = "19x19",
+) => {
+    const boardLetters: { [size: string]: string } = {
+        // cspell:disable
+        "19x19": "ABCDEFGHJKLMNOPQRST", // No "I"
+        "13x13": "ABCDEFGHJKLMN", // No "I"
+        "9x9": "ABCDEFGHJ", // No "I"
+        // cspell:enable
+    };
+
+    const marginFactor: { [size: string]: number } = {
+        "19x19": 1,
+        "13x13": 1.1, // untested
+        "9x9": 1.3,
+    };
+
+    const sizeNumber = parseInt(boardSize);
+    const letters = boardLetters[boardSize];
+    if (!letters) {
+        throw new Error(`Unsupported board size: ${boardSize}`);
+    }
     const match = coord.match(/^([A-Ta-t])([1-9]|1[0-9])$/i);
     if (!match) {
         throw new Error(`Invalid coordinate: ${coord}`);
@@ -42,11 +67,11 @@ export const clickOnGobanIntersection = async (page: Page, coord: string) => {
 
     const col = letters.indexOf(colLetter);
     if (col === -1) {
-        throw new Error(`Invalid column letter: ${colLetter}`);
+        throw new Error(`Invalid column letter: ${colLetter} for board size ${boardSize}`);
     }
 
-    // Row: 19 (top) -> 0, 1 (bottom) -> 18
-    const row = 19 - rowNumber;
+    // Row: N (top) -> 0, 1 (bottom) -> N-1
+    const row = sizeNumber - rowNumber;
 
     const goban = page.locator(".Goban[data-pointers-bound]");
     await goban.waitFor({ state: "visible" });
@@ -56,10 +81,25 @@ export const clickOnGobanIntersection = async (page: Page, coord: string) => {
     }
 
     // Calculate margin and cell size
-    const margin = box.width / 20;
-    const cellSize = (box.width - 2 * margin) / 18;
+    const margin = (box.width * marginFactor[boardSize]) / (sizeNumber + 1);
+    const cellSize = (box.width - 2 * margin) / (sizeNumber - 1);
     const x = box.x + margin + col * cellSize;
     const y = box.y + margin + row * cellSize;
 
     await page.mouse.click(x, y);
+};
+
+// This expects the board to be ready for black to play
+export const playMoves = async (
+    black: Page,
+    white: Page,
+    moves: string[],
+    boardSize: BoardSize = "19x19",
+) => {
+    for (let i = 0; i < moves.length; i++) {
+        const page = i % 2 === 0 ? black : white;
+        const moveText = page.getByText("Your move", { exact: true });
+        await expect(moveText).toBeVisible();
+        await clickOnGobanIntersection(page, moves[i], boardSize);
+    }
 };

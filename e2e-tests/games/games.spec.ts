@@ -16,8 +16,8 @@
  */
 
 import { ogsTest } from "@helpers";
-import { airBasicCreationTest } from "./air-basic-creation";
+import { basicScoringTest } from "./basic-scoring";
 
-ogsTest.describe("@AIReview AI Review Tests", () => {
-    ogsTest("Should get a grey review after a game", airBasicCreationTest);
+ogsTest.describe("@Games Tests", () => {
+    ogsTest("Should be able to pass and score a game", basicScoringTest);
 });
