@@ -28,7 +28,7 @@ import * as player_cache from "@/lib/player_cache";
 
 import { Card } from "@/components/material";
 
-import { ModTools } from "./ModTools";
+import { ModTools } from "@moderator-ui/ModTools";
 import { GameHistoryTable } from "./GameHistoryTable";
 import { ReviewsAndDemosTable } from "./ReviewsAndDemosTable";
 import { BotControls } from "./BotControls";

@@ -22,8 +22,8 @@
             "@helpers": ["e2e-tests/helpers"],
             "@stubs/*": ["src/stubs/*"],
             "@moderator-ui/*": [
-                "src/stubs/moderator-ui/*",
-                "submodules/moderator-ui/*"
+                "submodules/moderator-ui/*",                
+                "src/stubs/moderator-ui/*"
             ]
         },
 

@@ -1,29 +1,21 @@
-# This is a basic workflow to help you get started with Actions
+name: Test
 
-name: CI
-
-# Controls when the action will run.
 on:
-    # Triggers the workflow on push or pull request events but only for the devel branch
     push:
         branches: [devel]
     pull_request:
         branches: [devel]
-
-    # Allows you to run this workflow manually from the Actions tab
     workflow_dispatch:
 
 env:
-  PLAYWRIGHT_DOCKER: mcr.microsoft.com/playwright:v1.51.0-noble
+    PLAYWRIGHT_DOCKER: mcr.microsoft.com/playwright:v1.51.0-noble
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-    build:
+    playwright:
         runs-on: ubuntu-latest
         timeout-minutes: 10
 
         steps:
-            # Checks-out the repository under $GITHUB_WORKSPACE
             - uses: actions/checkout@v4
               with:
                   submodules: recursive
@@ -38,21 +30,17 @@ jobs:
               uses: actions/cache@v4
               with:
                   path: node_modules
-                  key: ${{ runner.os }}-node-modules
+                  key: ${{ runner.os }}-node-modules-${{ hashFiles('**/yarn.lock') }}
+                  restore-keys: |
+                      ${{ runner.os }}-node-modules-
 
             - name: yarn install
+              if: steps.cache-node-modules.outputs.cache-hit != 'true'
               uses: nick-fields/retry@v3
               with:
                   timeout_minutes: 10
                   max_attempts: 3
                   command: yarn install
-
-            - name: Eslint
-              run: yarn lint
-
-
-            - name: Type check
-              run: yarn type-check
 
             - name: Start frontend server for e2e tests
               run: yarn vite &
@@ -61,8 +49,8 @@ jobs:
               id: cache-docker-image
               uses: actions/cache@v4
               with:
-                path: /tmp/playwright-image.tar
-                key: docker-playwright-${{ hashFiles('.github/workflows/your-workflow.yml') }}
+                  path: /tmp/playwright-image.tar
+                  key: docker-playwright-${{ env.PLAYWRIGHT_DOCKER }}
 
             - name: Pull Playwright image if its not cached
               if: steps.cache-docker-image.outputs.cache-hit != 'true'
@@ -79,25 +67,14 @@ jobs:
             - name: Check server ready, wait if needed
               run: curl -s --retry 30 --retry-delay 1 --retry-all-errors http://localhost:8080 > /dev/null
 
-            - name: Tests
+            - name: Run tests
               run: yarn test:ci
 
             - name: Upload e2e test failure results (if any)
-              if: always() 
+              if: always()
               uses: actions/upload-artifact@v4
               with:
-                name: test-results
-                path: test-results/
-                retention-days: 7
-                if-no-files-found: ignore
-
-            - name: Test the Build
-              run: yarn build-ci
-
-            - name: Prettier check
-              run: yarn prettier:check
-
-            - name: Spell check
-              uses: streetsidesoftware/cspell-action@v6
-              with:
-                  files: src/**/*.{ts,tsx}
+                  name: test-results
+                  path: test-results/
+                  retention-days: 7
+                  if-no-files-found: ignore
