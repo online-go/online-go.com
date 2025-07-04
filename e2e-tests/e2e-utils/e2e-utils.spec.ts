@@ -16,11 +16,8 @@
  */
 
 import { ogsTest } from "@helpers";
-import { basicScoringTest } from "./basic-scoring";
-//import { runBotDetectionTest } from "./bot-detect";
+import { runGame } from "./run-game";
 
-ogsTest.describe("@Games Tests", () => {
-    ogsTest("Should be able to pass and score a game", basicScoringTest);
-    // WIP
-    // ogsTest("Should run bot detection after 80 moves", runBotDetectionTest);
+ogsTest.describe("@E2EUtils Tests", () => {
+    ogsTest("Run a game", runGame);
 });
