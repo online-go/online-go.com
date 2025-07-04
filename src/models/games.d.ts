@@ -230,6 +230,8 @@ declare namespace rest_api {
         network_size: string;
         strength: number;
         type: "fast" | "full";
+        playouts: number;
+        visits: number;
     }
 
     interface BotDetectionResults {
