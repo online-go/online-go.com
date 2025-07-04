@@ -46,10 +46,12 @@ export const clickOnGobanIntersection = async (
         // cspell:enable
     };
 
+    // Fudge the maths to get the click point in the right place
+    // It's something like "how much bigger is the margin than a cell"
     const marginFactor: { [size: string]: number } = {
-        "19x19": 1,
-        "13x13": 1.1, // untested
-        "9x9": 1.3,
+        "19x19": 1.4,
+        "13x13": 1.4, // untested
+        "9x9": 1.4,
     };
 
     const sizeNumber = parseInt(boardSize);
