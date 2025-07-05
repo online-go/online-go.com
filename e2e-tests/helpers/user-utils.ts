@@ -15,6 +15,48 @@ import { Page, Browser } from "@playwright/test";
 import { expectOGSClickableByName } from "./matchers";
 import { load } from "@helpers";
 
+/**
+ * User Management Utilities for E2E Tests
+ *
+ * This file provides utility functions for managing users in end-to-end tests:
+ *
+ * User Creation & Registration:
+ * - newTestUsername(): Generate unique test usernames with timestamp
+ * - registerNewUser(): Register a new user account
+ * - prepareNewUser(): Register and set up a new user with basic preferences
+ *
+ * Authentication & Session Management:
+ * - loginAsUser(): Log in as an existing user
+ * - logoutUser(): Log out the current user
+ * - setupSeededUser(): Set up a pre-existing seeded user account
+ * - setupSeededCM(): Set up a seeded Community Moderator account
+ *
+ * Profile & Navigation:
+ * - goToProfile(): Navigate to the current user's profile page
+ * - goToUsersProfile(): Navigate to another user's profile page
+ * - goToUsersGame(): Navigate to a specific game for a user
+ *
+ * Player Interactions:
+ * - openUserDropdownFromOmniSearch(): Open user's dropdown menu from via omnisearch
+ *
+ * Moderation & Reporting:
+ * - reportUser(): Submit a user report with specified type and notes
+ * - reportPlayerByColor(): Report a player by their game color
+ * - assertIncidentReportIndicatorActive(): Verify incident report indicator is active
+ * - assertIncidentReportIndicatorInactive(): Verify incident report indicator is inactive
+ * - turnOffModerationQuota(): Disable moderation quota for CM accounts
+ *
+ * Notification Indicators:
+ * - assertNotificationIndicatorActive(): Verify notification indicator is active with count
+ * - assertNotificationIndicatorInactive(): Verify notification indicator is inactive
+ *
+ * UI Preferences:
+ * - turnOffDynamicHelp(): Disable dynamic help popups
+ *
+ * Navigation:
+ * - selectNavMenuItem(): Clicks a specified Nav Menu item & subitem
+ */
+
 // This is tweaked to provide us with lots of unique usernames but also
 // a decent number of readable user-role characters, within the OGS username 20 character limit
 // on registration.
@@ -193,22 +235,14 @@ export const turnOffModerationQuota = async (page: Page) => {
     await reportQuotaInput.fill("0");
 };
 
-// Note: if there are multiple matches, this grabs the first.   This is avoids issues if we
-// accidentally have more seed games than intended.
-export const goToUsersGame = async (page: Page, username: string, gameName: string) => {
-    await page.fill(".OmniSearch-input", username);
-    await page.waitForSelector(".results .result");
-    await page.click(`.results .result:has-text('${username}')`);
+export const openUserDropdownFromOmniSearch = async (page: Page, username: string) => {
+    // Go to their profile where for sure there is their player link
+    await goToUsersProfile(page, username);
 
-    const gameHistory = page.getByText("Game History");
-    await gameHistory.scrollIntoViewIfNeeded(); // assists debug
-    await expect(gameHistory).toBeVisible();
-    const target_game = page.getByText(gameName, { exact: true }).first();
-    await expect(target_game).toBeVisible();
-
-    // Go to that page ...
-    await target_game.click();
-    await expect(page.locator(".Game")).toBeVisible();
+    const playerLink = page.locator(`a.Player:has-text("${username}")`);
+    await expect(playerLink).toBeVisible();
+    await playerLink.hover(); // Ensure the dropdown stays open
+    await playerLink.click();
 };
 
 export const goToUsersProfile = async (page: Page, username: string) => {
@@ -220,6 +254,22 @@ export const goToUsersProfile = async (page: Page, username: string) => {
     const playerUsername = page.locator(".Player-username").getByText(username);
     await expect(playerUsername).toBeVisible();
     return playerUsername;
+};
+
+// Note: if there are multiple matches, this grabs the first.   This is avoids issues if we
+// accidentally have more seed games than intended.
+export const goToUsersGame = async (page: Page, username: string, gameName: string) => {
+    await goToUsersProfile(page, username);
+
+    const gameHistory = page.getByText("Game History");
+    await gameHistory.scrollIntoViewIfNeeded(); // assists debug
+    await expect(gameHistory).toBeVisible();
+    const target_game = page.getByText(gameName, { exact: true }).first();
+    await expect(target_game).toBeVisible();
+
+    // Go to that page ...
+    await target_game.click();
+    await expect(page.locator(".Game")).toBeVisible();
 };
 
 export const reportUser = async (page: Page, username: string, type: string, notes: string) => {
@@ -294,6 +344,42 @@ export const assertIncidentReportIndicatorActive = async (page: Page, count: num
 export const assertIncidentReportIndicatorInactive = async (page: Page) => {
     const indicator = page.locator(".IncidentReportIndicator");
     await expect(indicator).toBeEmpty();
+};
+
+export const assertNotificationIndicatorActive = async (page: Page, count: number) => {
+    const indicator = page.locator(".NotificationIndicator");
+    const icon = indicator.locator(".fa-bell.active");
+    const countDisplay = indicator.locator(".count.active");
+
+    await expect(indicator).toBeVisible();
+    await expect(icon).toBeVisible();
+    await expect(countDisplay).toHaveText(`${count}`);
+
+    return indicator;
+};
+
+export const assertNotificationIndicatorInactive = async (page: Page) => {
+    const indicator = page.locator(".NotificationIndicator");
+    const icon = indicator.locator(".fa-bell");
+    const countDisplay = indicator.locator(".count");
+
+    await expect(indicator).toBeVisible();
+    await expect(icon).toBeVisible();
+    await expect(countDisplay).toHaveText("0");
+};
+
+// Currently this is expected to be used with a single notification.
+// When we have more than one, extend this :)
+// Could find the right notification by type, and handle a count parameter.
+export const dismissNotification = async (page: Page) => {
+    await assertNotificationIndicatorActive(page, 1);
+
+    const notificationIndicator = page.locator(".NotificationIndicator");
+    await notificationIndicator.click();
+
+    const dismissButton = page.locator(".notification .fa-times-circle");
+    await expect(dismissButton).toBeVisible();
+    await dismissButton.click();
 };
 
 export const selectNavMenuItem = async (

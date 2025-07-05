@@ -12,6 +12,7 @@
 import { expect } from "@playwright/test";
 import { Page } from "@playwright/test";
 import { expectOGSClickableByName } from "@helpers/matchers";
+import { openUserDropdownFromOmniSearch } from "./user-utils";
 
 // This defines the fields in the challenge modal form that need to be filled out.
 export interface ChallengeModalFields {
@@ -224,13 +225,7 @@ export const createDirectChallenge = async (
     challenged: string,
     settings: ChallengeModalFields = {},
 ) => {
-    await page.fill(".OmniSearch-input", challenged);
-    await page.waitForSelector(".results .result");
-    await page.click(`.results .result:has-text('${challenged}')`);
-    const playerLink = page.locator(`a.Player:has-text("${challenged}")`);
-    await expect(playerLink).toBeVisible();
-    await playerLink.hover(); // Ensure the dropdown stays open
-    await playerLink.click();
+    await openUserDropdownFromOmniSearch(page, challenged);
 
     await expect(page.getByRole("button", { name: /Challenge$/ })).toBeVisible();
     await page.getByRole("button", { name: /Challenge$/ }).click();
