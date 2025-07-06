@@ -70,6 +70,7 @@ interface AIReviewProperties {
     onAIReviewSelected: (ai_review: JGOFAIReview) => void;
     reportContext?: React.ContextType<typeof ReportContext>;
     gobanContext?: React.ContextType<typeof GobanContext>;
+    bot_detection_results?: any;
 }
 
 interface AIReviewState {
@@ -1091,6 +1092,23 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                                                             data.network,
                                                         ),
                                                     },
+                                                )}
+                                            </div>
+                                            <div className="ai-review-strength-info">
+                                                {data.playouts && data.visits && (
+                                                    <span>
+                                                        {interpolate(
+                                                            pgettext(
+                                                                "AI Review strength information",
+                                                                "{{playouts}} playouts, {{visits}} visits",
+                                                            ),
+                                                            {
+                                                                playouts:
+                                                                    data.playouts.toLocaleString(),
+                                                                visits: data.visits.toLocaleString(),
+                                                            },
+                                                        )}
+                                                    </span>
                                                 )}
                                             </div>
                                             <div className="date">
