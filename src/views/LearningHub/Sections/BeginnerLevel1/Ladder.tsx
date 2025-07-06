@@ -42,7 +42,7 @@ export class BL1Ladder extends LearningHubSection {
         return "bl1-ladder";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning capture in a ladder", "4.5 Ladder");
+        return pgettext("Tutorial section name on learning capture in a ladder", "Ladder");
     }
     static subtext(): string {
         return pgettext(

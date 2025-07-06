@@ -54,7 +54,7 @@ export class BL1Connect extends LearningHubSection {
         return "bl1-connect";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning connect", "4.14 Connect");
+        return pgettext("Tutorial section name on learning connect", "Connect");
     }
     static subtext(): string {
         return pgettext("Tutorial section subtext on learning on connect", "Connect your stones");

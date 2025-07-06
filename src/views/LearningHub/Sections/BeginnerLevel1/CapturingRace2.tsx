@@ -43,10 +43,7 @@ export class BL1CapturingRace2 extends LearningHubSection {
         return "bl1-capturing-race-2";
     }
     static title(): string {
-        return pgettext(
-            "Tutorial section name on learning choose correct chain",
-            "4.23 Capturing Race",
-        );
+        return pgettext("Tutorial section name on learning choose correct chain", "Capturing Race");
     }
     static subtext(): string {
         return pgettext(

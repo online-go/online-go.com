@@ -43,7 +43,7 @@ export class BL1CloseTerritory extends LearningHubSection {
         return "bl1-close-territory";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning close territory", "4.20 Territory");
+        return pgettext("Tutorial section name on learning close territory", "Territory");
     }
     static subtext(): string {
         return pgettext(

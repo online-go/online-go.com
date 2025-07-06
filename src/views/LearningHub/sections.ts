@@ -231,11 +231,11 @@ import { BL1Stretch } from "./Sections/BeginnerLevel1/Stretch";
 
 export const sections: [string, any[]][] = [
     [
-        pgettext("Learning hub section title", "1 Fundamentals"),
+        pgettext("Learning hub section title", "Fundamentals"),
         [Intro, SelfCapture, Eyes, Ko, Territory, EndingTheGame, TheBoard],
     ],
     [
-        pgettext("Learning hub section title", "2 Basic Principles"),
+        pgettext("Learning hub section title", "Basic Principles"),
         [
             CountLiberties,
             CountChains,
@@ -258,7 +258,7 @@ export const sections: [string, any[]][] = [
         ],
     ],
     [
-        pgettext("Learning hub section title", "3 Basic Skills"),
+        pgettext("Learning hub section title", "Basic Skills"),
         [
             AtariToSide,
             AtariToStones,
@@ -292,7 +292,7 @@ export const sections: [string, any[]][] = [
         ],
     ],
     [
-        pgettext("Learning hub section title", "4 Beginner Level 1"),
+        pgettext("Learning hub section title", "Beginner Level 1"),
         [
             BL1Atari,
             EscapeFromNet,
@@ -350,3 +350,18 @@ export let all_sections: Array<typeof LearningHubSection> = [];
 for (const S of sections) {
     all_sections = all_sections.concat(S[1]);
 }
+
+// Initialize section and lesson indices for all sections
+function initializeSectionIndices() {
+    for (let sectionIndex = 0; sectionIndex < sections.length; sectionIndex++) {
+        const [, lessons] = sections[sectionIndex];
+        for (let lessonIndex = 0; lessonIndex < lessons.length; lessonIndex++) {
+            const LessonClass = lessons[lessonIndex];
+            LessonClass.sectionIndex = sectionIndex;
+            LessonClass.lessonIndex = lessonIndex;
+        }
+    }
+}
+
+// Initialize indices after sections and all_sections are defined
+initializeSectionIndices();

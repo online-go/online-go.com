@@ -42,7 +42,7 @@ export class BL1LifeDeath3 extends LearningHubSection {
         return "bl1-life-death-3";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning play at vital point", "4.28 Life&Death");
+        return pgettext("Tutorial section name on learning play at vital point", "Life&Death");
     }
     static subtext(): string {
         return pgettext(

@@ -43,7 +43,7 @@ export class BL1ChaseDown extends LearningHubSection {
         return "bl1-chase-down";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning chase down", "4.9 Chase Down");
+        return pgettext("Tutorial section name on learning chase down", "Chase Down");
     }
     static subtext(): string {
         return pgettext(

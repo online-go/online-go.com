@@ -54,7 +54,7 @@ export class BL1Cut extends LearningHubSection {
         return "bl1-cut";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning cut", "4.15 Cut");
+        return pgettext("Tutorial section name on learning cut", "Cut");
     }
     static subtext(): string {
         return pgettext("Tutorial section subtext on learning on cut", "Cut opponent's stones");

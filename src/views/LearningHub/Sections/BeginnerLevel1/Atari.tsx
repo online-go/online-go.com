@@ -54,7 +54,7 @@ export class BL1Atari extends LearningHubSection {
         return "bl1-atari";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning atari", "4.1 Atari");
+        return pgettext("Tutorial section name on learning atari", "Atari");
     }
     static subtext(): string {
         return pgettext("Tutorial section subtext on learning on atari", "Play the correct atari");

@@ -54,7 +54,7 @@ export class EscapeFromNet extends LearningHubSection {
         return "escape-from-net";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning escape from the net", "4.2 Escape net");
+        return pgettext("Tutorial section name on learning escape from the net", "Escape net");
     }
     static subtext(): string {
         return pgettext(

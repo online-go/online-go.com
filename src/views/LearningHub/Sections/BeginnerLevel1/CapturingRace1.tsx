@@ -56,7 +56,7 @@ export class BL1CapturingRace1 extends LearningHubSection {
     static title(): string {
         return pgettext(
             "Tutorial section name on learning win the capturing race",
-            "4.22 Capturing Race",
+            "Capturing Race",
         );
     }
     static subtext(): string {

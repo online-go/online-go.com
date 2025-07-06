@@ -43,7 +43,7 @@ export class BL1Seki2 extends LearningHubSection {
         return "bl1-seki-2";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning make seki", "4.25 Make Seki");
+        return pgettext("Tutorial section name on learning make seki", "Make Seki");
     }
     static subtext(): string {
         return pgettext("Tutorial section subtext on learning on make seki", "");

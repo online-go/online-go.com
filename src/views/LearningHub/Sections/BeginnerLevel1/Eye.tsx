@@ -45,7 +45,7 @@ export class BL1Eye extends LearningHubSection {
         return "bl1-eye";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning real or false eye", "4.17 Eye");
+        return pgettext("Tutorial section name on learning real or false eye", "Eye");
     }
     static subtext(): string {
         return pgettext(
@@ -112,12 +112,6 @@ class Page03 extends LearningPage {
     }
 
     text() {
-        return (
-            <MultipleChoice
-                onCorrectAnswer={this.onCorrectAnswer}
-                onWrongAnswer={this.onWrongAnswer}
-            />
-        );
         function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
             const [value, setValue] = React.useState<string>("");
 
@@ -160,6 +154,12 @@ class Page03 extends LearningPage {
                 </div>
             );
         }
+        return (
+            <MultipleChoice
+                onCorrectAnswer={this.onCorrectAnswer}
+                onWrongAnswer={this.onWrongAnswer}
+            />
+        );
     }
     config(): GobanConfig {
         return {
@@ -183,12 +183,6 @@ class Page04 extends LearningPage {
     }
 
     text() {
-        return (
-            <MultipleChoice
-                onCorrectAnswer={this.onCorrectAnswer}
-                onWrongAnswer={this.onWrongAnswer}
-            />
-        );
         function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
             const [value, setValue] = React.useState<string>("");
 
@@ -231,6 +225,12 @@ class Page04 extends LearningPage {
                 </div>
             );
         }
+        return (
+            <MultipleChoice
+                onCorrectAnswer={this.onCorrectAnswer}
+                onWrongAnswer={this.onWrongAnswer}
+            />
+        );
     }
     config(): GobanConfig {
         return {
@@ -254,12 +254,6 @@ class Page05 extends LearningPage {
     }
 
     text() {
-        return (
-            <MultipleChoice
-                onCorrectAnswer={this.onCorrectAnswer}
-                onWrongAnswer={this.onWrongAnswer}
-            />
-        );
         function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
             const [value, setValue] = React.useState<string>("");
 
@@ -302,6 +296,12 @@ class Page05 extends LearningPage {
                 </div>
             );
         }
+        return (
+            <MultipleChoice
+                onCorrectAnswer={this.onCorrectAnswer}
+                onWrongAnswer={this.onWrongAnswer}
+            />
+        );
     }
     config(): GobanConfig {
         return {
@@ -325,12 +325,6 @@ class Page06 extends LearningPage {
     }
 
     text() {
-        return (
-            <MultipleChoice
-                onCorrectAnswer={this.onCorrectAnswer}
-                onWrongAnswer={this.onWrongAnswer}
-            />
-        );
         function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
             const [value, setValue] = React.useState<string>("");
 
@@ -373,6 +367,12 @@ class Page06 extends LearningPage {
                 </div>
             );
         }
+        return (
+            <MultipleChoice
+                onCorrectAnswer={this.onCorrectAnswer}
+                onWrongAnswer={this.onWrongAnswer}
+            />
+        );
     }
     config(): GobanConfig {
         return {
@@ -396,12 +396,6 @@ class Page07 extends LearningPage {
     }
 
     text() {
-        return (
-            <MultipleChoice
-                onCorrectAnswer={this.onCorrectAnswer}
-                onWrongAnswer={this.onWrongAnswer}
-            />
-        );
         function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
             const [value, setValue] = React.useState<string>("");
 
@@ -444,6 +438,12 @@ class Page07 extends LearningPage {
                 </div>
             );
         }
+        return (
+            <MultipleChoice
+                onCorrectAnswer={this.onCorrectAnswer}
+                onWrongAnswer={this.onWrongAnswer}
+            />
+        );
     }
     config(): GobanConfig {
         return {
@@ -467,12 +467,6 @@ class Page08 extends LearningPage {
     }
 
     text() {
-        return (
-            <MultipleChoice
-                onCorrectAnswer={this.onCorrectAnswer}
-                onWrongAnswer={this.onWrongAnswer}
-            />
-        );
         function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
             const [value, setValue] = React.useState<string>("");
 
@@ -515,6 +509,12 @@ class Page08 extends LearningPage {
                 </div>
             );
         }
+        return (
+            <MultipleChoice
+                onCorrectAnswer={this.onCorrectAnswer}
+                onWrongAnswer={this.onWrongAnswer}
+            />
+        );
     }
     config(): GobanConfig {
         return {
@@ -538,12 +538,6 @@ class Page09 extends LearningPage {
     }
 
     text() {
-        return (
-            <MultipleChoice
-                onCorrectAnswer={this.onCorrectAnswer}
-                onWrongAnswer={this.onWrongAnswer}
-            />
-        );
         function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
             const [value, setValue] = React.useState<string>("");
 
@@ -586,6 +580,12 @@ class Page09 extends LearningPage {
                 </div>
             );
         }
+        return (
+            <MultipleChoice
+                onCorrectAnswer={this.onCorrectAnswer}
+                onWrongAnswer={this.onWrongAnswer}
+            />
+        );
     }
     config(): GobanConfig {
         return {
@@ -609,12 +609,6 @@ class Page10 extends LearningPage {
     }
 
     text() {
-        return (
-            <MultipleChoice
-                onCorrectAnswer={this.onCorrectAnswer}
-                onWrongAnswer={this.onWrongAnswer}
-            />
-        );
         function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
             const [value, setValue] = React.useState<string>("");
 
@@ -657,6 +651,12 @@ class Page10 extends LearningPage {
                 </div>
             );
         }
+        return (
+            <MultipleChoice
+                onCorrectAnswer={this.onCorrectAnswer}
+                onWrongAnswer={this.onWrongAnswer}
+            />
+        );
     }
     config(): GobanConfig {
         return {
@@ -680,12 +680,6 @@ class Page11 extends LearningPage {
     }
 
     text() {
-        return (
-            <MultipleChoice
-                onCorrectAnswer={this.onCorrectAnswer}
-                onWrongAnswer={this.onWrongAnswer}
-            />
-        );
         function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
             const [value, setValue] = React.useState<string>("");
 
@@ -728,6 +722,12 @@ class Page11 extends LearningPage {
                 </div>
             );
         }
+        return (
+            <MultipleChoice
+                onCorrectAnswer={this.onCorrectAnswer}
+                onWrongAnswer={this.onWrongAnswer}
+            />
+        );
     }
     config(): GobanConfig {
         return {
@@ -751,12 +751,6 @@ class Page12 extends LearningPage {
     }
 
     text() {
-        return (
-            <MultipleChoice
-                onCorrectAnswer={this.onCorrectAnswer}
-                onWrongAnswer={this.onWrongAnswer}
-            />
-        );
         function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
             const [value, setValue] = React.useState<string>("");
 
@@ -799,6 +793,12 @@ class Page12 extends LearningPage {
                 </div>
             );
         }
+        return (
+            <MultipleChoice
+                onCorrectAnswer={this.onCorrectAnswer}
+                onWrongAnswer={this.onWrongAnswer}
+            />
+        );
     }
     config(): GobanConfig {
         return {
@@ -822,12 +822,6 @@ class Page13 extends LearningPage {
     }
 
     text() {
-        return (
-            <MultipleChoice
-                onCorrectAnswer={this.onCorrectAnswer}
-                onWrongAnswer={this.onWrongAnswer}
-            />
-        );
         function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
             const [value, setValue] = React.useState<string>("");
 
@@ -870,6 +864,12 @@ class Page13 extends LearningPage {
                 </div>
             );
         }
+        return (
+            <MultipleChoice
+                onCorrectAnswer={this.onCorrectAnswer}
+                onWrongAnswer={this.onWrongAnswer}
+            />
+        );
     }
     config(): GobanConfig {
         return {
@@ -893,12 +893,6 @@ class Page14 extends LearningPage {
     }
 
     text() {
-        return (
-            <MultipleChoice
-                onCorrectAnswer={this.onCorrectAnswer}
-                onWrongAnswer={this.onWrongAnswer}
-            />
-        );
         function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
             const [value, setValue] = React.useState<string>("");
 
@@ -941,6 +935,12 @@ class Page14 extends LearningPage {
                 </div>
             );
         }
+        return (
+            <MultipleChoice
+                onCorrectAnswer={this.onCorrectAnswer}
+                onWrongAnswer={this.onWrongAnswer}
+            />
+        );
     }
     config(): GobanConfig {
         return {
