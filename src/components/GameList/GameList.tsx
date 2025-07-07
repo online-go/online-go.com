@@ -536,7 +536,9 @@ function MiniGobanList(
                         game_id={game.id}
                         width={game.width}
                         height={game.height}
-                        onGobanCreated={(goban) => onGobanCreated(game, goban)}
+                        onGobanCreated={(goban_controller) =>
+                            onGobanCreated(game, goban_controller.goban)
+                        }
                         player={player}
                         {...(miniGobanProps || {})}
                     />

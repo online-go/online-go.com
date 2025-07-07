@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { GobanRenderer, GobanRendererConfig, createGoban, decodeMoves } from "goban";
+import { GobanRenderer, GobanRendererConfig, decodeMoves, createGoban } from "goban";
 import React from "react";
 import { PersistentElement } from "../../components/PersistentElement";
 

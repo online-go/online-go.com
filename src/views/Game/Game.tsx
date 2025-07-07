@@ -31,7 +31,6 @@ import {
     GobanModes,
     JGOFNumericPlayerColor,
     JGOFSealingIntersection,
-    createGoban,
 } from "goban";
 import { isLiveGame } from "@/components/TimeControl";
 import { setExtraActionCallback, PlayerDetails } from "@/components/Player";
@@ -54,7 +53,7 @@ import { GameControllerContext } from "./goban_context";
 import { is_valid_url } from "@/lib/url_validation";
 import { BotDetectionResults } from "./BotDetectionResults";
 import { ActiveTournament } from "@/lib/types";
-import { GameController } from "./GameController";
+import { GobanController } from "../../lib/GobanController";
 import {
     FragAIReview,
     FragBelowBoardControls,
@@ -73,8 +72,11 @@ export function Game(): React.ReactElement | null {
 
     const game_id = params.game_id ? parseInt(params.game_id) : 0;
     const review_id = params.review_id ? parseInt(params.review_id) : 0;
+
+    /* Return url state */
     const return_param = searchParams.get("return");
     const return_url = return_param && is_valid_url(return_param) ? return_param : null;
+    const return_url_debounce = React.useRef<boolean>(false);
 
     /* Refs */
     const ref_move_tree_container = React.useRef<HTMLElement | undefined>(undefined);
@@ -87,8 +89,7 @@ export function Game(): React.ReactElement | null {
     const last_move_viewed = React.useRef<number>(0);
     const white_username = React.useRef<string>("White");
     const black_username = React.useRef<string>("Black");
-    const game_controller = React.useRef<GameController | null>(null);
-    const return_url_debounce = React.useRef<boolean>(false);
+    const game_controller = React.useRef<GobanController | null>(null);
     const last_phase = React.useRef<string>("");
     const page_loaded_time = React.useRef<number>(Date.now()); // when we first created this view
 
@@ -324,8 +325,8 @@ export function Game(): React.ReactElement | null {
             opts.isPlayerController = () => goban?.review_controller_id === data.get("user").id;
         }
 
-        goban = createGoban(opts);
-        game_controller.current = new GameController(goban);
+        game_controller.current = new GobanController(opts);
+        goban = game_controller.current.goban;
 
         game_controller.current.last_variation_number = 0;
         game_controller.current.on("stopEstimatingScore", stopEstimatingScore);
@@ -811,6 +812,7 @@ export function Game(): React.ReactElement | null {
         };
     }, [game_id, review_id]);
 
+    /* Handle return urls */
     React.useEffect(() => {
         const elapsed = Date.now() - page_loaded_time.current;
         if (

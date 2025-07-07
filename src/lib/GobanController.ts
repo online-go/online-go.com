@@ -16,23 +16,31 @@
  */
 
 import * as React from "react";
-import { AnalysisTool, ConditionalMoveTree, GobanRenderer, MoveTree, encodeMove } from "goban";
+import {
+    AnalysisTool,
+    ConditionalMoveTree,
+    GobanRendererConfig,
+    GobanRenderer,
+    MoveTree,
+    createGoban,
+    encodeMove,
+} from "goban";
 import { EventEmitter } from "eventemitter3";
 import { sfx, SFXSprite, ValidSound } from "@/lib/sfx";
 import { AudioClockEvent } from "goban";
 import { _, current_language } from "@/lib/translate";
-import { disableTouchAction, enableTouchAction } from "./touch_actions";
+import { disableTouchAction, enableTouchAction } from "@/views/Game/touch_actions";
 import { browserHistory } from "@/lib/ogsHistory";
 import { errorAlerter, ignore } from "@/lib/misc";
 import { post } from "@/lib/requests";
 import { alert } from "@/lib/swal_config";
 import * as data from "@/lib/data";
 import * as preferences from "@/lib/preferences";
-import { goban_view_mode, shared_ip_with_player_map, ViewMode } from "./util";
-import { ChatMode } from "./GameChat";
+import { goban_view_mode, shared_ip_with_player_map, ViewMode } from "@/views/Game/util";
+import { ChatMode } from "@/views/Game/GameChat";
 import { inGameModChannel } from "@/lib/chat_manager";
 
-interface GameControllerEvents {
+interface GobanControllerEvents {
     autoplaying: (autoplaying: boolean) => void;
     set_variation_name: (variation_name: string) => void;
     set_show_game_timing: (show_game_timing: boolean) => void;
@@ -57,7 +65,7 @@ interface GameControllerEvents {
  * the Game view.
  */
 
-export class GameController extends EventEmitter<GameControllerEvents> {
+export class GobanController extends EventEmitter<GobanControllerEvents> {
     public readonly goban: GobanRenderer;
     private _autoplaying: boolean = false;
     public analyze_pencil_color: string = preferences.get("analysis.pencil-color");
@@ -81,8 +89,9 @@ export class GameController extends EventEmitter<GameControllerEvents> {
     private _view_mode: ViewMode = goban_view_mode();
     private _annulled: boolean = false;
 
-    constructor(goban: GobanRenderer) {
+    constructor(opts: GobanRendererConfig) {
         super();
+        const goban = createGoban(opts);
         this.goban = goban;
         const goban_opts = goban.config;
         this.bindAudioEvents();
