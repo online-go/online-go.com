@@ -148,7 +148,7 @@ export function FriendList() {
                         onChange={(ev) => setNotifyOnDecline(ev.target.checked)}
                     />
                     <label onClick={eat} htmlFor="notify-on-decline">
-                        {_("Notify when declining friend requests")}
+                        {_("Notify when declining")}
                     </label>
                 </div>
             )}

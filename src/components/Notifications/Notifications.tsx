@@ -327,21 +327,7 @@ class NotificationEntry extends React.Component<NotificationEntryProps, any> {
                                 justifyContent: "flex-end",
                                 marginTop: "8px",
                             }}
-                        >
-                            <div className="notify-on-decline">
-                                <label htmlFor={`notify-on-decline-${notification.id}`}>
-                                    {_("Notify when declining")}
-                                </label>
-                                <input
-                                    id={`notify-on-decline-${notification.id}`}
-                                    type="checkbox"
-                                    checked={this.state.notifyOnDecline}
-                                    onChange={(ev) =>
-                                        this.setState({ notifyOnDecline: ev.target.checked })
-                                    }
-                                />
-                            </div>
-                        </div>
+                        ></div>
                         <div className="buttons">
                             <FabX
                                 onClick={() => {
@@ -365,6 +351,19 @@ class NotificationEntry extends React.Component<NotificationEntryProps, any> {
                                         .catch(this.onError);
                                 }}
                             />
+                        </div>
+                        <div className="notify-on-decline">
+                            <input
+                                id={`notify-on-decline-${notification.id}`}
+                                type="checkbox"
+                                checked={this.state.notifyOnDecline}
+                                onChange={(ev) =>
+                                    this.setState({ notifyOnDecline: ev.target.checked })
+                                }
+                            />
+                            <label htmlFor={`notify-on-decline-${notification.id}`}>
+                                {_("Notify when declining")}
+                            </label>
                         </div>
                     </div>
                 );
