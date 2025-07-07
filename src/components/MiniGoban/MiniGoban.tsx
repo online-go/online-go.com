@@ -20,7 +20,8 @@ import { Link } from "react-router-dom";
 import { npgettext, interpolate } from "@/lib/translate";
 import moment from "moment";
 import * as preferences from "@/lib/preferences";
-import { GobanRenderer, JGOFMove, createGoban } from "goban";
+import { GobanRenderer, JGOFMove } from "goban";
+import { GobanController } from "@/lib/GobanController";
 import * as data from "@/lib/data";
 import { PersistentElement } from "@/components/PersistentElement";
 import { getUserRating, PROVISIONAL_RATING_CUTOFF } from "@/lib/rank_utils";
@@ -53,7 +54,7 @@ export interface MiniGobanProps {
     openLinksInNewTab?: boolean;
     noText?: boolean;
     title?: boolean;
-    onGobanCreated?: (goban: GobanRenderer) => void;
+    onGobanCreated?: (goban_controller: GobanController) => void;
     chat?: boolean;
     labels_positioning?: "none" | "all" | "top-left" | "top-right" | "bottom-left" | "bottom-right";
     sampleOptions?: {
@@ -111,29 +112,28 @@ export function MiniGoban(props: MiniGobanProps): React.ReactElement {
         props.labels_positioning === "bottom-right";
 
     React.useEffect(() => {
-        goban.current = createGoban(
-            {
-                board_div: goban_div.current,
-                draw_top_labels,
-                draw_bottom_labels,
-                draw_left_labels,
-                draw_right_labels,
-                connect_to_chat: !!props.chat,
-                game_id: props.game_id,
-                review_id: props.review_id,
-                display_width: props.displayWidth || computedDisplayWidth(),
-                square_size: "auto",
-                width: props.width || (props.json ? props.json.width : 19),
-                height: props.height || (props.json ? props.json.height : 19),
-                last_move_opacity: last_move_opacity,
-                variation_stone_opacity: preferences.get("variation-stone-opacity"),
-                stone_font_scale: preferences.get("stone-font-scale"),
-            },
-            props.json,
-        );
+        const controller = new GobanController({
+            board_div: goban_div.current,
+            draw_top_labels,
+            draw_bottom_labels,
+            draw_left_labels,
+            draw_right_labels,
+            connect_to_chat: !!props.chat,
+            game_id: props.game_id,
+            review_id: props.review_id,
+            display_width: props.displayWidth || computedDisplayWidth(),
+            square_size: "auto",
+            width: props.width || (props.json ? props.json.width : 19),
+            height: props.height || (props.json ? props.json.height : 19),
+            last_move_opacity: last_move_opacity,
+            variation_stone_opacity: preferences.get("variation-stone-opacity"),
+            stone_font_scale: preferences.get("stone-font-scale"),
+            ...props.json,
+        });
+        goban.current = controller.goban;
 
         if (props.onGobanCreated) {
-            props.onGobanCreated(goban.current);
+            props.onGobanCreated(controller);
         }
 
         if (props.sampleOptions?.undo) {

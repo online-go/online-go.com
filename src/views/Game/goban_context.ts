@@ -16,14 +16,14 @@
  */
 
 import * as React from "react";
-import { GameController } from "./GameController";
+import { GobanController } from "../../lib/GobanController";
 
-export const GameControllerContext = React.createContext<GameController | null>(null);
+export const GameControllerContext = React.createContext<GobanController | null>(null);
 
 /**
  * A React hook that provides the GameController (which contains our goban).
  */
-export function useGameController(): GameController {
+export function useGameController(): GobanController {
     const game_controller = React.useContext(GameControllerContext);
 
     if (game_controller === null) {

@@ -25,7 +25,8 @@ import { KBShortcut } from "@/components/KBShortcut";
 import { goban_view_mode, goban_view_squashed } from "@/views/Game";
 import { errorAlerter, errorLogger, ignore } from "@/lib/misc";
 import { longRankString, rankList } from "@/lib/rank_utils";
-import { createGoban, GobanRenderer, GobanRendererConfig, PuzzlePlacementSetting } from "goban";
+import { GobanRendererConfig, GobanRenderer, PuzzlePlacementSetting } from "goban";
+import { GobanController } from "@/lib/GobanController";
 import { Markdown } from "@/components/Markdown";
 import { Player } from "@/components/Player";
 import { StarRating } from "@/components/StarRating";
@@ -289,7 +290,8 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
         if (this.goban) {
             this.goban.destroy();
         }
-        this.goban = createGoban(opts);
+        const controller = new GobanController(opts);
+        this.goban = controller.goban;
         this.goban.setMode("puzzle");
         window.global_goban = this.goban;
         this.goban.on("update", () => this.onUpdate());

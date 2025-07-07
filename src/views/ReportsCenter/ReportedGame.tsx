@@ -41,7 +41,7 @@ import { Resizable } from "@/components/Resizable";
 
 import { Player } from "@/components/Player";
 import { useUser } from "@/lib/hooks";
-import { GameController } from "../Game/GameController";
+import { GobanController } from "../../lib/GobanController";
 export function ReportedGame({
     game_id,
     reported_at,
@@ -54,13 +54,13 @@ export function ReportedGame({
     onGobanCreated?: (goban: GobanRenderer) => void;
 }): React.ReactElement | null {
     const [goban, setGoban] = React.useState<GobanRenderer | null>(null);
-    const [game_controller, setGameController] = React.useState<GameController | null>(null);
+    const [game_controller, setGameController] = React.useState<GobanController | null>(null);
     const refresh = useRefresh();
     const handleGobanCreated = React.useCallback(
-        (goban: GobanRenderer) => {
-            setGoban(goban);
-            onGobanCreated?.(goban);
-            setGameController(new GameController(goban));
+        (goban_controller: GobanController) => {
+            setGoban(goban_controller.goban);
+            onGobanCreated?.(goban_controller.goban);
+            setGameController(goban_controller);
         },
         [onGobanCreated],
     );

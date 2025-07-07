@@ -6,11 +6,10 @@
 import { render, screen } from "@testing-library/react";
 import * as React from "react";
 import { GameDock } from "./GameDock";
-import { createGoban } from "goban";
 import { GameControllerContext } from "./goban_context";
 import { BrowserRouter as Router } from "react-router-dom";
 import * as data from "@/lib/data";
-import { GameController } from "./GameController";
+import { GobanController } from "../../lib/GobanController";
 
 const TEST_USER = {
     anonymous: false,
@@ -65,8 +64,7 @@ const BASE_PROPS = {
 
 test("providing both Game ID and Review ID cause SGF buttons to link to review SGFs", () => {
     data.set("user", TEST_USER);
-    const goban = createGoban({ game_id: 123456, review_id: 123 });
-    const gameController = new GameController(goban);
+    const gameController = new GobanController({ game_id: 123456, review_id: 123 });
 
     render(
         <Router>

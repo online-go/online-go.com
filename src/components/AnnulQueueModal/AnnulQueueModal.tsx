@@ -24,7 +24,7 @@ import {
     GameTimings,
     GameChat,
     GameControllerContext,
-    GameController,
+    GobanController,
 } from "@/views/Game";
 import { Player } from "@/components/Player";
 import { Resizable } from "@/components/Resizable";
@@ -52,11 +52,11 @@ export function AnnulQueueModal({
     // Declare state variables
     const [selectedGameIndex, setSelectedGameIndex] = React.useState(0);
     const [goban, setGoban] = React.useState<GobanRenderer | null>(null);
-    const [gameController, setGameController] = React.useState<GameController | null>(null);
+    const [gameController, setGameController] = React.useState<GobanController | null>(null);
     //const [selectedChatLog, setSelectedChatLog] = React.useState<ChatMode>("main");
-    const onGobanCreated = React.useCallback((goban: GobanRenderer) => {
-        setGoban(goban);
-        setGameController(new GameController(goban));
+    const onGobanCreated = React.useCallback((goban_controller: GobanController) => {
+        setGoban(goban_controller.goban);
+        setGameController(goban_controller);
     }, []);
     const [, setAiReviewUuid] = React.useState<string | null>(null);
     const [dequeueRequested, setDequeueRequested] = React.useState(false);

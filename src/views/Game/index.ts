@@ -21,7 +21,7 @@ export * from "./Game";
 export * from "./GameChat";
 export * from "./GameHooks";
 export * from "./GameTimings";
-export * from "./GameController";
+export * from "../../lib/GobanController";
 export * from "./goban_context";
 export * from "./util";
 export * from "./GameLog";
