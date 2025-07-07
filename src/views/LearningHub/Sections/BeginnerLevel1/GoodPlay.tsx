@@ -20,36 +20,22 @@ import { GobanConfig } from "goban";
 import { LearningPage, LearningPageProperties } from "../../LearningPage";
 import { _, pgettext } from "@/lib/translate";
 import { LearningHubSection } from "../../LearningHubSection";
-
 import React from "react";
 
-export class BSGroupAlive extends LearningHubSection {
+export class BL1GoodPlay extends LearningHubSection {
     static pages(): Array<typeof LearningPage> {
-        return [
-            Page01,
-            Page02,
-            Page03,
-            Page04,
-            Page05,
-            Page06,
-            Page07,
-            Page08,
-            Page09,
-            Page10,
-            Page11,
-            Page12,
-        ];
+        return [Page01, Page02, Page03, Page04, Page05, Page06, Page07, Page08, Page09];
     }
     static section(): string {
-        return "bs-group-alive";
+        return "bl1-good-play";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning is the group alive", "Group Alive");
+        return pgettext("Tutorial section name on learning good play", "Good Play");
     }
     static subtext(): string {
         return pgettext(
-            "Tutorial section subtext on learning on is the group alive",
-            "Is the group alive",
+            "Tutorial section subtext on learning on good play",
+            "Is this a good move?",
         );
     }
 }
@@ -67,7 +53,7 @@ class Page01 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "no") {
+                if (selectedValue === "not good") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -76,27 +62,27 @@ class Page01 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("Is the black group alive?")}</p>
+                    <p>{_("White to play. Is playing at A a good move?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="yes"
-                            checked={value === "yes"}
+                            value="good"
+                            checked={value === "good"}
                             onChange={handleChange}
                         />
-                        yes
+                        good
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="no"
-                            checked={value === "no"}
+                            value="not good"
+                            checked={value === "not good"}
                             onChange={handleChange}
                         />
-                        no
+                        not good
                     </label>
                     <br />
                 </div>
@@ -111,13 +97,16 @@ class Page01 extends LearningPage {
     }
     config(): GobanConfig {
         return {
-            width: 9,
-            height: 9,
+            width: 19,
+            height: 19,
             mode: "puzzle",
+            initial_player: "white",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "fcgdhdceeebfcfefbgahchci",
-                white: "ccbdbedeafdfcgdgggdhfhbi",
+                black: "bpdpcqcr",
+                white: "cpfpdq",
             },
+            marks: { A: "do" },
             phase: "finished",
         };
     }
@@ -136,7 +125,7 @@ class Page02 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "no") {
+                if (selectedValue === "good") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -145,27 +134,27 @@ class Page02 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("Is the black group alive?")}</p>
+                    <p>{_("White to play. Is playing at A a good move?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="yes"
-                            checked={value === "yes"}
+                            value="good"
+                            checked={value === "good"}
                             onChange={handleChange}
                         />
-                        yes
+                        good
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="no"
-                            checked={value === "no"}
+                            value="not good"
+                            checked={value === "not good"}
                             onChange={handleChange}
                         />
-                        no
+                        not good
                     </label>
                     <br />
                 </div>
@@ -180,13 +169,16 @@ class Page02 extends LearningPage {
     }
     config(): GobanConfig {
         return {
-            width: 9,
-            height: 9,
+            width: 19,
+            height: 19,
             mode: "puzzle",
+            initial_player: "white",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "gbfdgdhddeeeafcfagbgcgchdhdi",
-                white: "bcdcddaebecebfdfhfdgegggehbi",
+                black: "ephpdqfqdr",
+                white: "cmdodpcqeqcr",
             },
+            marks: { A: "er" },
             phase: "finished",
         };
     }
@@ -205,7 +197,7 @@ class Page03 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "yes") {
+                if (selectedValue === "not good") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -214,27 +206,27 @@ class Page03 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("Is the black group alive?")}</p>
+                    <p>{_("White to play. Is playing at A a good move?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="yes"
-                            checked={value === "yes"}
+                            value="good"
+                            checked={value === "good"}
                             onChange={handleChange}
                         />
-                        yes
+                        good
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="no"
-                            checked={value === "no"}
+                            value="not good"
+                            checked={value === "not good"}
                             onChange={handleChange}
                         />
-                        no
+                        not good
                     </label>
                     <br />
                 </div>
@@ -249,13 +241,16 @@ class Page03 extends LearningPage {
     }
     config(): GobanConfig {
         return {
-            width: 9,
-            height: 9,
+            width: 19,
+            height: 19,
             mode: "puzzle",
+            initial_player: "white",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "ecgdbgcgdgahdhbidi",
-                white: "eeafbfcfdfagegehei",
+                black: "fphqdrerfs",
+                white: "cobqdses",
             },
+            marks: { A: "cs" },
             phase: "finished",
         };
     }
@@ -274,7 +269,7 @@ class Page04 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "no") {
+                if (selectedValue === "good") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -283,27 +278,27 @@ class Page04 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("Is the black group alive?")}</p>
+                    <p>{_("White to play. Is playing at A a good move?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="yes"
-                            checked={value === "yes"}
+                            value="good"
+                            checked={value === "good"}
                             onChange={handleChange}
                         />
-                        yes
+                        good
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="no"
-                            checked={value === "no"}
+                            value="not good"
+                            checked={value === "not good"}
                             onChange={handleChange}
                         />
-                        no
+                        not good
                     </label>
                     <br />
                 </div>
@@ -318,13 +313,16 @@ class Page04 extends LearningPage {
     }
     config(): GobanConfig {
         return {
-            width: 9,
-            height: 9,
+            width: 19,
+            height: 19,
             mode: "puzzle",
+            initial_player: "white",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "ebfcgdhddgegfgchdhfhghcigi",
-                white: "dccdcedfefffbgcggghgbhhhei",
+                black: "dpgpeqfq",
+                white: "epfp",
             },
+            marks: { A: "en" },
             phase: "finished",
         };
     }
@@ -343,7 +341,7 @@ class Page05 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "yes") {
+                if (selectedValue === "not good") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -352,27 +350,27 @@ class Page05 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("Is the black group alive?")}</p>
+                    <p>{_("White to play. Is playing at A a good move?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="yes"
-                            checked={value === "yes"}
+                            value="good"
+                            checked={value === "good"}
                             onChange={handleChange}
                         />
-                        yes
+                        good
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="no"
-                            checked={value === "no"}
+                            value="not good"
+                            checked={value === "not good"}
                             onChange={handleChange}
                         />
-                        no
+                        not good
                     </label>
                     <br />
                 </div>
@@ -387,13 +385,16 @@ class Page05 extends LearningPage {
     }
     config(): GobanConfig {
         return {
-            width: 9,
-            height: 9,
+            width: 19,
+            height: 19,
             mode: "puzzle",
+            initial_player: "white",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "ecgcagbgcgdgbhdhci",
-                white: "eeafbfcfdfegggehei",
+                black: "dncpdqeqfqgqcrgrds",
+                white: "hphqdrerfrhresgs",
             },
+            marks: { A: "fs" },
             phase: "finished",
         };
     }
@@ -412,7 +413,7 @@ class Page06 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "yes") {
+                if (selectedValue === "not good") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -421,27 +422,27 @@ class Page06 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("Is the black group alive?")}</p>
+                    <p>{_("White to play. Is playing at A a good move?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="yes"
-                            checked={value === "yes"}
+                            value="good"
+                            checked={value === "good"}
                             onChange={handleChange}
                         />
-                        yes
+                        good
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="no"
-                            checked={value === "no"}
+                            value="not good"
+                            checked={value === "not good"}
                             onChange={handleChange}
                         />
-                        no
+                        not good
                     </label>
                     <br />
                 </div>
@@ -456,13 +457,16 @@ class Page06 extends LearningPage {
     }
     config(): GobanConfig {
         return {
-            width: 9,
-            height: 9,
+            width: 19,
+            height: 19,
             mode: "puzzle",
+            initial_player: "white",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "gcbfcfagcgdgbhdhdi",
-                white: "aebeceeeafdfegggeh",
+                black: "clendodpeqfq",
+                white: "epfpipiq",
             },
+            marks: { A: "eo" },
             phase: "finished",
         };
     }
@@ -481,7 +485,7 @@ class Page07 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "no") {
+                if (selectedValue === "not good") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -490,27 +494,27 @@ class Page07 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("Is the black group alive?")}</p>
+                    <p>{_("White to play. Is playing at A a good move?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="yes"
-                            checked={value === "yes"}
+                            value="good"
+                            checked={value === "good"}
                             onChange={handleChange}
                         />
-                        yes
+                        good
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="no"
-                            checked={value === "no"}
+                            value="not good"
+                            checked={value === "not good"}
                             onChange={handleChange}
                         />
-                        no
+                        not good
                     </label>
                     <br />
                 </div>
@@ -525,14 +529,16 @@ class Page07 extends LearningPage {
     }
     config(): GobanConfig {
         return {
-            width: 9,
-            height: 9,
+            width: 19,
+            height: 19,
             mode: "puzzle",
-            initial_player: "black",
+            initial_player: "white",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "ecgdafbfgfcgbhchbi",
-                white: "ddbecedfagdgahdhai",
+                black: "codqeqcrfrgr",
+                white: "hofqgqdrerhr",
             },
+            marks: { A: "cs" },
             phase: "finished",
         };
     }
@@ -551,7 +557,7 @@ class Page08 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "no") {
+                if (selectedValue === "not good") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -560,27 +566,27 @@ class Page08 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("Is the black group alive?")}</p>
+                    <p>{_("White to play. Is playing at A a good move?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="yes"
-                            checked={value === "yes"}
+                            value="good"
+                            checked={value === "good"}
                             onChange={handleChange}
                         />
-                        yes
+                        good
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="no"
-                            checked={value === "no"}
+                            value="not good"
+                            checked={value === "not good"}
                             onChange={handleChange}
                         />
-                        no
+                        not good
                     </label>
                     <br />
                 </div>
@@ -595,14 +601,16 @@ class Page08 extends LearningPage {
     }
     config(): GobanConfig {
         return {
-            width: 9,
-            height: 9,
+            width: 19,
+            height: 19,
             mode: "puzzle",
-            initial_player: "black",
+            initial_player: "white",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "agbgcgchdhdi",
-                white: "bfcfefdgehbi",
+                black: "dnepdqfqdr",
+                white: "hoeqgqgr",
             },
+            marks: { A: "er" },
             phase: "finished",
         };
     }
@@ -621,7 +629,7 @@ class Page09 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "yes") {
+                if (selectedValue === "good") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -630,27 +638,27 @@ class Page09 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("Is the black group alive?")}</p>
+                    <p>{_("White to play. Is playing at A a good move?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="yes"
-                            checked={value === "yes"}
+                            value="good"
+                            checked={value === "good"}
                             onChange={handleChange}
                         />
-                        yes
+                        good
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="no"
-                            checked={value === "no"}
+                            value="not good"
+                            checked={value === "not good"}
                             onChange={handleChange}
                         />
-                        no
+                        not good
                     </label>
                     <br />
                 </div>
@@ -665,224 +673,16 @@ class Page09 extends LearningPage {
     }
     config(): GobanConfig {
         return {
-            width: 9,
-            height: 9,
+            width: 19,
+            height: 19,
             mode: "puzzle",
-            initial_player: "black",
+            initial_player: "white",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "beceafcfagcgdgdhaibicidi",
-                white: "bdcddddebfdfffbgegbhcheh",
+                black: "fpdrerfs",
+                white: "cocqbrdses",
             },
-            phase: "finished",
-        };
-    }
-}
-
-class Page10 extends LearningPage {
-    constructor(props: LearningPageProperties) {
-        super(props);
-    }
-
-    text() {
-        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
-            const [value, setValue] = React.useState<string>("");
-
-            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-                const selectedValue = event.target.value;
-                setValue(selectedValue);
-
-                if (selectedValue === "yes") {
-                    props.onCorrectAnswer();
-                } else if (selectedValue !== "") {
-                    props.onWrongAnswer();
-                }
-            };
-
-            return (
-                <div>
-                    <p>{_("Is the black group alive?")}</p>
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="yes"
-                            checked={value === "yes"}
-                            onChange={handleChange}
-                        />
-                        yes
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="no"
-                            checked={value === "no"}
-                            onChange={handleChange}
-                        />
-                        no
-                    </label>
-                    <br />
-                </div>
-            );
-        }
-        return (
-            <MultipleChoice
-                onCorrectAnswer={this.onCorrectAnswer}
-                onWrongAnswer={this.onWrongAnswer}
-            />
-        );
-    }
-    config(): GobanConfig {
-        return {
-            width: 9,
-            height: 9,
-            mode: "puzzle",
-            initial_player: "black",
-            initial_state: {
-                black: "egfgggchdhghbicieigi",
-                white: "bfefffgfcgdghgbhfhhh",
-            },
-            phase: "finished",
-        };
-    }
-}
-
-class Page11 extends LearningPage {
-    constructor(props: LearningPageProperties) {
-        super(props);
-    }
-
-    text() {
-        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
-            const [value, setValue] = React.useState<string>("");
-
-            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-                const selectedValue = event.target.value;
-                setValue(selectedValue);
-
-                if (selectedValue === "no") {
-                    props.onCorrectAnswer();
-                } else if (selectedValue !== "") {
-                    props.onWrongAnswer();
-                }
-            };
-
-            return (
-                <div>
-                    <p>{_("Is the black group alive?")}</p>
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="yes"
-                            checked={value === "yes"}
-                            onChange={handleChange}
-                        />
-                        yes
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="no"
-                            checked={value === "no"}
-                            onChange={handleChange}
-                        />
-                        no
-                    </label>
-                    <br />
-                </div>
-            );
-        }
-        return (
-            <MultipleChoice
-                onCorrectAnswer={this.onCorrectAnswer}
-                onWrongAnswer={this.onWrongAnswer}
-            />
-        );
-    }
-    config(): GobanConfig {
-        return {
-            width: 9,
-            height: 9,
-            mode: "puzzle",
-            initial_player: "black",
-            initial_state: {
-                black: "dcfcgdagbgcgdgahdhdi",
-                white: "eebfcfdfegbhchehbici",
-            },
-            phase: "finished",
-        };
-    }
-}
-
-class Page12 extends LearningPage {
-    constructor(props: LearningPageProperties) {
-        super(props);
-    }
-
-    text() {
-        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
-            const [value, setValue] = React.useState<string>("");
-
-            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-                const selectedValue = event.target.value;
-                setValue(selectedValue);
-
-                if (selectedValue === "no") {
-                    props.onCorrectAnswer();
-                } else if (selectedValue !== "") {
-                    props.onWrongAnswer();
-                }
-            };
-
-            return (
-                <div>
-                    <p>{_("Is the black group alive?")}</p>
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="yes"
-                            checked={value === "yes"}
-                            onChange={handleChange}
-                        />
-                        yes
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="no"
-                            checked={value === "no"}
-                            onChange={handleChange}
-                        />
-                        no
-                    </label>
-                    <br />
-                </div>
-            );
-        }
-        return (
-            <MultipleChoice
-                onCorrectAnswer={this.onCorrectAnswer}
-                onWrongAnswer={this.onWrongAnswer}
-            />
-        );
-    }
-    config(): GobanConfig {
-        return {
-            width: 9,
-            height: 9,
-            mode: "puzzle",
-            initial_player: "black",
-            initial_state: {
-                black: "agbgcgdgahdhcidi",
-                white: "bfcfdfffegbhehbi",
-            },
+            marks: { A: "cs" },
             phase: "finished",
         };
     }

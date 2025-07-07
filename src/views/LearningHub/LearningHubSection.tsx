@@ -25,9 +25,14 @@ interface LearningHubSectionProperties {
     nextSection: string;
     section: string;
     pages: React.ComponentType<LearningPageProperties>[];
+    sectionIndex?: number;
+    lessonIndex?: number;
 }
 
 export abstract class LearningHubSection extends React.PureComponent<LearningHubSectionProperties> {
+    static sectionIndex: number;
+    static lessonIndex: number;
+
     constructor(props: LearningHubSectionProperties) {
         super(props);
     }
@@ -50,6 +55,7 @@ export abstract class LearningHubSection extends React.PureComponent<LearningHub
         page = Math.min(page, this.props.pages.length - 1);
         page = Math.max(page, 0);
         const P = this.props.pages[page];
+        const SectionClass = this.constructor as typeof LearningHubSection;
         return (
             <P
                 title={this.props.title}
@@ -57,6 +63,8 @@ export abstract class LearningHubSection extends React.PureComponent<LearningHub
                 curPage={page}
                 section={this.props.section}
                 nextSection={this.props.nextSection}
+                sectionIndex={SectionClass.sectionIndex}
+                lessonIndex={SectionClass.lessonIndex}
             />
         );
     }

@@ -71,6 +71,10 @@
                 text-transform: uppercase;
                 themed(color, shade2);
                 padding-right: 3rem;
+
+                .section-number {
+                    padding-right: 1.5rem;
+                }
             }
 
             > .contents {
@@ -130,7 +134,11 @@
 
                 h1 {
                     margin: 0;
-                    font-size: 1.8rem;  
+                    font-size: 1.8rem;
+
+                    .lesson-number {
+                        padding-right: 0.5rem;
+                    }
                 }
 
                 h2 {
@@ -139,7 +147,7 @@
 
                 h3 {
                     margin: 0;
-                    font-size: 1rem;  
+                    font-size: 1rem;
                 }
 
                 cursor: pointer;
@@ -177,6 +185,10 @@
 
         border-bottom: 1px solid #000;
         themed(border-color, shade3);
+
+        .section-number {
+            padding-right: 1.5rem;
+        }
     }
 
     .section {
@@ -195,6 +207,10 @@
             &.active {
                 themed(background-color, primary);
                 themed(color, colored-background-fg);
+            }
+
+            .lesson-number {
+                padding-right: 1rem;
             }
         }
     }
@@ -234,6 +250,16 @@
         text-align: center;
         themed-darken(background-color, primary, 0%);
         themed(color, colored-background-fg);
+        position: relative;
+
+        .section-number {
+            position: absolute;
+            top: 0.5rem;
+            left: 0.5rem;
+            font-size: 0.8rem;
+            opacity: 0.8;
+            font-weight: bold;
+        }
     }
 
     .text {
@@ -280,7 +306,6 @@
             themed(color, shade1);
             cursor: pointer;
             min-width: 1.2rem;
-
 
             &.active {
                 themed(background-color, primary);

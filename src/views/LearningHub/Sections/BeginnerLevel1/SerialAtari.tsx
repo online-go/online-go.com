@@ -21,7 +21,7 @@ import { LearningPage, LearningPageProperties } from "../../LearningPage";
 import { _, pgettext } from "@/lib/translate";
 import { LearningHubSection } from "../../LearningHubSection";
 
-export class ReduceLiberties extends LearningHubSection {
+export class BL1SerialAtari extends LearningHubSection {
     static pages(): Array<typeof LearningPage> {
         return [
             Page01,
@@ -46,18 +46,20 @@ export class ReduceLiberties extends LearningHubSection {
             Page20,
             Page21,
             Page22,
+            Page23,
+            Page24,
         ];
     }
     static section(): string {
-        return "reduce-liberties";
+        return "bl1-serial-atari";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning reduce liberties", "Reduce Liberties");
+        return pgettext("Tutorial section name on learning serial atari", "Serial Atari");
     }
     static subtext(): string {
         return pgettext(
-            "Tutorial section subtext on learning on reduce liberties",
-            "Reduce or increase liberties",
+            "Tutorial section subtext on learning on serial atari",
+            "Capture with serial atari",
         );
     }
 }
@@ -69,7 +71,7 @@ class Page01 extends LearningPage {
 
     text() {
         return _(
-            "You can attack a chain by taking away a liberty. In doing so, try to achieve other goals as well, such as connecting your stones or protecting territory. White to play. Choose the best way to reduce liberties, A, B or C.",
+            "A well-known way to capture stones is serial atari (oi-otoshi) them. Here White can capture the marked stones with an atari. If Black tries to save them by connecting, White can play atari again. White to play. Capture the marked stones with a serial atari.",
         );
     }
     config(): GobanConfig {
@@ -80,11 +82,11 @@ class Page01 extends LearningPage {
             initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "dpepfp",
-                white: "cocpdqfq",
+                black: "ambmanbobpcqdq",
+                white: "blcmbncncocp",
             },
-            marks: { A: "do", B: "gp", C: "eq" },
-            move_tree: this.makePuzzleMoveTree(["eq"], [], 19, 19),
+            marks: { triangle: "ambman", cross: "al" },
+            move_tree: this.makePuzzleMoveTree(["alaobq"], [], 19, 19),
         };
     }
 }
@@ -95,9 +97,7 @@ class Page02 extends LearningPage {
     }
 
     text() {
-        return _(
-            "Another goal while taking away a liberty is to cut opponent's stones. White to play. Choose the best way to reduce liberties, A, B or C.",
-        );
+        return _("White to play. Atari and capture the marked stones.");
     }
     config(): GobanConfig {
         return {
@@ -107,11 +107,11 @@ class Page02 extends LearningPage {
             initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "hmgohodpepfp",
-                white: "dncocpgpdqeqfqgr",
+                black: "bmcnbobpaqbrasbs",
+                white: "cocpbqcqcr",
             },
-            marks: { A: "do", B: "eo", C: "fo" },
-            move_tree: this.makePuzzleMoveTree(["fo"], [], 19, 19),
+            marks: { triangle: "brasbs" },
+            move_tree: this.makePuzzleMoveTree(["cs"], [], 19, 19),
         };
     }
 }
@@ -122,7 +122,7 @@ class Page03 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Choose the best way to reduce liberties, A, B or C.");
+        return _("White to play. Atari and capture the marked stones.");
     }
     config(): GobanConfig {
         return {
@@ -132,11 +132,11 @@ class Page03 extends LearningPage {
             initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "dmep",
-                white: "cpgpdq",
+                black: "bmanbnaobpaqbqdqcrerbs",
+                white: "alblcmcnbococpcqbr",
             },
-            marks: { A: "eo", B: "dp", C: "eq" },
-            move_tree: this.makePuzzleMoveTree(["eq"], [], 19, 19),
+            marks: { triangle: "bmanbnao" },
+            move_tree: this.makePuzzleMoveTree(["am"], ["arasamap"], 19, 19),
         };
     }
 }
@@ -147,9 +147,7 @@ class Page04 extends LearningPage {
     }
 
     text() {
-        return _(
-            "Yet another goal is to block the advance of stones of your opponent. White to play. Choose the best way to reduce liberties, A, B or C.",
-        );
+        return _("White to play. Atari and capture the marked stones.");
     }
     config(): GobanConfig {
         return {
@@ -159,11 +157,11 @@ class Page04 extends LearningPage {
             initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "epdqeq",
-                white: "cldodpcqcr",
+                black: "doeofodpfpeqhqcrdrfrgr",
+                white: "dnenfngncogocpgpcqdqgqbr",
             },
-            marks: { A: "eo", B: "dr", C: "er" },
-            move_tree: this.makePuzzleMoveTree(["eo"], [], 19, 19),
+            marks: { triangle: "doeofodpfp" },
+            move_tree: this.makePuzzleMoveTree(["fq"], [], 19, 19),
         };
     }
 }
@@ -174,7 +172,7 @@ class Page05 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Choose the best way to reduce liberties, A, B or C.");
+        return _("White to play. Atari and capture the marked stones.");
     }
     config(): GobanConfig {
         return {
@@ -184,11 +182,11 @@ class Page05 extends LearningPage {
             initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "dodpdq",
-                white: "clcofocphpcqfq",
+                black: "bmbncndnaobpaqcqbr",
+                white: "blcmdmenbocodoeo",
             },
-            marks: { A: "dn", C: "eq", B: "dr" },
-            move_tree: this.makePuzzleMoveTree(["dn"], [], 19, 19),
+            marks: { triangle: "bmbncndn" },
+            move_tree: this.makePuzzleMoveTree(["am", "anamal"], [], 19, 19),
         };
     }
 }
@@ -199,7 +197,7 @@ class Page06 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Choose the best way to reduce liberties, A, B or C.");
+        return _("White to play. Atari and capture the marked stones.");
     }
     config(): GobanConfig {
         return {
@@ -209,11 +207,11 @@ class Page06 extends LearningPage {
             initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "dndodp",
-                white: "cocpepfpcq",
+                black: "fneodpfpdqeq",
+                white: "dnendocpgpcqfqdrfr",
             },
-            marks: { A: "dm", B: "cn", C: "dq" },
-            move_tree: this.makePuzzleMoveTree(["dq"], [], 19, 19),
+            marks: { triangle: "dpdqeq" },
+            move_tree: this.makePuzzleMoveTree(["er"], [], 19, 19),
         };
     }
 }
@@ -224,7 +222,7 @@ class Page07 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Choose the best way to reduce liberties, A, B or C.");
+        return _("White to play. Atari and capture the marked stones.");
     }
     config(): GobanConfig {
         return {
@@ -234,11 +232,11 @@ class Page07 extends LearningPage {
             initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "cmbpcpdp",
-                white: "eoepbqcqgq",
+                black: "bocodobpaqbrasbs",
+                white: "cpbqcqeqfqcr",
             },
-            marks: { A: "co", B: "do", C: "dq" },
-            move_tree: this.makePuzzleMoveTree(["dq"], [], 19, 19),
+            marks: { triangle: "brasbs" },
+            move_tree: this.makePuzzleMoveTree(["cs"], [], 19, 19),
         };
     }
 }
@@ -249,7 +247,7 @@ class Page08 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Choose the best way to reduce liberties, A, B or C.");
+        return _("White to play. Atari and capture the marked stones.");
     }
     config(): GobanConfig {
         return {
@@ -259,11 +257,11 @@ class Page08 extends LearningPage {
             initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "epdqeq",
-                white: "bncpdpgpcqhq",
+                black: "bnbobpbqcqdrergrdsfsgs",
+                white: "bmcmcncocpdqeqfqgqhqfrhr",
             },
-            marks: { A: "eo", B: "fp", C: "dr" },
-            move_tree: this.makePuzzleMoveTree(["eo"], [], 19, 19),
+            marks: { triangle: "grfsgs" },
+            move_tree: this.makePuzzleMoveTree(["hsescr"], ["hsescscr"], 19, 19),
         };
     }
 }
@@ -274,7 +272,7 @@ class Page09 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Choose the best way to reduce liberties, A, B or C.");
+        return _("White to play. Atari and capture the marked stones.");
     }
     config(): GobanConfig {
         return {
@@ -284,11 +282,11 @@ class Page09 extends LearningPage {
             initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "fmdpepfpdq",
-                white: "cmcocpcqeqfqgq",
+                black: "dnbpcpdpaqbrasbscs",
+                white: "bqcqeqfqcrdr",
             },
-            marks: { A: "do", B: "gp", C: "dr" },
-            move_tree: this.makePuzzleMoveTree(["dr"], [], 19, 19),
+            marks: { triangle: "brasbscs" },
+            move_tree: this.makePuzzleMoveTree(["ds"], [], 19, 19),
         };
     }
 }
@@ -299,7 +297,7 @@ class Page10 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Choose the best way to reduce liberties, A, B or C.");
+        return _("White to play. Atari and capture the marked stones.");
     }
     config(): GobanConfig {
         return {
@@ -309,11 +307,11 @@ class Page10 extends LearningPage {
             initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "dqeqfq",
-                white: "cmcodpepfpcq",
+                black: "eodpfphpaqbqdqeqgqhqbrcrascs",
+                white: "gocpgpcqfqdrerfr",
             },
-            marks: { A: "gq", B: "dr", C: "er" },
-            move_tree: this.makePuzzleMoveTree(["gq"], [], 19, 19),
+            marks: { triangle: "dpdqeq" },
+            move_tree: this.makePuzzleMoveTree(["doepen"], ["doepfoen", "foco"], 19, 19),
         };
     }
 }
@@ -324,21 +322,21 @@ class Page11 extends LearningPage {
     }
 
     text() {
-        return _("Black to play. Increase the number of liberties of the marked chain.");
+        return _("White to play. Atari and capture the marked stones.");
     }
     config(): GobanConfig {
         return {
             width: 19,
             height: 19,
             mode: "puzzle",
-            initial_player: "black",
+            initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "hqer",
-                white: "cqeqdr",
+                black: "amanbnboapdpbqcqeq",
+                white: "flbmcmcncobpcp",
             },
-            marks: { triangle: "er" },
-            move_tree: this.makePuzzleMoveTree(["fr"], [], 19, 19),
+            marks: { triangle: "amanbnbo" },
+            move_tree: this.makePuzzleMoveTree(["al"], [], 19, 19),
         };
     }
 }
@@ -349,21 +347,21 @@ class Page12 extends LearningPage {
     }
 
     text() {
-        return _("Black to play. Increase the number of liberties of the marked chain.");
+        return _("White to play. Atari and capture the marked stones.");
     }
     config(): GobanConfig {
         return {
             width: 19,
             height: 19,
             mode: "puzzle",
-            initial_player: "black",
+            initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "cqdqgq",
-                white: "cncpbqcrdr",
+                black: "cmdmcnboapcpdpbqcq",
+                white: "dndoepaqdqfqarbrcr",
             },
-            marks: { triangle: "dqcq" },
-            move_tree: this.makePuzzleMoveTree(["eq"], [], 19, 19),
+            marks: { triangle: "cpdpbqcq" },
+            move_tree: this.makePuzzleMoveTree(["cobpbn"], ["cobpaoan"], 19, 19),
         };
     }
 }
@@ -374,7 +372,7 @@ class Page13 extends LearningPage {
     }
 
     text() {
-        return _("Black to play. Increase the number of liberties of the marked chain.");
+        return _("Black to play. Atari and capture the marked stones.");
     }
     config(): GobanConfig {
         return {
@@ -384,11 +382,11 @@ class Page13 extends LearningPage {
             initial_player: "black",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "dpephq",
-                white: "dndocpdqeq",
+                black: "epbqcqdqdrcsds",
+                white: "cnbpcpaqbrcras",
             },
-            marks: { triangle: "epdp" },
-            move_tree: this.makePuzzleMoveTree(["fp"], [], 19, 19),
+            marks: { triangle: "brcras" },
+            move_tree: this.makePuzzleMoveTree(["bs"], [], 19, 19),
         };
     }
 }
@@ -399,7 +397,7 @@ class Page14 extends LearningPage {
     }
 
     text() {
-        return _("Black to play. Increase the number of liberties of the marked chain.");
+        return _("Black to play. Atari and capture the marked stones.");
     }
     config(): GobanConfig {
         return {
@@ -409,11 +407,11 @@ class Page14 extends LearningPage {
             initial_player: "black",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "cmdpcqbrcrdr",
-                white: "bpcpbqdqeqfqhq",
+                black: "alblclcmcncobpcp",
+                white: "bmanbnboapdpbqcqeq",
             },
-            marks: { triangle: "dp" },
-            move_tree: this.makePuzzleMoveTree(["do"], [], 19, 19),
+            marks: { triangle: "bmanbnbo" },
+            move_tree: this.makePuzzleMoveTree(["am"], [], 19, 19),
         };
     }
 }
@@ -424,7 +422,7 @@ class Page15 extends LearningPage {
     }
 
     text() {
-        return _("Black to play. Increase the number of liberties of the marked chain.");
+        return _("Black to play. Atari and capture the marked stones.");
     }
     config(): GobanConfig {
         return {
@@ -434,11 +432,16 @@ class Page15 extends LearningPage {
             initial_player: "black",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "epcqdqeq",
-                white: "bncpdpbqfqcrdrergr",
+                black: "dpepfpcqgqhqcrdrhr",
+                white: "engobpcpgpbqdqeqfqbrergr",
             },
-            marks: { triangle: "eqdqcqep" },
-            move_tree: this.makePuzzleMoveTree(["eo"], [], 19, 19),
+            marks: { triangle: "dqeqfqer" },
+            move_tree: this.makePuzzleMoveTree(
+                ["esfrgs", "esfrfs"],
+                ["gsds", "fsds", "dses"],
+                19,
+                19,
+            ),
         };
     }
 }
@@ -449,7 +452,7 @@ class Page16 extends LearningPage {
     }
 
     text() {
-        return _("Black to play. Increase the number of liberties of the marked chain.");
+        return _("Black to play. Atari and capture the marked stones.");
     }
     config(): GobanConfig {
         return {
@@ -459,11 +462,11 @@ class Page16 extends LearningPage {
             initial_player: "black",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "cldodpdqdrds",
-                white: "bncofocphpcqfqarcrfr",
+                black: "bmcmcndndobpcpdp",
+                white: "anbnbocoapbqcqdqfq",
             },
-            marks: { triangle: "dsdrdqdpdo" },
-            move_tree: this.makePuzzleMoveTree(["dn"], [], 19, 19),
+            marks: { triangle: "anbnboco" },
+            move_tree: this.makePuzzleMoveTree(["am"], [], 19, 19),
         };
     }
 }
@@ -474,21 +477,21 @@ class Page17 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Black has filled his own liberty with move 1. Punish this.");
+        return _("Black to play. Atari and capture the marked stones.");
     }
     config(): GobanConfig {
         return {
             width: 19,
             height: 19,
             mode: "puzzle",
-            initial_player: "white",
+            initial_player: "black",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "bpcpdpbqeqfqdrer",
-                white: "epfpcqdqbrcrfrgr",
+                black: "anbnaocodoapdpdq",
+                white: "bocpbqeqcrdr",
             },
-            marks: { 1: "fq" },
-            move_tree: this.makePuzzleMoveTree(["gq"], [], 19, 19),
+            marks: { triangle: "bocp" },
+            move_tree: this.makePuzzleMoveTree(["cqbpbr"], ["cqbpaqbr", "bpcq", "aqbp"], 19, 19),
         };
     }
 }
@@ -499,21 +502,21 @@ class Page18 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Black has filled his own liberty with move 1. Punish this.");
+        return _("Black to play. Atari and capture the marked stones.");
     }
     config(): GobanConfig {
         return {
             width: 19,
             height: 19,
             mode: "puzzle",
-            initial_player: "white",
+            initial_player: "black",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "bpdpcqeqfqbrfrgrbsfs",
-                white: "epfpdqgqhqcrdrerires",
+                black: "cndoapbpdpcqcr",
+                white: "epaqdqfqarbrdrascs",
             },
-            marks: { 1: "fs" },
-            move_tree: this.makePuzzleMoveTree(["hr", "gshshr"], [], 19, 19),
+            marks: { triangle: "aqarbras" },
+            move_tree: this.makePuzzleMoveTree(["bq"], [], 19, 19),
         };
     }
 }
@@ -524,21 +527,21 @@ class Page19 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Black has filled his own liberty with move 1. Punish this.");
+        return _("Black to play. Atari and capture the marked stones.");
     }
     config(): GobanConfig {
         return {
             width: 19,
             height: 19,
             mode: "puzzle",
-            initial_player: "white",
+            initial_player: "black",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "dpepgpcqfqcrdrfrcs",
-                white: "bocpbqdqeqbreres",
+                black: "cpdpepfpcqfqfrfs",
+                white: "bncobpbqdqeqcrerds",
             },
-            marks: { 1: "dr" },
-            move_tree: this.makePuzzleMoveTree(["bs"], ["dsfs", "fsgs"], 19, 19),
+            marks: { triangle: "dqeqer" },
+            move_tree: this.makePuzzleMoveTree(["esdrbr", "brbses"], [], 19, 19),
         };
     }
 }
@@ -549,21 +552,21 @@ class Page20 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Black has filled his own liberty with move 1. Punish this.");
+        return _("Black to play. Atari and capture the marked stones.");
     }
     config(): GobanConfig {
         return {
             width: 19,
             height: 19,
             mode: "puzzle",
-            initial_player: "white",
+            initial_player: "black",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "bpbqfqgqcrercsdses",
-                white: "cqdqeqdrfrfs",
+                black: "epbqcqdqcrcs",
+                white: "cnbpcpaqbras",
             },
-            marks: { 1: "er" },
-            move_tree: this.makePuzzleMoveTree(["br"], ["bsbr"], 19, 19),
+            marks: { triangle: "bras" },
+            move_tree: this.makePuzzleMoveTree(["bs"], [], 19, 19),
         };
     }
 }
@@ -574,21 +577,21 @@ class Page21 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Black has filled his own liberty with move 1. Punish this.");
+        return _("Black to play. Atari and capture the marked stones.");
     }
     config(): GobanConfig {
         return {
             width: 19,
             height: 19,
             mode: "puzzle",
-            initial_player: "white",
+            initial_player: "black",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "bpbqcrdrercsds",
-                white: "cqdqeqgqfres",
+                black: "anbnfnaodoepfpcqdq",
+                white: "cmcnboapcpdpbqeqer",
             },
-            marks: { 1: "er" },
-            move_tree: this.makePuzzleMoveTree(["brfsbs"], ["brfsgsar", "fsbr", "bsbr"], 19, 19),
+            marks: { triangle: "bocpdp" },
+            move_tree: this.makePuzzleMoveTree(["cobpbr"], ["brco"], 19, 19),
         };
     }
 }
@@ -599,21 +602,71 @@ class Page22 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Black has filled his own liberty with move 1. Punish this.");
+        return _("Black to play. Atari and capture the marked stones.");
     }
     config(): GobanConfig {
         return {
             width: 19,
             height: 19,
             mode: "puzzle",
-            initial_player: "white",
+            initial_player: "black",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "fnfoepaqbqdqeqfqarcrbscs",
-                white: "dneoapbpcpdpfpgpcqgqdr",
+                black: "coeoepcqdqbrdrgrfs",
+                white: "fpeqgqcrerfrhrcsds",
             },
-            marks: { 1: "ep" },
-            move_tree: this.makePuzzleMoveTree(["fr", "erfrgr", "erfrfsgrhr"], [], 19, 19),
+            marks: { triangle: "crcsds" },
+            move_tree: this.makePuzzleMoveTree(["bs"], ["gses"], 19, 19),
+        };
+    }
+}
+
+class Page23 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        return _("Black to play. Atari and capture the marked stones.");
+    }
+    config(): GobanConfig {
+        return {
+            width: 19,
+            height: 19,
+            mode: "puzzle",
+            initial_player: "black",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            initial_state: {
+                black: "cpepbqcqdrcsds",
+                white: "cmcnbobpaqbrcras",
+            },
+            marks: { triangle: "brcras" },
+            move_tree: this.makePuzzleMoveTree(["bs"], [], 19, 19),
+        };
+    }
+}
+
+class Page24 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        return _("Black to play. Atari and capture the marked stones.");
+    }
+    config(): GobanConfig {
+        return {
+            width: 19,
+            height: 19,
+            mode: "puzzle",
+            initial_player: "black",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            initial_state: {
+                black: "bndncododpdqarbrcr",
+                white: "bmcmdmcnboapcpbqcq",
+            },
+            marks: { triangle: "cpbqcq" },
+            move_tree: this.makePuzzleMoveTree(["aq", "anamaq"], [], 19, 19),
         };
     }
 }

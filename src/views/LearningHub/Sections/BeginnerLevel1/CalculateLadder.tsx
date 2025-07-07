@@ -20,25 +20,79 @@ import { GobanConfig } from "goban";
 import { LearningPage, LearningPageProperties } from "../../LearningPage";
 import { _, pgettext } from "@/lib/translate";
 import { LearningHubSection } from "../../LearningHubSection";
-
 import React from "react";
 
-export class InAtari extends LearningHubSection {
+export class BL1CalculateLadder extends LearningHubSection {
     static pages(): Array<typeof LearningPage> {
-        return [Page01, Page02, Page03, Page04, Page05, Page06];
+        return [Page01, Page02, Page03, Page04, Page05, Page06, Page07, Page08];
     }
     static section(): string {
-        return "in_atari";
+        return "bl1-calculate-ladder";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning in atari?", "Atari");
+        return pgettext("Tutorial section name on learning does the ladder work", "Ladder");
     }
     static subtext(): string {
-        return pgettext("Tutorial section subtext on learning on in atari?", "In atari");
+        return pgettext(
+            "Tutorial section subtext on learning on does the ladder work",
+            "Does the ladder work?",
+        );
     }
 }
 
 class Page01 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        return _(
+            "If you want to capture in a ladder, you have to look out for a ladder-breaker. Black wants to capture the marked stone in a ladder, but this ladder will not work, because the other white stone is a ladder-breaker. Try to capture the marked stone in a ladder and see what happens.",
+        );
+    }
+    config(): GobanConfig {
+        return {
+            width: 9,
+            height: 9,
+            mode: "puzzle",
+            initial_player: "black",
+            initial_state: {
+                black: "edfeff",
+                white: "eecg",
+            },
+            marks: { triangle: "ee" },
+            move_tree: this.makePuzzleMoveTree(["deefegdfcfdg"], ["efde"], 9, 9),
+        };
+    }
+}
+
+class Page02 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        return _(
+            "Sometimes you can avoid the ladder-breaker, by starting at the correct side. Black can choose between playing at A or B. Capture the marked stones in a ladder by choosing the correct side.",
+        );
+    }
+    config(): GobanConfig {
+        return {
+            width: 9,
+            height: 9,
+            mode: "puzzle",
+            initial_player: "black",
+            initial_state: {
+                black: "edfeffeg",
+                white: "eeefcg",
+            },
+            marks: { triangle: "eeef", A: "de", B: "df" },
+            move_tree: this.makePuzzleMoveTree(["df"], ["de"], 9, 9),
+        };
+    }
+}
+
+class Page03 extends LearningPage {
     constructor(props: LearningPageProperties) {
         super(props);
     }
@@ -51,7 +105,7 @@ class Page01 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "yes") {
+                if (selectedValue === "no") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -62,7 +116,7 @@ class Page01 extends LearningPage {
                 <div>
                     <p>
                         {_(
-                            "If a chain has only one liberty, it is in atari. Is the marked chain in atari?",
+                            "Black to play. Can you capture the marked stones in a ladder that works?",
                         )}
                     </p>
                     <label>
@@ -103,150 +157,10 @@ class Page01 extends LearningPage {
             height: 9,
             mode: "puzzle",
             initial_state: {
-                black: "cfdeef",
-                white: "dfeg",
+                black: "ddedfegeeffg",
+                white: "ecfdgddeeecg",
             },
-            marks: { triangle: "df", cross: "dg" },
-            phase: "finished",
-        };
-    }
-}
-
-class Page02 extends LearningPage {
-    constructor(props: LearningPageProperties) {
-        super(props);
-    }
-
-    text() {
-        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
-            const [value, setValue] = React.useState<string>("");
-
-            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-                const selectedValue = event.target.value;
-                setValue(selectedValue);
-
-                if (selectedValue === "no") {
-                    props.onCorrectAnswer();
-                } else if (selectedValue !== "") {
-                    props.onWrongAnswer();
-                }
-            };
-
-            return (
-                <div>
-                    <p>{_("Is the marked chain in atari?")}</p>
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="yes"
-                            checked={value === "yes"}
-                            onChange={handleChange}
-                        />
-                        yes
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="no"
-                            checked={value === "no"}
-                            onChange={handleChange}
-                        />
-                        no
-                    </label>
-                    <br />
-                </div>
-            );
-        }
-        return (
-            <MultipleChoice
-                onCorrectAnswer={this.onCorrectAnswer}
-                onWrongAnswer={this.onWrongAnswer}
-            />
-        );
-    }
-    config(): GobanConfig {
-        return {
-            width: 9,
-            height: 9,
-            mode: "puzzle",
-            initial_state: {
-                black: "dieiehfggghh",
-                white: "chdgegfifh",
-            },
-            marks: { triangle: "dieieh" },
-            phase: "finished",
-        };
-    }
-}
-
-class Page03 extends LearningPage {
-    constructor(props: LearningPageProperties) {
-        super(props);
-    }
-
-    text() {
-        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
-            const [value, setValue] = React.useState<string>("");
-
-            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-                const selectedValue = event.target.value;
-                setValue(selectedValue);
-
-                if (selectedValue === "yes") {
-                    props.onCorrectAnswer();
-                } else if (selectedValue !== "") {
-                    props.onWrongAnswer();
-                }
-            };
-
-            return (
-                <div>
-                    <p>{_("Is the marked chain in atari?")}</p>
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="yes"
-                            checked={value === "yes"}
-                            onChange={handleChange}
-                        />
-                        yes
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="no"
-                            checked={value === "no"}
-                            onChange={handleChange}
-                        />
-                        no
-                    </label>
-                    <br />
-                </div>
-            );
-        }
-        return (
-            <MultipleChoice
-                onCorrectAnswer={this.onCorrectAnswer}
-                onWrongAnswer={this.onWrongAnswer}
-            />
-        );
-    }
-    config(): GobanConfig {
-        return {
-            width: 9,
-            height: 9,
-            mode: "puzzle",
-            initial_state: {
-                black: "ciegeffifh",
-                white: "dieiehfggg",
-            },
-            marks: { triangle: "dieieh" },
+            marks: { triangle: "eede" },
             phase: "finished",
         };
     }
@@ -265,7 +179,7 @@ class Page04 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "yes") {
+                if (selectedValue === "no") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -274,7 +188,11 @@ class Page04 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("Is the marked chain in atari?")}</p>
+                    <p>
+                        {_(
+                            "Black to play. Can you capture the marked stones in a ladder that works?",
+                        )}
+                    </p>
                     <label>
                         <input
                             type="radio"
@@ -313,10 +231,10 @@ class Page04 extends LearningPage {
             height: 9,
             mode: "puzzle",
             initial_state: {
-                black: "agbgcich",
-                white: "ahbibh",
+                black: "ddedfegeef",
+                white: "fcfddeeedh",
             },
-            marks: { triangle: "ahbibh" },
+            marks: { triangle: "eede" },
             phase: "finished",
         };
     }
@@ -335,7 +253,7 @@ class Page05 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "no") {
+                if (selectedValue === "yes") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -344,7 +262,11 @@ class Page05 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("Is the marked chain in atari?")}</p>
+                    <p>
+                        {_(
+                            "Black to play. Can you capture the marked stones in a ladder that works?",
+                        )}
+                    </p>
                     <label>
                         <input
                             type="radio"
@@ -383,10 +305,10 @@ class Page05 extends LearningPage {
             height: 9,
             mode: "puzzle",
             initial_state: {
-                black: "dgdfcecd",
-                white: "cfdeegef",
+                black: "ddedfegeef",
+                white: "fcfddeeeeh",
             },
-            marks: { triangle: "dgdf" },
+            marks: { triangle: "eede" },
             phase: "finished",
         };
     }
@@ -414,7 +336,11 @@ class Page06 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("Is the marked chain in atari?")}</p>
+                    <p>
+                        {_(
+                            "Black to play. Can you capture the marked stones in a ladder that works?",
+                        )}
+                    </p>
                     <label>
                         <input
                             type="radio"
@@ -453,10 +379,158 @@ class Page06 extends LearningPage {
             height: 9,
             mode: "puzzle",
             initial_state: {
-                black: "dgdfcecddceeed",
-                white: "bhcgcfdhdeef",
+                black: "cedeeefedgeg",
+                white: "gchedfefhfgg",
             },
-            marks: { triangle: "dgdf" },
+            marks: { triangle: "efdf" },
+            phase: "finished",
+        };
+    }
+}
+
+class Page07 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
+            const [value, setValue] = React.useState<string>("");
+
+            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+                const selectedValue = event.target.value;
+                setValue(selectedValue);
+
+                if (selectedValue === "yes") {
+                    props.onCorrectAnswer();
+                } else if (selectedValue !== "") {
+                    props.onWrongAnswer();
+                }
+            };
+
+            return (
+                <div>
+                    <p>
+                        {_(
+                            "Black to play. Can you capture the marked stones in a ladder that works?",
+                        )}
+                    </p>
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="yes"
+                            checked={value === "yes"}
+                            onChange={handleChange}
+                        />
+                        yes
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="no"
+                            checked={value === "no"}
+                            onChange={handleChange}
+                        />
+                        no
+                    </label>
+                    <br />
+                </div>
+            );
+        }
+        return (
+            <MultipleChoice
+                onCorrectAnswer={this.onCorrectAnswer}
+                onWrongAnswer={this.onWrongAnswer}
+            />
+        );
+    }
+    config(): GobanConfig {
+        return {
+            width: 9,
+            height: 9,
+            mode: "puzzle",
+            initial_state: {
+                black: "ddcebfffegdh",
+                white: "fddecfdfefdg",
+            },
+            marks: { triangle: "dgefdfcfde" },
+            phase: "finished",
+        };
+    }
+}
+
+class Page08 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
+            const [value, setValue] = React.useState<string>("");
+
+            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+                const selectedValue = event.target.value;
+                setValue(selectedValue);
+
+                if (selectedValue === "yes") {
+                    props.onCorrectAnswer();
+                } else if (selectedValue !== "") {
+                    props.onWrongAnswer();
+                }
+            };
+
+            return (
+                <div>
+                    <p>
+                        {_(
+                            "Black to play. Can you capture the marked stones in a ladder that works?",
+                        )}
+                    </p>
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="yes"
+                            checked={value === "yes"}
+                            onChange={handleChange}
+                        />
+                        yes
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="no"
+                            checked={value === "no"}
+                            onChange={handleChange}
+                        />
+                        no
+                    </label>
+                    <br />
+                </div>
+            );
+        }
+        return (
+            <MultipleChoice
+                onCorrectAnswer={this.onCorrectAnswer}
+                onWrongAnswer={this.onWrongAnswer}
+            />
+        );
+    }
+    config(): GobanConfig {
+        return {
+            width: 9,
+            height: 9,
+            mode: "puzzle",
+            initial_state: {
+                black: "deeecfff",
+                white: "dfeffhgh",
+            },
+            marks: { triangle: "efdf" },
             phase: "finished",
         };
     }

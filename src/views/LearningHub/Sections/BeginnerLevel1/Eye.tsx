@@ -20,10 +20,9 @@ import { GobanConfig } from "goban";
 import { LearningPage, LearningPageProperties } from "../../LearningPage";
 import { _, pgettext } from "@/lib/translate";
 import { LearningHubSection } from "../../LearningHubSection";
-
 import React from "react";
 
-export class BSGroupAlive extends LearningHubSection {
+export class BL1Eye extends LearningHubSection {
     static pages(): Array<typeof LearningPage> {
         return [
             Page01,
@@ -38,18 +37,20 @@ export class BSGroupAlive extends LearningHubSection {
             Page10,
             Page11,
             Page12,
+            Page13,
+            Page14,
         ];
     }
     static section(): string {
-        return "bs-group-alive";
+        return "bl1-eye";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning is the group alive", "Group Alive");
+        return pgettext("Tutorial section name on learning real or false eye", "Eye");
     }
     static subtext(): string {
         return pgettext(
-            "Tutorial section subtext on learning on is the group alive",
-            "Is the group alive",
+            "Tutorial section subtext on learning on real or false eye",
+            "Real or false eye?",
         );
     }
 }
@@ -60,53 +61,8 @@ class Page01 extends LearningPage {
     }
 
     text() {
-        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
-            const [value, setValue] = React.useState<string>("");
-
-            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-                const selectedValue = event.target.value;
-                setValue(selectedValue);
-
-                if (selectedValue === "no") {
-                    props.onCorrectAnswer();
-                } else if (selectedValue !== "") {
-                    props.onWrongAnswer();
-                }
-            };
-
-            return (
-                <div>
-                    <p>{_("Is the black group alive?")}</p>
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="yes"
-                            checked={value === "yes"}
-                            onChange={handleChange}
-                        />
-                        yes
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="no"
-                            checked={value === "no"}
-                            onChange={handleChange}
-                        />
-                        no
-                    </label>
-                    <br />
-                </div>
-            );
-        }
-        return (
-            <MultipleChoice
-                onCorrectAnswer={this.onCorrectAnswer}
-                onWrongAnswer={this.onWrongAnswer}
-            />
+        return _(
+            "If you want to make sure that your eye is real, you need to control three of the four points A, B, C and D, diagonally to the eye. Black to play. Make the eye real.",
         );
     }
     config(): GobanConfig {
@@ -114,11 +70,12 @@ class Page01 extends LearningPage {
             width: 9,
             height: 9,
             mode: "puzzle",
+            initial_player: "black",
             initial_state: {
-                black: "fcgdhdceeebfcfefbgahchci",
-                white: "ccbdbedeafdfcgdgggdhfhbi",
+                black: "dddedfedeffe",
             },
-            phase: "finished",
+            marks: { A: "dd", B: "fd", C: "df", D: "ff" },
+            move_tree: this.makePuzzleMoveTree(["fd", "ff", "fc", "fg", "gd", "gf"], [], 9, 9),
         };
     }
 }
@@ -129,53 +86,8 @@ class Page02 extends LearningPage {
     }
 
     text() {
-        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
-            const [value, setValue] = React.useState<string>("");
-
-            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-                const selectedValue = event.target.value;
-                setValue(selectedValue);
-
-                if (selectedValue === "no") {
-                    props.onCorrectAnswer();
-                } else if (selectedValue !== "") {
-                    props.onWrongAnswer();
-                }
-            };
-
-            return (
-                <div>
-                    <p>{_("Is the black group alive?")}</p>
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="yes"
-                            checked={value === "yes"}
-                            onChange={handleChange}
-                        />
-                        yes
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="no"
-                            checked={value === "no"}
-                            onChange={handleChange}
-                        />
-                        no
-                    </label>
-                    <br />
-                </div>
-            );
-        }
-        return (
-            <MultipleChoice
-                onCorrectAnswer={this.onCorrectAnswer}
-                onWrongAnswer={this.onWrongAnswer}
-            />
+        return _(
+            "For an eye A at the edge, both diagonal points (B and C) need to be controlled. White to play. Make the eye A false.",
         );
     }
     config(): GobanConfig {
@@ -183,11 +95,13 @@ class Page02 extends LearningPage {
             width: 9,
             height: 9,
             mode: "puzzle",
+            initial_player: "white",
             initial_state: {
-                black: "gbfdgdhddeeeafcfagbgcgchdhdi",
-                white: "bcdcddaebecebfdfhfdgegggehbi",
+                black: "ahbhbichdi",
+                white: "dg",
             },
-            phase: "finished",
+            marks: { A: "ci", B: "bh", C: "dh" },
+            move_tree: this.makePuzzleMoveTree(["dh"], [], 9, 9),
         };
     }
 }
@@ -205,7 +119,7 @@ class Page03 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "yes") {
+                if (selectedValue === "false") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -214,27 +128,27 @@ class Page03 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("Is the black group alive?")}</p>
+                    <p>{_("Is A a real or a false eye?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="yes"
-                            checked={value === "yes"}
+                            value="real"
+                            checked={value === "real"}
                             onChange={handleChange}
                         />
-                        yes
+                        real
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="no"
-                            checked={value === "no"}
+                            value="false"
+                            checked={value === "false"}
                             onChange={handleChange}
                         />
-                        no
+                        false
                     </label>
                     <br />
                 </div>
@@ -249,13 +163,15 @@ class Page03 extends LearningPage {
     }
     config(): GobanConfig {
         return {
-            width: 9,
-            height: 9,
+            width: 19,
+            height: 19,
             mode: "puzzle",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "ecgdbgcgdgahdhbidi",
-                white: "eeafbfcfdfagegehei",
+                black: "apbqcqarcrbs",
+                white: "bnbpcpdpdqdr",
             },
+            marks: { A: "aq" },
             phase: "finished",
         };
     }
@@ -274,7 +190,7 @@ class Page04 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "no") {
+                if (selectedValue === "real") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -283,27 +199,27 @@ class Page04 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("Is the black group alive?")}</p>
+                    <p>{_("Is A a real or a false eye?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="yes"
-                            checked={value === "yes"}
+                            value="real"
+                            checked={value === "real"}
                             onChange={handleChange}
                         />
-                        yes
+                        real
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="no"
-                            checked={value === "no"}
+                            value="false"
+                            checked={value === "false"}
                             onChange={handleChange}
                         />
-                        no
+                        false
                     </label>
                     <br />
                 </div>
@@ -318,13 +234,15 @@ class Page04 extends LearningPage {
     }
     config(): GobanConfig {
         return {
-            width: 9,
-            height: 9,
+            width: 19,
+            height: 19,
             mode: "puzzle",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "ebfcgdhddgegfgchdhfhghcigi",
-                white: "dccdcedfefffbgcggghgbhhhei",
+                black: "apcpbqarcrbs",
+                white: "cnbobpdpcqdqdr",
             },
+            marks: { A: "br" },
             phase: "finished",
         };
     }
@@ -343,7 +261,7 @@ class Page05 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "yes") {
+                if (selectedValue === "false") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -352,27 +270,27 @@ class Page05 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("Is the black group alive?")}</p>
+                    <p>{_("Is A a real or a false eye?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="yes"
-                            checked={value === "yes"}
+                            value="real"
+                            checked={value === "real"}
                             onChange={handleChange}
                         />
-                        yes
+                        real
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="no"
-                            checked={value === "no"}
+                            value="false"
+                            checked={value === "false"}
                             onChange={handleChange}
                         />
-                        no
+                        false
                     </label>
                     <br />
                 </div>
@@ -387,13 +305,15 @@ class Page05 extends LearningPage {
     }
     config(): GobanConfig {
         return {
-            width: 9,
-            height: 9,
+            width: 19,
+            height: 19,
             mode: "puzzle",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "ecgcagbgcgdgbhdhci",
-                white: "eeafbfcfdfegggehei",
+                black: "apcpbqarcrbs",
+                white: "cnbobpdpcqdqdr",
             },
+            marks: { A: "aq" },
             phase: "finished",
         };
     }
@@ -412,7 +332,7 @@ class Page06 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "yes") {
+                if (selectedValue === "false") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -421,27 +341,27 @@ class Page06 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("Is the black group alive?")}</p>
+                    <p>{_("Is A a real or a false eye?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="yes"
-                            checked={value === "yes"}
+                            value="real"
+                            checked={value === "real"}
                             onChange={handleChange}
                         />
-                        yes
+                        real
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="no"
-                            checked={value === "no"}
+                            value="false"
+                            checked={value === "false"}
                             onChange={handleChange}
                         />
-                        no
+                        false
                     </label>
                     <br />
                 </div>
@@ -456,13 +376,15 @@ class Page06 extends LearningPage {
     }
     config(): GobanConfig {
         return {
-            width: 9,
-            height: 9,
+            width: 19,
+            height: 19,
             mode: "puzzle",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "gcbfcfagcgdgbhdhdi",
-                white: "aebeceeeafdfegggeh",
+                black: "cnbpcpaqeqbras",
+                white: "dpbqcqdqcrer",
             },
+            marks: { A: "ar" },
             phase: "finished",
         };
     }
@@ -481,7 +403,7 @@ class Page07 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "no") {
+                if (selectedValue === "real") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -490,27 +412,27 @@ class Page07 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("Is the black group alive?")}</p>
+                    <p>{_("Is A a real or a false eye?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="yes"
-                            checked={value === "yes"}
+                            value="real"
+                            checked={value === "real"}
                             onChange={handleChange}
                         />
-                        yes
+                        real
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="no"
-                            checked={value === "no"}
+                            value="false"
+                            checked={value === "false"}
                             onChange={handleChange}
                         />
-                        no
+                        false
                     </label>
                     <br />
                 </div>
@@ -525,14 +447,15 @@ class Page07 extends LearningPage {
     }
     config(): GobanConfig {
         return {
-            width: 9,
-            height: 9,
+            width: 19,
+            height: 19,
             mode: "puzzle",
-            initial_player: "black",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "ecgdafbfgfcgbhchbi",
-                white: "ddbecedfagdgahdhai",
+                black: "bqarcrdrbsds",
+                white: "cobpcqdqfqer",
             },
+            marks: { A: "br" },
             phase: "finished",
         };
     }
@@ -551,7 +474,7 @@ class Page08 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "no") {
+                if (selectedValue === "false") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -560,27 +483,27 @@ class Page08 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("Is the black group alive?")}</p>
+                    <p>{_("Is A a real or a false eye?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="yes"
-                            checked={value === "yes"}
+                            value="real"
+                            checked={value === "real"}
                             onChange={handleChange}
                         />
-                        yes
+                        real
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="no"
-                            checked={value === "no"}
+                            value="false"
+                            checked={value === "false"}
                             onChange={handleChange}
                         />
-                        no
+                        false
                     </label>
                     <br />
                 </div>
@@ -595,14 +518,15 @@ class Page08 extends LearningPage {
     }
     config(): GobanConfig {
         return {
-            width: 9,
-            height: 9,
+            width: 19,
+            height: 19,
             mode: "puzzle",
-            initial_player: "black",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "agbgcgchdhdi",
-                white: "bfcfefdgehbi",
+                black: "boapbqcqarcrdrbs",
+                white: "bncnbpcpdpdqfqer",
             },
+            marks: { A: "aq" },
             phase: "finished",
         };
     }
@@ -621,7 +545,7 @@ class Page09 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "yes") {
+                if (selectedValue === "false") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -630,27 +554,27 @@ class Page09 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("Is the black group alive?")}</p>
+                    <p>{_("Is A a real or a false eye?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="yes"
-                            checked={value === "yes"}
+                            value="real"
+                            checked={value === "real"}
                             onChange={handleChange}
                         />
-                        yes
+                        real
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="no"
-                            checked={value === "no"}
+                            value="false"
+                            checked={value === "false"}
                             onChange={handleChange}
                         />
-                        no
+                        false
                     </label>
                     <br />
                 </div>
@@ -665,14 +589,15 @@ class Page09 extends LearningPage {
     }
     config(): GobanConfig {
         return {
-            width: 9,
-            height: 9,
+            width: 19,
+            height: 19,
             mode: "puzzle",
-            initial_player: "black",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "beceafcfagcgdgdhaibicidi",
-                white: "bdcddddebfdfffbgegbhcheh",
+                black: "bobpaqcqfqbrdr",
+                white: "anbncnaoapcpdp",
             },
+            marks: { A: "bq" },
             phase: "finished",
         };
     }
@@ -691,7 +616,7 @@ class Page10 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "yes") {
+                if (selectedValue === "false") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -700,27 +625,27 @@ class Page10 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("Is the black group alive?")}</p>
+                    <p>{_("Is A a real or a false eye?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="yes"
-                            checked={value === "yes"}
+                            value="real"
+                            checked={value === "real"}
                             onChange={handleChange}
                         />
-                        yes
+                        real
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="no"
-                            checked={value === "no"}
+                            value="false"
+                            checked={value === "false"}
                             onChange={handleChange}
                         />
-                        no
+                        false
                     </label>
                     <br />
                 </div>
@@ -735,14 +660,15 @@ class Page10 extends LearningPage {
     }
     config(): GobanConfig {
         return {
-            width: 9,
-            height: 9,
+            width: 19,
+            height: 19,
             mode: "puzzle",
-            initial_player: "black",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "egfgggchdhghbicieigi",
-                white: "bfefffgfcgdghgbhfhhh",
+                black: "dqeqbrdrfrascses",
+                white: "clcodpbqcqcr",
             },
+            marks: { A: "bs" },
             phase: "finished",
         };
     }
@@ -761,7 +687,7 @@ class Page11 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "no") {
+                if (selectedValue === "real") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -770,27 +696,27 @@ class Page11 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("Is the black group alive?")}</p>
+                    <p>{_("Is A a real or a false eye?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="yes"
-                            checked={value === "yes"}
+                            value="real"
+                            checked={value === "real"}
                             onChange={handleChange}
                         />
-                        yes
+                        real
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="no"
-                            checked={value === "no"}
+                            value="false"
+                            checked={value === "false"}
                             onChange={handleChange}
                         />
-                        no
+                        false
                     </label>
                     <br />
                 </div>
@@ -805,14 +731,15 @@ class Page11 extends LearningPage {
     }
     config(): GobanConfig {
         return {
-            width: 9,
-            height: 9,
+            width: 19,
+            height: 19,
             mode: "puzzle",
-            initial_player: "black",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "dcfcgdagbgcgdgahdhdi",
-                white: "eebfcfdfegbhchehbici",
+                black: "bpbqarcrdrerbs",
+                white: "cnboapcpcqdqeqfqfr",
             },
+            marks: { A: "br" },
             phase: "finished",
         };
     }
@@ -831,7 +758,7 @@ class Page12 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "no") {
+                if (selectedValue === "false") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -840,27 +767,27 @@ class Page12 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("Is the black group alive?")}</p>
+                    <p>{_("Is A a real or a false eye?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="yes"
-                            checked={value === "yes"}
+                            value="real"
+                            checked={value === "real"}
                             onChange={handleChange}
                         />
-                        yes
+                        real
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="no"
-                            checked={value === "no"}
+                            value="false"
+                            checked={value === "false"}
                             onChange={handleChange}
                         />
-                        no
+                        false
                     </label>
                     <br />
                 </div>
@@ -875,14 +802,157 @@ class Page12 extends LearningPage {
     }
     config(): GobanConfig {
         return {
-            width: 9,
-            height: 9,
+            width: 19,
+            height: 19,
             mode: "puzzle",
-            initial_player: "black",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "agbgcgdgahdhcidi",
-                white: "bfcfdfffegbhehbi",
+                black: "boapbqarcrdrerbs",
+                white: "bncndobpcpcqdqeqfqfr",
             },
+            marks: { A: "aq" },
+            phase: "finished",
+        };
+    }
+}
+
+class Page13 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
+            const [value, setValue] = React.useState<string>("");
+
+            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+                const selectedValue = event.target.value;
+                setValue(selectedValue);
+
+                if (selectedValue === "false") {
+                    props.onCorrectAnswer();
+                } else if (selectedValue !== "") {
+                    props.onWrongAnswer();
+                }
+            };
+
+            return (
+                <div>
+                    <p>{_("Is A a real or a false eye?")}</p>
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="real"
+                            checked={value === "real"}
+                            onChange={handleChange}
+                        />
+                        real
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="false"
+                            checked={value === "false"}
+                            onChange={handleChange}
+                        />
+                        false
+                    </label>
+                    <br />
+                </div>
+            );
+        }
+        return (
+            <MultipleChoice
+                onCorrectAnswer={this.onCorrectAnswer}
+                onWrongAnswer={this.onWrongAnswer}
+            />
+        );
+    }
+    config(): GobanConfig {
+        return {
+            width: 19,
+            height: 19,
+            mode: "puzzle",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            initial_state: {
+                black: "doeocpepcqdqbrdrercs",
+                white: "dmcnfncofobpfpeqfqfr",
+            },
+            marks: { A: "dp" },
+            phase: "finished",
+        };
+    }
+}
+
+class Page14 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
+            const [value, setValue] = React.useState<string>("");
+
+            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+                const selectedValue = event.target.value;
+                setValue(selectedValue);
+
+                if (selectedValue === "false") {
+                    props.onCorrectAnswer();
+                } else if (selectedValue !== "") {
+                    props.onWrongAnswer();
+                }
+            };
+
+            return (
+                <div>
+                    <p>{_("Is A a real or a false eye?")}</p>
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="real"
+                            checked={value === "real"}
+                            onChange={handleChange}
+                        />
+                        real
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="false"
+                            checked={value === "false"}
+                            onChange={handleChange}
+                        />
+                        false
+                    </label>
+                    <br />
+                </div>
+            );
+        }
+        return (
+            <MultipleChoice
+                onCorrectAnswer={this.onCorrectAnswer}
+                onWrongAnswer={this.onWrongAnswer}
+            />
+        );
+    }
+    config(): GobanConfig {
+        return {
+            width: 19,
+            height: 19,
+            mode: "puzzle",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            initial_state: {
+                black: "cnbobpbqdqarcrdrbs",
+                white: "coeocpepcqeqgqfrcsdses",
+            },
+            marks: { A: "br" },
             phase: "finished",
         };
     }
