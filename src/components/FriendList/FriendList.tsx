@@ -32,6 +32,7 @@ export function FriendList() {
         preferences.get("show-offline-friends"),
     );
     const [invitations, setInvitations] = React.useState<rest_api.FriendInvitations>([]);
+    const [notifyOnDecline, setNotifyOnDecline] = React.useState(false);
 
     React.useEffect(() => {
         const update_friend_list = () => {
@@ -114,7 +115,11 @@ export function FriendList() {
 
     const rejectInvite = (invitation: rest_api.FriendInvitations[number]) => {
         setInvitations(invitations.filter((inv) => inv.from_user.id !== invitation.from_user.id));
-        post("me/friends/invitations/", { from_user: invitation.from_user.id, delete: true })
+        post("me/friends/invitations/", {
+            from_user: invitation.from_user.id,
+            delete: true,
+            notify_requestor: notifyOnDecline,
+        })
             .then(() => 0)
             .catch(() => 0);
     };
@@ -133,6 +138,20 @@ export function FriendList() {
                     {_("Show offline")}
                 </label>
             </div>
+            {invitations.length > 0 && (
+                <div className="notify-on-decline">
+                    <input
+                        id="notify-on-decline"
+                        type="checkbox"
+                        checked={notifyOnDecline}
+                        onClick={eat}
+                        onChange={(ev) => setNotifyOnDecline(ev.target.checked)}
+                    />
+                    <label onClick={eat} htmlFor="notify-on-decline">
+                        {_("Notify when declining friend requests")}
+                    </label>
+                </div>
+            )}
             {invitations.map((invitation) => {
                 if (player_is_ignored(invitation.from_user.id)) {
                     return null;

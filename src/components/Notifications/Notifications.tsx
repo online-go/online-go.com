@@ -83,7 +83,8 @@ class NotificationEntry extends React.Component<NotificationEntryProps, any> {
     constructor(props: NotificationEntryProps) {
         super(props);
         this.state = {
-            message: null,
+            message: "",
+            notifyOnDecline: false,
         };
 
         this.del = this.del.bind(this);
@@ -320,6 +321,27 @@ class NotificationEntry extends React.Component<NotificationEntryProps, any> {
                     <div>
                         {_("Friend request from") /* translators: friend request from <user> */}{" "}
                         <Player user={notification.user} />
+                        <div
+                            style={{
+                                display: "flex",
+                                justifyContent: "flex-end",
+                                marginTop: "8px",
+                            }}
+                        >
+                            <div className="notify-on-decline">
+                                <label htmlFor={`notify-on-decline-${notification.id}`}>
+                                    {_("Notify when declining")}
+                                </label>
+                                <input
+                                    id={`notify-on-decline-${notification.id}`}
+                                    type="checkbox"
+                                    checked={this.state.notifyOnDecline}
+                                    onChange={(ev) =>
+                                        this.setState({ notifyOnDecline: ev.target.checked })
+                                    }
+                                />
+                            </div>
+                        </div>
                         <div className="buttons">
                             <FabX
                                 onClick={() => {
@@ -327,6 +349,7 @@ class NotificationEntry extends React.Component<NotificationEntryProps, any> {
                                     post("me/friends/invitations", {
                                         delete: true,
                                         from_user: notification.user.id,
+                                        notify_requestor: this.state.notifyOnDecline,
                                     })
                                         .then(this.del)
                                         .catch(this.onError);
