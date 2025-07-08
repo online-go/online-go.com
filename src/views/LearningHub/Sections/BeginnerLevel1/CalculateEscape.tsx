@@ -55,10 +55,7 @@ export class BL1CalculateEscape extends LearningHubSection {
         return "bl1-calculate-escape";
     }
     static title(): string {
-        return pgettext(
-            "Tutorial section name on learning can white escape",
-            "4.3 Calculate Escape",
-        );
+        return pgettext("Tutorial section name on learning can white escape", "Calculate Escape");
     }
     static subtext(): string {
         return pgettext(
