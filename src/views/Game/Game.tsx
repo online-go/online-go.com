@@ -20,27 +20,16 @@ import { useParams, useLocation, useSearchParams } from "react-router-dom";
 
 import * as data from "@/lib/data";
 import * as preferences from "@/lib/preferences";
-import { _, interpolate, current_language } from "@/lib/translate";
+import { _, interpolate } from "@/lib/translate";
 import { popover } from "@/lib/popover";
 import { get, abort_requests_in_flight } from "@/lib/requests";
 import { UIPush } from "@/components/UIPush";
-import {
-    GobanRenderer,
-    GobanRendererConfig,
-    GobanEnginePhase,
-    GobanModes,
-    JGOFNumericPlayerColor,
-    JGOFSealingIntersection,
-} from "goban";
+import { GobanRendererConfig, GobanEnginePhase, GobanModes, JGOFNumericPlayerColor } from "goban";
 import { isLiveGame } from "@/components/TimeControl";
 import { setExtraActionCallback, PlayerDetails } from "@/components/Player";
 import * as player_cache from "@/lib/player_cache";
 import { notification_manager } from "@/components/Notifications";
-import { Resizable } from "@/components/Resizable";
-import { chat_manager, ChatChannelProxy } from "@/lib/chat_manager";
-import { sfx } from "@/lib/sfx";
 import { GameChat } from "./GameChat";
-import { JGOFClock } from "goban";
 import { goban_view_mode, goban_view_squashed, ViewMode } from "./util";
 import { PlayerCards } from "./PlayerCards";
 import { PlayControls, ReviewControls } from "./PlayControls";
@@ -53,7 +42,7 @@ import { GameControllerContext } from "./goban_context";
 import { is_valid_url } from "@/lib/url_validation";
 import { BotDetectionResults } from "./BotDetectionResults";
 import { ActiveTournament } from "@/lib/types";
-import { GobanController } from "../../lib/GobanController";
+import { GobanController } from "@/lib/GobanController";
 import {
     FragAIReview,
     FragBelowBoardControls,
@@ -84,7 +73,6 @@ export function Game(): React.ReactElement | null {
     const tournament_id = React.useRef<number | undefined>(undefined);
     const goban_div = React.useRef<HTMLDivElement | undefined>(undefined);
     const resize_debounce = React.useRef<any | undefined>(undefined);
-    const chat_proxy = React.useRef<ChatChannelProxy | undefined>(undefined);
     const on_refocus_title = React.useRef<string>("OGS");
     const last_move_viewed = React.useRef<number>(0);
     const white_username = React.useRef<string>("White");
@@ -102,7 +90,6 @@ export function Game(): React.ReactElement | null {
     const estimating_score_ref = React.useRef(estimating_score);
     const user_is_player = useUserIsParticipant(goban);
     const [zen_mode, set_zen_mode] = React.useState(preferences.get("start-in-zen-mode"));
-    const [review_list, set_review_list] = React.useState<any[]>([]);
     const [variation_name, set_variation_name] = React.useState("");
     const [historical_black, set_historical_black] = React.useState<rest_api.games.Player | null>(
         null,
@@ -216,27 +203,6 @@ export function Game(): React.ReactElement | null {
     const nav_goto_move = game_controller.current?.nav_goto_move ?? (() => {});
     const setLabelHandler = game_controller.current?.setLabelHandler ?? (() => {});
     const updateVariationName = game_controller.current?.updateVariationName ?? (() => {});
-    const shareAnalysis = game_controller.current?.shareAnalysis ?? (() => {});
-    const stopEstimatingScore = game_controller.current?.stopEstimatingScore ?? (() => {});
-
-    const reviewAdded = (review: any) => {
-        console.log("Review added: " + JSON.stringify(review));
-        const new_review_list: any[] = [];
-        for (const r of this.review_list) {
-            new_review_list.push(r);
-        }
-        new_review_list.push(review);
-        new_review_list.sort((a, b) => {
-            if (a.owner.ranking === b.owner.ranking) {
-                return a.owner.username < b.owner.username ? -1 : 1;
-            }
-            return a.owner.ranking - b.owner.ranking;
-        });
-        set_review_list(new_review_list);
-        if (goban?.engine?.phase === "finished") {
-            sfx.play("review_started");
-        }
-    };
 
     const onWheel: React.WheelEventHandler<HTMLDivElement> = React.useCallback(
         (event) => {
@@ -253,44 +219,21 @@ export function Game(): React.ReactElement | null {
         [scroll_to_navigate],
     );
 
-    /* Review stuff */
-
-    const variationKeyPress = (ev: React.KeyboardEvent): boolean | void => {
-        if (ev.keyCode === 13) {
-            shareAnalysis();
-            return false;
-        }
-    };
-
-    const setMoveTreeContainer = (resizable: Resizable): void => {
-        ref_move_tree_container.current = resizable ? resizable.div ?? undefined : undefined;
-        if (goban && ref_move_tree_container.current) {
-            (goban as GobanRenderer).setMoveTreeContainer(ref_move_tree_container.current);
-        }
-    };
-
     /* Constructor */
     React.useEffect(() => {
         goban_div.current = document.createElement("div");
         goban_div.current.className = "Goban";
-        /* end constructor */
 
         set_estimating_score(false);
-        game_controller.current?.stopAutoplay();
-        set_review_list([]);
         set_historical_black(null);
         set_historical_white(null);
         set_black_flags(null);
         set_white_flags(null);
 
         window.addEventListener("focus", onFocus);
-
-        /*** BEGIN initialize ***/
-        chat_proxy.current = game_id
-            ? chat_manager.join(`game-${game_id}`)
-            : chat_manager.join(`review-${review_id}`);
         document.addEventListener("keypress", setLabelHandler);
 
+        /*** initialize ***/
         const label_position = preferences.get("label-positioning");
         const opts: GobanRendererConfig = {
             board_div: goban_div.current,
@@ -325,11 +268,11 @@ export function Game(): React.ReactElement | null {
             opts.isPlayerController = () => goban?.review_controller_id === data.get("user").id;
         }
 
+        game_controller.current?.destroy();
         game_controller.current = new GobanController(opts);
         goban = game_controller.current.goban;
 
         game_controller.current.last_variation_number = 0;
-        game_controller.current.on("stopEstimatingScore", stopEstimatingScore);
         game_controller.current.on("branch_copied", (copied_node) => {
             if (copied_node) {
                 toast(<div>{_("Branch copied")}</div>);
@@ -362,7 +305,6 @@ export function Game(): React.ReactElement | null {
         });
 
         if (preferences.get("dynamic-title")) {
-            /* Title Updates { */
             const last_title = window.document.title;
             last_move_viewed.current = 0;
             on_refocus_title.current = last_title;
@@ -386,7 +328,6 @@ export function Game(): React.ReactElement | null {
                     window.document.title = state.title;
                 }
             });
-            /* } */
         }
 
         goban.on("submitting-move", () => {
@@ -394,187 +335,23 @@ export function Game(): React.ReactElement | null {
             notification_manager.clearTimecopNotification(game_id);
         });
 
-        goban.on("clock", (clock: JGOFClock | null) => {
-            /* This is the code that draws the count down number on the "hover
-             * stone" for the current player if they are running low on time */
-
-            const user = data.get("user");
-
-            if (!clock) {
-                return;
-            }
-
-            if (user.anonymous) {
-                return;
-            }
-
-            if (!goban) {
-                return;
-            }
-
-            if (user.id.toString() !== clock.current_player_id) {
-                goban.setByoYomiLabel("");
-                return;
-            }
-
-            let ms_left = 0;
-            const player_clock =
-                clock.current_player === "black" ? clock.black_clock : clock.white_clock;
-            if (player_clock.main_time > 0) {
-                ms_left = player_clock.main_time;
-                if (
-                    goban.engine.time_control.system === "byoyomi" ||
-                    goban.engine.time_control.system === "canadian"
-                ) {
-                    ms_left = 0;
-                }
-            } else {
-                ms_left = player_clock.period_time_left || player_clock.block_time_left || 0;
-            }
-
-            const seconds = Math.ceil((ms_left - 1) / 1000);
-
-            const every_second_start = preferences.get(
-                "sound.countdown.every-second.start",
-            ) as number;
-
-            if (seconds > 0 && seconds < Math.max(10, every_second_start)) {
-                const count_direction = preferences.get(
-                    "sound.countdown.byoyomi-direction",
-                ) as string;
-                let count_direction_auto = "down";
-                if (count_direction === "auto") {
-                    count_direction_auto =
-                        current_language === "ja" || current_language === "ko" ? "up" : "down";
-                }
-
-                const count_direction_computed =
-                    count_direction !== "auto" ? count_direction : count_direction_auto;
-
-                if (count_direction_computed === "up") {
-                    if (seconds < every_second_start) {
-                        goban.setByoYomiLabel((every_second_start - seconds).toString());
-                    }
-                } else {
-                    goban.setByoYomiLabel(seconds.toString());
-                }
-            } else {
-                goban.setByoYomiLabel("");
-            }
-        });
-
         /* Ensure our state is kept up to date */
-
-        const sync_stone_removal = () => {
-            const engine = goban!.engine;
-
-            if (
-                (engine.phase === "stone removal" || engine.phase === "finished") &&
-                engine.outcome !== "Timeout" &&
-                engine.outcome !== "Disconnection" &&
-                engine.outcome !== "Resignation" &&
-                engine.outcome !== "Abandonment" &&
-                engine.outcome !== "Cancellation" &&
-                goban!.mode === "play"
-            ) {
-                if (
-                    engine.phase === "finished" &&
-                    engine.outcome.indexOf("Server Decision") === 0
-                ) {
-                    if (engine.stalling_score_estimate) {
-                        goban!.showStallingScoreEstimate(engine.stalling_score_estimate);
-                    }
-                } else {
-                    const s = engine.computeScore(false);
-                    goban!.showScores(s);
-                }
-            }
-        };
-
-        const sync_needs_sealing = (positions: undefined | JGOFSealingIntersection[]) => {
-            console.log("sync_needs_sealing", positions);
-            //const cur = goban as GobanRenderer;
-            const engine = goban!.engine;
-
-            const cur_move = engine.cur_move;
-            for (const pos of positions || []) {
-                const { x, y } = pos;
-                const marks = cur_move.getMarks(x, y);
-                marks.needs_sealing = true;
-                goban!.drawSquare(x, y);
-            }
-        };
-
         const onLoad = () => {
             const engine = goban!.engine;
             set_mode(goban!.mode);
             set_phase(engine.phase);
-
             set_undo_requested(engine.undo_requested);
-
-            sync_stone_removal();
-
-            const review_list: any[] = [];
-            for (const k in engine.config.reviews) {
-                review_list.push({
-                    id: k,
-                    owner: (engine.config.reviews as any)[k],
-                });
-            }
-            review_list.sort((a, b) => {
-                if (a.owner.ranking === b.owner.ranking) {
-                    return a.owner.username < b.owner.username ? -1 : 1;
-                }
-                return a.owner.ranking - b.owner.ranking;
-            });
-
-            set_review_list(review_list);
         };
-
-        goban.on("load", onLoad);
-        onLoad();
 
         goban.on("mode", set_mode);
         goban.on("phase", set_phase);
         goban.on("phase", () => goban!.engine.cur_move.clearMarks());
         goban.on("undo_requested", set_undo_requested);
-
-        goban.on("phase", sync_stone_removal);
-        goban.on("mode", sync_stone_removal);
-        goban.on("outcome", sync_stone_removal);
-        goban.on("stone-removal.accepted", sync_stone_removal);
-        goban.on("stone-removal.updated", sync_stone_removal);
-        goban.on("stone-removal.needs-sealing", sync_needs_sealing);
-
-        /* END sync_state port */
+        goban.on("load", onLoad);
+        onLoad();
 
         goban.on("move-made", auto_advance);
         goban.on("gamedata", onResize);
-
-        goban.on("gamedata", (gamedata) => {
-            if (!goban) {
-                throw new Error("goban is null");
-            }
-
-            try {
-                if (isLiveGame(gamedata.time_control, gamedata.width, gamedata.height)) {
-                    goban.one_click_submit = preferences.get("one-click-submit-live");
-                    goban.double_click_submit = preferences.get("double-click-submit-live");
-                } else {
-                    goban.one_click_submit = preferences.get("one-click-submit-correspondence");
-                    goban.double_click_submit = preferences.get(
-                        "double-click-submit-correspondence",
-                    );
-                }
-                /*
-                goban.visual_undo_request_indicator = preferences.get(
-                    "visual-undo-request-indicator",
-                );
-                */
-            } catch (e) {
-                console.error(e.stack);
-            }
-        });
 
         goban.on("played-by-click", (event) => {
             const target = ref_move_tree_container.current?.getBoundingClientRect();
@@ -588,6 +365,7 @@ export function Game(): React.ReactElement | null {
             }
         });
 
+        /* Handle ?move_number=10 query parameter */
         if (params.move_number) {
             goban.once(review_id ? "review.load-end" : "gamedata", () => {
                 nav_goto_move(parseInt(params.move_number as string));
@@ -764,8 +542,6 @@ export function Game(): React.ReactElement | null {
                 .catch(ignore);
         }
 
-        /*** END initialize ***/
-
         return () => {
             if (game_id) {
                 abort_requests_in_flight(`games/${game_id}`);
@@ -774,24 +550,14 @@ export function Game(): React.ReactElement | null {
                 abort_requests_in_flight(`reviews/${review_id}`);
             }
             console.log("unmounting, going to destroy", goban);
-            chat_proxy.current?.part();
-            if (game_controller.current) {
-                //game_controller.current.setSelectedChatLog(defaultChatMode);
-                //delete game_controller.current.creator_id;
-                game_controller.current.stopAutoplay();
-                game_controller.current.off("stopEstimatingScore", stopEstimatingScore);
-            }
             ladder_id.current = undefined;
             tournament_id.current = undefined;
             document.removeEventListener("keypress", setLabelHandler);
             try {
-                if (goban) {
-                    goban.destroy();
-                }
+                game_controller.current?.destroy();
             } catch (e) {
                 console.error(e.stack);
             }
-            goban?.removeAllListeners();
             game_controller.current = null;
             goban = null;
             if (resize_debounce.current) {
@@ -864,17 +630,12 @@ export function Game(): React.ReactElement | null {
         <ReviewControls
             mode={mode}
             review_id={review_id}
-            setMoveTreeContainer={setMoveTreeContainer}
-            onShareAnalysis={shareAnalysis}
             variation_name={variation_name}
             updateVariationName={updateVariationName}
-            variationKeyPress={variationKeyPress}
-            stopEstimatingScore={stopEstimatingScore}
         />
     ) : (
         <PlayControls
             show_cancel={view_mode !== "portrait" && !zen_mode}
-            review_list={review_list}
             stashed_conditional_moves={
                 game_controller.current?.stashed_conditional_moves ?? undefined
             }
@@ -882,14 +643,10 @@ export function Game(): React.ReactElement | null {
             phase={phase as any}
             title={title as string}
             show_title={show_title as boolean}
-            setMoveTreeContainer={setMoveTreeContainer}
-            onShareAnalysis={shareAnalysis}
             variation_name={variation_name}
             updateVariationName={updateVariationName}
-            variationKeyPress={variationKeyPress}
             annulment_reason={annulment_reason}
             zen_mode={zen_mode}
-            stopEstimatingScore={stopEstimatingScore}
         />
     );
 
@@ -920,7 +677,7 @@ export function Game(): React.ReactElement | null {
                         <UIPush
                             event="review-added"
                             channel={`game-${game_id}`}
-                            action={reviewAdded}
+                            action={game_controller.current?.addReview}
                         />
                     )}
                     <GameKeyboardShortcuts />

@@ -62,9 +62,6 @@ const PLAY_CONTROLS_DEFAULTS = {
     renderAnalyzeButtonBar: () => {
         return <React.Fragment />;
     },
-    setMoveTreeContainer: () => {
-        return;
-    },
     onShareAnalysis: () => {
         return;
     },
