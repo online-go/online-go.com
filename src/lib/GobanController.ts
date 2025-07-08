@@ -24,6 +24,8 @@ import {
     MoveTree,
     createGoban,
     encodeMove,
+    JGOFClock,
+    JGOFSealingIntersection,
 } from "goban";
 import { EventEmitter } from "eventemitter3";
 import { sfx, SFXSprite, ValidSound } from "@/lib/sfx";
@@ -38,7 +40,10 @@ import * as data from "@/lib/data";
 import * as preferences from "@/lib/preferences";
 import { goban_view_mode, shared_ip_with_player_map, ViewMode } from "@/views/Game/util";
 import { ChatMode } from "@/views/Game/GameChat";
-import { inGameModChannel } from "@/lib/chat_manager";
+import { chat_manager, ChatChannelProxy, inGameModChannel } from "@/lib/chat_manager";
+import { Resizable } from "@/components/Resizable";
+import { PlayerCacheEntry } from "./player_cache";
+import { isLiveGame } from "@/components/TimeControl";
 
 interface GobanControllerEvents {
     autoplaying: (autoplaying: boolean) => void;
@@ -57,6 +62,12 @@ interface GobanControllerEvents {
     branch_copied: (copied_node: MoveTree | undefined) => void;
     in_pushed_analysis: (in_pushed_analysis: boolean) => void;
     annulled: (annulled: boolean) => void;
+    destroy: () => void;
+}
+
+export interface ReviewListEntry {
+    owner: PlayerCacheEntry;
+    id: number;
 }
 
 /*
@@ -88,20 +99,138 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
     private _copied_node?: MoveTree;
     private _view_mode: ViewMode = goban_view_mode();
     private _annulled: boolean = false;
+    public chat_proxy: ChatChannelProxy;
+    public review_list: ReviewListEntry[] = [];
 
     constructor(opts: GobanRendererConfig) {
         super();
-        const goban = createGoban(opts);
-        this.goban = goban;
-        const goban_opts = goban.config;
+        this.goban = createGoban(opts);
         this.bindAudioEvents();
-        this.game_id = goban_opts.game_id ? Number(goban_opts.game_id) : undefined;
-        this.review_id = goban_opts.review_id ? Number(goban_opts.review_id) : undefined;
+        this.game_id = opts.game_id ? Number(opts.game_id) : undefined;
+        this.review_id = opts.review_id ? Number(opts.review_id) : undefined;
 
         const defaultChatMode = preferences.get("chat-mode") as ChatMode;
         const in_game_mod_channel =
             !this.review_id && this.game_id && inGameModChannel(this.game_id);
         this._selected_chat_log = in_game_mod_channel ? "hidden" : defaultChatMode;
+
+        this.chat_proxy = this.game_id
+            ? chat_manager.join(`game-${this.game_id}`)
+            : chat_manager.join(`review-${this.review_id}`);
+
+        this.setupCountdownCounter();
+        this.goban.on("phase", this.sync_stone_removal.bind(this));
+        this.goban.on("mode", this.sync_stone_removal.bind(this));
+        this.goban.on("outcome", this.sync_stone_removal.bind(this));
+        this.goban.on("stone-removal.accepted", this.sync_stone_removal.bind(this));
+        this.goban.on("stone-removal.updated", this.sync_stone_removal.bind(this));
+        this.goban.on("stone-removal.needs-sealing", this.sync_needs_sealing.bind(this));
+
+        this.goban.on("load", () => {
+            this.sync_stone_removal();
+            this.review_list = [];
+            for (const k in this.goban.engine.config.reviews) {
+                this.review_list.push({
+                    id: Number(k),
+                    owner: this.goban.engine.config.reviews[k as any] as PlayerCacheEntry,
+                });
+            }
+            this.review_list.sort(rankingThenUsername);
+        });
+
+        this.goban.on("gamedata", (gamedata) => {
+            try {
+                if (isLiveGame(gamedata.time_control, gamedata.width, gamedata.height)) {
+                    this.goban.one_click_submit = preferences.get("one-click-submit-live");
+                    this.goban.double_click_submit = preferences.get("double-click-submit-live");
+                } else {
+                    this.goban.one_click_submit = preferences.get(
+                        "one-click-submit-correspondence",
+                    );
+                    this.goban.double_click_submit = preferences.get(
+                        "double-click-submit-correspondence",
+                    );
+                }
+            } catch (e) {
+                console.error(e.stack);
+            }
+        });
+    }
+
+    public destroy() {
+        this.chat_proxy.part();
+        this.stopAutoplay();
+        this.goban.destroy();
+        this.emit("destroy");
+        this.removeAllListeners();
+    }
+
+    /* This is the code that draws the count down number on the "hover
+     * stone" for the current player if they are running low on time */
+    private setupCountdownCounter() {
+        this.goban.on("clock", (clock: JGOFClock | null) => {
+            const user = data.get("user");
+
+            if (!clock) {
+                return;
+            }
+
+            if (user.anonymous) {
+                return;
+            }
+
+            const goban = this.goban;
+
+            if (user.id.toString() !== clock.current_player_id) {
+                goban.setByoYomiLabel("");
+                return;
+            }
+
+            let ms_left = 0;
+            const player_clock =
+                clock.current_player === "black" ? clock.black_clock : clock.white_clock;
+            if (player_clock.main_time > 0) {
+                ms_left = player_clock.main_time;
+                if (
+                    goban.engine.time_control.system === "byoyomi" ||
+                    goban.engine.time_control.system === "canadian"
+                ) {
+                    ms_left = 0;
+                }
+            } else {
+                ms_left = player_clock.period_time_left || player_clock.block_time_left || 0;
+            }
+
+            const seconds = Math.ceil((ms_left - 1) / 1000);
+
+            const every_second_start = preferences.get(
+                "sound.countdown.every-second.start",
+            ) as number;
+
+            if (seconds > 0 && seconds < Math.max(10, every_second_start)) {
+                const count_direction = preferences.get(
+                    "sound.countdown.byoyomi-direction",
+                ) as string;
+                let count_direction_auto = "down";
+                if (count_direction === "auto") {
+                    count_direction_auto =
+                        current_language === "ja" || current_language === "ko" ? "up" : "down";
+                }
+
+                const count_direction_computed =
+                    count_direction !== "auto" ? count_direction : count_direction_auto;
+
+                if (count_direction_computed === "up") {
+                    if (seconds < every_second_start) {
+                        goban.setByoYomiLabel((every_second_start - seconds).toString());
+                    }
+                } else {
+                    goban.setByoYomiLabel(seconds.toString());
+                }
+            } else {
+                goban.setByoYomiLabel("");
+            }
+        });
     }
 
     public get in_pushed_analysis(): boolean {
@@ -301,6 +430,12 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         this.emit("set_variation_name", variation_name);
     };
 
+    public setMoveTreeContainer = (resizable: Resizable) => {
+        if (this.goban && resizable?.div) {
+            this.goban.setMoveTreeContainer(resizable.div);
+        }
+    };
+
     public stopAutoplay() {
         if (this.autoplay_timer) {
             clearTimeout(this.autoplay_timer);
@@ -385,6 +520,44 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         this.goban.clearAnalysisDrawing();
         return true;
     };
+
+    /* It's not clear to me if we need this anymore - anoek 2025-07-08 */
+    private sync_stone_removal = () => {
+        const goban = this.goban;
+        const engine = goban.engine;
+
+        if (
+            (engine.phase === "stone removal" || engine.phase === "finished") &&
+            engine.outcome !== "Timeout" &&
+            engine.outcome !== "Disconnection" &&
+            engine.outcome !== "Resignation" &&
+            engine.outcome !== "Abandonment" &&
+            engine.outcome !== "Cancellation" &&
+            goban.mode === "play"
+        ) {
+            if (engine.phase === "finished" && engine.outcome.indexOf("Server Decision") === 0) {
+                if (engine.stalling_score_estimate) {
+                    goban.showStallingScoreEstimate(engine.stalling_score_estimate);
+                }
+            } else {
+                const s = engine.computeScore(false);
+                goban.showScores(s);
+            }
+        }
+    };
+    private sync_needs_sealing = (positions: undefined | JGOFSealingIntersection[]) => {
+        console.log("sync_needs_sealing", positions);
+        const engine = this.goban.engine;
+
+        const cur_move = engine.cur_move;
+        for (const pos of positions || []) {
+            const { x, y } = pos;
+            const marks = cur_move.getMarks(x, y);
+            marks.needs_sealing = true;
+            this.goban.drawSquare(x, y);
+        }
+    };
+
     setLabelHandler = (event: KeyboardEvent) => {
         try {
             if (
@@ -584,6 +757,15 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
             this.goban.showMessage("error", {
                 error: { message: "Can't send to the " + this.selected_chat_log + " chat_log" },
             });
+        }
+    };
+
+    addReview = (review: ReviewListEntry) => {
+        console.log("Review added: " + JSON.stringify(review));
+        this.review_list.push(review);
+        this.review_list.sort(rankingThenUsername);
+        if (this.goban.engine.phase === "finished") {
+            sfx.play("review_started");
         }
     };
 
@@ -1204,4 +1386,11 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
             }
         });
     }
+}
+
+function rankingThenUsername(a: ReviewListEntry, b: ReviewListEntry): number {
+    if (a.owner.ranking === b.owner.ranking) {
+        return a.owner.username! < b.owner.username! ? -1 : 1;
+    }
+    return (a.owner.ranking ?? 0) - (b.owner.ranking ?? 0);
 }

@@ -21,7 +21,7 @@ import { socket } from "@/lib/sockets";
 interface UIPushProperties {
     event: string;
     channel?: string;
-    action: (data: any) => any;
+    action?: (data: any) => any;
 }
 
 interface Handler {

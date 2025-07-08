@@ -38,7 +38,6 @@ import { alert } from "@/lib/swal_config";
 import { challengeRematch } from "@/components/ChallengeModal";
 import { Clock } from "@/components/Clock";
 import { getOutcomeTranslation } from "@/lib/misc";
-import { PlayerCacheEntry } from "@/lib/player_cache";
 import { Link } from "react-router-dom";
 import { Resizable } from "@/components/Resizable";
 import { ChatMode } from "./GameChat";
@@ -71,8 +70,6 @@ interface PlayControlsProps {
     // chat on mobile.
     show_cancel: boolean;
 
-    readonly review_list: Array<{ owner: PlayerCacheEntry; id: number }>;
-
     stashed_conditional_moves?: ConditionalMoveTree;
 
     mode: GobanModes;
@@ -81,18 +78,12 @@ interface PlayControlsProps {
     title: string;
     show_title: boolean;
 
-    setMoveTreeContainer: (r: Resizable) => void;
-
-    onShareAnalysis: () => void;
     variation_name: string;
     updateVariationName: React.ChangeEventHandler<HTMLInputElement>;
-    variationKeyPress: React.KeyboardEventHandler<HTMLInputElement>;
 
     annulment_reason: null | rest_api.AnnulmentReason;
 
     zen_mode: boolean;
-
-    stopEstimatingScore: () => void;
 }
 
 const useConditionalMoveTree = generateGobanHook(
@@ -102,20 +93,15 @@ const useConditionalMoveTree = generateGobanHook(
 
 export function PlayControls({
     show_cancel,
-    review_list,
     stashed_conditional_moves,
     mode,
     phase,
     title,
     show_title,
     annulment_reason,
-    setMoveTreeContainer,
     zen_mode,
-    onShareAnalysis,
     variation_name,
     updateVariationName,
-    variationKeyPress,
-    stopEstimatingScore,
 }: PlayControlsProps): React.ReactElement {
     const user = useUser();
     const game_controller = useGameController();
@@ -138,6 +124,7 @@ export function PlayControls({
     const [selected_chat_log, set_selected_chat_log] = React.useState<ChatMode>(
         game_controller.selected_chat_log,
     );
+    const onVariationKeyPress = useOnVariationKeyPress();
 
     const user_is_active_player = [engine.players.black.id, engine.players.white.id].includes(
         user.id,
@@ -477,10 +464,10 @@ export function PlayControls({
                             {_("Rematch")}
                         </button>
                     )}
-                    {(review_list.length > 0 || null) && (
+                    {(game_controller.review_list.length > 0 || null) && (
                         <div className="review-list">
                             <h3>{_("Reviews")}</h3>
-                            {review_list.map((review, idx) => (
+                            {game_controller.review_list.map((review, idx) => (
                                 <div key={idx}>
                                     <Player user={review.owner} icon></Player> -{" "}
                                     <Link to={`/review/${review.id}`}>{_("view")}</Link>
@@ -663,7 +650,7 @@ export function PlayControls({
                     <Resizable
                         id="move-tree-container"
                         className="vertically-resizable"
-                        ref={setMoveTreeContainer}
+                        ref={game_controller.setMoveTreeContainer}
                     />
 
                     {(!zen_mode || null) && (
@@ -675,13 +662,13 @@ export function PlayControls({
                                     placeholder={_("Variation name...")}
                                     value={variation_name}
                                     onChange={updateVariationName}
-                                    onKeyDown={variationKeyPress}
+                                    onKeyDown={onVariationKeyPress}
                                     disabled={user.anonymous}
                                 />
                                 <ShareAnalysisButton
                                     selected_chat_log={selected_chat_log}
                                     isUserAnonymous={user.anonymous}
-                                    shareAnalysis={onShareAnalysis}
+                                    shareAnalysis={game_controller.shareAnalysis}
                                 />
                             </div>
                         </div>
@@ -710,7 +697,10 @@ export function PlayControls({
             {(mode === "score estimation" || null) && (
                 <div className="analyze-mode-buttons">
                     <span>
-                        <button className="sm primary bold" onClick={stopEstimatingScore}>
+                        <button
+                            className="sm primary bold"
+                            onClick={game_controller.stopEstimatingScore}
+                        >
                             {_("Back to Board")}
                         </button>
                     </span>
@@ -1061,16 +1051,11 @@ export function AnalyzeButtonBar(): React.ReactElement {
 interface ReviewControlsProps {
     mode: GobanModes;
     review_id: number;
-    setMoveTreeContainer: (r: Resizable) => void;
 
     // TODO: turn this into one render prop so that we don't have to pass these
     // props to both PlayControls and ReviewControls
-    onShareAnalysis: () => void;
     variation_name: string;
     updateVariationName: React.ChangeEventHandler<HTMLInputElement>;
-    variationKeyPress: React.KeyboardEventHandler<HTMLInputElement>;
-
-    stopEstimatingScore: () => void;
 }
 
 const useReviewOwnerId = generateGobanHook(
@@ -1085,12 +1070,8 @@ const useReviewControllerId = generateGobanHook(
 export function ReviewControls({
     mode,
     review_id,
-    setMoveTreeContainer,
-    onShareAnalysis,
     variation_name,
     updateVariationName,
-    variationKeyPress,
-    stopEstimatingScore,
 }: ReviewControlsProps) {
     const user = data.get("user");
     const game_controller = useGameController();
@@ -1102,6 +1083,8 @@ export function ReviewControls({
     const [selected_chat_log, set_selected_chat_log] = React.useState<ChatMode>(
         game_controller.selected_chat_log,
     );
+    const onVariationKeyPress = useOnVariationKeyPress();
+
     React.useEffect(() => {
         if (game_controller) {
             game_controller.on("selected_chat_log", set_selected_chat_log);
@@ -1284,7 +1267,7 @@ export function ReviewControls({
                     <Resizable
                         id="move-tree-container"
                         className="vertically-resizable"
-                        ref={setMoveTreeContainer}
+                        ref={game_controller.setMoveTreeContainer}
                     />
 
                     <div style={{ paddingLeft: "0.5em", paddingRight: "0.5em" }}>
@@ -1307,14 +1290,14 @@ export function ReviewControls({
                                 placeholder={_("Variation name...")}
                                 value={variation_name}
                                 onChange={updateVariationName}
-                                onKeyDown={variationKeyPress}
+                                onKeyDown={onVariationKeyPress}
                                 disabled={user.anonymous}
                             />
                             <button
                                 className="sm"
                                 type="button"
                                 disabled={user.anonymous}
-                                onClick={onShareAnalysis}
+                                onClick={game_controller.shareAnalysis}
                             >
                                 {_("Share")}
                             </button>
@@ -1325,7 +1308,10 @@ export function ReviewControls({
             {(mode === "score estimation" || null) && (
                 <div className="analyze-mode-buttons">
                     <span>
-                        <button className="sm primary bold" onClick={stopEstimatingScore}>
+                        <button
+                            className="sm primary bold"
+                            onClick={game_controller.stopEstimatingScore}
+                        >
                             {_("Back to Review")}
                         </button>
                     </span>
@@ -1553,4 +1539,20 @@ function AnnulmentReason({
     }
 
     return <div className="annulment-reason">{arr}</div>;
+}
+
+function useOnVariationKeyPress() {
+    const game_controller = useGameController();
+    const handler = React.useCallback(
+        (ev: React.KeyboardEvent) => {
+            if (ev.key === "Enter") {
+                game_controller.shareAnalysis();
+                return false;
+            }
+            return undefined;
+        },
+        [game_controller],
+    );
+
+    return handler;
 }
