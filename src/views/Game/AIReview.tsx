@@ -1337,7 +1337,9 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                                                     this.state.includeNegativeScoreLoss,
                                                 )}
                                                 reviewType={
-                                                    this.ai_review.type === "fast" ? "fast" : "full"
+                                                    // Treat all as full now: we're including all data in fast reviews
+                                                    "full"
+                                                    //this.ai_review.type === "fast" ? "fast" : "full"
                                                 }
                                                 table_hidden={this.state.table_hidden}
                                                 scoreDiffThresholds={this.state.scoreDiffThresholds}

@@ -125,6 +125,7 @@ function getPlayerColorsMoveList(goban: GobanRenderer) {
     return move_list;
 }
 
+/*
 function categorizeFastReview(
     ai_review: JGOFAIReview,
     goban: GobanRenderer,
@@ -196,6 +197,7 @@ function categorizeFastReview(
         moves_missing: 0,
     };
 }
+*/
 
 function categorizeFullReviewNew(
     ai_review: JGOFAIReview,
@@ -432,6 +434,7 @@ function validateReviewData(
         return { isValid: false, shouldShowTable: true };
     }
 
+    /*
     // Fast review specific validation
     if (ai_review.type === "fast") {
         const check3 =
@@ -442,13 +445,9 @@ function validateReviewData(
         }
         return { isValid: true, shouldShowTable: false };
     }
+*/
 
-    // Full review specific validation
-    if (ai_review.type === "full") {
-        return { isValid: true, shouldShowTable: false };
-    }
-
-    return { isValid: false, shouldShowTable: true };
+    return { isValid: true, shouldShowTable: false };
 }
 
 export interface AiReviewCategorization {
@@ -493,6 +492,7 @@ export function categorizeAiReview(
 
     // OK, we can do the actual categorization now
     const result =
+        /*
         ai_review.type === "fast"
             ? categorizeFastReview(
                   ai_review,
@@ -501,20 +501,21 @@ export function categorizeAiReview(
                   move_player_list,
                   scoreDiffThresholds,
               )
-            : categorization_method === "new"
-              ? categorizeFullReviewNew(
-                    ai_review,
-                    handicap_offset,
-                    move_player_list,
-                    scoreDiffThresholds,
-                    includeNegativeScoreLoss,
-                )
-              : categorizeFullReviewOld(
-                    ai_review,
-                    handicap_offset,
-                    move_player_list,
-                    scoreDiffThresholds,
-                );
+            : */
+        categorization_method === "new"
+            ? categorizeFullReviewNew(
+                  ai_review,
+                  handicap_offset,
+                  move_player_list,
+                  scoreDiffThresholds,
+                  includeNegativeScoreLoss,
+              )
+            : categorizeFullReviewOld(
+                  ai_review,
+                  handicap_offset,
+                  move_player_list,
+                  scoreDiffThresholds,
+              );
 
     const { move_counters, score_loss_list, total_score_loss, categorized_moves, moves_missing } =
         result;
