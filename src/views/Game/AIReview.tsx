@@ -56,6 +56,8 @@ import { sameIntersection } from "@/lib/misc";
 import type { ScoreDiffThresholds } from "@/lib/ai_review_move_categories";
 import { AiSummaryTable } from "@/components/AIReview/AiSummaryTable";
 
+const LOW_QUALITY_VISITS = 10; // don't mark the board for low quality branches
+
 export interface AIReviewEntry {
     move_number: number;
     win_rate: number;
@@ -603,6 +605,11 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
 
                 /* Generate the heatmap, blue move, and triangle move */
                 const strength = this.ai_review.strength;
+
+                //console.log("strength", strength, LOW_QUALITY_VISITS);
+
+                const visits_threshold = Math.max(LOW_QUALITY_VISITS, Math.min(50, 0.1 * strength));
+
                 heatmap = [];
                 for (let y = 0; y < goban.engine.height; y++) {
                     const r: number[] = [];
@@ -616,9 +623,13 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                     const branch = branches[i];
                     const mv = branch.moves[0];
 
+                    const branch_is_players_move = next_move && sameIntersection(mv, next_move);
+
                     if (mv === undefined || mv.x === -1) {
                         continue;
                     }
+
+                    //console.log("branch.visits", branch.visits, branch_is_players_move, mv.y, mv.x);
 
                     if (goban.engine.board[mv.y][mv.x]) {
                         console.error(
@@ -627,7 +638,10 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                         console.info("AIReview: ", this.ai_review);
                     }
 
-                    heatmap[mv.y][mv.x] = branch.visits / strength;
+                    if (branch.visits > visits_threshold) {
+                        //console.log("show heatmap", mv.y, mv.x, branch.visits, strength);
+                        heatmap[mv.y][mv.x] = branch.visits / strength;
+                    }
 
                     let next_player: JGOFNumericPlayerColor;
 
@@ -661,8 +675,8 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                         mv &&
                         (i === 0 ||
                             //true || // debugging
-                            (next_move && sameIntersection(branch.moves[0], next_move)) ||
-                            branch.visits >= Math.min(50, 0.1 * strength))
+                            branch_is_players_move ||
+                            branch.visits > visits_threshold)
                     ) {
                         if (parseFloat(key).toPrecision(2).length < key.length) {
                             key = parseFloat(key).toPrecision(2);
@@ -675,7 +689,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                         color: "rgba(0,0,0,0)",
                     };
 
-                    if (next_move && sameIntersection(branch.moves[0], next_move)) {
+                    if (branch_is_players_move) {
                         goban.setMark(mv.x, mv.y, "sub_triangle", true);
                         goban.setMark(mv.x, mv.y, "blue_move", true);
 
@@ -687,7 +701,11 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                             circle.color = "rgba(255, 255, 255, 0.3)";
                         }
                         colored_circles.push(circle);
-                    } else if (i === 0) {
+                    } else if (
+                        i === 0 &&
+                        // note: always show blue move unless it's really bad, hence not using visits_threshold
+                        branch.visits >= LOW_QUALITY_VISITS
+                    ) {
                         // blue move, not what player made
                         goban.setMark(mv.x, mv.y, "blue_move", true);
                         circle.border_width = 0.2;

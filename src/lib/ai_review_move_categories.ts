@@ -17,6 +17,9 @@
 
 import { JGOFAIReview, JGOFNumericPlayerColor, GobanRenderer } from "goban";
 import { sameIntersection } from "@/lib/misc";
+import Debug from "@/lib/debug";
+
+const debug = new Debug("ai_review");
 
 export const DEFAULT_SCORE_DIFF_THRESHOLDS: ScoreDiffThresholds = {
     Excellent: 0.2,
@@ -223,7 +226,7 @@ function categorizeFullReviewNew(
         white: { Excellent: [], Great: [], Good: [], Inaccuracy: [], Mistake: [], Blunder: [] },
     };
 
-    console.log("full review new categorisation... handicap_offset", handicap_offset);
+    debug.log("full review new categorisation... handicap_offset", handicap_offset);
     let moves_missing = 0;
     for (
         let move_index = handicap_offset;
@@ -253,24 +256,24 @@ function categorizeFullReviewNew(
 
         const score_loss = is_b_player ? effective_score_loss : -1 * effective_score_loss;
 
-        console.log("------Player", player, "to play at move index", move_index, " ------");
-        console.log(
+        debug.log("------Player", player, "to play at move index", move_index, " ------");
+        debug.log(
             `(1) score after last move -> \nai_review.moves[${move_index}].score: `,
             score_after_last_move.toFixed(3),
         );
-        console.log(
+        debug.log(
             ` (2) score after blue move would be played -> \nai_review.moves[${move_index}].branches[0].score: `,
             predicted_score_after_blue_move.toFixed(3),
         );
-        console.log(
+        debug.log(
             `- blue scoreloss for move ${move_index + 1} ->\n (1) - (2): `,
             blue_scoreloss.toFixed(3),
         );
-        console.log(
+        debug.log(
             `(3) score_after_players_move ->\n ai_review.moves[${move_index + 1}].score: `,
             score_after_players_move.toFixed(3),
         );
-        console.log(" => effective player score loss ->\n (1) - (3) - (2):", score_loss.toFixed(3));
+        debug.log(" => effective player score loss ->\n (1) - (3) - (2):", score_loss.toFixed(3));
 
         if (includeNegativeScoreLoss || score_loss >= 0) {
             total_score_loss[player] += score_loss;
@@ -520,7 +523,7 @@ export function categorizeAiReview(
     const { move_counters, score_loss_list, total_score_loss, categorized_moves, moves_missing } =
         result;
 
-    console.log("score loss by move:", score_loss_list);
+    debug.log("score loss by move:", score_loss_list);
 
     // Calculate average score loss
     const avg_score_loss = {

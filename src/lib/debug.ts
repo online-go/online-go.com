@@ -21,6 +21,7 @@ const debug = {
     data: false,
     player_cache: false,
     sockets: false,
+    ai_review: false,
 };
 
 // Create an instance of the Debug class to allow a module to debug itself.
