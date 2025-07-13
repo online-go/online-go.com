@@ -29,7 +29,7 @@ import { Player } from "@/components/Player";
 import { lookup, fetch } from "@/lib/player_cache";
 import { _, interpolate, ngettext } from "@/lib/translate";
 import * as data from "@/lib/data";
-import { generateGobanHook, usePlayerToMove } from "./GameHooks";
+import { generateGobanHook, usePlayerToMove, useZenMode } from "./GameHooks";
 import { get_network_latency, get_clock_drift } from "@/lib/sockets";
 import { useGameController } from "./goban_context";
 import { usePreference } from "@/lib/preferences";
@@ -44,7 +44,6 @@ interface PlayerCardsProps {
     historical_black: PlayerType | null;
     historical_white: PlayerType | null;
     estimating_score: boolean;
-    zen_mode: boolean;
     black_flags: null | rest_api.GamePlayerFlags;
     white_flags: null | rest_api.GamePlayerFlags;
     black_ai_suspected: boolean;
@@ -55,7 +54,6 @@ export function PlayerCards({
     historical_black,
     historical_white,
     estimating_score,
-    zen_mode,
     black_flags,
     white_flags,
     black_ai_suspected,
@@ -66,6 +64,7 @@ export function PlayerCards({
 
     const orig_marks = React.useRef<string | null>(null);
     const showing_scores = React.useRef<boolean>(false);
+    const zen_mode = useZenMode(game_controller);
 
     const [show_score_breakdown, set_show_score_breakdown] = React.useState(false);
 

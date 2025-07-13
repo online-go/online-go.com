@@ -26,7 +26,6 @@ import {
     Goban,
     ConditionalMoveTree,
     GobanModes,
-    GobanEnginePhase,
     AnalysisTool,
     PlayerColor,
     JGOFSealingIntersection,
@@ -52,6 +51,16 @@ import {
     useShowUndoRequested,
     useUserIsParticipant,
     usePlayerToMove,
+    useShowTitle,
+    useViewMode,
+    useVariationName,
+    useSelectedChatLog,
+    useAnnulled,
+    useMode,
+    usePhase,
+    useTitle,
+    useZenMode,
+    useStashedConditionalMoves,
 } from "./GameHooks";
 import { useGameController } from "./goban_context";
 import { is_valid_url } from "@/lib/url_validation";
@@ -66,24 +75,7 @@ import { EstimateScore } from "./fragments";
 const MAX_SEALING_LOCATIONS_TO_LIST = 5;
 
 interface PlayControlsProps {
-    // Cancel buttons are in props because the Cancel Button is placed below
-    // chat on mobile.
-    show_cancel: boolean;
-
-    stashed_conditional_moves?: ConditionalMoveTree;
-
-    mode: GobanModes;
-    phase: GobanEnginePhase;
-
-    title: string;
-    show_title: boolean;
-
-    variation_name: string;
-    updateVariationName: React.ChangeEventHandler<HTMLInputElement>;
-
     annulment_reason: null | rest_api.AnnulmentReason;
-
-    zen_mode: boolean;
 }
 
 const useConditionalMoveTree = generateGobanHook(
@@ -91,18 +83,7 @@ const useConditionalMoveTree = generateGobanHook(
     ["mode", "conditional-moves.updated"],
 );
 
-export function PlayControls({
-    show_cancel,
-    stashed_conditional_moves,
-    mode,
-    phase,
-    title,
-    show_title,
-    annulment_reason,
-    zen_mode,
-    variation_name,
-    updateVariationName,
-}: PlayControlsProps): React.ReactElement {
+export function PlayControls({ annulment_reason }: PlayControlsProps): React.ReactElement {
     const user = useUser();
     const game_controller = useGameController();
     const goban = game_controller.goban;
@@ -120,11 +101,17 @@ export function PlayControls({
     const need_to_seal = needs_sealing && needs_sealing.length > 0;
     const [autoscoring_in_progress, setAutoScoringInProgress] = React.useState(false);
     const [autoscoring_taking_too_long, setAutoscoringTakingTooLong] = React.useState(false);
-    const [annulled, set_annulled] = React.useState(game_controller.annulled);
-    const [selected_chat_log, set_selected_chat_log] = React.useState<ChatMode>(
-        game_controller.selected_chat_log,
-    );
+    const annulled = useAnnulled(game_controller);
     const onVariationKeyPress = useOnVariationKeyPress();
+    const show_title = useShowTitle(goban);
+    const view_mode = useViewMode(game_controller);
+    const zen_mode = useZenMode(game_controller);
+    const show_cancel = view_mode !== "portrait" && !zen_mode;
+    const variation_name = useVariationName(game_controller);
+    const selected_chat_log = useSelectedChatLog(game_controller);
+    const phase = usePhase(goban);
+    const title = useTitle(goban);
+    const stashed_conditional_moves = useStashedConditionalMoves(game_controller);
 
     const user_is_active_player = [engine.players.black.id, engine.players.white.id].includes(
         user.id,
@@ -154,15 +141,6 @@ export function PlayControls({
             syncStoneRemovalAcceptance,
         );
     }, [goban]);
-
-    React.useEffect(() => {
-        game_controller.on("annulled", set_annulled);
-        game_controller.on("selected_chat_log", set_selected_chat_log);
-        return () => {
-            game_controller.off("annulled", set_annulled);
-            game_controller.off("selected_chat_log", set_selected_chat_log);
-        };
-    }, [game_controller]);
 
     React.useEffect(() => {
         const syncNeedsSealing = (locs?: JGOFSealingIntersection[]) => {
@@ -238,6 +216,7 @@ export function PlayControls({
     const user_is_player = useUserIsParticipant(goban);
     const cur_move_number = useCurrentMoveNumber(goban);
     const this_users_turn = usePlayerToMove(goban) === user.id;
+    const mode = useMode(goban);
 
     React.useEffect(() => {
         if (show_undo_requested && moment(user.registration_date).isBefore(moment("2023-06-14"))) {
@@ -260,7 +239,7 @@ export function PlayControls({
         goban.setMode("play");
         if (stashed_conditional_moves) {
             goban.setConditionalTree(stashed_conditional_moves);
-            stashed_conditional_moves = undefined;
+            game_controller.setStashedConditionalMoves(null);
         }
     };
     const goban_resumeGame = () => {
@@ -270,7 +249,7 @@ export function PlayControls({
         goban.jumpToLastOfficialMove();
     };
     const acceptConditionalMoves = () => {
-        stashed_conditional_moves = undefined;
+        game_controller.setStashedConditionalMoves(null);
         goban.saveConditionalMoves();
         goban.setMode("play");
     };
@@ -661,7 +640,7 @@ export function PlayControls({
                                     className={`form-control ${selected_chat_log}`}
                                     placeholder={_("Variation name...")}
                                     value={variation_name}
-                                    onChange={updateVariationName}
+                                    onChange={game_controller.updateVariationName}
                                     onKeyDown={onVariationKeyPress}
                                     disabled={user.anonymous}
                                 />
@@ -1049,13 +1028,7 @@ export function AnalyzeButtonBar(): React.ReactElement {
 }
 
 interface ReviewControlsProps {
-    mode: GobanModes;
     review_id: number;
-
-    // TODO: turn this into one render prop so that we don't have to pass these
-    // props to both PlayControls and ReviewControls
-    variation_name: string;
-    updateVariationName: React.ChangeEventHandler<HTMLInputElement>;
 }
 
 const useReviewOwnerId = generateGobanHook(
@@ -1067,12 +1040,7 @@ const useReviewControllerId = generateGobanHook(
     ["review_controller_id"],
 );
 
-export function ReviewControls({
-    mode,
-    review_id,
-    variation_name,
-    updateVariationName,
-}: ReviewControlsProps) {
+export function ReviewControls({ review_id }: ReviewControlsProps) {
     const user = data.get("user");
     const game_controller = useGameController();
 
@@ -1080,20 +1048,10 @@ export function ReviewControls({
     const [in_pushed_analysis, set_in_pushed_analysis] = React.useState(
         game_controller.in_pushed_analysis,
     );
-    const [selected_chat_log, set_selected_chat_log] = React.useState<ChatMode>(
-        game_controller.selected_chat_log,
-    );
     const onVariationKeyPress = useOnVariationKeyPress();
-
-    React.useEffect(() => {
-        if (game_controller) {
-            game_controller.on("selected_chat_log", set_selected_chat_log);
-            return () => {
-                game_controller.off("selected_chat_log", set_selected_chat_log);
-            };
-        }
-        return;
-    }, [game_controller]);
+    const variation_name = useVariationName(game_controller);
+    const selected_chat_log = useSelectedChatLog(game_controller);
+    const mode = useMode(goban);
 
     const [review_out_of_sync, set_review_out_of_sync] = React.useState(false);
     React.useEffect(() => {
@@ -1289,7 +1247,7 @@ export function ReviewControls({
                                 className={`form-control ${selected_chat_log}`}
                                 placeholder={_("Variation name...")}
                                 value={variation_name}
-                                onChange={updateVariationName}
+                                onChange={game_controller.updateVariationName}
                                 onKeyDown={onVariationKeyPress}
                                 disabled={user.anonymous}
                             />
