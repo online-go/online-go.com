@@ -24,19 +24,19 @@ import { _, interpolate } from "@/lib/translate";
 import { popover } from "@/lib/popover";
 import { get, abort_requests_in_flight } from "@/lib/requests";
 import { UIPush } from "@/components/UIPush";
-import { GobanRendererConfig, GobanEnginePhase, GobanModes, JGOFNumericPlayerColor } from "goban";
+import { GobanRendererConfig, JGOFNumericPlayerColor } from "goban";
 import { isLiveGame } from "@/components/TimeControl";
 import { setExtraActionCallback, PlayerDetails } from "@/components/Player";
 import * as player_cache from "@/lib/player_cache";
 import { notification_manager } from "@/components/Notifications";
 import { GameChat } from "./GameChat";
-import { goban_view_mode, goban_view_squashed, ViewMode } from "./util";
+import { goban_view_mode, goban_view_squashed } from "./util";
 import { PlayerCards } from "./PlayerCards";
 import { PlayControls, ReviewControls } from "./PlayControls";
 import { CancelButton } from "./PlayButtons";
 import { GameDock } from "./GameDock";
 import { alert } from "@/lib/swal_config";
-import { useShowTitle, useTitle, useUserIsParticipant } from "./GameHooks";
+import { useMode, usePhase, useUserIsParticipant, useViewMode, useZenMode } from "./GameHooks";
 import { GobanContainer } from "@/components/GobanContainer";
 import { GameControllerContext } from "./goban_context";
 import { is_valid_url } from "@/lib/url_validation";
@@ -84,13 +84,10 @@ export function Game(): React.ReactElement | null {
     let goban = game_controller.current?.goban ?? null;
 
     /* State */
-    const [view_mode, set_view_mode] = React.useState<ViewMode>(goban_view_mode());
     const [squashed, set_squashed] = React.useState<boolean>(goban_view_squashed());
     const [estimating_score, _set_estimating_score] = React.useState<boolean>(false);
     const estimating_score_ref = React.useRef(estimating_score);
     const user_is_player = useUserIsParticipant(goban);
-    const [zen_mode, set_zen_mode] = React.useState(preferences.get("start-in-zen-mode"));
-    const [variation_name, set_variation_name] = React.useState("");
     const [historical_black, set_historical_black] = React.useState<rest_api.games.Player | null>(
         null,
     );
@@ -104,17 +101,15 @@ export function Game(): React.ReactElement | null {
     const [scroll_to_navigate, _setScrollToNavigate] = React.useState(
         preferences.get("scroll-to-navigate"),
     );
-    const [phase, set_phase] = React.useState<GobanEnginePhase>();
+    const phase = usePhase(goban);
     const [show_game_timing, set_show_game_timing] = React.useState(false);
-
-    const title = useTitle(goban);
     const [tournament, set_tournament] = React.useState<ActiveTournament>();
-
-    const [mode, set_mode] = React.useState<GobanModes>("play");
-    const show_title = useShowTitle(goban);
     const [, set_undo_requested] = React.useState<number | undefined>();
     const [bot_detection_results, set_bot_detection_results] = React.useState<any>(null);
     const [show_bot_detection_results, set_show_bot_detection_results] = React.useState(false);
+    const view_mode = useViewMode(game_controller.current);
+    const mode = useMode(goban);
+    const zen_mode = useZenMode(game_controller.current);
 
     /* Functions */
     const getLocation = (): string => {
@@ -156,13 +151,18 @@ export function Game(): React.ReactElement | null {
     const onResize = React.useCallback(
         (_no_debounce: boolean = false, skip_state_update: boolean = false) => {
             if (!skip_state_update) {
-                if (goban_view_mode() !== view_mode || goban_view_squashed() !== squashed) {
+                if (
+                    goban_view_mode() !== game_controller.current?.view_mode ||
+                    goban_view_squashed() !== squashed
+                ) {
                     set_squashed(goban_view_squashed());
-                    set_view_mode(goban_view_mode());
+                    if (game_controller.current) {
+                        game_controller.current.view_mode = goban_view_mode();
+                    }
                 }
             }
         },
-        [set_squashed, set_view_mode, squashed, view_mode],
+        [set_squashed, squashed, game_controller.current?.view_mode],
     );
 
     React.useEffect(() => {
@@ -171,38 +171,23 @@ export function Game(): React.ReactElement | null {
         }
         const controller = game_controller.current;
 
-        controller.on("set_variation_name", set_variation_name);
         controller.on("set_show_game_timing", set_show_game_timing);
         controller.on("set_show_bot_detection_results", set_show_bot_detection_results);
-        controller.on("zen_mode", set_zen_mode);
-        controller.on("view_mode", set_view_mode);
         controller.on("resize", onResize);
         controller.on("set_estimating_score", set_estimating_score);
 
         return () => {
-            controller.off("set_variation_name", set_variation_name);
             controller.off("set_show_game_timing", set_show_game_timing);
             controller.off("set_show_bot_detection_results", set_show_bot_detection_results);
-            controller.off("zen_mode", set_zen_mode);
-            controller.off("view_mode", set_view_mode);
             controller.off("resize", onResize);
             controller.off("set_estimating_score", set_estimating_score);
         };
-    }, [
-        game_controller.current,
-        set_variation_name,
-        set_show_game_timing,
-        set_show_bot_detection_results,
-        set_zen_mode,
-        set_view_mode,
-        onResize,
-    ]);
+    }, [game_controller.current, set_show_game_timing, set_show_bot_detection_results, onResize]);
 
     const nav_prev = game_controller.current?.nav_prev ?? (() => {});
     const nav_next = game_controller.current?.nav_next ?? (() => {});
     const nav_goto_move = game_controller.current?.nav_goto_move ?? (() => {});
     const setLabelHandler = game_controller.current?.setLabelHandler ?? (() => {});
-    const updateVariationName = game_controller.current?.updateVariationName ?? (() => {});
 
     const onWheel: React.WheelEventHandler<HTMLDivElement> = React.useCallback(
         (event) => {
@@ -338,13 +323,9 @@ export function Game(): React.ReactElement | null {
         /* Ensure our state is kept up to date */
         const onLoad = () => {
             const engine = goban!.engine;
-            set_mode(goban!.mode);
-            set_phase(engine.phase);
             set_undo_requested(engine.undo_requested);
         };
 
-        goban.on("mode", set_mode);
-        goban.on("phase", set_phase);
         goban.on("phase", () => goban!.engine.cur_move.clearMarks());
         goban.on("undo_requested", set_undo_requested);
         goban.on("load", onLoad);
@@ -494,7 +475,7 @@ export function Game(): React.ReactElement | null {
                     );
 
                     if (!live) {
-                        set_zen_mode(false);
+                        game_controller.current?.setZenMode(false);
                     }
 
                     if (ladder_id.current) {
@@ -627,27 +608,9 @@ export function Game(): React.ReactElement | null {
     );
 
     const CONTROLS = review ? (
-        <ReviewControls
-            mode={mode}
-            review_id={review_id}
-            variation_name={variation_name}
-            updateVariationName={updateVariationName}
-        />
+        <ReviewControls review_id={review_id} />
     ) : (
-        <PlayControls
-            show_cancel={view_mode !== "portrait" && !zen_mode}
-            stashed_conditional_moves={
-                game_controller.current?.stashed_conditional_moves ?? undefined
-            }
-            mode={mode}
-            phase={phase as any}
-            title={title as string}
-            show_title={show_title as boolean}
-            variation_name={variation_name}
-            updateVariationName={updateVariationName}
-            annulment_reason={annulment_reason}
-            zen_mode={zen_mode}
-        />
+        <PlayControls annulment_reason={annulment_reason} />
     );
 
     const GAME_DOCK = (
@@ -696,7 +659,6 @@ export function Game(): React.ReactElement | null {
                                     historical_black={historical_black}
                                     historical_white={historical_white}
                                     estimating_score={estimating_score}
-                                    zen_mode={zen_mode}
                                     black_flags={black_flags}
                                     white_flags={white_flags}
                                     black_ai_suspected={bot_detection_results?.ai_suspected.includes(
@@ -740,7 +702,6 @@ export function Game(): React.ReactElement | null {
                                         historical_black={historical_black}
                                         historical_white={historical_white}
                                         estimating_score={estimating_score}
-                                        zen_mode={zen_mode}
                                         black_flags={black_flags}
                                         white_flags={white_flags}
                                         black_ai_suspected={bot_detection_results?.ai_suspected.includes(

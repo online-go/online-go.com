@@ -254,7 +254,7 @@ test("Renders conditional moves", () => {
 
     render(
         <WrapTest controller={controller}>
-            <PlayControls {...PLAY_CONTROLS_DEFAULTS} mode="conditional" />
+            <PlayControls {...PLAY_CONTROLS_DEFAULTS} />
         </WrapTest>,
     );
 

@@ -63,6 +63,7 @@ interface GobanControllerEvents {
     in_pushed_analysis: (in_pushed_analysis: boolean) => void;
     annulled: (annulled: boolean) => void;
     destroy: () => void;
+    stashed_conditional_moves: (stashed_conditional_moves: ConditionalMoveTree | null) => void;
 }
 
 export interface ReviewListEntry {
@@ -82,10 +83,10 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
     public analyze_pencil_color: string = preferences.get("analysis.pencil-color");
     private show_game_timing: boolean = false;
     private show_bot_detection_results: boolean = false;
-    private _zen_mode: boolean = false;
+    private _zen_mode: boolean = preferences.get("start-in-zen-mode");
     private _ai_review_enabled: boolean = preferences.get("ai-review-enabled");
     private autoplay_timer: ReturnType<typeof setTimeout> | null = null;
-    private variation_name: string = "";
+    private _variation_name: string = "";
     private _in_pushed_analysis: boolean = false;
     public onPushAnalysisLeft?: () => void;
     public last_variation_number: number = 0;
@@ -94,7 +95,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
     private game_id?: number;
     private review_id?: number;
     public _selected_chat_log: ChatMode;
-    public stashed_conditional_moves: ConditionalMoveTree | null = null;
+    private _stashed_conditional_moves: ConditionalMoveTree | null = null;
     private _selected_ai_review_uuid: string | null = null;
     private _copied_node?: MoveTree;
     private _view_mode: ViewMode = goban_view_mode();
@@ -233,6 +234,14 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         });
     }
 
+    public get stashed_conditional_moves(): ConditionalMoveTree | null {
+        return this._stashed_conditional_moves;
+    }
+    public setStashedConditionalMoves(stashed_conditional_moves: ConditionalMoveTree | null) {
+        this._stashed_conditional_moves = stashed_conditional_moves;
+        this.emit("stashed_conditional_moves", stashed_conditional_moves);
+    }
+
     public get in_pushed_analysis(): boolean {
         return this._in_pushed_analysis;
     }
@@ -274,7 +283,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
     public get zen_mode(): boolean {
         return this._zen_mode;
     }
-    public set zen_mode(zen_mode: boolean) {
+    public setZenMode(zen_mode: boolean) {
         this._zen_mode = zen_mode;
         this.emit("zen_mode", zen_mode);
     }
@@ -426,9 +435,13 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
     };
 
     public setVariationName = (variation_name: string) => {
-        this.variation_name = variation_name;
+        this._variation_name = variation_name;
         this.emit("set_variation_name", variation_name);
     };
+
+    public get variation_name(): string {
+        return this._variation_name;
+    }
 
     public setMoveTreeContainer = (resizable: Resizable) => {
         if (this.goban && resizable?.div) {
@@ -797,7 +810,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         if (this.goban.isAnalysisDisabled()) {
             //alert.fire(_("Conditional moves have been disabled for this game."));
         } else {
-            this.stashed_conditional_moves = this.goban.conditional_tree.duplicate();
+            this.setStashedConditionalMoves(this.goban.conditional_tree.duplicate());
             this.goban.setMode("conditional");
         }
     };
