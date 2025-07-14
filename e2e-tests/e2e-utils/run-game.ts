@@ -38,7 +38,7 @@ export const runGame = async ({ browser }: { browser: Browser }) => {
     const acceptorUsername = newTestUsername("e2eUtilsRGAc"); // cspell:disable-line
     const { userPage: acceptorPage } = await prepareNewUser(browser, acceptorUsername, "test");
 
-    const boardSize = "19x19"; // needed in two places
+    const boardSize = "9x9"; // needed in two places
 
     // Challenger challenges the acceptor
     await createDirectChallenge(challengerPage, acceptorUsername, {
@@ -71,6 +71,40 @@ export const runGame = async ({ browser }: { browser: Browser }) => {
 
     //const moves = ["A19", "T19", "A1", "T1", "D16", "Q16", "K10", "Q4", "D4", "Q10", "D10", "K19"];
 
+    // Troublesome blue move rendering 9x9
+    const moves = [
+        "G7",
+        "H4",
+        "E7",
+        "B4",
+        "C4",
+        "C7",
+        "G4",
+        "D5",
+        "H6",
+        "E9",
+        "G9",
+        "G5",
+        "B8",
+        "E1",
+        "E3",
+        "F2",
+        "E2",
+        "G1",
+        "C2",
+        "J2",
+        "F6",
+        "J7",
+        "A5",
+        "H9",
+        "C6",
+        "D9",
+        "A7",
+        "J8",
+        "E8",
+        "E5",
+    ];
+    /* Random 9x9 game
     const moves = [
         "D9",
         "Q16",
@@ -155,6 +189,7 @@ export const runGame = async ({ browser }: { browser: Browser }) => {
         "R3",
         "P17",
     ];
+    */
     await playMoves(challengerPage, acceptorPage, moves, boardSize);
 
     // Note: this assumes that it's now black to play.

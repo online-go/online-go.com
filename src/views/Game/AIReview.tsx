@@ -56,7 +56,7 @@ import { sameIntersection } from "@/lib/misc";
 import type { ScoreDiffThresholds } from "@/lib/ai_review_move_categories";
 import { AiSummaryTable } from "@/components/AIReview/AiSummaryTable";
 
-const LOW_QUALITY_VISITS = 10; // don't mark the board for low quality branches
+export const LOW_QUALITY_VISITS = 10; // don't mark the board for low quality branches
 
 export interface AIReviewEntry {
     move_number: number;
@@ -707,6 +707,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                         branch.visits >= LOW_QUALITY_VISITS
                     ) {
                         // blue move, not what player made
+
                         goban.setMark(mv.x, mv.y, "blue_move", true);
                         circle.border_width = 0.2;
                         circle.border_color = "rgb(0, 130, 255)";
@@ -1044,6 +1045,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
         let white_moves = 0;
 
         let worst_move_list = getWorstMoves(goban.engine.move_tree, this.ai_review, 100);
+
         worst_move_list = worst_move_list.filter(
             (move) =>
                 (move.player === 1 && black_moves++ < 3) ||

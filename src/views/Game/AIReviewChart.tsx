@@ -20,7 +20,7 @@ import * as React from "react";
 import * as JSNoise from "js-noise";
 import * as data from "@/lib/data";
 import { OgsResizeDetector } from "@/components/OgsResizeDetector";
-import { AIReviewEntry } from "./AIReview";
+import { LOW_QUALITY_VISITS, AIReviewEntry } from "./AIReview";
 import { PersistentElement } from "@/components/PersistentElement";
 import { deepCompare } from "@/lib/misc";
 import { JGOFAIReview } from "goban";
@@ -404,26 +404,23 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
             ?.datum(variation_entries)
             .attr("d", this.win_rate_line as any);
 
-        const show_all = Object.keys(this.props.ai_review.moves).length <= 3;
         const circle_coords = entries.filter((x) => {
             if (this.props.ai_review.moves[x.move_number]) {
-                // This was a fast review, so mark only the 3 key moves provided
-                // by the backend
-                if (show_all) {
-                    return true;
+                // When highlighted moves are passed in because the client knows which ones they want,
+                // we just need to weed out low quality moves from fast reviews: those only send
+                // good data for the (3) moves they want to highlight.
+                // TBD why is this in here?  Should be a client thing, not a chart thing.
+                if (this.props.highlighted_moves?.includes(x.move_number)) {
+                    return (
+                        this.props.ai_review.moves[x.move_number].branches[0].visits >
+                        LOW_QUALITY_VISITS
+                    );
                 }
-
                 // The review is in progress, so mark discontinuities
                 if (
                     !this.props.ai_review.moves[x.move_number + 1] &&
                     x.move_number !== (this.props.ai_review.win_rates as number[]).length - 1
                 ) {
-                    return true;
-                }
-
-                // Highlighted moves are passed in. This is in the case of a
-                // full review where key moves have been calculated client-side
-                if (this.props.highlighted_moves?.includes(x.move_number)) {
                     return true;
                 }
             }
