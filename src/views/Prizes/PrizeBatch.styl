@@ -19,6 +19,37 @@
     p {
         margin: 5px 0;
     }
+
+    .prize-summary {
+        margin-top: 20px;
+
+        h3 {
+            themed: color fg;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+
+            th, td {
+                padding: 8px;
+                text-align: left;
+                border-bottom: 1px solid shade3;
+            }
+
+            th {
+                themed: background-color shade4;
+                themed: color text-color;
+                font-weight: bold;
+            }
+
+            td {
+                themed: color text-color;
+            }
+        }
+    }
 }
 
 .codes {
@@ -39,7 +70,7 @@
             display: flex;
             gap: 10px;
 
-            .print-btn, .add-codes-btn {
+            .print-btn, .add-codes-btn, .clone-btn {
                 themed: background-color primary;
                 themed: color colored-background-fg;
                 border: none;
@@ -151,5 +182,102 @@
                 themed: color text-color;
             }
         }
+    }
+}
+
+.clone-modal {
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+
+    textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid input-border;
+        border-radius: 5px;
+        themed: background-color input-bg;
+        themed: color input-fg;
+        font-size: 14px;
+        resize: vertical;
+    }
+
+    .batch-lines {
+        margin: 20px 0;
+
+        h4 {
+            themed: color fg;
+            margin-bottom: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+
+            th, td {
+                padding: 8px;
+                text-align: left;
+                border-bottom: 1px solid shade3;
+            }
+
+            th {
+                themed: background-color shade4;
+                themed: color text-color;
+                font-weight: bold;
+            }
+
+            select, input[type="number"] {
+                width: 100%;
+                padding: 5px;
+                border: 1px solid input-border;
+                border-radius: 3px;
+                themed: background-color input-bg;
+                themed: color input-fg;
+            }
+
+            input[type="number"] {
+                width: 80px;
+            }
+
+            .remove-line-btn {
+                themed: background-color danger;
+                themed: color colored-background-fg;
+                border: none;
+                padding: 5px 10px;
+                border-radius: 3px;
+                cursor: pointer;
+                font-size: 12px;
+            }
+        }
+
+        .add-line-btn {
+            themed: background-color success;
+            themed: color colored-background-fg;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+
+            &:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+            }
+        }
+    }
+
+    .clone-submit-btn {
+        themed: background-color success;
+        themed: color colored-background-fg;
+
+        &:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+    }
+
+    button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
     }
 }
