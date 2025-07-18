@@ -102,6 +102,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
     private _annulled: boolean = false;
     public chat_proxy: ChatChannelProxy;
     public review_list: ReviewListEntry[] = [];
+    public destroyed: boolean = false;
 
     constructor(opts: GobanRendererConfig) {
         super();
@@ -159,6 +160,11 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
     }
 
     public destroy() {
+        if (this.destroyed) {
+            console.warn("GobanController.destroy() called twice");
+            return;
+        }
+        this.destroyed = true;
         this.chat_proxy.part();
         this.stopAutoplay();
         this.goban.destroy();
@@ -444,6 +450,9 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
     }
 
     public setMoveTreeContainer = (resizable: Resizable) => {
+        if (this.destroyed) {
+            return;
+        }
         if (this.goban && resizable?.div) {
             this.goban.setMoveTreeContainer(resizable.div);
         }
