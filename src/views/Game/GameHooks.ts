@@ -264,3 +264,13 @@ export function useStashedConditionalMoves(
     }, [controller]);
     return stashed_conditional_moves;
 }
+
+export function useAIReviewEnabled(controller: GobanController): boolean {
+    const [ai_review_enabled, set_ai_review_enabled] = React.useState(
+        controller?.ai_review_enabled ?? preferences.get("ai-review-enabled"),
+    );
+    React.useEffect(() => {
+        controller.on("ai_review_enabled", set_ai_review_enabled);
+    }, [controller]);
+    return ai_review_enabled;
+}

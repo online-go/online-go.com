@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import { useGobanController } from "./goban_context";
-import { useShowTitle, useTitle, useCurrentMove } from "./GameHooks";
+import { useShowTitle, useTitle, useCurrentMove, useAIReviewEnabled } from "./GameHooks";
 import { _, interpolate } from "@/lib/translate";
 import { rulesText } from "@/lib/misc";
 import { KBShortcut } from "@/components/KBShortcut";
@@ -186,7 +186,7 @@ export function FragAIReview() {
     const cur_move = useCurrentMove(goban);
     const game_id = goban?.engine?.game_id;
     const review_id = goban?.review_id;
-    const ai_review_enabled = goban_controller.ai_review_enabled;
+    const ai_review_enabled = useAIReviewEnabled(goban_controller);
 
     if (!goban) {
         return;
