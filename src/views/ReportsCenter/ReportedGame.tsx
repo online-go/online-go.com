@@ -31,10 +31,10 @@ import {
     AIReview,
     GameTimings,
     GameChat,
-    GameControllerContext,
+    GobanControllerContext,
     useCurrentMove,
     GameLog,
-    useGameController,
+    useGobanController,
 } from "@/views/Game";
 import { GobanRenderer } from "goban";
 import { Resizable } from "@/components/Resizable";
@@ -54,7 +54,7 @@ export function ReportedGame({
     onGobanCreated?: (goban: GobanRenderer) => void;
 }): React.ReactElement | null {
     const [goban, setGoban] = React.useState<GobanRenderer | null>(null);
-    const [game_controller, setGameController] = React.useState<GobanController | null>(null);
+    const [goban_controller, setGameController] = React.useState<GobanController | null>(null);
     const refresh = useRefresh();
     const handleGobanCreated = React.useCallback(
         (goban_controller: GobanController) => {
@@ -133,7 +133,7 @@ export function ReportedGame({
                         chat={true}
                     />
                     {goban && goban.engine && (
-                        <GameControllerContext.Provider value={game_controller}>
+                        <GobanControllerContext.Provider value={goban_controller}>
                             <Resizable
                                 id="move-tree-container"
                                 className="vertically-resizable"
@@ -152,11 +152,11 @@ export function ReportedGame({
                                 goban={goban}
                                 annulled={annulled}
                             />
-                        </GameControllerContext.Provider>
+                        </GobanControllerContext.Provider>
                     )}
                 </div>
                 {goban && goban.engine && (
-                    <GameControllerContext.Provider value={game_controller}>
+                    <GobanControllerContext.Provider value={goban_controller}>
                         <div className="reported-game-element reported-game-info">
                             <h3>
                                 Game: <Link to={`/game/${game_id}`}>#{game_id}</Link>
@@ -224,7 +224,7 @@ export function ReportedGame({
                         <div className="reported-game-element reported-game-chat">
                             <GameChat channel={`game-${game_id}`} game_id={game_id} />
                         </div>
-                    </GameControllerContext.Provider>
+                    </GobanControllerContext.Provider>
                 )}
             </div>
         </div>
@@ -331,8 +331,8 @@ function GameOutcomeSummary({
     annulled,
     scoringAbandoned,
 }: GameOutcomeSummaryProps): React.ReactElement {
-    const game_controller = useGameController();
-    const goban = game_controller.goban;
+    const goban_controller = useGobanController();
+    const goban = goban_controller.goban;
     return (
         <div className="GameSummary">
             <div>

@@ -23,7 +23,7 @@ import {
     AIReview,
     GameTimings,
     GameChat,
-    GameControllerContext,
+    GobanControllerContext,
     GobanController,
 } from "@/views/Game";
 import { Player } from "@/components/Player";
@@ -290,7 +290,7 @@ export function AnnulQueueModal({
                             )}
 
                             {goban && goban.engine && currentGame && (
-                                <GameControllerContext.Provider value={gameController}>
+                                <GobanControllerContext.Provider value={gameController}>
                                     <div className="col">
                                         <div>
                                             Black: <Player user={currentGame?.black} />
@@ -344,7 +344,7 @@ export function AnnulQueueModal({
                                             game_id={currentGame.id}
                                         />
                                     </div>
-                                </GameControllerContext.Provider>
+                                </GobanControllerContext.Provider>
                             )}
                         </div>
                     </div>

@@ -34,7 +34,7 @@ import { doAnnul } from "@/lib/moderation";
 import { openReport } from "@/components/Report";
 import { openGameInfoModal } from "./GameInfoModal";
 import { useUserIsParticipant } from "./GameHooks";
-import { useGameController } from "./goban_context";
+import { useGobanController } from "./goban_context";
 import { Tooltip } from "../../components/Tooltip";
 import { ModalContext, ModalTypes } from "@/components/ModalProvider";
 import { GobanEngine, GobanRenderer } from "goban";
@@ -71,17 +71,17 @@ export function GameDock({
     historical_white,
     ai_suspected,
 }: DockProps): React.ReactElement {
-    const game_controller = useGameController();
-    const goban = game_controller.goban;
+    const goban_controller = useGobanController();
+    const goban = goban_controller.goban;
     const engine = goban.engine;
     const phase = engine.phase;
     const [ai_review_enabled, set_ai_review_enabled] = React.useState(
-        game_controller.ai_review_enabled,
+        goban_controller.ai_review_enabled,
     );
-    const [annulled, set_annulled] = React.useState(game_controller.annulled);
+    const [annulled, set_annulled] = React.useState(goban_controller.annulled);
     /*
     const [selected_ai_review_uuid, set_selected_ai_review_uuid] = React.useState<string | null>(
-        game_controller.selected_ai_review_uuid,
+        goban_controller.selected_ai_review_uuid,
     );
     */
 
@@ -89,17 +89,17 @@ export function GameDock({
     const { showModal } = React.useContext(ModalContext);
 
     React.useEffect(() => {
-        set_ai_review_enabled(game_controller.ai_review_enabled);
-        //set_selected_ai_review_uuid(game_controller.selected_ai_review_uuid);
-        game_controller.on("ai_review_enabled", set_ai_review_enabled);
-        game_controller.on("annulled", set_annulled);
-        //game_controller.on("selected_ai_review_uuid", set_selected_ai_review_uuid);
+        set_ai_review_enabled(goban_controller.ai_review_enabled);
+        //set_selected_ai_review_uuid(goban_controller.selected_ai_review_uuid);
+        goban_controller.on("ai_review_enabled", set_ai_review_enabled);
+        goban_controller.on("annulled", set_annulled);
+        //goban_controller.on("selected_ai_review_uuid", set_selected_ai_review_uuid);
         return () => {
-            game_controller.off("ai_review_enabled", set_ai_review_enabled);
-            game_controller.off("annulled", set_annulled);
-            //game_controller.off("selected_ai_review_uuid", set_selected_ai_review_uuid);
+            goban_controller.off("ai_review_enabled", set_ai_review_enabled);
+            goban_controller.off("annulled", set_annulled);
+            //goban_controller.off("selected_ai_review_uuid", set_selected_ai_review_uuid);
         };
-    }, [game_controller]);
+    }, [goban_controller]);
 
     const tooltipRequired = preferences.get("dock-delay") === MAX_DOCK_DELAY;
 
@@ -169,7 +169,7 @@ export function GameDock({
             historical_black || goban.engine.players.black,
             historical_white || goban.engine.players.white,
             annulled,
-            game_controller.creator_id || goban.review_owner_id || 0,
+            goban_controller.creator_id || goban.review_owner_id || 0,
         );
     };
 
@@ -273,13 +273,13 @@ export function GameDock({
             void alert.fire(_("Game ID missing"));
             return;
         }
-        doAnnul(engine.config, tf, game_controller.setAnnulled);
+        doAnnul(engine.config, tf, goban_controller.setAnnulled);
     };
 
     const showLogModal = () => {
         showModal(ModalTypes.GameLog, {
             config: goban.config,
-            markCoords: game_controller.gameLogModalMarkCoords,
+            markCoords: goban_controller.gameLogModalMarkCoords,
             black: historical_black || engine.players.black,
             white: historical_white || engine.players.white,
         });
@@ -370,13 +370,13 @@ export function GameDock({
                 </a>
             </Tooltip>
             <Tooltip tooltipRequired={tooltipRequired} title={_("Zen mode")}>
-                <a onClick={game_controller.toggleZenMode}>
+                <a onClick={goban_controller.toggleZenMode}>
                     <i className="ogs-zen-mode"></i> {_("Zen mode")}
                 </a>
             </Tooltip>
 
             <Tooltip tooltipRequired={tooltipRequired} title={_("Toggle coordinates")}>
-                <a onClick={game_controller.toggleCoordinates}>
+                <a onClick={goban_controller.toggleCoordinates}>
                     <i className="ogs-coordinates"></i> {_("Toggle coordinates")}
                 </a>
             </Tooltip>
@@ -385,7 +385,7 @@ export function GameDock({
                 tooltipRequired={tooltipRequired}
                 title={ai_review_enabled ? _("Disable AI review") : _("Enable AI review")}
             >
-                <a onClick={game_controller.toggleAIReview}>
+                <a onClick={goban_controller.toggleAIReview}>
                     <i className="fa fa-desktop"></i>{" "}
                     {ai_review_enabled ? _("Disable AI review") : _("Enable AI review")}
                 </a>
@@ -398,7 +398,7 @@ export function GameDock({
             {game && (
                 <Tooltip tooltipRequired={tooltipRequired} title={_("Analyze game")}>
                     <a
-                        onClick={game_controller.gameAnalyze}
+                        onClick={goban_controller.gameAnalyze}
                         className={goban.isAnalysisDisabled() ? "disabled" : ""}
                     >
                         <i className="fa fa-sitemap"></i> {_("Analyze game")}
@@ -415,7 +415,7 @@ export function GameDock({
                                     : "hidden",
                         }}
                         className={goban.isAnalysisDisabled() ? "disabled" : ""}
-                        onClick={game_controller.enterConditionalMovePlanner}
+                        onClick={goban_controller.enterConditionalMovePlanner}
                     >
                         <i className="fa fa-exchange"></i> {_("Plan conditional moves")}
                     </a>
@@ -424,7 +424,7 @@ export function GameDock({
             {((!review_id && (user_is_player || user_can_intervene) && phase !== "finished") ||
                 null) && (
                 <Tooltip tooltipRequired={tooltipRequired} title={_("Pause game")}>
-                    <a onClick={game_controller.pauseGame}>
+                    <a onClick={goban_controller.pauseGame}>
                         <i className="fa fa-pause"></i> {_("Pause game")}
                     </a>
                 </Tooltip>
@@ -434,7 +434,7 @@ export function GameDock({
                     <a
                         onClick={(ev) => {
                             if (ev.currentTarget.className.indexOf("disabled") === -1) {
-                                return game_controller.startReview();
+                                return goban_controller.startReview();
                             }
                         }}
                         className={goban.isAnalysisDisabled() || user.anonymous ? "disabled" : ""}
@@ -445,7 +445,7 @@ export function GameDock({
             )}
             <Tooltip tooltipRequired={tooltipRequired} title={_("Estimate score")}>
                 <a
-                    onClick={game_controller.estimateScore}
+                    onClick={goban_controller.estimateScore}
                     className={goban.isAnalysisDisabled() ? "disabled" : ""}
                 >
                     <i className="fa fa-tachometer"></i> {_("Estimate score")}
@@ -575,14 +575,14 @@ export function GameDock({
             {(user_can_intervene || user_can_annul) && <hr />}
             {(user_can_intervene || user_can_annul) && (
                 <Tooltip tooltipRequired={tooltipRequired} title={_("Timing")}>
-                    <a onClick={game_controller.toggleShowTiming}>
+                    <a onClick={goban_controller.toggleShowTiming}>
                         <i className="fa fa-clock-o"></i> {_("Timing")}
                     </a>
                 </Tooltip>
             )}
             {(user_can_intervene || user_can_annul) && ai_suspected && (
                 <Tooltip tooltipRequired={tooltipRequired} title={_("Bot Detection Results")}>
-                    <a onClick={game_controller.toggleShowBotDetectionResults}>
+                    <a onClick={goban_controller.toggleShowBotDetectionResults}>
                         <i className="fa fa-exclamation"></i> {_("Bot Detection Results")}
                     </a>
                 </Tooltip>

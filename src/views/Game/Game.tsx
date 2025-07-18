@@ -38,7 +38,7 @@ import { GameDock } from "./GameDock";
 import { alert } from "@/lib/swal_config";
 import { useMode, usePhase, useUserIsParticipant, useViewMode, useZenMode } from "./GameHooks";
 import { GobanContainer } from "@/components/GobanContainer";
-import { GameControllerContext } from "./goban_context";
+import { GobanControllerContext } from "./goban_context";
 import { is_valid_url } from "@/lib/url_validation";
 import { BotDetectionResults } from "./BotDetectionResults";
 import { ActiveTournament } from "@/lib/types";
@@ -77,11 +77,11 @@ export function Game(): React.ReactElement | null {
     const last_move_viewed = React.useRef<number>(0);
     const white_username = React.useRef<string>("White");
     const black_username = React.useRef<string>("Black");
-    const game_controller = React.useRef<GobanController | null>(null);
+    const goban_controller = React.useRef<GobanController | null>(null);
     const last_phase = React.useRef<string>("");
     const page_loaded_time = React.useRef<number>(Date.now()); // when we first created this view
 
-    let goban = game_controller.current?.goban ?? null;
+    let goban = goban_controller.current?.goban ?? null;
 
     /* State */
     const [squashed, set_squashed] = React.useState<boolean>(goban_view_squashed());
@@ -107,9 +107,9 @@ export function Game(): React.ReactElement | null {
     const [, set_undo_requested] = React.useState<number | undefined>();
     const [bot_detection_results, set_bot_detection_results] = React.useState<any>(null);
     const [show_bot_detection_results, set_show_bot_detection_results] = React.useState(false);
-    const view_mode = useViewMode(game_controller.current);
+    const view_mode = useViewMode(goban_controller.current);
     const mode = useMode(goban);
-    const zen_mode = useZenMode(game_controller.current);
+    const zen_mode = useZenMode(goban_controller.current);
 
     /* Functions */
     const getLocation = (): string => {
@@ -152,24 +152,24 @@ export function Game(): React.ReactElement | null {
         (_no_debounce: boolean = false, skip_state_update: boolean = false) => {
             if (!skip_state_update) {
                 if (
-                    goban_view_mode() !== game_controller.current?.view_mode ||
+                    goban_view_mode() !== goban_controller.current?.view_mode ||
                     goban_view_squashed() !== squashed
                 ) {
                     set_squashed(goban_view_squashed());
-                    if (game_controller.current) {
-                        game_controller.current.view_mode = goban_view_mode();
+                    if (goban_controller.current) {
+                        goban_controller.current.view_mode = goban_view_mode();
                     }
                 }
             }
         },
-        [set_squashed, squashed, game_controller.current?.view_mode],
+        [set_squashed, squashed, goban_controller.current?.view_mode],
     );
 
     React.useEffect(() => {
-        if (!game_controller.current) {
+        if (!goban_controller.current) {
             return;
         }
-        const controller = game_controller.current;
+        const controller = goban_controller.current;
 
         controller.on("set_show_game_timing", set_show_game_timing);
         controller.on("set_show_bot_detection_results", set_show_bot_detection_results);
@@ -182,12 +182,12 @@ export function Game(): React.ReactElement | null {
             controller.off("resize", onResize);
             controller.off("set_estimating_score", set_estimating_score);
         };
-    }, [game_controller.current, set_show_game_timing, set_show_bot_detection_results, onResize]);
+    }, [goban_controller.current, set_show_game_timing, set_show_bot_detection_results, onResize]);
 
-    const nav_prev = game_controller.current?.nav_prev ?? (() => {});
-    const nav_next = game_controller.current?.nav_next ?? (() => {});
-    const nav_goto_move = game_controller.current?.nav_goto_move ?? (() => {});
-    const setLabelHandler = game_controller.current?.setLabelHandler ?? (() => {});
+    const nav_prev = goban_controller.current?.nav_prev ?? (() => {});
+    const nav_next = goban_controller.current?.nav_next ?? (() => {});
+    const nav_goto_move = goban_controller.current?.nav_goto_move ?? (() => {});
+    const setLabelHandler = goban_controller.current?.setLabelHandler ?? (() => {});
 
     const onWheel: React.WheelEventHandler<HTMLDivElement> = React.useCallback(
         (event) => {
@@ -225,10 +225,10 @@ export function Game(): React.ReactElement | null {
             move_tree_container: ref_move_tree_container.current,
             interactive: true,
             connect_to_chat: true,
-            isInPushedAnalysis: () => game_controller.current?.in_pushed_analysis ?? false,
+            isInPushedAnalysis: () => goban_controller.current?.in_pushed_analysis ?? false,
             leavePushedAnalysis: () => {
-                if (game_controller.current?.onPushAnalysisLeft) {
-                    game_controller.current.onPushAnalysisLeft();
+                if (goban_controller.current?.onPushAnalysisLeft) {
+                    goban_controller.current.onPushAnalysisLeft();
                 }
             },
             game_id: undefined,
@@ -253,12 +253,12 @@ export function Game(): React.ReactElement | null {
             opts.isPlayerController = () => goban?.review_controller_id === data.get("user").id;
         }
 
-        game_controller.current?.destroy();
-        game_controller.current = new GobanController(opts);
-        goban = game_controller.current.goban;
+        goban_controller.current?.destroy();
+        goban_controller.current = new GobanController(opts);
+        goban = goban_controller.current.goban;
 
-        game_controller.current.last_variation_number = 0;
-        game_controller.current.on("branch_copied", (copied_node) => {
+        goban_controller.current.last_variation_number = 0;
+        goban_controller.current.on("branch_copied", (copied_node) => {
             if (copied_node) {
                 toast(<div>{_("Branch copied")}</div>);
             }
@@ -426,9 +426,9 @@ export function Game(): React.ReactElement | null {
                             black_username.current + " vs " + white_username.current;
                         window.document.title = on_refocus_title.current;
                     }
-                    if (game_controller.current) {
-                        game_controller.current.creator_id = game.creator;
-                        game_controller.current.setAnnulled(game.annulled);
+                    if (goban_controller.current) {
+                        goban_controller.current.creator_id = game.creator;
+                        goban_controller.current.setAnnulled(game.annulled);
                     }
                     ladder_id.current = game.ladder;
                     tournament_id.current = game.tournament ?? undefined;
@@ -475,7 +475,7 @@ export function Game(): React.ReactElement | null {
                     );
 
                     if (!live) {
-                        game_controller.current?.setZenMode(false);
+                        goban_controller.current?.setZenMode(false);
                     }
 
                     if (ladder_id.current) {
@@ -535,11 +535,11 @@ export function Game(): React.ReactElement | null {
             tournament_id.current = undefined;
             document.removeEventListener("keypress", setLabelHandler);
             try {
-                game_controller.current?.destroy();
+                goban_controller.current?.destroy();
             } catch (e) {
                 console.error(e.stack);
             }
-            game_controller.current = null;
+            goban_controller.current = null;
             goban = null;
             if (resize_debounce.current) {
                 clearTimeout(resize_debounce.current);
@@ -624,6 +624,8 @@ export function Game(): React.ReactElement | null {
         />
     );
 
+    (window as any)["goban_controller"] = goban_controller.current;
+
     return (
         <div>
             <div
@@ -635,17 +637,17 @@ export function Game(): React.ReactElement | null {
                     (squashed ? "squashed" : "")
                 }
             >
-                <GameControllerContext.Provider value={game_controller.current}>
+                <GobanControllerContext.Provider value={goban_controller.current}>
                     {game_id > 0 && (
                         <UIPush
                             event="review-added"
                             channel={`game-${game_id}`}
-                            action={game_controller.current?.addReview}
+                            action={goban_controller.current?.addReview}
                         />
                     )}
                     <GameKeyboardShortcuts />
                     <i
-                        onClick={game_controller.current?.toggleZenMode}
+                        onClick={goban_controller.current?.toggleZenMode}
                         className="leave-zen-mode-button ogs-zen-mode"
                     ></i>
 
@@ -745,7 +747,7 @@ export function Game(): React.ReactElement | null {
                     )}
 
                     <div className="align-row-end"></div>
-                </GameControllerContext.Provider>
+                </GobanControllerContext.Provider>
             </div>
         </div>
     );

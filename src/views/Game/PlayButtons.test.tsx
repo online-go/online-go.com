@@ -8,7 +8,7 @@ import { CancelButton, PlayButtons } from "./PlayButtons";
 import { act, cleanup, fireEvent, render, screen /* waitFor */ } from "@testing-library/react";
 import * as React from "react";
 import * as data from "@/lib/data";
-import { GameControllerContext } from "./goban_context";
+import { GobanControllerContext } from "./goban_context";
 import { OgsHelpProvider } from "@/components/OgsHelpProvider";
 import { GobanController } from "../../lib/GobanController";
 
@@ -75,9 +75,9 @@ describe("CancelButton", () => {
         const controller = new GobanController(LESS_THAN_SIX_MOVES);
 
         render(
-            <GameControllerContext.Provider value={controller}>
+            <GobanControllerContext.Provider value={controller}>
                 <CancelButton />
-            </GameControllerContext.Provider>,
+            </GobanControllerContext.Provider>,
         );
 
         expect(screen.getByText("Cancel game")).toBeDefined();
@@ -88,9 +88,9 @@ describe("CancelButton", () => {
         const controller = new GobanController(MORE_THAN_SIX_MOVES);
 
         render(
-            <GameControllerContext.Provider value={controller}>
+            <GobanControllerContext.Provider value={controller}>
                 <CancelButton />
-            </GameControllerContext.Provider>,
+            </GobanControllerContext.Provider>,
         );
 
         expect(screen.getByText("Resign")).toBeDefined();
@@ -115,9 +115,9 @@ describe("CancelButton", () => {
         const goban = controller.goban;
 
         render(
-            <GameControllerContext.Provider value={controller}>
+            <GobanControllerContext.Provider value={controller}>
                 <CancelButton />
-            </GameControllerContext.Provider>,
+            </GobanControllerContext.Provider>,
         );
 
         act(() => {
@@ -229,9 +229,9 @@ function WrapTest(props: { controller: GobanController; children: any }): React.
     const { controller } = props;
     return (
         <OgsHelpProvider>
-            <GameControllerContext.Provider value={controller}>
+            <GobanControllerContext.Provider value={controller}>
                 {props.children}
-            </GameControllerContext.Provider>
+            </GobanControllerContext.Provider>
         </OgsHelpProvider>
     );
 }

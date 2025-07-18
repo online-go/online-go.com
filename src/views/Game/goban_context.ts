@@ -18,20 +18,20 @@
 import * as React from "react";
 import { GobanController } from "../../lib/GobanController";
 
-export const GameControllerContext = React.createContext<GobanController | null>(null);
+export const GobanControllerContext = React.createContext<GobanController | null>(null);
 
 /**
  * A React hook that provides the GameController (which contains our goban).
  */
-export function useGameController(): GobanController {
-    const game_controller = React.useContext(GameControllerContext);
+export function useGobanController(): GobanController {
+    const controller = React.useContext(GobanControllerContext);
 
-    if (game_controller === null) {
-        throw TypeError("useContext: game_controller is null.");
+    if (controller === null) {
+        throw TypeError("useContext: controller is null.");
     }
-    if (!game_controller) {
-        throw TypeError("GameControllerContext was not set.");
+    if (!controller) {
+        throw TypeError("GobanControllerContext was not set.");
     }
 
-    return game_controller;
+    return controller;
 }

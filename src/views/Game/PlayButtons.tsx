@@ -28,7 +28,7 @@ import {
     useShowUndoRequested,
 } from "./GameHooks";
 import * as DynamicHelp from "react-dynamic-help";
-import { useGameController } from "./goban_context";
+import { useGobanController } from "./goban_context";
 
 const useOfficialMoveNumber = generateGobanHook(
     (goban) => goban!.engine.last_official_move?.move_number || -1,
@@ -42,8 +42,8 @@ interface PlayButtonsProps {
 }
 
 export function PlayButtons({ show_cancel = true }: PlayButtonsProps): React.ReactElement {
-    const game_controller = useGameController();
-    const goban = game_controller.goban;
+    const goban_controller = useGobanController();
+    const goban = goban_controller.goban;
     const engine = goban.engine;
     const phase = engine.phase;
 
@@ -56,7 +56,7 @@ export function PlayButtons({ show_cancel = true }: PlayButtonsProps): React.Rea
     const player_to_move = usePlayerToMove(goban);
     const is_my_move = player_to_move === data.get("user").id;
     const [in_pushed_analysis, set_in_pushed_analysis] = React.useState(
-        game_controller.in_pushed_analysis,
+        goban_controller.in_pushed_analysis,
     );
 
     const [show_submit, setShowSubmit] = React.useState(false);
@@ -77,19 +77,19 @@ export function PlayButtons({ show_cancel = true }: PlayButtonsProps): React.Rea
         goban.on("submit_move", syncShowSubmit);
         goban.on("last_official_move", syncShowSubmit);
         goban.on("cur_move", syncShowSubmit);
-        game_controller.on("in_pushed_analysis", set_in_pushed_analysis);
+        goban_controller.on("in_pushed_analysis", set_in_pushed_analysis);
         return () => {
             goban.off("submit_move", syncShowSubmit);
             goban.off("last_official_move", syncShowSubmit);
             goban.off("cur_move", syncShowSubmit);
-            game_controller.off("in_pushed_analysis", set_in_pushed_analysis);
+            goban_controller.off("in_pushed_analysis", set_in_pushed_analysis);
         };
     }, [goban]);
 
     const [show_accept_undo, setShowAcceptUndo] = React.useState<boolean>(false);
     React.useEffect(() => {
         const syncShowAcceptUndo = () => {
-            if (game_controller.in_pushed_analysis) {
+            if (goban_controller.in_pushed_analysis) {
                 return;
             }
 
@@ -211,8 +211,8 @@ interface CancelButtonProps {
     className?: string;
 }
 export function CancelButton({ className = "" }: CancelButtonProps) {
-    const game_controller = useGameController();
-    const goban = game_controller.goban;
+    const goban_controller = useGobanController();
+    const goban = goban_controller.goban;
     const [resign_mode, set_resign_mode] = React.useState<"cancel" | "resign">();
     React.useEffect(() => {
         const sync_resign_mode = () => {

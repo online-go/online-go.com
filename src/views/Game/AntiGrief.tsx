@@ -19,7 +19,7 @@ import * as React from "react";
 import * as data from "@/lib/data";
 import { Card } from "@/components/material";
 import { pgettext, _ } from "@/lib/translate";
-import { useGameController } from "./goban_context";
+import { useGobanController } from "./goban_context";
 import { useUser } from "@/lib/hooks";
 import { JGOFClockWithTransmitting, JGOFTimeControl } from "goban";
 import { browserHistory } from "@/lib/ogsHistory";
@@ -103,8 +103,8 @@ export function AntiGrief(): React.ReactElement {
 }
 function AntiEscaping(): React.ReactElement | null {
     const user = useUser();
-    const game_controller = useGameController();
-    const goban = game_controller.goban;
+    const goban_controller = useGobanController();
+    const goban = goban_controller.goban;
     const [phase, setPhase] = React.useState(goban?.engine?.phase);
     const [clock, setClock] = React.useState<JGOFClockWithTransmitting | undefined | null>(
         goban?.last_emitted_clock,
@@ -228,8 +228,8 @@ function AntiEscaping(): React.ReactElement | null {
 
 function AntiStalling(): React.ReactElement | null {
     const user = useUser();
-    const game_controller = useGameController();
-    const goban = game_controller.goban;
+    const goban_controller = useGobanController();
+    const goban = goban_controller.goban;
     const [estimate, setEstimate] = React.useState<any>(null);
     const [phase, setPhase] = React.useState(goban?.engine?.phase);
 

@@ -8,7 +8,7 @@ import { render, screen } from "@testing-library/react";
 import * as React from "react";
 import * as data from "@/lib/data";
 import { MemoryRouter as Router } from "react-router-dom";
-import { GameControllerContext } from "./goban_context";
+import { GobanControllerContext } from "./goban_context";
 import { act } from "react";
 import { OgsHelpProvider } from "@/components/OgsHelpProvider";
 import { GobanController } from "../../lib/GobanController";
@@ -86,9 +86,9 @@ function WrapTest(props: { controller: GobanController; children: any }): React.
     return (
         <OgsHelpProvider>
             <Router>
-                <GameControllerContext.Provider value={controller}>
+                <GobanControllerContext.Provider value={controller}>
                     {props.children}
-                </GameControllerContext.Provider>
+                </GobanControllerContext.Provider>
             </Router>
         </OgsHelpProvider>
     );

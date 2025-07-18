@@ -20,7 +20,7 @@ import { ConditionalMoveTree, Goban } from "goban";
 import { GobanEvents } from "goban";
 import * as data from "@/lib/data";
 import * as preferences from "@/lib/preferences";
-import { useGameController } from "./goban_context";
+import { useGobanController } from "./goban_context";
 import { GobanController } from "@/lib/GobanController";
 import { ViewMode } from "./util";
 import { ChatMode } from "./GameChat";
@@ -84,17 +84,17 @@ export function useShowUndoRequested(goban: Goban): boolean {
             goban.engine.undo_requested === goban.engine.last_official_move.move_number &&
             goban.engine.undo_requested === goban.engine.cur_move.move_number,
     );
-    const game_controller = useGameController();
+    const goban_controller = useGobanController();
     const [in_pushed_analysis, set_in_pushed_analysis] = React.useState(
-        game_controller.in_pushed_analysis,
+        goban_controller.in_pushed_analysis,
     );
 
     React.useEffect(() => {
-        game_controller.on("in_pushed_analysis", set_in_pushed_analysis);
+        goban_controller.on("in_pushed_analysis", set_in_pushed_analysis);
         return () => {
-            game_controller.off("in_pushed_analysis", set_in_pushed_analysis);
+            goban_controller.off("in_pushed_analysis", set_in_pushed_analysis);
         };
-    }, [game_controller]);
+    }, [goban_controller]);
 
     React.useEffect(() => {
         if (!goban) {
