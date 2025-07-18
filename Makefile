@@ -13,6 +13,9 @@ build-i18n:
 local-dev: node_modules .husky
 	export OGS_BACKEND=LOCAL && npm run dev
 
+bot-dev: node_modules .husky
+	OGS_BACKEND=LOCAL OGS_PORT=8085 npm run dev
+
 point-to-production: node_modules .husky
 	export OGS_BACKEND=PRODUCTION && npm run dev
 
