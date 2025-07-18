@@ -49,6 +49,8 @@ const backend_url =
           ? "https://online-go.com"
           : "http://127.0.0.1:1080"; // LOCAL
 
+const PORT = process.env.OGS_PORT ? parseInt(process.env.OGS_PORT) : 8080;
+
 const proxy: Record<string, ProxyOptions> = {};
 
 // REST api proxies
@@ -264,7 +266,7 @@ export default defineConfig({
     },
 
     server: {
-        port: 8080,
+        port: PORT,
         host: true,
         proxy,
         allowedHosts: true,
