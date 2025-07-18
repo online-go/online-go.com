@@ -663,12 +663,12 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         if (this.zen_mode) {
             const body = document.getElementsByTagName("body")[0];
             body.classList.remove("zen"); //remove the class
-            this.emit("zen_mode", false);
+            this.setZenMode(false);
             this.emit("view_mode", goban_view_mode());
         } else {
             const body = document.getElementsByTagName("body")[0];
             body.classList.add("zen"); //add the class
-            this.emit("zen_mode", true);
+            this.setZenMode(true);
             this.emit("view_mode", goban_view_mode());
         }
         this.emit("resize");
