@@ -15,13 +15,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import * as data from "@/lib/data";
+
 // Debugging flags to enable or disable debugging of individual modules.
 // Set these values at will in the console.
+
+// Window vars for very temporary debugging, manually set `data` for persisting.
+
 const debug = {
     data: false,
     player_cache: false,
     sockets: false,
     ai_review: false,
+    ai_review_chart: false,
 };
 
 // Create an instance of the Debug class to allow a module to debug itself.
@@ -38,12 +44,20 @@ export default class Debug {
     private format(message: string): string {
         return `[${this.module}] ${message}`;
     }
+
     log = (message: string, ...rest: Array<any>) =>
-        debug[this.module] ? console.log(this.format(message), ...rest) : undefined;
+        debug[this.module] || data.get(`debug.${this.module}`)
+            ? console.log(this.format(message), ...rest)
+            : undefined;
     trace = (message: string, ...rest: Array<any>) =>
-        debug[this.module] ? console.trace(this.format(message), ...rest) : undefined;
+        debug[this.module] || data.get(`debug.${this.module}`)
+            ? console.trace(this.format(message), ...rest)
+            : undefined;
     info = (message: string, ...rest: Array<any>) =>
-        debug[this.module] ? console.info(this.format(message), ...rest) : undefined;
+        debug[this.module] || data.get(`debug.${this.module}`)
+            ? console.info(this.format(message), ...rest)
+            : undefined;
+
     warn = (message: string, ...rest: Array<any>) => {
         console.warn(this.format(message), ...rest);
     };

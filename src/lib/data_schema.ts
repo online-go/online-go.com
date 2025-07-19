@@ -189,6 +189,10 @@ interface DemoSettings {
     komi?: number;
 }
 
+interface DebugSchema {
+    [module: string]: boolean;
+}
+
 /**
  * Prefixes every member of a type.
  *
@@ -224,7 +228,8 @@ export interface DataSchema
         Prefixed<PMSchema, "pm">,
         Prefixed<ObservedGamesSchema, "observed-games">,
         Prefixed<AnnouncementsSchema, "announcements">,
-        Prefixed<ChallengeSchema, "challenge"> {
+        Prefixed<ChallengeSchema, "challenge">,
+        Prefixed<DebugSchema, "debug"> {
     user: rest_api.UserConfig;
     bid: string; // deprecated in favor of device_id
     device_id: string;
