@@ -10,6 +10,25 @@ import * as requests from "@/lib/requests";
 import * as ogs_hooks from "@/lib/hooks";
 import { OgsHelpProvider } from "@/components/OgsHelpProvider";
 
+// Mock the socket module to prevent socket initialization errors in tests
+jest.mock("@/lib/sockets", () => ({
+    socket: {
+        on: jest.fn(),
+        send: jest.fn(),
+        options: {
+            ping_interval: 10000,
+            timeout_delay: 8000,
+        },
+    },
+    ai_socket: {
+        on: jest.fn(),
+        send: jest.fn(),
+        options: {
+            ping_interval: 20000,
+        },
+    },
+}));
+
 const BASE_PROPS = {
     state: { profile: { email: "" } },
     vacation_base_time: 0,
