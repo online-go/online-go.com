@@ -34,6 +34,7 @@ module.exports = {
         "^react-dynamic-help$": "<rootDir>/submodules/react-dynamic-help/src",
         "^goban$": "<rootDir>/submodules/goban/src",
         "^goscorer$": "<rootDir>/submodules/goban/src/third_party/goscorer/goscorer",
+        "^d3$": "<rootDir>/src/stubs/d3.ts",
     },
     setupFiles: ["./setup-jest.cjs"],
     setupFilesAfterEnv: ["jest-chain", "@testing-library/jest-dom"],
