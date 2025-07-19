@@ -411,8 +411,9 @@ function AvatarSubtext({ user, global_user }: { user: AvatarCardUserType; global
             {user.is_superuser && (
                 <div>
                     <h3 style={inlineBlock}>
-                        <i className="fa fa-smile-o fa-spin"></i> {_("OGS Developer")}{" "}
-                        <i className="fa fa-smile-o fa-spin"></i>
+                        <i className="fa fa-smile-o fa-spin" style={{ marginRight: "0.5em" }}></i>{" "}
+                        {_("OGS Developer")}{" "}
+                        <i className="fa fa-smile-o fa-spin" style={{ marginLeft: "0.5em" }}></i>
                     </h3>
                 </div>
             )}
