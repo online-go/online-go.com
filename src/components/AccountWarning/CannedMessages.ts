@@ -128,7 +128,7 @@ We've noticed that you joined game #{{game_id}} but didn't make any moves.
 
 It's possible you didn't notice this game start - we understand that.
 
-However, could you please take care avoid this situation, so that other users are not left waiting and wondering.
+If you can be alert for this, so that other users are not left waiting and wondering, that would be great..
 
 Thank you for helping keep OGS enjoyable for everyone. We appreciate it.
 `,

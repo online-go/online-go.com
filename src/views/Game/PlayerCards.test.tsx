@@ -6,7 +6,7 @@ import { render } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import * as React from "react";
 import { PlayerCard } from "./PlayerCards";
-import { GameControllerContext } from "./goban_context";
+import { GobanControllerContext } from "./goban_context";
 import { BrowserRouter as Router } from "react-router-dom";
 import * as data from "@/lib/data";
 import { GobanController } from "../../lib/GobanController";
@@ -63,9 +63,9 @@ test("make sure komi is displayed for white", () => {
 
     const { container } = render(
         <Router>
-            <GameControllerContext.Provider value={gameController}>
+            <GobanControllerContext.Provider value={gameController}>
                 <PlayerCard {...props} />
-            </GameControllerContext.Provider>
+            </GobanControllerContext.Provider>
         </Router>,
     );
     const divElement = container.querySelector(".komi");
@@ -84,9 +84,9 @@ test("make sure komi is not displayed for black", () => {
 
     const { container } = render(
         <Router>
-            <GameControllerContext.Provider value={gameController}>
+            <GobanControllerContext.Provider value={gameController}>
                 <PlayerCard {...props} />
-            </GameControllerContext.Provider>
+            </GobanControllerContext.Provider>
         </Router>,
     );
     const divElement = container.querySelector(".komi");

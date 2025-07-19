@@ -6,7 +6,7 @@
 import { render, screen } from "@testing-library/react";
 import * as React from "react";
 import { GameDock } from "./GameDock";
-import { GameControllerContext } from "./goban_context";
+import { GobanControllerContext } from "./goban_context";
 import { BrowserRouter as Router } from "react-router-dom";
 import * as data from "@/lib/data";
 import { GobanController } from "../../lib/GobanController";
@@ -68,9 +68,9 @@ test("providing both Game ID and Review ID cause SGF buttons to link to review S
 
     render(
         <Router>
-            <GameControllerContext.Provider value={gameController}>
+            <GobanControllerContext.Provider value={gameController}>
                 <GameDock {...BASE_PROPS} />
-            </GameControllerContext.Provider>
+            </GobanControllerContext.Provider>
         </Router>,
     );
     const sgf_buttons = screen.getAllByText("Download SGF");

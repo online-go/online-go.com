@@ -31,7 +31,7 @@ import { chat_markup } from "@/components/Chat";
 import { inGameModChannel } from "@/lib/chat_manager";
 import { MoveTree } from "goban";
 import { useUserIsParticipant } from "./GameHooks";
-import { useGameController } from "./goban_context";
+import { useGobanController } from "./goban_context";
 
 export type ChatMode = "main" | "malkovich" | "moderator" | "hidden" | "personal";
 interface GameChatProperties {
@@ -65,14 +65,14 @@ interface GameChatLineProperties {
 
 export function GameChat(props: GameChatProperties): React.ReactElement {
     const user = data.get("user");
-    const game_controller = useGameController();
-    const goban = game_controller.goban;
+    const goban_controller = useGobanController();
+    const goban = goban_controller.goban;
     const defaultChatMode = preferences.get("chat-mode") as ChatMode;
     const ref_chat_log = React.useRef<HTMLDivElement>(null);
     const scrolled_to_bottom = React.useRef(true);
     const [show_quick_chat, setShowQuickChat] = React.useState(false);
     const [selected_chat_log, setSelectedChatLog] = React.useState(
-        game_controller.selected_chat_log,
+        goban_controller.selected_chat_log,
     );
     const [show_player_list, setShowPlayerList] = React.useState(false);
 
@@ -82,11 +82,11 @@ export function GameChat(props: GameChatProperties): React.ReactElement {
     const userIsPlayer = useUserIsParticipant(goban);
 
     React.useEffect(() => {
-        game_controller.on("selected_chat_log", setSelectedChatLog);
+        goban_controller.on("selected_chat_log", setSelectedChatLog);
         return () => {
-            game_controller.off("selected_chat_log", setSelectedChatLog);
+            goban_controller.off("selected_chat_log", setSelectedChatLog);
         };
-    }, [game_controller]);
+    }, [goban_controller]);
 
     React.useEffect(() => {
         if (!goban) {
@@ -160,9 +160,9 @@ export function GameChat(props: GameChatProperties): React.ReactElement {
                 (props.game_id || props.review_id) as number,
             );
             if (in_game_mod_channel) {
-                game_controller.setSelectedChatLog("hidden");
+                goban_controller.setSelectedChatLog("hidden");
             } else {
-                game_controller.setSelectedChatLog(defaultChatMode);
+                goban_controller.setSelectedChatLog(defaultChatMode);
             }
         };
 
@@ -222,7 +222,7 @@ export function GameChat(props: GameChatProperties): React.ReactElement {
 
     const toggleChatLog = (isModerator: boolean) => {
         const new_chat_log = nextChatMode(selected_chat_log, isModerator);
-        game_controller.setSelectedChatLog(new_chat_log);
+        goban_controller.setSelectedChatLog(new_chat_log);
         setShowQuickChat(false);
     };
 
@@ -454,8 +454,8 @@ export function GameChatLine(props: GameChatLineProperties): React.ReactElement 
     }
     let show_date: React.ReactElement | null = null;
     let move_number: React.ReactElement | null = null;
-    const game_controller = useGameController();
-    const goban = game_controller.goban;
+    const goban_controller = useGobanController();
+    const goban = goban_controller.goban;
 
     if (!last_line || (line.date && last_line.date)) {
         if (line.date) {
@@ -478,7 +478,7 @@ export function GameChatLine(props: GameChatLineProperties): React.ReactElement 
         line.moves !== last_line.moves
     ) {
         const jumpToMove = () => {
-            game_controller.stopEstimatingScore();
+            goban_controller.stopEstimatingScore();
             const line = props.line;
 
             // In a demo/review, line.move_number is never set. For lines that
@@ -575,8 +575,8 @@ let stashed_pen_marks: any = null; //goban.pen_marks;
 
 function MarkupChatLine({ line }: { line: ChatLine }): React.ReactElement {
     const body = line.body;
-    const game_controller = useGameController();
-    const goban = game_controller.goban;
+    const goban_controller = useGobanController();
+    const goban = goban_controller.goban;
 
     const highlight_position = (event: React.MouseEvent<HTMLSpanElement>) => {
         const pos = parsePosition((event.target as HTMLSpanElement).innerText, goban);
@@ -639,16 +639,16 @@ function MarkupChatLine({ line }: { line: ChatLine }): React.ReactElement {
 
                     const v = parseInt("" + (body.name ? body.name.replace(/^[^0-9]*/, "") : 0));
                     if (v) {
-                        game_controller.last_variation_number = Math.max(
+                        goban_controller.last_variation_number = Math.max(
                             v,
-                            game_controller.last_variation_number,
+                            goban_controller.last_variation_number,
                         );
                     }
 
                     const onLeave = () => {
-                        if (game_controller.in_pushed_analysis) {
-                            game_controller.in_pushed_analysis = false;
-                            delete game_controller.onPushAnalysisLeft;
+                        if (goban_controller.in_pushed_analysis) {
+                            goban_controller.in_pushed_analysis = false;
+                            delete goban_controller.onPushAnalysisLeft;
                             goban.engine.cur_move.popStashedMarks();
                             goban.engine.jumpTo(orig_move);
                             if (orig_move) {
@@ -663,8 +663,8 @@ function MarkupChatLine({ line }: { line: ChatLine }): React.ReactElement {
                     };
 
                     const onEnter = () => {
-                        game_controller.in_pushed_analysis = true;
-                        game_controller.onPushAnalysisLeft = onLeave;
+                        goban_controller.in_pushed_analysis = true;
+                        goban_controller.onPushAnalysisLeft = onLeave;
 
                         const turn =
                             "branch_move" in body
@@ -696,11 +696,11 @@ function MarkupChatLine({ line }: { line: ChatLine }): React.ReactElement {
                     };
 
                     const onClick = () => {
-                        game_controller.stopEstimatingScore();
+                        goban_controller.stopEstimatingScore();
                         onLeave();
                         goban.setMode("analyze");
                         onEnter();
-                        game_controller.in_pushed_analysis = false;
+                        goban_controller.in_pushed_analysis = false;
                         goban.updateTitleAndStonePlacement();
                         goban.syncReviewMove();
                         goban.redraw();

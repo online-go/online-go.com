@@ -62,7 +62,7 @@ import {
     useZenMode,
     useStashedConditionalMoves,
 } from "./GameHooks";
-import { useGameController } from "./goban_context";
+import { useGobanController } from "./goban_context";
 import { is_valid_url } from "@/lib/url_validation";
 import { enableTouchAction } from "./touch_actions";
 import { ConditionalMoveTreeDisplay } from "./ConditionalMoveTreeDisplay";
@@ -85,8 +85,8 @@ const useConditionalMoveTree = generateGobanHook(
 
 export function PlayControls({ annulment_reason }: PlayControlsProps): React.ReactElement {
     const user = useUser();
-    const game_controller = useGameController();
-    const goban = game_controller.goban;
+    const goban_controller = useGobanController();
+    const goban = goban_controller.goban;
     const engine = goban.engine;
     const { registerTargetItem, triggerFlow, signalUsed } = React.useContext(DynamicHelp.Api);
     const { ref: game_state_pane, active: gameStatePaneActive } =
@@ -101,17 +101,17 @@ export function PlayControls({ annulment_reason }: PlayControlsProps): React.Rea
     const need_to_seal = needs_sealing && needs_sealing.length > 0;
     const [autoscoring_in_progress, setAutoScoringInProgress] = React.useState(false);
     const [autoscoring_taking_too_long, setAutoscoringTakingTooLong] = React.useState(false);
-    const annulled = useAnnulled(game_controller);
+    const annulled = useAnnulled(goban_controller);
     const onVariationKeyPress = useOnVariationKeyPress();
     const show_title = useShowTitle(goban);
-    const view_mode = useViewMode(game_controller);
-    const zen_mode = useZenMode(game_controller);
+    const view_mode = useViewMode(goban_controller);
+    const zen_mode = useZenMode(goban_controller);
     const show_cancel = view_mode !== "portrait" && !zen_mode;
-    const variation_name = useVariationName(game_controller);
-    const selected_chat_log = useSelectedChatLog(game_controller);
+    const variation_name = useVariationName(goban_controller);
+    const selected_chat_log = useSelectedChatLog(goban_controller);
     const phase = usePhase(goban);
     const title = useTitle(goban);
-    const stashed_conditional_moves = useStashedConditionalMoves(game_controller);
+    const stashed_conditional_moves = useStashedConditionalMoves(goban_controller);
 
     const user_is_active_player = [engine.players.black.id, engine.players.white.id].includes(
         user.id,
@@ -239,7 +239,7 @@ export function PlayControls({ annulment_reason }: PlayControlsProps): React.Rea
         goban.setMode("play");
         if (stashed_conditional_moves) {
             goban.setConditionalTree(stashed_conditional_moves);
-            game_controller.setStashedConditionalMoves(null);
+            goban_controller.setStashedConditionalMoves(null);
         }
     };
     const goban_resumeGame = () => {
@@ -249,7 +249,7 @@ export function PlayControls({ annulment_reason }: PlayControlsProps): React.Rea
         goban.jumpToLastOfficialMove();
     };
     const acceptConditionalMoves = () => {
-        game_controller.setStashedConditionalMoves(null);
+        goban_controller.setStashedConditionalMoves(null);
         goban.saveConditionalMoves();
         goban.setMode("play");
     };
@@ -443,10 +443,10 @@ export function PlayControls({ annulment_reason }: PlayControlsProps): React.Rea
                             {_("Rematch")}
                         </button>
                     )}
-                    {(game_controller.review_list.length > 0 || null) && (
+                    {(goban_controller.review_list.length > 0 || null) && (
                         <div className="review-list">
                             <h3>{_("Reviews")}</h3>
-                            {game_controller.review_list.map((review, idx) => (
+                            {goban_controller.review_list.map((review, idx) => (
                                 <div key={idx}>
                                     <Player user={review.owner} icon></Player> -{" "}
                                     <Link to={`/review/${review.id}`}>{_("view")}</Link>
@@ -629,7 +629,7 @@ export function PlayControls({ annulment_reason }: PlayControlsProps): React.Rea
                     <Resizable
                         id="move-tree-container"
                         className="vertically-resizable"
-                        ref={game_controller.setMoveTreeContainer}
+                        ref={goban_controller.setMoveTreeContainer}
                     />
 
                     {(!zen_mode || null) && (
@@ -640,14 +640,14 @@ export function PlayControls({ annulment_reason }: PlayControlsProps): React.Rea
                                     className={`form-control ${selected_chat_log}`}
                                     placeholder={_("Variation name...")}
                                     value={variation_name}
-                                    onChange={game_controller.updateVariationName}
+                                    onChange={goban_controller.updateVariationName}
                                     onKeyDown={onVariationKeyPress}
                                     disabled={user.anonymous}
                                 />
                                 <ShareAnalysisButton
                                     selected_chat_log={selected_chat_log}
                                     isUserAnonymous={user.anonymous}
-                                    shareAnalysis={game_controller.shareAnalysis}
+                                    shareAnalysis={goban_controller.shareAnalysis}
                                 />
                             </div>
                         </div>
@@ -678,7 +678,7 @@ export function PlayControls({ annulment_reason }: PlayControlsProps): React.Rea
                     <span>
                         <button
                             className="sm primary bold"
-                            onClick={game_controller.stopEstimatingScore}
+                            onClick={goban_controller.stopEstimatingScore}
                         >
                             {_("Back to Board")}
                         </button>
@@ -690,19 +690,19 @@ export function PlayControls({ annulment_reason }: PlayControlsProps): React.Rea
 }
 
 export function AnalyzeButtonBar(): React.ReactElement {
-    const game_controller = useGameController();
-    const setAnalyzeTool = game_controller.setAnalyzeTool;
-    const setAnalyzePencilColor = game_controller.setAnalyzePencilColor;
-    const analyze_pencil_color = game_controller.analyze_pencil_color;
+    const goban_controller = useGobanController();
+    const setAnalyzeTool = goban_controller.setAnalyzeTool;
+    const setAnalyzePencilColor = goban_controller.setAnalyzePencilColor;
+    const analyze_pencil_color = goban_controller.analyze_pencil_color;
     const [analyze_tool, set_analyze_tool] = React.useState<AnalysisTool>();
     const [analyze_subtool, set_analyze_subtool] = React.useState<string>();
     const [analyze_score_color, setAnalyzeScoreColor] =
         preferences.usePreference("analysis.score-color");
-    const [is_review, set_is_review] = React.useState(!!game_controller.goban.review_id);
+    const [is_review, set_is_review] = React.useState(!!goban_controller.goban.review_id);
     const [mode, set_mode] = React.useState<GobanModes>();
     const [copied_node, set_copied_node] = React.useState<MoveTree | undefined>(undefined);
 
-    const goban = game_controller.goban;
+    const goban = goban_controller.goban;
 
     React.useEffect(() => {
         if (!goban) {
@@ -716,20 +716,20 @@ export function AnalyzeButtonBar(): React.ReactElement {
 
         set_is_review(!!goban.review_id);
         set_mode(goban.mode);
-        set_copied_node(game_controller.copied_node);
+        set_copied_node(goban_controller.copied_node);
 
         goban.on("load", onLoad);
         goban.on("analyze_tool", set_analyze_tool);
         goban.on("analyze_subtool", set_analyze_subtool);
         goban.on("mode", set_mode);
-        game_controller.on("copied_node", set_copied_node);
+        goban_controller.on("copied_node", set_copied_node);
 
         return () => {
             goban.off("load", onLoad);
             goban.off("analyze_tool", set_analyze_tool);
             goban.off("analyze_subtool", set_analyze_subtool);
             goban.off("mode", set_mode);
-            game_controller.off("copied_node", set_copied_node);
+            goban_controller.off("copied_node", set_copied_node);
         };
     }, [goban]);
 
@@ -854,17 +854,17 @@ export function AnalyzeButtonBar(): React.ReactElement {
 
             {/* Copy/paste */}
             <div className="btn-group">
-                <button onClick={() => game_controller.copyBranch()} title={_("Copy this branch")}>
+                <button onClick={() => goban_controller.copyBranch()} title={_("Copy this branch")}>
                     <i className="fa fa-clone"></i>
                 </button>
                 <button
                     disabled={copied_node === null}
-                    onClick={() => game_controller.pasteBranch()}
+                    onClick={() => goban_controller.pasteBranch()}
                     title={_("Paste branch")}
                 >
                     <i className="fa fa-clipboard"></i>
                 </button>
-                <button onClick={game_controller.deleteBranch} title={_("Delete branch")}>
+                <button onClick={goban_controller.deleteBranch} title={_("Delete branch")}>
                     <i className="fa fa-trash"></i>
                 </button>
             </div>
@@ -1042,15 +1042,15 @@ const useReviewControllerId = generateGobanHook(
 
 export function ReviewControls({ review_id }: ReviewControlsProps) {
     const user = data.get("user");
-    const game_controller = useGameController();
+    const goban_controller = useGobanController();
 
-    const goban = game_controller.goban;
+    const goban = goban_controller.goban;
     const [in_pushed_analysis, set_in_pushed_analysis] = React.useState(
-        game_controller.in_pushed_analysis,
+        goban_controller.in_pushed_analysis,
     );
     const onVariationKeyPress = useOnVariationKeyPress();
-    const variation_name = useVariationName(game_controller);
-    const selected_chat_log = useSelectedChatLog(game_controller);
+    const variation_name = useVariationName(goban_controller);
+    const selected_chat_log = useSelectedChatLog(goban_controller);
     const mode = useMode(goban);
 
     const [review_out_of_sync, set_review_out_of_sync] = React.useState(false);
@@ -1093,11 +1093,11 @@ export function ReviewControls({ review_id }: ReviewControlsProps) {
     const review_controller_id = useReviewControllerId(goban);
 
     React.useEffect(() => {
-        game_controller.on("in_pushed_analysis", set_in_pushed_analysis);
+        goban_controller.on("in_pushed_analysis", set_in_pushed_analysis);
         return () => {
-            game_controller.off("in_pushed_analysis", set_in_pushed_analysis);
+            goban_controller.off("in_pushed_analysis", set_in_pushed_analysis);
         };
-    }, [game_controller]);
+    }, [goban_controller]);
 
     React.useEffect(() => {
         const renderExtraPlayerActions = (player_id: number): React.ReactElement | null => {
@@ -1225,7 +1225,7 @@ export function ReviewControls({ review_id }: ReviewControlsProps) {
                     <Resizable
                         id="move-tree-container"
                         className="vertically-resizable"
-                        ref={game_controller.setMoveTreeContainer}
+                        ref={goban_controller.setMoveTreeContainer}
                     />
 
                     <div style={{ paddingLeft: "0.5em", paddingRight: "0.5em" }}>
@@ -1247,7 +1247,7 @@ export function ReviewControls({ review_id }: ReviewControlsProps) {
                                 className={`form-control ${selected_chat_log}`}
                                 placeholder={_("Variation name...")}
                                 value={variation_name}
-                                onChange={game_controller.updateVariationName}
+                                onChange={goban_controller.updateVariationName}
                                 onKeyDown={onVariationKeyPress}
                                 disabled={user.anonymous}
                             />
@@ -1255,7 +1255,7 @@ export function ReviewControls({ review_id }: ReviewControlsProps) {
                                 className="sm"
                                 type="button"
                                 disabled={user.anonymous}
-                                onClick={game_controller.shareAnalysis}
+                                onClick={goban_controller.shareAnalysis}
                             >
                                 {_("Share")}
                             </button>
@@ -1268,7 +1268,7 @@ export function ReviewControls({ review_id }: ReviewControlsProps) {
                     <span>
                         <button
                             className="sm primary bold"
-                            onClick={game_controller.stopEstimatingScore}
+                            onClick={goban_controller.stopEstimatingScore}
                         >
                             {_("Back to Review")}
                         </button>
@@ -1500,16 +1500,16 @@ function AnnulmentReason({
 }
 
 function useOnVariationKeyPress() {
-    const game_controller = useGameController();
+    const goban_controller = useGobanController();
     const handler = React.useCallback(
         (ev: React.KeyboardEvent) => {
             if (ev.key === "Enter") {
-                game_controller.shareAnalysis();
+                goban_controller.shareAnalysis();
                 return false;
             }
             return undefined;
         },
-        [game_controller],
+        [goban_controller],
     );
 
     return handler;

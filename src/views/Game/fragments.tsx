@@ -16,8 +16,8 @@
  */
 
 import * as React from "react";
-import { useGameController } from "./goban_context";
-import { useShowTitle, useTitle, useCurrentMove } from "./GameHooks";
+import { useGobanController } from "./goban_context";
+import { useShowTitle, useTitle, useCurrentMove, useAIReviewEnabled } from "./GameHooks";
 import { _, interpolate } from "@/lib/translate";
 import { rulesText } from "@/lib/misc";
 import { KBShortcut } from "@/components/KBShortcut";
@@ -26,8 +26,8 @@ import { AIReview } from "./AIReview";
 import { GameTimings } from "./GameTimings";
 
 export function RengoHeader(): React.ReactElement | null {
-    const game_controller = useGameController();
-    const goban = game_controller.goban;
+    const goban_controller = useGobanController();
+    const goban = goban_controller.goban;
     const show_title = useShowTitle(goban);
     const title = useTitle(goban);
 
@@ -44,8 +44,8 @@ export function RengoHeader(): React.ReactElement | null {
 export function EstimateScore(): React.ReactElement | null {
     const [score_estimate_winner, set_score_estimate_winner] = React.useState<string>();
     const [score_estimate_amount, set_score_estimate_amount] = React.useState<number>();
-    const game_controller = useGameController();
-    const goban = game_controller.goban;
+    const goban_controller = useGobanController();
+    const goban = goban_controller.goban;
 
     React.useEffect(() => {
         if (goban) {
@@ -77,14 +77,14 @@ export function EstimateScore(): React.ReactElement | null {
 }
 
 export function GameInformation(): React.ReactElement | null {
-    const game_controller = useGameController();
-    const goban = game_controller.goban;
-    const [zen_mode, set_zen_mode] = React.useState(game_controller.zen_mode);
+    const goban_controller = useGobanController();
+    const goban = goban_controller.goban;
+    const [zen_mode, set_zen_mode] = React.useState(goban_controller.zen_mode);
 
     React.useEffect(() => {
-        game_controller.on("zen_mode", set_zen_mode);
+        goban_controller.on("zen_mode", set_zen_mode);
         return () => {
-            game_controller.off("zen_mode", set_zen_mode);
+            goban_controller.off("zen_mode", set_zen_mode);
         };
     }, [goban]);
 
@@ -112,81 +112,81 @@ export function GameInformation(): React.ReactElement | null {
 }
 
 export function GameKeyboardShortcuts() {
-    const game_controller = useGameController();
-    const goban = game_controller.goban;
+    const goban_controller = useGobanController();
+    const goban = goban_controller.goban;
 
     return (
         <div>
-            <KBShortcut shortcut="up" action={game_controller.nav_up} />
-            <KBShortcut shortcut="down" action={game_controller.nav_down} />
-            <KBShortcut shortcut="left" action={game_controller.nav_prev} />
-            <KBShortcut shortcut="right" action={game_controller.nav_next} />
-            <KBShortcut shortcut="page-up" action={game_controller.nav_prev_10} />
-            <KBShortcut shortcut="page-down" action={game_controller.nav_next_10} />
-            <KBShortcut shortcut="space" action={game_controller.nav_play_pause} />
-            <KBShortcut shortcut="home" action={game_controller.nav_first} />
-            <KBShortcut shortcut="end" action={game_controller.nav_last} />
-            <KBShortcut shortcut="escape" action={game_controller.handleEscapeKey} />
+            <KBShortcut shortcut="up" action={goban_controller.nav_up} />
+            <KBShortcut shortcut="down" action={goban_controller.nav_down} />
+            <KBShortcut shortcut="left" action={goban_controller.nav_prev} />
+            <KBShortcut shortcut="right" action={goban_controller.nav_next} />
+            <KBShortcut shortcut="page-up" action={goban_controller.nav_prev_10} />
+            <KBShortcut shortcut="page-down" action={goban_controller.nav_next_10} />
+            <KBShortcut shortcut="space" action={goban_controller.nav_play_pause} />
+            <KBShortcut shortcut="home" action={goban_controller.nav_first} />
+            <KBShortcut shortcut="end" action={goban_controller.nav_last} />
+            <KBShortcut shortcut="escape" action={goban_controller.handleEscapeKey} />
             <KBShortcut
                 shortcut="f1"
-                action={() => game_controller.setAnalyzeTool("stone", "alternate")}
+                action={() => goban_controller.setAnalyzeTool("stone", "alternate")}
             />
             <KBShortcut
                 shortcut="f2"
-                action={() => game_controller.setAnalyzeTool("stone", "black")}
+                action={() => goban_controller.setAnalyzeTool("stone", "black")}
             />
             <KBShortcut
                 shortcut="f4"
-                action={() => game_controller.setAnalyzeTool("label", "triangle")}
+                action={() => goban_controller.setAnalyzeTool("label", "triangle")}
             />
             <KBShortcut
                 shortcut="f5"
-                action={() => game_controller.setAnalyzeTool("label", "square")}
+                action={() => goban_controller.setAnalyzeTool("label", "square")}
             />
             <KBShortcut
                 shortcut="f6"
-                action={() => game_controller.setAnalyzeTool("label", "circle")}
+                action={() => goban_controller.setAnalyzeTool("label", "circle")}
             />
             <KBShortcut
                 shortcut="f7"
-                action={() => game_controller.setAnalyzeTool("label", "letters")}
+                action={() => goban_controller.setAnalyzeTool("label", "letters")}
             />
             <KBShortcut
                 shortcut="f8"
-                action={() => game_controller.setAnalyzeTool("label", "numbers")}
+                action={() => goban_controller.setAnalyzeTool("label", "numbers")}
             />
-            <KBShortcut shortcut="ctrl-c" action={game_controller.copyBranch} />
-            <KBShortcut shortcut="ctrl-v" action={game_controller.pasteBranch} />
+            <KBShortcut shortcut="ctrl-c" action={goban_controller.copyBranch} />
+            <KBShortcut shortcut="ctrl-v" action={goban_controller.pasteBranch} />
             <KBShortcut
                 shortcut="f9"
                 action={() =>
-                    game_controller.setAnalyzeTool("draw", game_controller.analyze_pencil_color)
+                    goban_controller.setAnalyzeTool("draw", goban_controller.analyze_pencil_color)
                 }
             />
             {goban?.mode === "analyze" && (
-                <KBShortcut shortcut="f10" action={game_controller.clear_and_sync} />
+                <KBShortcut shortcut="f10" action={goban_controller.clear_and_sync} />
             )}
-            <KBShortcut shortcut="del" action={game_controller.deleteBranch} />
-            <KBShortcut shortcut="shift-z" action={game_controller.toggleZenMode} />
-            <KBShortcut shortcut="shift-c" action={game_controller.toggleCoordinates} />
-            <KBShortcut shortcut="shift-i" action={game_controller.toggleAIReview} />
-            <KBShortcut shortcut="shift-a" action={game_controller.gameAnalyze} />
-            <KBShortcut shortcut="shift-r" action={game_controller.startReview} />
-            <KBShortcut shortcut="shift-e" action={game_controller.estimateScore} />
+            <KBShortcut shortcut="del" action={goban_controller.deleteBranch} />
+            <KBShortcut shortcut="shift-z" action={goban_controller.toggleZenMode} />
+            <KBShortcut shortcut="shift-c" action={goban_controller.toggleCoordinates} />
+            <KBShortcut shortcut="shift-i" action={goban_controller.toggleAIReview} />
+            <KBShortcut shortcut="shift-a" action={goban_controller.gameAnalyze} />
+            <KBShortcut shortcut="shift-r" action={goban_controller.startReview} />
+            <KBShortcut shortcut="shift-e" action={goban_controller.estimateScore} />
             <KBShortcut
                 shortcut="shift-p"
-                action={() => game_controller.goban.setModeDeferred("play")}
+                action={() => goban_controller.goban.setModeDeferred("play")}
             />
         </div>
     );
 }
 export function FragAIReview() {
-    const game_controller = useGameController();
-    const goban = game_controller.goban;
+    const goban_controller = useGobanController();
+    const goban = goban_controller.goban;
     const cur_move = useCurrentMove(goban);
     const game_id = goban?.engine?.game_id;
     const review_id = goban?.review_id;
-    const ai_review_enabled = game_controller.ai_review_enabled;
+    const ai_review_enabled = useAIReviewEnabled(goban_controller);
 
     if (!goban) {
         return;
@@ -203,7 +203,7 @@ export function FragAIReview() {
     ) {
         return (
             <AIReview
-                onAIReviewSelected={(r) => (game_controller.selected_ai_review_uuid = r?.uuid)}
+                onAIReviewSelected={(r) => (goban_controller.selected_ai_review_uuid = r?.uuid)}
                 game_id={game_id}
                 move={cur_move}
                 hidden={!ai_review_enabled}
@@ -224,55 +224,55 @@ export function FragAIReview() {
     return null;
 }
 export function FragBelowBoardControls() {
-    const game_controller = useGameController();
-    const goban = game_controller.goban;
-    const [view_mode, set_view_mode] = React.useState(game_controller.view_mode);
-    const [autoplaying, set_autoplaying] = React.useState(game_controller.autoplaying);
+    const goban_controller = useGobanController();
+    const goban = goban_controller.goban;
+    const [view_mode, set_view_mode] = React.useState(goban_controller.view_mode);
+    const [autoplaying, set_autoplaying] = React.useState(goban_controller.autoplaying);
 
     React.useEffect(() => {
-        game_controller.on("view_mode", set_view_mode);
-        game_controller.on("autoplaying", set_autoplaying);
+        goban_controller.on("view_mode", set_view_mode);
+        goban_controller.on("autoplaying", set_autoplaying);
         return () => {
-            game_controller.off("view_mode", set_view_mode);
-            game_controller.off("autoplaying", set_autoplaying);
+            goban_controller.off("view_mode", set_view_mode);
+            goban_controller.off("autoplaying", set_autoplaying);
         };
-    }, [game_controller]);
+    }, [goban_controller]);
 
     return (
         <div className="action-bar">
             <span className="icons" />
             <span className="controls">
-                <button type="button" onClick={game_controller.nav_first} className="move-control">
+                <button type="button" onClick={goban_controller.nav_first} className="move-control">
                     <i className="fa fa-fast-backward"></i>
                 </button>
                 <button
                     type="button"
-                    onClick={game_controller.nav_prev_10}
+                    onClick={goban_controller.nav_prev_10}
                     className="move-control"
                 >
                     <i className="fa fa-backward"></i>
                 </button>
-                <button type="button" onClick={game_controller.nav_prev} className="move-control">
+                <button type="button" onClick={goban_controller.nav_prev} className="move-control">
                     <i className="fa fa-step-backward"></i>
                 </button>
                 <button
                     type="button"
-                    onClick={game_controller.nav_play_pause}
+                    onClick={goban_controller.nav_play_pause}
                     className="move-control"
                 >
                     <i className={"fa " + (autoplaying ? "fa-pause" : "fa-play")}></i>
                 </button>
-                <button type="button" onClick={game_controller.nav_next} className="move-control">
+                <button type="button" onClick={goban_controller.nav_next} className="move-control">
                     <i className="fa fa-step-forward"></i>
                 </button>
                 <button
                     type="button"
-                    onClick={game_controller.nav_next_10}
+                    onClick={goban_controller.nav_next_10}
                     className="move-control"
                 >
                     <i className="fa fa-forward"></i>
                 </button>
-                <button type="button" onClick={game_controller.nav_last} className="move-control">
+                <button type="button" onClick={goban_controller.nav_last} className="move-control">
                     <i className="fa fa-fast-forward"></i>
                 </button>
             </span>
@@ -289,8 +289,8 @@ export function FragBelowBoardControls() {
 }
 
 export function FragTimings() {
-    const game_controller = useGameController();
-    const goban = game_controller.goban;
+    const goban_controller = useGobanController();
+    const goban = goban_controller.goban;
 
     if (goban?.engine?.config) {
         return (

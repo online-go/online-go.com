@@ -31,7 +31,7 @@ import { _, interpolate, ngettext } from "@/lib/translate";
 import * as data from "@/lib/data";
 import { generateGobanHook, usePlayerToMove, useZenMode } from "./GameHooks";
 import { get_network_latency, get_clock_drift } from "@/lib/sockets";
-import { useGameController } from "./goban_context";
+import { useGobanController } from "./goban_context";
 import { usePreference } from "@/lib/preferences";
 import { browserHistory } from "@/lib/ogsHistory";
 import { player_is_ignored } from "@/components/BlockPlayer";
@@ -59,12 +59,12 @@ export function PlayerCards({
     black_ai_suspected,
     white_ai_suspected,
 }: PlayerCardsProps): React.ReactElement {
-    const game_controller = useGameController();
-    const goban = game_controller.goban;
+    const goban_controller = useGobanController();
+    const goban = goban_controller.goban;
 
     const orig_marks = React.useRef<string | null>(null);
     const showing_scores = React.useRef<boolean>(false);
-    const zen_mode = useZenMode(game_controller);
+    const zen_mode = useZenMode(goban_controller);
 
     const [show_score_breakdown, set_show_score_breakdown] = React.useState(false);
 

@@ -102,6 +102,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
     private _annulled: boolean = false;
     public chat_proxy: ChatChannelProxy;
     public review_list: ReviewListEntry[] = [];
+    public destroyed: boolean = false;
 
     constructor(opts: GobanRendererConfig) {
         super();
@@ -159,6 +160,11 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
     }
 
     public destroy() {
+        if (this.destroyed) {
+            console.warn("GobanController.destroy() called twice");
+            return;
+        }
+        this.destroyed = true;
         this.chat_proxy.part();
         this.stopAutoplay();
         this.goban.destroy();
@@ -444,6 +450,9 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
     }
 
     public setMoveTreeContainer = (resizable: Resizable) => {
+        if (this.destroyed) {
+            return;
+        }
         if (this.goban && resizable?.div) {
             this.goban.setMoveTreeContainer(resizable.div);
         }
@@ -663,12 +672,12 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         if (this.zen_mode) {
             const body = document.getElementsByTagName("body")[0];
             body.classList.remove("zen"); //remove the class
-            this.emit("zen_mode", false);
+            this.setZenMode(false);
             this.emit("view_mode", goban_view_mode());
         } else {
             const body = document.getElementsByTagName("body")[0];
             body.classList.add("zen"); //add the class
-            this.emit("zen_mode", true);
+            this.setZenMode(true);
             this.emit("view_mode", goban_view_mode());
         }
         this.emit("resize");
@@ -678,6 +687,11 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         preferences.set("ai-review-enabled", this._ai_review_enabled);
         console.log("toggleAIReview", this._ai_review_enabled);
         if (this._ai_review_enabled) {
+            this.goban.setHeatmap(undefined);
+            this.goban.setColoredCircles(undefined);
+            this.goban.engine.move_tree.traverse((node: MoveTree) => node.clearMarks());
+            this.goban.redraw();
+        } else {
             this.goban.setHeatmap(undefined);
             this.goban.setColoredCircles(undefined);
             this.goban.engine.move_tree.traverse((node: MoveTree) => node.clearMarks());

@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { useGameController } from "@/views/Game/goban_context";
+import { useGobanController } from "@/views/Game/goban_context";
 
 interface MoveListPopoverProps {
     moves: number[];
@@ -31,7 +31,7 @@ export function MoveListPopover({
     color,
     onClose,
 }: MoveListPopoverProps): React.ReactElement {
-    const game_controller = useGameController();
+    const goban_controller = useGobanController();
     return (
         <div className="category-move-popover">
             <div className="category-move-header">
@@ -48,7 +48,7 @@ export function MoveListPopover({
                                 key={move}
                                 className="move-number"
                                 onClick={() => {
-                                    game_controller.nav_goto_move(move - 1);
+                                    goban_controller.nav_goto_move(move - 1);
                                 }}
                             >
                                 {move}
