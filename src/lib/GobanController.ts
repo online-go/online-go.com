@@ -686,17 +686,10 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         this._ai_review_enabled = !this._ai_review_enabled;
         preferences.set("ai-review-enabled", this._ai_review_enabled);
         console.log("toggleAIReview", this._ai_review_enabled);
-        if (this._ai_review_enabled) {
-            this.goban.setHeatmap(undefined);
-            this.goban.setColoredCircles(undefined);
-            this.goban.engine.move_tree.traverse((node: MoveTree) => node.clearMarks());
-            this.goban.redraw();
-        } else {
-            this.goban.setHeatmap(undefined);
-            this.goban.setColoredCircles(undefined);
-            this.goban.engine.move_tree.traverse((node: MoveTree) => node.clearMarks());
-            this.goban.redraw();
-        }
+        this.goban.setHeatmap(undefined);
+        this.goban.setColoredCircles(undefined);
+        this.goban.engine.move_tree.traverse((node: MoveTree) => node.clearMarks());
+        this.goban.redraw();
         this.emit("ai_review_enabled", this._ai_review_enabled);
     };
     updateVariationName = (ev: React.ChangeEvent<HTMLInputElement>) => {
