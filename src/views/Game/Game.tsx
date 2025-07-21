@@ -80,6 +80,7 @@ export function Game(): React.ReactElement | null {
     const goban_controller = React.useRef<GobanController | null>(null);
     const last_phase = React.useRef<string>("");
     const page_loaded_time = React.useRef<number>(Date.now()); // when we first created this view
+    const [, forceUpdate] = React.useReducer((x) => x + 1, 0);
 
     let goban = goban_controller.current?.goban ?? null;
 
@@ -256,6 +257,7 @@ export function Game(): React.ReactElement | null {
         goban_controller.current?.destroy();
         goban_controller.current = new GobanController(opts);
         goban = goban_controller.current.goban;
+        forceUpdate();
 
         goban_controller.current.last_variation_number = 0;
         goban_controller.current.on("branch_copied", (copied_node) => {
