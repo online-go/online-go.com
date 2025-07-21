@@ -271,6 +271,9 @@ export function useAIReviewEnabled(controller: GobanController): boolean {
     );
     React.useEffect(() => {
         controller.on("ai_review_enabled", set_ai_review_enabled);
+        return () => {
+            controller.off("ai_review_enabled", set_ai_review_enabled);
+        };
     }, [controller]);
     return ai_review_enabled;
 }
