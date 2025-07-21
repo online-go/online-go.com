@@ -197,9 +197,9 @@ export function useVariationName(controller: GobanController | null): string {
     const [variation_name, set_variation_name] = React.useState(controller?.variation_name ?? "");
     React.useEffect(() => {
         if (controller) {
-            controller.on("set_variation_name", set_variation_name);
+            controller.on("variation_name", set_variation_name);
             return () => {
-                controller.off("set_variation_name", set_variation_name);
+                controller.off("variation_name", set_variation_name);
             };
         }
         return undefined;

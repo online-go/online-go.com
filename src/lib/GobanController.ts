@@ -47,16 +47,16 @@ import { isLiveGame } from "@/components/TimeControl";
 
 interface GobanControllerEvents {
     autoplaying: (autoplaying: boolean) => void;
-    set_variation_name: (variation_name: string) => void;
-    set_show_game_timing: (show_game_timing: boolean) => void;
-    set_show_bot_detection_results: (show_bot_detection_results: boolean) => void;
+    variation_name: (variation_name: string) => void;
+    show_game_timing: (show_game_timing: boolean) => void;
+    show_bot_detection_results: (show_bot_detection_results: boolean) => void;
     zen_mode: (zen_mode: boolean) => void;
     copied_node: (copied_node: MoveTree | undefined) => void;
     view_mode: (view_mode: ViewMode) => void;
     ai_review_enabled: (ai_review_enabled: boolean) => void;
-    set_estimating_score: (estimating_score: boolean) => void;
+    estimating_score: (estimating_score: boolean) => void;
     resize: () => void;
-    stopEstimatingScore: () => void; // emitted when we want to stop estimating the score
+    stop_estimating_score: () => void; // emitted when we want to stop estimating the score
     selected_chat_log: (selected_chat_log: ChatMode) => void;
     selected_ai_review_uuid: (selected_ai_review_uuid: string | null) => void;
     branch_copied: (copied_node: MoveTree | undefined) => void;
@@ -121,15 +121,15 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
             : chat_manager.join(`review-${this.review_id}`);
 
         this.setupCountdownCounter();
-        this.goban.on("phase", this.sync_stone_removal.bind(this));
-        this.goban.on("mode", this.sync_stone_removal.bind(this));
-        this.goban.on("outcome", this.sync_stone_removal.bind(this));
-        this.goban.on("stone-removal.accepted", this.sync_stone_removal.bind(this));
-        this.goban.on("stone-removal.updated", this.sync_stone_removal.bind(this));
-        this.goban.on("stone-removal.needs-sealing", this.sync_needs_sealing.bind(this));
+        this.goban.on("phase", this.syncStoneRemoval.bind(this));
+        this.goban.on("mode", this.syncStoneRemoval.bind(this));
+        this.goban.on("outcome", this.syncStoneRemoval.bind(this));
+        this.goban.on("stone-removal.accepted", this.syncStoneRemoval.bind(this));
+        this.goban.on("stone-removal.updated", this.syncStoneRemoval.bind(this));
+        this.goban.on("stone-removal.needs-sealing", this.syncNeedsSealing.bind(this));
 
         this.goban.on("load", () => {
-            this.sync_stone_removal();
+            this.syncStoneRemoval();
             this.review_list = [];
             for (const k in this.goban.engine.config.reviews) {
                 this.review_list.push({
@@ -251,7 +251,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
     public get in_pushed_analysis(): boolean {
         return this._in_pushed_analysis;
     }
-    public set in_pushed_analysis(in_pushed_analysis: boolean) {
+    public setInPushedAnalysis(in_pushed_analysis: boolean) {
         this._in_pushed_analysis = in_pushed_analysis;
         this.emit("in_pushed_analysis", in_pushed_analysis);
     }
@@ -281,7 +281,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
     public get selected_ai_review_uuid(): string | null {
         return this._selected_ai_review_uuid;
     }
-    public set selected_ai_review_uuid(selected_ai_review_uuid: string | null) {
+    public setSelectedAiReviewUuid(selected_ai_review_uuid: string | null) {
         this._selected_ai_review_uuid = selected_ai_review_uuid;
         this.emit("selected_ai_review_uuid", selected_ai_review_uuid);
     }
@@ -301,7 +301,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
     public get copied_node(): MoveTree | undefined {
         return this._copied_node;
     }
-    public set copied_node(copied_node: MoveTree | undefined) {
+    public setCopiedNode(copied_node: MoveTree | undefined) {
         this._copied_node = copied_node;
         this.emit("copied_node", copied_node);
     }
@@ -309,12 +309,12 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
     public get view_mode(): ViewMode {
         return this._view_mode;
     }
-    public set view_mode(view_mode: ViewMode) {
+    public setViewMode(view_mode: ViewMode) {
         this._view_mode = view_mode;
         this.emit("view_mode", view_mode);
     }
 
-    public nav_up = () => {
+    public nextBranchUp = () => {
         if (this.goban.mode === "conditional") {
             return;
         }
@@ -324,7 +324,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         this.goban.syncReviewMove();
     };
 
-    public nav_down = () => {
+    public nextBranchDown = () => {
         if (this.goban.mode === "conditional") {
             return;
         }
@@ -333,14 +333,14 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         this.goban.nextSibling();
         this.goban.syncReviewMove();
     };
-    public nav_first = () => {
+    public gotoFirstMove = () => {
         const last_estimate_move = this.stopEstimatingScore();
         this.stopAutoplay();
         this.checkAndEnterAnalysis(last_estimate_move);
         this.goban.showFirst();
         this.goban.syncReviewMove();
     };
-    public nav_prev_10 = () => {
+    public previous10Moves = () => {
         const last_estimate_move = this.stopEstimatingScore();
         this.stopAutoplay();
         this.checkAndEnterAnalysis(last_estimate_move);
@@ -349,7 +349,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         }
         this.goban.syncReviewMove();
     };
-    public nav_prev = () => {
+    public previousMove = () => {
         const last_estimate_move = this.stopEstimatingScore();
         this.stopAutoplay();
         this.checkAndEnterAnalysis(last_estimate_move);
@@ -363,7 +363,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
 
         this.goban.syncReviewMove();
     };
-    public nav_next = (event?: React.MouseEvent<any>, dont_stop_autoplay?: boolean) => {
+    public nextMove = (event?: React.MouseEvent<any>, dont_stop_autoplay?: boolean) => {
         const last_estimate_move = this.stopEstimatingScore();
         if (!dont_stop_autoplay) {
             this.stopAutoplay();
@@ -372,7 +372,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         this.goban.showNext();
         this.goban.syncReviewMove();
     };
-    public nav_next_10 = () => {
+    public forwardTenMoves = () => {
         const last_estimate_move = this.stopEstimatingScore();
         this.stopAutoplay();
         this.checkAndEnterAnalysis(last_estimate_move);
@@ -381,7 +381,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         }
         this.goban.syncReviewMove();
     };
-    public nav_last = () => {
+    public gotoLastMove = () => {
         const last_estimate_move = this.stopEstimatingScore();
         this.stopAutoplay();
         this.checkAndEnterAnalysis(last_estimate_move);
@@ -394,7 +394,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         }
         this.goban.syncReviewMove();
     };
-    public nav_play_pause = () => {
+    public togglePlayPause = () => {
         if (this.autoplaying) {
             this.stopAutoplay();
         } else {
@@ -402,7 +402,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         }
         console.log("nav_play_pause", this.autoplaying);
     };
-    public nav_goto_move = (move_number?: number) => {
+    public gotoMove = (move_number?: number) => {
         if (typeof move_number !== "number") {
             return;
         }
@@ -442,7 +442,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
 
     public setVariationName = (variation_name: string) => {
         this._variation_name = variation_name;
-        this.emit("set_variation_name", variation_name);
+        this.emit("variation_name", variation_name);
     };
 
     public get variation_name(): string {
@@ -474,7 +474,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         this.checkAndEnterAnalysis();
         const step = () => {
             if (this.goban.mode === "analyze") {
-                this.nav_next(undefined, true);
+                this.nextMove(undefined, true);
 
                 if (
                     this.goban.engine.last_official_move.move_number ===
@@ -537,14 +537,14 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
 
         return false;
     };
-    clear_and_sync = () => {
+    clearAndSync = () => {
         this.goban.syncReviewMove({ clearpen: true });
         this.goban.clearAnalysisDrawing();
         return true;
     };
 
     /* It's not clear to me if we need this anymore - anoek 2025-07-08 */
-    private sync_stone_removal = () => {
+    private syncStoneRemoval = () => {
         const goban = this.goban;
         const engine = goban.engine;
 
@@ -567,7 +567,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
             }
         }
     };
-    private sync_needs_sealing = (positions: undefined | JGOFSealingIntersection[]) => {
+    private syncNeedsSealing = (positions: undefined | JGOFSealingIntersection[]) => {
         console.log("sync_needs_sealing", positions);
         const engine = this.goban.engine;
 
@@ -632,12 +632,12 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
 
     toggleShowTiming = () => {
         this.show_game_timing = !this.show_game_timing;
-        this.emit("set_show_game_timing", this.show_game_timing);
+        this.emit("show_game_timing", this.show_game_timing);
     };
 
     toggleShowBotDetectionResults = () => {
         this.show_bot_detection_results = !this.show_bot_detection_results;
-        this.emit("set_show_bot_detection_results", this.show_bot_detection_results);
+        this.emit("show_bot_detection_results", this.show_bot_detection_results);
     };
 
     gameLogModalMarkCoords = (stones_string: string) => {
@@ -669,17 +669,15 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         }
     };
     toggleZenMode = () => {
+        const body = document.getElementsByTagName("body")[0];
         if (this.zen_mode) {
-            const body = document.getElementsByTagName("body")[0];
             body.classList.remove("zen"); //remove the class
             this.setZenMode(false);
-            this.emit("view_mode", goban_view_mode());
         } else {
-            const body = document.getElementsByTagName("body")[0];
             body.classList.add("zen"); //add the class
             this.setZenMode(true);
-            this.emit("view_mode", goban_view_mode());
         }
+        this.emit("view_mode", goban_view_mode());
         this.emit("resize");
     };
     toggleAIReview = () => {
@@ -805,7 +803,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
     };
 
     leaveScoreEstimation = () => {
-        this.emit("set_estimating_score", false);
+        this.emit("estimating_score", false);
         if (!this.goban) {
             return;
         }
@@ -865,7 +863,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
             );
             return false;
         }
-        this.emit("set_estimating_score", true);
+        this.emit("estimating_score", true);
         const use_ai_estimate =
             this.goban.engine.phase === "finished" || !this.goban.engine.isParticipant(user.id);
         this.goban.setScoringMode(true, use_ai_estimate);
@@ -877,7 +875,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
             return;
         }
         */
-        this.emit("set_estimating_score", false);
+        this.emit("estimating_score", false);
         const ret = this.goban.setScoringMode(false);
         this.goban.hideScores();
         this.goban.score_estimator = null;
@@ -932,7 +930,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
             // ignore error
         }
 
-        this.copied_node = this.goban.engine.cur_move;
+        this.setCopiedNode(this.goban.engine.cur_move);
         this.emit("branch_copied", this.copied_node);
     };
     pasteBranch = () => {

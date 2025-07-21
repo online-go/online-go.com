@@ -48,7 +48,7 @@ export function MoveListPopover({
                                 key={move}
                                 className="move-number"
                                 onClick={() => {
-                                    goban_controller.nav_goto_move(move - 1);
+                                    goban_controller.gotoMove(move - 1);
                                 }}
                             >
                                 {move}

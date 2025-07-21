@@ -1255,7 +1255,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                                     update_count={this.state.rerender}
                                     move_number={move_number}
                                     variation_move_number={variation_move_number}
-                                    set_move={(num: number) => goban_controller.nav_goto_move(num)}
+                                    set_move={(num: number) => goban_controller.gotoMove(num)}
                                     use_score={this.state.use_score}
                                     highlighted_moves={
                                         this.state.current_popup_moves.length > 0
@@ -1532,7 +1532,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                                         ? "move black-background"
                                         : "move white-background"
                                 }
-                                onClick={() => goban_controller.nav_goto_move(de.move_number - 1)}
+                                onClick={() => goban_controller.gotoMove(de.move_number - 1)}
                             >
                                 {pretty_coords}
                             </span>

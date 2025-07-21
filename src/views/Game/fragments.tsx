@@ -117,15 +117,15 @@ export function GameKeyboardShortcuts() {
 
     return (
         <div>
-            <KBShortcut shortcut="up" action={goban_controller.nav_up} />
-            <KBShortcut shortcut="down" action={goban_controller.nav_down} />
-            <KBShortcut shortcut="left" action={goban_controller.nav_prev} />
-            <KBShortcut shortcut="right" action={goban_controller.nav_next} />
-            <KBShortcut shortcut="page-up" action={goban_controller.nav_prev_10} />
-            <KBShortcut shortcut="page-down" action={goban_controller.nav_next_10} />
-            <KBShortcut shortcut="space" action={goban_controller.nav_play_pause} />
-            <KBShortcut shortcut="home" action={goban_controller.nav_first} />
-            <KBShortcut shortcut="end" action={goban_controller.nav_last} />
+            <KBShortcut shortcut="up" action={goban_controller.nextBranchUp} />
+            <KBShortcut shortcut="down" action={goban_controller.nextBranchDown} />
+            <KBShortcut shortcut="left" action={goban_controller.previousMove} />
+            <KBShortcut shortcut="right" action={goban_controller.nextMove} />
+            <KBShortcut shortcut="page-up" action={goban_controller.previous10Moves} />
+            <KBShortcut shortcut="page-down" action={goban_controller.forwardTenMoves} />
+            <KBShortcut shortcut="space" action={goban_controller.togglePlayPause} />
+            <KBShortcut shortcut="home" action={goban_controller.gotoFirstMove} />
+            <KBShortcut shortcut="end" action={goban_controller.gotoLastMove} />
             <KBShortcut shortcut="escape" action={goban_controller.handleEscapeKey} />
             <KBShortcut
                 shortcut="f1"
@@ -164,7 +164,7 @@ export function GameKeyboardShortcuts() {
                 }
             />
             {goban?.mode === "analyze" && (
-                <KBShortcut shortcut="f10" action={goban_controller.clear_and_sync} />
+                <KBShortcut shortcut="f10" action={goban_controller.clearAndSync} />
             )}
             <KBShortcut shortcut="del" action={goban_controller.deleteBranch} />
             <KBShortcut shortcut="shift-z" action={goban_controller.toggleZenMode} />
@@ -203,7 +203,7 @@ export function FragAIReview() {
     ) {
         return (
             <AIReview
-                onAIReviewSelected={(r) => (goban_controller.selected_ai_review_uuid = r?.uuid)}
+                onAIReviewSelected={(r) => goban_controller.setSelectedAiReviewUuid(r?.uuid)}
                 game_id={game_id}
                 move={cur_move}
                 hidden={!ai_review_enabled}
@@ -242,37 +242,49 @@ export function FragBelowBoardControls() {
         <div className="action-bar">
             <span className="icons" />
             <span className="controls">
-                <button type="button" onClick={goban_controller.nav_first} className="move-control">
+                <button
+                    type="button"
+                    onClick={goban_controller.gotoFirstMove}
+                    className="move-control"
+                >
                     <i className="fa fa-fast-backward"></i>
                 </button>
                 <button
                     type="button"
-                    onClick={goban_controller.nav_prev_10}
+                    onClick={goban_controller.previous10Moves}
                     className="move-control"
                 >
                     <i className="fa fa-backward"></i>
                 </button>
-                <button type="button" onClick={goban_controller.nav_prev} className="move-control">
+                <button
+                    type="button"
+                    onClick={goban_controller.previousMove}
+                    className="move-control"
+                >
                     <i className="fa fa-step-backward"></i>
                 </button>
                 <button
                     type="button"
-                    onClick={goban_controller.nav_play_pause}
+                    onClick={goban_controller.togglePlayPause}
                     className="move-control"
                 >
                     <i className={"fa " + (autoplaying ? "fa-pause" : "fa-play")}></i>
                 </button>
-                <button type="button" onClick={goban_controller.nav_next} className="move-control">
+                <button type="button" onClick={goban_controller.nextMove} className="move-control">
                     <i className="fa fa-step-forward"></i>
                 </button>
                 <button
                     type="button"
-                    onClick={goban_controller.nav_next_10}
+                    onClick={goban_controller.forwardTenMoves}
                     className="move-control"
                 >
                     <i className="fa fa-forward"></i>
                 </button>
-                <button type="button" onClick={goban_controller.nav_last} className="move-control">
+                <button
+                    type="button"
+                    onClick={goban_controller.gotoLastMove}
+                    className="move-control"
+                >
                     <i className="fa fa-fast-forward"></i>
                 </button>
             </span>

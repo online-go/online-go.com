@@ -158,7 +158,7 @@ export function Game(): React.ReactElement | null {
                 ) {
                     set_squashed(goban_view_squashed());
                     if (goban_controller.current) {
-                        goban_controller.current.view_mode = goban_view_mode();
+                        goban_controller.current.setViewMode(goban_view_mode());
                     }
                 }
             }
@@ -172,22 +172,19 @@ export function Game(): React.ReactElement | null {
         }
         const controller = goban_controller.current;
 
-        controller.on("set_show_game_timing", set_show_game_timing);
-        controller.on("set_show_bot_detection_results", set_show_bot_detection_results);
+        controller.on("show_game_timing", set_show_game_timing);
+        controller.on("show_bot_detection_results", set_show_bot_detection_results);
         controller.on("resize", onResize);
-        controller.on("set_estimating_score", set_estimating_score);
+        controller.on("estimating_score", set_estimating_score);
 
         return () => {
-            controller.off("set_show_game_timing", set_show_game_timing);
-            controller.off("set_show_bot_detection_results", set_show_bot_detection_results);
+            controller.off("show_game_timing", set_show_game_timing);
+            controller.off("show_bot_detection_results", set_show_bot_detection_results);
             controller.off("resize", onResize);
-            controller.off("set_estimating_score", set_estimating_score);
+            controller.off("estimating_score", set_estimating_score);
         };
     }, [goban_controller.current, set_show_game_timing, set_show_bot_detection_results, onResize]);
 
-    const nav_prev = goban_controller.current?.nav_prev ?? (() => {});
-    const nav_next = goban_controller.current?.nav_next ?? (() => {});
-    const nav_goto_move = goban_controller.current?.nav_goto_move ?? (() => {});
     const setLabelHandler = goban_controller.current?.setLabelHandler ?? (() => {});
 
     const onWheel: React.WheelEventHandler<HTMLDivElement> = React.useCallback(
@@ -197,9 +194,9 @@ export function Game(): React.ReactElement | null {
             }
 
             if (event.deltaY > 0) {
-                nav_next();
+                goban_controller.current?.nextMove();
             } else if (event.deltaY < 0) {
-                nav_prev();
+                goban_controller.current?.previousMove();
             }
         },
         [scroll_to_navigate],
@@ -351,7 +348,7 @@ export function Game(): React.ReactElement | null {
         /* Handle ?move_number=10 query parameter */
         if (params.move_number) {
             goban.once(review_id ? "review.load-end" : "gamedata", () => {
-                nav_goto_move(parseInt(params.move_number as string));
+                goban_controller.current?.gotoMove(parseInt(params.move_number as string));
             });
         }
 

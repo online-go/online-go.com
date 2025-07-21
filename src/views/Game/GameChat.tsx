@@ -647,7 +647,7 @@ function MarkupChatLine({ line }: { line: ChatLine }): React.ReactElement {
 
                     const onLeave = () => {
                         if (goban_controller.in_pushed_analysis) {
-                            goban_controller.in_pushed_analysis = false;
+                            goban_controller.setInPushedAnalysis(false);
                             delete goban_controller.onPushAnalysisLeft;
                             goban.engine.cur_move.popStashedMarks();
                             goban.engine.jumpTo(orig_move);
@@ -663,7 +663,7 @@ function MarkupChatLine({ line }: { line: ChatLine }): React.ReactElement {
                     };
 
                     const onEnter = () => {
-                        goban_controller.in_pushed_analysis = true;
+                        goban_controller.setInPushedAnalysis(true);
                         goban_controller.onPushAnalysisLeft = onLeave;
 
                         const turn =
@@ -700,7 +700,7 @@ function MarkupChatLine({ line }: { line: ChatLine }): React.ReactElement {
                         onLeave();
                         goban.setMode("analyze");
                         onEnter();
-                        goban_controller.in_pushed_analysis = false;
+                        goban_controller.setInPushedAnalysis(false);
                         goban.updateTitleAndStonePlacement();
                         goban.syncReviewMove();
                         goban.redraw();
