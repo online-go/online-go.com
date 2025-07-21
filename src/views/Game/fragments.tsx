@@ -111,7 +111,7 @@ export function GameInformation(): React.ReactElement | null {
     );
 }
 
-export function GameKeyboardShortcuts() {
+export function GameKeyboardShortcuts(): React.ReactElement | null {
     const goban_controller = useGobanController();
     const goban = goban_controller.goban;
 
@@ -180,7 +180,7 @@ export function GameKeyboardShortcuts() {
         </div>
     );
 }
-export function FragAIReview() {
+export function FragAIReview(): React.ReactElement | null {
     const goban_controller = useGobanController();
     const goban = goban_controller.goban;
     const cur_move = useCurrentMove(goban);
@@ -189,7 +189,7 @@ export function FragAIReview() {
     const ai_review_enabled = useAIReviewEnabled(goban_controller);
 
     if (!goban) {
-        return;
+        return null;
     }
     // Games
     if (
@@ -223,7 +223,7 @@ export function FragAIReview() {
     }
     return null;
 }
-export function FragBelowBoardControls() {
+export function FragBelowBoardControls(): React.ReactElement | null {
     const goban_controller = useGobanController();
     const goban = goban_controller.goban;
     const [view_mode, set_view_mode] = React.useState(goban_controller.view_mode);
@@ -300,7 +300,7 @@ export function FragBelowBoardControls() {
     );
 }
 
-export function FragTimings() {
+export function FragTimings(): React.ReactElement | null {
     const goban_controller = useGobanController();
     const goban = goban_controller.goban;
 
