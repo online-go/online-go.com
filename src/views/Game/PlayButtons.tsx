@@ -89,7 +89,7 @@ export function PlayButtons({ show_cancel = true }: PlayButtonsProps): React.Rea
     const [show_accept_undo, setShowAcceptUndo] = React.useState<boolean>(false);
     React.useEffect(() => {
         const syncShowAcceptUndo = () => {
-            if (goban_controller.in_pushed_analysis) {
+            if (in_pushed_analysis) {
                 return;
             }
 
