@@ -17,7 +17,13 @@
 
 import * as React from "react";
 import { useGobanController } from "./goban_context";
-import { useShowTitle, useTitle, useCurrentMove, useAIReviewEnabled } from "./GameHooks";
+import {
+    useShowTitle,
+    useTitle,
+    useCurrentMove,
+    useAIReviewEnabled,
+    useCurrentMoveNumber,
+} from "./GameHooks";
 import { _, interpolate } from "@/lib/translate";
 import { rulesText } from "@/lib/misc";
 import { KBShortcut } from "@/components/KBShortcut";
@@ -228,6 +234,7 @@ export function FragBelowBoardControls(): React.ReactElement | null {
     const goban = goban_controller.goban;
     const [view_mode, set_view_mode] = React.useState(goban_controller.view_mode);
     const [autoplaying, set_autoplaying] = React.useState(goban_controller.autoplaying);
+    const current_move_number = useCurrentMoveNumber(goban);
 
     React.useEffect(() => {
         goban_controller.on("view_mode", set_view_mode);
@@ -292,7 +299,7 @@ export function FragBelowBoardControls(): React.ReactElement | null {
             {view_mode !== "portrait" && (
                 <span className="move-number">
                     {interpolate(_("Move {{move_number}}"), {
-                        move_number: goban?.engine.getMoveNumber(),
+                        move_number: current_move_number >= 0 ? current_move_number : 0,
                     })}
                 </span>
             )}

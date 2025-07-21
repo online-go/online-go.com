@@ -33,7 +33,13 @@ import { errorAlerter } from "@/lib/misc";
 import { doAnnul } from "@/lib/moderation";
 import { openReport } from "@/components/Report";
 import { openGameInfoModal } from "./GameInfoModal";
-import { useUserIsParticipant } from "./GameHooks";
+import {
+    useUserIsParticipant,
+    useCurrentMoveNumber,
+    usePhase,
+    useMode,
+    usePlayerToMove,
+} from "./GameHooks";
 import { useGobanController } from "./goban_context";
 import { Tooltip } from "../../components/Tooltip";
 import { ModalContext, ModalTypes } from "@/components/ModalProvider";
@@ -74,7 +80,8 @@ export function GameDock({
     const goban_controller = useGobanController();
     const goban = goban_controller.goban;
     const engine = goban.engine;
-    const phase = engine.phase;
+    const phase = usePhase(goban);
+    const mode = useMode(goban);
     const [ai_review_enabled, set_ai_review_enabled] = React.useState(
         goban_controller.ai_review_enabled,
     );
@@ -109,6 +116,8 @@ export function GameDock({
     const annulable = !annulled && engine.config.ranked;
     const unannulable = annulled && engine.config.ranked;
     const user_is_player = useUserIsParticipant(goban);
+    const current_move_number = useCurrentMoveNumber(goban);
+    const player_to_move = usePlayerToMove(goban);
 
     const review_id: number | undefined = goban.config.review_id;
     const game_id: number | undefined = Number(goban.config.game_id);
@@ -322,9 +331,7 @@ export function GameDock({
     // Not the same as engine.playerToMove(), which changes when you place a
     // provisional stone on the board (in submit-move or double-click mode).
     const currentPlayer =
-        engine.getMoveNumber() === engine.getCurrentMoveNumber()
-            ? engine.playerToMove()
-            : engine.playerNotToMove();
+        engine.getMoveNumber() === current_move_number ? player_to_move : engine.playerNotToMove();
 
     return (
         <Dock>
@@ -410,7 +417,7 @@ export function GameDock({
                     <a
                         style={{
                             visibility:
-                                goban.mode === "play" && currentPlayer !== user?.id
+                                mode === "play" && currentPlayer !== user?.id
                                     ? "visible"
                                     : "hidden",
                         }}
