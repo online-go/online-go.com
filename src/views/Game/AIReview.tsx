@@ -1582,7 +1582,7 @@ function sanityCheck(ai_review: JGOFAIReview) {
 export function ReviewStrengthIcon({
     review,
 }: {
-    review: JGOFAIReview | rest_api.AIReviewParams;
+    review: (JGOFAIReview | rest_api.AIReviewParams) & { cheat_detection?: boolean };
 }): React.ReactElement {
     let strength: string;
     let content = "";
@@ -1625,6 +1625,11 @@ export function ReviewStrengthIcon({
                 content = "";
             }
         }
+    }
+
+    if (review.cheat_detection) {
+        strength = "ai-cheat-detection-review";
+        content = "D";
     }
 
     return <span className={"ai-review-strength-icon " + strength}>{content}</span>;
