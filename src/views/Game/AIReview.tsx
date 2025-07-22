@@ -1026,7 +1026,16 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
         let black_moves = 0;
         let white_moves = 0;
 
-        let worst_move_list = getWorstMoves(goban.engine.move_tree, this.ai_review, 100);
+        let worst_move_list =
+            this.ai_review.type === "fast"
+                ? Object.values(this.ai_review.moves).map((move) => ({
+                      move_number: move.move_number + 1,
+                      player: goban.engine.move_tree.index(move.move_number).player,
+                      delta: move.win_rate,
+                      move: move.move,
+                  }))
+                : getWorstMoves(goban.engine.move_tree, this.ai_review, 100);
+
         worst_move_list = worst_move_list.filter(
             (move) =>
                 (move.player === 1 && black_moves++ < 3) ||
