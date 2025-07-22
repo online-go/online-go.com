@@ -670,13 +670,12 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                         key = "0";
                     }
                     // only show numbers for well explored moves
-                    // show number for AI choice and played moves[0] as well
+                    // show number for AI choice (if well explored)and played moves[0] as well
                     if (
                         mv &&
-                        (i === 0 ||
+                        ((i === 0 && branch.visits > visits_threshold) ||
                             //true || // debugging
-                            branch_is_players_move ||
-                            branch.visits > visits_threshold)
+                            branch_is_players_move)
                     ) {
                         if (parseFloat(key).toPrecision(2).length < key.length) {
                             key = parseFloat(key).toPrecision(2);
