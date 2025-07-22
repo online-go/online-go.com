@@ -667,7 +667,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                         if (parseFloat(key).toPrecision(2).length < key.length) {
                             key = parseFloat(key).toPrecision(2);
                         }
-                        goban.setSubscriptMark(mv.x, mv.y, key, true);
+                        goban.setSubscriptMark(mv.x, mv.y, key, true, true);
                     }
 
                     const circle: ColoredCircle = {
@@ -677,7 +677,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
 
                     if (next_move && sameIntersection(branch.moves[0], next_move)) {
                         goban.setMark(mv.x, mv.y, "sub_triangle", true);
-                        goban.setMark(mv.x, mv.y, "blue_move", true);
+                        goban.setMark(mv.x, mv.y, "blue_move", true, true);
 
                         circle.border_width = 0.1;
                         circle.border_color = "rgb(0, 0, 0)";
@@ -689,7 +689,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                         colored_circles.push(circle);
                     } else if (i === 0) {
                         // blue move, not what player made
-                        goban.setMark(mv.x, mv.y, "blue_move", true);
+                        goban.setMark(mv.x, mv.y, "blue_move", true, true);
                         circle.border_width = 0.2;
                         circle.border_color = "rgb(0, 130, 255)";
                         circle.color = "rgba(0, 130, 255, 0.7)";
@@ -712,7 +712,8 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
         marks = this.trimMaxMoves(marks);
 
         try {
-            goban.setMarks(marks, true); /* draw the remaining AI sequence as ghost marks, if any */
+            /* draw the remaining AI sequence as ghost marks, if any */
+            goban.setMarks(marks, true, true);
             goban.setHeatmap(heatmap as any, true);
             goban.setColoredCircles(colored_circles, false);
         } catch (e) {

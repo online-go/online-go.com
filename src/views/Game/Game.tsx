@@ -607,7 +607,7 @@ export function Game(): React.ReactElement | null {
         if (ai_review_enabled) {
             goban.current.setHeatmap(undefined);
             goban.current.setColoredCircles(undefined);
-            goban.current.engine.move_tree.traverse((node: MoveTree) => node.clearMarks());
+            goban.current.engine.move_tree.traverse((node: MoveTree) => node.clearAIMarks());
             goban.current.redraw();
         }
         set_ai_review_enabled(!ai_review_enabled);

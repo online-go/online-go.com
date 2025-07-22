@@ -435,7 +435,7 @@ function renderAnalysis(goban: GobanRenderer, data: any) {
 
         // blue move, not what player made
         if (i === 0) {
-            goban.setMark(mv.x, mv.y, "blue_move", true);
+            goban.setMark(mv.x, mv.y, "blue_move", true, true);
             circle.border_width = 0.2;
             circle.border_color = "rgb(0, 130, 255)";
             circle.color = "rgba(0, 130, 255, 0.7)";
@@ -447,7 +447,8 @@ function renderAnalysis(goban: GobanRenderer, data: any) {
     marks = trimMaxMoves(marks);
 
     try {
-        goban.setMarks(marks, true); /* draw the remaining AI sequence as ghost marks, if any */
+        /* draw the remaining AI sequence as ghost marks, if any */
+        goban.setMarks(marks, true, true);
         goban.setHeatmap(heatmap, true);
         goban.setColoredCircles(colored_circles, false);
     } catch (e) {
