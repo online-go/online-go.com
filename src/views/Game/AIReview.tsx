@@ -1638,7 +1638,12 @@ export function ReviewStrengthIcon({
 
     if (review.cheat_detection) {
         strength = "ai-cheat-detection-review";
-        content = "D";
+        if (review.strength >= 500) {
+            strength += " ai-cheat-detection-review-plus";
+            content = "D+";
+        } else {
+            content = "D";
+        }
     }
 
     return <span className={"ai-review-strength-icon " + strength}>{content}</span>;
