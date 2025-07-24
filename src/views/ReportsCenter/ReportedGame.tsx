@@ -77,28 +77,10 @@ export function ReportedGame({
             goban.on("update", refresh);
         }
 
-        /*
-        const gotoMove = (move_number?: number) => {
-            if (typeof move_number !== "number") {
-                return;
-            }
-
-            if (goban) {
-                goban.showFirst(move_number > 0);
-                for (let i = 0; i < move_number; ++i) {
-                    goban.showNext(i !== move_number - 1);
-                }
-                goban.syncReviewMove();
-            }
-        };
-
-        game_control.on("gotoMove", gotoMove);
-        */
         return () => {
             if (goban) {
                 goban.off("update", refresh);
             }
-            //game_control.off("gotoMove", gotoMove);
         };
     }, [goban]);
 
