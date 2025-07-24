@@ -235,7 +235,7 @@ export function Game(): React.ReactElement | null {
             variation_stone_opacity: preferences.get("variation-stone-opacity"),
             stone_font_scale: preferences.get("stone-font-scale"),
             onScoreEstimationUpdated: () => {
-                goban?.redraw(true);
+                goban_controller.current?.goban?.redraw(true);
             },
         };
 
@@ -244,8 +244,10 @@ export function Game(): React.ReactElement | null {
         }
         if (review_id) {
             opts.review_id = review_id;
-            opts.isPlayerOwner = () => goban?.review_owner_id === data.get("user").id;
-            opts.isPlayerController = () => goban?.review_controller_id === data.get("user").id;
+            opts.isPlayerOwner = () =>
+                goban_controller.current?.goban?.review_owner_id === data.get("user").id;
+            opts.isPlayerController = () =>
+                goban_controller.current?.goban?.review_controller_id === data.get("user").id;
         }
 
         goban_controller.current?.destroy();
