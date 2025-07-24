@@ -144,6 +144,9 @@ export function PlayButtons({ show_cancel = true }: PlayButtonsProps): React.Rea
     const [submitting_move, setSubmittingMove] = React.useState(false);
     React.useEffect(() => {
         goban.on("submitting-move", setSubmittingMove);
+        return () => {
+            goban.off("submitting-move", setSubmittingMove);
+        };
     }, [goban]);
 
     return (
