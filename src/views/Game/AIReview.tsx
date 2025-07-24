@@ -675,7 +675,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                         if (parseFloat(key).toPrecision(2).length < key.length) {
                             key = parseFloat(key).toPrecision(2);
                         }
-                        goban.setSubscriptMark(mv.x, mv.y, key, true);
+                        goban.setSubscriptMark(mv.x, mv.y, key, true, true);
                     }
 
                     const circle: ColoredCircle = {
@@ -685,7 +685,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
 
                     if (next_move && sameIntersection(branch.moves[0], next_move)) {
                         goban.setMark(mv.x, mv.y, "sub_triangle", true);
-                        goban.setMark(mv.x, mv.y, "blue_move", true);
+                        goban.setMark(mv.x, mv.y, "blue_move", true, true);
 
                         circle.border_width = 0.1;
                         circle.border_color = "rgb(0, 0, 0)";
@@ -697,7 +697,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                         colored_circles.push(circle);
                     } else if (i === 0) {
                         // blue move, not what player made
-                        goban.setMark(mv.x, mv.y, "blue_move", true);
+                        goban.setMark(mv.x, mv.y, "blue_move", true, true);
                         circle.border_width = 0.2;
                         circle.border_color = "rgb(0, 130, 255)";
                         circle.color = "rgba(0, 130, 255, 0.7)";
@@ -720,7 +720,8 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
         marks = this.trimMaxMoves(marks);
 
         try {
-            goban.setMarks(marks, true); /* draw the remaining AI sequence as ghost marks, if any */
+            /* draw the remaining AI sequence as ghost marks, if any */
+            goban.setMarks(marks, true, true);
             goban.setHeatmap(heatmap as any, true);
             goban.setColoredCircles(colored_circles, false);
         } catch (e) {
@@ -1045,7 +1046,16 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
         let black_moves = 0;
         let white_moves = 0;
 
-        let worst_move_list = getWorstMoves(goban.engine.move_tree, this.ai_review, 100);
+        let worst_move_list =
+            this.ai_review.type === "fast"
+                ? Object.values(this.ai_review.moves).map((move) => ({
+                      move_number: move.move_number + 1,
+                      player: goban.engine.move_tree.index(move.move_number).player,
+                      delta: move.win_rate,
+                      move: move.move,
+                  }))
+                : getWorstMoves(goban.engine.move_tree, this.ai_review, 100);
+
         worst_move_list = worst_move_list.filter(
             (move) =>
                 (move.player === 1 && black_moves++ < 3) ||
@@ -1605,7 +1615,7 @@ function sanityCheck(ai_review: JGOFAIReview) {
 export function ReviewStrengthIcon({
     review,
 }: {
-    review: JGOFAIReview | rest_api.AIReviewParams;
+    review: (JGOFAIReview | rest_api.AIReviewParams) & { cheat_detection?: boolean };
 }): React.ReactElement {
     let strength: string;
     let content = "";
@@ -1647,6 +1657,16 @@ export function ReviewStrengthIcon({
                 strength = "ai-review-strength-0";
                 content = "";
             }
+        }
+    }
+
+    if (review.cheat_detection) {
+        strength = "ai-cheat-detection-review";
+        if (review.strength >= 500) {
+            strength += " ai-cheat-detection-review-plus";
+            content = "D+";
+        } else {
+            content = "D";
         }
     }
 

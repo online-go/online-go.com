@@ -686,7 +686,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         console.log("toggleAIReview", this._ai_review_enabled);
         this.goban.setHeatmap(undefined);
         this.goban.setColoredCircles(undefined);
-        this.goban.engine.move_tree.traverse((node: MoveTree) => node.clearMarks());
+        this.goban.engine.move_tree.traverse((node: MoveTree) => node.clearAIMarks());
         this.goban.redraw();
         this.emit("ai_review_enabled", this._ai_review_enabled);
     };
