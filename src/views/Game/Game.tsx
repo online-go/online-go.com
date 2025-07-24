@@ -185,8 +185,6 @@ export function Game(): React.ReactElement | null {
         };
     }, [goban_controller.current, set_show_game_timing, set_show_bot_detection_results, onResize]);
 
-    const setLabelHandler = goban_controller.current?.setLabelHandler ?? (() => {});
-
     const onWheel: React.WheelEventHandler<HTMLDivElement> = React.useCallback(
         (event) => {
             if (!scroll_to_navigate) {
@@ -214,7 +212,6 @@ export function Game(): React.ReactElement | null {
         set_white_flags(null);
 
         window.addEventListener("focus", onFocus);
-        document.addEventListener("keypress", setLabelHandler);
 
         /*** initialize ***/
         const label_position = preferences.get("label-positioning");
@@ -262,6 +259,8 @@ export function Game(): React.ReactElement | null {
                 toast(<div>{_("Branch copied")}</div>);
             }
         });
+        const setLabelHandler = goban_controller.current.setLabelHandler;
+        document.addEventListener("keypress", setLabelHandler);
 
         onResize(true);
         window.global_goban = goban;
