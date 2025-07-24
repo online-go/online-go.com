@@ -84,7 +84,7 @@ export function PlayButtons({ show_cancel = true }: PlayButtonsProps): React.Rea
             goban.off("cur_move", syncShowSubmit);
             goban_controller.off("in_pushed_analysis", set_in_pushed_analysis);
         };
-    }, [goban]);
+    }, [goban_controller, goban, set_in_pushed_analysis]);
 
     const [show_accept_undo, setShowAcceptUndo] = React.useState<boolean>(false);
     React.useEffect(() => {
