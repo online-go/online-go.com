@@ -43,18 +43,24 @@ export class Toast extends TypedEventEmitter<Events> {
     }
 
     close() {
-        requestAnimationFrame(() => {
-            this.react_root.unmount();
-        });
+        // Unmount the React root first so React can clean up while the container
+        // is still in the DOM, avoiding potential race conditions where React
+        // tries to access nodes that have already been removed.
+        this.react_root.unmount();
+
+        // After React has unmounted its contents, it is now safe to remove the
+        // container and any parent wrapper elements from the DOM.
         const parent = this.container.parentElement;
         if (parent) {
             parent.remove();
         }
         this.container.remove();
+
         if (this.timeout) {
-            this.timeout = null;
             clearTimeout(this.timeout);
+            this.timeout = null;
         }
+
         this.emit("close");
     }
 }
