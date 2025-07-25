@@ -43,7 +43,9 @@ export class Toast extends TypedEventEmitter<Events> {
     }
 
     close() {
-        this.react_root.unmount();
+        requestAnimationFrame(() => {
+            this.react_root.unmount();
+        });
         const parent = this.container.parentElement;
         if (parent) {
             parent.remove();

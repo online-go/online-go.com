@@ -53,6 +53,7 @@ import {
 } from "./fragments";
 import { toast } from "@/lib/toast";
 import { ignore } from "@/lib/misc";
+import { updateAntiGriefGameState } from "./AntiGrief";
 
 export function Game(): React.ReactElement | null {
     const params = useParams<"game_id" | "review_id" | "move_number">();
@@ -253,7 +254,11 @@ export function Game(): React.ReactElement | null {
         goban_controller.current?.destroy();
         goban_controller.current = new GobanController(opts);
         goban = goban_controller.current.goban;
+        window.global_goban = goban;
         forceUpdate();
+
+        // Update AntiGrief state with the new goban
+        updateAntiGriefGameState(goban);
 
         goban_controller.current.last_variation_number = 0;
         goban_controller.current.on("branch_copied", (copied_node) => {
@@ -265,7 +270,6 @@ export function Game(): React.ReactElement | null {
         document.addEventListener("keypress", setLabelHandler);
 
         onResize(true);
-        window.global_goban = goban;
         if (review_id) {
             goban.setMode("analyze");
         }
@@ -324,9 +328,16 @@ export function Game(): React.ReactElement | null {
         const onLoad = () => {
             const engine = goban!.engine;
             set_undo_requested(engine.undo_requested);
+
+            // Update AntiGrief state when game data loads
+            updateAntiGriefGameState(goban);
         };
 
-        goban.on("phase", () => goban!.engine.cur_move.clearMarks());
+        goban.on("phase", () => {
+            goban!.engine.cur_move.clearMarks();
+            // Update AntiGrief state when phase changes
+            updateAntiGriefGameState(goban);
+        });
         goban.on("undo_requested", set_undo_requested);
         goban.on("load", onLoad);
         onLoad();
@@ -548,6 +559,9 @@ export function Game(): React.ReactElement | null {
 
             window.Game = null;
             window.global_goban = null;
+
+            // Clear AntiGrief state when unmounting
+            updateAntiGriefGameState(null);
 
             setExtraActionCallback(null as any);
             window.removeEventListener("focus", onFocus);

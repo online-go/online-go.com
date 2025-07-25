@@ -21,7 +21,7 @@ import { Card } from "@/components/material";
 import { pgettext, _ } from "@/lib/translate";
 import { useGobanController } from "./goban_context";
 import { useUser } from "@/lib/hooks";
-import { JGOFClockWithTransmitting, JGOFTimeControl } from "goban";
+import { GobanInteractive, JGOFClockWithTransmitting, JGOFTimeControl } from "goban";
 import { browserHistory } from "@/lib/ogsHistory";
 import { toast } from "@/lib/toast";
 import { StallingScoreEstimate } from "goban";
@@ -30,44 +30,93 @@ const ANTI_ESCAPING_TIMEOUT = 60; // number of seconds to wait before allowing t
 
 let on_game_page = false;
 let live_game = false;
-let live_game_id = 0;
+let last_game_id = 0;
 let live_game_phase: string | null = null;
 let last_toast: ReturnType<typeof toast> | null = null;
-let was_player = false;
+let is_player = false; // Changed from was_player to is_player for clarity
+let last_pathname = "";
+let paused_since: number | undefined;
+let last_goban: GobanInteractive | undefined | null;
+
+// Exported function to be called by Game.tsx
+export function updateAntiGriefGameState(goban: GobanInteractive | null) {
+    const user_id = data.get("user").id;
+
+    if (last_goban) {
+        last_goban.off("clock", updatePauseState);
+    }
+
+    if (!goban) {
+        last_goban = null;
+        return;
+    }
+
+    const isPlayer =
+        goban.engine?.config?.black_player_id === user_id ||
+        goban.engine?.config?.white_player_id === user_id;
+
+    const isLiveGame = goban.engine?.time_control?.speed !== "correspondence";
+    const gamePhase = goban.engine?.phase;
+
+    on_game_page = true;
+    is_player = isPlayer;
+    live_game = isLiveGame;
+    last_game_id = goban.game_id;
+    live_game_phase = gamePhase;
+    last_goban = goban;
+    paused_since = goban.paused_since;
+    const clock = goban.last_emitted_clock;
+    if (clock?.pause_state && !paused_since) {
+        paused_since = clock.paused_since || Date.now();
+    }
+
+    goban.on("clock", updatePauseState);
+}
+
+function updatePauseState() {
+    if (last_goban) {
+        paused_since = last_goban.paused_since;
+        // Also check the last emitted clock for pause state
+        const clock = last_goban.last_emitted_clock;
+        if (clock?.pause_state && !paused_since) {
+            // If clock says paused but paused_since not set, use current time
+            paused_since = clock.paused_since || Date.now();
+        }
+    }
+}
 
 function checkForLeavingLiveGame(pathname: string) {
     try {
-        const user = data.get("user");
-        const goban = window.global_goban;
-        const was_on_page = on_game_page;
-        const was_live_game = live_game;
-
-        if (goban) {
-            const path = `/game/${goban.game_id}`;
-            if (pathname === path) {
-                on_game_page = true;
-                live_game = goban.engine.time_control.speed !== "correspondence";
-                live_game_id = goban.game_id;
-                live_game_phase = goban.engine?.phase;
-                was_player =
-                    goban.engine?.config?.black_player_id === user?.id ||
-                    goban.engine?.config?.white_player_id === user?.id;
-                if (last_toast) {
-                    last_toast.close();
-                }
-            } else {
-                on_game_page = false;
-            }
+        if (pathname === last_pathname) {
+            return;
         }
 
-        if (
+        // Capture the previous state before updating
+        const was_on_page = on_game_page;
+        const was_live_game = live_game;
+        const was_player = is_player;
+
+        // Check if we're navigating TO a game page
+        const isGamePage = pathname.startsWith(`/game/`);
+
+        if (isGamePage) {
+            // Close any existing toast when navigating back to a game
+            if (last_toast) {
+                last_toast.close();
+            }
+        } else {
+            on_game_page = false;
+        }
+
+        const shouldShowToast =
             was_on_page &&
             was_player &&
             !on_game_page &&
             was_live_game &&
             live_game_phase === "play" &&
-            !goban?.paused_since
-        ) {
+            !paused_since;
+
+        if (shouldShowToast) {
             const t = toast(
                 <div>
                     {_(
@@ -77,23 +126,29 @@ function checkForLeavingLiveGame(pathname: string) {
             );
             last_toast = t;
 
-            const game_id = live_game_id; // capture the game id
             t.on("close", () => {
                 last_toast = null;
-                browserHistory.push(`/game/${game_id}`);
+                browserHistory.push(`/game/${last_game_id}`);
             });
         }
     } catch (e) {
         console.error(e);
     }
+    last_pathname = pathname;
 }
 browserHistory.listen((obj: any) => {
     checkForLeavingLiveGame(obj?.location?.pathname);
+    if (!obj?.location?.pathname.startsWith("/game/")) {
+        last_goban = null;
+        paused_since = undefined;
+        on_game_page = false;
+        live_game = false;
+        live_game_phase = null;
+        is_player = false;
+    }
 });
 
 export function AntiGrief(): React.ReactElement {
-    checkForLeavingLiveGame(location?.pathname);
-
     return (
         <>
             <AntiEscaping />
