@@ -30,19 +30,18 @@ import { doAnnul } from "@/lib/moderation";
 import {
     AIReview,
     GameTimings,
-    ChatMode,
     GameChat,
-    GobanContext,
+    GobanControllerContext,
     useCurrentMove,
-    game_control,
     GameLog,
-    useGoban,
+    useGobanController,
 } from "@/views/Game";
 import { GobanRenderer } from "goban";
 import { Resizable } from "@/components/Resizable";
 
 import { Player } from "@/components/Player";
 import { useUser } from "@/lib/hooks";
+import { GobanController } from "../../lib/GobanController";
 export function ReportedGame({
     game_id,
     reported_at,
@@ -55,12 +54,13 @@ export function ReportedGame({
     onGobanCreated?: (goban: GobanRenderer) => void;
 }): React.ReactElement | null {
     const [goban, setGoban] = React.useState<GobanRenderer | null>(null);
-    const [selectedChatLog, setSelectedChatLog] = React.useState<ChatMode>("main");
+    const [goban_controller, setGameController] = React.useState<GobanController | null>(null);
     const refresh = useRefresh();
     const handleGobanCreated = React.useCallback(
-        (goban: GobanRenderer) => {
-            setGoban(goban);
-            onGobanCreated?.(goban);
+        (goban_controller: GobanController) => {
+            setGoban(goban_controller.goban);
+            onGobanCreated?.(goban_controller.goban);
+            setGameController(goban_controller);
         },
         [onGobanCreated],
     );
@@ -77,26 +77,10 @@ export function ReportedGame({
             goban.on("update", refresh);
         }
 
-        const gotoMove = (move_number?: number) => {
-            if (typeof move_number !== "number") {
-                return;
-            }
-
-            if (goban) {
-                goban.showFirst(move_number > 0);
-                for (let i = 0; i < move_number; ++i) {
-                    goban.showNext(i !== move_number - 1);
-                }
-                goban.syncReviewMove();
-            }
-        };
-
-        game_control.on("gotoMove", gotoMove);
         return () => {
             if (goban) {
                 goban.off("update", refresh);
             }
-            game_control.off("gotoMove", gotoMove);
         };
     }, [goban]);
 
@@ -131,7 +115,7 @@ export function ReportedGame({
                         chat={true}
                     />
                     {goban && goban.engine && (
-                        <GobanContext.Provider value={goban}>
+                        <GobanControllerContext.Provider value={goban_controller}>
                             <Resizable
                                 id="move-tree-container"
                                 className="vertically-resizable"
@@ -150,11 +134,11 @@ export function ReportedGame({
                                 goban={goban}
                                 annulled={annulled}
                             />
-                        </GobanContext.Provider>
+                        </GobanControllerContext.Provider>
                     )}
                 </div>
                 {goban && goban.engine && (
-                    <GobanContext.Provider value={goban}>
+                    <GobanControllerContext.Provider value={goban_controller}>
                         <div className="reported-game-element reported-game-info">
                             <h3>
                                 Game: <Link to={`/game/${game_id}`}>#{game_id}</Link>
@@ -220,14 +204,9 @@ export function ReportedGame({
                         </div>
 
                         <div className="reported-game-element reported-game-chat">
-                            <GameChat
-                                selected_chat_log={selectedChatLog}
-                                onSelectedChatModeChange={setSelectedChatLog}
-                                channel={`game-${game_id}`}
-                                game_id={game_id}
-                            />
+                            <GameChat channel={`game-${game_id}`} game_id={game_id} />
                         </div>
-                    </GobanContext.Provider>
+                    </GobanControllerContext.Provider>
                 )}
             </div>
         </div>
@@ -334,7 +313,8 @@ function GameOutcomeSummary({
     annulled,
     scoringAbandoned,
 }: GameOutcomeSummaryProps): React.ReactElement {
-    const goban = useGoban();
+    const goban_controller = useGobanController();
+    const goban = goban_controller.goban;
     return (
         <div className="GameSummary">
             <div>

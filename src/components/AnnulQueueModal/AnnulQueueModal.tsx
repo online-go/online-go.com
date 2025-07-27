@@ -19,7 +19,13 @@ import * as React from "react";
 import { _ } from "@/lib/translate";
 import { MiniGoban } from "@/components/MiniGoban";
 import { GobanRenderer } from "goban";
-import { AIReview, GameTimings, ChatMode, GameChat, GobanContext } from "@/views/Game";
+import {
+    AIReview,
+    GameTimings,
+    GameChat,
+    GobanControllerContext,
+    GobanController,
+} from "@/views/Game";
 import { Player } from "@/components/Player";
 import { Resizable } from "@/components/Resizable";
 import { post, put } from "@/lib/requests";
@@ -46,9 +52,11 @@ export function AnnulQueueModal({
     // Declare state variables
     const [selectedGameIndex, setSelectedGameIndex] = React.useState(0);
     const [goban, setGoban] = React.useState<GobanRenderer | null>(null);
-    const [selectedChatLog, setSelectedChatLog] = React.useState<ChatMode>("main");
-    const onGobanCreated = React.useCallback((goban: GobanRenderer) => {
-        setGoban(goban);
+    const [gameController, setGameController] = React.useState<GobanController | null>(null);
+    //const [selectedChatLog, setSelectedChatLog] = React.useState<ChatMode>("main");
+    const onGobanCreated = React.useCallback((goban_controller: GobanController) => {
+        setGoban(goban_controller.goban);
+        setGameController(goban_controller);
     }, []);
     const [, setAiReviewUuid] = React.useState<string | null>(null);
     const [dequeueRequested, setDequeueRequested] = React.useState(false);
@@ -282,7 +290,7 @@ export function AnnulQueueModal({
                             )}
 
                             {goban && goban.engine && currentGame && (
-                                <GobanContext.Provider value={goban}>
+                                <GobanControllerContext.Provider value={gameController}>
                                     <div className="col">
                                         <div>
                                             Black: <Player user={currentGame?.black} />
@@ -332,13 +340,11 @@ export function AnnulQueueModal({
 
                                     <div className="col">
                                         <GameChat
-                                            selected_chat_log={selectedChatLog}
-                                            onSelectedChatModeChange={setSelectedChatLog}
                                             channel={`game-${currentGame.id}`}
                                             game_id={currentGame.id}
                                         />
                                     </div>
-                                </GobanContext.Provider>
+                                </GobanControllerContext.Provider>
                             )}
                         </div>
                     </div>

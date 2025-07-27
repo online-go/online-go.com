@@ -3,15 +3,17 @@
  * Copyright (C)  Benjamin P. Jones
  */
 
-import { createGoban, GobanRenderer, ConditionalMoveTree } from "goban";
 import { PlayControls } from "./PlayControls";
 import { render, screen } from "@testing-library/react";
 import * as React from "react";
 import * as data from "@/lib/data";
 import { MemoryRouter as Router } from "react-router-dom";
-import { GobanContext } from "./goban_context";
+import { GobanControllerContext } from "./goban_context";
 import { act } from "react";
 import { OgsHelpProvider } from "@/components/OgsHelpProvider";
+import { GobanController } from "../../lib/GobanController";
+import { GobanRenderer, ConditionalMoveTree } from "goban";
+
 const TEST_USER = {
     anonymous: false,
     id: 123,
@@ -60,9 +62,6 @@ const PLAY_CONTROLS_DEFAULTS = {
     renderAnalyzeButtonBar: () => {
         return <React.Fragment />;
     },
-    setMoveTreeContainer: () => {
-        return;
-    },
     onShareAnalysis: () => {
         return;
     },
@@ -82,18 +81,21 @@ const PLAY_CONTROLS_DEFAULTS = {
     },
 } as const;
 
-function WrapTest(props: { goban: GobanRenderer; children: any }): React.ReactElement {
+function WrapTest(props: { controller: GobanController; children: any }): React.ReactElement {
+    const { controller } = props;
     return (
         <OgsHelpProvider>
             <Router>
-                <GobanContext.Provider value={props.goban}>{props.children}</GobanContext.Provider>
+                <GobanControllerContext.Provider value={controller}>
+                    {props.children}
+                </GobanControllerContext.Provider>
             </Router>
         </OgsHelpProvider>
     );
 }
 
 test("No moves have been played", () => {
-    const goban = createGoban({
+    const controller = new GobanController({
         game_id: 1234,
         // TEST_USER must be a member of the game in order for cancel to show up.
         players: {
@@ -104,7 +106,7 @@ test("No moves have been played", () => {
     data.set("user", TEST_USER);
 
     render(
-        <WrapTest goban={goban}>
+        <WrapTest controller={controller}>
             <PlayControls {...PLAY_CONTROLS_DEFAULTS} />
         </WrapTest>,
     );
@@ -117,11 +119,11 @@ test("No moves have been played", () => {
 });
 
 test("Don't render play buttons if user is not a player", () => {
-    const goban = createGoban({ game_id: 1234 });
+    const controller = new GobanController({ game_id: 1234 });
     data.set("user", TEST_USER);
 
     render(
-        <WrapTest goban={goban}>
+        <WrapTest controller={controller}>
             <PlayControls {...PLAY_CONTROLS_DEFAULTS} />
         </WrapTest>,
     );
@@ -134,7 +136,7 @@ test("Don't render play buttons if user is not a player", () => {
 });
 
 test("Renders undo if it is not the players turn", () => {
-    const goban = createGoban({
+    const controller = new GobanController({
         game_id: 1234,
         // Need to play at least one move before Undo button shows up
         moves: [
@@ -152,7 +154,7 @@ test("Renders undo if it is not the players turn", () => {
     data.set("user", TEST_USER);
 
     render(
-        <WrapTest goban={goban}>
+        <WrapTest controller={controller}>
             <PlayControls {...PLAY_CONTROLS_DEFAULTS} />
         </WrapTest>,
     );
@@ -162,7 +164,7 @@ test("Renders undo if it is not the players turn", () => {
 });
 
 test("Renders accept undo if undo requested", () => {
-    const goban = createGoban({
+    const controller = new GobanController({
         game_id: 1234,
         // Need to play at least one move before Undo button shows up
         moves: [
@@ -177,11 +179,11 @@ test("Renders accept undo if undo requested", () => {
             black: { id: 456, username: "test_user2" },
         },
     });
-    goban.engine.undo_requested = 3;
+    controller.goban.engine.undo_requested = 3;
     data.set("user", TEST_USER);
 
     render(
-        <WrapTest goban={goban}>
+        <WrapTest controller={controller}>
             <PlayControls {...PLAY_CONTROLS_DEFAULTS} />
         </WrapTest>,
     );
@@ -192,7 +194,7 @@ test("Renders accept undo if undo requested", () => {
 });
 
 test("Renders Pass if it is the user's turn", () => {
-    const goban = createGoban({
+    const controller = new GobanController({
         game_id: 1234,
         moves: [
             [15, 15, 5241],
@@ -205,11 +207,11 @@ test("Renders Pass if it is the user's turn", () => {
             black: { id: 456, username: "test_user2" },
         },
     });
-    goban.engine.undo_requested = 3;
+    controller.goban.engine.undo_requested = 3;
     data.set("user", TEST_USER);
 
     render(
-        <WrapTest goban={goban}>
+        <WrapTest controller={controller}>
             <PlayControls {...PLAY_CONTROLS_DEFAULTS} />
         </WrapTest>,
     );
@@ -238,7 +240,7 @@ function makeConditionalMoveTree() {
 }
 
 test("Renders conditional moves", () => {
-    const goban = createGoban({
+    const controller = new GobanController({
         game_id: 1234,
         moves: [],
         players: {
@@ -247,12 +249,12 @@ test("Renders conditional moves", () => {
             black: { id: 456, username: "test_user2" },
         },
     });
-    goban.setMode("conditional");
-    goban.setConditionalTree(makeConditionalMoveTree());
+    controller.goban.setMode("conditional");
+    controller.goban.setConditionalTree(makeConditionalMoveTree());
 
     render(
-        <WrapTest goban={goban}>
-            <PlayControls {...PLAY_CONTROLS_DEFAULTS} mode="conditional" />
+        <WrapTest controller={controller}>
+            <PlayControls {...PLAY_CONTROLS_DEFAULTS} />
         </WrapTest>,
     );
 
@@ -261,27 +263,27 @@ test("Renders conditional moves", () => {
 });
 
 test("Unsubscribe from all events on unmount", () => {
-    const goban = createGoban({ game_id: 1234 });
+    const controller = new GobanController({ game_id: 1234 });
     data.set("user", TEST_USER);
 
     const getListenerCounts = (emitter: GobanRenderer) =>
         Object.fromEntries(emitter.eventNames().map((key) => [key, emitter.listenerCount(key)]));
 
     // Goban may set up listeners on itself
-    const listeners_before = getListenerCounts(goban);
+    const listeners_before = getListenerCounts(controller.goban);
 
     const { unmount } = render(
-        <WrapTest goban={goban}>
+        <WrapTest controller={controller}>
             <PlayControls {...PLAY_CONTROLS_DEFAULTS} />
         </WrapTest>,
     );
     unmount();
 
-    expect(getListenerCounts(goban)).toEqual(listeners_before);
+    expect(getListenerCounts(controller.goban)).toEqual(listeners_before);
 });
 
 test("Pause buttons show up", () => {
-    const goban = createGoban({
+    const controller = new GobanController({
         game_id: 1234,
         // TEST_USER must be a member of the game in order for cancel to show up.
         players: {
@@ -292,7 +294,7 @@ test("Pause buttons show up", () => {
     data.set("user", TEST_USER);
 
     render(
-        <WrapTest goban={goban}>
+        <WrapTest controller={controller}>
             <PlayControls {...PLAY_CONTROLS_DEFAULTS} />
         </WrapTest>,
     );
@@ -300,13 +302,13 @@ test("Pause buttons show up", () => {
         // It would be more realistic to mock the "game/${id}/clock" socket event,
         // but AdHocClock is a complicated object and I'm not sure what params
         // to use to get the goban to actually pause.
-        goban.pause_control = {
+        controller.goban.pause_control = {
             paused: {
                 pausing_player_id: 123,
                 pauses_left: 4,
             },
         };
-        goban.emit("paused", true);
+        controller.goban.emit("paused", true);
     });
 
     expect(screen.getByText("Resume")).toBeDefined();

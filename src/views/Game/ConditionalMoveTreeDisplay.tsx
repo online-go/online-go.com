@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import { ConditionalMoveTree } from "goban";
-import { useGoban } from "./goban_context";
+import { useGobanController } from "./goban_context";
 import { generateGobanHook } from "./GameHooks";
 import { _ } from "@/lib/translate";
 
@@ -32,7 +32,8 @@ export function ConditionalMoveTreeDisplay({
 }: ConditionalMoveTreeDisplayProps) {
     const player_move: string | null = tree.move;
 
-    const goban = useGoban();
+    const goban_controller = useGobanController();
+    const goban = goban_controller.goban;
     const opponent_color = goban.conditional_starting_color;
     const player_color = opponent_color === "black" ? "white" : "black";
     const selected_path = useCurrentConditionalPath(goban);
@@ -95,7 +96,8 @@ const useCurrentConditionalPath = generateGobanHook(
 );
 
 function MoveEntry({ color, conditional_path }: MoveEntryProps) {
-    const goban = useGoban();
+    const goban_controller = useGobanController();
+    const goban = goban_controller.goban;
     const mv = goban.engine.decodeMoves(conditional_path.slice(-2))[0];
     const selected_conditional_path = useCurrentConditionalPath(goban);
     const selected = conditional_path === selected_conditional_path;
@@ -124,7 +126,8 @@ function MoveEntry({ color, conditional_path }: MoveEntryProps) {
 }
 
 function DeleteButton({ conditional_path }: { conditional_path: string }) {
-    const goban = useGoban();
+    const goban_controller = useGobanController();
+    const goban = goban_controller.goban;
     const cb = () => {
         goban.jumpToLastOfficialMove();
         goban.deleteConditionalPath(conditional_path);

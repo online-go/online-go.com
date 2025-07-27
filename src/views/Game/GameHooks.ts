@@ -16,10 +16,14 @@
  */
 
 import * as React from "react";
-import { Goban } from "goban";
-import { game_control } from "./game_control";
+import { ConditionalMoveTree, Goban } from "goban";
 import { GobanEvents } from "goban";
 import * as data from "@/lib/data";
+import * as preferences from "@/lib/preferences";
+import { useGobanController } from "./goban_context";
+import { GobanController } from "@/lib/GobanController";
+import { ViewMode } from "./util";
+import { ChatMode } from "./GameChat";
 
 /**
  * Generates a custom react hook that can return a prop that is derived from a
@@ -80,13 +84,25 @@ export function useShowUndoRequested(goban: Goban): boolean {
             goban.engine.undo_requested === goban.engine.last_official_move.move_number &&
             goban.engine.undo_requested === goban.engine.cur_move.move_number,
     );
+    const goban_controller = useGobanController();
+    const [in_pushed_analysis, set_in_pushed_analysis] = React.useState(
+        goban_controller.in_pushed_analysis,
+    );
+
+    React.useEffect(() => {
+        goban_controller.on("in_pushed_analysis", set_in_pushed_analysis);
+        return () => {
+            goban_controller.off("in_pushed_analysis", set_in_pushed_analysis);
+        };
+    }, [goban_controller]);
+
     React.useEffect(() => {
         if (!goban) {
             return;
         }
 
         const syncShowUndoRequested = () => {
-            if (game_control.in_pushed_analysis) {
+            if (in_pushed_analysis) {
                 return;
             }
 
@@ -110,7 +126,7 @@ export function useShowUndoRequested(goban: Goban): boolean {
             goban.off("last_official_move", syncShowUndoRequested);
             goban.off("cur_move", syncShowUndoRequested);
         };
-    }, [goban, game_control.in_pushed_analysis]);
+    }, [goban, in_pushed_analysis]);
 
     return show_undo_requested;
 }
@@ -161,3 +177,103 @@ export const useShowTitle = generateGobanHook(
 
 /** React hook that returns the title text (e.g. "Black to move"). */
 export const useTitle = generateGobanHook((goban: Goban | null) => goban?.title, ["title"]);
+export const useMode = generateGobanHook((goban: Goban | null) => goban?.mode, ["mode"]);
+
+export function useViewMode(controller: GobanController | null): ViewMode {
+    const [view_mode, set_view_mode] = React.useState(controller?.view_mode ?? "wide");
+    React.useEffect(() => {
+        if (controller) {
+            controller.on("view_mode", set_view_mode);
+            return () => {
+                controller.off("view_mode", set_view_mode);
+            };
+        }
+        return undefined;
+    }, [controller]);
+    return view_mode;
+}
+
+export function useVariationName(controller: GobanController | null): string {
+    const [variation_name, set_variation_name] = React.useState(controller?.variation_name ?? "");
+    React.useEffect(() => {
+        if (controller) {
+            controller.on("variation_name", set_variation_name);
+            return () => {
+                controller.off("variation_name", set_variation_name);
+            };
+        }
+        return undefined;
+    }, [controller]);
+    return variation_name;
+}
+
+export function useSelectedChatLog(controller: GobanController): ChatMode {
+    const [selected_chat_log, set_selected_chat_log] = React.useState(controller.selected_chat_log);
+    React.useEffect(() => {
+        if (!controller) {
+            return;
+        }
+
+        controller.on("selected_chat_log", set_selected_chat_log);
+        return () => {
+            controller.off("selected_chat_log", set_selected_chat_log);
+        };
+    }, [controller]);
+    return selected_chat_log;
+}
+
+export function useAnnulled(controller: GobanController): boolean {
+    const [annulled, set_annulled] = React.useState(controller.annulled);
+    React.useEffect(() => {
+        controller.on("annulled", set_annulled);
+        return () => {
+            controller.off("annulled", set_annulled);
+        };
+    }, [controller]);
+    return annulled;
+}
+
+export function useZenMode(controller: GobanController | null): boolean {
+    const [zen_mode, set_zen_mode] = React.useState(
+        controller?.zen_mode ?? preferences.get("start-in-zen-mode"),
+    );
+    React.useEffect(() => {
+        if (!controller) {
+            return;
+        }
+
+        controller.on("zen_mode", set_zen_mode);
+        return () => {
+            controller.off("zen_mode", set_zen_mode);
+        };
+    }, [controller]);
+    return zen_mode;
+}
+
+export function useStashedConditionalMoves(
+    controller: GobanController,
+): ConditionalMoveTree | null {
+    const [stashed_conditional_moves, set_stashed_conditional_moves] = React.useState(
+        controller?.stashed_conditional_moves ?? null,
+    );
+    React.useEffect(() => {
+        controller.on("stashed_conditional_moves", set_stashed_conditional_moves);
+        return () => {
+            controller.off("stashed_conditional_moves", set_stashed_conditional_moves);
+        };
+    }, [controller]);
+    return stashed_conditional_moves;
+}
+
+export function useAIReviewEnabled(controller: GobanController): boolean {
+    const [ai_review_enabled, set_ai_review_enabled] = React.useState(
+        controller?.ai_review_enabled ?? preferences.get("ai-review-enabled"),
+    );
+    React.useEffect(() => {
+        controller.on("ai_review_enabled", set_ai_review_enabled);
+        return () => {
+            controller.off("ai_review_enabled", set_ai_review_enabled);
+        };
+    }, [controller]);
+    return ai_review_enabled;
+}
