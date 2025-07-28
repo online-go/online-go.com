@@ -98,7 +98,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
     private _stashed_conditional_moves: ConditionalMoveTree | null = null;
     private _selected_ai_review_uuid: string | null = null;
     private _copied_node?: MoveTree;
-    private _view_mode: ViewMode = goban_view_mode();
+    private _view_mode: ViewMode = "wide"; // Default to wide, will be updated on resize if needed
     private _annulled: boolean = false;
     public chat_proxy: ChatChannelProxy;
     public review_list: ReviewListEntry[] = [];

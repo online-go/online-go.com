@@ -32,10 +32,6 @@ export function goban_view_mode(bar_width?: number): ViewMode {
         return "portrait";
     }
 
-    if (aspect_ratio >= 1920 / 1200 && w >= 1280) {
-        return "wide";
-    }
-
     return "wide";
 }
 
