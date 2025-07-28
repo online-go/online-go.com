@@ -39,6 +39,7 @@ export const runGame = async ({ browser }: { browser: Browser }) => {
     const { userPage: acceptorPage } = await prepareNewUser(browser, acceptorUsername, "test");
 
     const boardSize = "19x19"; // needed in two places
+    const handicap = 2; // also needed in two places
 
     // Challenger challenges the acceptor
     await createDirectChallenge(challengerPage, acceptorUsername, {
@@ -50,6 +51,7 @@ export const runGame = async ({ browser }: { browser: Browser }) => {
         mainTime: "45",
         timePerPeriod: "10",
         periods: "1",
+        handicap: handicap.toString(),
     });
 
     // escaper accepts
@@ -62,16 +64,100 @@ export const runGame = async ({ browser }: { browser: Browser }) => {
 
     await challengerPage.waitForTimeout(1000);
 
-    // Wait for the game state to indicate it's the challenger's move
-    let challengersMove = challengerPage.getByText("Your move", { exact: true });
-    await expect(challengersMove).toBeVisible();
+    // ** Make sure you have set the board size above to match the moves below! **
 
-    challengersMove = challengerPage.getByText("Your move", { exact: true });
-    await expect(challengersMove).toBeVisible();
+    const moves = ["D17", "K11", "Q17", "M10", "D3", "J8"];
 
-    const moves = ["A19", "T19", "A1", "T1", "D16", "Q16", "K10", "Q4", "D4", "Q10", "D10", "K19"];
+    // const moves = ["A19", "T19", "A1", "T1", "D16", "Q16", "K10", "Q4", "D4", "Q10", "D10", "K19"];
 
-    await playMoves(challengerPage, acceptorPage, moves, boardSize);
+    /*
+    const moves = [
+        "P4", // B[pd]
+        "D3", // W[dc]
+        "Q16", // B[qp]
+        "D16", // W[dq]
+        "N16", // B[np]
+        "P16", // W[pp]
+        "P15", // B[pq]
+        "Q15", // W[qq]
+        "Q14", // B[qo]
+        "O15", // W[oq]
+        "P17", // B[pr]
+        "O16", // W[op]
+        "O17", // B[or]
+        "N15", // W[nq]
+        "N17", // B[nr]
+        "M15", // W[mq]
+        "N14", // B[no]
+        "O13", // W[on]
+        "Q12", // B[qm]
+        "P13", // W[pn]
+        "Q13", // B[qn]
+        "M17", // W[mr]
+        "R15", // B[rq]
+        "J16", // W[jp]
+        "C5", // B[ce]
+        "E4", // W[ed]
+        "C9", // B[ci]
+        "C11", // W[ck]
+        "B3", // B[bc]
+        "C6", // W[cf]
+        "D6", // B[df]
+        "C4", // W[cd]
+        "B6", // B[bf]
+        "B4", // W[bd]
+        "C7", // B[cg]
+        "N3", // W[nc]
+        "P6", // B[pf]
+        "K4", // W[kd]
+        "C14", // B[co]
+        "C16", // W[cp]
+        "D14", // B[do]
+        "F15", // W[fq]
+        "C12", // B[cm]
+        "P3", // W[pc]
+        "Q3", // B[qc]
+        "Q2", // W[qb]
+        "O3", // B[oc]
+        "P2", // W[pb]
+        "O2", // B[ob]
+        "O4", // W[od]
+        "N2", // B[nb]
+        "Q4", // W[qd]
+        "P5", // B[pe]
+        "R3", // W[rc]
+        "M3", // B[mc]
+        "J3", // W[ic]
+        "R5", // B[re]
+        "R4", // W[rd]
+        "P10", // B[pj]
+        "N11", // W[nl]
+        "H15", // B[hq]
+        "F14", // W[fo]
+        "J11", // B[jq]
+        "J18", // W[ip]
+        "J17", // B[iq]
+        "K16", // W[kp]
+        "H16", // B[hp]
+        "J13", // W[in]
+        "H14", // B[ho]
+        "H13", // W[hn]
+        "F17", // B[fr]
+        "E17", // W[er]
+        "G17", // B[gr]
+        "E12", // W[em]
+        "D11", // B[dk]
+        "D10", // W[dj]
+        "D12", // B[dl]
+        "C10", // W[cj]
+        "F11", // B[fk]
+        "D9", // W[di]
+        "B9", // B[bi]
+        "F9", // W[fi]
+    ];
+    */
+
+    await playMoves(challengerPage, acceptorPage, moves, boardSize, handicap);
 
     // Note: this assumes that it's now black to play.
     const challengerPass = challengerPage.getByText("Pass", { exact: true });

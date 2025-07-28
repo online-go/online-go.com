@@ -91,15 +91,25 @@ export const clickOnGobanIntersection = async (
     await page.mouse.click(x, y);
 };
 
-// This expects the board to be ready for black to play
+// This expects the board to be ready for the first player to move
+// and that handicap stones are placed automatically by the system (Japanese rules)
 export const playMoves = async (
     black: Page,
     white: Page,
     moves: string[],
     boardSize: BoardSize = "19x19",
+    handicap: number = 0, // Japanese
 ) => {
     for (let i = 0; i < moves.length; i++) {
-        const page = i % 2 === 0 ? black : white;
+        // Determine which player should move based on handicap
+        let page;
+        if (handicap > 1) {
+            // White moves first after handicap stones are placed automatically
+            page = i % 2 === 0 ? white : black;
+        } else {
+            // Black moves first (no handicap or handicap = 1)
+            page = i % 2 === 0 ? black : white;
+        }
         const moveText = page.getByText("Your move", { exact: true });
         await expect(moveText).toBeVisible();
         await clickOnGobanIntersection(page, moves[i], boardSize);
