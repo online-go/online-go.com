@@ -83,7 +83,9 @@ export function GobanContainer({
                 return;
             }
 
-            if (goban_view_mode() === "portrait") {
+            const view_mode = goban_view_mode();
+
+            if (view_mode === "portrait") {
                 const w = window.innerWidth + 10;
                 if (ref_goban_container.current.style.minHeight !== `${w}px`) {
                     ref_goban_container.current.style.minHeight = `${w}px`;
@@ -116,8 +118,12 @@ export function GobanContainer({
         [goban, goban_div, onResizeCb],
     );
 
-    // Trigger resize on createGoban and subsequent "load" events
-    //generateGobanHook(() => onResize(/* no_debounce */ true, /* do_cb */ false))(goban || null);
+    React.useEffect(() => {
+        if (!goban || !goban_div || !ref_goban_container.current) {
+            return;
+        }
+        onResize(/* no_debounce */ true, /* do_cb */ true);
+    }, [goban, goban_div, ref_goban_container.current, onResize]);
 
     if (!goban || !goban_div) {
         return <React.Fragment />;

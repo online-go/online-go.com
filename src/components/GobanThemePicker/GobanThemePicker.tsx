@@ -183,7 +183,7 @@ export function GobanCustomBoardPicker(props: GobanThemePickerProperties): React
                         value={background_color}
                         onChange={setBackgroundColor}
                     />
-                    <button className="color-reset" onClick={() => _setBackgroundColor("")}>
+                    <button className="color-reset" onClick={() => _setBackgroundColor("#DCB35C")}>
                         <i className="fa fa-undo" />
                     </button>
 
@@ -193,7 +193,7 @@ export function GobanCustomBoardPicker(props: GobanThemePickerProperties): React
                         value={line_color}
                         onChange={setLineColor}
                     />
-                    <button className="color-reset" onClick={() => _setLineColor("")}>
+                    <button className="color-reset" onClick={() => _setLineColor("#000000")}>
                         <i className="fa fa-undo" />
                     </button>
                 </div>

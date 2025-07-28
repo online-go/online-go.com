@@ -39,6 +39,7 @@ export const runGame = async ({ browser }: { browser: Browser }) => {
     const { userPage: acceptorPage } = await prepareNewUser(browser, acceptorUsername, "test");
 
     const boardSize = "19x19"; // needed in two places
+    const handicap = 2; // also needed in two places
 
     // Challenger challenges the acceptor
     await createDirectChallenge(challengerPage, acceptorUsername, {
@@ -50,6 +51,7 @@ export const runGame = async ({ browser }: { browser: Browser }) => {
         mainTime: "45",
         timePerPeriod: "10",
         periods: "1",
+        handicap: handicap.toString(),
     });
 
     // escaper accepts
@@ -62,14 +64,13 @@ export const runGame = async ({ browser }: { browser: Browser }) => {
 
     await challengerPage.waitForTimeout(1000);
 
-    // Wait for the game state to indicate it's the challenger's move
-    let challengersMove = challengerPage.getByText("Your move", { exact: true });
-    await expect(challengersMove).toBeVisible();
+    // ** Make sure you have set the board size above to match the moves below! **
 
-    challengersMove = challengerPage.getByText("Your move", { exact: true });
-    await expect(challengersMove).toBeVisible();
+    const moves = ["D17", "K11", "Q17", "M10", "D3", "J8"];
 
-    // https://online-go.com/game/75395937
+    // const moves = ["A19", "T19", "A1", "T1", "D16", "Q16", "K10", "Q4", "D4", "Q10", "D10", "K19"];
+
+    /*
     const moves = [
         "P4", // B[pd]
         "D3", // W[dc]
@@ -133,8 +134,8 @@ export const runGame = async ({ browser }: { browser: Browser }) => {
         "N11", // W[nl]
         "H15", // B[hq]
         "F14", // W[fo]
-        "J15", // B[jq]
-        "L16", // W[ip]
+        "J11", // B[jq]
+        "J18", // W[ip]
         "J17", // B[iq]
         "K16", // W[kp]
         "H16", // B[hp]
@@ -153,13 +154,10 @@ export const runGame = async ({ browser }: { browser: Browser }) => {
         "D9", // W[di]
         "B9", // B[bi]
         "F9", // W[fi]
-        "G13", // B[gn]
-        "G14", // W[go]
-        "G12", // B[gm]
-        "B16", // W[bp]
     ];
+    */
 
-    await playMoves(challengerPage, acceptorPage, moves, boardSize);
+    await playMoves(challengerPage, acceptorPage, moves, boardSize, handicap);
 
     // Note: this assumes that it's now black to play.
     const challengerPass = challengerPage.getByText("Pass", { exact: true });

@@ -22,7 +22,7 @@ import * as data from "@/lib/data";
 import * as preferences from "@/lib/preferences";
 import { useGobanController } from "./goban_context";
 import { GobanController } from "@/lib/GobanController";
-import { ViewMode } from "./util";
+import { ViewMode, goban_view_mode } from "./util";
 import { ChatMode } from "./GameChat";
 
 /**
@@ -180,7 +180,7 @@ export const useTitle = generateGobanHook((goban: Goban | null) => goban?.title,
 export const useMode = generateGobanHook((goban: Goban | null) => goban?.mode, ["mode"]);
 
 export function useViewMode(controller: GobanController | null): ViewMode {
-    const [view_mode, set_view_mode] = React.useState(controller?.view_mode ?? "wide");
+    const [view_mode, set_view_mode] = React.useState(controller?.view_mode ?? goban_view_mode());
     React.useEffect(() => {
         if (controller) {
             controller.on("view_mode", set_view_mode);
