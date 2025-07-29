@@ -103,11 +103,15 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
     public chat_proxy: ChatChannelProxy;
     public review_list: ReviewListEntry[] = [];
     public destroyed: boolean = false;
+    private enable_sounds: boolean = true;
 
-    constructor(opts: GobanRendererConfig) {
+    constructor(opts: GobanRendererConfig & { enable_sounds?: boolean }) {
         super();
         this.goban = createGoban(opts);
-        this.bindAudioEvents();
+        this.enable_sounds = opts.enable_sounds !== false; // Default to true if not specified
+        if (this.enable_sounds) {
+            this.bindAudioEvents();
+        }
         this.game_id = opts.game_id ? Number(opts.game_id) : undefined;
         this.review_id = opts.review_id ? Number(opts.review_id) : undefined;
 
