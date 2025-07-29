@@ -100,7 +100,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
     private _copied_node?: MoveTree;
     private _view_mode: ViewMode = "wide"; // Default to wide, will be updated on resize if needed
     private _annulled: boolean = false;
-    public chat_proxy: ChatChannelProxy;
+    public chat_proxy?: ChatChannelProxy;
     public review_list: ReviewListEntry[] = [];
     public destroyed: boolean = false;
     private enable_sounds: boolean = true;
@@ -120,9 +120,11 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
             !this.review_id && this.game_id && inGameModChannel(this.game_id);
         this._selected_chat_log = in_game_mod_channel ? "hidden" : defaultChatMode;
 
-        this.chat_proxy = this.game_id
-            ? chat_manager.join(`game-${this.game_id}`)
-            : chat_manager.join(`review-${this.review_id}`);
+        if (opts.connect_to_chat) {
+            this.chat_proxy = this.game_id
+                ? chat_manager.join(`game-${this.game_id}`)
+                : chat_manager.join(`review-${this.review_id}`);
+        }
 
         this.setupCountdownCounter();
         this.goban.on("phase", this.syncStoneRemoval.bind(this));
@@ -169,7 +171,9 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
             return;
         }
         this.destroyed = true;
-        this.chat_proxy.part();
+        if (this.chat_proxy?.part) {
+            this.chat_proxy.part();
+        }
         this.stopAutoplay();
         this.goban.destroy();
         this.emit("destroy");
