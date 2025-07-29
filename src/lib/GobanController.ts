@@ -424,7 +424,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
             !this.goban.isAnalysisDisabled()
         ) {
             this.setVariationName("");
-            this.goban.setMode("analyze");
+            this.goban.setMode("analyze", true);
             if (move) {
                 this.goban.engine.jumpTo(move);
             }
