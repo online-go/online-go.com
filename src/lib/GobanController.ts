@@ -326,7 +326,6 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         if (this.goban.mode === "conditional") {
             return;
         }
-
         this.checkAndEnterAnalysis();
         this.goban.prevSibling();
         this.goban.syncReviewMove();
@@ -336,12 +335,14 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         if (this.goban.mode === "conditional") {
             return;
         }
-
         this.checkAndEnterAnalysis();
         this.goban.nextSibling();
         this.goban.syncReviewMove();
     };
     public gotoFirstMove = () => {
+        if (this.goban.mode === "conditional") {
+            return;
+        }
         const last_estimate_move = this.stopEstimatingScore();
         this.stopAutoplay();
         this.checkAndEnterAnalysis(last_estimate_move);
@@ -349,6 +350,9 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         this.goban.syncReviewMove();
     };
     public previous10Moves = () => {
+        if (this.goban.mode === "conditional") {
+            return;
+        }
         const last_estimate_move = this.stopEstimatingScore();
         this.stopAutoplay();
         this.checkAndEnterAnalysis(last_estimate_move);
@@ -390,6 +394,9 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         this.goban.syncReviewMove();
     };
     public gotoLastMove = () => {
+        if (this.goban.mode === "conditional") {
+            return;
+        }
         const last_estimate_move = this.stopEstimatingScore();
         this.stopAutoplay();
         this.checkAndEnterAnalysis(last_estimate_move);
@@ -403,6 +410,9 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         this.goban.syncReviewMove();
     };
     public togglePlayPause = () => {
+        if (this.goban.mode === "conditional") {
+            return;
+        }
         if (this.autoplaying) {
             this.stopAutoplay();
         } else {
@@ -426,6 +436,10 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
     };
 
     public checkAndEnterAnalysis = (move?: MoveTree) => {
+        if (this.goban.mode === "conditional") {
+            return true;
+        }
+
         if (
             this.goban.mode === "play" &&
             this.goban.engine.phase !== "stone removal" &&
@@ -855,6 +869,9 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         }
     };
     estimateScore = (): boolean => {
+        if (this.goban.mode === "conditional") {
+            return false;
+        }
         const user = data.get("user");
         const is_player =
             user.id === this.goban.engine.players.black.id ||
@@ -878,11 +895,6 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         return true;
     };
     stopEstimatingScore = (): MoveTree | undefined => {
-        /*
-        if (!this.estimating_score_ref.current) {
-            return;
-        }
-        */
         this.emit("estimating_score", false);
         const ret = this.goban.setScoringMode(false);
         this.goban.hideScores();
