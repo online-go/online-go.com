@@ -17,10 +17,9 @@
 
 import { ogsTest } from "@helpers";
 import { basicScoringTest } from "./basic-scoring";
-//import { runBotDetectionTest } from "./bot-detect";
+import { conditionalMovesArrowBugTest } from "./conditional-moves-arrow";
 
 ogsTest.describe("@Games Tests", () => {
     ogsTest("Should be able to pass and score a game", basicScoringTest);
-    // WIP
-    // ogsTest("Should run bot detection after 80 moves", runBotDetectionTest);
+    ogsTest("Should be able to use arrow in conditional moves", conditionalMovesArrowBugTest);
 });
