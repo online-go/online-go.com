@@ -27,7 +27,7 @@ interface Events {}
 interface Collection {
     id: number;
     name: string;
-    private: string;
+    private: boolean;
     parent_id: number;
     parent?: Collection;
     collections: Collection[];
@@ -83,7 +83,7 @@ export class SGFCollectionModal extends Modal<
                 const root: Collection = {
                     id: 0,
                     name: _("Main Library"),
-                    private: "",
+                    private: false,
                     parent_id: 0,
                     parent: undefined,
                     collections: [],
