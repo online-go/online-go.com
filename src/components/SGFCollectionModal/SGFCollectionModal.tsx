@@ -48,6 +48,7 @@ interface SGFCollectionModalState {
     selectedCollectionId: string;
     loading: boolean;
     uploading: boolean;
+    fileName: string;
 }
 
 export class SGFCollectionModal extends Modal<
@@ -62,6 +63,7 @@ export class SGFCollectionModal extends Modal<
             selectedCollectionId: "0",
             loading: true,
             uploading: false,
+            fileName: props.gameName || `Game ${props.gameId}`,
         };
     }
 
@@ -138,7 +140,7 @@ export class SGFCollectionModal extends Modal<
             })
             .then((sgfData) => {
                 // Create a file-like object from the SGF data
-                const gameName = this.props.gameName || `Game ${this.props.gameId}`;
+                const gameName = this.state.fileName;
                 const filename = `${gameName}.sgf`;
                 const file = new File([sgfData], filename, {
                     type: "application/x-go-sgf",
@@ -218,13 +220,19 @@ export class SGFCollectionModal extends Modal<
                                     {this.renderCollectionOption(collections["0"])}
                                 </select>
                             </div>
-                            {this.props.gameName && (
-                                <div className="game-info">
-                                    <p>
-                                        <strong>{_("Game:")}</strong> {this.props.gameName}
-                                    </p>
-                                </div>
-                            )}
+                            <div className="game-name-field">
+                                <label htmlFor="game-name">
+                                    <strong>{_("Game Name:")}</strong>
+                                </label>
+                                <input
+                                    id="game-name"
+                                    type="text"
+                                    value={this.state.fileName}
+                                    onChange={(e) => this.setState({ fileName: e.target.value })}
+                                    disabled={uploading}
+                                    placeholder={_("Enter game name")}
+                                />
+                            </div>
                         </>
                     ) : (
                         <p>{_("Failed to load collections.")}</p>
