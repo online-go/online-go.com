@@ -3,13 +3,19 @@
  * Copyright (C)  Benjamin P. Jones
  */
 
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import * as React from "react";
 import { GameDock } from "./GameDock";
 import { GobanControllerContext } from "./goban_context";
 import { BrowserRouter as Router } from "react-router-dom";
 import * as data from "@/lib/data";
 import { GobanController } from "../../lib/GobanController";
+import { openSGFCollectionModal } from "@/components/SGFCollectionModal";
+
+// Mock the SGF Collection Modal
+jest.mock("@/components/SGFCollectionModal", () => ({
+    openSGFCollectionModal: jest.fn(),
+}));
 
 const TEST_USER = {
     anonymous: false,
@@ -82,4 +88,54 @@ test("providing both Game ID and Review ID cause SGF buttons to link to review S
     const sgf_button_with_comments = sgf_buttons_with_comments[1];
     expect(sgf_button_with_comments).toBeDefined();
     expect(sgf_button_with_comments.getAttribute("href")).toBe("/api/v1/reviews/123/sgf");
+});
+
+test("clicking 'Add to library' button opens SGF Collection Modal", () => {
+    const mockOpenSGFCollectionModal = openSGFCollectionModal as jest.MockedFunction<
+        typeof openSGFCollectionModal
+    >;
+
+    data.set("user", TEST_USER);
+    const gameController = new GobanController({ game_id: 456789 });
+
+    // Mock engine data for game name generation
+    gameController.goban.engine.config.game_name = "Test Game Name";
+
+    render(
+        <Router>
+            <GobanControllerContext.Provider value={gameController}>
+                <GameDock {...BASE_PROPS} />
+            </GobanControllerContext.Provider>
+        </Router>,
+    );
+
+    const addToLibraryButton = screen.getByText("Add to library");
+    expect(addToLibraryButton).toBeInTheDocument();
+
+    fireEvent.click(addToLibraryButton);
+
+    expect(mockOpenSGFCollectionModal).toHaveBeenCalledWith(
+        456789,
+        "Test Game Name",
+        expect.any(Function),
+    );
+});
+
+test("'Add to library' button is disabled for anonymous users", () => {
+    const anonymousUser = { ...TEST_USER, anonymous: true };
+    data.set("user", anonymousUser);
+
+    const gameController = new GobanController({ game_id: 456789 });
+
+    render(
+        <Router>
+            <GobanControllerContext.Provider value={gameController}>
+                <GameDock {...BASE_PROPS} />
+            </GobanControllerContext.Provider>
+        </Router>,
+    );
+
+    const addToLibraryButton = screen.getByText("Add to library");
+    expect(addToLibraryButton).toBeInTheDocument();
+    expect(addToLibraryButton.closest("a")).toHaveClass("disabled");
 });
