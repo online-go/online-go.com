@@ -22,8 +22,6 @@ import { get, post } from "@/lib/requests";
 import { errorAlerter } from "@/lib/misc";
 import * as data from "@/lib/data";
 
-import "./SGFCollectionModal.styl";
-
 interface Events {}
 
 interface Collection {
