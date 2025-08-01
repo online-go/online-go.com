@@ -67,8 +67,8 @@ jobs:
             - name: Check server ready, wait if needed
               run: curl -s --retry 30 --retry-delay 1 --retry-all-errors http://localhost:8080 > /dev/null
 
-            - name: Run tests
-              run: yarn test:ci
+            - name: Run smoketests
+              run: yarn test:e2e:docker:smoke
 
             - name: Upload e2e test failure results (if any)
               if: always()

@@ -128,6 +128,7 @@ export function MiniGoban(props: MiniGobanProps): React.ReactElement {
             last_move_opacity: last_move_opacity,
             variation_stone_opacity: preferences.get("variation-stone-opacity"),
             stone_font_scale: preferences.get("stone-font-scale"),
+            enable_sounds: false, // Disable sounds for mini boards
             ...props.json,
         });
         goban.current = controller.goban;
