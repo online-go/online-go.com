@@ -37,10 +37,6 @@ const mockPost = post as jest.MockedFunction<typeof post>;
 const mockDataGet = data.get as jest.MockedFunction<typeof data.get>;
 const mockErrorAlerter = errorAlerter as jest.MockedFunction<typeof errorAlerter>;
 
-// Mock fetch globally
-global.fetch = jest.fn();
-const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
-
 describe("SGFCollectionModal", () => {
     const mockUser = {
         id: 123,
@@ -60,11 +56,6 @@ describe("SGFCollectionModal", () => {
         jest.clearAllMocks();
         mockDataGet.mockReturnValue(mockUser);
         mockGet.mockResolvedValue(mockLibraryData);
-
-        mockFetch.mockResolvedValue({
-            ok: true,
-            text: () => Promise.resolve("(;FF[4]GM[1]SZ[19])"),
-        } as Response);
 
         mockPost.mockResolvedValue({});
     });
@@ -153,7 +144,7 @@ describe("SGFCollectionModal", () => {
                 expect(screen.getByRole("combobox")).toBeInTheDocument();
             });
 
-            const addButton = screen.getByRole("button", { name: "Add to Collection" });
+            const addButton = screen.getByRole("button", { name: "Add game to SGF Library" });
             fireEvent.click(addButton);
 
             await waitFor(() => {
@@ -190,7 +181,7 @@ describe("SGFCollectionModal", () => {
                 expect(screen.getByRole("combobox")).toBeInTheDocument();
             });
 
-            const addButton = screen.getByRole("button", { name: "Add to Collection" });
+            const addButton = screen.getByRole("button", { name: "Add game to SGF Library" });
             fireEvent.click(addButton);
 
             await waitFor(() => {
@@ -200,7 +191,7 @@ describe("SGFCollectionModal", () => {
         });
     });
 
-    describe("Add to Collection Functionality", () => {
+    describe("Add to Library Functionality", () => {
         test("successfully adds game to collection", async () => {
             const onSuccess = jest.fn();
             const modalCloseSpy = jest.fn();
@@ -217,12 +208,15 @@ describe("SGFCollectionModal", () => {
                 expect(screen.getByRole("combobox")).toBeInTheDocument();
             });
 
-            const addButton = screen.getByRole("button", { name: "Add to Collection" });
+            const addButton = screen.getByRole("button", { name: "Add game to SGF Library" });
             fireEvent.click(addButton);
 
             await waitFor(() => {
-                expect(mockFetch).toHaveBeenCalledWith("/api/v1/games/456/sgf");
-                expect(mockPost).toHaveBeenCalledWith("me/games/sgf/0", expect.any(File));
+                expect(mockPost).toHaveBeenCalledWith("library/123", {
+                    game_id: 456,
+                    collection_id: 0,
+                    name: "Test Game",
+                });
                 expect(onSuccess).toHaveBeenCalled();
             });
         });
@@ -235,21 +229,20 @@ describe("SGFCollectionModal", () => {
                 fireEvent.change(input, { target: { value: "Edited Name" } });
             });
 
-            const addButton = screen.getByRole("button", { name: "Add to Collection" });
+            const addButton = screen.getByRole("button", { name: "Add game to SGF Library" });
             fireEvent.click(addButton);
 
             await waitFor(() => {
-                expect(mockPost).toHaveBeenCalledWith(
-                    "me/games/sgf/0",
-                    expect.objectContaining({
-                        name: "Edited Name.sgf",
-                    }),
-                );
+                expect(mockPost).toHaveBeenCalledWith("library/123", {
+                    game_id: 456,
+                    collection_id: 0,
+                    name: "Edited Name",
+                });
             });
         });
 
-        test("handles SGF fetch error", async () => {
-            mockFetch.mockRejectedValue(new Error("SGF fetch failed"));
+        test("handles library API error", async () => {
+            mockPost.mockRejectedValue(new Error("Library API failed"));
 
             render(<SGFCollectionModal gameId={456} />);
 
@@ -257,24 +250,7 @@ describe("SGFCollectionModal", () => {
                 expect(screen.getByRole("combobox")).toBeInTheDocument();
             });
 
-            const addButton = screen.getByRole("button", { name: "Add to Collection" });
-            fireEvent.click(addButton);
-
-            await waitFor(() => {
-                expect(mockErrorAlerter).toHaveBeenCalledWith(expect.any(Error));
-            });
-        });
-
-        test("handles upload error", async () => {
-            mockPost.mockRejectedValue(new Error("Upload failed"));
-
-            render(<SGFCollectionModal gameId={456} />);
-
-            await waitFor(() => {
-                expect(screen.getByRole("combobox")).toBeInTheDocument();
-            });
-
-            const addButton = screen.getByRole("button", { name: "Add to Collection" });
+            const addButton = screen.getByRole("button", { name: "Add game to SGF Library" });
             fireEvent.click(addButton);
 
             await waitFor(() => {
@@ -289,7 +265,7 @@ describe("SGFCollectionModal", () => {
                 expect(screen.getByRole("combobox")).toBeInTheDocument();
             });
 
-            const addButton = screen.getByRole("button", { name: "Add to Collection" });
+            const addButton = screen.getByRole("button", { name: "Add game to SGF Library" });
             fireEvent.click(addButton);
 
             await waitFor(() => {
@@ -302,49 +278,26 @@ describe("SGFCollectionModal", () => {
 
             render(<SGFCollectionModal gameId={456} />);
 
-            const addButton = screen.getByRole("button", { name: "Add to Collection" });
+            const addButton = screen.getByRole("button", { name: "Add game to SGF Library" });
             expect(addButton).toBeDisabled();
         });
 
-        test("uploads original SGF data unchanged", async () => {
-            const originalSgfData = "(;FF[4]GM[1]SZ[19]PB[Black]PW[White];B[pd];W[dd])";
-            mockFetch.mockResolvedValue({
-                ok: true,
-                text: () => Promise.resolve(originalSgfData),
-            } as Response);
-
-            render(<SGFCollectionModal gameId={456} gameName="SGF Test" />);
+        test("sends correct game data to library API", async () => {
+            render(<SGFCollectionModal gameId={456} gameName="Library Test" />);
 
             await waitFor(() => {
                 expect(screen.getByRole("combobox")).toBeInTheDocument();
             });
 
-            const addButton = screen.getByRole("button", { name: "Add to Collection" });
+            const addButton = screen.getByRole("button", { name: "Add game to SGF Library" });
             fireEvent.click(addButton);
 
             await waitFor(() => {
-                expect(mockFetch).toHaveBeenCalledWith("/api/v1/games/456/sgf");
-
-                // Verify the File object was created with correct properties
-                const postCall = mockPost.mock.calls[0];
-                expect(postCall[0]).toBe("me/games/sgf/0");
-
-                const uploadedFile = postCall[1] as File;
-                expect(uploadedFile).toBeInstanceOf(File);
-                expect(uploadedFile.name).toBe("SGF Test.sgf");
-                expect(uploadedFile.type).toBe("application/x-go-sgf");
-                expect(uploadedFile.size).toBe(originalSgfData.length);
-
-                // Verify the file was created with the original SGF data
-                // Since File constructor was called with originalSgfData as first argument
-                expect(mockPost).toHaveBeenCalledWith(
-                    "me/games/sgf/0",
-                    expect.objectContaining({
-                        name: "SGF Test.sgf",
-                        type: "application/x-go-sgf",
-                        size: originalSgfData.length,
-                    }),
-                );
+                expect(mockPost).toHaveBeenCalledWith("library/123", {
+                    game_id: 456,
+                    collection_id: 0,
+                    name: "Library Test",
+                });
             });
         });
     });

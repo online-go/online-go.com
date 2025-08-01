@@ -128,26 +128,20 @@ export class SGFCollectionModal extends Modal<
 
         this.setState({ uploading: true });
 
-        // Fetch SGF data from the game (use direct fetch to get raw text, not JSON)
-        fetch(`/api/v1/games/${this.props.gameId}/sgf`)
-            .then((response) => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.text();
-            })
-            .then((sgfData) => {
-                // Create a file-like object from the SGF data
-                const gameName = this.state.fileName;
-                const filename = `${gameName}.sgf`;
-                const file = new File([sgfData], filename, {
-                    type: "application/x-go-sgf",
-                    lastModified: new Date().getTime(),
-                });
+        const user = data.get("user");
+        console.log("DEBUG: Adding game to library", {
+            user_id: user.id,
+            game_id: this.props.gameId,
+            collection_id: parseInt(this.state.selectedCollectionId),
+            name: this.state.fileName,
+            url: `library/${user.id}`,
+        });
 
-                // Upload to the selected collection
-                return post(`me/games/sgf/${this.state.selectedCollectionId}`, file);
-            })
+        post(`library/${user.id}`, {
+            game_id: this.props.gameId,
+            collection_id: parseInt(this.state.selectedCollectionId),
+            name: this.state.fileName,
+        })
             .then(() => {
                 if (this.props.onSuccess) {
                     this.props.onSuccess();
@@ -245,7 +239,7 @@ export class SGFCollectionModal extends Modal<
                         onClick={this.addToCollection}
                         disabled={loading || uploading || !collections}
                     >
-                        {uploading ? _("Adding...") : _("Add to Collection")}
+                        {uploading ? _("Adding...") : _("Add game to SGF Library")}
                     </button>
                 </div>
             </div>
