@@ -1662,7 +1662,10 @@ export function ReviewStrengthIcon({
 
     if (review.cheat_detection) {
         strength = "ai-cheat-detection-review";
-        if (review.strength >= 500) {
+        if (review.strength > 2000) {
+            strength += " ai-cheat-detection-review-plus";
+            content = "DD";
+        } else if (review.strength >= 500) {
             strength += " ai-cheat-detection-review-plus";
             content = "D+";
         } else {

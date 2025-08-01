@@ -39,7 +39,7 @@ export const runGame = async ({ browser }: { browser: Browser }) => {
     const { userPage: acceptorPage } = await prepareNewUser(browser, acceptorUsername, "test");
 
     const boardSize = "19x19"; // needed in two places
-    const handicap = 2; // also needed in two places
+    const handicap = 0; // also needed in two places
 
     // Challenger challenges the acceptor
     await createDirectChallenge(challengerPage, acceptorUsername, {
@@ -66,11 +66,10 @@ export const runGame = async ({ browser }: { browser: Browser }) => {
 
     // ** Make sure you have set the board size above to match the moves below! **
 
-    const moves = ["D17", "K11", "Q17", "M10", "D3", "J8"];
+    //const moves = ["D17", "K11", "Q17", "M10", "D3", "J8"];
 
     // const moves = ["A19", "T19", "A1", "T1", "D16", "Q16", "K10", "Q4", "D4", "Q10", "D10", "K19"];
 
-    /*
     const moves = [
         "P4", // B[pd]
         "D3", // W[dc]
@@ -155,7 +154,6 @@ export const runGame = async ({ browser }: { browser: Browser }) => {
         "B9", // B[bi]
         "F9", // W[fi]
     ];
-    */
 
     await playMoves(challengerPage, acceptorPage, moves, boardSize, handicap);
 
