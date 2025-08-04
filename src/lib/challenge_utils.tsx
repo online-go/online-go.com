@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { getBlocks } from "@/components/BlockPlayer";
+
 /**
  * This is the schema for the data functions (e.g. get(), set()).  It defines
  * all the possible keys as well as the associated value types.
@@ -39,6 +41,11 @@ export type ChallengeFilterKey = keyof ChallengeFilter;
 export function shouldDisplayChallenge(c: Challenge, filter: ChallengeFilter): boolean {
     if (c.user_challenge) {
         return true;
+    }
+
+    // Don't display the challenge if the player is blocked
+    if (getBlocks(c.user_id).block_games) {
+        return false;
     }
     const matchesSize =
         (filter.show19x19 && c.width === 19 && c.height === 19) ||
