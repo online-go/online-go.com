@@ -410,27 +410,25 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
             demo: next.demo,
         });
 
-        const settings: any = {};
-        for (const k in next.demo) {
-            settings[k] = next.demo[k];
-        }
+        const settings = {
+            ...next.demo,
+            black_pro: next.demo.black_ranking > 1000 ? 1 : 0,
+            white_pro: next.demo.white_ranking > 1000 ? 1 : 0,
+            tournament_record_id: this.props.tournamentRecordId,
+            tournament_record_round_id: this.props.tournamentRecordRoundId,
+        };
 
         // Ignore komi value if komi is automatic.
         if (settings.komi_auto !== "custom") {
             delete settings.komi;
         }
 
-        settings.black_pro = settings.black_ranking > 1000 ? 1 : 0;
         if (settings.black_pro) {
             settings.black_ranking -= 1000;
         }
-        settings.white_pro = settings.white_ranking > 1000 ? 1 : 0;
         if (settings.white_pro) {
             settings.white_ranking -= 1000;
         }
-
-        settings.tournament_record_id = this.props.tournamentRecordId;
-        settings.tournament_record_round_id = this.props.tournamentRecordRoundId;
 
         if (!settings.name) {
             settings.name = this.props.game_record_mode
@@ -438,7 +436,6 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                 : _("Demo Board");
         }
 
-        console.log("Sending", settings);
         this.saveSettings();
         this.props.modal.close?.();
 
@@ -533,6 +530,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         return challenge;
     }
 
+    // This can't be called in demo mode.
     createChallenge = () => {
         const next = this.next();
 
@@ -540,11 +538,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
             void alert.fire(_("Invalid board size, please correct and try again"));
             return;
         }
-        /*
-            void alert.fire(_("Invalid time settings, please correct them and try again"));
-            return;
-        }
-        */
+
         const conf = next.conf;
 
         if (this.gameStateOf(next).komi_auto === "custom" && this.gameStateOf(next).komi === null) {
@@ -559,9 +553,9 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
             this.gameStateOf(next).komi = null;
         }
 
-        let player_id = 0;
+        let player_id: number | undefined = 0;
         if (this.props.mode === "player") {
-            player_id = this.props.playerId as number;
+            player_id = this.props.playerId;
             if (!player_id || player_id === data.get("user").id) {
                 return;
             }
@@ -592,11 +586,6 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         if (this.props.mode === "computer") {
             open_now = true;
         }
-        /*
-        if (this.props.mode === "demo") {
-            open_now = true;
-        }
-        */
 
         this.saveSettings();
         this.props.modal.close?.();
@@ -2160,15 +2149,11 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
     next(): any {
         return this.nextState();
     }
-    componentDidUpdate() {
-        this.upstate_object = null;
-    }
 
-    toggleComputerSettings = () => {
-        this.setState({
-            show_computer_settings: !this.state.show_computer_settings,
-        });
-    };
+    toggleComputerSettings = () =>
+        this.setState((state) => ({
+            show_computer_settings: !state.show_computer_settings,
+        }));
 }
 
 export function isStandardBoardSize(board_size: string): boolean {
