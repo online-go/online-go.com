@@ -63,9 +63,20 @@ export function ThemePreferences(): React.ReactElement | null {
     const setTheme = React.useCallback((theme: string) => {
         data.set("theme", theme, data.Replication.REMOTE_OVERWRITES_LOCAL);
     }, []);
+    const removeTheme = React.useCallback(() => {
+        data.remove("theme", data.Replication.REMOTE_OVERWRITES_LOCAL);
+
+        if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+            /* if OS theme set to dark */
+            document.body.className = "dark";
+        } else {
+            document.body.className = "light";
+        }
+    }, []);
     const setThemeLight = React.useCallback(setTheme.bind(null, "light"), [setTheme]);
     const setThemeDark = React.useCallback(setTheme.bind(null, "dark"), [setTheme]);
     const setThemeAccessible = React.useCallback(setTheme.bind(null, "accessible"), [setTheme]);
+    const setThemeSystem = React.useCallback(removeTheme.bind(null), [removeTheme]);
     const setStoneRemovalGraphic = React.useCallback((graphic: "square" | "x") => {
         console.log("Setting with remote replication");
         preferences.set(
@@ -161,24 +172,34 @@ export function ThemePreferences(): React.ReactElement | null {
             <PreferenceLine title={_("Site theme")}>
                 <div className="theme-selectors">
                     <button
+                        title="Light"
                         className={`theme-button light ${theme === "light" ? "primary" : ""}`}
                         onClick={setThemeLight}
                     >
                         <i className="fa fa-sun-o" />
                     </button>
                     <button
+                        title="Dark"
                         className={`theme-button dark  ${theme === "dark" ? "primary" : ""}`}
                         onClick={setThemeDark}
                     >
                         <i className="fa fa-moon-o" />
                     </button>
                     <button
+                        title="Accessible"
                         className={`theme-button accessible  ${
                             theme === "accessible" ? "primary" : ""
                         }`}
                         onClick={setThemeAccessible}
                     >
                         <i className="fa fa-eye" />
+                    </button>
+                    <button
+                        title="System"
+                        className={`theme-button ${theme} ${!theme ? "primary" : ""}`}
+                        onClick={setThemeSystem}
+                    >
+                        <i className="fa fa-cogs" />
                     </button>
                 </div>
             </PreferenceLine>

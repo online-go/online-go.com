@@ -62,12 +62,24 @@ function _update_theme(theme?: string) {
 function setTheme(theme: string) {
     data.set("theme", theme, data.Replication.REMOTE_OVERWRITES_LOCAL); // causes _update_theme to be called via the data.watch() in constructor
 }
+function removeTheme() {
+    data.remove("theme", data.Replication.REMOTE_OVERWRITES_LOCAL);
+
+    if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+        /* if OS theme set to dark */
+        document.body.className = "dark";
+    } else {
+        document.body.className = "light";
+    }
+}
 
 function toggleTheme() {
     if (data.get("theme") === "dark") {
         setTheme("light");
     } else if (data.get("theme") === "light") {
         setTheme("accessible");
+    } else if (data.get("theme") === "accessible") {
+        removeTheme();
     } else {
         setTheme("dark");
     }
@@ -75,6 +87,7 @@ function toggleTheme() {
 const setThemeLight = setTheme.bind(null, "light");
 const setThemeDark = setTheme.bind(null, "dark");
 const setThemeAccessible = setTheme.bind(null, "accessible");
+const setThemeSystem = removeTheme.bind(null);
 
 export function NavBar(): React.ReactElement {
     const user = useUser();
@@ -596,6 +609,8 @@ function ProfileAndQuickSettingsBits({
     const user = useUser();
     const themeId = useId();
 
+    const [theme] = useData("theme", "light");
+
     return (
         <>
             <MenuLink
@@ -624,7 +639,8 @@ function ProfileAndQuickSettingsBits({
                     <h5 className="sr-only">{_("Website theme")}</h5>
                     <div className="theme-selectors">
                         <button
-                            className="theme-button light"
+                            title="Light"
+                            className={`theme-button light ${theme === "light" ? "primary" : ""}`}
                             onClick={setThemeLight}
                             aria-label={pgettext(
                                 "Name of the browser/app theme with a light background",
@@ -634,7 +650,8 @@ function ProfileAndQuickSettingsBits({
                             <i className="fa fa-sun-o" />
                         </button>
                         <button
-                            className="theme-button dark"
+                            title="Dark"
+                            className={`theme-button dark  ${theme === "dark" ? "primary" : ""}`}
                             onClick={setThemeDark}
                             aria-label={pgettext(
                                 "Name of the browser/app theme with a dark background",
@@ -644,7 +661,10 @@ function ProfileAndQuickSettingsBits({
                             <i className="fa fa-moon-o" />
                         </button>
                         <button
-                            className="theme-button accessible"
+                            title="Accessible"
+                            className={`theme-button accessible  ${
+                                theme === "accessible" ? "primary" : ""
+                            }`}
                             onClick={setThemeAccessible}
                             aria-label={pgettext(
                                 "Name of the browser/app theme designed for users with visual impairments",
@@ -652,6 +672,17 @@ function ProfileAndQuickSettingsBits({
                             )}
                         >
                             <i className="fa fa-eye" />
+                        </button>
+                        <button
+                            title="System"
+                            className={`theme-button ${theme} ${!theme ? "primary" : ""}`}
+                            onClick={setThemeSystem}
+                            aria-label={pgettext(
+                                "Name of the browser/app theme adapting the browser theme",
+                                "System theme",
+                            )}
+                        >
+                            <i className="fa fa-cogs" />
                         </button>
                     </div>
                     <h5 className="sr-only">{_("Goban theme")}</h5>
