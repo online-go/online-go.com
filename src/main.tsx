@@ -119,6 +119,7 @@ import * as data from "@/lib/data";
 
 import * as preferences from "@/lib/preferences";
 
+data.setDefault("theme", "");
 window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
     if (!data.get("theme")) {
         if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
