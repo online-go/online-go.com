@@ -173,30 +173,28 @@ export function ThemePreferences(): React.ReactElement | null {
                 <div className="theme-selectors">
                     <button
                         title="Light"
-                        className={`theme-button light ${theme === "light" ? "primary" : ""}`}
+                        className={`theme-button ${theme === "light" ? "primary" : ""}`}
                         onClick={setThemeLight}
                     >
                         <i className="fa fa-sun-o" />
                     </button>
                     <button
                         title="Dark"
-                        className={`theme-button dark  ${theme === "dark" ? "primary" : ""}`}
+                        className={`theme-button ${theme === "dark" ? "primary" : ""}`}
                         onClick={setThemeDark}
                     >
                         <i className="fa fa-moon-o" />
                     </button>
                     <button
                         title="Accessible"
-                        className={`theme-button accessible  ${
-                            theme === "accessible" ? "primary" : ""
-                        }`}
+                        className={`theme-button ${theme === "accessible" ? "primary" : ""}`}
                         onClick={setThemeAccessible}
                     >
                         <i className="fa fa-eye" />
                     </button>
                     <button
                         title="System"
-                        className={`theme-button ${theme} ${!theme ? "primary" : ""}`}
+                        className={`theme-button ${!theme ? "primary" : ""}`}
                         onClick={setThemeSystem}
                     >
                         <i className="fa fa-cogs" />
