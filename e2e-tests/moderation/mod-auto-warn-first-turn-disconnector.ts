@@ -85,11 +85,11 @@ export const modWarnFirstTurnDisconnectorTest = async ({ browser }: { browser: B
     await loginAsUser(newEscaperPage, escaperUsername, "test");
 
     await newEscaperPage
-        .locator('.AccountWarning .canned-message:has-text("We\'ve noticed that you joined game")')
+        .locator(
+            '.AccountWarningInfo .canned-message:has-text("We\'ve noticed that you joined game")',
+        )
         .waitFor();
 
-    await newEscaperPage.locator("#AccountWarning-accept:not([disabled])").waitFor();
-    await newEscaperPage.locator("#AccountWarning-accept").check();
-    await newEscaperPage.locator(".AccountWarning button.primary:not([disabled])").waitFor();
-    await newEscaperPage.locator(".AccountWarning button.primary").click();
+    await newEscaperPage.locator(".AccountWarningInfo button.primary:not([disabled])").waitFor();
+    await newEscaperPage.locator(".AccountWarningInfo button.primary").click();
 };
