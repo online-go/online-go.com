@@ -449,8 +449,43 @@
     .opponent-rank-range {
         display: flex;
         justify-content: space-around;
-        align-items: center;
+        align-items: flex-end;
         gap: 0.5rem;
+    }
+
+    .rank-title-group {
+        display: flex;
+        align-items: flex-end;
+        gap: 1rem;
+    }
+
+    .rank-title-group h2 {
+        margin: 0;
+        font-size: 1.2rem;
+        line-height: 1;
+        padding-bottom: 8px;
+        /* Align with the dash */
+    }
+
+    .rank-selector-label {
+        font-size: 1.2rem;
+        font-weight: 500;
+        margin-top: 0.5rem;
+    }
+
+    .handicap-section {
+        margin-top: 1.7rem;
+    }
+
+    .rank-separator {
+        display: flex;
+        align-items: flex-end;
+        font-size: 1.2rem;
+        font-weight: 500;
+        // color: #666;
+        margin: 0 0.5rem;
+        padding-bottom: 8px;
+        /* Fine-tune to align with selector text */
     }
 
     .opponent-rank-container {
@@ -627,7 +662,7 @@
     }
 
     .activity.player-waiting:after, .activity.popular:after {
-        @extends .fa;
+        @extend .fa;
         content: '\f111'; // font awesome circle
         position: absolute;
         font-size: 0.5rem;
