@@ -1691,7 +1691,7 @@ function formatMoneyWithTrimmedZeros(currency_code: string, amount: number): str
     if (currency.decimal_digits === 0 || currency_code === "HUF") {
         return ret.replace(/[.,].{2}$/, "");
     }
-    return ret.replace(".00", "");
+    return ret.replace(/[,.]00$/, "");
 }
 
 function getCurrentPlanSlug(config: Config): string | null {
