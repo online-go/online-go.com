@@ -329,9 +329,6 @@ export function QuickMatch(): React.ReactElement {
                 value: handicaps === "disabled" ? "disabled" : "enabled",
             },
         };
-        console.log("DEBUG: Automatch preferences being sent to backend:", preferences);
-        console.log("DEBUG: Rank differences - lower:", lower_rank_diff, "upper:", upper_rank_diff);
-        console.log("DEBUG: User ranking:", data.get("user").ranking);
 
         automatch_manager.findMatch(preferences);
         refresh();
