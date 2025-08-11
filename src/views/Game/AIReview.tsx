@@ -88,8 +88,8 @@ interface AIReviewState {
     current_popup_moves: number[];
 }
 
-// We need this wrapped because we want to access two contexts,
-// and we can't do that in a function component.
+// We need this wrapped in a function because we want to access two contexts,
+// and we can't do that in an old style component.
 // This wil be a lot cleaner when we convert it to a function component.
 export function AIReview(props: AIReviewProperties) {
     return (
