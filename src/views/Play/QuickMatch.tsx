@@ -329,7 +329,9 @@ export function QuickMatch(): React.ReactElement {
                 value: handicaps === "disabled" ? "disabled" : "enabled",
             },
         };
-        console.log(preferences);
+        console.log("DEBUG: Automatch preferences being sent to backend:", preferences);
+        console.log("DEBUG: Rank differences - lower:", lower_rank_diff, "upper:", upper_rank_diff);
+        console.log("DEBUG: User ranking:", data.get("user").ranking);
 
         automatch_manager.findMatch(preferences);
         refresh();
@@ -669,17 +671,43 @@ export function QuickMatch(): React.ReactElement {
         return " activity ";
     }
 
-    const lower_rank_diff_options = [9, 8, 7, 6, 5, 4, 3, 2, 1, 0].map((v) => ({
-        value: v.toString(),
-        label: v === 0 ? "0" : v.toString(),
-        description: v === 0 ? llm_pgettext("Player is the same rank as you", "Your rank") : "",
-    }));
+    const lower_rank_diff_options = [9, 8, 7, 6, 5, 4, 3, 2, 1, 0].map((v) => {
+        // For weaker opponents (left side), we want ranks that are numerically higher (weaker)
+        // So we subtract the difference to get weaker ranks
+        const computedRank = user.ranking - v;
+        let rankLabel;
+        if (computedRank < 30) {
+            // Kyu ranks: 29 = 1k, 28 = 2k, 27 = 3k, etc.
+            rankLabel = `${30 - computedRank}k`;
+        } else {
+            // Dan ranks: 30 = 1d, 31 = 2d, 32 = 3d, etc.
+            rankLabel = `${computedRank - 29}d`;
+        }
+        return {
+            value: v.toString(),
+            label: rankLabel,
+            description: v === 0 ? llm_pgettext("Player is the same rank as you", "Your rank") : "",
+        };
+    });
 
-    const upper_rank_diff_options = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((v) => ({
-        value: v.toString(),
-        label: v === 0 ? "0" : v.toString(),
-        description: v === 0 ? llm_pgettext("Player is the same rank as you", "Your rank") : "",
-    }));
+    const upper_rank_diff_options = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((v) => {
+        // For stronger opponents (right side), we want ranks that are numerically lower (stronger)
+        // So we add the difference to get stronger ranks
+        const computedRank = user.ranking + v;
+        let rankLabel;
+        if (computedRank < 30) {
+            // Kyu ranks: 29 = 1k, 28 = 2k, 27 = 3k, etc.
+            rankLabel = `${30 - computedRank}k`;
+        } else {
+            // Dan ranks: 30 = 1d, 31 = 2d, 32 = 3d, etc.
+            rankLabel = `${computedRank - 29}d`;
+        }
+        return {
+            value: v.toString(),
+            label: rankLabel,
+            description: v === 0 ? llm_pgettext("Player is the same rank as you", "Your rank") : "",
+        };
+    });
 
     // ensure a valid handicap value is selected
     if (!handicap_options.find((o) => o.value === handicaps)) {
@@ -1025,60 +1053,10 @@ export function QuickMatch(): React.ReactElement {
                         <div className="opponent-rank-range">
                             <div className="rank-title-group">
                                 <h2 id={opponentRankId}>{_("Opponent Rank")}</h2>
-                                <div className="rank-selector-group">
-                                    <label className="rank-selector-label">
-                                        {pgettext(
-                                            "A word that means this is a list of ranks that are weaker than the player's rank",
-                                            "Weaker",
-                                        )}
-                                    </label>
-                                    <Select
-                                        classNamePrefix="ogs-react-select"
-                                        value={lower_rank_diff_options.find(
-                                            (o) => o.value === lower_rank_diff.toString(),
-                                        )}
-                                        styles={
-                                            {
-                                                ...select_styles,
-                                                menu: (base) => ({
-                                                    ...base,
-                                                    width: "120",
-                                                }),
-                                            } as StylesConfig<
-                                                OptionWithDescription,
-                                                false,
-                                                GroupBase<OptionWithDescription>
-                                            >
-                                        }
-                                        isSearchable={false}
-                                        isDisabled={automatch_search_active}
-                                        menuPlacement="auto"
-                                        onChange={(opt) => {
-                                            if (opt) {
-                                                setLowerRankDiff(parseInt(opt.value));
-                                            }
-                                        }}
-                                        options={lower_rank_diff_options}
-                                        components={{
-                                            Option: RenderOptionWithDescription,
-                                        }}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="rank-separator">{" - "}</div>
-
-                            <div className="rank-selector-group">
-                                <label className="rank-selector-label">
-                                    {pgettext(
-                                        "A word that means this is a list of ranks that are stronger than the player's rank",
-                                        "Stronger",
-                                    )}
-                                </label>
                                 <Select
                                     classNamePrefix="ogs-react-select"
-                                    value={upper_rank_diff_options.find(
-                                        (o) => o.value === upper_rank_diff.toString(),
+                                    value={lower_rank_diff_options.find(
+                                        (o) => o.value === lower_rank_diff.toString(),
                                     )}
                                     styles={
                                         {
@@ -1098,15 +1076,49 @@ export function QuickMatch(): React.ReactElement {
                                     menuPlacement="auto"
                                     onChange={(opt) => {
                                         if (opt) {
-                                            setUpperRankDiff(parseInt(opt.value));
+                                            setLowerRankDiff(parseInt(opt.value));
                                         }
                                     }}
-                                    options={upper_rank_diff_options}
+                                    options={lower_rank_diff_options}
                                     components={{
                                         Option: RenderOptionWithDescription,
                                     }}
                                 />
                             </div>
+
+                            <div className="rank-separator">{" - "}</div>
+
+                            <Select
+                                classNamePrefix="ogs-react-select"
+                                value={upper_rank_diff_options.find(
+                                    (o) => o.value === upper_rank_diff.toString(),
+                                )}
+                                styles={
+                                    {
+                                        ...select_styles,
+                                        menu: (base) => ({
+                                            ...base,
+                                            width: "120",
+                                        }),
+                                    } as StylesConfig<
+                                        OptionWithDescription,
+                                        false,
+                                        GroupBase<OptionWithDescription>
+                                    >
+                                }
+                                isSearchable={false}
+                                isDisabled={automatch_search_active}
+                                menuPlacement="auto"
+                                onChange={(opt) => {
+                                    if (opt) {
+                                        setUpperRankDiff(parseInt(opt.value));
+                                    }
+                                }}
+                                options={upper_rank_diff_options}
+                                components={{
+                                    Option: RenderOptionWithDescription,
+                                }}
+                            />
                         </div>
                     </div>
                 </section>
