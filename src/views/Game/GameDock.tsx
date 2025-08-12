@@ -30,7 +30,7 @@ import { openGameLinkModal } from "./GameLinkModal";
 import { sfx } from "@/lib/sfx";
 import { alert } from "@/lib/swal_config";
 import { errorAlerter } from "@/lib/misc";
-import { doAnnul } from "@/lib/moderation";
+import { doAnnul, MODERATOR_POWERS } from "@/lib/moderation";
 import { openReport } from "@/components/Report";
 import { openGameInfoModal } from "./GameInfoModal";
 import {
@@ -113,6 +113,8 @@ export function GameDock({
     let superuser_ai_review_ready = user?.is_superuser && phase === "finished";
     let user_can_intervene = user?.is_moderator && phase !== "finished";
     let user_can_annul = user?.is_moderator && phase === "finished";
+    let user_detects_ai = ((user?.moderator_powers ?? 0) & MODERATOR_POWERS.AI_DETECTOR) !== 0;
+
     const annulable = !annulled && engine.config.ranked;
     const unannulable = annulled && engine.config.ranked;
     const user_is_player = useUserIsParticipant(goban);
@@ -128,6 +130,7 @@ export function GameDock({
         superuser_ai_review_ready = false;
         user_can_intervene = false;
         user_can_annul = false;
+        user_detects_ai = false;
     }
 
     let sgf_download_enabled = false;
@@ -579,15 +582,15 @@ export function GameDock({
                 ) /* This is a "do nothing" icon for when the game is unranked */
             }
 
-            {(user_can_intervene || user_can_annul) && <hr />}
-            {(user_can_intervene || user_can_annul) && (
+            {(user_can_intervene || user_can_annul || user_detects_ai) && <hr />}
+            {(user_can_intervene || user_can_annul || user_detects_ai) && (
                 <Tooltip tooltipRequired={tooltipRequired} title={_("Timing")}>
                     <a onClick={goban_controller.toggleShowTiming}>
                         <i className="fa fa-clock-o"></i> {_("Timing")}
                     </a>
                 </Tooltip>
             )}
-            {(user_can_intervene || user_can_annul) && ai_suspected && (
+            {(user_can_intervene || user_can_annul || user_detects_ai) && ai_suspected && (
                 <Tooltip tooltipRequired={tooltipRequired} title={_("Bot Detection Results")}>
                     <a onClick={goban_controller.toggleShowBotDetectionResults}>
                         <i className="fa fa-exclamation"></i> {_("Bot Detection Results")}
