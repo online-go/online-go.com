@@ -639,7 +639,7 @@ function ProfileAndQuickSettingsBits({
                     <h5 className="sr-only">{_("Website theme")}</h5>
                     <div className="theme-selectors">
                         <button
-                            title="Light"
+                            title={pgettext("Light browser/app theme", "Light")}
                             className={`theme-button ${theme === "light" ? "primary" : ""}`}
                             onClick={setThemeLight}
                             aria-label={pgettext(
@@ -650,7 +650,7 @@ function ProfileAndQuickSettingsBits({
                             <i className="fa fa-sun-o" />
                         </button>
                         <button
-                            title="Dark"
+                            title={pgettext("Dark browser/app theme", "Dark")}
                             className={`theme-button ${theme === "dark" ? "primary" : ""}`}
                             onClick={setThemeDark}
                             aria-label={pgettext(
@@ -661,7 +661,10 @@ function ProfileAndQuickSettingsBits({
                             <i className="fa fa-moon-o" />
                         </button>
                         <button
-                            title="Accessible"
+                            title={pgettext(
+                                "Browser/app theme designed for users with visual impairments",
+                                "Accessible",
+                            )}
                             className={`theme-button ${theme === "accessible" ? "primary" : ""}`}
                             onClick={setThemeAccessible}
                             aria-label={pgettext(
@@ -672,11 +675,11 @@ function ProfileAndQuickSettingsBits({
                             <i className="fa fa-eye" />
                         </button>
                         <button
-                            title="System"
+                            title={pgettext("Automatic browser/app system theme", "System")}
                             className={`theme-button ${!theme ? "primary" : ""}`}
                             onClick={setThemeSystem}
                             aria-label={pgettext(
-                                "Name of the browser/app theme adapting the browser theme",
+                                "Name of the browser/app system theme automatically adapting the browser theme",
                                 "System theme",
                             )}
                         >

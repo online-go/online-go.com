@@ -172,28 +172,31 @@ export function ThemePreferences(): React.ReactElement | null {
             <PreferenceLine title={_("Site theme")}>
                 <div className="theme-selectors">
                     <button
-                        title="Light"
+                        title={pgettext("Light browser/app theme", "Light")}
                         className={`theme-button ${theme === "light" ? "primary" : ""}`}
                         onClick={setThemeLight}
                     >
                         <i className="fa fa-sun-o" />
                     </button>
                     <button
-                        title="Dark"
+                        title={pgettext("Dark browser/app theme", "Dark")}
                         className={`theme-button ${theme === "dark" ? "primary" : ""}`}
                         onClick={setThemeDark}
                     >
                         <i className="fa fa-moon-o" />
                     </button>
                     <button
-                        title="Accessible"
+                        title={pgettext(
+                            "Browser/app theme designed for users with visual impairments",
+                            "Accessible",
+                        )}
                         className={`theme-button ${theme === "accessible" ? "primary" : ""}`}
                         onClick={setThemeAccessible}
                     >
                         <i className="fa fa-eye" />
                     </button>
                     <button
-                        title="System"
+                        title={pgettext("Automatic browser/app system theme", "System")}
                         className={`theme-button ${!theme ? "primary" : ""}`}
                         onClick={setThemeSystem}
                     >
