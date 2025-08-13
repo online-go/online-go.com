@@ -32,6 +32,8 @@ import { IdType } from "@/lib/types";
 import { openSGFPasteModal } from "@/components/SGFPasteModal";
 import * as preferences from "@/lib/preferences";
 import { PlayerCacheEntry } from "@/lib/player_cache";
+import { AIDetection } from "@moderator-ui/AIDetection";
+import { MODERATOR_POWERS } from "@/lib/moderation";
 // import { createGameRecord } from "@/components/ChallengeModal";
 
 type LibraryPlayerProperties = RouteComponentProps<{
@@ -62,6 +64,7 @@ interface LibraryPlayerState {
     new_collection_private: boolean;
     sort_order: SortOrder;
     sort_descending: boolean;
+    show_ai_detection: boolean;
 }
 
 interface Entry {
@@ -92,6 +95,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
             new_collection_private: false,
             sort_order: preferences.get("sgf.sort-order") as SortOrder,
             sort_descending: preferences.get("sgf.sort-descending"),
+            show_ai_detection: false,
         };
     }
 
@@ -388,6 +392,10 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
         }
     };
 
+    toggleAIDetection = () => {
+        this.setState({ show_ai_detection: !this.state.show_ai_detection });
+    };
+
     renderColumnHeaders(owner: boolean) {
         return (
             <div className="sort-header">
@@ -563,6 +571,22 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                                         </div>
                                     )}
 
+                                    {(data.get("user").is_moderator ||
+                                        (data.get("user").moderator_powers &
+                                            MODERATOR_POWERS.AI_DETECTOR) !==
+                                            0) && (
+                                        <div className="upload-button">
+                                            <button
+                                                className="primary"
+                                                onClick={this.toggleAIDetection}
+                                            >
+                                                {this.state.show_ai_detection
+                                                    ? _("Hide AI Detection")
+                                                    : _("Show AI Detection")}
+                                            </button>
+                                        </div>
+                                    )}
+
                                     {hasCollections && (
                                         <div className="collections">
                                             {collection.collections.map((collection) => (
@@ -601,66 +625,69 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                                     )}
                                     {hasCollections && <hr />}
 
-                                    <div className="games">
-                                        {hasGames && this.renderColumnHeaders(!!owner)}
-                                        {owner && hasGames && (
-                                            <div className="game-entry">
-                                                <span className="select">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={all_games_checked}
-                                                        onChange={this.toggleAllGamesChecked}
-                                                    />
-                                                </span>
-                                            </div>
-                                        )}
-                                        {collection.games.map((game) => (
-                                            <div key={game.game_id} className="game-entry">
-                                                {owner && (
+                                    {!this.state.show_ai_detection && (
+                                        <div className="games">
+                                            {hasGames && this.renderColumnHeaders(!!owner)}
+                                            {owner && hasGames && (
+                                                <div className="game-entry">
                                                     <span className="select">
                                                         <input
                                                             type="checkbox"
-                                                            checked={
-                                                                (this.state.games_checked as any)[
-                                                                    game.entry_id
-                                                                ] || false
-                                                            }
-                                                            onChange={this.setCheckedGame.bind(
-                                                                this,
-                                                                game.entry_id,
-                                                            )}
+                                                            checked={all_games_checked}
+                                                            onChange={this.toggleAllGamesChecked}
                                                         />
                                                     </span>
-                                                )}
-                                                <span className="date-column">
-                                                    {moment(game.started).format("ll")}
-                                                </span>
-                                                <span className="name-column">
-                                                    <Link to={`/game/${game.game_id}`}>
-                                                        {game.name}
-                                                    </Link>
-                                                </span>
-                                                <span className="black-column">
-                                                    <Player
-                                                        user={game.black}
-                                                        disableCacheUpdate={true}
-                                                    />
-                                                </span>
-                                                <span className="white-column">
-                                                    <Player
-                                                        user={game.white}
-                                                        disableCacheUpdate={true}
-                                                    />
-                                                </span>
-                                                <span className="outcome-column">
-                                                    {outcome_formatter(game)}
-                                                </span>
-                                                <span className="date-column">
-                                                    {moment(game.created).format("ll")}
-                                                </span>
-                                            </div>
-                                        ))}
-                                    </div>
+                                                </div>
+                                            )}
+                                            {collection.games.map((game) => (
+                                                <div key={game.game_id} className="game-entry">
+                                                    {owner && (
+                                                        <span className="select">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={
+                                                                    (
+                                                                        this.state
+                                                                            .games_checked as any
+                                                                    )[game.entry_id] || false
+                                                                }
+                                                                onChange={this.setCheckedGame.bind(
+                                                                    this,
+                                                                    game.entry_id,
+                                                                )}
+                                                            />
+                                                        </span>
+                                                    )}
+                                                    <span className="date-column">
+                                                        {moment(game.started).format("ll")}
+                                                    </span>
+                                                    <span className="name-column">
+                                                        <Link to={`/game/${game.game_id}`}>
+                                                            {game.name}
+                                                        </Link>
+                                                    </span>
+                                                    <span className="black-column">
+                                                        <Player
+                                                            user={game.black}
+                                                            disableCacheUpdate={true}
+                                                        />
+                                                    </span>
+                                                    <span className="white-column">
+                                                        <Player
+                                                            user={game.white}
+                                                            disableCacheUpdate={true}
+                                                        />
+                                                    </span>
+                                                    <span className="outcome-column">
+                                                        {outcome_formatter(game)}
+                                                    </span>
+                                                    <span className="date-column">
+                                                        {moment(game.created).format("ll")}
+                                                    </span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
 
                                     {!(hasCollections || hasGames) && (
                                         <div className="empty-text">
@@ -687,6 +714,15 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                         </section>
                     )}
                 </Dropzone>
+                {this.state.show_ai_detection && (
+                    <AIDetection
+                        standalone={false}
+                        title={`AI Detection - ${collection.name}`}
+                        dataSource={`games/library_ai_detection/${this.state.player_id}/${this.state.collection_id}`}
+                        additionalFilters={{}}
+                        showControls={true}
+                    />
+                )}
             </div>
         );
     }
