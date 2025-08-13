@@ -85,6 +85,7 @@ export const defaults = {
     //"goban-theme-white_stone_url": null as null | string,
     "goban-theme-removal-graphic": "square" as "square" | "x",
     "goban-theme-removal-scale": 0.9,
+    "goban-theme-disable-stone-shadows": false,
     "goban-theme-custom-board-background": "#DCB35C",
     "goban-theme-custom-board-url": "",
     "goban-theme-custom-board-line": "#000000",
@@ -292,6 +293,7 @@ export function getSelectedThemes(): GobanSelectedThemes {
     let black = get("goban-theme-black") || (default_plain ? "Plain" : "Slate");
     const removal_graphic = get("goban-theme-removal-graphic");
     const removal_scale = get("goban-theme-removal-scale");
+    const disable_stone_shadows = get("goban-theme-disable-stone-shadows");
 
     if (!(board in Goban.THEMES["board"])) {
         board = default_plain ? "Plain" : "Kaya";
@@ -312,6 +314,7 @@ export function getSelectedThemes(): GobanSelectedThemes {
         black: black,
         "removal-graphic": removal_graphic as any,
         "removal-scale": removal_scale,
+        "disable-stone-shadows": disable_stone_shadows,
     };
 }
 
@@ -332,6 +335,7 @@ export function watchSelectedThemes(cb: (themes: GobanSelectedThemes) => void) {
         "goban-theme-white",
         "goban-theme-removal-graphic",
         "goban-theme-removal-scale",
+        "goban-theme-disable-stone-shadows",
         "goban-theme-custom-board-background",
         "goban-theme-custom-board-url",
         "goban-theme-custom-board-line",

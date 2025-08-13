@@ -60,6 +60,9 @@ export function ThemePreferences(): React.ReactElement | null {
     const [theme] = useData("theme", "light");
 
     const [removal_scale] = usePreference("goban-theme-removal-scale");
+    const [disable_stone_shadows, setDisableStoneShadows] = usePreference(
+        "goban-theme-disable-stone-shadows",
+    );
     const setTheme = React.useCallback((theme: string) => {
         data.set("theme", theme, data.Replication.REMOTE_OVERWRITES_LOCAL);
     }, []);
@@ -274,6 +277,13 @@ export function ThemePreferences(): React.ReactElement | null {
                     id={"goban-theme-removal-scale"}
                     onChange={toggleRemovalScale}
                     checked={removal_scale < 1.0}
+                />
+            </PreferenceLine>
+            <PreferenceLine title={_("Disable stone shadows")}>
+                <Toggle
+                    id={"goban-theme-disable-stone-shadows"}
+                    onChange={setDisableStoneShadows}
+                    checked={disable_stone_shadows}
                 />
             </PreferenceLine>
             <PreferenceLine
