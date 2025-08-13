@@ -23,6 +23,8 @@ import { socket } from "@/lib/sockets";
 import { useEffect, useState, useCallback } from "react";
 import { Timeout } from "@/lib/misc";
 import { chat_manager, users_by_rank, ChatChannelProxy } from "@/lib/chat_manager";
+import { User } from "goban";
+import { getBlocks } from "../BlockPlayer";
 
 interface ChatUsersListProperties {
     channel: string;
@@ -72,9 +74,14 @@ export function ChatUsersList({ channel }: ChatUsersListProperties): React.React
         return <div className="ChatUsersList" />;
     }
 
-    const sorted_user_list: any[] = [];
-    for (const id in proxy?.channel.user_list) {
-        sorted_user_list.push(proxy?.channel.user_list[id]);
+    const sorted_user_list: User[] = [];
+    for (const id in proxy.channel.user_list) {
+        const user = proxy.channel.user_list[id];
+
+        // only display users that are not blocked from chat
+        if (!getBlocks(user.id).block_chat) {
+            sorted_user_list.push(user);
+        }
     }
 
     if (user_sort_order === "rank") {
