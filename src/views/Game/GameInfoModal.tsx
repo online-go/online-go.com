@@ -227,6 +227,7 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, GameIn
                     <dl className="horizontal">
                         <dt>{_("Game")}</dt>
                         <dd>
+                            {this.props.creatorId ? "" : "(Private Game)"}
                             {editable ? (
                                 <input value={config.game_name} onChange={this.updateName} />
                             ) : (
