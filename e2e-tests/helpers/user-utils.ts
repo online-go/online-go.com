@@ -251,7 +251,8 @@ export const goToUsersProfile = async (page: Page, username: string) => {
     await page.click(`.results .result:has-text('${username}')`);
 
     // It's actually tricky to prove we're on the profile page.  Appearance of this will have to do.
-    const playerUsername = page.locator(".Player-username").getByText(username);
+    // Use first() to avoid strict mode violations when multiple Player-username elements exist
+    const playerUsername = page.locator(".Player-username").getByText(username).first();
     await expect(playerUsername).toBeVisible();
     return playerUsername;
 };
@@ -270,6 +271,7 @@ export const goToUsersGame = async (page: Page, username: string, gameName: stri
     // Go to that page ...
     await target_game.click();
     await expect(page.locator(".Game")).toBeVisible();
+    await page.waitForTimeout(500); // wait for the game components to finish loading
 };
 
 export const reportUser = async (page: Page, username: string, type: string, notes: string) => {

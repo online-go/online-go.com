@@ -74,11 +74,11 @@ export const modWarnFirstTurnEscapersTest = async ({ browser }: { browser: Brows
 
     // And escaper should have warning...
     await escaperPage
-        .locator('.AccountWarning .canned-message:has-text("We\'ve noticed that you joined game")')
+        .locator(
+            '.AccountWarningInfo .canned-message:has-text("We\'ve noticed that you joined game")',
+        )
         .waitFor();
 
-    await escaperPage.locator("#AccountWarning-accept:not([disabled])").waitFor();
-    await escaperPage.locator("#AccountWarning-accept").check();
-    await escaperPage.locator(".AccountWarning button.primary:not([disabled])").waitFor();
-    await escaperPage.locator(".AccountWarning button.primary").click();
+    await escaperPage.locator(".AccountWarningInfo button.primary:not([disabled])").waitFor();
+    await escaperPage.locator(".AccountWarningInfo button.primary").click();
 };
