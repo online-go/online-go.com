@@ -44,6 +44,7 @@ import { useGobanController } from "./goban_context";
 import { Tooltip } from "../../components/Tooltip";
 import { ModalContext, ModalTypes } from "@/components/ModalProvider";
 import { GobanEngine, GobanRenderer } from "goban";
+import { openSGFCollectionModal } from "@/components/SGFCollectionModal";
 
 const handleForkGameClick = (
     showModal: (type: ModalTypes, props?: any) => void,
@@ -331,6 +332,25 @@ export function GameDock({
             .catch(errorAlerter);
     };
 
+    const addSGFToLibrary = () => {
+        if (!game_id || user.anonymous) {
+            return;
+        }
+
+        let gameName = `Game ${game_id}`;
+        if (engine.config.game_name) {
+            gameName = engine.config.game_name;
+        } else if (historical_black && historical_white) {
+            gameName = `${historical_black.username} vs ${historical_white.username}`;
+        } else if (engine.players?.black && engine.players?.white) {
+            gameName = `${engine.players.black.username} vs ${engine.players.white.username}`;
+        }
+
+        openSGFCollectionModal(game_id, gameName, () => {
+            toast(<div>{_("SGF added to library successfully")}</div>, 3000);
+        });
+    };
+
     // Not the same as engine.playerToMove(), which changes when you place a
     // provisional stone on the board (in submit-move or double-click mode).
     const currentPlayer =
@@ -513,6 +533,13 @@ export function GameDock({
                 >
                     <i className="fa fa-download"></i> {_("Download SGF")}
                 </a>
+            )}
+            {sgf_download_enabled && game && (
+                <Tooltip tooltipRequired={tooltipRequired} title={_("Add SGF to my library")}>
+                    <a onClick={addSGFToLibrary} className={user.anonymous ? "disabled" : ""}>
+                        <i className="fa fa-plus"></i> {_("Add to library")}
+                    </a>
+                </Tooltip>
             )}
             {/*
             {sgf_download_enabled && sgf_with_ai_review_url && (
