@@ -227,18 +227,19 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, GameIn
                     <dl className="horizontal">
                         <dt>{_("Game")}</dt>
                         <dd>
+                            {this.props.creatorId ? "" : "(Private Game)"}
                             {editable ? (
                                 <input value={config.game_name} onChange={this.updateName} />
                             ) : (
                                 <span>{config.game_name}</span>
                             )}
                         </dd>
-                        {this.props.creatorId && <dt>{_("Creator")}</dt>}
-                        {this.props.creatorId && (
-                            <dd>
+                        <dt>{_("Creator")}</dt>
+                        <dd>
+                            {!!this.props.creatorId && (
                                 <Player icon rank user={this.props.creatorId} />
-                            </dd>
-                        )}
+                            )}
+                        </dd>
                         {(config.rengo || null) && (
                             <>
                                 <dt>{_("Participants")}</dt>
@@ -276,7 +277,7 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, GameIn
                                     ) : (
                                         <Player
                                             disableCacheUpdate
-                                            icon
+                                            icon={!!this.props.creatorId}
                                             rank
                                             user={this.props.black}
                                         />
@@ -308,7 +309,7 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, GameIn
                                     ) : (
                                         <Player
                                             disableCacheUpdate
-                                            icon
+                                            icon={!!this.props.creatorId}
                                             rank
                                             user={this.props.white}
                                         />
