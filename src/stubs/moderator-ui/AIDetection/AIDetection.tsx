@@ -4,7 +4,13 @@
 
 import * as React from "react";
 
-export type AIDetectionProps = {};
+export type AIDetectionProps = {
+    standalone?: boolean;
+    title?: string;
+    dataSource?: string;
+    additionalFilters?: Record<string, any>;
+    showControls?: boolean;
+};
 
 export type AIDetectionT = (props: AIDetectionProps) => React.ReactElement;
 
