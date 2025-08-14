@@ -234,8 +234,14 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, GameIn
                                 <span>{config.game_name}</span>
                             )}
                         </dd>
-                        {<dt>{_("Creator")}</dt>}
-                        <dd>{<Player icon rank user={this.props.creatorId} />}</dd>
+                        <dt>{_("Creator")}</dt>
+                        <dd>
+                            {this.props.creatorId ? (
+                                <Player icon rank user={this.props.creatorId} />
+                            ) : (
+                                ""
+                            )}
+                        </dd>
                         {(config.rengo || null) && (
                             <>
                                 <dt>{_("Participants")}</dt>
