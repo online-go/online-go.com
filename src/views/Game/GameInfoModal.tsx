@@ -279,7 +279,7 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, GameIn
                                     ) : (
                                         <Player
                                             disableCacheUpdate
-                                            icon
+                                            icon={!!this.props.creatorId}
                                             rank
                                             user={this.props.black}
                                         />
@@ -311,7 +311,7 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, GameIn
                                     ) : (
                                         <Player
                                             disableCacheUpdate
-                                            icon
+                                            icon={!!this.props.creatorId}
                                             rank
                                             user={this.props.white}
                                         />
