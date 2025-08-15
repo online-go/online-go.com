@@ -100,6 +100,16 @@ class Index extends React.PureComponent<{}, any> {
         return (
             <div id="LearningHub-Index">
                 <div id="LearningHub-list">
+                    <div className="kids-go-server">
+                        <img src="https://cdn.online-go.com/assets/axol.svg" />
+                        <div>
+                            {pgettext(
+                                "Immediately after this text is a link to Kids Go Server",
+                                "Looking for a great place to learn Go for kids? Check out",
+                            )}
+                            <a href="https://kidsgoserver.com/learn-to-play">KidsGoServer.com</a>
+                        </div>
+                    </div>
                     {sections.map((arr) => (
                         <div key={arr[0]} className="section">
                             <h2>
@@ -152,7 +162,6 @@ class Index extends React.PureComponent<{}, any> {
                             </div>
                         </div>
                     ))}
-
                     <div className="section">
                         <h2>
                             {pgettext(
