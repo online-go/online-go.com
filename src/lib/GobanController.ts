@@ -682,7 +682,9 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         } else {
             const last_estimate_move = this.stopEstimatingScore();
 
+            const cur_move = this.goban.engine.cur_move;
             this.goban.setMode("analyze");
+            this.goban.engine.jumpTo(cur_move);
             if (last_estimate_move) {
                 this.goban.engine.jumpTo(last_estimate_move);
             }
