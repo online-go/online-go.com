@@ -868,7 +868,9 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                     <AIDetection
                         standalone={false}
                         title={`AI Detection - ${collection.name}`}
-                        dataSource={`games/library_ai_detection/${this.state.player_id}/${this.state.collection_id}`}
+                        dataSource={`games/library_ai_detection/${this.state.player_id}/${
+                            this.state.collection_id !== "0" ? this.state.collection_id : ""
+                        }`}
                         additionalFilters={{}}
                         showControls={true}
                     />
