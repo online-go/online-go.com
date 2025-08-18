@@ -413,6 +413,19 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
             return;
         }
 
+        if (selectedGameIds.length > 3) {
+            toast(
+                <div>
+                    {llm_pgettext(
+                        "Please select no more than 3 games for AI analysis",
+                        "Please select no more than 3 games for AI analysis",
+                    )}
+                </div>,
+                3000,
+            );
+            return;
+        }
+
         const user = data.get("user");
         if (user.anonymous) {
             toast(<div>{llm_pgettext("Please sign in first", "Please sign in first")}</div>, 3000);
