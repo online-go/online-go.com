@@ -28,6 +28,7 @@ import {
     JGOFSealingIntersection,
 } from "goban";
 import { EventEmitter } from "eventemitter3";
+import type { AnalysisVariationData, SerializedMoveTree } from "@/lib/data_schema";
 import { sfx, SFXSprite, ValidSound } from "@/lib/sfx";
 import { AudioClockEvent } from "goban";
 import { _, current_language } from "@/lib/translate";
@@ -71,6 +72,15 @@ export interface ReviewListEntry {
     id: number;
 }
 
+interface AnalysisMessage {
+    type: "analysis";
+    from: number;
+    moves: string;
+    name: string;
+    marks?: { [key: string]: string };
+    pen_marks?: unknown[];
+}
+
 /*
  * This class is a wrapper around the Goban class that stacks on various
  * non-react functionality that we need in the various components within
@@ -91,7 +101,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
     public onPushAnalysisLeft?: () => void;
     public last_variation_number: number = 0;
     public creator_id?: number;
-    private last_analysis_sent: any;
+    private last_analysis_sent: AnalysisMessage | null = null;
     private game_id?: number;
     private review_id?: number;
     public _selected_chat_log: ChatMode;
@@ -130,10 +140,15 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         this.setupCountdownCounter();
         this.goban.on("phase", this.syncStoneRemoval.bind(this));
         this.goban.on("mode", this.syncStoneRemoval.bind(this));
+        this.goban.on("mode", this.onModeChange.bind(this));
         this.goban.on("outcome", this.syncStoneRemoval.bind(this));
         this.goban.on("stone-removal.accepted", this.syncStoneRemoval.bind(this));
         this.goban.on("stone-removal.updated", this.syncStoneRemoval.bind(this));
         this.goban.on("stone-removal.needs-sealing", this.syncNeedsSealing.bind(this));
+
+        // Save analysis variations on key events
+        this.goban.on("cur_move", this.saveAnalysisVariations);
+        this.goban.on("phase", this.clearExpiredAnalysisData);
 
         this.goban.on("load", () => {
             this.syncStoneRemoval();
@@ -145,6 +160,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
                 });
             }
             this.review_list.sort(rankingThenUsername);
+            this.cleanupOldAnalysisData(); // Clean up old data on each load
         });
 
         this.goban.on("gamedata", (gamedata) => {
@@ -458,6 +474,268 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         return false;
     };
 
+    private getAnalysisStorageKey(): `analysis_variations_${number}` | null {
+        if (!this.game_id) {
+            return null;
+        }
+        return `analysis_variations_${this.game_id}` as const;
+    }
+
+    private getAnalysisFinishedKey(): `analysis_variations_${number}_finished` | null {
+        if (!this.game_id) {
+            return null;
+        }
+        return `analysis_variations_${this.game_id}_finished` as const;
+    }
+
+    private saveAnalysisVariations = () => {
+        if (this.goban.mode !== "analyze" || !this.game_id) {
+            return;
+        }
+
+        try {
+            const storageKey = this.getAnalysisStorageKey();
+            if (!storageKey) {
+                return;
+            }
+
+            const moveTree = this.goban.engine.move_tree;
+            const serializedTree = this.serializeMoveTree(moveTree);
+
+            const analysisData: AnalysisVariationData = {
+                tree: serializedTree,
+                currentMoveId: this.goban.engine.cur_move.id,
+                timestamp: Date.now(),
+                gamePhase: this.goban.engine.phase,
+            };
+
+            data.set(storageKey, analysisData);
+        } catch (e) {
+            console.warn("Failed to save analysis variations:", e);
+        }
+    };
+
+    private restoreAnalysisVariations = () => {
+        if (!this.game_id) {
+            return;
+        }
+
+        try {
+            const storageKey = this.getAnalysisStorageKey();
+            if (!storageKey) {
+                return;
+            }
+
+            const analysisData = data.get(storageKey);
+            if (!analysisData) {
+                return;
+            }
+
+            // Only check age if game is finished, otherwise keep data indefinitely during active games
+            const gameFinishedKey = this.getAnalysisFinishedKey();
+            if (gameFinishedKey) {
+                const gameFinishedTimestamp = data.get(gameFinishedKey);
+                if (gameFinishedTimestamp) {
+                    // Game is finished, check if data should expire (7 days after finish)
+                    const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+                    if (Date.now() - gameFinishedTimestamp > sevenDaysMs) {
+                        data.remove(storageKey);
+                        data.remove(gameFinishedKey);
+                        return;
+                    }
+                }
+            }
+            // For active games, keep analysis data indefinitely
+
+            // Only restore if we're in the same phase as when saved
+            if (analysisData.gamePhase !== this.goban.engine.phase) {
+                return;
+            }
+
+            // Restore the move tree structure
+            this.deserializeMoveTree(analysisData.tree, this.goban.engine.move_tree);
+
+            // Try to find and jump to the saved current move
+            const savedMove = this.findMoveById(
+                this.goban.engine.move_tree,
+                analysisData.currentMoveId,
+            );
+            if (savedMove) {
+                this.goban.engine.jumpTo(savedMove);
+            }
+        } catch (e) {
+            console.warn("Failed to restore analysis variations:", e);
+            // Clean up corrupted data
+            const storageKey = this.getAnalysisStorageKey();
+            if (storageKey) {
+                data.remove(storageKey);
+            }
+        }
+    };
+
+    private serializeMoveTree(node: MoveTree): SerializedMoveTree {
+        const serialized: SerializedMoveTree = {
+            id: node.id,
+            x: node.x,
+            y: node.y,
+            player: node.player,
+            edited: node.edited,
+            text: node.text,
+            marks: node.getAllMarks(),
+            branches: [],
+        };
+
+        // Serialize trunk_next
+        if (node.trunk_next) {
+            serialized.trunk_next = this.serializeMoveTree(node.trunk_next);
+        }
+
+        // Serialize branches
+        for (const branch of node.branches) {
+            serialized.branches.push(this.serializeMoveTree(branch));
+        }
+
+        return serialized;
+    }
+
+    private deserializeMoveTree(serialized: SerializedMoveTree, targetNode: MoveTree): void {
+        // Restore marks
+        if (serialized.marks) {
+            targetNode.setAllMarks(serialized.marks);
+        }
+
+        // Restore text
+        if (serialized.text) {
+            targetNode.text = serialized.text;
+        }
+
+        // Restore trunk_next
+        if (serialized.trunk_next) {
+            if (!targetNode.trunk_next) {
+                const move = serialized.trunk_next;
+                this.goban.engine.jumpTo(targetNode);
+                if (move.edited) {
+                    this.goban.engine.editPlace(move.x, move.y, move.player, false);
+                } else if (move.x !== -1 && move.y !== -1) {
+                    this.goban.engine.place(move.x, move.y, false, false, true, false, false);
+                }
+            }
+            if (targetNode.trunk_next) {
+                this.deserializeMoveTree(serialized.trunk_next, targetNode.trunk_next);
+            }
+        }
+
+        // Restore branches
+        for (let i = 0; i < serialized.branches.length; i++) {
+            const branchData = serialized.branches[i];
+            let branch = targetNode.branches[i];
+
+            if (!branch) {
+                // Create the branch if it doesn't exist
+                this.goban.engine.jumpTo(targetNode);
+                const move = branchData;
+                if (move.edited) {
+                    this.goban.engine.editPlace(move.x, move.y, move.player, false);
+                } else if (move.x !== -1 && move.y !== -1) {
+                    this.goban.engine.place(move.x, move.y, false, false, true, false, false);
+                }
+                branch = targetNode.branches[targetNode.branches.length - 1];
+            }
+
+            if (branch) {
+                this.deserializeMoveTree(branchData, branch);
+            }
+        }
+    }
+
+    private clearExpiredAnalysisData = () => {
+        if (!this.game_id) {
+            return;
+        }
+
+        // Mark analysis data for cleanup when game finishes
+        if (this.goban.engine.phase === "finished") {
+            const finishedKey = this.getAnalysisFinishedKey();
+            if (finishedKey) {
+                const finishTimestamp = Date.now();
+                data.set(finishedKey, finishTimestamp);
+            }
+        }
+
+        // Clean up old analysis data for finished games
+        this.cleanupOldAnalysisData();
+    };
+
+    private cleanupOldAnalysisData = () => {
+        try {
+            const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+            let cleanupCount = 0;
+
+            // Get all analysis variation keys using the data module's utility
+            const allData = data.getPrefix("analysis_variations_");
+
+            for (const [fullKey, value] of Object.entries(allData)) {
+                if (fullKey.endsWith("_finished")) {
+                    // This is a finish timestamp
+                    const finishTimestamp = value as number;
+                    if (Date.now() - finishTimestamp > sevenDaysMs) {
+                        // Game finished more than 7 days ago, clean up both keys
+                        const dataKey = fullKey.replace("_finished", "");
+                        data.remove(fullKey as `analysis_variations_${number}_finished`);
+                        data.remove(dataKey as `analysis_variations_${number}`);
+                        cleanupCount += 2;
+                    }
+                } else if (!allData[`${fullKey}_finished`]) {
+                    // This is analysis data without a finish timestamp (legacy data from before this fix)
+                    // Only clean up legacy data if it's very old (30+ days) to be safe
+                    const analysisData = value as AnalysisVariationData;
+                    const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
+                    if (
+                        analysisData.timestamp &&
+                        Date.now() - analysisData.timestamp > thirtyDaysMs
+                    ) {
+                        data.remove(fullKey as `analysis_variations_${number}`);
+                        cleanupCount++;
+                    }
+                }
+            }
+
+            if (cleanupCount > 0) {
+                console.log(`Cleaned up ${cleanupCount} old analysis data entries`);
+            }
+        } catch (e) {
+            console.warn("Failed to cleanup old analysis data:", e);
+        }
+    };
+
+    private findMoveById(node: MoveTree, id: number): MoveTree | null {
+        if (node.id === id) {
+            return node;
+        }
+
+        if (node.trunk_next) {
+            const found = this.findMoveById(node.trunk_next, id);
+            if (found) {
+                return found;
+            }
+        }
+
+        for (const branch of node.branches) {
+            const found = this.findMoveById(branch, id);
+            if (found) {
+                return found;
+            }
+        }
+
+        return null;
+    }
+
+    private onModeChange = () => {
+        if (this.goban.mode === "analyze") {
+            this.restoreAnalysisVariations();
+        }
+    };
+
     public setVariationName = (variation_name: string) => {
         this._variation_name = variation_name;
         this.emit("variation_name", variation_name);
@@ -760,7 +1038,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
             }
         }
 
-        const analysis: any = {
+        const analysis: AnalysisMessage = {
             type: "analysis",
             from: diff.from,
             moves: diff.moves,
@@ -791,7 +1069,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         }
 
         if (!data.get("user").anonymous) {
-            this.goban.sendChat(analysis, this.selected_chat_log);
+            this.goban.sendChat(JSON.stringify(analysis), this.selected_chat_log);
             this.last_analysis_sent = analysis;
         } else {
             this.goban.showMessage("error", {

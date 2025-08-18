@@ -27,6 +27,26 @@ import type { defaults as defaultPreferences, ValidPreference } from "./preferen
 import type { TimeControl, TimeControlTypes } from "@/components/TimeControl";
 import type { JosekiFilter } from "@/components/JosekiVariationFilter";
 import type { Challenge } from "@/lib/challenge_utils";
+import type { MarkInterface } from "goban";
+
+export interface SerializedMoveTree {
+    id: number;
+    x: number;
+    y: number;
+    player: number;
+    edited: boolean;
+    text?: string;
+    marks?: MarkInterface[][];
+    trunk_next?: SerializedMoveTree;
+    branches: SerializedMoveTree[];
+}
+
+export interface AnalysisVariationData {
+    tree: SerializedMoveTree;
+    currentMoveId: number;
+    timestamp: number;
+    gamePhase: string;
+}
 
 type TimeControlSpeed = TimeControlTypes.TimeControlSpeed;
 type TimeControlSystem = TimeControlTypes.TimeControlSystem;
@@ -292,6 +312,8 @@ export interface DataSchema
     [paginated_table_page_size_key: `paginated-table.${string}.page_size`]: number;
     [dismissed_key: `dismissed.${string}`]: boolean;
     [experiments_key: `experiments.${string}`]: string;
+    [analysis_variations_key: `analysis_variations_${number}`]: AnalysisVariationData;
+    [analysis_variations_finished_key: `analysis_variations_${number}_finished`]: number;
 
     // Using underscore prefixed keys suppresses type errors. This may be
     // be desired when prototyping a new feature and the structure of the data
