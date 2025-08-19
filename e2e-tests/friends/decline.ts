@@ -37,7 +37,7 @@ export const declineFriendRequestNotificationTest = async ({ browser }: { browse
 
     await goToProfile(requestor);
 
-    await expect(requestor.getByText("Notify when declining friend requests")).not.toBeVisible();
+    await expect(requestor.getByText("Notify when declining")).not.toBeVisible();
 
     const declinerUsername = newTestUsername("frDFRNDec"); // cspell:disable-line
     const { userPage: decliner } = await prepareNewUser(browser, declinerUsername, "test");
@@ -57,7 +57,7 @@ export const declineFriendRequestNotificationTest = async ({ browser }: { browse
     await assertNotificationIndicatorActive(decliner, 1);
 
     // and the option to decline it
-    await expect(decliner.getByText("Notify when declining friend requests")).toBeVisible();
+    await expect(decliner.getByText("Notify when declining")).toBeVisible();
 
     // Assert that the checkbox is not checked (unchecked by default)
     await expect(decliner.locator('input[id="notify-on-decline"]')).not.toBeChecked();
@@ -78,7 +78,7 @@ export const declineFriendRequestNotificationTest = async ({ browser }: { browse
 
     await expect(requestor.getByText("Sent friend request").first()).toBeVisible();
 
-    await expect(decliner.getByText("Notify when declining friend requests")).toBeVisible();
+    await expect(decliner.getByText("Notify when declining")).toBeVisible();
 
     const notifyCheckbox = decliner.locator('input[id="notify-on-decline"]');
     await expect(notifyCheckbox).not.toBeChecked();

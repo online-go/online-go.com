@@ -60,6 +60,19 @@ export function ThemePreferences(): React.ReactElement | null {
     const [theme] = useData("theme", "light");
 
     const [removal_scale] = usePreference("goban-theme-removal-scale");
+    const [stone_shadows, setStoneShadows] = usePreference("goban-theme-stone-shadows");
+    const [custom_black_shadow_color, setCustomBlackShadowColor] = usePreference(
+        "goban-theme-custom-black-shadow-color",
+    );
+    const [custom_black_shadow_gradient, setCustomBlackShadowGradient] = usePreference(
+        "goban-theme-custom-black-shadow-gradient",
+    );
+    const [custom_white_shadow_color, setCustomWhiteShadowColor] = usePreference(
+        "goban-theme-custom-white-shadow-color",
+    );
+    const [custom_white_shadow_gradient, setCustomWhiteShadowGradient] = usePreference(
+        "goban-theme-custom-white-shadow-gradient",
+    );
     const setTheme = React.useCallback((theme: string) => {
         data.set("theme", theme, data.Replication.REMOTE_OVERWRITES_LOCAL);
     }, []);
@@ -297,6 +310,63 @@ export function ThemePreferences(): React.ReactElement | null {
                     checked={removal_scale < 1.0}
                 />
             </PreferenceLine>
+            <PreferenceLine title={_("Stone shadow style")}>
+                <PreferenceDropdown
+                    value={stone_shadows}
+                    options={[
+                        { value: "default", label: _("Default") },
+                        { value: "low", label: _("Low") },
+                        { value: "mid", label: _("Mid") },
+                        { value: "high", label: _("High") },
+                        { value: "anime", label: _("Anime") },
+                        { value: "custom", label: _("Custom") },
+                        { value: "none", label: _("None") },
+                    ]}
+                    onChange={setStoneShadows}
+                />
+            </PreferenceLine>
+            {stone_shadows === "custom" && (
+                <>
+                    <PreferenceLine title={_("Black stone shadow color")}>
+                        <input
+                            type="color"
+                            value={custom_black_shadow_color}
+                            onChange={(e) => setCustomBlackShadowColor(e.target.value)}
+                        />
+                    </PreferenceLine>
+                    <PreferenceLine
+                        title={_("Black stone shadow gradient transform")}
+                        description={_("CSS transform for black stone shadow gradient")}
+                    >
+                        <textarea
+                            value={custom_black_shadow_gradient}
+                            onChange={(e) => setCustomBlackShadowGradient(e.target.value)}
+                            placeholder="rotate(45) scale(1.10 1.0) translate(0.05 -0.50)"
+                            rows={2}
+                            style={{ width: "100%", fontFamily: "monospace" }}
+                        />
+                    </PreferenceLine>
+                    <PreferenceLine title={_("White stone shadow color")}>
+                        <input
+                            type="color"
+                            value={custom_white_shadow_color}
+                            onChange={(e) => setCustomWhiteShadowColor(e.target.value)}
+                        />
+                    </PreferenceLine>
+                    <PreferenceLine
+                        title={_("White stone shadow gradient transform")}
+                        description={_("CSS transform for white stone shadow gradient")}
+                    >
+                        <textarea
+                            value={custom_white_shadow_gradient}
+                            onChange={(e) => setCustomWhiteShadowGradient(e.target.value)}
+                            placeholder="rotate(45) scale(1.10 1.0) translate(0.05 -0.50)"
+                            rows={2}
+                            style={{ width: "100%", fontFamily: "monospace" }}
+                        />
+                    </PreferenceLine>
+                </>
+            )}
             <PreferenceLine
                 title={_("Stone font scale")}
                 description={_("Adjust the size of the font used to display symbols on stones.")}

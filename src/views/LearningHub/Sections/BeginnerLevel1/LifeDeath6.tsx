@@ -55,7 +55,7 @@ class Page01 extends LearningPage {
     }
 
     text() {
-        return _("Black to play. capture the white group.");
+        return _("Black to play. Capture the white group.");
     }
     config(): GobanConfig {
         return {
@@ -79,7 +79,7 @@ class Page02 extends LearningPage {
     }
 
     text() {
-        return _("Black to play. capture the white group.");
+        return _("Black to play. Capture the white group.");
     }
     config(): GobanConfig {
         return {
@@ -103,7 +103,7 @@ class Page03 extends LearningPage {
     }
 
     text() {
-        return _("Black to play. capture the white group.");
+        return _("Black to play. Capture the white group.");
     }
     config(): GobanConfig {
         return {
@@ -127,7 +127,7 @@ class Page04 extends LearningPage {
     }
 
     text() {
-        return _("Black to play. capture the white group.");
+        return _("Black to play. Capture the white group.");
     }
     config(): GobanConfig {
         return {
@@ -151,7 +151,7 @@ class Page05 extends LearningPage {
     }
 
     text() {
-        return _("Black to play. capture the white group.");
+        return _("Black to play. Capture the white group.");
     }
     config(): GobanConfig {
         return {
@@ -180,7 +180,7 @@ class Page06 extends LearningPage {
     }
 
     text() {
-        return _("Black to play. capture the white group.");
+        return _("Black to play. Capture the white group.");
     }
     config(): GobanConfig {
         return {
@@ -204,7 +204,7 @@ class Page07 extends LearningPage {
     }
 
     text() {
-        return _("Black to play. capture the white group.");
+        return _("Black to play. Capture the white group.");
     }
     config(): GobanConfig {
         return {
@@ -233,7 +233,7 @@ class Page08 extends LearningPage {
     }
 
     text() {
-        return _("Black to play. capture the white group.");
+        return _("Black to play. Capture the white group.");
     }
     config(): GobanConfig {
         return {
@@ -262,7 +262,7 @@ class Page09 extends LearningPage {
     }
 
     text() {
-        return _("Black to play. capture the white group.");
+        return _("Black to play. Capture the white group.");
     }
     config(): GobanConfig {
         return {
@@ -286,7 +286,7 @@ class Page10 extends LearningPage {
     }
 
     text() {
-        return _("Black to play. capture the white group.");
+        return _("Black to play. Capture the white group.");
     }
     config(): GobanConfig {
         return {
@@ -315,7 +315,7 @@ class Page11 extends LearningPage {
     }
 
     text() {
-        return _("Black to play. capture the white group.");
+        return _("Black to play. Capture the white group.");
     }
     config(): GobanConfig {
         return {
@@ -339,7 +339,7 @@ class Page12 extends LearningPage {
     }
 
     text() {
-        return _("Black to play. capture the white group.");
+        return _("Black to play. Capture the white group.");
     }
     config(): GobanConfig {
         return {

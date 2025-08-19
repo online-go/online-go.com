@@ -16,7 +16,14 @@
  */
 
 import * as data from "@/lib/data";
-import { GobanSelectedThemes, Goban, LabelPosition, JGOFTimeControlSpeed, Size } from "goban";
+import {
+    GobanSelectedThemes,
+    Goban,
+    LabelPosition,
+    JGOFTimeControlSpeed,
+    Size,
+    ShadowTheme,
+} from "goban";
 import * as React from "react";
 import { current_language } from "@/lib/translate";
 import { DataSchema } from "./data_schema";
@@ -85,6 +92,11 @@ export const defaults = {
     //"goban-theme-white_stone_url": null as null | string,
     "goban-theme-removal-graphic": "square" as "square" | "x",
     "goban-theme-removal-scale": 0.9,
+    "goban-theme-stone-shadows": "default" as ShadowTheme,
+    "goban-theme-custom-black-shadow-color": "#000000",
+    "goban-theme-custom-black-shadow-gradient": "rotate(45) scale(1.10 1.0) translate(0.05 -0.50)",
+    "goban-theme-custom-white-shadow-color": "#000000",
+    "goban-theme-custom-white-shadow-gradient": "rotate(45) scale(1.10 1.0) translate(0.05 -0.50)",
     "goban-theme-custom-board-background": "#DCB35C",
     "goban-theme-custom-board-url": "",
     "goban-theme-custom-board-line": "#000000",
@@ -292,6 +304,11 @@ export function getSelectedThemes(): GobanSelectedThemes {
     let black = get("goban-theme-black") || (default_plain ? "Plain" : "Slate");
     const removal_graphic = get("goban-theme-removal-graphic");
     const removal_scale = get("goban-theme-removal-scale");
+    const stone_shadows = get("goban-theme-stone-shadows");
+    const custom_black_shadow_color = get("goban-theme-custom-black-shadow-color");
+    const custom_black_shadow_gradient = get("goban-theme-custom-black-shadow-gradient");
+    const custom_white_shadow_color = get("goban-theme-custom-white-shadow-color");
+    const custom_white_shadow_gradient = get("goban-theme-custom-white-shadow-gradient");
 
     if (!(board in Goban.THEMES["board"])) {
         board = default_plain ? "Plain" : "Kaya";
@@ -312,6 +329,17 @@ export function getSelectedThemes(): GobanSelectedThemes {
         black: black,
         "removal-graphic": removal_graphic as any,
         "removal-scale": removal_scale,
+        "stone-shadows": stone_shadows,
+        "custom-shadow-config": {
+            black: {
+                shadow_color: custom_black_shadow_color,
+                gradientTransform: custom_black_shadow_gradient,
+            },
+            white: {
+                shadow_color: custom_white_shadow_color,
+                gradientTransform: custom_white_shadow_gradient,
+            },
+        },
     };
 }
 
@@ -332,6 +360,11 @@ export function watchSelectedThemes(cb: (themes: GobanSelectedThemes) => void) {
         "goban-theme-white",
         "goban-theme-removal-graphic",
         "goban-theme-removal-scale",
+        "goban-theme-stone-shadows",
+        "goban-theme-custom-black-shadow-color",
+        "goban-theme-custom-black-shadow-gradient",
+        "goban-theme-custom-white-shadow-color",
+        "goban-theme-custom-white-shadow-gradient",
         "goban-theme-custom-board-background",
         "goban-theme-custom-board-url",
         "goban-theme-custom-board-line",

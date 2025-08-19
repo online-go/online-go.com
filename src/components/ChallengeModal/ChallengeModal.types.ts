@@ -152,7 +152,7 @@ export type GameInput = {
     initial_state: {
         black: string;
         white: string;
-    };
+    } | null;
     private: boolean;
     rengo: boolean;
     rengo_casual_mode: boolean;
@@ -171,6 +171,8 @@ export type ChallengeInput = {
     boardWidth?: number;
     boardHeight?: number;
     game: GameInput;
+    initialized: boolean;
+    aga_ranked?: boolean;
 };
 
 export type DemoSettings = {

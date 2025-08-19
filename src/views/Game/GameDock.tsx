@@ -30,7 +30,7 @@ import { openGameLinkModal } from "./GameLinkModal";
 import { sfx } from "@/lib/sfx";
 import { alert } from "@/lib/swal_config";
 import { errorAlerter } from "@/lib/misc";
-import { doAnnul } from "@/lib/moderation";
+import { doAnnul, MODERATOR_POWERS } from "@/lib/moderation";
 import { openReport } from "@/components/Report";
 import { openGameInfoModal } from "./GameInfoModal";
 import {
@@ -44,6 +44,7 @@ import { useGobanController } from "./goban_context";
 import { Tooltip } from "../../components/Tooltip";
 import { ModalContext, ModalTypes } from "@/components/ModalProvider";
 import { GobanEngine, GobanRenderer } from "goban";
+import { openSGFCollectionModal } from "@/components/SGFCollectionModal";
 
 const handleForkGameClick = (
     showModal: (type: ModalTypes, props?: any) => void,
@@ -113,6 +114,8 @@ export function GameDock({
     let superuser_ai_review_ready = user?.is_superuser && phase === "finished";
     let user_can_intervene = user?.is_moderator && phase !== "finished";
     let user_can_annul = user?.is_moderator && phase === "finished";
+    let user_detects_ai = ((user?.moderator_powers ?? 0) & MODERATOR_POWERS.AI_DETECTOR) !== 0;
+
     const annulable = !annulled && engine.config.ranked;
     const unannulable = annulled && engine.config.ranked;
     const user_is_player = useUserIsParticipant(goban);
@@ -128,6 +131,7 @@ export function GameDock({
         superuser_ai_review_ready = false;
         user_can_intervene = false;
         user_can_annul = false;
+        user_detects_ai = false;
     }
 
     let sgf_download_enabled = false;
@@ -328,6 +332,25 @@ export function GameDock({
             .catch(errorAlerter);
     };
 
+    const addSGFToLibrary = () => {
+        if (!game_id || user.anonymous) {
+            return;
+        }
+
+        let gameName = `Game ${game_id}`;
+        if (engine.config.game_name) {
+            gameName = engine.config.game_name;
+        } else if (historical_black && historical_white) {
+            gameName = `${historical_black.username} vs ${historical_white.username}`;
+        } else if (engine.players?.black && engine.players?.white) {
+            gameName = `${engine.players.black.username} vs ${engine.players.white.username}`;
+        }
+
+        openSGFCollectionModal(game_id, gameName, () => {
+            toast(<div>{_("SGF added to library successfully")}</div>, 3000);
+        });
+    };
+
     // Not the same as engine.playerToMove(), which changes when you place a
     // provisional stone on the board (in submit-move or double-click mode).
     const currentPlayer =
@@ -511,6 +534,13 @@ export function GameDock({
                     <i className="fa fa-download"></i> {_("Download SGF")}
                 </a>
             )}
+            {sgf_download_enabled && game && (
+                <Tooltip tooltipRequired={tooltipRequired} title={_("Add SGF to my library")}>
+                    <a onClick={addSGFToLibrary} className={user.anonymous ? "disabled" : ""}>
+                        <i className="fa fa-plus"></i> {_("Add to library")}
+                    </a>
+                </Tooltip>
+            )}
             {/*
             {sgf_download_enabled && sgf_with_ai_review_url && (
                 <Tooltip tooltipRequired={tooltipRequired} title={_("SGF with AI Review")}>
@@ -579,15 +609,15 @@ export function GameDock({
                 ) /* This is a "do nothing" icon for when the game is unranked */
             }
 
-            {(user_can_intervene || user_can_annul) && <hr />}
-            {(user_can_intervene || user_can_annul) && (
+            {(user_can_intervene || user_can_annul || user_detects_ai) && <hr />}
+            {(user_can_intervene || user_can_annul || user_detects_ai) && (
                 <Tooltip tooltipRequired={tooltipRequired} title={_("Timing")}>
                     <a onClick={goban_controller.toggleShowTiming}>
                         <i className="fa fa-clock-o"></i> {_("Timing")}
                     </a>
                 </Tooltip>
             )}
-            {(user_can_intervene || user_can_annul) && ai_suspected && (
+            {(user_can_intervene || user_can_annul || user_detects_ai) && ai_suspected && (
                 <Tooltip tooltipRequired={tooltipRequired} title={_("Bot Detection Results")}>
                     <a onClick={goban_controller.toggleShowBotDetectionResults}>
                         <i className="fa fa-exclamation"></i> {_("Bot Detection Results")}

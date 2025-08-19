@@ -113,7 +113,7 @@ export function AccountWarningMessage(props: {
     const Renderers = {
         warning: WarningModal,
         acknowledgement: AckModal,
-        info: AckModal,
+        info: InfoModal,
     };
 
     const ack = () => {
@@ -154,6 +154,23 @@ function MessageTextRender(props: MessageTextRenderProps): React.ReactElement {
 interface WarningModalProps {
     warning: rest_api.warnings.Warning;
     accept: () => void;
+}
+
+function InfoModal(props: WarningModalProps): React.ReactElement {
+    return (
+        <>
+            <div className="AccountWarning-backdrop" />
+            <div className="AccountWarningInfo">
+                <MessageTextRender warning={props.warning} />
+                <div className="space" />
+                <div className="buttons">
+                    <button className="primary" onClick={props.accept}>
+                        {_("OK")}
+                    </button>
+                </div>
+            </div>
+        </>
+    );
 }
 
 function AckModal(props: WarningModalProps): React.ReactElement {

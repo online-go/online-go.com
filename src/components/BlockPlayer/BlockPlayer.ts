@@ -86,8 +86,11 @@ export function setAnnouncementBlock(player_id: number, tf: boolean) {
     }
 }
 
-export function getBlocks(player_id: number): BlockState {
-    return block_states[player_id] || new BlockState(player_id);
+/**
+ * Get blocks statuses for a given user
+ */
+export function getBlocks(user_id: number): BlockState {
+    return block_states[user_id] || new BlockState(user_id);
 }
 
 export function getAllBlocks(): BlockState[] {

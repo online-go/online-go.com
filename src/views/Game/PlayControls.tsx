@@ -1214,7 +1214,8 @@ export function ReviewControls({ review_id }: ReviewControlsProps) {
                     <div className="space-around">
                         {review_controller_id &&
                             review_controller_id !== user.id &&
-                            review_out_of_sync && (
+                            review_out_of_sync &&
+                            !in_pushed_analysis && (
                                 <button className="sm" onClick={syncToCurrentReviewMove}>
                                     {pgettext("Synchronize to current review position", "Sync")}{" "}
                                     <i className="fa fa-refresh" />
