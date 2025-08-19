@@ -28,6 +28,6 @@ tr {
   visibility: hidden !important;
 }
 
-.LadderComponent tbody { /* hide the player details */
+.LadderComponent { /* this table is too variable to test by screenshot*/
   visibility: hidden !important;
 }
