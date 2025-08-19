@@ -15,3 +15,7 @@ section.right { /* NavBar changeable icons and user name */
 .activity-card > div:first-of-type{
   visibility: hidden !important;
 }
+
+.Announcements {
+  visibility: hidden !important;
+}

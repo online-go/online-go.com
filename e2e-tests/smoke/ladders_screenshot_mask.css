@@ -19,3 +19,7 @@ td {
 tr {
   border: none !important;
 }
+
+.Announcements {
+  visibility: hidden !important;
+}
