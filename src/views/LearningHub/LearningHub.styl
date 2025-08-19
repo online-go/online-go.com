@@ -17,7 +17,16 @@
 #LearningHub-container {
     display: flex;
     justify-content: center;
+    height: calc(100vh - var(--below-navbar));
+    overflow: hidden;
 }
+
+@media (orientation: portrait) {
+    #LearningHub-container {
+        overflow-y: auto;
+    }
+}
+
 
 #LearningHub {
     width: 100%;
@@ -180,6 +189,9 @@
     width: 17rem;
     margin: 2rem;
     margin-top: 5rem;
+    min-height: 30rem;
+    max-height: calc(100vh - 10rem);
+    overflow-y: auto;
 
     > a { /* main menu */
         font-size: font-size-big;
