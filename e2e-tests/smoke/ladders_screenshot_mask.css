@@ -23,3 +23,7 @@ tr {
 .Announcements {
   visibility: hidden !important;
 }
+
+.LadderList .Card h4 {  /* Hide the player counts */
+  visibility: hidden !important;
+}
