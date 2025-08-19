@@ -28,6 +28,8 @@ import moment from "moment";
 //import { Announcement } from "@/components/Announcements";
 import { useUser } from "@/lib/hooks";
 import { Announcement } from "@/components/Announcements";
+import { openModal } from "@/components/Modal";
+import { AnnouncementSpamModal } from "./AnnouncementSpamModal";
 
 moment.relativeTimeThreshold("m", 59);
 
@@ -79,7 +81,11 @@ export function AnnouncementCenter(): React.ReactElement {
         refresh();
     }, []);
 
-    const create = () => {
+    const checkForRecentAnnouncements = (userId: number): boolean => {
+        return announcements.some((announcement: any) => announcement.creator.id === userId);
+    };
+
+    const createAnnouncement = () => {
         const duration = all_duration_options[duration_idx] * 1000 + 1000;
         const expiration = moment.utc(Date.now() + duration).format("YYYY-MM-DD HH:mm:ss Z");
         data.set("announcement.last-type", announcementType);
@@ -97,6 +103,22 @@ export function AnnouncementCenter(): React.ReactElement {
         })
             .then(refresh)
             .catch(errorAlerter);
+    };
+
+    const create = () => {
+        // Skip spam check for moderators and superusers
+        if (!user.is_moderator && !user.is_superuser) {
+            const hasRecentAnnouncements = checkForRecentAnnouncements(user.id);
+
+            if (hasRecentAnnouncements) {
+                // Show the spam warning modal
+                openModal(<AnnouncementSpamModal onProceed={createAnnouncement} />);
+                return;
+            }
+        }
+
+        // If no recent announcements or user is moderator, create directly
+        createAnnouncement();
     };
     const refresh = () => {
         get("announcements")
