@@ -38,6 +38,7 @@ export const smokeCssSanityTest = async ({ browser }: { browser: Browser }) => {
 
     await await expect(page).toHaveScreenshot("sign-in-page.png", {
         fullPage: true,
+        stylePath: path.join(currentDir, "basic_screenshot_mask.css"), // get rid of the "Announcements"
     });
 
     // Now look at some logged in views, masking as needed...
