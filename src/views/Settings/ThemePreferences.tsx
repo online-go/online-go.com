@@ -63,9 +63,8 @@ export function ThemePreferences(): React.ReactElement | null {
     const setTheme = React.useCallback((theme: string) => {
         data.set("theme", theme, data.Replication.REMOTE_OVERWRITES_LOCAL);
     }, []);
-    const removeTheme = React.useCallback(() => {
+    const unsetTheme = React.useCallback(() => {
         data.remove("theme", data.Replication.REMOTE_OVERWRITES_LOCAL);
-
         if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
             /* if OS theme set to dark */
             document.body.className = "dark";
@@ -76,7 +75,7 @@ export function ThemePreferences(): React.ReactElement | null {
     const setThemeLight = React.useCallback(setTheme.bind(null, "light"), [setTheme]);
     const setThemeDark = React.useCallback(setTheme.bind(null, "dark"), [setTheme]);
     const setThemeAccessible = React.useCallback(setTheme.bind(null, "accessible"), [setTheme]);
-    const setThemeSystem = React.useCallback(removeTheme.bind(null), [removeTheme]);
+    const setThemeSystem = React.useCallback(unsetTheme.bind(null), [unsetTheme]);
     const setStoneRemovalGraphic = React.useCallback((graphic: "square" | "x") => {
         console.log("Setting with remote replication");
         preferences.set(
@@ -200,7 +199,7 @@ export function ThemePreferences(): React.ReactElement | null {
                         className={`theme-button ${!theme ? "primary" : ""}`}
                         onClick={setThemeSystem}
                     >
-                        <i className="fa fa-cogs" />
+                        <i className="fa fa-adjust" />
                     </button>
                 </div>
             </PreferenceLine>

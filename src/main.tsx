@@ -119,6 +119,7 @@ import * as data from "@/lib/data";
 
 import * as preferences from "@/lib/preferences";
 
+/* If no theme is set explicitly, use the system theme (represented implicitly) */
 data.setDefault("theme", "");
 window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
     if (!data.get("theme")) {

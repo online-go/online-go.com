@@ -62,9 +62,8 @@ function _update_theme(theme?: string) {
 function setTheme(theme: string) {
     data.set("theme", theme, data.Replication.REMOTE_OVERWRITES_LOCAL); // causes _update_theme to be called via the data.watch() in constructor
 }
-function removeTheme() {
+function unsetTheme() {
     data.remove("theme", data.Replication.REMOTE_OVERWRITES_LOCAL);
-
     if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
         /* if OS theme set to dark */
         document.body.className = "dark";
@@ -79,7 +78,7 @@ function toggleTheme() {
     } else if (data.get("theme") === "light") {
         setTheme("accessible");
     } else if (data.get("theme") === "accessible") {
-        removeTheme();
+        unsetTheme();
     } else {
         setTheme("dark");
     }
@@ -87,7 +86,7 @@ function toggleTheme() {
 const setThemeLight = setTheme.bind(null, "light");
 const setThemeDark = setTheme.bind(null, "dark");
 const setThemeAccessible = setTheme.bind(null, "accessible");
-const setThemeSystem = removeTheme.bind(null);
+const setThemeSystem = unsetTheme.bind(null);
 
 export function NavBar(): React.ReactElement {
     const user = useUser();
@@ -491,7 +490,9 @@ export function NavBar(): React.ReactElement {
                     {user.anonymous ? (
                         <>
                             <span className="spacer" />
-                            <i className="fa fa-adjust" onClick={toggleTheme} />
+                            <span className="theme-toggle" onClick={toggleTheme}>
+                                <i className="fa fa-adjust" />
+                            </span>
                             <LanguagePicker />
                             {show_sign_in && (
                                 <Link className="sign-in" to={"/sign-in#" + location.pathname}>
@@ -683,7 +684,7 @@ function ProfileAndQuickSettingsBits({
                                 "System theme",
                             )}
                         >
-                            <i className="fa fa-cogs" />
+                            <i className="fa fa-adjust" />
                         </button>
                     </div>
                     <h5 className="sr-only">{_("Goban theme")}</h5>

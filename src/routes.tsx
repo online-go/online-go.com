@@ -108,15 +108,6 @@ function AppLayout(props: { children: any }): React.ReactElement {
         );
     }
 
-    if (!data.get("theme")) {
-        if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-            /* if OS theme set to dark */
-            document.body.className = "dark";
-        } else {
-            document.body.className = "light";
-        }
-    }
-
     return (
         <Experiment name="v6">
             <Variant value="enabled" bodyClass="v6">
