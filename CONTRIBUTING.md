@@ -46,8 +46,12 @@ To open issues or make code contributions you'll need to have a GitHub account, 
 1. [Fork the repository](https://help.github.com/articles/fork-a-repo/).
     - If you haven't done so, [set up git](https://help.github.com/articles/set-up-git/).
 2. Clone the repository to your computer. (Found in step 2 of "keeping your fork synced" in the fork a repo help article.)
+
     - To ensure you track the latest updates, you will want to configure git to sync your fork with the original online-go repository. (See step 3 in the same article.)
-    - You may need to install [Git LFS](https://git-lfs.github.com/) if your clone doesn't complete.
+    - You will need [Git LFS](https://git-lfs.github.com/) installed.
+        - If you already have it that should be fine
+        - If you don't already have it you'll likely get mysterious errors like "file that should have been pointer".
+
 3. [Create a branch](https://help.github.com/articles/creating-and-deleting-branches-within-your-repository/) on your local machine. Name it something that makes sense for your updates.
     - This could also be done from the [git bash command line](https://github.com/Kunena/Kunena-Forum/wiki/Create-a-new-branch-with-git-and-manage-branches).
     - If you used the first method, you will need to ensure you [pull down your project's remote branches](https://stackify.com/git-checkout-remote-branch/).
