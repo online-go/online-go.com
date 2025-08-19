@@ -610,6 +610,8 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
         const hasGames: boolean = collection.games.length > 0;
         const hasCollections: boolean = collection.collections.length > 0;
 
+        const is_beta_or_dev_site = window.location.hostname !== "online-go.com";
+
         return (
             <div className="LibraryPlayer container">
                 <div className="space-between">
@@ -715,40 +717,41 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                                         </div>
                                     )}
 
-                                    {(data.get("user").is_moderator ||
-                                        (data.get("user").moderator_powers &
-                                            MODERATOR_POWERS.AI_DETECTOR) !==
-                                            0) && (
-                                        <div className="upload-button">
-                                            <button
-                                                className="primary"
-                                                onClick={this.runAIAnalysis}
-                                                disabled={
-                                                    Object.keys(this.state.games_checked).length ===
-                                                    0
-                                                }
-                                            >
-                                                {llm_pgettext(
-                                                    "Button label to start an AI analysis of the selected games",
-                                                    "Run AI Detection",
-                                                )}
-                                            </button>
-                                            <button
-                                                className="primary"
-                                                onClick={this.toggleAIDetection}
-                                            >
-                                                {this.state.show_ai_detection
-                                                    ? llm_pgettext(
-                                                          "Hide AI Detection",
-                                                          "Hide AI Detection",
-                                                      )
-                                                    : llm_pgettext(
-                                                          "Show AI Detection",
-                                                          "Show AI Detection",
-                                                      )}
-                                            </button>
-                                        </div>
-                                    )}
+                                    {is_beta_or_dev_site &&
+                                        (data.get("user").is_moderator ||
+                                            (data.get("user").moderator_powers &
+                                                MODERATOR_POWERS.AI_DETECTOR) !==
+                                                0) && (
+                                            <div className="upload-button">
+                                                <button
+                                                    className="primary"
+                                                    onClick={this.runAIAnalysis}
+                                                    disabled={
+                                                        Object.keys(this.state.games_checked)
+                                                            .length === 0
+                                                    }
+                                                >
+                                                    {llm_pgettext(
+                                                        "Button label to start an AI analysis of the selected games",
+                                                        "Run AI Detection",
+                                                    )}
+                                                </button>
+                                                <button
+                                                    className="primary"
+                                                    onClick={this.toggleAIDetection}
+                                                >
+                                                    {this.state.show_ai_detection
+                                                        ? llm_pgettext(
+                                                              "Hide AI Detection",
+                                                              "Hide AI Detection",
+                                                          )
+                                                        : llm_pgettext(
+                                                              "Show AI Detection",
+                                                              "Show AI Detection",
+                                                          )}
+                                                </button>
+                                            </div>
+                                        )}
 
                                     {hasCollections && (
                                         <div className="collections">
