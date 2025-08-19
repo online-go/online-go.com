@@ -212,7 +212,11 @@ export function ThemePreferences(): React.ReactElement | null {
                         className={`theme-button ${!theme ? "primary" : ""}`}
                         onClick={setThemeSystem}
                     >
-                        <i className="fa fa-adjust" />
+                        <span className="composed-icon">
+                            <i className="fa fa-sun-o" />
+                            /
+                            <i className="fa fa-moon-o" />
+                        </span>
                     </button>
                 </div>
             </PreferenceLine>

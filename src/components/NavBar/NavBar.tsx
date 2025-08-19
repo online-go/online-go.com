@@ -490,9 +490,7 @@ export function NavBar(): React.ReactElement {
                     {user.anonymous ? (
                         <>
                             <span className="spacer" />
-                            <span className="theme-toggle" onClick={toggleTheme}>
-                                <i className="fa fa-adjust" />
-                            </span>
+                            <i className="fa fa-adjust" onClick={toggleTheme} />
                             <LanguagePicker />
                             {show_sign_in && (
                                 <Link className="sign-in" to={"/sign-in#" + location.pathname}>
@@ -684,7 +682,11 @@ function ProfileAndQuickSettingsBits({
                                 "System theme",
                             )}
                         >
-                            <i className="fa fa-adjust" />
+                            <span className="composed-icon">
+                                <i className="fa fa-sun-o" />
+                                /
+                                <i className="fa fa-moon-o" />
+                            </span>
                         </button>
                     </div>
                     <h5 className="sr-only">{_("Goban theme")}</h5>

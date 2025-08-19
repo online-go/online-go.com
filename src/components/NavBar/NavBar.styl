@@ -549,19 +549,19 @@ header.NavBar {
     }
 
     
-    .theme-toggle {
+    .fa-adjust {
         padding: 0.6rem;
         margin-bottom: -0.1rem;
         cursor: pointer;
     }
 
     /body.dark .fa-adjust {
-        transform: scale(-1, 1);
+        transform: rotate(180deg);
     }
 
     // Since accessible is based on dark, I assume it needs this (not clear what this is specifically for, though the general idea is clear)
     /body.accessible .fa-adjust {
-            transform: scale(-1, 1);
+        transform: rotate(180deg);
     }
 
     .sign-in {
@@ -778,6 +778,27 @@ button.theme-button {
     padding: 0.3rem;
     padding-inline: 1rem;
     font-size: 1.2rem;
+
+    .composed-icon {
+        margin-inline: 0 !important;
+        font-size: 1rem;
+
+        .fa {
+            position: relative;
+            margin-inline: 0 !important;
+            font-size: 0.7rem;
+            width: 12px !important;
+            height: 12px !important;
+        }
+
+        .fa-sun-o {
+            top: -0.25rem;
+        }
+
+        .fa-moon-o {
+            bottom: -0.1rem;
+        }
+    }
 }
 
 
