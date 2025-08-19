@@ -27,3 +27,7 @@ tr {
 .LadderList .Card h4 {  /* Hide the player counts */
   visibility: hidden !important;
 }
+
+.LadderComponent tbody { /* hide the player details */
+  visibility: hidden !important;
+}
