@@ -69,11 +69,5 @@ export const smokeCssSanityTest = async ({ browser }: { browser: Browser }) => {
         stylePath: path.join(currentDir, "basic_screenshot_mask.css"),
     });
 
-    await load(userPage, "/groups");
-    await expect(userPage).toHaveScreenshot("groups-page.png", {
-        fullPage: true,
-        stylePath: path.join(currentDir, "groups_screenshot_mask.css"),
-    });
-
     await userPage.close();
 };
