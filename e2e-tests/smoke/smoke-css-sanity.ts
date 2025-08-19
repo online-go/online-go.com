@@ -31,14 +31,14 @@ export const smokeCssSanityTest = async ({ browser }: { browser: Browser }) => {
 
     await await expect(page).toHaveScreenshot("logged-out-initial-page.png", {
         fullPage: true,
-        stylePath: path.join(currentDir, "basic_screenshot_mask.css"), // get rid of the "ObserveGames"
+        stylePath: path.join(currentDir, "signed_out_screenshot_mask.css"), // get rid of the "ObserveGames"
     });
 
     await load(page, "/sign-in");
 
     await await expect(page).toHaveScreenshot("sign-in-page.png", {
         fullPage: true,
-        stylePath: path.join(currentDir, "basic_screenshot_mask.css"), // get rid of the "Announcements"
+        stylePath: path.join(currentDir, "signed_out_screenshot_mask.css"), // get rid of the "Announcements"
     });
 
     // Now look at some logged in views, masking as needed...
