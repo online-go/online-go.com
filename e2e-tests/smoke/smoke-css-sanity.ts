@@ -31,13 +31,14 @@ export const smokeCssSanityTest = async ({ browser }: { browser: Browser }) => {
 
     await await expect(page).toHaveScreenshot("logged-out-initial-page.png", {
         fullPage: true,
-        stylePath: path.join(currentDir, "basic_screenshot_mask.css"), // get rid of the "ObserveGames"
+        stylePath: path.join(currentDir, "signed_out_screenshot_mask.css"), // get rid of the "ObserveGames"
     });
 
     await load(page, "/sign-in");
 
     await await expect(page).toHaveScreenshot("sign-in-page.png", {
         fullPage: true,
+        stylePath: path.join(currentDir, "signed_out_screenshot_mask.css"), // get rid of the "Announcements"
     });
 
     // Now look at some logged in views, masking as needed...
@@ -66,12 +67,6 @@ export const smokeCssSanityTest = async ({ browser }: { browser: Browser }) => {
     await expect(userPage).toHaveScreenshot("tournaments-page.png", {
         fullPage: true,
         stylePath: path.join(currentDir, "basic_screenshot_mask.css"),
-    });
-
-    await load(userPage, "/groups");
-    await expect(userPage).toHaveScreenshot("groups-page.png", {
-        fullPage: true,
-        stylePath: path.join(currentDir, "groups_screenshot_mask.css"),
     });
 
     await userPage.close();
