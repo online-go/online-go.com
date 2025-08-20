@@ -107,3 +107,25 @@ export function openModal(modal: any): any {
     };
     return current_modal;
 }
+
+export function openModalFunctional(
+    eventsRef: { close: () => void },
+    modal: React.ReactElement,
+): void {
+    const container = document.createElement("DIV");
+    document.body.append(container);
+    const root = ReactDOM.createRoot(container);
+
+    function close() {
+        root.unmount();
+        document.body.removeChild(container);
+    }
+
+    eventsRef.close = close;
+
+    root.render(
+        <React.StrictMode>
+            <div className="Modal-container">{modal}</div>
+        </React.StrictMode>,
+    );
+}

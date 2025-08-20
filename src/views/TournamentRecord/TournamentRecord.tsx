@@ -24,11 +24,11 @@ import { PaginatedTable, PaginatedTableRef } from "@/components/PaginatedTable";
 import { Player } from "@/components/Player";
 import { ignore, errorAlerter, dup } from "@/lib/misc";
 import { rankString, allRanks } from "@/lib/rank_utils";
-import { createDemoBoard } from "@/components/ChallengeModal";
 
 window.dup = dup;
 
 import { alert } from "@/lib/swal_config";
+import { openDemoBoardModal } from "@/components/DemoBoardModal";
 const ranks = allRanks();
 
 interface Round {
@@ -290,7 +290,11 @@ export function TournamentRecord(): React.ReactElement {
     };
 
     const recordGame = (round: Round) => {
-        createDemoBoard(players, tournament_record_id, round.id);
+        openDemoBoardModal({
+            players_list: players,
+            tournament_record_id: tournament_record_id,
+            tournament_record_round_id: round.id,
+        });
     };
 
     const editable = editable_by_current_user || null;
