@@ -119,12 +119,18 @@ import * as data from "@/lib/data";
 
 import * as preferences from "@/lib/preferences";
 
-try {
-    // default_theme is set in index.html based on looking at the OS theme
-    data.setDefault("theme", window.default_theme);
-} catch {
-    data.setDefault("theme", "light");
-}
+/* If no theme is set explicitly, use the system theme (represented implicitly) */
+data.setDefault("theme", "");
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+    if (!data.get("theme")) {
+        if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+            /* if OS theme set to dark */
+            document.body.className = "dark";
+        } else {
+            document.body.className = "light";
+        }
+    }
+});
 
 const default_user = {
     anonymous: true,

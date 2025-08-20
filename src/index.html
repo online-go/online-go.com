@@ -350,7 +350,11 @@
                 var theme =
                     localStorage.getItem("ogs.theme") ||
                     JSON.stringify(remote_theme || default_theme);
-                document.body.className = JSON.parse(theme);
+                if (JSON.parse(theme)) {
+                    document.body.className = JSON.parse(theme);
+                } else {
+                    document.body.className = default_theme;
+                }
             } catch (e) {
                 console.error(e);
                 document.body.className = "light";

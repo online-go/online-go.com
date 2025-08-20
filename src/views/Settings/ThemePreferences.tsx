@@ -76,9 +76,19 @@ export function ThemePreferences(): React.ReactElement | null {
     const setTheme = React.useCallback((theme: string) => {
         data.set("theme", theme, data.Replication.REMOTE_OVERWRITES_LOCAL);
     }, []);
+    const unsetTheme = React.useCallback(() => {
+        data.remove("theme", data.Replication.REMOTE_OVERWRITES_LOCAL);
+        if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+            /* if OS theme set to dark */
+            document.body.className = "dark";
+        } else {
+            document.body.className = "light";
+        }
+    }, []);
     const setThemeLight = React.useCallback(setTheme.bind(null, "light"), [setTheme]);
     const setThemeDark = React.useCallback(setTheme.bind(null, "dark"), [setTheme]);
     const setThemeAccessible = React.useCallback(setTheme.bind(null, "accessible"), [setTheme]);
+    const setThemeSystem = React.useCallback(unsetTheme.bind(null), [unsetTheme]);
     const setStoneRemovalGraphic = React.useCallback((graphic: "square" | "x") => {
         console.log("Setting with remote replication");
         preferences.set(
@@ -174,24 +184,39 @@ export function ThemePreferences(): React.ReactElement | null {
             <PreferenceLine title={_("Site theme")}>
                 <div className="theme-selectors">
                     <button
-                        className={`theme-button light ${theme === "light" ? "primary" : ""}`}
+                        title={pgettext("Light browser/app theme", "Light")}
+                        className={`theme-button ${theme === "light" ? "primary" : ""}`}
                         onClick={setThemeLight}
                     >
                         <i className="fa fa-sun-o" />
                     </button>
                     <button
-                        className={`theme-button dark  ${theme === "dark" ? "primary" : ""}`}
+                        title={pgettext("Dark browser/app theme", "Dark")}
+                        className={`theme-button ${theme === "dark" ? "primary" : ""}`}
                         onClick={setThemeDark}
                     >
                         <i className="fa fa-moon-o" />
                     </button>
                     <button
-                        className={`theme-button accessible  ${
-                            theme === "accessible" ? "primary" : ""
-                        }`}
+                        title={pgettext(
+                            "Browser/app theme designed for users with visual impairments",
+                            "Accessible",
+                        )}
+                        className={`theme-button ${theme === "accessible" ? "primary" : ""}`}
                         onClick={setThemeAccessible}
                     >
                         <i className="fa fa-eye" />
+                    </button>
+                    <button
+                        title={pgettext("Automatic browser/app system theme", "System")}
+                        className={`theme-button ${!theme ? "primary" : ""}`}
+                        onClick={setThemeSystem}
+                    >
+                        <span className="composed-icon">
+                            <i className="fa fa-sun-o" />
+                            /
+                            <i className="fa fa-moon-o" />
+                        </span>
                     </button>
                 </div>
             </PreferenceLine>
