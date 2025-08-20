@@ -45,40 +45,14 @@ import { OmniSearch } from "./OmniSearch";
 import { forwardRef, useId, useState } from "react";
 import { MODERATOR_POWERS } from "@/lib/moderation";
 
-const body = document.body;
-
-function _update_theme(theme?: string) {
-    if (!theme) {
-        return;
-    }
-
-    if (body.classList.contains(theme)) {
-        return;
-    }
-    body.classList.remove("light", "dark", "accessible");
-    body.classList.add(theme);
-}
-
 function setTheme(theme: string) {
-    data.set("theme", theme, data.Replication.REMOTE_OVERWRITES_LOCAL); // causes _update_theme to be called via the data.watch() in constructor
-}
-function unsetTheme() {
-    data.remove("theme", data.Replication.REMOTE_OVERWRITES_LOCAL);
-    if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-        /* if OS theme set to dark */
-        document.body.className = "dark";
-    } else {
-        document.body.className = "light";
-    }
+    data.set("theme", theme, data.Replication.REMOTE_OVERWRITES_LOCAL);
 }
 
 function toggleTheme() {
-    if (data.get("theme") === "dark") {
+    const currentTheme = document.body.classList.contains("light") ? "light" : "dark";
+    if (currentTheme === "dark") {
         setTheme("light");
-    } else if (data.get("theme") === "light") {
-        setTheme("accessible");
-    } else if (data.get("theme") === "accessible") {
-        unsetTheme();
     } else {
         setTheme("dark");
     }
@@ -86,7 +60,7 @@ function toggleTheme() {
 const setThemeLight = setTheme.bind(null, "light");
 const setThemeDark = setTheme.bind(null, "dark");
 const setThemeAccessible = setTheme.bind(null, "accessible");
-const setThemeSystem = unsetTheme.bind(null);
+const setThemeSystem = setTheme.bind(null, "system");
 
 export function NavBar(): React.ReactElement {
     const user = useUser();
@@ -157,12 +131,6 @@ export function NavBar(): React.ReactElement {
         setHamburgerExpanded(false);
         closeNavbar();
     }, [location.key]);
-
-    React.useEffect(() => {
-        // here we are watching in case 'theme' is updated by the
-        // remote-storage update mechanism, which doesn't call setTheme()
-        data.watch("theme", _update_theme);
-    }, []);
 
     //const valid_user = user.anonymous ? null : user;
 
@@ -608,7 +576,7 @@ function ProfileAndQuickSettingsBits({
     const user = useUser();
     const themeId = useId();
 
-    const [theme] = useData("theme", "light");
+    const [theme] = useData("theme", "system");
 
     return (
         <>
@@ -675,7 +643,7 @@ function ProfileAndQuickSettingsBits({
                         </button>
                         <button
                             title={pgettext("Automatic browser/app system theme", "System")}
-                            className={`theme-button ${!theme ? "primary" : ""}`}
+                            className={`theme-button ${theme === "system" ? "primary" : ""}`}
                             onClick={setThemeSystem}
                             aria-label={pgettext(
                                 "Name of the browser/app system theme automatically adapting the browser theme",

@@ -776,8 +776,10 @@ button.theme-button {
     inactive-button();
     border: 1px solid transparent;
     padding: 0.3rem;
-    padding-inline: 1rem;
+    padding-inline: 0.5rem;
     font-size: 1.2rem;
+    width: 4rem;
+    word-wrap: nowrap;
 
     .composed-icon {
         margin-inline: 0 !important;
@@ -793,10 +795,13 @@ button.theme-button {
 
         .fa-sun-o {
             top: -0.25rem;
+            padding-left: 0.3rem;
+            padding-right: 0.1rem;
         }
 
         .fa-moon-o {
             bottom: -0.1rem;
+            padding-left: 0.1rem;
         }
     }
 }

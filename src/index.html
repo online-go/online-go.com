@@ -338,22 +338,21 @@
                     /* ignore errors, expected if user is not logged in */
                 }
 
-                var default_theme = null;
+                var system_theme = null;
                 if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
                     /* if OS theme set to dark */
-                    default_theme = "dark";
+                    system_theme = "dark";
                 } else {
-                    default_theme = "light";
+                    system_theme = "light";
                 }
-                window["default_theme"] = default_theme;
 
                 var theme =
-                    localStorage.getItem("ogs.theme") ||
-                    JSON.stringify(remote_theme || default_theme);
-                if (JSON.parse(theme)) {
-                    document.body.className = JSON.parse(theme);
+                    localStorage.getItem("ogs.theme") || JSON.stringify(remote_theme || "system");
+                var parsedTheme = JSON.parse(theme);
+                if (parsedTheme === "system" || !parsedTheme) {
+                    document.body.className = system_theme;
                 } else {
-                    document.body.className = default_theme;
+                    document.body.className = parsedTheme;
                 }
             } catch (e) {
                 console.error(e);
