@@ -29,6 +29,11 @@ import { getDefaultKomi } from "../ChallengeModal/ChallengeModal.utils";
 import { RuleSet } from "@/lib/types";
 import * as data from "@/lib/data";
 import { defaultInitialSettings } from "./DemoBoardModal.config";
+import { DemoSettings } from "@/lib/data_schema";
+import { alert } from "@/lib/swal_config";
+import { post } from "@/lib/requests";
+import { browserHistory } from "@/lib/ogsHistory";
+import { errorAlerter } from "@/lib/misc";
 
 export function DemoBoardModal(
     props: DemoBoardModalProps & { eventsRef: { close: () => void } },
@@ -81,6 +86,68 @@ export function DemoBoardModal(
     }
 
     const user = data.get("user");
+
+    function getValidatedSettings(): DemoSettings | null {
+        if (width === null || width < 1 || width > 25) {
+            document.getElementById("demo-board-modal-width")?.focus();
+            void alert.fire(_("Invalid board size, please correct and try again"));
+            return null;
+        }
+        if (height === null || height < 1 || height > 25) {
+            document.getElementById("demo-board-modal-height")?.focus();
+            void alert.fire(_("Invalid board size, please correct and try again"));
+            return null;
+        }
+        if (komiOption === "custom" && komi === null) {
+            document.getElementById("demo-board-modal-komi")?.focus();
+            void alert.fire(_("Please enter a number for komi."));
+            return null;
+        }
+
+        return {
+            name: name,
+            rules: ruleSet,
+            width: width,
+            height: height,
+            black_name: blackName,
+            black_ranking: blackRanking,
+            white_name: whiteName,
+            white_ranking: whiteRanking,
+            private: isPrivate,
+            komi_auto: komiOption,
+            ...(komi !== null && { komi: komi }),
+        };
+    }
+
+    async function createDemoBoard(): Promise<void> {
+        const validatedSettings = getValidatedSettings();
+        if (validatedSettings === null) {
+            return;
+        }
+
+        data.set("demo.settings", validatedSettings);
+
+        const black_pro = validatedSettings.black_ranking > 1000 ? 1 : 0;
+        const white_pro = validatedSettings.white_ranking > 1000 ? 1 : 0;
+        const extendedSettings = {
+            ...validatedSettings,
+            black_pro,
+            white_pro,
+            tournament_record_id: props.tournament_record_id,
+            tournament_record_round_id: props.tournament_record_round_id,
+            black_ranking: validatedSettings.black_ranking - (black_pro ? 1000 : 0),
+            white_ranking: validatedSettings.white_ranking - (white_pro ? 1000 : 0),
+            name: validatedSettings.name || _("Demo Board"),
+        };
+
+        await post("demos", extendedSettings)
+            .then((res) => {
+                console.log("Demo create response: ", res);
+                props.eventsRef.close();
+                browserHistory.push(`/demo/${res.id}`);
+            })
+            .catch(errorAlerter);
+    }
 
     return (
         <div className="Modal DemoBoardModal">
@@ -187,6 +254,7 @@ export function DemoBoardModal(
                                 </div>
                                 <div className="controls">
                                     <input
+                                        id="demo-board-modal-width"
                                         type="number"
                                         value={width ?? ""}
                                         onChange={(ev) =>
@@ -199,6 +267,7 @@ export function DemoBoardModal(
                                     />
                                     x
                                     <input
+                                        id="demo-board-modal-height"
                                         type="number"
                                         value={height ?? ""}
                                         onChange={(ev) =>
@@ -237,6 +306,7 @@ export function DemoBoardModal(
                                 </div>
                                 <div className="controls">
                                     <input
+                                        id="demo-board-modal-komi"
                                         type="number"
                                         value={komi ?? ""}
                                         onChange={(ev) =>
@@ -290,7 +360,7 @@ export function DemoBoardModal(
                 )}
 
                 {!user?.anonymous && (
-                    <button /* TODO: onClick={createDemo()} */ className="primary">
+                    <button onClick={async () => await createDemoBoard()} className="primary">
                         {_("Create Demo")}
                     </button>
                 )}
