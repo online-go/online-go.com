@@ -15,8 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { DemoSettings } from "@/lib/data_schema";
+
 export type DemoBoardModalProps = {
     players_list?: Array<{ name: string; rank: number }>;
     tournament_record_id?: number;
     tournament_record_round_id?: number;
+    initialSettings?: DemoSettings;
 };

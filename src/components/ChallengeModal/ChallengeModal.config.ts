@@ -15,22 +15,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { RuleSet } from "@/lib/types";
-import { standard_board_sizes } from "../ChallengeModal/ChallengeModal.config";
+import { DemoSettings } from "@/lib/data_schema";
+import { _ } from "@/lib/translate";
 
-export function isRuleSet(v: string): v is RuleSet {
-    return ["japanese", "chinese", "aga", "korean", "nz", "ing"].includes(v);
-}
+export const defaultInitialSettings: DemoSettings = {
+    name: "",
+    rules: "japanese",
+    width: 19,
+    height: 19,
+    black_name: _("Black"),
+    black_ranking: 1039,
+    white_name: _("White"),
+    white_ranking: 1039,
+    private: false,
+    komi_auto: "automatic",
+};
 
-export function isKomiOption(v: string): v is rest_api.KomiOption {
-    return v === "custom" || v === "automatic";
-}
-
-export function parseNumberInput(input: string): number | null {
-    const num = Number(input);
-    return input === "" || !Number.isFinite(num) ? null : num;
-}
-
-export function isStandardBoardSize(board_size: string): boolean {
-    return standard_board_sizes.includes(board_size);
-}
+export const standard_board_sizes: string[] = [
+    "19x19",
+    "13x13",
+    "9x9",
+    "25x25",
+    "21x21",
+    "5x5",
+    "19x9",
+    "5x13",
+];

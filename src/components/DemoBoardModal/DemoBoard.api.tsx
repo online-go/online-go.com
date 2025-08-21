@@ -19,6 +19,7 @@ import * as React from "react";
 import { DemoBoardModal } from "./DemoBoardModal";
 import { DemoBoardModalProps } from "./DemoBoardModal.types";
 import { openModalFunctional } from "../Modal";
+import * as data from "@/lib/data";
 
 export function openDemoBoardModal(props: DemoBoardModalProps) {
     // actually set in open modal function
@@ -30,6 +31,7 @@ export function openDemoBoardModal(props: DemoBoardModalProps) {
             players_list={props.players_list}
             tournament_record_id={props.tournament_record_id}
             tournament_record_round_id={props.tournament_record_round_id}
+            initialSettings={props.initialSettings ?? data.get("demo.settings")}
         />,
     );
 }

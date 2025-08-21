@@ -19,26 +19,38 @@ import { _ } from "@/lib/translate";
 import React from "react";
 import { allRanks, rankString } from "@/lib/rank_utils";
 import { DemoBoardModalProps } from "./DemoBoardModal.types";
-import { isKomiOption, isRuleSet, parseNumberInput } from "./DemoBoardModal.utils";
+import {
+    isKomiOption,
+    isRuleSet,
+    isStandardBoardSize,
+    parseNumberInput,
+} from "./DemoBoardModal.utils";
 import { getDefaultKomi } from "../ChallengeModal/ChallengeModal.utils";
 import { RuleSet } from "@/lib/types";
 import * as data from "@/lib/data";
+import { defaultInitialSettings } from "../ChallengeModal/ChallengeModal.config";
 
 export function DemoBoardModal(
     props: DemoBoardModalProps & { eventsRef: { close: () => void } },
 ): React.ReactElement {
-    const [name, setName] = React.useState<string>("");
-    const [isPrivate, setIsPrivate] = React.useState<boolean>(false);
-    const [ruleSet, setRuleSet] = React.useState<RuleSet>("japanese");
-    const [blackName, setBlackName] = React.useState<string>(_("Black"));
-    const [whiteName, setWhiteName] = React.useState<string>(_("White"));
-    const [width, setWidth] = React.useState<number | null>(19);
-    const [height, setHeight] = React.useState<number | null>(19);
-    const [blackRanking, setBlackRanking] = React.useState<number>(1039);
-    const [whiteRanking, setWhiteRanking] = React.useState<number>(1039);
-    const [komiOption, setKomiOption] = React.useState<rest_api.KomiOption>("automatic");
-    const [komi, setKomi] = React.useState<number | null>(null);
-    const [isCustomBoardSize, setIsCustomBoardSize] = React.useState<boolean>(false);
+    const initialSettings = props.initialSettings ?? defaultInitialSettings;
+
+    const [name, setName] = React.useState<string>(initialSettings.name);
+    const [isPrivate, setIsPrivate] = React.useState<boolean>(initialSettings.private);
+    const [ruleSet, setRuleSet] = React.useState<RuleSet>(initialSettings.rules);
+    const [blackName, setBlackName] = React.useState<string>(initialSettings.black_name);
+    const [whiteName, setWhiteName] = React.useState<string>(initialSettings.white_name);
+    const [width, setWidth] = React.useState<number | null>(initialSettings.width);
+    const [height, setHeight] = React.useState<number | null>(initialSettings.height);
+    const [blackRanking, setBlackRanking] = React.useState<number>(initialSettings.black_ranking);
+    const [whiteRanking, setWhiteRanking] = React.useState<number>(initialSettings.white_ranking);
+    const [komiOption, setKomiOption] = React.useState<rest_api.KomiOption>(
+        initialSettings.komi_auto,
+    );
+    const [komi, setKomi] = React.useState<number | null>(initialSettings.komi ?? null);
+    const [isCustomBoardSize, setIsCustomBoardSize] = React.useState<boolean>(
+        !isStandardBoardSize(`${initialSettings.width}x${initialSettings.height}`),
+    );
 
     function updateRules(rules: string): void {
         if (isRuleSet(rules)) {
