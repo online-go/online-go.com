@@ -28,7 +28,7 @@ import {
 import { getDefaultKomi } from "../ChallengeModal/ChallengeModal.utils";
 import { RuleSet } from "@/lib/types";
 import * as data from "@/lib/data";
-import { defaultInitialSettings } from "../ChallengeModal/ChallengeModal.config";
+import { defaultInitialSettings } from "./DemoBoardModal.config";
 
 export function DemoBoardModal(
     props: DemoBoardModalProps & { eventsRef: { close: () => void } },
@@ -240,7 +240,7 @@ export function DemoBoardModal(
                                         type="number"
                                         value={komi ?? ""}
                                         onChange={(ev) =>
-                                            this.update_komi(parseNumberInput(ev.target.value))
+                                            setKomi(parseNumberInput(ev.target.value))
                                         }
                                         className="form-control"
                                         style={{ width: "4em" }}

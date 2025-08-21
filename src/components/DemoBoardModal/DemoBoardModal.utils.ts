@@ -16,7 +16,7 @@
  */
 
 import { RuleSet } from "@/lib/types";
-import { standard_board_sizes } from "../ChallengeModal/ChallengeModal.config";
+import { standard_board_sizes } from "./DemoBoardModal.config";
 
 export function isRuleSet(v: string): v is RuleSet {
     return ["japanese", "chinese", "aga", "korean", "nz", "ing"].includes(v);
