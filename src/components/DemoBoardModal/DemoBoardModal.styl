@@ -31,10 +31,6 @@
     align-content: stretch;
   }
 
-  .left-pane {
-    margin-right: 0.5rem;
-  }
-
   .pane {
     min-width: 49%;
     box-sizing: border-box;
@@ -46,6 +42,7 @@
 
     .controls {
         width: 10rem;
+        display: unset;
     }
 
     .checkbox-container {
@@ -61,6 +58,10 @@
     }
   }
 
+  .left-pane {
+    margin-right: 0.5rem;
+  }
+
   .right-pane {
     border-left: 1px solid transparent;
     themed: border-color shade3;
@@ -69,6 +70,10 @@
   .header {
     max-height: 80vh;
     align-items: stretch !important;
+  }
+
+  label {
+    user-select: none;
   }
 
   @media only screen and (max-width: 768px) {
