@@ -167,7 +167,7 @@ export function DemoBoardModal(
                             </label>
                             <div className="controls">
                                 <input
-                                    id="demo-name"
+                                    id="demo-board-modal-name"
                                     type="text"
                                     value={name}
                                     onChange={(ev) => setName(ev.target.value)}
@@ -184,7 +184,7 @@ export function DemoBoardModal(
                             <div className="controls checkbox-container">
                                 <input
                                     type="checkbox"
-                                    id="demo-private"
+                                    id="demo-board-modal-private"
                                     checked={isPrivate}
                                     onChange={(ev) => setIsPrivate(ev.target.checked)}
                                 ></input>
@@ -199,7 +199,7 @@ export function DemoBoardModal(
                             </label>
                             <div className="controls">
                                 <select
-                                    id="demo-rules"
+                                    id="demo-board-modal-rules"
                                     value={ruleSet}
                                     onChange={(ev) => updateRules(ev.target.value)}
                                     className="form-control"
@@ -221,7 +221,7 @@ export function DemoBoardModal(
                             </label>
                             <div className="controls">
                                 <select
-                                    id="demo-board-size"
+                                    id="demo-board-modal-board-size"
                                     value={isCustomBoardSize ? "custom" : `${width}x${height}`}
                                     onChange={(ev) => updateBoardSize(ev.target.value)}
                                     className="challenge-dropdown form-control"
@@ -292,7 +292,7 @@ export function DemoBoardModal(
                                     value={komiOption}
                                     onChange={(ev) => updateKomiOption(ev.target.value)}
                                     className="form-control"
-                                    id="demo-komi-option"
+                                    id="demo-board-modal-komi-option"
                                 >
                                     <option value="automatic">{_("Automatic")}</option>
                                     <option value="custom">{_("Custom")}</option>
@@ -327,6 +327,7 @@ export function DemoBoardModal(
                 <div className="demo-pane-container" style={{ marginTop: "1em" }}>
                     <div className="left-pane pane" role="form">
                         {PlayerControls(
+                            "black",
                             _("Black Player"),
                             [blackName, setBlackName],
                             [blackRanking, setBlackRanking],
@@ -335,6 +336,7 @@ export function DemoBoardModal(
                     </div>
                     <div className="right-pane pane">
                         {PlayerControls(
+                            "white",
                             _("White Player"),
                             [whiteName, setWhiteName],
                             [whiteRanking, setWhiteRanking],
@@ -372,6 +374,7 @@ export function DemoBoardModal(
 const demo_ranks = allRanks();
 
 function PlayerControls(
+    player: string,
     label: string,
     [name, setName]: [string, React.Dispatch<React.SetStateAction<string>>],
     [rank, setRank]: [number, React.Dispatch<React.SetStateAction<number>>],
@@ -386,6 +389,7 @@ function PlayerControls(
                     <label className="control-label">{label}</label>
                     <div className="controls">
                         <input
+                            id={`demo-board-modal-${player}-name`}
                             type="text"
                             className="form-control"
                             value={name}
@@ -397,6 +401,7 @@ function PlayerControls(
                     <label className="control-label">{_("Rank")}</label>
                     <div className="controls">
                         <select
+                            id={`demo-board-modal-${player}-rank`}
                             value={rank}
                             onChange={(ev) => setRank(parseInt(ev.target.value))}
                             className="form-control"
@@ -422,7 +427,11 @@ function PlayerControls(
     return (
         <div className="form-group">
             <label className="control-label">{label}</label>
-            <select value={selectedPlayer} onChange={(ev) => set(parseInt(ev.target.value))}>
+            <select
+                id={`demo-board-modal-${player}-player-selection`}
+                value={selectedPlayer}
+                onChange={(ev) => set(parseInt(ev.target.value))}
+            >
                 {playersList.map((player, idx) => (
                     <option key={idx} value={idx}>
                         {player.name} [{rankString(player.rank)}]
