@@ -281,7 +281,7 @@ export function LogData({
                                 key={k}
                                 config={markedConfig}
                                 move_number={data.move_number}
-                                removal_string={data.removed}
+                                removal_string={data.stones}
                             />,
                         );
                     }
@@ -293,7 +293,7 @@ export function LogData({
                                 key={k}
                                 config={markedConfig}
                                 move_number={data.move_number}
-                                removal_string={data.current_removal_string || data.removed}
+                                removal_string={data.current_removal_string || data.stones}
                             />,
                         );
                     }
