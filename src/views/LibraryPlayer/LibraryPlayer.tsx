@@ -413,6 +413,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
             return;
         }
 
+        /*
         if (selectedGameIds.length > 3) {
             toast(
                 <div>
@@ -425,6 +426,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
             );
             return;
         }
+        */
 
         const user = data.get("user");
         if (user.anonymous) {
