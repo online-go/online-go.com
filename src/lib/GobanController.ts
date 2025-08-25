@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as React from "react";
+import type { ChangeEvent, MouseEvent } from "react";
 import {
     AnalysisTool,
     ConditionalMoveTree,
@@ -374,7 +374,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
 
         this.goban.syncReviewMove();
     };
-    public nextMove = (event?: React.MouseEvent<any>, dont_stop_autoplay?: boolean) => {
+    public nextMove = (event?: MouseEvent<any>, dont_stop_autoplay?: boolean) => {
         const last_estimate_move = this.stopEstimatingScore();
         if (!dont_stop_autoplay) {
             this.stopAutoplay();
@@ -712,7 +712,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         this.goban.redraw();
         this.emit("ai_review_enabled", this._ai_review_enabled);
     };
-    updateVariationName = (ev: React.ChangeEvent<HTMLInputElement>) => {
+    updateVariationName = (ev: ChangeEvent<HTMLInputElement>) => {
         this.setVariationName(ev.target.value);
     };
     shareAnalysis = () => {

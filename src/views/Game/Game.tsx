@@ -688,7 +688,7 @@ export function Game(): React.ReactElement | null {
                                 <RengoHeader />
                             </div>
                         )}
-                        <GobanContainer goban={goban} onResize={onResize} onWheel={onWheel} />
+                        <GobanContainer onResize={onResize} onWheel={onWheel} />
 
                         <FragBelowBoardControls />
 
