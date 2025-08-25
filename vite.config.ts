@@ -138,7 +138,7 @@ export default defineConfig({
                           if (id.includes("node_modules")) {
                               return "vendor";
                           }
-                          if (id.includes("goban")) {
+                          if (id.includes("/goban/")) {
                               return "goban";
                           }
                           if (id.includes("react-dynamic-help")) {
