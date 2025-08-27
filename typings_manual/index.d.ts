@@ -9,6 +9,8 @@ interface Window {
     cdn_service: string;
     ogs_release: string;
     ogs_current_language: string;
+    ip_location: undefined | { continent: string; country: string; valid: boolean };
+    ip_address: string;
 
     // Set by translation files
     ogs_locales: Record<string, Record<string, Array<string>>>;
