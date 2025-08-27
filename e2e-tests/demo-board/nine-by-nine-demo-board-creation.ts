@@ -54,9 +54,7 @@ export const nineByNineDemoBoardCreation = async ({ browser }: { browser: Browse
 
     await expect(page.locator(".condensed-game-ranked")).toHaveText("Unranked");
 
-    // TODO: await expect(page.locator(".condensed-game-rules")).toHaveText("Rules: Chinese");
-    // NOTE: The Rules are not reflected correctly on the demo board page. But they are in the GameInfoModal.
-    // It is not until I manually inspect the element that the correct value of it shows.
+    await expect(page.locator(".condensed-game-rules")).toHaveText("Rules: Chinese");
 
     await page.waitForTimeout(10000);
 
