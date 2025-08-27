@@ -20,6 +20,7 @@ import * as player_cache from "@/lib/player_cache";
 import { errorLogger } from "@/lib/misc";
 import { player_is_ignored } from "@/components/BlockPlayer";
 import { _ } from "@/lib/translate";
+import { user_uploads_url } from "@/lib/cdn";
 
 interface PlayerIconProps {
     id?: number;
@@ -29,12 +30,9 @@ interface PlayerIconProps {
     style?: any;
 }
 
-export function icon_size_url(url: string, size: number): string {
-    return url.replace(/-[0-9]+.png$/, `-${size}.png`).replace(/s=[0-9]+/, `s=${size}`);
-}
-
 export async function getPlayerIconURL(id: number, size: number): Promise<string> {
-    return player_cache.fetch(id, ["icon"]).then((user) => icon_size_url(user.icon || "", size));
+    const user = await player_cache.fetch(id, ["icon"]);
+    return user_uploads_url(user.icon || "", size);
 }
 
 export function PlayerIcon(props: PlayerIconProps): React.ReactElement {
@@ -51,7 +49,7 @@ export function PlayerIcon(props: PlayerIconProps): React.ReactElement {
 
         const user = player_cache.lookup(id);
         const size = typeof props.size === "number" ? props.size : parseInt(props.size);
-        const new_url = user && user.icon ? icon_size_url(user.icon, size) : null;
+        const new_url = user && user.icon ? user_uploads_url(user.icon, size) : null;
         setUrl(new_url);
 
         if (!url) {

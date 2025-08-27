@@ -23,6 +23,7 @@ import { PaginatedTable } from "@/components/PaginatedTable";
 import { SearchInput } from "@/components/misc-ui";
 import { navigateTo } from "@/lib/misc";
 import { useUser } from "@/lib/hooks";
+import { user_uploads_url } from "@/lib/cdn";
 
 export function GroupList(): React.ReactElement {
     const user = useUser();
@@ -75,14 +76,17 @@ export function GroupList(): React.ReactElement {
                             {
                                 header: "",
                                 className: "group-icon-header",
-                                render: (X) => (
-                                    <img
-                                        className="group-icon"
-                                        src={X.icon}
-                                        width="64"
-                                        height="64"
-                                    />
-                                ),
+                                render: (X) => {
+                                    const iconUrl = user_uploads_url(X.icon, 64);
+                                    return iconUrl ? (
+                                        <img
+                                            className="group-icon"
+                                            src={iconUrl}
+                                            width="64"
+                                            height="64"
+                                        />
+                                    ) : null;
+                                },
                             },
                             {
                                 header: _("Group"),
@@ -112,7 +116,7 @@ export function GroupList(): React.ReactElement {
                                     <Link to={`/group/${group.id}`}>
                                         <img
                                             className="group-icon"
-                                            src={group.icon}
+                                            src={user_uploads_url(group.icon, 16)}
                                             width="16"
                                             height="16"
                                         />

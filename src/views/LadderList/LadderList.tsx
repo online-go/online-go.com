@@ -23,6 +23,7 @@ import { LadderComponent } from "@/components/LadderComponent";
 import { Card } from "@/components/material";
 import { errorAlerter } from "@/lib/misc";
 import { useUser } from "@/lib/hooks";
+import { user_uploads_url } from "@/lib/cdn";
 
 /* Ensure these get picked up in our translations */
 _("Site 19x19 Ladder");
@@ -129,7 +130,7 @@ export function LadderList(): React.ReactElement {
                             {ladder.group?.icon ? (
                                 <img
                                     className="group-icon"
-                                    src={ladder.group.icon}
+                                    src={user_uploads_url(ladder.group.icon, 16)}
                                     title={ladder.group.name}
                                     alt={ladder.group.name}
                                 />

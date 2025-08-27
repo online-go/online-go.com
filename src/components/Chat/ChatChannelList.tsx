@@ -32,6 +32,7 @@ import {
     resolveChannelInformation,
     cachedChannelInformation,
 } from "@/lib/chat_manager";
+import { user_uploads_url } from "@/lib/cdn";
 
 data.setDefault("chat.joined", { "global-english": true });
 
@@ -362,7 +363,7 @@ export function ChatChannel({
             <Flag country={country} language={language as string} user_country={user_country} />
         ) : null;
     } else if (channel.indexOf("group") === 0) {
-        icon_element = <img src={icon} />;
+        icon_element = icon ? <img src={user_uploads_url(icon)} /> : null;
     }
 
     const mentioned = proxy?.channel.mentioned;

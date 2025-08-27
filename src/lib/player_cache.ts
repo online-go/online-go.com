@@ -18,6 +18,7 @@
 import { get } from "@/lib/requests";
 import { Batcher } from "@/lib/batcher";
 import { Publisher, Subscriber as RealSubscriber } from "@/lib/pubsub";
+import { user_uploads_url } from "@/lib/cdn";
 
 import Debug from "@/lib/debug";
 const debug = new Debug("player_cache");
@@ -266,7 +267,10 @@ const fetch_player = new Batcher<FetchEntry>((fetch_queue) => {
                     const required_fields = queue[idx].required_fields;
 
                     if ("icon-url" in player) {
-                        player.icon = player["icon-url"]; /* handle stupid inconsistency in API */
+                        player.icon = user_uploads_url(
+                            player["icon-url"],
+                        ); /* handle stupid inconsistency in API */
+                        player["icon-url"] = player.icon;
                     }
 
                     delete active_fetches[player.id];

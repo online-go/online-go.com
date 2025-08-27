@@ -23,6 +23,7 @@ import { UserVoteActivityGraph } from "./VoteActivityGraph";
 import { CMPieCharts } from "./CMPieCharts";
 import { useUser } from "@/lib/hooks";
 import { WarningSystemMessages } from "@/components/WarningSystemMessages/WarningSystemMessages";
+import { user_uploads_url } from "@/lib/cdn";
 
 /** Activity card doesn't care about that many user traits */
 interface ActivityCardUser {
@@ -100,7 +101,11 @@ export function ActivityCard({
                         {tournaments.map((tournament, idx) => (
                             <dd key={idx}>
                                 <Link to={`/tournament/${tournament.id}`}>
-                                    <img src={tournament.icon} className="icon" /> {tournament.name}
+                                    <img
+                                        src={user_uploads_url(tournament.icon, 32)}
+                                        className="icon"
+                                    />{" "}
+                                    {tournament.name}
                                 </Link>
                             </dd>
                         ))}
@@ -119,7 +124,8 @@ export function ActivityCard({
                         {groups.map((group, idx) => (
                             <dd key={idx}>
                                 <Link to={`/group/${group.id}`}>
-                                    <img src={group.icon} className="icon" /> {group.name}
+                                    <img src={user_uploads_url(group.icon, 32)} className="icon" />{" "}
+                                    {group.name}
                                 </Link>
                             </dd>
                         ))}

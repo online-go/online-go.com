@@ -40,6 +40,7 @@ import { localize_time_strings } from "@/lib/localize-time";
 import { alert } from "@/lib/swal_config";
 import { PlayerCacheEntry } from "@/lib/player_cache";
 import { is_valid_url } from "@/lib/url_validation";
+import { user_uploads_url } from "@/lib/cdn";
 
 type GroupProperties = RouteComponentProps<{
     group_id: string;
@@ -689,7 +690,9 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
                                             {this.state.new_banner ? (
                                                 <img src={this.state.new_banner.preview} />
                                             ) : group.banner ? (
-                                                <img src={group.banner} />
+                                                <img
+                                                    src={user_uploads_url(group.banner, "original")}
+                                                />
                                             ) : (
                                                 <i className="fa fa-picture-o" />
                                             )}
@@ -698,7 +701,7 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
                                 )}
                             </Dropzone>
                         ) : group.banner ? (
-                            <img src={group.banner} />
+                            <img src={user_uploads_url(group.banner, "original")} />
                         ) : (
                             <i className="fa fa-picture-o" />
                         )}
@@ -731,25 +734,28 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
                                                                     maxWidth: "128px",
                                                                 }}
                                                             />
-                                                        ) : (
+                                                        ) : group.icon ? (
                                                             <img
-                                                                src={group.icon}
+                                                                src={user_uploads_url(
+                                                                    group.icon,
+                                                                    128,
+                                                                )}
                                                                 style={{
                                                                     maxHeight: "128px",
                                                                     maxWidth: "128px",
                                                                 }}
                                                             />
-                                                        )}
+                                                        ) : null}
                                                     </div>
                                                 </section>
                                             )}
                                         </Dropzone>
-                                    ) : (
+                                    ) : group.icon ? (
                                         <img
-                                            src={group.icon}
+                                            src={user_uploads_url(group.icon, 128)}
                                             style={{ maxHeight: "128px", maxWidth: "128px" }}
                                         />
-                                    )}
+                                    ) : null}
                                 </div>
                                 <div className="col-sm-10">
                                     {!editing ? (
