@@ -16,11 +16,16 @@
  */
 
 import { ogsTest } from "@helpers";
-import { demoBoardCreation } from "./default-demo-board-creation";
+import { defaultDemoBoardCreation } from "./default-demo-board-creation";
+import { nineByNineDemoBoardCreation } from "./nine-by-nine-demo-board-creation";
 
 ogsTest.describe("Demo Board Tests", () => {
     ogsTest(
         "should successfully create and navigate to the new demo board",
-        demoBoardCreation,
+        defaultDemoBoardCreation,
+    );
+    ogsTest(
+        "should successfully create a 9x9 demo board with custom form data and navigate to it",
+        nineByNineDemoBoardCreation,
     );
 });

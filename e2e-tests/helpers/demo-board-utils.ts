@@ -18,7 +18,6 @@
 import { expect } from "@playwright/test";
 import { Page } from "@playwright/test";
 
-
 export interface DemoBoardModalFields {
     gameName?: string;
     private?: boolean;
@@ -37,22 +36,21 @@ export const defaultDemoBoardSettings: DemoBoardModalFields = {
     rules: "japanese",
     boardSize: "19x19",
     komi: "automatic",
-    black_name: "Black",
-    black_ranking: 1039,
-    white_name: "White",
-    white_ranking: 1039
-}
-
+    black_name: "Demo Black Player",
+    black_ranking: 38, // 9 Dan
+    white_name: "Demo White Player",
+    white_ranking: 33, // 4 Dan
+};
 
 export const loadDemoBoardCreationModal = async (page: Page) => {
     const toolsButton = page.getByText("Tools", { exact: true });
     await expect(toolsButton).toBeVisible();
     await toolsButton.click();
 
-    const demoBoardButton = page.getByRole("button", { name:"Demo Board" })
+    const demoBoardButton = page.getByRole("button", { name: "Demo Board" });
     await expect(demoBoardButton).toBeVisible();
-    await demoBoardButton.click()
-}
+    await demoBoardButton.click();
+};
 
 export const fillOutDemoBoardCreationForm = async (
     page: Page,
@@ -63,7 +61,7 @@ export const fillOutDemoBoardCreationForm = async (
         ? { ...defaultDemoBoardSettings, ...settings }
         : settings;
 
-    if (final_settings.gameName != undefined) {
+    if (final_settings.gameName !== undefined) {
         await page.fill("#challenge-game-name", final_settings.gameName);
     }
 
@@ -73,10 +71,15 @@ export const fillOutDemoBoardCreationForm = async (
     }
 
     if (final_settings.rules) {
-        await expect(page.locator("#challenge-rules")).toHaveValue(final_settings.rules);
+        await page.locator("#challenge-rules").selectOption(final_settings.rules);
     }
     if (final_settings.boardSize !== undefined) {
-        await page.selectOption("#challenge-board-size", final_settings.boardSize);
+        await page.locator("#challenge-board-size").click();
+        await page.waitForSelector("#challenge-board-size", { state: "visible" });
+        console.log("Board Size:", final_settings.boardSize);
+        await page
+            .locator("select#challenge-board-size")
+            .selectOption({ label: final_settings.boardSize });
     }
 
     if (final_settings.komi !== undefined) {
@@ -87,7 +90,25 @@ export const fillOutDemoBoardCreationForm = async (
         }
     }
 
-    // NOTE: The elements for the name and rank of the players do not have an "id"
-    // So I couldn't select them to fill them.
+    // await page.locator(".Modal.ChallengeModal").waitFor();
 
-}
+    const blackInput = page.locator('input.form-control[type="text"][value="Black"]');
+    await blackInput.fill(final_settings.black_name || "Fallback Black Player Name");
+
+    const blackRankSelect = page
+        .locator("#challenge-advanced-fields .left-pane .form-group")
+        .filter({ has: page.locator('label:has-text("Rank")') })
+        .locator("select.challenge-dropdown");
+
+    await blackRankSelect.selectOption(final_settings.black_ranking?.toString() || "1");
+
+    const whiteInput = page.locator('input.form-control[type="text"][value="White"]');
+    await whiteInput.fill(final_settings.white_name || "Fallback White Player Name");
+
+    const whiteRankSelect = page
+        .locator("#challenge-advanced-fields .right-pane .form-group")
+        .filter({ has: page.locator('label:has-text("Rank")') })
+        .locator("select.challenge-dropdown");
+
+    await whiteRankSelect.selectOption(final_settings.white_ranking?.toString() || "2");
+};

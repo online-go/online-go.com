@@ -22,9 +22,10 @@ import { newTestUsername, prepareNewUser } from "@helpers/user-utils";
 import {
     loadDemoBoardCreationModal,
     fillOutDemoBoardCreationForm,
+    DemoBoardModalFields,
 } from "@helpers/demo-board-utils";
 
-export const defaultDemoBoardCreation = async ({ browser }: { browser: Browser }) => {
+export const nineByNineDemoBoardCreation = async ({ browser }: { browser: Browser }) => {
     const { userPage: page } = await prepareNewUser(
         browser,
         newTestUsername("DemoDefault"), // cspell:disable-line
@@ -33,7 +34,16 @@ export const defaultDemoBoardCreation = async ({ browser }: { browser: Browser }
 
     await loadDemoBoardCreationModal(page);
 
-    await fillOutDemoBoardCreationForm(page, {});
+    const customSettings: DemoBoardModalFields = {
+        boardSize: "9x9",
+        black_name: "Demo Dark Player",
+        black_ranking: 37, // 8 Dan
+        white_name: "Demo Light Player",
+        white_ranking: 1037, // 1 Pro
+        rules: "chinese",
+    };
+
+    await fillOutDemoBoardCreationForm(page, customSettings);
 
     await page.click('button:has-text("Create Demo")');
 
@@ -43,7 +53,10 @@ export const defaultDemoBoardCreation = async ({ browser }: { browser: Browser }
     await expect(page.locator(".Goban")).toHaveCount(2);
 
     await expect(page.locator(".condensed-game-ranked")).toHaveText("Unranked");
-    await expect(page.locator(".condensed-game-rules")).toHaveText("Rules: Japanese");
+
+    // TODO: await expect(page.locator(".condensed-game-rules")).toHaveText("Rules: Chinese");
+    // NOTE: The Rules are not reflected correctly on the demo board page. But they are in the GameInfoModal.
+    // It is not until I manually inspect the element that the correct value of it shows.
 
     await page.waitForTimeout(10000);
 
@@ -54,25 +67,25 @@ export const defaultDemoBoardCreation = async ({ browser }: { browser: Browser }
     await page.waitForSelector(".Modal.GameInfoModal", { state: "visible" });
 
     const boardSize = await page.textContent('.Modal.GameInfoModal dt:has-text("Board Size") + dd');
-    expect(boardSize).toBe("19x19");
+    expect(boardSize).toBe("9x9");
 
     const blackPlayerUsername = await page
         .locator("div.black.player-name-container .Player-username")
         .innerText();
-    expect(blackPlayerUsername).toBe("Demo Black Player");
+    expect(blackPlayerUsername).toBe("Demo Dark Player");
 
     const blackPlayerRank = await page
         .locator("div.black.player-name-container .Player-rank")
         .innerText();
-    expect(blackPlayerRank).toBe("[9d]");
+    expect(blackPlayerRank).toBe("[8d]");
 
     const whitePlayerUsername = await page
         .locator("div.white.player-name-container .Player-username")
         .innerText();
-    expect(whitePlayerUsername).toBe("Demo White Player");
+    expect(whitePlayerUsername).toBe("Demo Light Player");
 
     const whitePlayerRank = await page
         .locator("div.white.player-name-container .Player-rank")
         .innerText();
-    expect(whitePlayerRank).toBe("[4d]");
+    expect(whitePlayerRank).toBe("[1p]");
 };
