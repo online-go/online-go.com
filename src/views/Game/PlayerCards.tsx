@@ -19,7 +19,7 @@ import * as React from "react";
 import { get } from "@/lib/requests";
 
 import { GobanRenderer, Goban, PlayerScore, JGOFPlayerSummary } from "goban";
-import { icon_size_url } from "@/components/PlayerIcon";
+import { user_uploads_url } from "@/lib/cdn";
 import { CountDown } from "./CountDown";
 import { Flag } from "@/components/Flag";
 import { ChatPresenceIndicator } from "@/components/ChatPresenceIndicator";
@@ -257,10 +257,10 @@ export function PlayerCard({
     const player_bg: React.CSSProperties = {};
     if (engine.rengo && player && (player as any)["icon-url"]) {
         // Does icon-url need to be added to GobanEnginePlayerEntry? -BPJ
-        const icon = icon_size_url((player as any)["icon-url"], 64);
+        const icon = user_uploads_url((player as any)["icon-url"], 64);
         player_bg.backgroundImage = `url("${icon}")`;
     } else if (historical) {
-        const icon = icon_size_url(historical["icon"], 64);
+        const icon = user_uploads_url(historical["icon"], 64);
         player_bg.backgroundImage = `url("${icon}")`;
     }
 

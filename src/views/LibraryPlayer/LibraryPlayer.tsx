@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import * as data from "@/lib/data";
-import { _, interpolate } from "@/lib/translate";
+import { _, interpolate, llm_pgettext } from "@/lib/translate";
 import { Link } from "react-router-dom";
 import { RouteComponentProps, rr6ClassShim } from "@/lib/ogs-rr6-shims";
 import { browserHistory } from "@/lib/ogsHistory";
@@ -34,6 +34,7 @@ import * as preferences from "@/lib/preferences";
 import { PlayerCacheEntry } from "@/lib/player_cache";
 import { AIDetection } from "@moderator-ui/AIDetection";
 import { MODERATOR_POWERS } from "@/lib/moderation";
+import { toast } from "@/lib/toast";
 // import { createGameRecord } from "@/components/ChallengeModal";
 
 type LibraryPlayerProperties = RouteComponentProps<{
@@ -396,6 +397,151 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
         this.setState({ show_ai_detection: !this.state.show_ai_detection });
     };
 
+    runAIAnalysis = async () => {
+        const selectedGameIds = Object.keys(this.state.games_checked);
+
+        if (selectedGameIds.length === 0) {
+            toast(
+                <div>
+                    {llm_pgettext(
+                        "Please select games to analyze",
+                        "Please select games to analyze",
+                    )}
+                </div>,
+                3000,
+            );
+            return;
+        }
+
+        /*
+        if (selectedGameIds.length > 3) {
+            toast(
+                <div>
+                    {llm_pgettext(
+                        "Please select no more than 3 games for AI analysis",
+                        "Please select no more than 3 games for AI analysis",
+                    )}
+                </div>,
+                3000,
+            );
+            return;
+        }
+        */
+
+        const user = data.get("user");
+        if (user.anonymous) {
+            toast(<div>{llm_pgettext("Please sign in first", "Please sign in first")}</div>, 3000);
+            return;
+        }
+
+        if (
+            !user.supporter &&
+            !user.professional &&
+            !user.is_moderator &&
+            (user.moderator_powers & MODERATOR_POWERS.AI_DETECTOR) === 0
+        ) {
+            toast(
+                <div>
+                    {llm_pgettext(
+                        "This feature requires supporter status or moderator privileges",
+                        "This feature requires supporter status or moderator privileges",
+                    )}
+                </div>,
+                3000,
+            );
+            return;
+        }
+
+        let analysisCount = 0;
+        let errorCount = 0;
+
+        toast(
+            <div>
+                {llm_pgettext(
+                    "Starting AI analysis for selected games...",
+                    "Starting AI analysis for selected games...",
+                )}
+            </div>,
+            3000,
+        );
+
+        for (const entryId of selectedGameIds) {
+            const collection = this.state.collections![this.state.collection_id];
+            const game = collection.games.find((g) => g.entry_id.toString() === entryId);
+
+            if (!game) {
+                continue;
+            }
+
+            try {
+                // Check if game already has cheat detection reviews
+                const existingReviews = await get(`games/${game.game_id}/ai_reviews`);
+                const hasCheatDetection = existingReviews.some(
+                    (review: any) => review.cheat_detection,
+                );
+
+                if (!hasCheatDetection) {
+                    // Start new AI review with cheat detection
+                    await post(`games/${game.game_id}/ai_reviews`, {
+                        type: "full",
+                        engine: "katago",
+                        cheat_detection: true,
+                    });
+                    analysisCount++;
+                }
+            } catch (err) {
+                console.error(`Failed to start AI analysis for game ${game.game_id}:`, err);
+                errorCount++;
+            }
+        }
+
+        if (analysisCount > 0) {
+            toast(
+                <div>
+                    {interpolate(
+                        llm_pgettext(
+                            "Started AI analysis for {{count}} games",
+                            "Started AI analysis for {{count}} games",
+                        ),
+                        {
+                            count: analysisCount,
+                        },
+                    )}
+                </div>,
+                4000,
+            );
+        }
+
+        if (errorCount > 0) {
+            toast(
+                <div>
+                    {interpolate(
+                        llm_pgettext(
+                            "Failed to start analysis for {{count}} games",
+                            "Failed to start analysis for {{count}} games",
+                        ),
+                        {
+                            count: errorCount,
+                        },
+                    )}
+                </div>,
+                4000,
+            );
+        }
+
+        if (analysisCount === 0 && errorCount === 0) {
+            toast(
+                <div>
+                    {llm_pgettext(
+                        "All selected games already have cheat detection analysis",
+                        "All selected games already have cheat detection analysis",
+                    )}
+                </div>,
+                3000,
+            );
+        }
+    };
+
     renderColumnHeaders(owner: boolean) {
         return (
             <div className="sort-header">
@@ -420,6 +566,11 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
 
     render() {
         const owner = this.state.player_id === data.get("user").id || null;
+        const see_checkboxes =
+            owner ||
+            data.get("user").is_moderator ||
+            data.get("user").moderator_powers & MODERATOR_POWERS.AI_DETECTOR;
+
         if (this.state.collections == null) {
             return <div className="LibraryPlayer" />;
         }
@@ -465,6 +616,8 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
 
         const hasGames: boolean = collection.games.length > 0;
         const hasCollections: boolean = collection.collections.length > 0;
+
+        const is_beta_or_dev_site = window.location.hostname !== "online-go.com";
 
         return (
             <div className="LibraryPlayer container">
@@ -571,21 +724,41 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                                         </div>
                                     )}
 
-                                    {(data.get("user").is_moderator ||
-                                        (data.get("user").moderator_powers &
-                                            MODERATOR_POWERS.AI_DETECTOR) !==
-                                            0) && (
-                                        <div className="upload-button">
-                                            <button
-                                                className="primary"
-                                                onClick={this.toggleAIDetection}
-                                            >
-                                                {this.state.show_ai_detection
-                                                    ? _("Hide AI Detection")
-                                                    : _("Show AI Detection")}
-                                            </button>
-                                        </div>
-                                    )}
+                                    {is_beta_or_dev_site &&
+                                        (data.get("user").is_moderator ||
+                                            (data.get("user").moderator_powers &
+                                                MODERATOR_POWERS.AI_DETECTOR) !==
+                                                0) && (
+                                            <div className="upload-button">
+                                                <button
+                                                    className="primary"
+                                                    onClick={this.runAIAnalysis}
+                                                    disabled={
+                                                        Object.keys(this.state.games_checked)
+                                                            .length === 0
+                                                    }
+                                                >
+                                                    {llm_pgettext(
+                                                        "Button label to start an AI analysis of the selected games",
+                                                        "Run AI Detection",
+                                                    )}
+                                                </button>
+                                                <button
+                                                    className="primary"
+                                                    onClick={this.toggleAIDetection}
+                                                >
+                                                    {this.state.show_ai_detection
+                                                        ? llm_pgettext(
+                                                              "Hide AI Detection",
+                                                              "Hide AI Detection",
+                                                          )
+                                                        : llm_pgettext(
+                                                              "Show AI Detection",
+                                                              "Show AI Detection",
+                                                          )}
+                                                </button>
+                                            </div>
+                                        )}
 
                                     {hasCollections && (
                                         <div className="collections">
@@ -627,8 +800,8 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
 
                                     {!this.state.show_ai_detection && (
                                         <div className="games">
-                                            {hasGames && this.renderColumnHeaders(!!owner)}
-                                            {owner && hasGames && (
+                                            {hasGames && this.renderColumnHeaders(!!see_checkboxes)}
+                                            {see_checkboxes && hasGames && (
                                                 <div className="game-entry">
                                                     <span className="select">
                                                         <input
@@ -640,8 +813,8 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                                                 </div>
                                             )}
                                             {collection.games.map((game) => (
-                                                <div key={game.game_id} className="game-entry">
-                                                    {owner && (
+                                                <div key={game.entry_id} className="game-entry">
+                                                    {see_checkboxes && (
                                                         <span className="select">
                                                             <input
                                                                 type="checkbox"
@@ -718,7 +891,9 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                     <AIDetection
                         standalone={false}
                         title={`AI Detection - ${collection.name}`}
-                        dataSource={`games/library_ai_detection/${this.state.player_id}/${this.state.collection_id}`}
+                        dataSource={`games/library_ai_detection/${this.state.player_id}/${
+                            this.state.collection_id !== "0" ? this.state.collection_id : ""
+                        }`}
                         additionalFilters={{}}
                         showControls={true}
                     />

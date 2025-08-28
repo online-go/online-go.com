@@ -119,12 +119,29 @@ import * as data from "@/lib/data";
 
 import * as preferences from "@/lib/preferences";
 
-try {
-    // default_theme is set in index.html based on looking at the OS theme
-    data.setDefault("theme", window.default_theme);
-} catch {
-    data.setDefault("theme", "light");
+/* Deal with "system" theme */
+data.setDefault("theme", "system");
+export function applyTheme() {
+    let theme = data.get("theme", "system");
+
+    if (theme === "system") {
+        if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+            theme = "dark";
+        } else {
+            theme = "light";
+        }
+    }
+
+    if (document.body.classList.contains(theme)) {
+        return;
+    }
+
+    document.body.classList.remove("light", "dark", "accessible");
+    document.body.classList.add(theme);
 }
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applyTheme);
+data.watch("theme", applyTheme);
+applyTheme();
 
 const default_user = {
     anonymous: true,

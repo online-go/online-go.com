@@ -183,6 +183,7 @@ const HIDDEN_LOG_FIELDS = [
     "move_number", // irrelevant
     // isn't used
     "strict_seki_mode",
+    "stones",
 ];
 
 export function LogData({
@@ -272,7 +273,7 @@ export function LogData({
                             Winner: <Player user={data[k]} />
                         </span>,
                     );
-                } else if (k === "stones") {
+                } else if (k === "score_estimate_response") {
                     // we'll re-render when it's set
                     if (markedConfig) {
                         ret.push(
@@ -280,7 +281,19 @@ export function LogData({
                                 key={k}
                                 config={markedConfig}
                                 move_number={data.move_number}
-                                removal_string={data.current_removal_string}
+                                removal_string={data.stones}
+                            />,
+                        );
+                    }
+                } else if (k === "stones" && !data.score_estimate_response) {
+                    // we'll re-render when it's set
+                    if (markedConfig) {
+                        ret.push(
+                            <ScoringEventThumbnail
+                                key={k}
+                                config={markedConfig}
+                                move_number={data.move_number}
+                                removal_string={data.current_removal_string || data.stones}
                             />,
                         );
                     }

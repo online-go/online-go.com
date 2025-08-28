@@ -138,7 +138,7 @@ export default defineConfig({
                           if (id.includes("node_modules")) {
                               return "vendor";
                           }
-                          if (id.includes("goban")) {
+                          if (id.includes("/goban/")) {
                               return "goban";
                           }
                           if (id.includes("react-dynamic-help")) {
@@ -501,9 +501,15 @@ async function ogs_process_template(content: string, req: IncomingMessage): Prom
                 // we don't need to serve a separate goban.js file
                 return "";
             }
-            case "EXTRA_CONFIG":
+            case "EXTRA_CONFIG": {
+                const ip = req.socket.remoteAddress;
+                const location = undefined;
                 //return `<script>window['websocket_host'] = "${server_url}";</script>`;
-                return ``;
+                return `<script>
+                    window.ip_location = ${JSON.stringify(location)};
+                    window.ip_address = "${ip}";
+                </script>`;
+            }
         }
         return "{{" + parameter + "}}";
     });

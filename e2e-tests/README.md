@@ -69,7 +69,13 @@ If you run it again, it should pass. You can commit the screenshots and that's i
 
 Playwright writes useful stuff when tests fail - screenshots and an activity log.
 
-If the e2e test fails in the CI, it stores this stuff - a link is provided in the CI build log
+If the e2e test fails in the CI, it stores this stuff - a link is provided in the CI build log.
+
+You find this by:
+
+-   clicking on the `Test/playwright` link in the Github test report,
+-   then finding the "Upload e2e results" section, click that open
+-   click on the "Download results" link.
 
 # yarn targets
 

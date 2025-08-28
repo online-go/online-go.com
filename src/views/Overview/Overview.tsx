@@ -38,6 +38,7 @@ import { FabX } from "@/components/material";
 import { ActiveTournamentList, Group } from "@/lib/types";
 import { DismissableMessages } from "@/components/DismissableMessages";
 import { Experiment, Variant, Default } from "@/components/Experiment";
+import { user_uploads_url } from "@/lib/cdn";
 import { EXV6Overview } from "./EXV6Overview";
 import { EmailBanner } from "@/components/EmailBanner";
 import { PaymentProblemBanner } from "@/components/PaymentProblemBanner";
@@ -336,13 +337,14 @@ export class GroupList extends React.PureComponent<{}, GroupState> {
                         <i className="fa fa-times" onClick={this.rejectInvite.bind(this, invite)} />
                         <i className="fa fa-check" onClick={this.acceptInvite.bind(this, invite)} />
                         <Link key={invite.group.id} to={`/group/${invite.group.id}`}>
-                            <img src={invite.group.icon} /> {invite.group.name}
+                            <img src={user_uploads_url(invite.group.icon, 32)} />{" "}
+                            {invite.group.name}
                         </Link>
                     </div>
                 ))}
                 {this.state.groups.map((group) => (
                     <Link key={group.id} to={`/group/${group.id}`}>
-                        <img src={group.icon} /> {group.name}
+                        <img src={user_uploads_url(group.icon, 32)} /> {group.name}
                     </Link>
                 ))}
             </div>
@@ -379,7 +381,7 @@ export class TournamentList extends React.PureComponent<{}, TournamentListState>
             <div className="Overview-TournamentList">
                 {this.state.my_tournaments.map((tournament) => (
                     <Link key={tournament.id} to={`/tournament/${tournament.id}`}>
-                        <img src={tournament.icon} /> {tournament.name}
+                        <img src={user_uploads_url(tournament.icon, 32)} /> {tournament.name}
                     </Link>
                 ))}
             </div>
