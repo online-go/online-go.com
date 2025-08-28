@@ -14,7 +14,13 @@ section.right { /* NavBar changeable icons and user name */
   visibility: hidden !important;
 }
 
+/* Hide all the user generated content! 
+ * We're left testing that the page skeleton renders. */
+
 .Goban {
+  visibility: hidden !important;
+}
+.explore-pane {
   visibility: hidden !important;
 }
 
