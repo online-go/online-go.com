@@ -45,16 +45,15 @@ export const defaultDemoBoardCreation = async ({ browser }: { browser: Browser }
     await expect(page.locator(".condensed-game-ranked")).toHaveText("Unranked");
     await expect(page.locator(".condensed-game-rules")).toHaveText("Rules: Japanese");
 
-    await page.waitForTimeout(10000);
-
     await page
         .locator("a")
         .filter({ has: page.locator("i.fa.fa-info") })
         .click();
     await page.waitForSelector(".Modal.GameInfoModal", { state: "visible" });
 
-    const boardSize = await page.textContent('.Modal.GameInfoModal dt:has-text("Board Size") + dd');
-    expect(boardSize).toBe("19x19");
+    await page.waitForSelector(
+        '.Modal.GameInfoModal dt:has-text("Board Size") + dd:has-text("19x19")',
+    );
 
     const blackPlayerUsername = await page
         .locator("div.black.player-name-container .Player-username")

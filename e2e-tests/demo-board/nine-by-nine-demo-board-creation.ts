@@ -56,7 +56,7 @@ export const nineByNineDemoBoardCreation = async ({ browser }: { browser: Browse
 
     await expect(page.locator(".condensed-game-rules")).toHaveText("Rules: Chinese");
 
-    await page.waitForTimeout(10000);
+    // await page.waitForTimeout(10000);
 
     await page
         .locator("a")
@@ -64,8 +64,9 @@ export const nineByNineDemoBoardCreation = async ({ browser }: { browser: Browse
         .click();
     await page.waitForSelector(".Modal.GameInfoModal", { state: "visible" });
 
-    const boardSize = await page.textContent('.Modal.GameInfoModal dt:has-text("Board Size") + dd');
-    expect(boardSize).toBe("9x9");
+    await page.waitForSelector(
+        '.Modal.GameInfoModal dt:has-text("Board Size") + dd:has-text("9x9")',
+    );
 
     const blackPlayerUsername = await page
         .locator("div.black.player-name-container .Player-username")

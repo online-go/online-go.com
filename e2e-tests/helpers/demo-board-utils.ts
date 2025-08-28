@@ -90,8 +90,6 @@ export const fillOutDemoBoardCreationForm = async (
         }
     }
 
-    // await page.locator(".Modal.ChallengeModal").waitFor();
-
     const blackInput = page.locator('input.form-control[type="text"][value="Black"]');
     await blackInput.fill(final_settings.black_name || "Fallback Black Player Name");
 
