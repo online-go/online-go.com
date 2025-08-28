@@ -16,16 +16,46 @@
  */
 
 import { ogsTest } from "@helpers";
-import { defaultDemoBoardCreation } from "./default-demo-board-creation";
-import { nineByNineDemoBoardCreation } from "./nine-by-nine-demo-board-creation";
+import { createAndVerifyDemoBoard } from "@helpers/demo-board-utils";
 
 ogsTest.describe("Demo Board Tests", () => {
-    ogsTest(
-        "should successfully create and navigate to the new demo board",
-        defaultDemoBoardCreation,
-    );
-    ogsTest(
-        "should successfully create a 9x9 demo board with custom form data and navigate to it",
-        nineByNineDemoBoardCreation,
-    );
+    const testCases = [
+        {
+            name: "Default 19x19 board",
+            settings: {},
+            expected: {
+                boardSize: "19x19",
+                rules: "Japanese",
+                blackName: "Demo Black Player",
+                blackRank: "[9d]",
+                whiteName: "Demo White Player",
+                whiteRank: "[4d]",
+            },
+        },
+        {
+            name: "Custom 9x9 board",
+            settings: {
+                boardSize: "9x9",
+                black_name: "Demo Dark Player",
+                black_ranking: 37, // 8 Dan
+                white_name: "Demo Light Player",
+                white_ranking: 1037, // 1 Pro
+                rules: "chinese",
+            },
+            expected: {
+                boardSize: "9x9",
+                rules: "Chinese",
+                blackName: "Demo Dark Player",
+                blackRank: "[8d]",
+                whiteName: "Demo Light Player",
+                whiteRank: "[1p]",
+            },
+        },
+    ];
+
+    for (const tc of testCases) {
+        ogsTest(`should successfully create a ${tc.name}`, async ({ browser }) => {
+            await createAndVerifyDemoBoard(browser, tc.settings, tc.expected);
+        });
+    }
 });
