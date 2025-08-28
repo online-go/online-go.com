@@ -36,21 +36,20 @@ export async function getPlayerIconURL(id: number, size: number): Promise<string
 }
 
 export function PlayerIcon(props: PlayerIconProps): React.ReactElement {
-    const [url, setUrl] = React.useState<string | null>(null);
+    const [url, setUrl] = React.useState<string | undefined>(undefined);
 
     const subscriber = React.useRef<player_cache.Subscriber | undefined>(undefined);
     const id = getId(props);
 
     React.useEffect(() => {
         if (!id) {
-            setUrl(null);
+            setUrl(undefined);
             return;
         }
 
         const user = player_cache.lookup(id);
         const size = typeof props.size === "number" ? props.size : parseInt(props.size);
-        const new_url = user && user.icon ? user_uploads_url(user.icon, size) : null;
-        setUrl(new_url);
+        setUrl(user_uploads_url(user?.icon, size));
 
         if (!url) {
             fetchIconUrl(id, props);

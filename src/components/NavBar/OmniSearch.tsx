@@ -128,10 +128,7 @@ export function OmniSearch(props: OmniSearchProperties): React.ReactElement | nu
                     <h3>{_("Groups")}</h3>
                     {omnisearch_groups.map((e) => (
                         <div className="result" key={e.id}>
-                            {(() => {
-                                const iconUrl = e.icon ? user_uploads_url(e.icon, 32) : null;
-                                return iconUrl ? <img src={iconUrl} /> : null;
-                            })()}
+                            <img src={user_uploads_url(e.icon, 32)} />
                             <Link to={`/group/${e.id}`}>{e.name}</Link>
                         </div>
                     ))}
@@ -142,10 +139,7 @@ export function OmniSearch(props: OmniSearchProperties): React.ReactElement | nu
                     <h3>{_("Tournaments")}</h3>
                     {omnisearch_tournaments.map((e) => (
                         <div className="result" key={e.id}>
-                            {(() => {
-                                const iconUrl = e.icon ? user_uploads_url(e.icon, 32) : null;
-                                return iconUrl ? <img src={iconUrl} /> : null;
-                            })()}
+                            <img src={user_uploads_url(e.icon, 32)} />
                             <Link to={`/tournament/${e.id}`}>{e.name}</Link>
                         </div>
                     ))}

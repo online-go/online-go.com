@@ -33,14 +33,18 @@ const valid_sizes = [15, 16, 32, 64, 80, 96, 128, 256, 512];
 type ImageSize = number | "original";
 
 export function user_uploads_url(url_or_hash: string, size?: ImageSize): string;
-export function user_uploads_url(url_or_hash: undefined, size?: ImageSize): null;
-export function user_uploads_url(url_or_hash: null, size?: ImageSize): null;
+export function user_uploads_url(url_or_hash: undefined, size?: ImageSize): undefined;
+export function user_uploads_url(
+    url_or_hash: string | undefined,
+    size?: ImageSize,
+): string | undefined;
+export function user_uploads_url(url_or_hash: null, size?: ImageSize): undefined;
 export function user_uploads_url(
     url_or_hash: string | undefined | null,
     size: ImageSize = 64,
-): string | null {
+): string | undefined {
     if (!url_or_hash) {
-        return null;
+        return undefined;
     }
 
     if (!url_or_hash.includes("rackcdn")) {

@@ -293,8 +293,7 @@ export class PlayerDetails extends React.PureComponent<
                     <div
                         className="icon"
                         style={{
-                            backgroundImage:
-                                'url("' + user_uploads_url(this.state.icon || "", 64) + '")',
+                            backgroundImage: `url(${user_uploads_url(this.state.icon, 64)})`,
                         }}
                     >
                         <span style={{ position: "absolute", bottom: -4, right: 0 }}>

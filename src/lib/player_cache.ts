@@ -267,9 +267,8 @@ const fetch_player = new Batcher<FetchEntry>((fetch_queue) => {
                     const required_fields = queue[idx].required_fields;
 
                     if ("icon-url" in player) {
-                        player.icon = user_uploads_url(
-                            player["icon-url"],
-                        ); /* handle stupid inconsistency in API */
+                        /* our API is inconsistent, this just maps one to the other for our convenience on the front end*/
+                        player.icon = user_uploads_url(player["icon-url"]);
                         player["icon-url"] = player.icon;
                     }
 

@@ -412,9 +412,7 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
                             onClick={this.goToChannel}
                         >
                             <span className="channel-name" data-channel={"group-" + chan.id}>
-                                {chan.icon && (
-                                    <img className="icon" src={user_uploads_url(chan.icon, 32)} />
-                                )}{" "}
+                                <img className="icon" src={user_uploads_url(chan.icon, 32)} />{" "}
                                 {chan.name}
                             </span>
                             {message_count("group-" + chan.id)}
