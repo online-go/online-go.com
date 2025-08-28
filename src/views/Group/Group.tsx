@@ -734,7 +734,7 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
                                                                     maxWidth: "128px",
                                                                 }}
                                                             />
-                                                        ) : group.icon ? (
+                                                        ) : (
                                                             <img
                                                                 src={user_uploads_url(
                                                                     group.icon,
@@ -745,17 +745,17 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
                                                                     maxWidth: "128px",
                                                                 }}
                                                             />
-                                                        ) : null}
+                                                        )}
                                                     </div>
                                                 </section>
                                             )}
                                         </Dropzone>
-                                    ) : group.icon ? (
+                                    ) : (
                                         <img
                                             src={user_uploads_url(group.icon, 128)}
                                             style={{ maxHeight: "128px", maxWidth: "128px" }}
                                         />
-                                    ) : null}
+                                    )}
                                 </div>
                                 <div className="col-sm-10">
                                     {!editing ? (

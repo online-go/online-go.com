@@ -363,7 +363,7 @@ export function ChatChannel({
             <Flag country={country} language={language as string} user_country={user_country} />
         ) : null;
     } else if (channel.indexOf("group") === 0) {
-        icon_element = icon ? <img src={user_uploads_url(icon)} /> : null;
+        icon_element = <img src={user_uploads_url(icon)} />;
     }
 
     const mentioned = proxy?.channel.mentioned;

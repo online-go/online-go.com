@@ -76,16 +76,14 @@ export function GroupList(): React.ReactElement {
                             {
                                 header: "",
                                 className: "group-icon-header",
-                                render: (X) => {
-                                    return (
-                                        <img
-                                            className="group-icon"
-                                            src={user_uploads_url(X.icon, 64)}
-                                            width="64"
-                                            height="64"
-                                        />
-                                    );
-                                },
+                                render: (X) => (
+                                    <img
+                                        className="group-icon"
+                                        src={user_uploads_url(X.icon, 64)}
+                                        width="64"
+                                        height="64"
+                                    />
+                                ),
                             },
                             {
                                 header: _("Group"),
