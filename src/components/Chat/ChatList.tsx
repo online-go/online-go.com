@@ -28,6 +28,7 @@ import * as data from "@/lib/data";
 import { Flag } from "@/components/Flag";
 import { shouldOpenNewTab } from "@/lib/misc";
 import { browserHistory } from "@/lib/ogsHistory";
+import { user_uploads_url } from "@/lib/cdn";
 import { popover } from "@/lib/popover";
 import {
     getUnreadChatPreference,
@@ -411,7 +412,8 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
                             onClick={this.goToChannel}
                         >
                             <span className="channel-name" data-channel={"group-" + chan.id}>
-                                <img className="icon" src={chan.icon} /> {chan.name}
+                                <img className="icon" src={user_uploads_url(chan.icon, 32)} />{" "}
+                                {chan.name}
                             </span>
                             {message_count("group-" + chan.id)}
                         </div>
