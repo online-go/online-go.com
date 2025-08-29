@@ -22,6 +22,7 @@ import { _ } from "@/lib/translate";
 import { Link } from "react-router-dom";
 import { Player } from "@/components/Player";
 import { ignore } from "@/lib/misc";
+import { user_uploads_url } from "@/lib/cdn";
 
 interface OmniSearchProperties {
     search: string;
@@ -127,7 +128,7 @@ export function OmniSearch(props: OmniSearchProperties): React.ReactElement | nu
                     <h3>{_("Groups")}</h3>
                     {omnisearch_groups.map((e) => (
                         <div className="result" key={e.id}>
-                            <img src={e.icon} />
+                            <img src={user_uploads_url(e.icon, 32)} />
                             <Link to={`/group/${e.id}`}>{e.name}</Link>
                         </div>
                     ))}
@@ -138,7 +139,7 @@ export function OmniSearch(props: OmniSearchProperties): React.ReactElement | nu
                     <h3>{_("Tournaments")}</h3>
                     {omnisearch_tournaments.map((e) => (
                         <div className="result" key={e.id}>
-                            <img src={e.icon} />
+                            <img src={user_uploads_url(e.icon, 32)} />
                             <Link to={`/tournament/${e.id}`}>{e.name}</Link>
                         </div>
                     ))}

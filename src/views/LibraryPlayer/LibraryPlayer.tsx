@@ -413,6 +413,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
             return;
         }
 
+        /*
         if (selectedGameIds.length > 3) {
             toast(
                 <div>
@@ -425,6 +426,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
             );
             return;
         }
+        */
 
         const user = data.get("user");
         if (user.anonymous) {
@@ -564,6 +566,11 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
 
     render() {
         const owner = this.state.player_id === data.get("user").id || null;
+        const see_checkboxes =
+            owner ||
+            data.get("user").is_moderator ||
+            data.get("user").moderator_powers & MODERATOR_POWERS.AI_DETECTOR;
+
         if (this.state.collections == null) {
             return <div className="LibraryPlayer" />;
         }
@@ -793,8 +800,8 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
 
                                     {!this.state.show_ai_detection && (
                                         <div className="games">
-                                            {hasGames && this.renderColumnHeaders(!!owner)}
-                                            {owner && hasGames && (
+                                            {hasGames && this.renderColumnHeaders(!!see_checkboxes)}
+                                            {see_checkboxes && hasGames && (
                                                 <div className="game-entry">
                                                     <span className="select">
                                                         <input
@@ -807,7 +814,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                                             )}
                                             {collection.games.map((game) => (
                                                 <div key={game.entry_id} className="game-entry">
-                                                    {owner && (
+                                                    {see_checkboxes && (
                                                         <span className="select">
                                                             <input
                                                                 type="checkbox"

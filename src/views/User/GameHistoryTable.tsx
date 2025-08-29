@@ -375,7 +375,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
                                 ),
                             },
                             {
-                                header: _(""),
+                                header: "",
                                 className: (X) =>
                                     "winner_marker" + (X && X.annulled ? " annulled" : ""),
                                 render: (X) =>
@@ -404,7 +404,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
                                 ),
                             },
                             {
-                                header: _(""),
+                                header: "",
                                 className: (X) => "speed" + (X && X.annulled ? " annulled" : ""),
                                 render: (X) => <i className={X.speed_icon_class} title={X.speed} />,
                             },

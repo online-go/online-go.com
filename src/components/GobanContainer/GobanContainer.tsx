@@ -24,8 +24,10 @@ import { goban_view_mode } from "@/views/Game/util";
 //import { generateGobanHook } from "@/views/Game/GameHooks";
 
 import { usePreference } from "@/lib/preferences";
+import { useGobanControllerSafe } from "@/views/Game/goban_context";
 
 interface GobanContainerProps {
+    /** The goban to render. If not provided, the goban context goban will be used */
     goban?: GobanRenderer;
     /** callback that is called when the goban detects a resize. */
     onResize?: () => void;
@@ -44,9 +46,14 @@ export function GobanContainer({
     onWheel,
     extra_props,
 }: GobanContainerProps): React.ReactElement {
+    const goban_controller = useGobanControllerSafe();
     const ref_goban_container = React.useRef<HTMLDivElement>(null);
     const resize_debounce = React.useRef<NodeJS.Timeout | null>(null);
     const [last_move_opacity] = usePreference("last-move-opacity");
+
+    if (!goban) {
+        goban = goban_controller?.goban;
+    }
 
     const goban_div = (goban?.config as GobanRendererConfig | undefined)?.board_div;
 

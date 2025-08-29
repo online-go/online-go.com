@@ -32,6 +32,7 @@ import tooltip from "@/lib/tooltip";
 import { Toggle } from "@/components/Toggle";
 import { IdType } from "@/lib/types";
 import { useUser } from "@/lib/hooks";
+import { user_uploads_url } from "@/lib/cdn";
 
 interface TournamentListProperties {
     phase: "open" | "active" | "finished";
@@ -288,7 +289,7 @@ function TournamentListImpl({
                                 {tournament.group ? (
                                     <Link to={`/group/${tournament.group.id}`}>
                                         <img
-                                            src={mk32icon(tournament.icon)}
+                                            src={user_uploads_url(tournament.icon, 32)}
                                             data-title={tournament.group.name}
                                             onMouseOver={tooltip}
                                             onMouseOut={tooltip}
@@ -297,7 +298,7 @@ function TournamentListImpl({
                                     </Link>
                                 ) : (
                                     <img
-                                        src={tournament.icon}
+                                        src={user_uploads_url(tournament.icon, 32)}
                                         data-title={_("OGS Site Wide Tournament")}
                                         onMouseOver={tooltip}
                                         onMouseOut={tooltip}
@@ -404,9 +405,6 @@ function makeTournamentFilter(
     return filter;
 }
 
-function mk32icon(path: string) {
-    return path.replace(/-[0-9]+.png/, "-32.png");
-}
 function speedIcon(e: any) {
     const tpm = computeAverageMoveTime(e.time_control_parameters, e.size, e.size);
     if (tpm === 0 || tpm > 3600) {

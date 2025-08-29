@@ -23,7 +23,7 @@ import { post } from "@/lib/requests";
 import { shouldOpenNewTab, errorAlerter, ignore } from "@/lib/misc";
 import { getUserRating, humble_rating } from "@/lib/rank_utils";
 import * as player_cache from "@/lib/player_cache";
-import { icon_size_url } from "@/components/PlayerIcon";
+import { user_uploads_url } from "@/lib/cdn";
 import { socket } from "@/lib/sockets";
 import * as data from "@/lib/data";
 import { close_all_popovers } from "@/lib/popover";
@@ -293,8 +293,7 @@ export class PlayerDetails extends React.PureComponent<
                     <div
                         className="icon"
                         style={{
-                            backgroundImage:
-                                'url("' + icon_size_url(this.state.icon || "", 64) + '")',
+                            backgroundImage: `url(${user_uploads_url(this.state.icon, 64)})`,
                         }}
                     >
                         <span style={{ position: "absolute", bottom: -4, right: 0 }}>
