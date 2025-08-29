@@ -425,8 +425,11 @@ class NotificationEntry extends React.Component<NotificationEntryProps, any> {
                 return (
                     <div>
                         {interpolate(
-                            _("You've received an invitation to join the group {{group_name}}"),
+                            _(
+                                "{{username}} has sent you an invitation to join the group {{group_name}}",
+                            ),
                             {
+                                username: notification.invitingUser,
                                 group_name: notification.groupname,
                             },
                         )}
