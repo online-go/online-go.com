@@ -16,7 +16,45 @@
  */
 
 import { User } from "goban";
-import { _, interpolate, pgettext } from "@/lib/translate";
+import { _, interpolate, pgettext, current_language } from "@/lib/translate";
+
+/**
+ * Translates Arabic numerals to Chinese/Japanese numerals for use when displaying
+ * professional ranks, as is customary.
+ */
+function formalizeRankNumber(num: number | string, language?: string): string {
+    const numStr = typeof num === "number" ? num.toString() : num;
+    const targetLanguage = language || current_language;
+
+    // Only translate for Chinese and Japanese languages
+    if (!["zh-cn", "zh-tw", "ja"].includes(targetLanguage)) {
+        return numStr;
+    }
+
+    const chineseDigits = ["〇", "一", "二", "三", "四", "五", "六", "七", "八", "九"];
+
+    // Handle decimal numbers
+    if (numStr.includes(".")) {
+        const [wholePart, decimalPart] = numStr.split(".");
+        const translatedWhole = wholePart
+            .split("")
+            .map((digit) => (/\d/.test(digit) ? chineseDigits[parseInt(digit)] : digit))
+            .join("");
+        const translatedDecimal = decimalPart
+            .split("")
+            .map((digit) => (/\d/.test(digit) ? chineseDigits[parseInt(digit)] : digit))
+            .join("");
+        return `${translatedWhole}.${translatedDecimal}`;
+    }
+
+    // Handle whole numbers
+    return numStr
+        .split("")
+        .map((digit) => (/\d/.test(digit) ? chineseDigits[parseInt(digit)] : digit))
+        .join("");
+}
+
+(window as any)["formalizeRankNumber"] = formalizeRankNumber;
 
 export interface IRankInfo {
     rank: number;
@@ -272,9 +310,11 @@ export function rankString(
         const ranking: number = ("ranking" in r ? r.ranking : r.rank) as number;
         if ((r as any).pro || r.professional) {
             if (ranking > 900) {
-                return interpolate(pgettext("Pro", "%sp"), [ranking - 1000 - 36]);
+                return interpolate(pgettext("Pro", "%sp"), [
+                    formalizeRankNumber(ranking - 1000 - 36),
+                ]);
             } else {
-                return interpolate(pgettext("Pro", "%sp"), [ranking - 36]);
+                return interpolate(pgettext("Pro", "%sp"), [formalizeRankNumber(ranking - 36)]);
             }
         }
         if ("ratings" in r) {
@@ -285,7 +325,7 @@ export function rankString(
         }
     }
     if (r > 900) {
-        return interpolate(pgettext("Pro", "%sp"), [r - 1000 - 36]);
+        return interpolate(pgettext("Pro", "%sp"), [formalizeRankNumber(r - 1000 - 36)]);
     }
 
     if (r < -900) {
@@ -327,7 +367,7 @@ export function longRankString(r: UserOrRank): string {
 
         const ranking = ("ranking" in r ? r.ranking : r.rank) as number;
         if ((r as any).pro || r.professional) {
-            return interpolate(_("%s Pro"), [ranking - 36]);
+            return interpolate(_("%s Pro"), [formalizeRankNumber(ranking - 36)]);
         }
         if ("ratings" in r) {
             r = overall_rank(r);
@@ -336,7 +376,7 @@ export function longRankString(r: UserOrRank): string {
         }
     }
     if (r > 900) {
-        return interpolate(_("%s Pro"), [r - 1000 - 36]);
+        return interpolate(_("%s Pro"), [formalizeRankNumber(r - 1000 - 36)]);
     }
 
     if (r < -900) {

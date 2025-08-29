@@ -19,3 +19,15 @@ td {
 tr {
   border: none !important;
 }
+
+.Announcements {
+  visibility: hidden !important;
+}
+
+.LadderList .Card h4 {  /* Hide the player counts */
+  visibility: hidden !important;
+}
+
+.LadderComponent { /* this table is too variable to test by screenshot*/
+  visibility: hidden !important;
+}

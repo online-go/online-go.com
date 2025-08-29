@@ -45,7 +45,8 @@ export class BSEscape extends LearningHubSection {
         return pgettext("Tutorial section name on learning escape", "Escape");
     }
     static subtext(): string {
-        return pgettext("Tutorial section subtext on learning on escape", "");
+        //return pgettext("Tutorial section subtext on learning on escape", "");
+        return "";
     }
 }
 

@@ -45,7 +45,8 @@ export class CloseTerritory extends LearningHubSection {
         return pgettext("Tutorial section name on learning close territory", "Close Territory");
     }
     static subtext(): string {
-        return pgettext("Tutorial section subtext on learning on close territory", "");
+        //return pgettext("Tutorial section subtext on learning on close territory", "");
+        return "";
     }
 }
 

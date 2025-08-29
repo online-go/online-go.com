@@ -21,7 +21,12 @@ import { lookingAtOurLiveGame } from "@/components/TimeControl/util";
 
 const debug = new Debug("sockets");
 
-let main_websocket_host: string = window.websocket_host ?? window.location.origin;
+// The ISP "BT" in the UK has a problem with ipv6 websocket connections to cloudflare. As a workaround, we'll
+// route through the google premium network instead of our default cloudflare route.
+const default_websocket_host =
+    window.ip_location?.country === "GB" ? "wss://wsp.online-go.com" : window.location.origin;
+
+let main_websocket_host: string = window.websocket_host ?? default_websocket_host;
 try {
     // can't use `data` here because of a dependency loop
     if (typeof localStorage !== "undefined" && localStorage.getItem("ogs.websocket_host")) {
@@ -32,6 +37,16 @@ try {
     }
 } catch (e) {
     console.error(e);
+}
+if (typeof process !== "undefined" && process.env.NODE_ENV === "development") {
+    main_websocket_host = window.location.origin;
+    console.log("%cConnecting locally (development mode)", "color: #888888; font-weight: bold;");
+} else if (main_websocket_host === "wss://wsp.online-go.com") {
+    console.log("%cConnecting via Google Premium Network", "color: #4285f4; font-weight: bold;");
+} else if (main_websocket_host === "wss://wss.online-go.com") {
+    console.log("%cConnecting via Public Internet", "color: #ff6b35; font-weight: bold;");
+} else {
+    console.log("%cConnecting via Cloudflare", "color: #f38020; font-weight: bold;");
 }
 
 export const socket = new GobanSocket(main_websocket_host);

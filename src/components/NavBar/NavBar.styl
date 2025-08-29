@@ -150,7 +150,7 @@ header.NavBar {
 
                 .theme-selectors {
                     display: flex;
-                    justify-content: space-around;
+                    justify-content: center;
                 }
 
                 .settings-and-logout {
@@ -548,6 +548,7 @@ header.NavBar {
         }
     }
 
+    
     .fa-adjust {
         padding: 0.6rem;
         margin-bottom: -0.1rem;
@@ -616,7 +617,7 @@ header.NavBar {
 
         .theme-selectors {
             display: flex;
-            justify-content: space-around;
+            justify-content: center;
         }
 
         .settings-and-logout {
@@ -775,38 +776,36 @@ button.theme-button {
     inactive-button();
     border: 1px solid transparent;
     padding: 0.3rem;
-    padding-right: 1rem;
-    padding-left: 1rem;
+    padding-inline: 0.5rem;
     font-size: 1.2rem;
-}
+    width: 4rem;
+    word-wrap: nowrap;
 
-body.light header.NavBar button.theme-button.light {
-    background-color: light.primary;
-    border-color: darken(light.primary, 8%);
+    .composed-icon {
+        margin-inline: 0 !important;
+        font-size: 1rem;
 
-    i.fa.fa-sun-o {
-        color: #fff;
+        .fa {
+            position: relative;
+            margin-inline: 0 !important;
+            font-size: 0.7rem;
+            width: 12px !important;
+            height: 12px !important;
+        }
+
+        .fa-sun-o {
+            top: -0.25rem;
+            padding-left: 0.3rem;
+            padding-right: 0.1rem;
+        }
+
+        .fa-moon-o {
+            bottom: -0.1rem;
+            padding-left: 0.1rem;
+        }
     }
 }
 
-body.dark header.NavBar button.theme-button.dark {
-    background-color: dark.primary;
-    border-color: darken(dark.primary, 8%);
-
-    i.fa.fa-moon-o {
-        color: #fff;
-    }
-}
-
-// do for accessible what we do for dark...
-body.accessible header.NavBar button.theme-button.accessible {
-    background-color: accessible.primary;
-    border-color: darken(accessible.primary, 8%);
-
-    i.fa.fa-eye {
-        color: #fff;
-    }
-}
 
 .BanIndicator {
     position: fixed;

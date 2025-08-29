@@ -201,7 +201,8 @@ export function GeneralPreferences(props: SettingGroupPageProps): React.ReactEle
     }
 
     const websocket_host_options = [
-        { value: undefined, label: "Cloudflare" },
+        { value: undefined, label: _("Automatic") },
+        { value: "wss://online-go.com", label: "Cloudflare" },
         { value: "wss://wsp.online-go.com", label: "Google" },
         { value: "wss://wss.online-go.com", label: "Public Internet" },
     ];
