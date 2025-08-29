@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { expect } from "@playwright/test";
-import { Page } from "@playwright/test";
+import { expect, Page, Browser } from "@playwright/test";
+import { newTestUsername, prepareNewUser } from "@helpers/user-utils";
 
 export interface DemoBoardModalFields {
     gameName?: string;
@@ -90,8 +90,6 @@ export const fillOutDemoBoardCreationForm = async (
         }
     }
 
-    // await page.locator(".Modal.ChallengeModal").waitFor();
-
     const blackInput = page.locator('input.form-control[type="text"][value="Black"]');
     await blackInput.fill(final_settings.black_name || "Fallback Black Player Name");
 
@@ -111,4 +109,71 @@ export const fillOutDemoBoardCreationForm = async (
         .locator("select.challenge-dropdown");
 
     await whiteRankSelect.selectOption(final_settings.white_ranking?.toString() || "2");
+};
+
+// 1. Add a new interface for the expected outcomes
+export interface DemoBoardExpectedFields {
+    boardSize: string;
+    rules: string;
+    blackName: string;
+    blackRank: string;
+    whiteName: string;
+    whiteRank: string;
+}
+
+// 2. Add the new high-level orchestrator function
+export const createAndVerifyDemoBoard = async (
+    browser: Browser,
+    settings: DemoBoardModalFields,
+    expected: DemoBoardExpectedFields,
+) => {
+    const { userPage: page } = await prepareNewUser(
+        browser,
+        newTestUsername("DemoE2E"), // cspell:disable-line
+        "test",
+    );
+
+    // Use existing helpers for the setup
+    await loadDemoBoardCreationModal(page);
+    await fillOutDemoBoardCreationForm(page, settings);
+
+    // Click create and wait for navigation
+    await page.click('button:has-text("Create Demo")');
+    await expect(page).toHaveURL(/.*demo.*/);
+
+    // Perform all assertions based on the 'expected' parameter
+    await expect(page.locator(".game-state")).toContainText("Review by");
+    await expect(page.locator(".Goban")).toHaveCount(2);
+    await expect(page.locator(".condensed-game-ranked")).toHaveText("Unranked");
+    await expect(page.locator(".condensed-game-rules")).toHaveText(`Rules: ${expected.rules}`);
+
+    await page
+        .locator("a")
+        .filter({ has: page.locator("i.fa.fa-info") })
+        .click();
+    await page.waitForSelector(".Modal.GameInfoModal", { state: "visible" });
+
+    await page.waitForSelector(
+        `.Modal.GameInfoModal dt:has-text("Board Size") + dd:has-text("${expected.boardSize}")`,
+    );
+
+    const blackPlayerUsername = await page
+        .locator("div.black.player-name-container .Player-username")
+        .innerText();
+    expect(blackPlayerUsername).toBe(expected.blackName);
+
+    const blackPlayerRank = await page
+        .locator("div.black.player-name-container .Player-rank")
+        .innerText();
+    expect(blackPlayerRank).toBe(expected.blackRank);
+
+    const whitePlayerUsername = await page
+        .locator("div.white.player-name-container .Player-username")
+        .innerText();
+    expect(whitePlayerUsername).toBe(expected.whiteName);
+
+    const whitePlayerRank = await page
+        .locator("div.white.player-name-container .Player-rank")
+        .innerText();
+    expect(whitePlayerRank).toBe(expected.whiteRank);
 };
