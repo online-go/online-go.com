@@ -18,8 +18,13 @@
 import { DemoSettings } from "@/lib/data_schema";
 
 export type DemoBoardModalProps = {
-    players_list?: Array<{ name: string; rank: number }>;
+    players_list?: shortPlayerInfo[];
     tournament_record_id?: number;
     tournament_record_round_id?: number;
     initialSettings?: DemoSettings;
+};
+
+export type shortPlayerInfo = {
+    name: string;
+    rank: number;
 };

@@ -18,7 +18,7 @@
 import { _ } from "@/lib/translate";
 import React from "react";
 import { allRanks, rankString } from "@/lib/rank_utils";
-import { DemoBoardModalProps } from "./DemoBoardModal.types";
+import { DemoBoardModalProps, shortPlayerInfo } from "./DemoBoardModal.types";
 import {
     isKomiOption,
     isRuleSet,
@@ -39,6 +39,13 @@ export function DemoBoardModal(
     props: DemoBoardModalProps & { eventsRef: { close: () => void } },
 ): React.ReactElement {
     const initialSettings = props.initialSettings ?? defaultInitialSettings;
+
+    if (props.players_list) {
+        initialSettings.black_name = props.players_list[0].name;
+        initialSettings.black_ranking = props.players_list[0].rank;
+        initialSettings.white_name = props.players_list[0].name;
+        initialSettings.white_ranking = props.players_list[0].rank;
+    }
 
     const [name, setName] = React.useState<string>(initialSettings.name);
     const [isPrivate, setIsPrivate] = React.useState<boolean>(initialSettings.private);
@@ -374,11 +381,11 @@ export function DemoBoardModal(
 const demo_ranks = allRanks();
 
 function PlayerControls(
-    player: string,
+    playerColor: string,
     label: string,
     [name, setName]: [string, React.Dispatch<React.SetStateAction<string>>],
     [rank, setRank]: [number, React.Dispatch<React.SetStateAction<number>>],
-    playersList: { name: string; rank: number }[] | undefined,
+    playersList: shortPlayerInfo[] | undefined,
 ): React.ReactElement {
     const [selectedPlayer, setSelectedPlayer] = React.useState<number>(0);
 
@@ -389,7 +396,7 @@ function PlayerControls(
                     <label className="control-label">{label}</label>
                     <div className="controls">
                         <input
-                            id={`demo-board-modal-${player}-name`}
+                            id={`demo-board-modal-${playerColor}-name`}
                             type="text"
                             className="form-control"
                             value={name}
@@ -401,7 +408,7 @@ function PlayerControls(
                     <label className="control-label">{_("Rank")}</label>
                     <div className="controls">
                         <select
-                            id={`demo-board-modal-${player}-rank`}
+                            id={`demo-board-modal-${playerColor}-rank`}
                             value={rank}
                             onChange={(ev) => setRank(parseInt(ev.target.value))}
                             className="form-control"
@@ -418,19 +425,19 @@ function PlayerControls(
         );
     }
 
-    function set(selectedPlayerIndex: number) {
+    function setSelectedPlayerIndex(selectedPlayerIndex: number) {
         setSelectedPlayer(selectedPlayerIndex);
-        const player = playersList![selectedPlayerIndex];
-        setName(player.name);
-        setRank(player.rank);
+        const selectedPlayer = playersList![selectedPlayerIndex];
+        setName(selectedPlayer.name);
+        setRank(selectedPlayer.rank);
     }
     return (
         <div className="form-group">
             <label className="control-label">{label}</label>
             <select
-                id={`demo-board-modal-${player}-player-selection`}
+                id={`demo-board-modal-${playerColor}-player-selection`}
                 value={selectedPlayer}
-                onChange={(ev) => set(parseInt(ev.target.value))}
+                onChange={(ev) => setSelectedPlayerIndex(parseInt(ev.target.value))}
             >
                 {playersList.map((player, idx) => (
                     <option key={idx} value={idx}>
