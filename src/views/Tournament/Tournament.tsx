@@ -1065,7 +1065,7 @@ export function Tournament(): React.ReactElement {
                                 user.id === tournament.director.id) &&
                                 !tournament.started &&
                                 !tournament.start_waiting) ||
-                                null) && (
+                                user.is_moderator) && (
                                 <button className="xs" onClick={startEditing}>
                                     {_("Edit Tournament")}
                                 </button>
