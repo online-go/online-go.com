@@ -16,12 +16,16 @@
  */
 
 import { ogsTest } from "@helpers";
-import { basicScoringTest } from "./basic-scoring";
-import { conditionalMovesArrowBugTest } from "./conditional-moves-arrow";
-import { persistAnalysisTest } from "./persist-analysis";
+import { defaultDemoBoardCreation } from "./default-demo-board-creation";
+import { nineByNineDemoBoardCreation } from "./nine-by-nine-demo-board-creation";
 
-ogsTest.describe("@Games Tests", () => {
-    ogsTest("Should be able to pass and score a game", basicScoringTest);
-    ogsTest("Should be able to use arrow in conditional moves", conditionalMovesArrowBugTest);
-    ogsTest("Should be able retain analysis during socket disconnect", persistAnalysisTest);
+ogsTest.describe("Demo Board Tests", () => {
+    ogsTest(
+        "should successfully create and navigate to the new demo board",
+        defaultDemoBoardCreation,
+    );
+    ogsTest(
+        "should successfully create a 9x9 demo board with custom form data and navigate to it",
+        nineByNineDemoBoardCreation,
+    );
 });

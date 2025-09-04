@@ -2,6 +2,7 @@
 
 # We need to use host.docker.internal to access the host machine from Docker
 # so that it's recognisable as a CSRF bypass at the backend in local development
+# Note: The backend Django settings now include http://host.docker.internal:8080 in CSRF_TRUSTED_ORIGINS
 HOST_IP="host.docker.internal"
 
 # This script is intended to be called from the package.json 

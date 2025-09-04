@@ -45,29 +45,14 @@ import { OmniSearch } from "./OmniSearch";
 import { forwardRef, useId, useState } from "react";
 import { MODERATOR_POWERS } from "@/lib/moderation";
 
-const body = document.body;
-
-function _update_theme(theme?: string) {
-    if (!theme) {
-        return;
-    }
-
-    if (body.classList.contains(theme)) {
-        return;
-    }
-    body.classList.remove("light", "dark", "accessible");
-    body.classList.add(theme);
-}
-
 function setTheme(theme: string) {
-    data.set("theme", theme, data.Replication.REMOTE_OVERWRITES_LOCAL); // causes _update_theme to be called via the data.watch() in constructor
+    data.set("theme", theme, data.Replication.REMOTE_OVERWRITES_LOCAL);
 }
 
 function toggleTheme() {
-    if (data.get("theme") === "dark") {
+    const currentTheme = document.body.classList.contains("light") ? "light" : "dark";
+    if (currentTheme === "dark") {
         setTheme("light");
-    } else if (data.get("theme") === "light") {
-        setTheme("accessible");
     } else {
         setTheme("dark");
     }
@@ -75,6 +60,7 @@ function toggleTheme() {
 const setThemeLight = setTheme.bind(null, "light");
 const setThemeDark = setTheme.bind(null, "dark");
 const setThemeAccessible = setTheme.bind(null, "accessible");
+const setThemeSystem = setTheme.bind(null, "system");
 
 export function NavBar(): React.ReactElement {
     const user = useUser();
@@ -145,12 +131,6 @@ export function NavBar(): React.ReactElement {
         setHamburgerExpanded(false);
         closeNavbar();
     }, [location.key]);
-
-    React.useEffect(() => {
-        // here we are watching in case 'theme' is updated by the
-        // remote-storage update mechanism, which doesn't call setTheme()
-        data.watch("theme", _update_theme);
-    }, []);
 
     //const valid_user = user.anonymous ? null : user;
 
@@ -596,6 +576,8 @@ function ProfileAndQuickSettingsBits({
     const user = useUser();
     const themeId = useId();
 
+    const [theme] = useData("theme", "system");
+
     return (
         <>
             <MenuLink
@@ -624,7 +606,8 @@ function ProfileAndQuickSettingsBits({
                     <h5 className="sr-only">{_("Website theme")}</h5>
                     <div className="theme-selectors">
                         <button
-                            className="theme-button light"
+                            title={pgettext("Light browser/app theme", "Light")}
+                            className={`theme-button ${theme === "light" ? "primary" : ""}`}
                             onClick={setThemeLight}
                             aria-label={pgettext(
                                 "Name of the browser/app theme with a light background",
@@ -634,7 +617,8 @@ function ProfileAndQuickSettingsBits({
                             <i className="fa fa-sun-o" />
                         </button>
                         <button
-                            className="theme-button dark"
+                            title={pgettext("Dark browser/app theme", "Dark")}
+                            className={`theme-button ${theme === "dark" ? "primary" : ""}`}
                             onClick={setThemeDark}
                             aria-label={pgettext(
                                 "Name of the browser/app theme with a dark background",
@@ -644,7 +628,11 @@ function ProfileAndQuickSettingsBits({
                             <i className="fa fa-moon-o" />
                         </button>
                         <button
-                            className="theme-button accessible"
+                            title={pgettext(
+                                "Browser/app theme designed for users with visual impairments",
+                                "Accessible",
+                            )}
+                            className={`theme-button ${theme === "accessible" ? "primary" : ""}`}
                             onClick={setThemeAccessible}
                             aria-label={pgettext(
                                 "Name of the browser/app theme designed for users with visual impairments",
@@ -652,6 +640,21 @@ function ProfileAndQuickSettingsBits({
                             )}
                         >
                             <i className="fa fa-eye" />
+                        </button>
+                        <button
+                            title={pgettext("Automatic browser/app system theme", "System")}
+                            className={`theme-button ${theme === "system" ? "primary" : ""}`}
+                            onClick={setThemeSystem}
+                            aria-label={pgettext(
+                                "Name of the browser/app system theme automatically adapting the browser theme",
+                                "System theme",
+                            )}
+                        >
+                            <span className="composed-icon">
+                                <i className="fa fa-sun-o" />
+                                /
+                                <i className="fa fa-moon-o" />
+                            </span>
                         </button>
                     </div>
                     <h5 className="sr-only">{_("Goban theme")}</h5>

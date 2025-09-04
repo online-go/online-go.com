@@ -7,9 +7,10 @@ interface Window {
 
     // Set in index.html
     cdn_service: string;
-    default_theme: string;
     ogs_release: string;
     ogs_current_language: string;
+    ip_location: undefined | { continent: string; country: string; valid: boolean };
+    ip_address: string;
 
     // Set by translation files
     ogs_locales: Record<string, Record<string, Array<string>>>;
@@ -40,7 +41,10 @@ interface Window {
     sfx: unknown; // sfx.ts
     sprite_packs: unknown; // sfx.ts
     swal: unknown; // swal.ts
-    toast: (element: import("react").ReactElement<any>, timeout?: number) => import("../src/lib/toast").Toast; // toast.tsx
+    toast: (
+        element: import("react").ReactElement<any>,
+        timeout?: number,
+    ) => import("../src/lib/toast").Toast; // toast.tsx
     aireview?: unknown; // AIReview.tsx
     stripe?: unknown; // Supporter.tsx
     Md5: unknown; // SignIn.tsx

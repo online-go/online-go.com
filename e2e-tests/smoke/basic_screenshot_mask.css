@@ -9,3 +9,7 @@ section.right { /* NavBar changeable icons and user name */
 .ObserveGames { 
   visibility: hidden !important;
 }
+
+.announcement {
+  visibility: hidden !important;
+}
