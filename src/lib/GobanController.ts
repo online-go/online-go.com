@@ -34,7 +34,7 @@ import { AudioClockEvent } from "goban";
 import { _, current_language } from "@/lib/translate";
 import { disableTouchAction, enableTouchAction } from "@/views/Game/touch_actions";
 import { browserHistory } from "@/lib/ogsHistory";
-import { errorAlerter, ignore } from "@/lib/misc";
+import { errorAlerter, ignore, getCurrentGameId } from "@/lib/misc";
 import { post } from "@/lib/requests";
 import { alert } from "@/lib/swal_config";
 import * as data from "@/lib/data";
@@ -161,6 +161,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
             }
             this.review_list.sort(rankingThenUsername);
             this.cleanupOldAnalysisData(); // Clean up old data on each load
+            this.restoreAnalysisVariations(); // Restore analysis variations on game load
         });
 
         this.goban.on("gamedata", (gamedata) => {
@@ -520,6 +521,12 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
             return;
         }
 
+        // Only restore analysis variations when on the actual game page
+        const currentGameId = getCurrentGameId();
+        if (!currentGameId || currentGameId !== this.game_id) {
+            return;
+        }
+
         try {
             const storageKey = this.getAnalysisStorageKey();
             if (!storageKey) {
@@ -545,24 +552,16 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
                     }
                 }
             }
-            // For active games, keep analysis data indefinitely
+            // Restore the move tree structure without jumping to saved position
+            // This preserves analysis variations but keeps the board at its current position
+            // Save current position before restoration
+            const currentMove = this.goban.engine.cur_move;
 
-            // Only restore if we're in the same phase as when saved
-            if (analysisData.gamePhase !== this.goban.engine.phase) {
-                return;
-            }
-
-            // Restore the move tree structure
+            // Restore the tree structure
             this.deserializeMoveTree(analysisData.tree, this.goban.engine.move_tree);
 
-            // Try to find and jump to the saved current move
-            const savedMove = this.findMoveById(
-                this.goban.engine.move_tree,
-                analysisData.currentMoveId,
-            );
-            if (savedMove) {
-                this.goban.engine.jumpTo(savedMove);
-            }
+            // Restore original position to not affect the main board display
+            this.goban.engine.jumpTo(currentMove);
         } catch (e) {
             console.warn("Failed to restore analysis variations:", e);
             // Clean up corrupted data
@@ -732,7 +731,41 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
 
     private onModeChange = () => {
         if (this.goban.mode === "analyze") {
-            this.restoreAnalysisVariations();
+            this.restoreAnalysisPosition();
+        }
+    };
+
+    private restoreAnalysisPosition = () => {
+        if (!this.game_id) {
+            return;
+        }
+
+        const currentGameId = getCurrentGameId();
+        if (!currentGameId || currentGameId !== this.game_id) {
+            return;
+        }
+
+        try {
+            const storageKey = this.getAnalysisStorageKey();
+            if (!storageKey) {
+                return;
+            }
+
+            const analysisData = data.get(storageKey);
+            if (!analysisData) {
+                return;
+            }
+
+            // Try to find and jump to the saved current move when entering analysis mode
+            const savedMove = this.findMoveById(
+                this.goban.engine.move_tree,
+                analysisData.currentMoveId,
+            );
+            if (savedMove) {
+                this.goban.engine.jumpTo(savedMove);
+            }
+        } catch (e) {
+            console.warn("Failed to restore analysis position:", e);
         }
     };
 
