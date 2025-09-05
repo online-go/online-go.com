@@ -37,7 +37,7 @@ export interface Group {
 export type GroupList = Array<Group>;
 
 export type TournamentPairingMethod = "slaughter" | "random" | "slide" | "strength";
-export type TournamentExclusivity = "open" | "group" | "invite";
+export type TournamentExclusivity = "group" | "invite";
 export type TournamentType =
     | "mcmahon"
     | "s_mcmahon"

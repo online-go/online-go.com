@@ -183,7 +183,7 @@ export function Tournament(): React.ReactElement {
         exclude_provisional: true,
         auto_start_on_max: false,
         //scheduled_rounds: true,
-        exclusivity: "open",
+        exclusivity: "group",
         first_pairing_method: "slide",
         subsequent_pairing_method: "slaughter",
         players_start: 4,
@@ -382,6 +382,7 @@ export function Tournament(): React.ReactElement {
             group: group,
             rules: group?.rules ?? "japanese",
             handicap: String(group?.handicap ?? 0),
+            exclusivity: "group",
         });
     const copyTournamentToClone = (src_tournament: LoadedTournamentInterface) => {
         // Clean tournament settings.
@@ -477,12 +478,27 @@ export function Tournament(): React.ReactElement {
             })
             .catch((res) => {
                 try {
-                    _("Player already has an outstanding invite"); /* for translations */
-                    _("Player is already participating in this tournament"); /* for translations */
-                    setInviteResult(_(JSON.parse(res.responseText).error));
+                    // Backend messages for translation
+                    _("Player already has an outstanding invite");
+                    _("Player is already participating in this tournament");
+                    _(
+                        "This tournament is only open to group members, so this user cannot be invited",
+                    );
+
+                    // The request library rejects and supplies the parsed JSON data directly for HTTP errors
+                    if (res && typeof res === "object" && res.error) {
+                        setInviteResult(_(res.error));
+                    } else if (typeof res === "string") {
+                        // If it's a string, it might be statusText or a direct error message
+                        setInviteResult(res);
+                    } else {
+                        // Fallback for unexpected error format
+                        setInviteResult(_("An error occurred while inviting the user"));
+                    }
                 } catch (e) {
-                    console.error(res);
+                    console.error("Error handling invitation response:", res);
                     console.error(e);
+                    setInviteResult(_("An error occurred while inviting the user"));
                 }
             });
     };
@@ -936,14 +952,14 @@ export function Tournament(): React.ReactElement {
 
     let tournament_exclusivity = "";
     switch (tournament.exclusivity) {
-        case "open":
-            tournament_exclusivity = pgettext("Open tournament", "Open");
-            break;
         case "group":
             tournament_exclusivity = pgettext("Group tournament", "Members only");
             break;
         case "invite":
             tournament_exclusivity = pgettext("Group tournament", "Invite only");
+            break;
+        default:
+            tournament_exclusivity = pgettext("Group tournament", "Members only");
             break;
     }
 
@@ -1184,9 +1200,6 @@ export function Tournament(): React.ReactElement {
                                             value={tournament.exclusivity}
                                             onChange={setTournamentExclusivity}
                                         >
-                                            <option value="open">
-                                                {pgettext("Open tournament", "Open")}
-                                            </option>
                                             <option value="group">
                                                 {pgettext("Group tournament", "Members only")}
                                             </option>

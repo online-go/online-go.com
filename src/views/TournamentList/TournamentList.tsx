@@ -38,7 +38,7 @@ interface TournamentListProperties {
     phase: "open" | "active" | "finished";
     speed?: "live" | "correspondence";
     hide_stale?: boolean; // Hides tournaments that were supposed to have started already
-    hide_exclusive?: boolean; // Hides tournaments that are invite-only or members-only
+    hide_exclusive?: boolean; // Hides invite-only tournaments (shows only members-only tournaments)
     group?: IdType;
 }
 
@@ -395,7 +395,7 @@ function makeTournamentFilter(
     }
 
     if (hide_exclusive) {
-        filter["exclusivity"] = "open";
+        filter["exclusivity"] = "group";
     }
 
     if (group !== undefined) {
