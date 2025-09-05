@@ -40,7 +40,7 @@ export function DemoBoardModal(
 ): React.ReactElement {
     const initialSettings = props.initialSettings ?? defaultInitialSettings;
 
-    if (props.players_list) {
+    if (props.players_list?.length) {
         initialSettings.black_name = props.players_list[0].name;
         initialSettings.black_ranking = props.players_list[0].rank;
         initialSettings.white_name = props.players_list[0].name;
