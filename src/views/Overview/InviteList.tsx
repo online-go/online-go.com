@@ -94,6 +94,7 @@ function challengeDtoToSeekgraphChallengeSubset(c: ChallengeDTO, user_id: number
         rengo_auto_start: -999, // number;
 
         invite_only: false, // boolean;
+        private: c.game.private, // boolean;
     };
 }
 

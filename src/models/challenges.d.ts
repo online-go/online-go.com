@@ -54,6 +54,7 @@ declare namespace socket_api {
             rengo_white_team: number[]; // array of player ids
             rengo_participants: number[]; // array of player ids
             invite_only: boolean;
+            private: boolean;
             uuid: string;
             created?: string | null; // ISO 8601 format datetime
 
@@ -179,6 +180,7 @@ declare namespace rest_api {
         rengo_casual_mode: boolean;
         historical_ratings: { black: MinimalPlayerDTO; white: MinimalPlayerDTO };
         related: any; // not sure what this is, the serializer is a gnarly function
+        private: boolean;
     }
 
     interface RengoParticipantsDTO {
