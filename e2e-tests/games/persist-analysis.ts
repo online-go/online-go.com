@@ -20,7 +20,11 @@
 import { Browser } from "@playwright/test";
 import { expect } from "@playwright/test";
 
-import { newTestUsername, prepareNewUser } from "@helpers/user-utils";
+import {
+    newTestUsername,
+    prepareNewUser,
+    setCorrespondenceClickToSubmit,
+} from "@helpers/user-utils";
 import {
     acceptDirectChallenge,
     createDirectChallenge,
@@ -28,7 +32,13 @@ import {
 } from "@helpers/challenge-utils";
 import { clickOnGobanIntersection, playMoves } from "@helpers/game-utils";
 
-export const persistAnalysisTest = async ({ browser }: { browser: Browser }) => {
+export const runPersistAnalysisTest = async ({
+    browser,
+    settings = {},
+}: {
+    browser: Browser;
+    settings?: any;
+}) => {
     const { userPage: challengerPage } = await prepareNewUser(
         browser,
         newTestUsername("gamesPersCh"), // cspell:disable-line
@@ -38,22 +48,27 @@ export const persistAnalysisTest = async ({ browser }: { browser: Browser }) => 
     const acceptorUsername = newTestUsername("gamesPersAc"); // cspell:disable-line
     const { userPage: acceptorPage } = await prepareNewUser(browser, acceptorUsername, "test");
 
-    const boardSize = "9x9"; // needed in two places\
+    const boardSize = "9x9"; // Needed in two places.  Would need moves as a parameter if we wanted to change it.
+
+    if (settings.speed === "correspondence") {
+        await setCorrespondenceClickToSubmit(challengerPage);
+        await setCorrespondenceClickToSubmit(acceptorPage);
+    }
 
     // Challenger challenges the acceptor
     await createDirectChallenge(challengerPage, acceptorUsername, {
         ...defaultChallengeSettings,
         gameName: "E2E 'Persist Analysis' Game",
-        boardSize: boardSize,
-        speed: "correspondence",
-        timeControl: "byoyomi",
-        mainTime: "86400",
-        timePerPeriod: "86400",
-        periods: "1",
+        ...settings,
     });
 
     // escaper accepts
     await acceptDirectChallenge(acceptorPage);
+
+    // In correspondence games we have to click to get to the game
+    // (this will be a no-op in live games)
+    await acceptorPage.locator('span.TurnIndicator span.inactive.count:has-text("0")').click(); // not our turn
+    await challengerPage.locator('span.TurnIndicator span.active.count:has-text("1")').click(); // its our turn
 
     // Challenger is black
     // Wait for the Goban to be visible & definitely ready

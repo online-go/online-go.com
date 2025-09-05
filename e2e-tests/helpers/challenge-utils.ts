@@ -235,7 +235,16 @@ export const createDirectChallenge = async (
 
     // Send the challenge
     await page.getByRole("button", { name: "Send Challenge" }).click();
-    await expect(page.getByText("Waiting for opponent")).toBeVisible();
+
+    const finalSettings = { ...defaultChallengeSettings, ...settings };
+    if (finalSettings.speed === "correspondence") {
+        // For correspondence games, dismiss the "Challenge sent!" dialog
+        await expect(page.getByText("Challenge sent!")).toBeVisible();
+        await page.getByRole("button", { name: "OK" }).click();
+    } else {
+        // For non-correspondence games, wait for "Waiting for opponent"
+        await expect(page.getByText("Waiting for opponent")).toBeVisible();
+    }
 };
 
 export const acceptDirectChallenge = async (page: Page) => {
@@ -247,6 +256,7 @@ export const acceptDirectChallenge = async (page: Page) => {
         await skipButton.click();
     }
 
+    // This totally assumes that there is 1 (only) direct challenge waiting to be accepted on the home page
     await page.locator(".fab.primary.raiser").click();
 };
 

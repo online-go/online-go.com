@@ -18,10 +18,38 @@
 import { ogsTest } from "@helpers";
 import { basicScoringTest } from "./basic-scoring";
 import { conditionalMovesArrowBugTest } from "./conditional-moves-arrow";
-import { persistAnalysisTest } from "./persist-analysis";
+import { runPersistAnalysisTest } from "./persist-analysis";
+
+const persistAnalysisTestCases = [
+    {
+        name: "Live Game",
+        settings: {
+            speed: "live",
+            timeControl: "byoyomi",
+            mainTime: "40",
+            timePerPeriod: "40",
+            periods: "1",
+        },
+    },
+    {
+        name: "Correspondence Game",
+        settings: {
+            speed: "correspondence",
+            timeControl: "byoyomi",
+            mainTime: "86400",
+            timePerPeriod: "86400",
+            periods: "1",
+        },
+    },
+];
 
 ogsTest.describe("@Games Tests", () => {
     ogsTest("Should be able to pass and score a game", basicScoringTest);
     ogsTest("Should be able to use arrow in conditional moves", conditionalMovesArrowBugTest);
-    ogsTest("Should be able retain analysis during socket disconnect", persistAnalysisTest);
+
+    for (const tc of persistAnalysisTestCases) {
+        ogsTest(`Analysis should survive socket disconnect in ${tc.name}`, async ({ browser }) => {
+            await runPersistAnalysisTest({ browser, settings: tc.settings });
+        });
+    }
 });
