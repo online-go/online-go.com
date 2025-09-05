@@ -25,7 +25,6 @@ import * as data from "@/lib/data";
 import { _, pgettext } from "@/lib/translate";
 import { PlayerIcon } from "@/components/PlayerIcon";
 import { LineText } from "@/components/misc-ui";
-import { createDemoBoard } from "@/components/ChallengeModal";
 import { LanguagePicker } from "@/components/LanguagePicker";
 import { GobanThemePicker } from "@/components/GobanThemePicker";
 import { IncidentReportIndicator } from "@/components/IncidentReportTracker";
@@ -44,6 +43,7 @@ import { useUser, useData } from "@/lib/hooks";
 import { OmniSearch } from "./OmniSearch";
 import { forwardRef, useId, useState } from "react";
 import { MODERATOR_POWERS } from "@/lib/moderation";
+import { openDemoBoardModal } from "../DemoBoardModal";
 
 function setTheme(theme: string) {
     data.set("theme", theme, data.Replication.REMOTE_OVERWRITES_LOCAL);
@@ -111,7 +111,7 @@ export function NavBar(): React.ReactElement {
 
     const newDemo = () => {
         closeNavbar();
-        createDemoBoard();
+        openDemoBoardModal({});
     };
     /*
     const newRecord = () => {

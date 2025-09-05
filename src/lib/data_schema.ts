@@ -175,7 +175,7 @@ type ChallengeSchema = {
     [speed in `challenge.${TimeControlSpeed}`]: rest_api.ChallengeDetails;
 };
 
-interface DemoSettings {
+export interface DemoSettings {
     name: string;
     rules: RuleSet;
     width: number;

@@ -1,0 +1,36 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+import { RuleSet } from "@/lib/types";
+import { standard_board_sizes } from "./DemoBoardModal.config";
+
+export function isRuleSet(v: string): v is RuleSet {
+    return ["japanese", "chinese", "aga", "korean", "nz", "ing"].includes(v);
+}
+
+export function isKomiOption(v: string): v is rest_api.KomiOption {
+    return v === "custom" || v === "automatic";
+}
+
+export function parseNumberInput(input: string): number | null {
+    const num = Number(input);
+    return input === "" || !Number.isFinite(num) ? null : num;
+}
+
+export function isStandardBoardSize(board_size: string): boolean {
+    return standard_board_sizes.includes(board_size);
+}
