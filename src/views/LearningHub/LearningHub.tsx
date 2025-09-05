@@ -107,7 +107,7 @@ class Index extends React.PureComponent<{}, any> {
                                 "Immediately after this text is a link to Kids Go Server",
                                 "Looking for a great place to learn Go for kids? Check out",
                             )}
-                            <a href="https://kidsgoserver.com/learn-to-play">KidsGoServer.com</a>
+                            <a href="https://kidsgoserver.com/">KidsGoServer.com</a>
                         </div>
                     </div>
                     {sections.map((arr) => (
