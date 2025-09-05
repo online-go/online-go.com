@@ -85,20 +85,25 @@ export function EstimateScore(): React.ReactElement | null {
 export function GameInformation(): React.ReactElement | null {
     const goban_controller = useGobanController();
     const goban = goban_controller.goban;
+    const [config, setConfig] = React.useState(goban?.engine?.config);
     const [zen_mode, set_zen_mode] = React.useState(goban_controller.zen_mode);
 
     React.useEffect(() => {
+        const handleUpdate = () => {
+            setConfig(goban?.engine?.config);
+        };
+        goban?.on("load", handleUpdate);
         goban_controller.on("zen_mode", set_zen_mode);
         return () => {
+            goban?.off("load", handleUpdate);
             goban_controller.off("zen_mode", set_zen_mode);
         };
-    }, [goban]);
+    }, [goban, goban_controller]);
 
     if (zen_mode) {
         return null;
     }
 
-    const config = goban?.engine?.config;
     if (!config) {
         return null;
     }
