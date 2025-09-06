@@ -23,18 +23,18 @@ import { PaginatedTable } from "@/components/PaginatedTable";
 import { SearchInput } from "@/components/misc-ui";
 import { navigateTo } from "@/lib/misc";
 import { user_uploads_url } from "@/lib/cdn";
+import { useUser } from "@/lib/hooks";
 
 export function GroupList(): React.ReactElement {
+    const user = useUser();
     const [name_contains_filter, setNameContainsFilter] = React.useState("");
 
     const my_groups = data.get("cached.groups", []);
-    const canCreateGroups = data.get("can-create-groups", false);
+    const canCreateGroups = data.get("can-create-groups", false) || user.is_moderator;
 
     React.useEffect(() => {
         window.document.title = _("Groups");
     }, []);
-
-    console.log(my_groups);
 
     return (
         <div className="page-width">
