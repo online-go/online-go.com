@@ -144,6 +144,7 @@ export const cached = {
         groups: () => {
             if (anon()) {
                 data.set(cached.groups, []);
+                data.set("can-create-groups", false);
                 return;
             }
 
@@ -154,6 +155,9 @@ export const cached = {
                         a.name.localeCompare(b.name),
                     );
                     data.set(cached.groups, groups);
+
+                    const canCreateGroups = res.can_create_groups || false;
+                    data.set("can-create-groups", canCreateGroups);
                 })
                 .catch((err) => {
                     console.error("Error retrieving groups: ", err);

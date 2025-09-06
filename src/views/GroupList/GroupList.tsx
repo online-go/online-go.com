@@ -22,14 +22,13 @@ import { _ } from "@/lib/translate";
 import { PaginatedTable } from "@/components/PaginatedTable";
 import { SearchInput } from "@/components/misc-ui";
 import { navigateTo } from "@/lib/misc";
-import { useUser } from "@/lib/hooks";
 import { user_uploads_url } from "@/lib/cdn";
 
 export function GroupList(): React.ReactElement {
-    const user = useUser();
     const [name_contains_filter, setNameContainsFilter] = React.useState("");
 
     const my_groups = data.get("cached.groups", []);
+    const canCreateGroups = data.get("can-create-groups", false);
 
     React.useEffect(() => {
         window.document.title = _("Groups");
@@ -45,7 +44,7 @@ export function GroupList(): React.ReactElement {
                         <i className="fa fa-users"></i> {_("Groups")}
                     </h2>
                     <div>
-                        {(!user.anonymous || null) && (
+                        {canCreateGroups && (
                             <Link className="primary" to="/group/create">
                                 <i className="fa fa-plus-square"></i> {_("New group")}
                             </Link>
