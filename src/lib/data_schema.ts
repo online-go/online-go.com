@@ -41,9 +41,14 @@ export interface SerializedMoveTree {
     branches: SerializedMoveTree[];
 }
 
+export interface MovePath {
+    coordinates: Array<{ x: number; y: number; move_number: number }>;
+    branchIndices: Array<number>; // -1 for trunk_next, >= 0 for branch index
+}
+
 export interface AnalysisVariationData {
     tree: SerializedMoveTree;
-    currentMoveId: number;
+    currentMovePath: MovePath;
     timestamp: number;
     gamePhase: string;
 }

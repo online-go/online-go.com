@@ -28,7 +28,7 @@ import {
     JGOFSealingIntersection,
 } from "goban";
 import { EventEmitter } from "eventemitter3";
-import type { AnalysisVariationData, SerializedMoveTree } from "@/lib/data_schema";
+import type { AnalysisVariationData, SerializedMoveTree, MovePath } from "@/lib/data_schema";
 import { sfx, SFXSprite, ValidSound } from "@/lib/sfx";
 import { AudioClockEvent } from "goban";
 import { _, current_language } from "@/lib/translate";
@@ -505,7 +505,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
 
             const analysisData: AnalysisVariationData = {
                 tree: serializedTree,
-                currentMoveId: this.goban.engine.cur_move.id,
+                currentMovePath: this.generateMovePath(this.goban.engine.cur_move),
                 timestamp: Date.now(),
                 gamePhase: this.goban.engine.phase,
             };
@@ -707,26 +707,75 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         }
     };
 
-    private findMoveById(node: MoveTree, id: number): MoveTree | null {
-        if (node.id === id) {
-            return node;
+    /** Generate a stable path from root to the given move node */
+    private generateMovePath(node: MoveTree): MovePath {
+        const coordinates: Array<{ x: number; y: number; move_number: number }> = [];
+        const branchIndices: Array<number> = [];
+
+        // Build path from node to root
+        const pathNodes: MoveTree[] = [];
+        let current: MoveTree | null = node;
+        while (current) {
+            pathNodes.unshift(current);
+            current = current.parent;
         }
 
-        if (node.trunk_next) {
-            const found = this.findMoveById(node.trunk_next, id);
-            if (found) {
-                return found;
+        // Generate coordinates and branch indices
+        for (let i = 0; i < pathNodes.length; i++) {
+            const pathNode = pathNodes[i];
+            coordinates.push({
+                x: pathNode.x,
+                y: pathNode.y,
+                move_number: pathNode.move_number,
+            });
+
+            if (i > 0) {
+                // Determine branch index for this node relative to its parent
+                branchIndices.push(pathNode.getPositionInParent());
             }
         }
 
-        for (const branch of node.branches) {
-            const found = this.findMoveById(branch, id);
-            if (found) {
-                return found;
+        return { coordinates, branchIndices };
+    }
+
+    /** Follow a move path to find the corresponding node in the current tree */
+    private followMovePath(root: MoveTree, path: MovePath): MoveTree | null {
+        let current = root;
+
+        // Skip the first coordinate (root) and follow the path
+        for (let i = 1; i < path.coordinates.length; i++) {
+            const targetCoord = path.coordinates[i];
+            const branchIndex = path.branchIndices[i - 1];
+
+            let next: MoveTree | undefined;
+
+            if (branchIndex === -1) {
+                // Following trunk_next
+                next = current.trunk_next;
+            } else if (branchIndex >= 0 && branchIndex < current.branches.length) {
+                // Following a specific branch
+                next = current.branches[branchIndex];
             }
+
+            // Verify the coordinates match what we expect
+            if (
+                !next ||
+                next.x !== targetCoord.x ||
+                next.y !== targetCoord.y ||
+                next.move_number !== targetCoord.move_number
+            ) {
+                console.warn("Move path doesn't match tree structure", {
+                    expected: targetCoord,
+                    found: next ? { x: next.x, y: next.y, move_number: next.move_number } : null,
+                    branchIndex,
+                });
+                return null;
+            }
+
+            current = next;
         }
 
-        return null;
+        return current;
     }
 
     private onModeChange = () => {
@@ -757,9 +806,9 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
             }
 
             // Try to find and jump to the saved current move when entering analysis mode
-            const savedMove = this.findMoveById(
+            const savedMove = this.followMovePath(
                 this.goban.engine.move_tree,
-                analysisData.currentMoveId,
+                analysisData.currentMovePath,
             );
             if (savedMove) {
                 this.goban.engine.jumpTo(savedMove);
