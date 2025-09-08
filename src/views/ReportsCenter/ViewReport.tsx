@@ -227,6 +227,10 @@ export function ViewReport({
             .catch(errorAlerter);
     };
 
+    const show_moderator_note =
+        user.is_moderator ||
+        (report.report_type === "ai_use" && user.moderator_powers & MODERATOR_POWERS.AI_DETECTOR);
+
     return (
         <div>
             <KBShortcut shortcut="left" action={nav_prev} />
@@ -400,7 +404,7 @@ export function ViewReport({
                             </div>
                         )}
 
-                        {(user.is_moderator || null) && (
+                        {show_moderator_note && (
                             <div className="notes">
                                 <h4>
                                     Moderator Notes{" "}
