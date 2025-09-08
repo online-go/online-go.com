@@ -96,7 +96,7 @@ export const associations: Array<IAssociation> = [
     { country: "tw", name: "中華民國圍棋協會 (Taiwanese Go Association)" },
     { country: "th", name: "Thai Go Association " },
     { country: "tn", name: "Tunisia Go Association" },
-    { country: "tr", name: "Turkish Go Players Association" },
+    { country: "tr", name: "Turkish Go Association" },
     { country: "ua", name: "Ukrainian Go Federation", acronym: "КПДЮ / UFGO" },
     { country: "gb", name: "British Go Association", acronym: "BGA" },
     { country: "us", name: "American Go Association", acronym: "AGA" },
