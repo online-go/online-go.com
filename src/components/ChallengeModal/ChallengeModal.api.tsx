@@ -58,39 +58,6 @@ export function challenge(
         />,
     );
 }
-export function createGameRecord(props: {
-    library_collection_id?: number;
-    players_list?: Array<{ name: string; rank: number }>;
-    tournament_record_id?: number;
-    tournament_record_round_id?: number;
-}) {
-    const mode: ChallengeModes = "demo";
-    return openModal(
-        <ChallengeModal
-            mode={mode}
-            game_record_mode={true}
-            libraryCollectionId={props.library_collection_id}
-            playersList={props.players_list}
-            tournamentRecordId={props.tournament_record_id}
-            tournamentRecordRoundId={props.tournament_record_round_id}
-        />,
-    );
-}
-export function createDemoBoard(
-    players_list?: Array<{ name: string; rank: number }>,
-    tournament_record_id?: number,
-    tournament_record_round_id?: number,
-) {
-    const mode: ChallengeModes = "demo";
-    return openModal(
-        <ChallengeModal
-            mode={mode}
-            playersList={players_list}
-            tournamentRecordId={tournament_record_id}
-            tournamentRecordRoundId={tournament_record_round_id}
-        />,
-    );
-}
 
 export function challengeComputer(settings?: ChallengeModalConfig) {
     return challenge(undefined, null, true, settings);

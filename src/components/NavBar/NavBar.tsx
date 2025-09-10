@@ -113,12 +113,6 @@ export function NavBar(): React.ReactElement {
         closeNavbar();
         openDemoBoardModal({});
     };
-    /*
-    const newRecord = () => {
-        closeNavbar();
-        createGameRecord();
-    };
-    */
 
     React.useEffect(() => {
         setForceNavClose(true);

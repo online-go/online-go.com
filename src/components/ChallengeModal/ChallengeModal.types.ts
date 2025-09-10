@@ -27,19 +27,14 @@ import { ViewMode } from "@/views/Game";
 
 export type ChallengeDetails = rest_api.ChallengeDetails;
 
-export type ChallengeModes = "open" | "computer" | "player" | "demo";
+export type ChallengeModes = "open" | "computer" | "player";
 
 export interface ChallengeModalProperties {
     mode: ChallengeModes;
-    game_record_mode?: boolean /* when true, if mode === "demo", we will create a game instance instead of a review instance */;
     playerId?: number;
     initialState?: any;
     config?: ChallengeModalConfig;
     autoCreate?: boolean;
-    playersList?: Array<{ name: string; rank: number }>;
-    tournamentRecordId?: number;
-    tournamentRecordRoundId?: number;
-    libraryCollectionId?: number;
     created?: (c: CreatedChallengeInfo) => void;
 }
 
@@ -175,29 +170,12 @@ export type ChallengeInput = {
     aga_ranked?: boolean;
 };
 
-export type DemoSettings = {
-    name: string;
-    rules: RuleSet;
-    width: number | null;
-    height: number | null;
-    black_name: string;
-    black_ranking: number;
-    white_name: string;
-    white_ranking: number;
-    private: boolean;
-    komi_auto: rest_api.KomiOption;
-    komi?: number | null;
-};
-
 export type ChallengeModalState = {
     challenge: ChallengeInput;
     conf: ChallengeModalConf;
-    demo: DemoSettings;
     forking_game: boolean;
     hide_preferred_settings_on_portrait: boolean;
     preferred_settings: ChallengeDetails[];
-    selected_demo_player_black: number;
-    selected_demo_player_white: number;
     time_control: TimeControl;
     view_mode: ViewMode;
     player_username_resolved?: boolean;

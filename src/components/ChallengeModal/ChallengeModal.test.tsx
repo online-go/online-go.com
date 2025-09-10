@@ -20,7 +20,7 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { ChallengeModalBody } from "./ChallengeModal";
 import { post } from "@/lib/requests";
 import { ChallengeModalProperties } from "@/components/ChallengeModal/ChallengeModal.types";
-import { sanitizeChallengeDetails, sanitizeDemoSettings } from "./ChallengeModal.utils";
+import { sanitizeChallengeDetails } from "./ChallengeModal.utils";
 
 // Mock data module
 jest.mock("@/lib/data", () => ({
@@ -304,22 +304,6 @@ describe("ChallengeModalBody", () => {
     });
 
     it("sanitizes legacy data", () => {
-        const demoSettings: any = {
-            name: "test settings 1",
-            rules: "aga",
-            width: 19,
-            height: 19,
-            black_name: "p1",
-            white_name: "p2",
-            white_ranking: 1500,
-            black_ranking: 1500,
-            private: false,
-            komi_auto: "custom",
-        };
-        expect("komi" in sanitizeDemoSettings(demoSettings)).toBeFalsy();
-        demoSettings.komi = "6.5";
-        expect(sanitizeDemoSettings(demoSettings).komi).toBe(6.5);
-
         const challengeDetails: any = {
             initialized: false,
             min_ranking: 20,
