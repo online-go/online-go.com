@@ -754,8 +754,13 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
     update_private =
         this.props.mode === "demo" ? this.update_private_demo : this.update_private_game;
 
-    update_invite_only = (invite_only: boolean) =>
+    update_invite_only = (invite_only: boolean) => {
         this.update_challenge_settings((prev) => ({ ...prev, invite_only: invite_only }));
+        // If we're in open mode and invite_only is being turned off, also turn off private
+        if (this.props.mode === "open" && !invite_only && this.state.challenge.game.private) {
+            this.update_private_game(false);
+        }
+    };
 
     update_rengo = (isRengo: boolean) => {
         this.forceTimeControlSystemIfNecessary(
@@ -1026,23 +1031,6 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                         </div>
                     </div>
                 )}
-                <div className="form-group">
-                    <label className="control-label" htmlFor="challenge-private">
-                        {_("Private")}
-                    </label>
-
-                    <div className="controls">
-                        <div className="checkbox">
-                            <input
-                                type="checkbox"
-                                id="challenge-private"
-                                disabled={this.state.challenge.game.rengo}
-                                checked={this.gameState().private}
-                                onChange={(ev) => this.update_private(ev.target.checked)}
-                            />
-                        </div>
-                    </div>
-                </div>
                 {!(this.props.playerId || null) && mode === "open" && (
                     <div className="form-group">
                         <label className="control-label" htmlFor="challenge-invite-only">
@@ -1058,6 +1046,26 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                                     id="challenge-invite-only"
                                     checked={this.state.challenge.invite_only}
                                     onChange={(ev) => this.update_invite_only(ev.target.checked)}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                )}
+                {/* Only show Private checkbox if not in open mode, or if in open mode with invite-only checked */}
+                {(mode !== "open" || this.state.challenge.invite_only) && (
+                    <div className="form-group">
+                        <label className="control-label" htmlFor="challenge-private">
+                            {_("Private")}
+                        </label>
+
+                        <div className="controls">
+                            <div className="checkbox">
+                                <input
+                                    type="checkbox"
+                                    id="challenge-private"
+                                    disabled={this.state.challenge.game.rengo}
+                                    checked={this.gameState().private}
+                                    onChange={(ev) => this.update_private(ev.target.checked)}
                                 />
                             </div>
                         </div>

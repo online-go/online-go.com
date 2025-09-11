@@ -841,7 +841,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
 
         const black_id = goban?.engine?.config?.black_player_id;
         const white_id = goban?.engine?.config?.white_player_id;
-        const creator_id = goban_controller.creator_id;
+        const creator_id = goban_controller.creator_id || goban?.review_controller_id;
 
         if (user.id !== black_id && user.id !== white_id && user.id !== creator_id) {
             //console.debug("Not performing analysis of variation for non player");

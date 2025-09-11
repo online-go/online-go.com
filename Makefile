@@ -19,6 +19,12 @@ bot-dev: node_modules .husky
 point-to-production: node_modules .husky
 	export OGS_BACKEND=PRODUCTION && npm run dev
 
+stage1-dev: node_modules .husky
+	export OGS_BACKEND=LOCAL OGS_PORT=8001 && npm run dev
+
+stage2-dev: node_modules .husky
+	export OGS_BACKEND=LOCAL OGS_PORT=8002 && npm run dev
+
 .husky: 
 	npx husky install
 

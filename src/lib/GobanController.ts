@@ -895,7 +895,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         const ret = this.goban.setScoringMode(false);
         this.goban.hideScores();
         this.goban.score_estimator = null;
-        this.goban.engine.jumpTo(this.goban.engine.last_official_move);
+        this.goban.engine.jumpTo(ret);
         return ret;
     };
 
