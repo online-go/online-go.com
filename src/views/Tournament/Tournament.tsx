@@ -952,14 +952,14 @@ export function Tournament(): React.ReactElement {
 
     let tournament_exclusivity = "";
     switch (tournament.exclusivity) {
+        case "open":
+            tournament_exclusivity = pgettext("Open tournament", "Open");
+            break;
         case "group":
             tournament_exclusivity = pgettext("Group tournament", "Members only");
             break;
         case "invite":
             tournament_exclusivity = pgettext("Group tournament", "Invite only");
-            break;
-        default:
-            tournament_exclusivity = pgettext("Group tournament", "Members only");
             break;
     }
 
