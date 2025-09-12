@@ -62,7 +62,7 @@ class Page01 extends LearningPage {
                 <div>
                     <p>
                         {_(
-                            "Black captures the marked white stone with 1. If the recapture results in the same board position as just before Black's move 1, this recapture is not allowed. Is White allowed to recapture immediately?",
+                            "Black captures with stone 1 the white stone marked with a triangle. If the recapture by White results in the same board position as just before Black's move 1, this recapture is not allowed. Is White allowed to recapture stone 1 immediately?",
                         )}
                     </p>
                     <label>
@@ -137,7 +137,7 @@ class Page02 extends LearningPage {
                 <div>
                     <p>
                         {_(
-                            "Black captures the marked white chain with 1. Is White allowed to recapture immediately?",
+                            "Black captures with stone 1 the white chain marked with triangles. Is White allowed to recapture immediately?",
                         )}
                     </p>
                     <label>
@@ -212,7 +212,7 @@ class Page03 extends LearningPage {
                 <div>
                     <p>
                         {_(
-                            "Black captures the marked white stone with 1. Is white allowed to recapture immediately?",
+                            "Black captures with 1 the white stone marked with a triangle. Is White allowed to recapture immediately?",
                         )}
                     </p>
                     <label>
@@ -287,7 +287,7 @@ class Page04 extends LearningPage {
                 <div>
                     <p>
                         {_(
-                            "Black captures the marked white stone with 1. Is White allowed to recapture immediately?",
+                            "Black captures with 1 the white stone marked with a triangle. Is White allowed to recapture immediately?",
                         )}
                     </p>
                     <label>
@@ -362,7 +362,7 @@ class Page05 extends LearningPage {
                 <div>
                     <p>
                         {_(
-                            "Black captures the marked white stone with 1. Is White allowed to recapture immediately?",
+                            "Black captures with 1 the white stone marked with a triangle. Is White allowed to recapture immediately?",
                         )}
                     </p>
                     <label>
@@ -437,7 +437,7 @@ class Page06 extends LearningPage {
                 <div>
                     <p>
                         {_(
-                            "Black captures the marked white stone with 1. Is White allowed to recapture immediately?",
+                            "Black captures with 1 the white stone marked with a triangle. Is White allowed to recapture immediately?",
                         )}
                     </p>
                     <label>
