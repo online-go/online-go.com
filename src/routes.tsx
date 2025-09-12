@@ -335,6 +335,7 @@ export const routes = (
                 <Route path="/admin" element={<Admin />} />
                 <Route path="/announcement-center" element={<AnnouncementCenter />} />
                 <Route path="/redeem" element={<PrizeRedemption />} />
+                <Route path="/redeem/:code" element={<PrizeRedemption />} />
                 <Route path="/prize-batches/:id" element={<PrizeBatch />} />
                 <Route path="/prize-batches" element={<PrizeBatchList />} />
                 {/*

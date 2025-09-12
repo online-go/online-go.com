@@ -15,11 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { get, post } from "@/lib/requests";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useUser } from "@/lib/hooks";
-import { _, interpolate } from "@/lib/translate";
+import { interpolate, pgettext } from "@/lib/translate";
 
 interface Prize {
     batch: string;
@@ -28,108 +28,245 @@ interface Prize {
     code: string;
     redeemed_ad: string;
     redeemed_by: number;
-    supporter_level: string;
+    supporter_level: number;
+    times_used?: number;
+    max_uses?: number;
+    is_available?: boolean;
+    user_has_redeemed?: boolean;
+}
+
+interface UpgradeInfo {
+    current_level: number;
+    prize_level: number;
+    new_level: number;
+    duration_days: number;
+}
+
+// Helper function to get supporter level name from numeric level
+function getSupporterLevelName(level: number): string {
+    switch (level) {
+        case 0:
+            return "";
+        case 1:
+            return pgettext("OGS supporter level name", "Aji");
+        case 2:
+            return pgettext("OGS supporter level name", "Hane");
+        case 3:
+            return pgettext("OGS supporter level name", "Tenuki");
+        case 4:
+            return pgettext("OGS supporter level name", "Meijin");
+        default:
+            return "";
+    }
 }
 
 export function PrizeRedemption(): React.ReactElement {
-    const [code, setCode] = useState(["", "", "", "", "", ""]);
+    const params = useParams<{ code?: string }>();
+    const [code, setCode] = useState("");
     const [prizeInfo, setPrizeInfo] = useState<Prize>();
+    const [upgradeInfo, setUpgradeInfo] = useState<UpgradeInfo>();
+    const [codeValidated, setCodeValidated] = useState(false);
     const [showForm, setShowForm] = useState(true);
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
     const [redeemed, setRedeemed] = useState(false);
-    const [currentSupportLevel, setCurrentSupportLevel] = useState(0);
     const navigate = useNavigate();
-    const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
+    const inputRef = useRef<HTMLInputElement | null>(null);
     const user = useUser();
 
     if (user.anonymous) {
         void navigate("/sign-in");
     }
 
-    const handleCodeChange = (event: any, index: number) => {
-        const newCode = [...code];
-        newCode[index] = event.target.value.toUpperCase();
-        setCode(newCode);
+    // Handle URL-based code redemption - pre-fill only, no auto-submit
+    useEffect(() => {
+        if (params.code) {
+            setCode(params.code.toUpperCase());
 
-        if (event.target.value !== "" && index < code.length - 1) {
-            inputRefs.current[index + 1]?.focus();
+            // Focus on the submit button to draw user's attention
+            // They can review their account before submitting
+            setTimeout(() => {
+                const submitButton = document.querySelector(
+                    'button[type="submit"]',
+                ) as HTMLButtonElement;
+                submitButton?.focus();
+            }, 100);
+        }
+    }, [params.code]);
+
+    const handleCodeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        // Don't allow changes while loading
+        if (loading) {
+            return;
+        }
+        // Allow alphanumeric codes, remove spaces and convert to uppercase
+        const cleanedCode = event.target.value.replace(/\s/g, "").toUpperCase();
+        setCode(cleanedCode);
+        setError(""); // Clear error when user types
+        setCodeValidated(false); // Reset validation when code changes
+        setPrizeInfo(undefined); // Clear prize info when code changes
+        setUpgradeInfo(undefined); // Clear upgrade info when code changes
+    };
+
+    // Auto-fetch prize details when code looks complete
+    useEffect(() => {
+        if (code.length >= 4) {
+            const timer = setTimeout(() => {
+                fetchPrizeDetails(code);
+            }, 500);
+            return () => clearTimeout(timer);
+        }
+        return undefined;
+    }, [code]);
+
+    const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            handleSubmit(event as any);
         }
     };
 
-    const handleKeyDown = (event: any, index: number) => {
-        if (event.key === "Backspace" && code[index] === "") {
-            if (index > 0) {
-                inputRefs.current[index - 1]?.focus();
-            }
+    const fetchPrizeDetails = (codeToCheck: string, isManualCheck: boolean = false) => {
+        if (!codeToCheck || codeToCheck.length < 1) {
+            return;
         }
-    };
 
-    const handlePaste = (event: any) => {
-        event.preventDefault();
-        const pastedCode = event.clipboardData.getData("text").slice(0, 6).toUpperCase();
-
-        const newCode = [...code];
-        for (let i = 0; i < pastedCode.length; i++) {
-            newCode[i] = pastedCode[i];
+        // Only show loading state for manual checks
+        if (isManualCheck) {
+            setLoading(true);
+            setError("");
         }
-        setCode(newCode);
 
-        inputRefs.current[pastedCode.length - 1]?.focus();
+        get("prizes/redeem", { code: codeToCheck })
+            .then((res) => {
+                setPrizeInfo(res.voucher);
+                // Process upgrade info from API
+                const upgradeData = res.upgrade_info;
+                setUpgradeInfo(upgradeData);
+
+                // For automatic checks, if code is valid, update state and focus button
+                if (!isManualCheck && res.voucher.is_available && !res.voucher.user_has_redeemed) {
+                    setCodeValidated(true);
+                    // Focus the submit button for easy redemption
+                    setTimeout(() => {
+                        const submitButton = document.querySelector(
+                            'button[type="submit"]',
+                        ) as HTMLButtonElement;
+                        submitButton?.focus();
+                    }, 100);
+                }
+
+                // Only update validation state for manual checks
+                if (isManualCheck) {
+                    setCodeValidated(true);
+
+                    // Check if user has already redeemed this code
+                    if (res.voucher.user_has_redeemed) {
+                        setError(
+                            pgettext(
+                                "Prize redemption error - code already used",
+                                "You have already redeemed this code.",
+                            ),
+                        );
+                    }
+                    // Check if code is already redeemed or unavailable
+                    else if (!res.voucher.is_available) {
+                        if (res.voucher.times_used >= res.voucher.max_uses) {
+                            setError(
+                                pgettext(
+                                    "Prize redemption error - max uses reached",
+                                    "This code has reached its maximum usage limit.",
+                                ),
+                            );
+                        } else {
+                            setError(
+                                pgettext(
+                                    "Prize redemption error - expired code",
+                                    "This code has expired.",
+                                ),
+                            );
+                        }
+                    }
+                    // Note: We don't set an error for max level here because
+                    // the UI handles it through the button text and upgrade preview
+                }
+            })
+            .catch((err) => {
+                console.error(err);
+                if (isManualCheck) {
+                    setError(
+                        pgettext("Prize redemption error - invalid code", "Invalid prize code."),
+                    );
+                    setCodeValidated(false);
+                }
+            })
+            .finally(() => {
+                if (isManualCheck) {
+                    setLoading(false);
+                }
+            });
     };
 
     const handleSubmit = (event: any) => {
         event.preventDefault();
 
-        const enteredCode = code.join("");
+        const enteredCode = code.trim();
 
-        if (enteredCode.length !== 6) {
-            setError(_("Invalid code. Please enter a 6-character code."));
+        if (enteredCode.length < 1) {
+            setError(
+                pgettext("Prize redemption error - empty input", "Please enter a prize code."),
+            );
             return;
         }
 
-        setLoading(true);
-        setError("");
+        // If we haven't validated the code yet, fetch details first
+        if (!codeValidated) {
+            fetchPrizeDetails(enteredCode, true);
+            return;
+        }
 
-        const data = { code: enteredCode };
-
-        get("prizes/redeem", data)
-            .then((res) => {
-                if (res.voucher.redeemed_by) {
-                    setError(_("Sorry, this code has already been redeemed."));
-                    setCode(["", "", "", "", "", ""]);
-                } else {
-                    setCurrentSupportLevel(res.supporter_level);
-                    setPrizeInfo(res.voucher);
-                    setShowForm(false);
-                }
-            })
-            .catch((err) => {
-                console.error(err);
-                setError(_("Invalid prize code. Please try again."));
-                setCode(["", "", "", "", "", ""]);
-            })
-            .finally(() => {
-                setLoading(false);
-            });
+        // If code is validated and available, proceed with redemption
+        if (prizeInfo?.is_available && !prizeInfo?.user_has_redeemed) {
+            onRedeem();
+        }
     };
 
     const onRedeem = () => {
         setLoading(true);
         setError("");
 
-        const enteredCode = code.join("");
+        const enteredCode = code.trim();
         const data = { code: enteredCode };
 
         post("prizes/redeem", data)
             .then((res) => {
-                if (res === 200) {
+                if (res.success || res === 200) {
                     setRedeemed(true);
+                    setShowForm(false);
                 }
             })
             .catch((err) => {
                 console.error(err);
-                setError(_("Failed to redeem the prize. Please try again."));
+                // Check for specific error codes from the API
+                if (
+                    err?.error === "You have already redeemed this code." ||
+                    err?.error_code === "PRIZE_CODE_ALREADY_REDEEMED"
+                ) {
+                    setError(pgettext("Error message", "You have already redeemed this code."));
+                } else if (err?.error_code === "PRIZE_CODE_EXPIRED") {
+                    setError(pgettext("Error message", "This code has expired."));
+                } else if (err?.error_code === "PRIZE_CODE_MAX_USES_REACHED") {
+                    setError(
+                        pgettext("Error message", "This code has reached its maximum usage limit."),
+                    );
+                } else {
+                    setError(
+                        pgettext(
+                            "Prize redemption error - generic failure",
+                            "Failed to redeem the prize. Please try again.",
+                        ),
+                    );
+                }
             })
             .finally(() => {
                 setLoading(false);
@@ -140,140 +277,284 @@ export function PrizeRedemption(): React.ReactElement {
         void navigate("/");
     };
 
-    const getSupportTier = (support_level: number) => {
-        switch (support_level) {
-            case 1:
-                return "Aji";
-            case 2:
-                return "Hane";
-            case 3:
-                return "Tenuki";
-            case 4:
-                return "Meijin";
-            default:
-                return null;
-        }
-    };
-
-    const getTierValue = (tierName: string) => {
-        switch (tierName.toLowerCase()) {
-            case "aji":
-                return 1;
-            case "hane":
-                return 2;
-            case "tenuki":
-                return 3;
-            case "meijin":
-                return 4;
-            default:
-                return 0;
-        }
-    };
-
     return (
         <div className="prize-redemption">
-            <h2>{_("Prize Redemption")}</h2>
+            <h2>{pgettext("Prize redemption page heading", "Prize Redemption")}</h2>
             {showForm && (
                 <form onSubmit={handleSubmit}>
-                    <p>{_("Enter your prize code below to redeem your prize.")}</p>
+                    <p>
+                        {pgettext(
+                            "Prize redemption form instructions",
+                            "Enter your prize code below to redeem your prize.",
+                        )}
+                    </p>
 
-                    <label>{_("Prize Code:")}</label>
-                    <div className="code-input">
-                        {code.map((char, index) => (
+                    <div className="code-input-container">
+                        <label htmlFor="prize-code-input">
+                            {pgettext("Prize code input field label", "Prize Code:")}
+                        </label>
+                        <div className="input-wrapper">
                             <input
-                                key={index}
+                                id="prize-code-input"
                                 type="text"
-                                maxLength={1}
-                                value={char}
-                                onChange={(event) => handleCodeChange(event, index)}
-                                onKeyDown={(event) => handleKeyDown(event, index)}
-                                onPaste={handlePaste}
-                                ref={(ref) => {
-                                    inputRefs.current[index] = ref;
-                                }}
+                                className={`prize-code-input ${loading ? "loading" : ""} ${
+                                    codeValidated && prizeInfo?.is_available ? "valid" : ""
+                                }`}
+                                placeholder={pgettext(
+                                    "Prize code input placeholder text",
+                                    "Enter code (e.g., FUN4U or ABC123)",
+                                )}
+                                value={code}
+                                onChange={handleCodeChange}
+                                onKeyPress={handleKeyPress}
+                                ref={inputRef}
+                                autoComplete="off"
+                                autoCorrect="off"
+                                autoCapitalize="characters"
+                                spellCheck={false}
                             />
-                        ))}
+                            {codeValidated && prizeInfo?.is_available && (
+                                <span className="valid-checkmark">✓</span>
+                            )}
+                        </div>
                     </div>
-                    <button type="submit" disabled={loading}>
-                        {loading ? _("Submitting...") : _("Submit")}
+                    <button
+                        type="submit"
+                        className={
+                            prizeInfo?.user_has_redeemed
+                                ? "already-redeemed"
+                                : upgradeInfo && upgradeInfo.current_level >= 4
+                                  ? "max-level"
+                                  : codeValidated && prizeInfo?.is_available
+                                    ? "redeem-ready"
+                                    : "check-code"
+                        }
+                        disabled={
+                            loading ||
+                            (codeValidated && !prizeInfo?.is_available) ||
+                            prizeInfo?.user_has_redeemed ||
+                            (upgradeInfo && upgradeInfo.current_level >= 4)
+                        }
+                    >
+                        {loading
+                            ? pgettext("Prize redemption button - loading state", "Loading...")
+                            : prizeInfo?.user_has_redeemed
+                              ? pgettext(
+                                    "Prize redemption button - already used",
+                                    "Already Redeemed",
+                                )
+                              : upgradeInfo && upgradeInfo.current_level >= 4
+                                ? pgettext(
+                                      "Prize redemption button - max level reached",
+                                      "Maximum Level",
+                                  )
+                                : codeValidated && prizeInfo?.is_available
+                                  ? pgettext(
+                                        "Prize redemption button - ready to redeem",
+                                        "Redeem Prize",
+                                    )
+                                  : pgettext(
+                                        "Prize redemption button - validate code",
+                                        "Check Code",
+                                    )}
                     </button>
                 </form>
             )}
             {error && <p className="error">{error}</p>}
-            {prizeInfo && !redeemed && (
-                <div className="prize-info">
-                    <h3>{_("Prize Details")}</h3>
-                    <p>{_("You are about to redeem the following prize:")}</p>
-                    <ul>
-                        <li>
-                            {interpolate(_("Prize Level: {{prizeLevel}}"), {
-                                prizeLevel: prizeInfo.supporter_level,
-                            })}
-                        </li>
-                        <li>
-                            {interpolate(_("Duration: {{duration}} days"), {
-                                duration: prizeInfo.duration,
-                            })}
-                        </li>
-                    </ul>
-                    {currentSupportLevel > 0 ? (
-                        currentSupportLevel === 4 ? (
-                            <p>
-                                {_(
-                                    "You are currently at the highest supporter tier (Meijin). To use this voucher, you will need to cancel your current subscription first.",
-                                )}
-                            </p>
-                        ) : (
-                            <p>
-                                {interpolate(
-                                    _(
-                                        "You are currently a supporter at the {{currentSupporterLevel}} tier. This prize will upgrade you to the {{supportTier}} tier.",
-                                    ),
-                                    {
-                                        currentSupporterLevel: getSupportTier(currentSupportLevel),
-                                        supportTier: getSupportTier(
-                                            Math.min(
-                                                currentSupportLevel +
-                                                    getTierValue(prizeInfo.supporter_level),
-                                                4,
+
+            {/* Show prize details when available */}
+            {prizeInfo && upgradeInfo && prizeInfo.is_available && !prizeInfo.user_has_redeemed && (
+                <div className="prize-preview visible">
+                    <div className="prize-header">
+                        <h3>{pgettext("Prize preview section heading", "Prize Details")}</h3>
+                    </div>
+
+                    <div className="prize-content">
+                        <div className="prize-info-card">
+                            <div className="info-row highlight">
+                                <span className="info-label">
+                                    {pgettext(
+                                        "Prize details - support level label",
+                                        "Support Level",
+                                    )}
+                                </span>
+                                <span className="info-value strong">
+                                    {upgradeInfo.new_level > upgradeInfo.current_level ? (
+                                        <>
+                                            <span className="strikethrough">
+                                                {getSupporterLevelName(upgradeInfo.current_level)}
+                                            </span>{" "}
+                                            →{" "}
+                                            <span className="new-level">
+                                                {getSupporterLevelName(upgradeInfo.new_level)}
+                                            </span>
+                                        </>
+                                    ) : upgradeInfo.current_level >= 4 ? (
+                                        getSupporterLevelName(upgradeInfo.current_level)
+                                    ) : (
+                                        getSupporterLevelName(upgradeInfo.prize_level)
+                                    )}
+                                </span>
+                            </div>
+                            <div className="info-row">
+                                <span className="info-label">
+                                    {pgettext("Prize details - duration label", "Duration")}
+                                </span>
+                                <span className="info-value">
+                                    {upgradeInfo.duration_days}{" "}
+                                    {pgettext("Time unit plural for prize duration", "days")}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="upgrade-details">
+                        {upgradeInfo.current_level === 0 &&
+                            /*
+                            <div className="upgrade-card new-supporter">
+                                <div className="card-icon">
+                                    <span>●</span>
+                                </div>
+                                <div className="card-content">
+                                    <h4>
+                                        {pgettext(
+                                            "New supporter welcome heading",
+                                            "Welcome to the Community!",
+                                        )}
+                                    </h4>
+                                    <p className="upgrade-message">
+                                        {interpolate(
+                                            pgettext(
+                                                "Prize redemption - new supporter upgrade message",
+                                                "You'll become a {{level}} supporter for {{days}} days",
                                             ),
-                                        ),
-                                    },
-                                )}
-                            </p>
-                        )
-                    ) : (
-                        <p>
-                            {interpolate(
-                                _(
-                                    "This prize will grant you the {{supporterLevel}} tier supporter status.",
-                                ),
-                                { supporterLevel: prizeInfo.supporter_level },
+                                            {
+                                                level: getSupporterLevelName(
+                                                    upgradeInfo.prize_level,
+                                                ),
+                                                days: upgradeInfo.duration_days,
+                                            },
+                                        )}
+                                    </p>
+                                </div>
+                            </div>
+                            */
+                            null}
+
+                        {upgradeInfo.new_level > upgradeInfo.current_level &&
+                            upgradeInfo.current_level > 0 && (
+                                <div className="upgrade-card level-up">
+                                    <div className="card-icon">
+                                        <span>↑</span>
+                                    </div>
+                                    <div className="card-content">
+                                        <h4>
+                                            {pgettext(
+                                                "Existing supporter level upgrade heading",
+                                                "Level Upgrade!",
+                                            )}
+                                        </h4>
+                                        <p className="upgrade-message">
+                                            <span className="upgrade-flow">
+                                                <span className="from-level">
+                                                    {getSupporterLevelName(
+                                                        upgradeInfo.current_level,
+                                                    )}
+                                                </span>
+                                                <span className="arrow">→</span>
+                                                <span className="to-level">
+                                                    {getSupporterLevelName(upgradeInfo.new_level)}
+                                                </span>
+                                            </span>
+                                            <span className="duration-note">
+                                                {interpolate(
+                                                    pgettext(
+                                                        "Prize duration suffix phrase",
+                                                        "for {{days}} days",
+                                                    ),
+                                                    {
+                                                        days: upgradeInfo.duration_days,
+                                                    },
+                                                )}
+                                            </span>
+                                        </p>
+                                    </div>
+                                </div>
                             )}
-                        </p>
-                    )}
-                    <p>{_("Are you sure you want to redeem this prize?")}</p>
-                    <div className="actions">
-                        <button
-                            onClick={onRedeem}
-                            disabled={loading || currentSupportLevel === 4}
-                            className={currentSupportLevel === 4 ? "disabled" : "primary"}
-                        >
-                            {loading ? _("Redeeming...") : _("Redeem")}
-                        </button>
-                        <button onClick={onCancel}>{_("Cancel")}</button>
+
+                        {upgradeInfo.current_level >= 4 && (
+                            <div className="upgrade-card max-level">
+                                <div className="card-icon">
+                                    <span>■</span>
+                                </div>
+                                <div className="card-content">
+                                    <h4>
+                                        {pgettext(
+                                            "Maximum supporter level heading",
+                                            "Maximum Level",
+                                        )}
+                                    </h4>
+                                    <p className="upgrade-message">
+                                        {pgettext(
+                                            "Prize redemption - already at max level message",
+                                            "You are already at the maximum supporter level. Please contact anoek to work something else out for you.",
+                                        )}
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+
+                        {upgradeInfo.current_level > 0 &&
+                            upgradeInfo.new_level === upgradeInfo.current_level &&
+                            upgradeInfo.current_level < 4 && (
+                                <div className="upgrade-card extend">
+                                    <div className="card-icon">
+                                        <span>○</span>
+                                    </div>
+                                    <div className="card-content">
+                                        <h4>
+                                            {pgettext(
+                                                "Support duration extension heading",
+                                                "Extension",
+                                            )}
+                                        </h4>
+                                        <p className="upgrade-message">
+                                            {interpolate(
+                                                pgettext(
+                                                    "Prize redemption - support extension message",
+                                                    "Extends your {{level}} support by {{days}} days",
+                                                ),
+                                                {
+                                                    level: getSupporterLevelName(
+                                                        upgradeInfo.current_level,
+                                                    ),
+                                                    days: upgradeInfo.duration_days,
+                                                },
+                                            )}
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
                     </div>
                 </div>
             )}
             {redeemed && (
                 <div className="success-message">
-                    <h3>{_("Congratulations!")}</h3>
+                    <h3>
+                        {pgettext(
+                            "Prize redemption success heading",
+                            "Prize Redeemed Successfully",
+                        )}
+                    </h3>
                     <p>
-                        {_(
-                            "Your prize has been successfully redeemed. Enjoy your enhanced experience on Online-Go.com!",
+                        {pgettext(
+                            "Prize redemption success message",
+                            "Your prize has been successfully redeemed. Enjoy!",
                         )}
                     </p>
-                    <button onClick={onCancel}>{_("Close")}</button>
+                    <button onClick={onCancel}>
+                        {pgettext("Close success dialog button", "Close")}
+                    </button>
                 </div>
             )}
         </div>
