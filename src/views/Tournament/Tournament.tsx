@@ -481,9 +481,7 @@ export function Tournament(): React.ReactElement {
                     // Backend messages for translation
                     _("Player already has an outstanding invite");
                     _("Player is already participating in this tournament");
-                    _(
-                        "This tournament is only open to group members, so this user cannot be invited",
-                    );
+                    _("Only group members can be invited to group tournaments");
 
                     // The request library rejects and supplies the parsed JSON data directly for HTTP errors
                     if (res && typeof res === "object" && res.error) {
