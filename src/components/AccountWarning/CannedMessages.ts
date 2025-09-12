@@ -326,6 +326,32 @@ Thank you for helping keep OGS enjoyable for everyone. We appreciate it.`,
             ),
             { reported },
         ),
+    warn_likely_ai_user: (game_id) =>
+        interpolate(
+            llm_pgettext(
+                "Warning message to a user",
+                `
+Our systems have detected that you may be using AI assistance in your games.
+
+Using such methods is considered cheating and is prohibited.
+
+We ask that you resign from any ongoing games in which AI was used and refrain from seeking AI assistance in future games.
+
+Any further detection of AI use will result in suspension of your account.`,
+            ),
+            { game_id },
+        ),
+    ack_likely_ai_user_reporter: (reported) =>
+        interpolate(
+            llm_pgettext(
+                "Acknowledgement message to a user",
+                `
+    Thank you for your report about '{{reported}}'.
+
+    We've formally warning that person, and any further detection of AI use will result in suspension of their account.`,
+            ),
+            { reported },
+        ),
     no_ai_use_evident: (game_id) =>
         interpolate(
             llm_pgettext(
