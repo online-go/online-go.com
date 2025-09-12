@@ -83,6 +83,10 @@ export function ReportsCenter(): React.ReactElement | null {
     const report_id = parseInt(params["report_id"] || "0");
     const category = params["category"] || "all";
 
+    React.useEffect(() => {
+        window.document.title = _("Reports Center");
+    }, []);
+
     let [report_quota] = usePreference("moderator.report-quota");
     if (!user.is_moderator && !user.moderator_powers) {
         report_quota = 0;
