@@ -110,6 +110,30 @@ import { BL1Ko } from "./Sections/BeginnerLevel1/Ko";
 import { BL1GoodPlay } from "./Sections/BeginnerLevel1/GoodPlay";
 import { BL1Block } from "./Sections/BeginnerLevel1/Block";
 import { BL1Stretch } from "./Sections/BeginnerLevel1/Stretch";
+import { BL2Seki } from "./Sections/BeginnerLevel2/Seki";
+import { BL2Atari } from "./Sections/BeginnerLevel2/Atari";
+import { BL2ChaseDown } from "./Sections/BeginnerLevel2/ChaseDown";
+import { BL2Snapback } from "./Sections/BeginnerLevel2/Snapback";
+import { BL2Net } from "./Sections/BeginnerLevel2/Net";
+import { BL2Capture1 } from "./Sections/BeginnerLevel2/Capture1";
+import { BL2Capture2 } from "./Sections/BeginnerLevel2/Capture2";
+import { BL2ThrowIn1 } from "./Sections/BeginnerLevel2/ThrowIn1";
+import { BL2ThrowIn2 } from "./Sections/BeginnerLevel2/ThrowIn2";
+import { BL2Capture3 } from "./Sections/BeginnerLevel2/Capture3";
+import { BL2Connect } from "./Sections/BeginnerLevel2/Connect";
+import { BL2Cut1 } from "./Sections/BeginnerLevel2/Cut1";
+import { BL2Cut2 } from "./Sections/BeginnerLevel2/Cut2";
+import { BL2Opening } from "./Sections/BeginnerLevel2/Opening";
+import { BL2Corner1 } from "./Sections/BeginnerLevel2/Corner1";
+import { BL2Corner2 } from "./Sections/BeginnerLevel2/Corner2";
+import { BL2Defense1 } from "./Sections/BeginnerLevel2/Defense1";
+import { BL2Defense2 } from "./Sections/BeginnerLevel2/Defense2";
+import { BL2Defense3 } from "./Sections/BeginnerLevel2/Defense3";
+import { BL2Miai } from "./Sections/BeginnerLevel2/Miai";
+import { BL2Eye1 } from "./Sections/BeginnerLevel2/Eye1";
+import { BL2Eye2 } from "./Sections/BeginnerLevel2/Eye2";
+import { BL2Eye3 } from "./Sections/BeginnerLevel2/Eye3";
+import { BL2Endgame1 } from "./Sections/BeginnerLevel2/Endgame1";
 
 // export class FalseEyes extends LearningHubSection {
 //     static section(): string {
@@ -331,6 +355,35 @@ export const sections: [string, any[]][] = [
             BL1GoodPlay,
             BL1Block,
             BL1Stretch,
+        ],
+    ],
+    [
+        pgettext("Learning hub section title", "Beginner Level 2"),
+        [
+            BL2Seki,
+            BL2Atari,
+            BL2ChaseDown,
+            BL2Snapback,
+            BL2Net,
+            BL2Capture1,
+            BL2Capture2,
+            BL2ThrowIn1,
+            BL2ThrowIn2,
+            BL2Capture3,
+            BL2Connect,
+            BL2Cut1,
+            BL2Cut2,
+            BL2Opening,
+            BL2Corner1,
+            BL2Corner2,
+            BL2Defense1,
+            BL2Defense2,
+            BL2Defense3,
+            BL2Miai,
+            BL2Eye1,
+            BL2Eye2,
+            BL2Eye3,
+            BL2Endgame1,
         ],
     ],
 
