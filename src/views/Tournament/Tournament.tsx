@@ -1200,6 +1200,9 @@ export function Tournament(): React.ReactElement {
                                             value={tournament.exclusivity}
                                             onChange={setTournamentExclusivity}
                                         >
+                                            <option value="open">
+                                                {pgettext("Open tournament", "Anyone can join")}
+                                            </option>
                                             <option value="group">
                                                 {pgettext("Group tournament", "Members only")}
                                             </option>
