@@ -46,6 +46,8 @@ declare namespace rest_api {
             | "ack_warned_score_cheat"
             | "ack_warned_score_cheat_and_annul"
             | "no_score_cheating_evident"
+            | "warn_likely_ai_user"
+            | "ack_likely_ai_user_reporter"
             | "no_ai_use_evident"
             | "no_ai_use_bad_report"
             | "annul_no_warning"
