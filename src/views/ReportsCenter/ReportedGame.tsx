@@ -204,7 +204,7 @@ export function ReportedGame({
                         </div>
 
                         <div className="reported-game-element reported-game-chat">
-                            <GameChat channel={`game-${game_id}`} game_id={game_id} />
+                            <GameChat channel={`game-${game_id}`} game_id={game_id} hidden={true} />
                         </div>
                     </GobanControllerContext.Provider>
                 )}
