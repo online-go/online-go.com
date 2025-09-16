@@ -38,7 +38,6 @@ interface GameChatProperties {
     channel: string;
     game_id?: number;
     review_id?: number;
-    hidden?: boolean;
 }
 
 interface ChatLine {
@@ -68,12 +67,12 @@ export function GameChat(props: GameChatProperties): React.ReactElement {
     const user = data.get("user");
     const goban_controller = useGobanController();
     const goban = goban_controller.goban;
-    const defaultChatMode = props.hidden ? "hidden" : (preferences.get("chat-mode") as ChatMode);
+    const defaultChatMode = preferences.get("chat-mode") as ChatMode;
     const ref_chat_log = React.useRef<HTMLDivElement>(null);
     const scrolled_to_bottom = React.useRef(true);
     const [show_quick_chat, setShowQuickChat] = React.useState(false);
     const [selected_chat_log, setSelectedChatLog] = React.useState(
-        props.hidden ? "hidden" : goban_controller.selected_chat_log,
+        goban_controller.selected_chat_log,
     );
     const [show_player_list, setShowPlayerList] = React.useState(false);
 
@@ -83,18 +82,11 @@ export function GameChat(props: GameChatProperties): React.ReactElement {
     const userIsPlayer = useUserIsParticipant(goban);
 
     React.useEffect(() => {
-        const handleChatLogChange = (new_mode: ChatMode) => {
-            if (props.hidden) {
-                setSelectedChatLog("hidden");
-            } else {
-                setSelectedChatLog(new_mode);
-            }
-        };
-        goban_controller.on("selected_chat_log", handleChatLogChange);
+        goban_controller.on("selected_chat_log", setSelectedChatLog);
         return () => {
-            goban_controller.off("selected_chat_log", handleChatLogChange);
+            goban_controller.off("selected_chat_log", setSelectedChatLog);
         };
-    }, [goban_controller, props.hidden]);
+    }, [goban_controller]);
 
     React.useEffect(() => {
         if (!goban) {
@@ -164,10 +156,6 @@ export function GameChat(props: GameChatProperties): React.ReactElement {
 
     React.useEffect(() => {
         const onAnonymousOverrideChange = () => {
-            if (props.hidden) {
-                goban_controller.setSelectedChatLog("hidden");
-                return;
-            }
             const in_game_mod_channel = inGameModChannel(
                 (props.game_id || props.review_id) as number,
             );
@@ -187,7 +175,7 @@ export function GameChat(props: GameChatProperties): React.ReactElement {
         return () => {
             data.unwatch(`moderator.join-game-publicly.${channel}`, onAnonymousOverrideChange);
         };
-    }, [props.hidden]);
+    }, []);
 
     const onKeyPress = (event: React.KeyboardEvent<HTMLElement>): boolean | void => {
         if (event.key === "Enter") {
@@ -233,10 +221,6 @@ export function GameChat(props: GameChatProperties): React.ReactElement {
     };
 
     const toggleChatLog = (isModerator: boolean) => {
-        if (props.hidden) {
-            // Don't allow changing from hidden mode when forced
-            return;
-        }
         const new_chat_log = nextChatMode(selected_chat_log, isModerator);
         goban_controller.setSelectedChatLog(new_chat_log);
         setShowQuickChat(false);
