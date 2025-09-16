@@ -300,6 +300,11 @@ let last_proxy_id = 0;
 
 export function inGameModChannel(channel_or_game_id: string | number): boolean {
     const user = data.get("user");
+
+    if (window.location.pathname.includes("/reports-center/")) {
+        return true;
+    }
+
     if (!user?.is_moderator) {
         return false;
     }
