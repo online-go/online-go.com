@@ -334,11 +334,13 @@ export function NavBar(): React.ReactElement {
                                 external={true}
                             />
 
-                            <MenuLink
-                                title={_("Reports Center")}
-                                to="/reports-center"
-                                icon={<i className="fa fa-exclamation-triangle" />}
-                            />
+                            {(user.is_moderator || user.moderator_powers) && (
+                                <MenuLink
+                                    title={_("Reports Center")}
+                                    to="/reports-center"
+                                    icon={<i className="fa fa-exclamation-triangle" />}
+                                />
+                            )}
                             {user.is_moderator && (
                                 <MenuLink
                                     title={_("Moderator Center")}
