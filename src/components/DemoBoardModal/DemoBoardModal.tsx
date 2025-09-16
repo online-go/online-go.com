@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { _ } from "@/lib/translate";
+import { _, pgettext } from "@/lib/translate";
 import React from "react";
 import { allRanks, rankString } from "@/lib/rank_utils";
 import { DemoBoardModalProps, shortPlayerInfo } from "./DemoBoardModal.types";
@@ -63,6 +63,8 @@ export function DemoBoardModal(
     const [isCustomBoardSize, setIsCustomBoardSize] = React.useState<boolean>(
         !isStandardBoardSize(`${initialSettings.width}x${initialSettings.height}`),
     );
+
+    const isGameRecordMode = !!props.players_list;
 
     function updateRules(rules: string): void {
         if (isRuleSet(rules)) {
@@ -160,7 +162,12 @@ export function DemoBoardModal(
         <div className="Modal DemoBoardModal">
             <div className="header">
                 <h2>
-                    <span> {_("Demo Board")} </span>
+                    <span>
+                        {isGameRecordMode
+                            ? pgettext("Game record from real life game", "Game Record")
+                            : _("Demo Board")}
+                        ?
+                    </span>
                 </h2>
             </div>
 
@@ -370,7 +377,7 @@ export function DemoBoardModal(
 
                 {!user?.anonymous && (
                     <button onClick={async () => await createDemoBoard()} className="primary">
-                        {_("Create Demo")}
+                        {isGameRecordMode ? _("Create Game Record") : _("Create Demo")}
                     </button>
                 )}
             </div>

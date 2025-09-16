@@ -22,7 +22,6 @@ import { rulesText } from "@/lib/misc";
 import { shortShortTimeControl, timeControlSystemText } from "@/components/TimeControl";
 import {
     ChallengeDetails,
-    DemoSettings,
     RejectionDetails,
 } from "@/components/ChallengeModal/ChallengeModal.types";
 import { rankSelectorIndexToText } from "@/lib/rank_utils";
@@ -220,14 +219,6 @@ export function sanitizeChallengeDetails<T extends ChallengeDetails>(challengeDe
             }),
         },
     };
-}
-
-// For legacy reasons, komi can have a string value
-// when these challenge details come from local storage.
-export function sanitizeDemoSettings(
-    settings: ReturnType<typeof data.get<"demo.settings">>,
-): DemoSettings {
-    return { ...settings, ...(settings.komi !== undefined && { komi: Number(settings.komi) }) };
 }
 
 export function getPreferredSettings(): ChallengeDetails[] {

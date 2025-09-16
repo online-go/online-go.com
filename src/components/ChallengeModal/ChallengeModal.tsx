@@ -26,7 +26,7 @@ import { _, pgettext, interpolate, llm_pgettext } from "@/lib/translate";
 import { post, del } from "@/lib/requests";
 import { Modal } from "@/components/Modal";
 import { socket } from "@/lib/sockets";
-import { rankString, amateurRanks, allRanks } from "@/lib/rank_utils";
+import { rankString, amateurRanks } from "@/lib/rank_utils";
 import { CreatedChallengeInfo } from "@/lib/types";
 import { errorLogger, errorAlerter, dup } from "@/lib/misc";
 import { PlayerIcon } from "@/components/PlayerIcon";
@@ -56,7 +56,6 @@ import {
     getPreferredSettings,
     getDefaultKomi,
     isKomiOption,
-    sanitizeDemoSettings,
     parseNumberInput,
     isRuleSet,
     isColorSelectionOption,
@@ -65,7 +64,6 @@ import {
     ChallengeDetails,
     ChallengeInput,
     ChallengeModalConf,
-    DemoSettings,
     GameInput,
     ChallengeModalInput,
     ChallengeModalProperties,
@@ -83,7 +81,6 @@ for (let i = 1; i <= 36; ++i) {
 }
 
 const ranks = amateurRanks();
-const demo_ranks = allRanks();
 
 const standard_board_sizes: { [k: string]: string | undefined } = {
     "19x19": "19x19",
@@ -139,22 +136,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
             }),
         );
 
-        const demo = sanitizeDemoSettings(
-            data.get("demo.settings", {
-                name: "",
-                rules: "japanese",
-                width: 19,
-                height: 19,
-                komi_auto: "automatic",
-                black_name: _("Black"),
-                black_ranking: 1039,
-                white_name: _("White"),
-                white_ranking: 1039,
-                private: false,
-            }),
-        );
-
-        const game_settings = this.props.mode === "demo" ? demo : challenge.game;
+        const game_settings = challenge.game;
 
         // make sure rengo=true doesn't persist into the wrong kinds of challenges
         if (challenge.game.ranked || challenge.game.private || this.props.mode !== "open") {
@@ -200,27 +182,13 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                 restrict_rank: data.get("challenge.restrict_rank", false),
             },
             challenge: challenge,
-            demo: demo,
             forking_game: !!this.props.initialState,
-            selected_demo_player_black: 0,
-            selected_demo_player_white: this.props.playersList
-                ? this.props.playersList.length - 1
-                : 0,
 
             preferred_settings: getPreferredSettings(),
             view_mode: goban_view_mode(),
             hide_preferred_settings_on_portrait: true,
             time_control: this.loadLastTimeControlSettings(),
         };
-
-        if (this.props.playersList && this.props.playersList.length > 0) {
-            this.state.demo.black_name = this.props.playersList[0].name;
-            this.state.demo.black_ranking = this.props.playersList[0].rank;
-            this.state.demo.white_name =
-                this.props.playersList[this.props.playersList.length - 1].name;
-            this.state.demo.white_ranking =
-                this.props.playersList[this.props.playersList.length - 1].rank;
-        }
 
         const state: any = this.state;
 
@@ -272,17 +240,12 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         );
     }
 
-    gameStateOf(state: any) {
-        return this.props.mode === "demo" ? state.demo : state.challenge.game;
+    gameStateOf(state: ChallengeModalState): any {
+        return state.challenge.game;
     }
 
     gameState() {
         return this.gameStateOf(this.state);
-    }
-
-    gameStateName(name: string) {
-        const prefix = this.props.mode === "demo" ? "demo" : "challenge.game";
-        return `${prefix}.${name}`;
     }
 
     onResize = () => {
@@ -352,12 +315,11 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         data.set(`challenge.challenge.${speed}`, next.challenge);
         data.set("challenge.bot", next.conf.bot_id);
         data.set("challenge.restrict_rank", next.conf.restrict_rank);
-        data.set("demo.settings", next.demo);
     }
 
     addToPreferredSettings = () => {
         const preferred_settings = getPreferredSettings();
-        const challenge = JSON.parse(JSON.stringify(this.getChallenge()));
+        const challenge = dup(this.getChallenge());
         preferred_settings.push(challenge);
         data.set(
             "preferred-game-settings",
@@ -381,7 +343,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
 
     usePreferredSetting = (index: number) => {
         const preferred_settings = getPreferredSettings();
-        const setting: ChallengeDetails = JSON.parse(JSON.stringify(preferred_settings[index]));
+        const setting: ChallengeDetails = dup(preferred_settings[index]);
         if (this.props.mode !== "open") {
             setting.rengo_auto_start = 0;
             setting.game.rengo = false;
@@ -399,65 +361,6 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         });
     };
 
-    createDemo = () => {
-        if (!this.validateBoardSize()) {
-            return;
-        }
-
-        const next = this.next();
-
-        this.setState({
-            demo: next.demo,
-        });
-
-        const settings = {
-            ...next.demo,
-            black_pro: next.demo.black_ranking > 1000 ? 1 : 0,
-            white_pro: next.demo.white_ranking > 1000 ? 1 : 0,
-            tournament_record_id: this.props.tournamentRecordId,
-            tournament_record_round_id: this.props.tournamentRecordRoundId,
-        };
-
-        // Ignore komi value if komi is automatic.
-        if (settings.komi_auto !== "custom") {
-            delete settings.komi;
-        }
-
-        if (settings.black_pro) {
-            settings.black_ranking -= 1000;
-        }
-        if (settings.white_pro) {
-            settings.white_ranking -= 1000;
-        }
-
-        if (!settings.name) {
-            settings.name = this.props.game_record_mode
-                ? pgettext("Game record from real life game", "Game Record")
-                : _("Demo Board");
-        }
-
-        this.saveSettings();
-        this.props.modal.close?.();
-
-        if (this.props.game_record_mode) {
-            settings.library_collection_id = this.props.libraryCollectionId;
-
-            post("game_records/", settings)
-                .then((res) => {
-                    console.log("Game record create response: ", res);
-                    browserHistory.push(`/game/${res.id}`);
-                })
-                .catch(errorAlerter);
-        } else {
-            // Review board demo
-            post("demos", settings)
-                .then((res) => {
-                    console.log("Demo create response: ", res);
-                    browserHistory.push(`/demo/${res.id}`);
-                })
-                .catch(errorAlerter);
-        }
-    };
     validateBoardSize() {
         const next = this.next();
 
@@ -530,7 +433,6 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         return challenge;
     }
 
-    // This can't be called in demo mode.
     createChallenge = () => {
         const next = this.next();
 
@@ -732,33 +634,23 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         this.setState((prev) => ({ conf: update_fn(prev.conf) }));
     update_challenge_settings = (update_fn: UpdateFn<ChallengeInput>): void =>
         this.setState((prev) => ({ challenge: update_fn(prev.challenge) }));
-    update_demo_settings = (update_fn: UpdateFn<DemoSettings>): void =>
-        this.setState((prev) => ({ demo: update_fn(prev.demo) }));
     update_game_settings = (update_fn: UpdateFn<GameInput>): void =>
         this.update_challenge_settings((prev) => ({ ...prev, game: update_fn(prev.game) }));
 
     /* direct fn updates */
     update_bot_id = (id: number) => this.update_conf((prev) => ({ ...prev, bot_id: id }));
 
-    update_demo_name = (name: string): void =>
-        this.update_demo_settings((prev) => ({ ...prev, name: name }));
     update_game_name = (name: string): void =>
         this.update_game_settings((prev) => ({ ...prev, name: name }));
-    update_challenge_game_name: (name: string) => void =
-        this.props.mode === "demo" ? this.update_demo_name : this.update_game_name;
 
-    update_private_game = (isPrivate: boolean) =>
+    update_private = (isPrivate: boolean) =>
         this.update_game_settings((prev) => ({ ...prev, private: isPrivate, ranked: false }));
-    update_private_demo = (isPrivate: boolean) =>
-        this.update_demo_settings((prev): DemoSettings => ({ ...prev, private: isPrivate }));
-    update_private =
-        this.props.mode === "demo" ? this.update_private_demo : this.update_private_game;
 
     update_invite_only = (invite_only: boolean) => {
         this.update_challenge_settings((prev) => ({ ...prev, invite_only: invite_only }));
         // If we're in open mode and invite_only is being turned off, also turn off private
         if (this.props.mode === "open" && !invite_only && this.state.challenge.game.private) {
-            this.update_private_game(false);
+            this.update_private(false);
         }
     };
 
@@ -808,52 +700,21 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
     };
 
     update_board_width = (width: number | null) =>
-        this.props.mode === "demo"
-            ? this.update_demo_settings((prev) => ({ ...prev, width: width }))
-            : this.update_game_settings((prev) => ({ ...prev, width: width }));
+        this.update_game_settings((prev) => ({ ...prev, width: width }));
 
     update_board_height = (height: number | null) =>
-        this.props.mode === "demo"
-            ? this.update_demo_settings((prev) => ({ ...prev, height: height }))
-            : this.update_game_settings((prev) => ({ ...prev, height: height }));
+        this.update_game_settings((prev) => ({ ...prev, height: height }));
 
     update_rules = (rules: string) => {
         if (!isRuleSet(rules)) {
             return;
         }
-        if (this.props.mode === "demo") {
-            // Note: I wasn't able to see a rules input in the challenge computer modal
-            this.update_demo_settings((prev) => ({ ...prev, rules: rules }));
-        } else {
-            this.update_game_settings((prev) => ({ ...prev, rules: rules }));
-        }
+        this.update_game_settings((prev) => ({ ...prev, rules: rules }));
     };
     update_handicap = (handicap: number) =>
         this.update_game_settings((prev) => ({ ...prev, handicap: handicap }));
 
-    update_komi_option_demo = (komi_option: string) => {
-        if (!isKomiOption(komi_option)) {
-            console.error(`invalid komi option: ${komi_option}`);
-            return;
-        }
-        this.setState((prev) => {
-            const changedToCustom = komi_option === "custom" && prev.demo.komi_auto !== "custom";
-
-            return {
-                demo: {
-                    ...prev.demo,
-                    komi_auto: komi_option,
-                    // If we just switched to custom komi, set it to the default for the current
-                    // rules.
-                    ...(changedToCustom && {
-                        komi: getDefaultKomi(prev.demo.rules, false),
-                    }),
-                },
-            };
-        });
-    };
-
-    update_komi_option_game = (komi_option: string) => {
+    update_komi_option = (komi_option: string) => {
         if (!isKomiOption(komi_option)) {
             console.error(`invalid komi option: ${komi_option}`);
             return;
@@ -882,13 +743,8 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         });
     };
 
-    update_komi_auto =
-        this.props.mode === "demo" ? this.update_komi_option_demo : this.update_komi_option_game;
-
     update_komi = (komi: number | null) =>
-        this.props.mode === "demo"
-            ? this.update_demo_settings((prev) => ({ ...prev, komi: komi }))
-            : this.update_game_settings((prev) => ({ ...prev, komi: komi }));
+        this.update_game_settings((prev) => ({ ...prev, komi: komi }));
     update_challenge_color = (color_selection: string) => {
         if (!isColorSelectionOption(color_selection)) {
             return;
@@ -915,43 +771,6 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                 max_ranking: max_rank,
             },
         }));
-    update_demo_black_name = (name: string) =>
-        this.update_demo_settings((prev) => ({ ...prev, black_name: name }));
-    update_demo_white_name = (name: string) =>
-        this.update_demo_settings((prev) => ({ ...prev, white_name: name }));
-    update_demo_black_ranking = (rank: number) =>
-        this.update_demo_settings((prev) => ({ ...prev, black_ranking: rank }));
-    update_demo_white_ranking = (rank: number) =>
-        this.update_demo_settings((prev) => ({ ...prev, white_ranking: rank }));
-
-    update_selected_demo_player_black = (
-        idx: number,
-        players: { name: string; rank: number }[],
-    ) => {
-        const player = players[idx];
-        this.update_demo_settings((prev) => ({
-            ...prev,
-            black_name: player.name,
-            black_ranking: player.rank,
-        }));
-        this.setState({
-            selected_demo_player_black: idx,
-        });
-    };
-    update_selected_demo_player_white = (
-        idx: number,
-        players: { name: string; rank: number }[],
-    ) => {
-        const player = players[idx];
-        this.update_demo_settings((prev) => ({
-            ...prev,
-            white_name: player.name,
-            white_ranking: player.rank,
-        }));
-        this.setState({
-            selected_demo_player_white: idx,
-        });
-    };
 
     forceTimeControlSystemIfNecessary = (rengo: boolean, casual: boolean) => {
         if (rengo && casual) {
@@ -1020,9 +839,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                                 <input
                                     type="text"
                                     value={this.gameState().name}
-                                    onChange={(ev) =>
-                                        this.update_challenge_game_name(ev.target.value)
-                                    }
+                                    onChange={(ev) => this.update_game_name(ev.target.value)}
                                     className="form-control"
                                     id="challenge-game-name"
                                     placeholder={_("Game Name")}
@@ -1247,7 +1064,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                         <div className="checkbox">
                             <select
                                 value={game.komi_auto}
-                                onChange={(ev) => this.update_komi_auto(ev.target.value)}
+                                onChange={(ev) => this.update_komi_option(ev.target.value)}
                                 className="challenge-dropdown form-control"
                                 id="challenge-komi"
                             >
@@ -1284,26 +1101,21 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
 
     // board size and 'Ranked' checkbox
     additionalSettings = () => {
-        const mode = this.props.mode;
-
         return (
             <div
                 id="challenge-basic-settings"
                 className="right-pane pane form-horizontal"
                 role="form"
             >
-                {!this.state.forking_game && mode !== "demo" && this.rankedSettings()}
-                {mode === "demo" && this.rulesSettings()}
+                {!this.state.forking_game && this.rankedSettings()}
                 {!this.state.forking_game && this.boardSizeSettings()}
-                {mode === "demo" && this.komiSettings()}
             </div>
         );
     };
 
     boardSizeSettings = () => {
-        const mode = this.props.mode;
         const conf = this.state.conf;
-        const enable_custom_board_sizes = mode === "demo" || !this.state.challenge.game.ranked;
+        const enable_custom_board_sizes = !this.state.challenge.game.ranked;
 
         return (
             <>
@@ -1415,143 +1227,6 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                             />
                         </div>
                     </div>
-                </div>
-            </div>
-        );
-    };
-
-    advancedDemoSettings = () => {
-        return (
-            <div
-                id="challenge-advanced-fields"
-                className="challenge-pane-container form-inline"
-                style={{ marginTop: "1em" }}
-            >
-                <div className="left-pane pane form-horizontal">
-                    <div className="form-group">
-                        <label className="control-label" htmlFor="demo-black-name">
-                            {_("Black Player")}
-                        </label>
-                        <div className="controls">
-                            {this.props.playersList ? (
-                                <select
-                                    value={this.state.selected_demo_player_black}
-                                    onChange={(ev) =>
-                                        this.update_selected_demo_player_black(
-                                            parseInt(ev.target.value),
-                                            this.props.playersList!,
-                                        )
-                                    }
-                                >
-                                    {this.props.playersList.map((player, idx) => (
-                                        <option key={idx} value={idx}>
-                                            {player.name} [{rankString(player.rank)}]
-                                        </option>
-                                    ))}
-                                </select>
-                            ) : (
-                                <div className="checkbox">
-                                    <input
-                                        type="text"
-                                        className="form-control"
-                                        value={this.state.demo.black_name}
-                                        onChange={(ev) =>
-                                            this.update_demo_black_name(ev.target.value)
-                                        }
-                                    />
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                    {!this.props.playersList && (
-                        <div className="form-group">
-                            <label className="control-label" htmlFor="demo-black-name">
-                                {_("Rank")}
-                            </label>
-                            <div className="controls">
-                                <div className="checkbox">
-                                    <select
-                                        value={this.state.demo.black_ranking}
-                                        onChange={(ev) =>
-                                            this.update_demo_black_ranking(
-                                                parseInt(ev.target.value),
-                                            )
-                                        }
-                                        className="challenge-dropdown form-control"
-                                    >
-                                        {demo_ranks.map((r, idx) => (
-                                            <option key={idx} value={r.rank}>
-                                                {r.label}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </div>
-                <div className="right-pane pane form-horizontal">
-                    <div className="form-group">
-                        <label className="control-label" htmlFor="demo-white-name">
-                            {_("White Player")}
-                        </label>
-                        <div className="controls">
-                            {this.props.playersList ? (
-                                <select
-                                    value={this.state.selected_demo_player_white}
-                                    onChange={(ev) =>
-                                        this.update_selected_demo_player_white(
-                                            parseInt(ev.target.value),
-                                            this.props.playersList!,
-                                        )
-                                    }
-                                >
-                                    {this.props.playersList.map((player, idx) => (
-                                        <option key={idx} value={idx}>
-                                            {player.name} [{rankString(player.rank)}]
-                                        </option>
-                                    ))}
-                                </select>
-                            ) : (
-                                <div className="checkbox">
-                                    <input
-                                        type="text"
-                                        className="form-control"
-                                        value={this.state.demo.white_name}
-                                        onChange={(ev) =>
-                                            this.update_demo_white_name(ev.target.value)
-                                        }
-                                    />
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                    {!this.props.playersList && (
-                        <div className="form-group">
-                            <label className="control-label" htmlFor="demo-white-name">
-                                {_("Rank")}
-                            </label>
-                            <div className="controls">
-                                <div className="checkbox">
-                                    <select
-                                        value={this.state.demo.white_ranking}
-                                        onChange={(ev) =>
-                                            this.update_demo_white_ranking(
-                                                parseInt(ev.target.value),
-                                            )
-                                        }
-                                        className="challenge-dropdown form-control"
-                                    >
-                                        {demo_ranks.map((r, idx) => (
-                                            <option key={idx} value={r.rank}>
-                                                {r.label}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    )}
                 </div>
             </div>
         );
@@ -2033,14 +1708,6 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                     {mode !== "computer" ? (
                         <h2>
                             {mode === "open" && <span>{_("Custom Game")}</span>}
-                            {mode === "demo" && (
-                                <span>
-                                    {this.props.game_record_mode
-                                        ? pgettext("Game record from real life game", "Game Record")
-                                        : _("Demo Board")}
-                                    ?
-                                </span>
-                            )}
                             {mode === "player" && (
                                 <span className="header-with-icon">
                                     <PlayerIcon id={player_id} size={32} />
@@ -2069,8 +1736,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                             </div>
 
                             <hr />
-                            {mode !== "demo" && this.advancedSettings()}
-                            {mode === "demo" && this.advancedDemoSettings()}
+                            {this.advancedSettings()}
                         </div>
                     </div>
                 )}
@@ -2090,14 +1756,6 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                                 <a href="/sign-in#/play">{_("Sign in")}</a>
                             </div>
                         </div>
-                    )}
-
-                    {!user?.anonymous && mode === "demo" && (
-                        <button onClick={this.createDemo} className="primary">
-                            {this.props.game_record_mode
-                                ? _("Create Game Record")
-                                : _("Create Demo")}
-                        </button>
                     )}
 
                     {mode === "computer" && (
@@ -2133,7 +1791,6 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                     )}
                 </div>
                 {(mode !== "computer" || this.state.show_computer_settings) &&
-                    mode !== "demo" &&
                     this.preferredGameSettings()}
             </div>
         );

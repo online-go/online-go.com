@@ -35,7 +35,6 @@ import { PlayerCacheEntry } from "@/lib/player_cache";
 import { AIDetection } from "@moderator-ui/AIDetection";
 import { MODERATOR_POWERS } from "@/lib/moderation";
 import { toast } from "@/lib/toast";
-// import { createGameRecord } from "@/components/ChallengeModal";
 
 type LibraryPlayerProperties = RouteComponentProps<{
     player_id: string;
@@ -693,20 +692,6 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                                 <Card>
                                     {owner && (
                                         <div className="upload-button">
-                                            {/*
-                                            <button
-                                                className="primary"
-                                                onClick={() => {
-                                                    createGameRecord({
-                                                        library_collection_id: parseInt(
-                                                            this.state.collection_id,
-                                                        ),
-                                                    });
-                                                }}
-                                            >
-                                                {_("Record Game")}
-                                            </button>
-                                            */}
                                             <button
                                                 className="primary"
                                                 onClick={() =>
