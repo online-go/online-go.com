@@ -356,7 +356,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
         ); /* don't notify for name matches within 10s of joining a channel */
 
         const user = data.get("user");
-        if (user?.is_moderator && channel.startsWith("game-")) {
+        if ((user?.is_moderator || user?.moderator_powers) && channel.startsWith("game-")) {
             data.watch(
                 `moderator.join-game-publicly.${channel}`,
                 this.handleAnonymousOverride,
@@ -607,7 +607,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
             if (data.get("config.user").supporter) {
                 chillout_time = 10;
             }
-            if (data.get("config.user").is_moderator) {
+            if (data.get("config.user").is_moderator || data.get("config.user").moderator_powers) {
                 chillout_time = 2;
             }
 
