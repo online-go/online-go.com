@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import * as data from "@/lib/data";
-import { _, interpolate, pgettext } from "@/lib/translate";
+import { _, interpolate, llm_pgettext, pgettext } from "@/lib/translate";
 import { post, get, del, put } from "@/lib/requests";
 import { PaginatedTable } from "@/components/PaginatedTable";
 import { Card } from "@/components/material";
@@ -742,6 +742,12 @@ export function AnnouncementCenter(): React.ReactElement {
                                 <button className="reject" onClick={cancelEdit}>
                                     {_("Cancel")}
                                 </button>
+                            )}
+                        </div>
+                        <div className="note">
+                            {llm_pgettext(
+                                "Note to announcers",
+                                "One announcement per event or stream, please use multiple content lines for multiple links, and use the edit feature to update them as needed.",
                             )}
                         </div>
                     </dd>
