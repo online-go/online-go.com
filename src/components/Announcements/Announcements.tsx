@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { Link } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { get } from "@/lib/requests";
 import { UIPush } from "@/components/UIPush";
 import { TypedEventEmitter } from "@/lib/TypedEventEmitter";
@@ -26,25 +26,23 @@ import ITC from "@/lib/ITC";
 import * as data from "@/lib/data";
 import { getBlocks } from "../BlockPlayer";
 import * as preferences from "@/lib/preferences";
+import {
+    activeAnnouncementsTracker,
+    getDisplayableEntries,
+    sortAnnouncements,
+    isUserGameParticipant,
+    shouldShowToGameParticipant,
+    Announcement,
+} from "@/lib/announcement_utils";
+import { AnnouncementEntry } from "./AnnouncementEntry";
 
 interface Events {
     announcement: any;
     "announcement-cleared": any;
 }
 
-export interface Announcement {
-    id: number;
-    expiration: number;
-    type: string;
-    creator: {
-        id: number;
-        username: string;
-        ui_class: string;
-    };
-    clear?: () => void;
-    link?: string;
-    text: string;
-}
+// Re-export Announcement type from utils for backward compatibility
+export type { Announcement } from "@/lib/announcement_utils";
 
 export const announcement_event_emitter = new TypedEventEmitter<Events>();
 export const active_announcements: { [id: number]: Announcement } = {};
@@ -62,6 +60,8 @@ export function announcementTypeMuted(announcement: Announcement): boolean {
 const announced: { [id: number]: Announcement } = {};
 // Holds the expirations dates of cleared announcements
 const cleared_announcements: { [id: number]: number } = data.get("announcements.cleared", {});
+// Store announcement timeouts
+const announcement_timeouts: { [id: number]: NodeJS.Timeout } = {};
 for (const k in cleared_announcements) {
     if (cleared_announcements[k] < Date.now()) {
         delete cleared_announcements[k];
@@ -69,145 +69,234 @@ for (const k in cleared_announcements) {
 }
 data.set("announcements.cleared", cleared_announcements);
 
-interface AnnouncementsState {
-    announcements: Announcement[];
-}
-export class Announcements extends React.PureComponent<{}, AnnouncementsState> {
-    constructor(props: {}) {
-        super(props);
-        this.state = {
-            announcements: [],
+export const Announcements: React.FC = React.memo(() => {
+    const [announcements, setAnnouncements] = React.useState<Announcement[]>([]);
+    const location = useLocation(); // Triggers re-render on navigation
+    const [isGameParticipant, setIsGameParticipant] = React.useState(false);
+    const [hasActiveAnnouncements, setHasActiveAnnouncements] = React.useState(
+        activeAnnouncementsTracker.getIsPresent(),
+    );
+
+    const clearAnnouncement = React.useCallback(
+        (id: number, dont_send_clear_announcement: boolean) => {
+            cleared_announcements[id] = Date.now() + 30 * 24 * 3600 * 1000;
+            announcement_event_emitter.emit("announcement-cleared", announced[id]);
+            data.set("announcements.cleared", cleared_announcements);
+
+            if (!dont_send_clear_announcement) {
+                ITC.send("clear-announcement", id);
+            }
+
+            setAnnouncements((prev) => prev.filter((announcement) => announcement.id !== id));
+        },
+        [],
+    );
+
+    const announce = React.useCallback(
+        (announcement: Announcement) => {
+            active_announcements[announcement.id] = announcement;
+
+            // Check if this is an update to an existing announcement
+            const isUpdate = announcement.id in announced;
+
+            announcement_event_emitter.emit("announcement", announcement);
+
+            if (announcement.id in cleared_announcements) {
+                announcement_event_emitter.emit("announcement-cleared", announcement);
+                return;
+            }
+
+            announcement.clear = () => clearAnnouncement(announcement.id, false);
+            announced[announcement.id] = announcement;
+
+            if (announcement.type !== "tournament") {
+                if (isUpdate) {
+                    // Update existing announcement
+                    setAnnouncements((prev) =>
+                        prev.map((a) => (a.id === announcement.id ? announcement : a)),
+                    );
+                } else {
+                    // Add new announcement
+                    setAnnouncements((prev) => [...prev, announcement]);
+                }
+
+                // Clear any existing timeout for this announcement
+                if (announcement_timeouts[announcement.id]) {
+                    clearTimeout(announcement_timeouts[announcement.id]);
+                }
+
+                // Set new timeout based on updated expiration
+                const timeout = setTimeout(
+                    () => {
+                        clearAnnouncement(announcement.id, true);
+                        delete active_announcements[announcement.id];
+                        delete announcement_timeouts[announcement.id];
+                    },
+                    moment(announcement.expiration).toDate().getTime() - Date.now(),
+                );
+                announcement_timeouts[announcement.id] = timeout;
+            } else {
+                const t = moment(announcement.expiration).toDate().getTime() - Date.now();
+                // Tournaments are announced 30 minutes prior, but allow
+                // up to 5 minutes of clock skew.
+                if (t > 0 && t < 35 * 60 * 1000) {
+                    data.set("active-tournament", announcement);
+                }
+            }
+        },
+        [clearAnnouncement],
+    );
+
+    const retract = React.useCallback(
+        (announcement: Announcement) => {
+            clearAnnouncement(announcement.id, true);
+        },
+        [clearAnnouncement],
+    );
+
+    // Register ITC handler (only once on mount)
+    React.useEffect(() => {
+        ITC.register("clear-announcement", (id: number) => {
+            console.log("ITC: Clearing announcement");
+            clearAnnouncement(id, true);
+        });
+        // ITC registrations are global and don't need cleanup
+    }, [clearAnnouncement]);
+
+    // Listen for ActiveAnnouncements presence changes
+    React.useEffect(() => {
+        const handlePresenceChange = (present?: boolean) => {
+            setHasActiveAnnouncements(present || false);
         };
 
-        ITC.register("clear-announcement", (id) => {
-            console.log("ITC: Clearing announcement");
-            this.clearAnnouncement(id, true);
-        });
-    }
+        activeAnnouncementsTracker.on("presence-changed", handlePresenceChange);
+        return () => {
+            activeAnnouncementsTracker.off("presence-changed", handlePresenceChange);
+        };
+    }, []);
 
-    componentDidMount() {
-        setTimeout(() => {
+    // Load announcements on mount (only once)
+    React.useEffect(() => {
+        const timeout = setTimeout(() => {
             /* Defer this get so we can load whatever page we're on first */
             get("announcements")
                 .then((announcements) => {
                     for (const announcement of announcements) {
-                        this.announce(announcement);
+                        announce(announcement);
                     }
                 })
                 .catch(errorLogger);
         }, 20);
+
+        return () => clearTimeout(timeout);
+    }, []); // Empty dependency array - only fetch once on mount
+
+    // Update game participant status when location changes or goban loads
+    React.useEffect(() => {
+        const checkParticipation = () => {
+            const user = data.get("user");
+            setIsGameParticipant(isUserGameParticipant(user?.id));
+        };
+
+        // Check after navigation with requestAnimationFrame
+        const rafId = requestAnimationFrame(() => {
+            checkParticipation();
+
+            // Also listen for goban load event if goban exists
+            const goban = (window as any).global_goban;
+            if (goban?.on) {
+                goban.on("load", checkParticipation);
+            }
+        });
+
+        return () => {
+            cancelAnimationFrame(rafId);
+            // Clean up goban load listener
+            const goban = (window as any).global_goban;
+            if (goban?.off) {
+                goban.off("load", checkParticipation);
+            }
+        };
+    }, [location]); // Re-run when location changes
+
+    // Sort announcements: system first, then by id (oldest first)
+    const sortedAnnouncements = React.useMemo(
+        () => sortAnnouncements(announcements),
+        [announcements],
+    );
+
+    // Don't show if ActiveAnnouncements is present on the page
+    if (hasActiveAnnouncements) {
+        return null;
     }
 
-    retract = (announcement: Announcement) => {
-        this.clearAnnouncement(announcement.id, true);
-    };
-    announce = (announcement: Announcement) => {
-        active_announcements[announcement.id] = announcement;
+    return (
+        <div className="Announcements">
+            <UIPush event="retract" channel="announcements" action={retract} />
+            <UIPush event="announcement" channel="announcements" action={announce} />
+            <UIPush event="retract" action={retract} />
+            <UIPush event="announcement" action={announce} />
 
-        if (announcement.id in announced) {
-            return;
-        }
+            {sortedAnnouncements.map((announcement, idx) => {
+                const creator_blocked = getBlocks(announcement.creator.id).block_announcements;
+                const type_muted = announcementTypeMuted(announcement);
 
-        announcement_event_emitter.emit("announcement", announcement);
+                // Hide non-system announcements if user is a game participant
+                if (!shouldShowToGameParticipant(announcement, isGameParticipant)) {
+                    return null;
+                }
 
-        if (announcement.id in cleared_announcements) {
-            announcement_event_emitter.emit("announcement-cleared", announcement);
-            return;
-        }
+                if (creator_blocked || type_muted) {
+                    return null;
+                }
 
-        announcement.clear = this.clearAnnouncement.bind(this, announcement.id, false);
-        announced[announcement.id] = announcement;
+                // All announcements should have entries now
+                if (!announcement.entries || announcement.entries.length === 0) {
+                    return null;
+                }
 
-        if (announcement.type !== "tournament") {
-            this.state.announcements.push(announcement);
-            this.forceUpdate();
+                const displayableEntries = getDisplayableEntries(announcement.entries);
 
-            setTimeout(
-                () => {
-                    this.clearAnnouncement(announcement.id, true);
-                    delete active_announcements[announcement.id];
-                },
-                moment(announcement.expiration).toDate().getTime() - Date.now(),
-            );
-        } else {
-            const t = moment(announcement.expiration).toDate().getTime() - Date.now();
-            // Tournaments are announced 30 minutes prior, but allow
-            // up to 5 minutes of clock skew.
-            if (t > 0 && t < 35 * 60 * 1000) {
-                data.set("active-tournament", announcement);
-            }
-        }
-    };
+                // If no displayable entries, don't show the announcement
+                if (displayableEntries.length === 0) {
+                    return null;
+                }
 
-    clearAnnouncement(id: number, dont_send_clear_announcement: boolean) {
-        cleared_announcements[id] = Date.now() + 30 * 24 * 3600 * 1000;
-        announcement_event_emitter.emit("announcement-cleared", announced[id]);
-        data.set("announcements.cleared", cleared_announcements);
-
-        if (!dont_send_clear_announcement) {
-            ITC.send("clear-announcement", id);
-        }
-
-        for (let i = 0; i < this.state.announcements.length; ++i) {
-            const announcement = this.state.announcements[i];
-            if (announcement.id === id) {
-                this.state.announcements.splice(i, 1);
-                break;
-            }
-        }
-
-        this.forceUpdate();
-    }
-
-    render() {
-        return (
-            <div className="Announcements">
-                <UIPush event="retract" channel="announcements" action={this.retract} />
-                <UIPush event="announcement" channel="announcements" action={this.announce} />
-                <UIPush event="retract" action={this.retract} />
-                <UIPush event="announcement" action={this.announce} />
-
-                {this.state.announcements.map((announcement, idx) => {
-                    const creator_blocked = getBlocks(announcement.creator.id).block_announcements;
-                    const type_muted = announcementTypeMuted(announcement);
-
-                    if (creator_blocked || type_muted) {
-                        return null;
-                    }
-
-                    /* No longer show twitch announcements, they'll show up automatically on GoTV */
-                    if (
-                        announcement.link &&
-                        announcement.link.toLowerCase().indexOf("twitch.tv") > 0
-                    ) {
-                        return null;
-                    }
-
-                    return (
-                        <div className="announcement" key={idx}>
-                            <i className="fa fa-times-circle" onClick={announcement.clear} />
-                            {announcement.link ? (
-                                announcement.link.indexOf("://") > 0 ? (
-                                    <a href={announcement.link} target="_blank">
-                                        {announcement.text}
-                                        <i>&nbsp; - {announcement.creator.username}</i>
-                                    </a>
-                                ) : (
-                                    <Link to={announcement.link}>
-                                        {announcement.text}
-                                        <i>&nbsp; - {announcement.creator.username}</i>
-                                    </Link>
-                                )
-                            ) : (
-                                <span>
-                                    {announcement.text}
-                                    <i>&nbsp; - {announcement.creator.username}</i>
-                                </span>
+                return (
+                    <div
+                        className={`announcement multi-link announcement-${announcement.type}`}
+                        key={idx}
+                        role="alert"
+                        aria-live="polite"
+                    >
+                        <i
+                            className="fa fa-times-circle"
+                            onClick={announcement.clear}
+                            role="button"
+                            tabIndex={0}
+                            aria-label="Dismiss announcement"
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter" || e.key === " ") {
+                                    e.preventDefault();
+                                    announcement.clear?.();
+                                }
+                            }}
+                        />
+                        <div className="announcement-content">
+                            {displayableEntries.map((entry, entryIdx) => (
+                                <div className="announcement-entry" key={entryIdx}>
+                                    <AnnouncementEntry entry={entry} />
+                                </div>
+                            ))}
+                            {announcement.type !== "system" && (
+                                <i className="announcement-creator">
+                                    &nbsp; - {announcement.creator.username}
+                                </i>
                             )}
                         </div>
-                    );
-                })}
-            </div>
-        );
-    }
-}
+                    </div>
+                );
+            })}
+        </div>
+    );
+});

@@ -142,5 +142,10 @@ ComponentName/
 ### Animation Guidelines
 
 -   Avoid disorienting animations like continuous pulsing, throbbing, or looping effects
--   Do not use translate effects on hover
+-   Do not use translate effects on hover (no transform: translateY or translateX)
 -   Keep animations subtle and purposeful - prefer opacity and shadow changes over position changes
+
+### Interaction Guidelines
+
+-   Background color changes on hover are only allowed for interactive elements (buttons, links, clickable items)
+-   Non-interactive elements should not have background color changes on hover
