@@ -328,7 +328,7 @@ export function NavBar(): React.ReactElement {
                                 external={true}
                             />
 
-                            {(user.is_moderator || user.moderator_powers) && (
+                            {!user.anonymous && (
                                 <MenuLink
                                     title={_("Reports Center")}
                                     to="/reports-center"
