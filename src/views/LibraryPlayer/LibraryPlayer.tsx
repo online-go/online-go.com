@@ -35,6 +35,7 @@ import { PlayerCacheEntry } from "@/lib/player_cache";
 import { AIDetection } from "@moderator-ui/AIDetection";
 import { MODERATOR_POWERS } from "@/lib/moderation";
 import { toast } from "@/lib/toast";
+import { CollectionSharingModal } from "@/components/CollectionSharingModal";
 
 type LibraryPlayerProperties = RouteComponentProps<{
     player_id: string;
@@ -65,6 +66,8 @@ interface LibraryPlayerState {
     sort_order: SortOrder;
     sort_descending: boolean;
     show_ai_detection: boolean;
+    sharing_modal_collection_id: number | null;
+    sharing_modal_collection_name: string;
 }
 
 interface Entry {
@@ -96,6 +99,8 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
             sort_order: preferences.get("sgf.sort-order") as SortOrder,
             sort_descending: preferences.get("sgf.sort-descending"),
             show_ai_detection: false,
+            sharing_modal_collection_id: null,
+            sharing_modal_collection_name: "",
         };
     }
 
@@ -394,6 +399,20 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
 
     toggleAIDetection = () => {
         this.setState({ show_ai_detection: !this.state.show_ai_detection });
+    };
+
+    openCollectionSharingModal = (collectionId: number, collectionName: string) => {
+        this.setState({
+            sharing_modal_collection_id: collectionId,
+            sharing_modal_collection_name: collectionName,
+        });
+    };
+
+    closeCollectionSharingModal = () => {
+        this.setState({
+            sharing_modal_collection_id: null,
+            sharing_modal_collection_name: "",
+        });
     };
 
     runAIAnalysis = async () => {
@@ -751,32 +770,53 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                                                 <div
                                                     key={collection.id}
                                                     className="collection-entry"
-                                                    onClick={this.setCollection.bind(
-                                                        this,
-                                                        collection.id,
-                                                    )}
                                                 >
-                                                    {owner && (
-                                                        <span className="private-lock">
-                                                            {collection["private"] ? (
-                                                                <i className="fa fa-lock" />
-                                                            ) : (
-                                                                <i className="fa fa-unlock" />
+                                                    <div
+                                                        className="collection-info"
+                                                        onClick={this.setCollection.bind(
+                                                            this,
+                                                            collection.id,
+                                                        )}
+                                                    >
+                                                        {owner && (
+                                                            <span className="private-lock">
+                                                                {collection["private"] ? (
+                                                                    <i className="fa fa-lock" />
+                                                                ) : (
+                                                                    <i className="fa fa-unlock" />
+                                                                )}
+                                                            </span>
+                                                        )}
+                                                        <span className="collection">
+                                                            {collection.name}/
+                                                        </span>
+                                                        <span className="game-count">
+                                                            {interpolate(
+                                                                _(
+                                                                    "{{library_collection_size}} games",
+                                                                ),
+                                                                {
+                                                                    library_collection_size:
+                                                                        collection.game_ct,
+                                                                },
                                                             )}
                                                         </span>
+                                                    </div>
+                                                    {owner && collection["private"] && (
+                                                        <button
+                                                            className="share-collection-btn"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                this.openCollectionSharingModal(
+                                                                    collection.id,
+                                                                    collection.name,
+                                                                );
+                                                            }}
+                                                            title={_("Share collection")}
+                                                        >
+                                                            <i className="fa fa-share"></i>
+                                                        </button>
                                                     )}
-                                                    <span className="collection">
-                                                        {collection.name}/
-                                                    </span>
-                                                    <span className="game-count">
-                                                        {interpolate(
-                                                            _("{{library_collection_size}} games"),
-                                                            {
-                                                                library_collection_size:
-                                                                    collection.game_ct,
-                                                            },
-                                                        )}
-                                                    </span>
                                                 </div>
                                             ))}
                                         </div>
@@ -881,6 +921,13 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                         }`}
                         additionalFilters={{}}
                         showControls={true}
+                    />
+                )}
+                {this.state.sharing_modal_collection_id && (
+                    <CollectionSharingModal
+                        collection_id={this.state.sharing_modal_collection_id}
+                        collection_name={this.state.sharing_modal_collection_name}
+                        onClose={this.closeCollectionSharingModal}
                     />
                 )}
             </div>
