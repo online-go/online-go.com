@@ -37,7 +37,42 @@
         flex-direction: column;
     }
 
-    .games {
+    .collection-header {
+        display: flex;
+        margin-bottom: 1rem;
+        align-items: anchor-center;
+
+        .collection-title {
+            display: flex;
+            justify-content: space-between;
+
+            h3 {
+                margin-right: 1rem;
+                font-size: font-size-big;
+                color: text-color;
+            }
+
+            .share-collection-btn {
+                display: flex;
+                align-items: center;
+                margin-left: 1rem;
+                gap: 0.5rem;
+                background: primary;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: font-size-small;
+
+                &:hover {
+                    background: primary-hover;
+                }
+
+                i {
+                    font-size: font-size-medium;
+                }
+            }
+        }
     }
 
     .Card {
@@ -179,19 +214,19 @@
 
     .upload-button {
         float: right;
-        
+
         button {
             margin-left: 0.5rem;
         }
     }
-    
+
     .embedded-ai-detection {
         margin-top: 2rem;
         padding: 1rem;
         background-color: #f8f9fa;
         border-radius: 8px;
         border: 1px solid #e9ecef;
-        
+
         h2 {
             margin-top: 0;
             margin-bottom: 1rem;
@@ -199,7 +234,7 @@
             border-bottom: 1px solid #ddd;
             padding-bottom: 0.5rem;
         }
-        
+
         .game-options {
             margin-bottom: 1rem;
             padding: 1rem;
@@ -207,7 +242,7 @@
             border-radius: 4px;
             border: 1px solid #dee2e6;
         }
-        
+
         .ai-detection {
             margin-top: 1rem;
         }

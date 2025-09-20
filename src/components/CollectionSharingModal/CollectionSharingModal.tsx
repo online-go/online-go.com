@@ -20,6 +20,7 @@ import { post, get, del } from "@/lib/requests";
 import { errorAlerter } from "@/lib/misc";
 import { _ } from "@/lib/translate";
 import { PlayerCacheEntry } from "@/lib/player_cache";
+import { PlayerAutocomplete } from "@/components/PlayerAutocomplete/PlayerAutocomplete";
 
 interface CollectionSharingModalProps {
     collection_id: number;
@@ -30,16 +31,11 @@ interface CollectionSharingModalProps {
 interface SharedWithItem {
     id: number;
     player?: PlayerCacheEntry;
-    group?: {
-        id: number;
-        name: string;
-    };
 }
 
 interface CollectionSharingModalState {
     sharedWith: SharedWithItem[];
-    newPlayerName: string;
-    newGroupName: string;
+    selectedPlayer: PlayerCacheEntry | null;
     loading: boolean;
 }
 
@@ -50,8 +46,7 @@ export function CollectionSharingModal({
 }: CollectionSharingModalProps): React.ReactElement {
     const [state, setState] = React.useState<CollectionSharingModalState>({
         sharedWith: [],
-        newPlayerName: "",
-        newGroupName: "",
+        selectedPlayer: null,
         loading: false,
     });
 
@@ -71,48 +66,17 @@ export function CollectionSharingModal({
     };
 
     const addPlayer = async () => {
-        if (!state.newPlayerName.trim()) {
+        if (!state.selectedPlayer) {
             return;
         }
 
         setState((prev) => ({ ...prev, loading: true }));
         try {
-            // First, resolve the player by username
-            const playerResponse = await get(`players/${state.newPlayerName.trim()}`);
-            if (playerResponse && playerResponse.id) {
-                await post(`library/collections/${collection_id}/acl`, {
-                    player_id: playerResponse.id,
-                });
-                setState((prev) => ({ ...prev, newPlayerName: "" }));
-                await refreshSharedWith();
-            } else {
-                alert(_("Player not found"));
-            }
-        } catch (err) {
-            errorAlerter(err);
-        } finally {
-            setState((prev) => ({ ...prev, loading: false }));
-        }
-    };
-
-    const addGroup = async () => {
-        if (!state.newGroupName.trim()) {
-            return;
-        }
-
-        setState((prev) => ({ ...prev, loading: true }));
-        try {
-            // First, resolve the group by name
-            const groupResponse = await get(`groups/${state.newGroupName.trim()}`);
-            if (groupResponse && groupResponse.id) {
-                await post(`library/collections/${collection_id}/acl`, {
-                    group_id: groupResponse.id,
-                });
-                setState((prev) => ({ ...prev, newGroupName: "" }));
-                await refreshSharedWith();
-            } else {
-                alert(_("Group not found"));
-            }
+            await post(`library/collections/${collection_id}/acl`, {
+                player_id: state.selectedPlayer.id,
+            });
+            setState((prev) => ({ ...prev, selectedPlayer: null }));
+            await refreshSharedWith();
         } catch (err) {
             errorAlerter(err);
         } finally {
@@ -122,30 +86,20 @@ export function CollectionSharingModal({
 
     const removeShare = async (itemId: number) => {
         const item = state.sharedWith.find((item) => item.id === itemId);
-        if (!item) {
+        if (!item || !item.player) {
             return;
         }
 
         setState((prev) => ({ ...prev, loading: true }));
         try {
-            if (item.player) {
-                await del(`library/collections/${collection_id}/acl`, {
-                    player_id: item.player.id,
-                });
-            } else if (item.group) {
-                await del(`library/collections/${collection_id}/acl`, { group_id: item.group.id });
-            }
+            await del(`library/collections/${collection_id}/acl`, {
+                player_id: item.player.id,
+            });
             await refreshSharedWith();
         } catch (err) {
             errorAlerter(err);
         } finally {
             setState((prev) => ({ ...prev, loading: false }));
-        }
-    };
-
-    const handleKeyPress = (e: React.KeyboardEvent, action: () => void) => {
-        if (e.key === "Enter") {
-            action();
         }
     };
 
@@ -168,10 +122,7 @@ export function CollectionSharingModal({
                         <div className="shared-items">
                             {state.sharedWith.map((item) => (
                                 <div key={item.id} className="shared-item">
-                                    <span className="name">
-                                        {item.player?.username || item.group?.name}
-                                        {item.player ? ` (${_("Player")})` : ` (${_("Group")})`}
-                                    </span>
+                                    <span className="name">{item.player?.username}</span>
                                     <button
                                         className="remove-btn"
                                         onClick={() => removeShare(item.id)}
@@ -188,39 +139,17 @@ export function CollectionSharingModal({
                 <div className="add-sharing">
                     <h4>{_("Add sharing:")}</h4>
                     <div className="add-player">
-                        <input
-                            type="text"
+                        <PlayerAutocomplete
+                            onComplete={(player) => {
+                                setState((prev) => ({ ...prev, selectedPlayer: player }));
+                            }}
                             placeholder={_("Player username")}
-                            value={state.newPlayerName}
-                            onChange={(e) =>
-                                setState((prev) => ({ ...prev, newPlayerName: e.target.value }))
-                            }
-                            onKeyPress={(e) => handleKeyPress(e, addPlayer)}
-                            disabled={state.loading}
                         />
                         <button
                             onClick={addPlayer}
-                            disabled={state.loading || !state.newPlayerName.trim()}
+                            disabled={state.loading || !state.selectedPlayer}
                         >
                             {_("Add Player")}
-                        </button>
-                    </div>
-                    <div className="add-group">
-                        <input
-                            type="text"
-                            placeholder={_("Group name")}
-                            value={state.newGroupName}
-                            onChange={(e) =>
-                                setState((prev) => ({ ...prev, newGroupName: e.target.value }))
-                            }
-                            onKeyPress={(e) => handleKeyPress(e, addGroup)}
-                            disabled={state.loading}
-                        />
-                        <button
-                            onClick={addGroup}
-                            disabled={state.loading || !state.newGroupName.trim()}
-                        >
-                            {_("Add Group")}
                         </button>
                     </div>
                 </div>
