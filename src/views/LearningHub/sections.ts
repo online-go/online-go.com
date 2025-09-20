@@ -134,6 +134,16 @@ import { BL2Eye1 } from "./Sections/BeginnerLevel2/Eye1";
 import { BL2Eye2 } from "./Sections/BeginnerLevel2/Eye2";
 import { BL2Eye3 } from "./Sections/BeginnerLevel2/Eye3";
 import { BL2Endgame1 } from "./Sections/BeginnerLevel2/Endgame1";
+import { BL2Endgame2 } from "./Sections/BeginnerLevel2/Endgame2";
+import { BL2Endgame3 } from "./Sections/BeginnerLevel2/Endgame3";
+import { BL2Endgame4 } from "./Sections/BeginnerLevel2/Endgame4";
+import { BL2Endgame5 } from "./Sections/BeginnerLevel2/Endgame5";
+import { BL2LifeDeath1 } from "./Sections/BeginnerLevel2/LifeDeath1";
+import { BL2LifeDeath2 } from "./Sections/BeginnerLevel2/LifeDeath2";
+import { BL2LifeDeath3 } from "./Sections/BeginnerLevel2/LifeDeath3";
+import { BL2LifeDeath4 } from "./Sections/BeginnerLevel2/LifeDeath4";
+import { BL2LifeDeath5 } from "./Sections/BeginnerLevel2/LifeDeath5";
+import { BL2LifeDeath6 } from "./Sections/BeginnerLevel2/LifeDeath6";
 
 // export class FalseEyes extends LearningHubSection {
 //     static section(): string {
@@ -384,6 +394,16 @@ export const sections: [string, any[]][] = [
             BL2Eye2,
             BL2Eye3,
             BL2Endgame1,
+            BL2Endgame2,
+            BL2Endgame3,
+            BL2Endgame4,
+            BL2Endgame5,
+            BL2LifeDeath1,
+            BL2LifeDeath2,
+            BL2LifeDeath3,
+            BL2LifeDeath4,
+            BL2LifeDeath5,
+            BL2LifeDeath6,
         ],
     ],
 
