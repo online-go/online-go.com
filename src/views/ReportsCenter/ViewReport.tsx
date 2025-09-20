@@ -231,6 +231,23 @@ export function ViewReport({
         user.is_moderator ||
         (report.report_type === "ai_use" && user.moderator_powers & MODERATOR_POWERS.AI_DETECTOR);
 
+    const voters_to_show = user.is_moderator
+        ? report.voters
+        : // Note: AI detectors are the only other group that can see "voters"
+          // Hacky filter here to make sure we only show 'AI detection' votes to AI detectors
+          // We want to exclude showing Dan CM votes, Dan CMs are not "accountable" to AI Detectors
+          report.voters?.filter((voter) =>
+              [
+                  // possible values for AI detection votes
+                  "definitely_ai",
+                  "likely_ai",
+                  "assess_ai_play",
+                  "no_ai_use_evident",
+                  "no_ai_use_bad_report",
+              ].includes(voter.action),
+          );
+
+    console.log("voters_to_show", voters_to_show, report.voters);
     return (
         <div>
             <KBShortcut shortcut="left" action={nav_prev} />
@@ -488,7 +505,7 @@ export function ViewReport({
                             <div className="notes">
                                 <h4>
                                     {llm_pgettext(
-                                        "Heading the section containing notes from dissenting voters",
+                                        "Heading of the section containing notes from dissenting voters",
                                         "Dissenting voter notes",
                                     )}
                                 </h4>
@@ -539,13 +556,15 @@ export function ViewReport({
                                     </ul>
                                 </>
                             )}
-                            {user.is_moderator && (
+                            {(user.is_moderator ||
+                                ((user.moderator_powers & MODERATOR_POWERS.AI_DETECTOR) !== 0 &&
+                                    report.report_type === "ai_use")) && (
                                 <>
-                                    {report.voters?.length > 0 && (
+                                    {voters_to_show?.length > 0 && (
                                         <div className="voters">
                                             <h4>{_("Voters:")}</h4>
                                             <ul>
-                                                {report.voters?.map((vote) => (
+                                                {voters_to_show?.map((vote) => (
                                                     <li key={vote.voter_id}>
                                                         <Player user={vote.voter_id} />:{" "}
                                                         {vote.action}

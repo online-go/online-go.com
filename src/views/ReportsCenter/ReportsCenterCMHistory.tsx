@@ -18,8 +18,11 @@
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import { PaginatedTable } from "@/components/PaginatedTable";
+import { useUser } from "@/lib/hooks";
+import { MODERATOR_POWERS } from "@/lib/moderation";
 
 export function ReportsCenterCMHistory(): React.ReactElement {
+    const user = useUser();
     const navigateTo = useNavigate();
 
     return (
@@ -79,13 +82,20 @@ export function ReportsCenterCMHistory(): React.ReactElement {
                     {
                         header: "Your vote",
                         className: () => "your-vote",
-                        render: (X) => `"${X.users_vote}"`,
+                        render: (X) => `${X.users_vote || "-"}`,
                     },
-                    {
-                        header: "Your outcome",
-                        className: () => "your-outcome",
-                        render: (X) => voteOutcomePresentation(X.users_vote_category),
-                    },
+                    ...(user.moderator_powers & MODERATOR_POWERS.AI_DETECTOR
+                        ? [
+                              /* "outcome" is not applicable for AI Detectors */
+                          ]
+                        : [
+                              {
+                                  header: "Your outcome",
+                                  className: () => "your-outcome",
+                                  render: (X: any) =>
+                                      voteOutcomePresentation(X.users_vote_category),
+                              },
+                          ]),
                 ]}
             />
         </div>
