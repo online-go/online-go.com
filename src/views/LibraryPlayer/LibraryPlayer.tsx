@@ -141,6 +141,9 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                 update.collection_id = "0";
             }
             update.games_checked = {};
+            // Close sharing modal when navigating to a different collection
+            update.sharing_modal_collection_id = null;
+            update.sharing_modal_collection_name = "";
             updated = true;
         }
 
