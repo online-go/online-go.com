@@ -657,7 +657,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                         ))}
                     </div>
                     {owner && (
-                        <div className="new-collection flex center-vertically">
+                        <div className="new-collection">
                             {Object.keys(this.state.games_checked).length === 0 && (
                                 <div className="name-checkbox">
                                     <input
@@ -666,39 +666,34 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                                         onChange={this.setNewCollectionName}
                                         placeholder={_("New collection name")}
                                     />
-                                    {this.state.new_collection_name.trim() !== "" && (
-                                        <div className="row">
-                                            <div
-                                                className="private-toggle"
-                                                onClick={() =>
-                                                    this.setState({
-                                                        new_collection_private:
-                                                            !this.state.new_collection_private,
-                                                    })
+                                    <div className="row">
+                                        <div
+                                            className={`private-toggle ${
+                                                this.state.new_collection_name.trim() === ""
+                                                    ? "disabled"
+                                                    : ""
+                                            }`}
+                                            onClick={() =>
+                                                this.setState({
+                                                    new_collection_private:
+                                                        !this.state.new_collection_private,
+                                                })
+                                            }
+                                        >
+                                            <i
+                                                className={
+                                                    this.state.new_collection_private
+                                                        ? "fa fa-lock"
+                                                        : "fa fa-unlock"
                                                 }
-                                                style={{
-                                                    display: "flex",
-                                                    alignItems: "center",
-                                                    cursor: "pointer",
-                                                    padding: "0.25rem 0",
-                                                }}
-                                            >
-                                                <i
-                                                    className={
-                                                        this.state.new_collection_private
-                                                            ? "fa fa-lock"
-                                                            : "fa fa-unlock"
-                                                    }
-                                                    style={{ marginRight: "0.5rem" }}
-                                                ></i>
-                                                <span>
-                                                    {this.state.new_collection_private
-                                                        ? _("Private collection")
-                                                        : _("Open collection")}
-                                                </span>
-                                            </div>
+                                            ></i>
+                                            <span>
+                                                {this.state.new_collection_private
+                                                    ? _("Private collection")
+                                                    : _("Open collection")}
+                                            </span>
                                         </div>
-                                    )}
+                                    </div>
                                 </div>
                             )}
                             {Object.keys(this.state.games_checked).length === 0 && (
@@ -862,7 +857,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                                                     }}
                                                     title={_("Share collection")}
                                                 >
-                                                    <i className="fa fa-users"></i>
+                                                    <i className="fa fa-share-alt"></i>
                                                     {_("Share")}
                                                 </button>
                                             )}
