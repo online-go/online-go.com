@@ -135,10 +135,10 @@ export function PuzzleCollection(): React.ReactElement | null {
                 </dl>
 
                 <div className="update">
-                    <button className="btn reject" onClick={remove}>
+                    <button className="reject" onClick={remove}>
                         {_("Delete")}
                     </button>
-                    <button className="btn primary" onClick={save}>
+                    <button className="primary" onClick={save}>
                         {_("Save")}
                     </button>
                 </div>

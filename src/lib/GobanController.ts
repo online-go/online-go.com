@@ -149,16 +149,20 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
 
         this.goban.on("gamedata", (gamedata) => {
             try {
-                if (isLiveGame(gamedata.time_control, gamedata.width, gamedata.height)) {
-                    this.goban.one_click_submit = preferences.get("one-click-submit-live");
-                    this.goban.double_click_submit = preferences.get("double-click-submit-live");
-                } else {
-                    this.goban.one_click_submit = preferences.get(
-                        "one-click-submit-correspondence",
-                    );
-                    this.goban.double_click_submit = preferences.get(
-                        "double-click-submit-correspondence",
-                    );
+                if (gamedata.time_control) {
+                    if (isLiveGame(gamedata.time_control, gamedata.width, gamedata.height)) {
+                        this.goban.one_click_submit = preferences.get("one-click-submit-live");
+                        this.goban.double_click_submit = preferences.get(
+                            "double-click-submit-live",
+                        );
+                    } else {
+                        this.goban.one_click_submit = preferences.get(
+                            "one-click-submit-correspondence",
+                        );
+                        this.goban.double_click_submit = preferences.get(
+                            "double-click-submit-correspondence",
+                        );
+                    }
                 }
             } catch (e) {
                 console.error(e.stack);
