@@ -63,7 +63,7 @@ export function BotControls({
             <div className="well">
                 <h5>
                     {_("API Key")}
-                    <button className="btn btn-xs btn-default" onClick={generateAPIKey}>
+                    <button className="xs" onClick={generateAPIKey}>
                         {_("Generate API Key")}
                     </button>
                 </h5>
@@ -77,7 +77,7 @@ export function BotControls({
                     onChange={(event) => onBotAiChanged(event.target.value)}
                 />
                 <div style={{ textAlign: "right" }}>
-                    <button className="btn btn-xs btn-default" onClick={saveBot}>
+                    <button className="xs" onClick={saveBot}>
                         {_("Save")}
                     </button>
                 </div>

@@ -42,8 +42,8 @@
         overflow: hidden;
         transition: box-shadow 0.2s ease, transform 0.15s ease;
         border: 1px solid;
-        themed(border-color, shade4);
-        themed(background-color, bg);
+        themed border-color shade4;
+        themed background-color bg;
         position: relative;
 
         // Minimal vertical movement for user comfort
@@ -59,34 +59,34 @@
         // Type-specific color accents
         &.type-system {
             border-left: 4px solid;
-            themed(border-left-color, info);
+            themed border-left-color info;
 
             .type-indicator {
-                themed(color, info);
+                themed color info;
             }
         }
 
         &.type-event {
             border-left: 4px solid;
-            themed(border-left-color, success);
+            themed border-left-color success;
 
             .type-indicator {
-                themed(color, success);
+                themed color success;
             }
         }
 
         &.type-stream {
             border-left: 4px solid;
-            themed(border-left-color, primary);
+            themed border-left-color primary;
 
             .type-indicator {
-                themed(color, primary);
+                themed color primary;
             }
         }
 
         &.type-default {
             border-left: 4px solid;
-            themed(border-left-color, shade3);
+            themed border-left-color shade3;
         }
     }
 
@@ -96,9 +96,9 @@
         justify-content: space-between;
         align-items: center;
         padding: 1rem 1.25rem;
-        themed(background-color, shade6);
+        themed background-color shade5;
         border-bottom: 1px solid;
-        themed(border-bottom-color, shade5);
+        themed border-bottom-color shade5;
 
         .header-left {
             display: flex;
@@ -132,7 +132,7 @@
             gap: 0.5rem;
 
             i {
-                themed(color, shade2);
+                themed color shade2;
                 font-size: 0.9rem;
             }
 
@@ -151,7 +151,7 @@
                 font-weight: 500;
                 text-transform: uppercase;
                 letter-spacing: 0.02em;
-                themed(color, fg);
+                themed color fg;
                 border: 1px solid rgba(100, 150, 200, 0.2);
             }
         }
@@ -160,20 +160,10 @@
             display: flex;
             gap: 0.5rem;
 
-            .action-btn {
+            button {
                 display: flex;
                 align-items: center;
                 gap: 0.35rem;
-                padding: 0.4rem 0.75rem;
-                border-radius: 0.25rem;
-                border: 1px solid;
-                themed(border-color, shade4);
-                themed(background-color, bg);
-                themed(color, fg);
-                font-size: 0.85rem;
-                font-weight: 500;
-                cursor: pointer;
-                transition: all 0.15s ease;
 
                 i {
                     font-size: 0.85rem;
@@ -183,20 +173,6 @@
                     @media (max-width: 600px) {
                         display: none;
                     }
-                }
-
-                &:hover {
-                    themed(background-color, shade5);
-                }
-
-                &.edit-btn:hover {
-                    themed(border-color, primary);
-                    themed(color, primary);
-                }
-
-                &.delete-btn:hover {
-                    themed(border-color, reject);
-                    themed(color, reject);
                 }
             }
         }
@@ -209,7 +185,7 @@
         .announcement-message {
             font-size: 1rem;
             line-height: 1.6;
-            themed(color, fg);
+            themed color fg;
             margin-bottom: 1rem;
 
             .primary-language-badge {
@@ -243,13 +219,13 @@
                     padding: 0.75rem;
                     border-radius: 0.35rem;
                     border: 1px solid;
-                    themed(border-color, shade5);
-                    themed(background-color, shade6);
+                    themed border-color shade5;
+                    themed background-color shade5;
                     text-decoration: none;
                     transition: all 0.15s ease;
 
                     i {
-                        themed(color, primary);
+                        themed color primary;
                         font-size: 0.9rem;
                         margin-top: 0.15rem;
                         flex-shrink: 0;
@@ -261,7 +237,7 @@
 
                         .entry-primary-text {
                             display: block;
-                            themed(color, fg);
+                            themed color fg;
                             font-weight: 500;
                             margin-bottom: 0.25rem;
                             word-break: break-word;
@@ -275,7 +251,7 @@
                             .translation-item {
                                 display: inline-block;
                                 font-size: 0.85rem;
-                                themed(color, shade2);
+                                themed color shade2;
 
                                 .lang-code {
                                     font-weight: 600;
@@ -287,12 +263,12 @@
                     }
 
                     &:hover {
-                        themed(background-color, shade5);
-                        themed(border-color, primary);
+                        themed background-color shade5;
+                        themed border-color primary;
                         transform: translateX(2px);
 
                         i {
-                            themed-lighten(color, primary, 10%);
+                            themed color primary;
                         }
                     }
                 }
@@ -309,8 +285,8 @@
                 gap: 0.5rem;
                 padding: 0.5rem 0.75rem;
                 border-radius: 0.25rem;
-                themed(background-color, primary-shade);
-                themed(color, primary);
+                themed background-color primary;
+                themed color primary;
                 text-decoration: none;
                 font-size: 0.9rem;
                 transition: all 0.15s ease;
@@ -320,8 +296,8 @@
                 }
 
                 &:hover {
-                    themed(background-color, primary);
-                    themed(color, colored-background-fg);
+                    themed background-color primary;
+                    themed color colored-background-fg;
                 }
             }
         }
@@ -333,9 +309,9 @@
         justify-content: space-between;
         align-items: center;
         padding: 0.75rem 1.25rem;
-        themed(background-color, shade6);
+        themed background-color shade5;
         border-top: 1px solid;
-        themed(border-top-color, shade5);
+        themed border-top-color shade5;
         font-size: 0.85rem;
 
         .creator-info {
@@ -347,7 +323,7 @@
             display: flex;
             align-items: center;
             gap: 1rem;
-            themed(color, shade2);
+            themed color shade2;
 
             .expiration-info,
             .edit-info {
@@ -389,7 +365,7 @@
         max-width: 90vw;
 
         &.invalid {
-            themed-important: border-color reject;
+            themed border-color reject !important;
         }
     }
 
@@ -439,16 +415,16 @@
             }
 
             &::-webkit-scrollbar-track {
-                themed(background, shade5);
+                themed background shade5;
                 border-radius: 3px;
             }
 
             &::-webkit-scrollbar-thumb {
-                themed(background, shade3);
+                themed background shade3;
                 border-radius: 3px;
 
                 &:hover {
-                    themed(background, shade2);
+                    themed background shade2;
                 }
             }
         }
@@ -477,13 +453,13 @@
         a {
             display: inline-block;
             padding: 0.125rem 0.5rem;
-            themed(background, primary-shade);
+            themed background primary;
             border-radius: 3px;
             text-decoration: none;
             
             &:hover {
-                themed(background, primary);
-                themed(color, colored-background-fg);
+                themed background primary;
+                themed color colored-background-fg;
             }
         }
     }
@@ -508,11 +484,11 @@
 // Inline translation styles
 .AnnouncementCenter .link-item-v3 {
     border: 1px solid;
-    themed(border-color, shade4);
+    themed border-color shade4;
     border-radius: 0.25rem;
     padding: 0.75rem;
     margin-bottom: 0.75rem;
-    themed(background-color, shade6);
+    themed background-color shade5;
 
     .link-translations {
         .link-url-row {
@@ -525,16 +501,16 @@
                 flex: 1;
                 padding: 0.35rem 0.5rem;
                 border: 1px solid;
-                themed(border-color, shade4);
+                themed border-color shade4;
                 border-radius: 0.25rem;
-                themed(background-color, bg);
-                themed(color, fg);
+                themed background-color bg;
+                themed color fg;
                 font-family: monospace;
                 font-size: 0.9rem;
 
                 &:focus {
                     outline: none;
-                    themed(border-color, primary);
+                    themed border-color primary;
                 }
             }
 
@@ -556,15 +532,15 @@
                 width: 150px;
                 padding: 0.35rem 0.5rem;
                 border: 1px solid;
-                themed(border-color, shade4);
+                themed border-color shade4;
                 border-radius: 0.25rem;
-                themed(background-color, bg);
-                themed(color, fg);
+                themed background-color bg;
+                themed color fg;
                 font-size: 0.85rem;
                 
                 &:focus {
                     outline: none;
-                    themed(border-color, primary);
+                    themed border-color primary;
                 }
             }
 
@@ -572,14 +548,14 @@
                 flex: 1;
                 padding: 0.35rem 0.5rem;
                 border: 1px solid;
-                themed(border-color, shade4);
+                themed border-color shade4;
                 border-radius: 0.25rem;
-                themed(background-color, bg);
-                themed(color, fg);
+                themed background-color bg;
+                themed color fg;
                 
                 &:focus {
                     outline: none;
-                    themed(border-color, primary);
+                    themed border-color primary;
                 }
             }
             
@@ -595,7 +571,7 @@
                     cursor: not-allowed;
                     
                     &:hover {
-                        themed(background-color, shade6);
+                        themed background-color shade5;
                     }
                 }
             }
@@ -608,43 +584,9 @@
             flex-wrap: wrap;
         }
 
-        .add-translation-btn,
-        .translate-btn,
-        .clear-btn {
-            padding: 0.35rem 0.75rem;
-            border: 1px solid;
-            themed(border-color, shade4);
-            themed(background-color, shade5);
-            themed(color, fg);
-            border-radius: 0.25rem;
-            cursor: pointer;
-            font-size: 0.85rem;
-            transition: all 0.15s;
-
-            &:hover {
-                themed(background-color, shade4);
-            }
-            
+        button {
             i {
                 margin-right: 0.25rem;
-            }
-        }
-        
-        .translate-btn {
-            themed(background-color, primary);
-            themed(color, colored-background-fg);
-            themed(border-color, primary);
-            
-            &:hover {
-                themed-lighten(background-color, primary, 10%);
-            }
-        }
-        
-        .clear-btn {
-            themed(background-color, shade6);
-            
-            &:hover {
-                themed(background-color, shade5);
             }
         }
     }

@@ -689,7 +689,7 @@ export function AnnouncementCenter(): React.ReactElement {
 
                                                 <div className="translation-actions">
                                                     <button
-                                                        className="add-translation-btn"
+                                                        className="xs"
                                                         onClick={() => addTranslation(index)}
                                                         title={_("Add translation")}
                                                     >
@@ -698,7 +698,7 @@ export function AnnouncementCenter(): React.ReactElement {
                                                     </button>
 
                                                     <LoadingButton
-                                                        className="translate-btn"
+                                                        className="primary xs"
                                                         onClick={() => translateEntry(index)}
                                                         title={_("Auto-translate to all languages")}
                                                         loading={translatingEntries.has(index)}
@@ -709,7 +709,7 @@ export function AnnouncementCenter(): React.ReactElement {
                                                     </LoadingButton>
 
                                                     <button
-                                                        className="clear-btn"
+                                                        className="xs"
                                                         onClick={() => clearTranslations(index)}
                                                         title={_(
                                                             "Clear all translations except the first",
@@ -838,7 +838,7 @@ export function AnnouncementCenter(): React.ReactElement {
                                         {canEdit && (
                                             <div className="action-buttons">
                                                 <button
-                                                    className="action-btn edit-btn"
+                                                    className="xs"
                                                     onClick={() => editAnnouncement(announcement)}
                                                     title={_("Edit announcement")}
                                                 >
@@ -846,7 +846,7 @@ export function AnnouncementCenter(): React.ReactElement {
                                                     <span className="btn-text">{_("Edit")}</span>
                                                 </button>
                                                 <button
-                                                    className="action-btn delete-btn"
+                                                    className="reject xs"
                                                     onClick={() => deleteAnnouncement(announcement)}
                                                     title={_("Delete announcement")}
                                                 >

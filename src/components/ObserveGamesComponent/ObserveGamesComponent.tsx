@@ -331,21 +331,19 @@ export class ObserveGamesComponent extends React.PureComponent<
                                     })}
                                 </button>
 
-                                <button className="btn default" onClick={this.toggleShowFilters}>
+                                <button className="" onClick={this.toggleShowFilters}>
                                     <i className="fa fa-filter"></i>{" "}
                                     {n_filters ? `(${n_filters})` : ""}
                                 </button>
                                 <button
-                                    className={
-                                        "btn default " + (this.state.force_list ? "active" : "")
-                                    }
+                                    className={this.state.force_list ? "active" : ""}
                                     onClick={this.toggleForceList}
                                 >
                                     <i className="fa fa-list"></i>
                                 </button>
                             </div>
 
-                            <button className="btn xs primary" onClick={this.refresh}>
+                            <button className="xs primary" onClick={this.refresh}>
                                 <i className="fa fa-refresh"></i> {_("Refresh")}
                             </button>
 

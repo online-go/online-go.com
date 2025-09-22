@@ -898,10 +898,10 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
 
         return (
             <div style={{ visibility: goban.engine.cur_move.parent ? "visible" : "hidden" }}>
-                <button className="btn btn-default" onClick={this.undo}>
+                <button className="" onClick={this.undo}>
                     <i className="fa fa-step-backward"></i> {_("Undo")}
                 </button>
-                <button className="btn btn-warning pull-right" onClick={this.doReset}>
+                <button className="danger pull-right" onClick={this.doReset}>
                     <i className="fa fa-refresh"></i> {_("Reset")}
                 </button>
             </div>
