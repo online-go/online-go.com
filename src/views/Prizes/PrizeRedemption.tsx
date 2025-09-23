@@ -326,8 +326,8 @@ export function PrizeRedemption(): React.ReactElement {
                                 : upgradeInfo && upgradeInfo.current_level >= 4
                                   ? "max-level"
                                   : codeValidated && prizeInfo?.is_available
-                                    ? "redeem-ready"
-                                    : "check-code"
+                                    ? "success redeem-ready"
+                                    : "primary check-code"
                         }
                         disabled={
                             loading ||
@@ -552,7 +552,7 @@ export function PrizeRedemption(): React.ReactElement {
                             "Your prize has been successfully redeemed. Enjoy!",
                         )}
                     </p>
-                    <button onClick={onCancel}>
+                    <button className="primary" onClick={onCancel}>
                         {pgettext("Close success dialog button", "Close")}
                     </button>
                 </div>

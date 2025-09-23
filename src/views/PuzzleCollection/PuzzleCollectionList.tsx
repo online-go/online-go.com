@@ -36,7 +36,7 @@ export function PuzzleCollectionList(): React.ReactElement {
             <div className="PuzzleList container">
                 <div className="puzzle-list-container" style={{ clear: "both" }}>
                     <div style={{ textAlign: "center", margin: "1rem" }}>
-                        <button className="btn primary" onClick={newPuzzleCollection}>
+                        <button className="primary" onClick={newPuzzleCollection}>
                             {_("New puzzle collection")}
                         </button>
                     </div>

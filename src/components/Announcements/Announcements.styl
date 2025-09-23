@@ -36,26 +36,26 @@
         width: 100%;  // Use full container width
         display: inline-flex;
         padding: 0.75rem 1rem;  // More generous padding
-        themed: background-color bg;
+        themed background-color bg;
         align-items: center;
         box-sizing: border-box;
         // Enhanced shadow for depth without being heavy
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.12);
         overflow: hidden;
         border-left: 3px solid transparent;
-        themed: border-left-color shade3;  // Default color for non-system announcements
+        themed border-left-color shade3;  // Default color for non-system announcements
         margin-bottom: 0;  // No gap between announcements
         transition: all 0.2s ease;
 
         // Add top border for separation (except first announcement)
         &:not(:first-child) {
             border-top: 1px solid;
-            themed: border-top-color shade5;
+            themed border-top-color shade5;
         }
 
         // System announcements get primary color
         &.announcement-system {
-            themed: border-left-color primary;
+            themed border-left-color primary;
         }
 
         .fa-times-circle {
@@ -73,7 +73,7 @@
         }
 
         i {
-            themed: color fg;
+            themed color fg;
         }
 
         &.multi-link {
@@ -104,7 +104,7 @@
                         left: 0;
                         right: 0;
                         height: 1px;
-                        themed: background-color shade5;
+                        themed background-color shade5;
                         opacity: 0.5;
                     }
 
@@ -123,11 +123,11 @@
                     }
 
                     span {
-                        themed: color fg;
+                        themed color fg;
                     }
 
                     a {
-                        themed: color primary;
+                        themed color primary;
                         text-decoration: none;
 
                         // External link indicator
@@ -159,7 +159,7 @@
                     padding-top: 0.5rem;
                     font-size: 0.8rem;
                     opacity: 0.6;
-                    themed: border-top-color shade5;
+                    themed border-top-color shade5;
                     border-top: 1px solid;
                     font-style: italic;
                 }

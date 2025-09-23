@@ -423,7 +423,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
                             count: this.state.page_visits || "...",
                         })}
                     </span>
-                    <button className="btn s" onClick={this.showVisitStats}>
+                    <button className="s" onClick={this.showVisitStats}>
                         {pgettext(
                             "A button that shows details of joseki visit statistics",
                             "details",
@@ -440,7 +440,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
                         </div>
                         <h3>{_("Misc Admin")}</h3>
                         <div className="misc-admin">
-                            <button className={"btn"} onClick={this.toggleLockdown}>
+                            <button className="" onClick={this.toggleLockdown}>
                                 {this.props.db_locked_down ? _("Unlock") : _("Lockdown")}
                             </button>
                             <span>

@@ -35,20 +35,20 @@
         justify-content: space-between;
         align-items: center;
         padding: 0.75rem 1rem;
-        themed: background-color bg;
+        themed background-color bg;
         border-left: 3px solid transparent;
-        themed: border-left-color shade3;  // Default color for non-system announcements
+        themed border-left-color shade3;  // Default color for non-system announcements
         transition: all 0.2s ease;
 
         // Add top border for separation (except first announcement)
         &:not(:first-child) {
             border-top: 1px solid;
-            themed: border-top-color shade5;
+            themed border-top-color shade5;
         }
 
         // System announcements get primary color
         &.announcement-system {
-            themed: border-left-color primary;
+            themed border-left-color primary;
         }
 
         &:hover {
@@ -74,7 +74,7 @@
                 }
 
                 a {
-                    themed: color primary;
+                    themed color primary;
                     text-decoration: none;
 
                     &:hover {
@@ -83,7 +83,7 @@
                 }
 
                 span {
-                    themed: color fg;
+                    themed color fg;
                 }
             }
 

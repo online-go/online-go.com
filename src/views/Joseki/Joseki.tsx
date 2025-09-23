@@ -1372,7 +1372,7 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
                 </button>
             )}
             {this.state.user_can_edit && this.state.db_locked_down && (
-                <button className={"btn s "} disabled>
+                <button className={"s"} disabled>
                     Edit <i className="fa fa-lock" />
                 </button>
             )}
@@ -2310,7 +2310,7 @@ class EditPane extends React.Component<EditProps, EditState> {
                     <textarea onChange={this.handleEditInput} value={this.state.new_description} />
 
                     <div className="position-edit-button">
-                        <button className="btn xs primary" onClick={this.saveNewInfo}>
+                        <button className="xs primary" onClick={this.saveNewInfo}>
                             {_("Save")}
                         </button>
                     </div>
