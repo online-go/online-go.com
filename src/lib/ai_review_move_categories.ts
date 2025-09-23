@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { JGOFAIReview, JGOFNumericPlayerColor, GobanRenderer } from "goban";
+import { JGOFAIReview, JGOFNumericPlayerColor, GobanEngine } from "goban";
 import { sameIntersection } from "@/lib/misc";
 
 export const DEFAULT_SCORE_DIFF_THRESHOLDS: ScoreDiffThresholds = {
@@ -101,20 +101,15 @@ function medianList(numbers: { scoreLoss: number }[]): number {
     return median;
 }
 
-function handicapOffset(goban: GobanRenderer): number {
-    if (
-        goban &&
-        goban.engine &&
-        goban.engine.free_handicap_placement &&
-        goban.engine.handicap > 0
-    ) {
-        return goban.engine.handicap;
+function handicapOffset(engine: GobanEngine): number {
+    if (engine && engine.free_handicap_placement && engine.handicap > 0) {
+        return engine.handicap;
     }
     return 0;
 }
 
-function getPlayerColorsMoveList(goban: GobanRenderer) {
-    const init_move = goban.engine.move_tree;
+function getPlayerColorsMoveList(engine: GobanEngine) {
+    const init_move = engine.move_tree;
     const move_list: any[] = [];
     let cur_move = init_move.trunk_next;
 
@@ -127,7 +122,7 @@ function getPlayerColorsMoveList(goban: GobanRenderer) {
 
 function categorizeFastReview(
     ai_review: JGOFAIReview,
-    goban: GobanRenderer,
+    engine: GobanEngine,
     handicap_offset: number,
     move_player_list: any[],
     scoreDiffThresholds?: ScoreDiffThresholds,
@@ -221,7 +216,7 @@ function categorizeFullReviewNew(
         white: { Excellent: [], Great: [], Good: [], Inaccuracy: [], Mistake: [], Blunder: [] },
     };
 
-    console.log("full review new categorisation... handicap_offset", handicap_offset);
+    //console.log("full review new categorisation... handicap_offset", handicap_offset);
     let moves_missing = 0;
     for (
         let move_index = handicap_offset;
@@ -251,6 +246,7 @@ function categorizeFullReviewNew(
 
         const score_loss = is_b_player ? effective_score_loss : -1 * effective_score_loss;
 
+        /*
         console.log("------Player", player, "to play at move index", move_index, " ------");
         console.log(
             `(1) score after last move -> \nai_review.moves[${move_index}].score: `,
@@ -269,6 +265,7 @@ function categorizeFullReviewNew(
             score_after_players_move.toFixed(3),
         );
         console.log(" => effective player score loss ->\n (1) - (3) - (2):", score_loss.toFixed(3));
+        */
 
         if (includeNegativeScoreLoss || score_loss >= 0) {
             total_score_loss[player] += score_loss;
@@ -412,10 +409,10 @@ function categorizeFullReviewOld(
 
 function validateReviewData(
     ai_review: JGOFAIReview,
-    goban: GobanRenderer,
+    engine: GobanEngine,
     b_player: number,
 ): { isValid: boolean; shouldShowTable: boolean } {
-    const is_uploaded = goban.config.original_sgf !== undefined;
+    const is_uploaded = engine.config.original_sgf !== undefined;
     const scores = ai_review.scores;
 
     if (!scores) {
@@ -423,10 +420,10 @@ function validateReviewData(
     }
 
     // Common validation for both review types
-    const check1 = !is_uploaded && goban.config.moves?.length !== scores.length - 1;
+    const check1 = !is_uploaded && engine.config.moves?.length !== scores.length - 1;
     const check2 =
         is_uploaded &&
-        (goban.config as any)["all_moves"]?.split("!").length - b_player !== scores.length;
+        (engine.config as any)["all_moves"]?.split("!").length - b_player !== scores.length;
 
     if (check1 || check2) {
         return { isValid: false, shouldShowTable: true };
@@ -465,13 +462,13 @@ export interface AiReviewCategorization {
 
 export function categorizeAiReview(
     ai_review: JGOFAIReview | undefined,
-    goban: GobanRenderer | null | undefined,
+    engine: GobanEngine | null | undefined,
     categorization_method: CategorizationMethod = "old",
     scoreDiffThresholds?: ScoreDiffThresholds,
     includeNegativeScoreLoss: boolean = false,
 ): AiReviewCategorization | null {
     if (
-        !goban ||
+        !engine ||
         !ai_review ||
         !ai_review.engine.includes("katago") ||
         !["fast", "full"].includes(ai_review.type)
@@ -480,13 +477,13 @@ export function categorizeAiReview(
     }
 
     // Make sure the review is valid
-    const handicap = goban.engine.handicap;
-    let handicap_offset = handicapOffset(goban);
+    const handicap = engine.handicap;
+    let handicap_offset = handicapOffset(engine);
     handicap_offset = handicap_offset === 1 ? 0 : handicap_offset;
     const b_player = handicap_offset > 0 || handicap > 1 ? 1 : 0;
-    const move_player_list = getPlayerColorsMoveList(goban);
+    const move_player_list = getPlayerColorsMoveList(engine);
 
-    const { isValid } = validateReviewData(ai_review, goban, b_player);
+    const { isValid } = validateReviewData(ai_review, engine, b_player);
     if (!isValid) {
         return null;
     }
@@ -496,7 +493,7 @@ export function categorizeAiReview(
         ai_review.type === "fast"
             ? categorizeFastReview(
                   ai_review,
-                  goban,
+                  engine,
                   handicap_offset,
                   move_player_list,
                   scoreDiffThresholds,
@@ -519,7 +516,7 @@ export function categorizeAiReview(
     const { move_counters, score_loss_list, total_score_loss, categorized_moves, moves_missing } =
         result;
 
-    console.log("score loss by move:", score_loss_list);
+    //console.log("score loss by move:", score_loss_list);
 
     // Calculate average score loss
     const avg_score_loss = {
