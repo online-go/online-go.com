@@ -42,19 +42,13 @@ import {
     encodeMoves,
     encodeMove,
     AIReviewData,
-    ai_request_variation_analysis,
 } from "goban";
 import { alert } from "@/lib/swal_config";
 import { GobanControllerContext } from "./goban_context";
 import { ReportContext } from "@/contexts/ReportContext";
 import { MODERATOR_POWERS } from "@/lib/moderation";
-import {
-    CategorizationMethod,
-    categorizeAiReview,
-    DEFAULT_SCORE_DIFF_THRESHOLDS,
-} from "@/lib/ai_review_move_categories";
+import { DEFAULT_SCORE_DIFF_THRESHOLDS, ScoreDiffThresholds } from "goban";
 import { sameIntersection } from "@/lib/misc";
-import type { ScoreDiffThresholds } from "@/lib/ai_review_move_categories";
 import { AiSummaryTable } from "@/components/AIReview/AiSummaryTable";
 
 export interface AIReviewEntry {
@@ -84,7 +78,6 @@ interface AIReviewState {
     worst_moves_shown: number;
     show_table: boolean;
     table_hidden: boolean;
-    categorization_method: CategorizationMethod;
     scoreDiffThresholds: ScoreDiffThresholds;
     includeNegativeScoreLoss: boolean;
     current_popup_moves: number[];
@@ -116,7 +109,6 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
 
     constructor(props: AIReviewProperties) {
         super(props);
-        const method = preferences.get("ai-review-categorization-method") || "old";
         const current_thresholds = preferences.get("ai-review-score-diff-thresholds") || {};
         const state: AIReviewState = {
             loading: true,
@@ -127,7 +119,6 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
             worst_moves_shown: 6,
             show_table: true,
             table_hidden: preferences.get("ai-summary-table-show"),
-            categorization_method: method,
             scoreDiffThresholds: { ...DEFAULT_SCORE_DIFF_THRESHOLDS, ...current_thresholds },
             includeNegativeScoreLoss: false,
             current_popup_moves: [],
@@ -183,10 +174,8 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
             return;
         }
         const goban = goban_controller.goban;
-        const categorization = categorizeAiReview(
-            this.review_data,
+        const categorization = this.review_data?.categorize(
             goban.engine,
-            this.state.categorization_method,
             this.state.scoreDiffThresholds,
             this.state.includeNegativeScoreLoss,
         );
@@ -792,8 +781,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
             return false;
         }
 
-        ai_request_variation_analysis(
-            ai_socket,
+        this.review_data.analyze_variation(
             this.review_data.uuid,
             this.props.game_id,
             Number(this.state.selected_ai_review?.id),
@@ -1279,10 +1267,8 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                                     ai_review?.engine.includes("katago") && (
                                         <div>
                                             <AiSummaryTable
-                                                categorization={categorizeAiReview(
-                                                    ai_review,
+                                                categorization={this.review_data?.categorize(
                                                     goban.engine,
-                                                    this.state.categorization_method,
                                                     this.state.scoreDiffThresholds,
                                                     this.state.includeNegativeScoreLoss,
                                                 )}
@@ -1291,9 +1277,6 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                                                 }
                                                 table_hidden={this.state.table_hidden}
                                                 scoreDiffThresholds={this.state.scoreDiffThresholds}
-                                                categorization_method={
-                                                    this.state.categorization_method
-                                                }
                                                 onThresholdChange={this.handleThresholdChange}
                                                 onResetThresholds={this.handleResetThresholds}
                                                 includeNegativeScores={
@@ -1313,49 +1296,6 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                                                     );
                                                 }}
                                             />
-                                            {!this.state.table_hidden && (
-                                                <div className="categorization-toggler">
-                                                    <span className="toggle-label">
-                                                        {pgettext(
-                                                            "Use the original categorization method",
-                                                            "Original",
-                                                        )}
-                                                    </span>
-                                                    <Toggle
-                                                        checked={
-                                                            this.state.categorization_method ===
-                                                            "new"
-                                                        }
-                                                        onChange={(b) => {
-                                                            const new_method = b ? "new" : "old";
-                                                            preferences.set(
-                                                                "ai-review-categorization-method",
-                                                                new_method,
-                                                            );
-                                                            this.setState(
-                                                                {
-                                                                    categorization_method:
-                                                                        new_method,
-                                                                    rerender:
-                                                                        this.state.rerender + 1,
-                                                                    show_table: true,
-                                                                },
-                                                                () => {
-                                                                    if (this.state.show_table) {
-                                                                        this.calculateAndUpdateTableData();
-                                                                    }
-                                                                },
-                                                            );
-                                                        }}
-                                                    />
-                                                    <span className="toggle-label">
-                                                        {pgettext(
-                                                            "Use the new categorization method",
-                                                            "New",
-                                                        )}
-                                                    </span>
-                                                </div>
-                                            )}
                                         </div>
                                     )}
                             </React.Fragment>
