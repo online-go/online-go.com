@@ -334,6 +334,7 @@ export class AiSummaryTable extends React.Component<AiSummaryTableProperties, Ai
                                                               catKey as keyof ScoreDiffThresholds
                                                           ]
                                                 }
+                                                step={0.1}
                                                 onChange={(e) => {
                                                     const v = parseFloat(e.target.value);
                                                     if (!isNaN(v)) {
