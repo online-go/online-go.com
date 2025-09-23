@@ -1128,9 +1128,10 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                                         {show_full_ai_review_button && (
                                             <div className="ai-review-new-review">
                                                 <button
-                                                    onClick={() =>
-                                                        this.startNewAIReview("full", "katago")
-                                                    }
+                                                    onClick={() => {
+                                                        this.startNewAIReview("full", "katago");
+                                                        props.selectProps.onMenuClose?.();
+                                                    }}
                                                 >
                                                     <i className="fa fa-plus" /> KataGo
                                                 </button>
