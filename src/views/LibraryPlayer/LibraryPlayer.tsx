@@ -588,11 +588,12 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
     }
 
     render() {
-        const owner = this.state.player_id === data.get("user").id || null;
-        const see_checkboxes =
+        const owner = this.state.player_id === data.get("user").id;
+        const see_checkboxes = !!(
             owner ||
             data.get("user").is_moderator ||
-            data.get("user").moderator_powers & MODERATOR_POWERS.AI_DETECTOR;
+            (data.get("user").moderator_powers & MODERATOR_POWERS.AI_DETECTOR) !== 0
+        );
 
         if (this.state.collections == null) {
             return <div className="LibraryPlayer" />;
