@@ -254,8 +254,9 @@ header.NavBar {
         }
 
         .OmniSearch-container {
-            // display: none !important;
-            display: inline-flex !important;
+            // hide on the navbar when the left nav isn't expanded
+            display: none !important;
+            // display: inline-flex !important;
             min-width: 2rem;
 
             &:focus-within {
@@ -565,7 +566,12 @@ header.NavBar {
     }
 
     .sign-in {
-        padding-right: 1rem;
+        padding-right: 0.5rem;
+        white-space: nowrap;
+    }
+
+    .sign-up-btn {
+        margin-right: 1rem;
         white-space: nowrap;
     }
 
