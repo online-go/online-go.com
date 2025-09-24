@@ -598,8 +598,8 @@ function MarkupChatLine({ line }: { line: ChatLine }): React.ReactElement {
             <React.Fragment>
                 {chat_markup(body, [
                     {
-                        split: /(\b[a-zA-Z][0-9]{1,2}\b)/gm,
-                        pattern: /\b([a-zA-Z][0-9]{1,2})\b/gm,
+                        split: /((?<=^|\s)\b[a-zA-Z][0-9]{1,2}\b(?=\s|$))/gm,
+                        pattern: /(?<=^|\s)\b([a-zA-Z][0-9]{1,2})\b(?=\s|$)/gm,
                         replacement: (m, idx) => {
                             const pos = m[1];
                             if (parsePosition(pos, goban).i < 0) {
