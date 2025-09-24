@@ -35,6 +35,7 @@ import { PlayerCacheEntry } from "@/lib/player_cache";
 import { AIDetection } from "@moderator-ui/AIDetection";
 import { MODERATOR_POWERS } from "@/lib/moderation";
 import { toast } from "@/lib/toast";
+import { CollectionSharingModal } from "@/components/CollectionSharingModal";
 
 type LibraryPlayerProperties = RouteComponentProps<{
     player_id: string;
@@ -65,6 +66,8 @@ interface LibraryPlayerState {
     sort_order: SortOrder;
     sort_descending: boolean;
     show_ai_detection: boolean;
+    sharing_modal_collection_id: number | null;
+    sharing_modal_collection_name: string;
 }
 
 interface Entry {
@@ -96,6 +99,8 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
             sort_order: preferences.get("sgf.sort-order") as SortOrder,
             sort_descending: preferences.get("sgf.sort-descending"),
             show_ai_detection: false,
+            sharing_modal_collection_id: null,
+            sharing_modal_collection_name: "",
         };
     }
 
@@ -136,6 +141,9 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                 update.collection_id = "0";
             }
             update.games_checked = {};
+            // Close sharing modal when navigating to a different collection
+            update.sharing_modal_collection_id = null;
+            update.sharing_modal_collection_name = "";
             updated = true;
         }
 
@@ -327,10 +335,12 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
         });
     }
     setNewCollectionName = (ev: React.ChangeEvent<HTMLInputElement>) => {
-        this.setState({ new_collection_name: ev.target.value });
-    };
-    setNewCollectionPrivate = (ev: React.ChangeEvent<HTMLInputElement>) => {
-        this.setState({ new_collection_private: ev.target.checked });
+        const value = ev.target.value;
+        this.setState({
+            new_collection_name: value,
+            // Reset private checkbox if name is cleared
+            new_collection_private: value.trim() === "" ? false : this.state.new_collection_private,
+        });
     };
     createCollection = () => {
         post(`library/${this.state.player_id}/collections`, {
@@ -394,6 +404,20 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
 
     toggleAIDetection = () => {
         this.setState({ show_ai_detection: !this.state.show_ai_detection });
+    };
+
+    openCollectionSharingModal = (collectionId: number, collectionName: string) => {
+        this.setState({
+            sharing_modal_collection_id: collectionId,
+            sharing_modal_collection_name: collectionName,
+        });
+    };
+
+    closeCollectionSharingModal = () => {
+        this.setState({
+            sharing_modal_collection_id: null,
+            sharing_modal_collection_name: "",
+        });
     };
 
     runAIAnalysis = async () => {
@@ -564,11 +588,12 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
     }
 
     render() {
-        const owner = this.state.player_id === data.get("user").id || null;
-        const see_checkboxes =
+        const owner = this.state.player_id === data.get("user").id;
+        const see_checkboxes = !!(
             owner ||
             data.get("user").is_moderator ||
-            data.get("user").moderator_powers & MODERATOR_POWERS.AI_DETECTOR;
+            (data.get("user").moderator_powers & MODERATOR_POWERS.AI_DETECTOR) !== 0
+        );
 
         if (this.state.collections == null) {
             return <div className="LibraryPlayer" />;
@@ -628,42 +653,77 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                                 onClick={this.setCollection.bind(this, collection.id)}
                                 key={idx}
                             >
-                                {collection.name}/
+                                <span className="breadcrumb-name">{collection.name}</span>
+                                <span className="breadcrumb-slash">/</span>
                             </span>
                         ))}
+                        {this.state.collection_id !== "0" && collection["private"] && (
+                            <i
+                                className="fa fa-lock breadcrumb-lock"
+                                style={{
+                                    marginLeft: "0.5rem",
+                                    fontSize: "0.9em",
+                                }}
+                            ></i>
+                        )}
+                        {this.state.collection_id !== "0" && owner && collection["private"] && (
+                            <button
+                                className="share-collection-btn breadcrumb-share"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    this.openCollectionSharingModal(collection.id, collection.name);
+                                }}
+                                title={_("Share collection")}
+                            >
+                                <i className="fa fa-share-alt"></i>
+                                {_("Share")}
+                            </button>
+                        )}
                     </div>
                     {owner && (
-                        <div className="new-collection flex center-vertically">
+                        <div className="new-collection">
                             {Object.keys(this.state.games_checked).length === 0 && (
-                                <div className="name-checkbox">
+                                <>
+                                    <div
+                                        className={`private-toggle ${
+                                            this.state.new_collection_name.trim() === ""
+                                                ? "disabled"
+                                                : ""
+                                        }`}
+                                        onClick={() =>
+                                            this.setState({
+                                                new_collection_private:
+                                                    !this.state.new_collection_private,
+                                            })
+                                        }
+                                    >
+                                        <i
+                                            className={
+                                                this.state.new_collection_private
+                                                    ? "fa fa-lock"
+                                                    : "fa fa-unlock"
+                                            }
+                                        ></i>
+                                        <span>
+                                            {this.state.new_collection_private
+                                                ? _("Private collection")
+                                                : _("Open collection")}
+                                        </span>
+                                    </div>
                                     <input
                                         type="text"
                                         value={this.state.new_collection_name}
                                         onChange={this.setNewCollectionName}
                                         placeholder={_("New collection name")}
                                     />
-                                    <div className="row">
-                                        <input
-                                            type="checkbox"
-                                            id="private"
-                                            checked={this.state.new_collection_private}
-                                            onChange={this.setNewCollectionPrivate}
-                                        />
-                                        <label htmlFor="private">
-                                            <i className="fa fa-lock"></i>
-                                            {_("Private collection")}
-                                        </label>
-                                    </div>
-                                </div>
-                            )}
-                            {Object.keys(this.state.games_checked).length === 0 && (
-                                <button
-                                    className="primary"
-                                    disabled={this.state.new_collection_name.trim() === ""}
-                                    onClick={this.createCollection}
-                                >
-                                    {_("Create collection")}
-                                </button>
+                                    <button
+                                        className="primary"
+                                        disabled={this.state.new_collection_name.trim() === ""}
+                                        onClick={this.createCollection}
+                                    >
+                                        {_("Create collection")}
+                                    </button>
+                                </>
                             )}
                             {Object.keys(this.state.games_checked).length > 0 && (
                                 <button className="reject" onClick={this.deleteGames}>
@@ -690,60 +750,66 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                             <div {...getRootProps()}>
                                 <input {...getInputProps()} />
                                 <Card>
-                                    {owner && (
-                                        <div className="upload-button">
-                                            <button
-                                                className="primary"
-                                                onClick={() =>
-                                                    openSGFPasteModal(this.uploadSGFText)
-                                                }
-                                            >
-                                                {_("Paste SGF")}
-                                            </button>
-                                            <button
-                                                className="primary"
-                                                onClick={() => this.dropzone?.open()}
-                                            >
-                                                {_("Upload")}
-                                            </button>
-                                        </div>
-                                    )}
+                                    <div className="controls-row">
+                                        <div className="controls-left"></div>
+                                        <div className="controls-right">
+                                            {owner && (
+                                                <div className="upload-button">
+                                                    <button
+                                                        className="primary"
+                                                        onClick={() =>
+                                                            openSGFPasteModal(this.uploadSGFText)
+                                                        }
+                                                    >
+                                                        {_("Paste SGF")}
+                                                    </button>
+                                                    <button
+                                                        className="primary"
+                                                        onClick={() => this.dropzone?.open()}
+                                                    >
+                                                        {_("Upload")}
+                                                    </button>
+                                                </div>
+                                            )}
 
-                                    {is_beta_or_dev_site &&
-                                        (data.get("user").is_moderator ||
-                                            (data.get("user").moderator_powers &
-                                                MODERATOR_POWERS.AI_DETECTOR) !==
-                                                0) && (
-                                            <div className="upload-button">
-                                                <button
-                                                    className="primary"
-                                                    onClick={this.runAIAnalysis}
-                                                    disabled={
-                                                        Object.keys(this.state.games_checked)
-                                                            .length === 0
-                                                    }
-                                                >
-                                                    {llm_pgettext(
-                                                        "Button label to start an AI analysis of the selected games",
-                                                        "Run AI Detection",
-                                                    )}
-                                                </button>
-                                                <button
-                                                    className="primary"
-                                                    onClick={this.toggleAIDetection}
-                                                >
-                                                    {this.state.show_ai_detection
-                                                        ? llm_pgettext(
-                                                              "Hide AI Detection",
-                                                              "Hide AI Detection",
-                                                          )
-                                                        : llm_pgettext(
-                                                              "Show AI Detection",
-                                                              "Show AI Detection",
-                                                          )}
-                                                </button>
-                                            </div>
-                                        )}
+                                            {is_beta_or_dev_site &&
+                                                (data.get("user").is_moderator ||
+                                                    (data.get("user").moderator_powers &
+                                                        MODERATOR_POWERS.AI_DETECTOR) !==
+                                                        0) && (
+                                                    <div className="upload-button">
+                                                        <button
+                                                            className="primary"
+                                                            onClick={this.runAIAnalysis}
+                                                            disabled={
+                                                                Object.keys(
+                                                                    this.state.games_checked,
+                                                                ).length === 0
+                                                            }
+                                                        >
+                                                            {llm_pgettext(
+                                                                "Button label to start an AI analysis of the selected games",
+                                                                "Run AI Detection",
+                                                            )}
+                                                        </button>
+                                                        <button
+                                                            className="primary"
+                                                            onClick={this.toggleAIDetection}
+                                                        >
+                                                            {this.state.show_ai_detection
+                                                                ? llm_pgettext(
+                                                                      "Hide AI Detection",
+                                                                      "Hide AI Detection",
+                                                                  )
+                                                                : llm_pgettext(
+                                                                      "Show AI Detection",
+                                                                      "Show AI Detection",
+                                                                  )}
+                                                        </button>
+                                                    </div>
+                                                )}
+                                        </div>
+                                    </div>
 
                                     {hasCollections && (
                                         <div className="collections">
@@ -751,38 +817,43 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                                                 <div
                                                     key={collection.id}
                                                     className="collection-entry"
-                                                    onClick={this.setCollection.bind(
-                                                        this,
-                                                        collection.id,
-                                                    )}
                                                 >
-                                                    {owner && (
-                                                        <span className="private-lock">
-                                                            {collection["private"] ? (
-                                                                <i className="fa fa-lock" />
-                                                            ) : (
-                                                                <i className="fa fa-unlock" />
+                                                    <div
+                                                        className="collection-info"
+                                                        onClick={this.setCollection.bind(
+                                                            this,
+                                                            collection.id,
+                                                        )}
+                                                    >
+                                                        {owner && (
+                                                            <span className="private-lock">
+                                                                {collection["private"] ? (
+                                                                    <i className="fa fa-lock" />
+                                                                ) : (
+                                                                    <i className="fa fa-unlock" />
+                                                                )}
+                                                            </span>
+                                                        )}
+                                                        <span className="collection">
+                                                            {collection.name}/
+                                                        </span>
+                                                        <span className="game-count">
+                                                            {interpolate(
+                                                                _(
+                                                                    "{{library_collection_size}} games",
+                                                                ),
+                                                                {
+                                                                    library_collection_size:
+                                                                        collection.game_ct,
+                                                                },
                                                             )}
                                                         </span>
-                                                    )}
-                                                    <span className="collection">
-                                                        {collection.name}/
-                                                    </span>
-                                                    <span className="game-count">
-                                                        {interpolate(
-                                                            _("{{library_collection_size}} games"),
-                                                            {
-                                                                library_collection_size:
-                                                                    collection.game_ct,
-                                                            },
-                                                        )}
-                                                    </span>
+                                                    </div>
                                                 </div>
                                             ))}
                                         </div>
                                     )}
                                     {hasCollections && <hr />}
-
                                     {!this.state.show_ai_detection && (
                                         <div className="games">
                                             {hasGames && this.renderColumnHeaders(!!see_checkboxes)}
@@ -881,6 +952,13 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                         }`}
                         additionalFilters={{}}
                         showControls={true}
+                    />
+                )}
+                {this.state.sharing_modal_collection_id && (
+                    <CollectionSharingModal
+                        collection_id={this.state.sharing_modal_collection_id}
+                        collection_name={this.state.sharing_modal_collection_name}
+                        onClose={this.closeCollectionSharingModal}
                     />
                 )}
             </div>
