@@ -137,9 +137,11 @@ export function NavBar(): React.ReactElement {
     //  get taken to the challenge they were in the middle of accepting).
 
     const show_sign_in =
-        !window.location.pathname.includes("/sign-in") && // don't show the link to the page we're on
         !window.location.pathname.includes("/welcome") && // a challenge link page is being shown
         !window.location.hash.includes("/welcome"); // the sign-in with redirect to challenge accept
+
+    const show_sign_up_button = !window.location.pathname.includes("/register");
+    const show_log_in_link = !window.location.pathname.includes("/sign-in");
 
     const show_appeal_box = !window.location.pathname.includes("/appeal");
 
@@ -457,9 +459,24 @@ export function NavBar(): React.ReactElement {
                             <i className="fa fa-adjust" onClick={toggleTheme} />
                             <LanguagePicker />
                             {show_sign_in && (
-                                <Link className="sign-in" to={"/sign-in#" + location.pathname}>
-                                    {_("Sign In")}
-                                </Link>
+                                <>
+                                    {show_sign_up_button && (
+                                        <Link
+                                            className="btn primary sign-up-btn"
+                                            to={"/register#" + location.pathname}
+                                        >
+                                            {_("Register")}
+                                        </Link>
+                                    )}
+                                    {show_log_in_link && (
+                                        <Link
+                                            className="sign-in"
+                                            to={"/sign-in#" + location.pathname}
+                                        >
+                                            {_("Sign In")}
+                                        </Link>
+                                    )}
+                                </>
                             )}
                         </>
                     ) : (
