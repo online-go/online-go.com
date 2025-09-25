@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import { useState, useMemo } from "react";
 import {
     MoveCategory,
     ScoreDiffThresholds,
@@ -36,21 +37,55 @@ interface AiSummaryTableProperties {
     onPopupMovesChange?: (moves: number[]) => void;
 }
 
-interface AiSummaryTableState {
-    showMoveList: boolean;
-    selectedCategory: string;
-    selectedColor: "black" | "white";
-}
+// Category constants moved outside component since they never change
+const FAST_CATEGORIES = ["Good", "Inaccuracy", "Mistake", "Blunder"] as const;
+const FULL_CATEGORIES = ["Excellent", "Great", "Good", "Inaccuracy", "Mistake", "Blunder"] as const;
 
-export class AiSummaryTable extends React.Component<AiSummaryTableProperties, AiSummaryTableState> {
-    state = {
-        showMoveList: false,
-        selectedCategory: "",
-        selectedColor: "black" as "black" | "white",
+export function AiSummaryTable({
+    categorization,
+    reviewType,
+    table_hidden,
+    scoreDiffThresholds,
+    onThresholdChange,
+    onResetThresholds,
+    includeNegativeScores,
+    onToggleNegativeScores,
+    onPopupMovesChange,
+}: AiSummaryTableProperties): React.ReactElement {
+    // State management with useState hooks
+    const [showMoveList, setShowMoveList] = useState(false);
+    const [selectedCategory, setSelectedCategory] = useState("");
+    const [selectedColor, setSelectedColor] = useState<"black" | "white">("black");
+
+    // Helper function for setting up table data - doesn't need memoization as it's called within useMemo
+    const setupTableData = (type: "fast" | "full") => {
+        const ai_table_rows: string[][] = [];
+        const summary_moves_list: {
+            blackCount: string;
+            blackPercent: string;
+            whiteCount: string;
+            whitePercent: string;
+        }[] = [];
+
+        const categories = type === "fast" ? FAST_CATEGORIES : FULL_CATEGORIES;
+        const num_rows = categories.length;
+
+        for (let j = 0; j < num_rows; j++) {
+            ai_table_rows.push([categories[j]]);
+            summary_moves_list.push({
+                blackCount: "",
+                blackPercent: "",
+                whiteCount: "",
+                whitePercent: "",
+            });
+        }
+
+        return { ai_table_rows, summary_moves_list, num_rows };
     };
 
-    private formatTableData() {
-        if (!this.props.categorization) {
+    // Memoize the formatted table data to avoid unnecessary recalculations
+    const formatted = useMemo(() => {
+        if (!categorization) {
             return {
                 heading_list: ["Type", "Black", "%", "", "White", "%"],
                 body_list: [["", "", "", "", ""]],
@@ -78,20 +113,15 @@ export class AiSummaryTable extends React.Component<AiSummaryTableProperties, Ai
             };
         }
 
-        const { ai_table_rows, summary_moves_list, num_rows } = this.setupTableData(
-            this.props.reviewType,
-        );
-        const categories =
-            this.props.reviewType === "fast"
-                ? this.currentFastCategories
-                : this.currentFullCategories;
+        const { ai_table_rows, summary_moves_list, num_rows } = setupTableData(reviewType);
+        const categories = reviewType === "fast" ? FAST_CATEGORIES : FULL_CATEGORIES;
 
         const totalMoves = {
-            black: Object.values(this.props.categorization.move_counters.black).reduce(
+            black: Object.values(categorization.move_counters.black).reduce(
                 (sum, count) => sum + count,
                 0,
             ),
-            white: Object.values(this.props.categorization.move_counters.white).reduce(
+            white: Object.values(categorization.move_counters.white).reduce(
                 (sum, count) => sum + count,
                 0,
             ),
@@ -100,23 +130,19 @@ export class AiSummaryTable extends React.Component<AiSummaryTableProperties, Ai
         // Assemble table data
         for (let j = 0; j < num_rows; j++) {
             const cat = categories[j] as MoveCategory;
-            summary_moves_list[j].blackCount =
-                this.props.categorization.move_counters.black[cat].toString();
+            summary_moves_list[j].blackCount = categorization.move_counters.black[cat].toString();
             summary_moves_list[j].blackPercent =
                 totalMoves.black > 0
-                    ? (
-                          (100 * this.props.categorization.move_counters.black[cat]) /
-                          totalMoves.black
-                      ).toFixed(1)
+                    ? ((100 * categorization.move_counters.black[cat]) / totalMoves.black).toFixed(
+                          1,
+                      )
                     : "";
-            summary_moves_list[j].whiteCount =
-                this.props.categorization.move_counters.white[cat].toString();
+            summary_moves_list[j].whiteCount = categorization.move_counters.white[cat].toString();
             summary_moves_list[j].whitePercent =
                 totalMoves.white > 0
-                    ? (
-                          (100 * this.props.categorization.move_counters.white[cat]) /
-                          totalMoves.white
-                      ).toFixed(1)
+                    ? ((100 * categorization.move_counters.white[cat]) / totalMoves.white).toFixed(
+                          1,
+                      )
                     : "";
         }
 
@@ -133,305 +159,243 @@ export class AiSummaryTable extends React.Component<AiSummaryTableProperties, Ai
         return {
             heading_list: ["Type", "Black", "%", "", "White", "%"],
             body_list: ai_table_rows,
-            avg_loss: this.props.categorization.avg_score_loss,
-            median_score_loss: this.props.categorization.median_score_loss,
-            strong_move_rate: this.props.categorization.strong_move_rate,
-            categorized_moves: this.props.categorization.categorized_moves,
+            avg_loss: categorization.avg_score_loss,
+            median_score_loss: categorization.median_score_loss,
+            strong_move_rate: categorization.strong_move_rate,
+            categorized_moves: categorization.categorized_moves,
         };
+    }, [categorization, reviewType]);
+
+    // All categories are now editable
+    const editableCategories = ["Excellent", "Great", "Good", "Inaccuracy", "Mistake", "Blunder"];
+
+    // Default values for display
+    const defaultThresholds: { [k: string]: number } = { ...DEFAULT_SCORE_DIFF_THRESHOLDS };
+
+    // Add defensive check for required props
+    if (!formatted.body_list || !formatted.heading_list) {
+        return <div className="ai-summary-container" />;
     }
 
-    private setupTableData(reviewType: "fast" | "full") {
-        const ai_table_rows: string[][] = [];
-        const summary_moves_list: {
-            blackCount: string;
-            blackPercent: string;
-            whiteCount: string;
-            whitePercent: string;
-        }[] = [];
-
-        const categories =
-            reviewType === "fast" ? this.currentFastCategories : this.currentFullCategories;
-        const num_rows = categories.length;
-
-        for (let j = 0; j < num_rows; j++) {
-            ai_table_rows.push([categories[j]]);
-            summary_moves_list.push({
-                blackCount: "",
-                blackPercent: "",
-                whiteCount: "",
-                whitePercent: "",
-            });
-        }
-
-        return { ai_table_rows, summary_moves_list, num_rows };
-    }
-
-    private readonly currentFastCategories = ["Good", "Inaccuracy", "Mistake", "Blunder"];
-    private readonly currentFullCategories = [
-        "Excellent",
-        "Great",
-        "Good",
-        "Inaccuracy",
-        "Mistake",
-        "Blunder",
-    ];
-
-    render(): React.ReactElement {
-        const formatted = this.formatTableData();
-        const { scoreDiffThresholds, onThresholdChange, onResetThresholds } = this.props;
-
-        // All categories are now editable
-        const editableCategories = [
-            "Excellent",
-            "Great",
-            "Good",
-            "Inaccuracy",
-            "Mistake",
-            "Blunder",
-        ];
-
-        // Default values for display
-        const defaultThresholds: { [k: string]: number } = { ...DEFAULT_SCORE_DIFF_THRESHOLDS };
-
-        // Add defensive check for required props
-        if (!formatted.body_list || !formatted.heading_list) {
-            return <div className="ai-summary-container" />;
-        }
-
-        return (
-            <div className="ai-summary-container">
-                <table
-                    className="ai-summary-table"
-                    style={{ display: this.props.table_hidden ? "none" : "block" }}
-                >
-                    <thead>
-                        <tr>
-                            {formatted.heading_list.map((head, index) => {
-                                return <th key={index}>{head}</th>;
-                            })}
-                            <th className="spacer-column" style={{ width: "10px" }}></th>
-                            <th className="centered">Δs &lt;</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {formatted.body_list.map((body, b_index) => {
-                            const catKey = [
-                                "Excellent",
-                                "Great",
-                                "Good",
-                                "Inaccuracy",
-                                "Mistake",
-                                "Blunder",
-                            ][b_index];
-                            return (
-                                <tr key={b_index}>
-                                    {body.map((element, e_index) => {
-                                        if (e_index === 1 || e_index === 4) {
-                                            const color = e_index === 1 ? "black" : "white";
-                                            const moves =
-                                                formatted.categorized_moves[color][
-                                                    catKey as MoveCategory
-                                                ];
-                                            return (
-                                                <td key={e_index}>
-                                                    <div className="move-count-container">
-                                                        {element}
-                                                        <button
-                                                            className={`move-list-button ${
-                                                                moves.length === 0
-                                                                    ? "invisible"
-                                                                    : ""
-                                                            }`}
-                                                            onClick={() => {
-                                                                if (moves.length > 0) {
-                                                                    this.setState({
-                                                                        showMoveList: true,
-                                                                        selectedCategory: catKey,
-                                                                        selectedColor: color,
-                                                                    });
-                                                                    if (
-                                                                        this.props
-                                                                            .onPopupMovesChange
-                                                                    ) {
-                                                                        this.props.onPopupMovesChange(
-                                                                            moves.map(
-                                                                                (move) => move - 1,
-                                                                            ),
-                                                                        );
-                                                                    }
+    return (
+        <div className="ai-summary-container">
+            <table
+                className="ai-summary-table"
+                style={{ display: table_hidden ? "none" : "block" }}
+            >
+                <thead>
+                    <tr>
+                        {formatted.heading_list.map((head, index) => {
+                            return <th key={index}>{head}</th>;
+                        })}
+                        <th className="spacer-column" style={{ width: "10px" }}></th>
+                        <th className="centered">Δs &lt;</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {formatted.body_list.map((body, b_index) => {
+                        const catKey = [
+                            "Excellent",
+                            "Great",
+                            "Good",
+                            "Inaccuracy",
+                            "Mistake",
+                            "Blunder",
+                        ][b_index];
+                        return (
+                            <tr key={b_index}>
+                                {body.map((element, e_index) => {
+                                    if (e_index === 1 || e_index === 4) {
+                                        const color = e_index === 1 ? "black" : "white";
+                                        const moves =
+                                            formatted.categorized_moves[color][
+                                                catKey as MoveCategory
+                                            ];
+                                        return (
+                                            <td key={e_index}>
+                                                <div className="move-count-container">
+                                                    {element}
+                                                    <button
+                                                        className={`move-list-button ${
+                                                            moves.length === 0 ? "invisible" : ""
+                                                        }`}
+                                                        onClick={() => {
+                                                            if (moves.length > 0) {
+                                                                setShowMoveList(true);
+                                                                setSelectedCategory(catKey);
+                                                                setSelectedColor(color);
+                                                                if (onPopupMovesChange) {
+                                                                    onPopupMovesChange(
+                                                                        moves.map(
+                                                                            (move) => move - 1,
+                                                                        ),
+                                                                    );
                                                                 }
-                                                            }}
-                                                            title={
-                                                                moves.length > 0
-                                                                    ? `Show ${color} ${catKey} moves`
-                                                                    : ""
                                                             }
-                                                        >
-                                                            <i className="fa fa-chevron-down" />
-                                                        </button>
-                                                        {this.state.showMoveList &&
-                                                            this.state.selectedCategory ===
-                                                                catKey &&
-                                                            this.state.selectedColor === color && (
-                                                                <MoveListPopover
-                                                                    moves={moves}
-                                                                    category={catKey}
-                                                                    color={color}
-                                                                    onClose={() => {
-                                                                        this.setState({
-                                                                            showMoveList: false,
-                                                                        });
-                                                                        this.props.onPopupMovesChange?.(
-                                                                            [],
-                                                                        );
-                                                                    }}
-                                                                />
-                                                            )}
-                                                    </div>
-                                                </td>
-                                            );
-                                        }
-                                        if (e_index === 3) {
-                                            return (
-                                                <td
-                                                    key={e_index}
-                                                    className="spacer-column"
-                                                    style={{ width: "10px" }}
-                                                ></td>
-                                            );
-                                        }
-                                        return <td key={e_index}>{element}</td>;
-                                    })}
-                                    <td className="spacer-column" style={{ width: "10px" }}></td>
-                                    <td className="centered">
-                                        {editableCategories.includes(catKey) &&
-                                        catKey !== "Blunder" ? (
-                                            <input
-                                                type="number"
-                                                style={{
-                                                    width: 60,
-                                                    textAlign: "center",
-                                                    display: "block",
-                                                    margin: "0 auto",
-                                                    color:
-                                                        scoreDiffThresholds[
-                                                            catKey as keyof ScoreDiffThresholds
-                                                        ] !==
-                                                        defaultThresholds[
-                                                            catKey as keyof ScoreDiffThresholds
-                                                        ]
-                                                            ? "#e67c00"
-                                                            : undefined,
-                                                }}
-                                                value={
+                                                        }}
+                                                        title={
+                                                            moves.length > 0
+                                                                ? `Show ${color} ${catKey} moves`
+                                                                : ""
+                                                        }
+                                                    >
+                                                        <i className="fa fa-chevron-down" />
+                                                    </button>
+                                                    {showMoveList &&
+                                                        selectedCategory === catKey &&
+                                                        selectedColor === color && (
+                                                            <MoveListPopover
+                                                                moves={moves}
+                                                                category={catKey}
+                                                                color={color}
+                                                                onClose={() => {
+                                                                    setShowMoveList(false);
+                                                                    onPopupMovesChange?.([]);
+                                                                }}
+                                                            />
+                                                        )}
+                                                </div>
+                                            </td>
+                                        );
+                                    }
+                                    if (e_index === 3) {
+                                        return (
+                                            <td
+                                                key={e_index}
+                                                className="spacer-column"
+                                                style={{ width: "10px" }}
+                                            ></td>
+                                        );
+                                    }
+                                    return <td key={e_index}>{element}</td>;
+                                })}
+                                <td className="spacer-column" style={{ width: "10px" }}></td>
+                                <td className="centered">
+                                    {editableCategories.includes(catKey) && catKey !== "Blunder" ? (
+                                        <input
+                                            type="number"
+                                            style={{
+                                                width: 60,
+                                                textAlign: "center",
+                                                display: "block",
+                                                margin: "0 auto",
+                                                color:
                                                     scoreDiffThresholds[
                                                         catKey as keyof ScoreDiffThresholds
-                                                    ] !== undefined
-                                                        ? scoreDiffThresholds[
-                                                              catKey as keyof ScoreDiffThresholds
-                                                          ]
-                                                        : defaultThresholds[
-                                                              catKey as keyof ScoreDiffThresholds
-                                                          ]
+                                                    ] !==
+                                                    defaultThresholds[
+                                                        catKey as keyof ScoreDiffThresholds
+                                                    ]
+                                                        ? "#e67c00"
+                                                        : undefined,
+                                            }}
+                                            value={
+                                                scoreDiffThresholds[
+                                                    catKey as keyof ScoreDiffThresholds
+                                                ] !== undefined
+                                                    ? scoreDiffThresholds[
+                                                          catKey as keyof ScoreDiffThresholds
+                                                      ]
+                                                    : defaultThresholds[
+                                                          catKey as keyof ScoreDiffThresholds
+                                                      ]
+                                            }
+                                            step={0.1}
+                                            onChange={(e) => {
+                                                const v = parseFloat(e.target.value);
+                                                if (!isNaN(v)) {
+                                                    onThresholdChange(catKey, v);
                                                 }
-                                                step={0.1}
-                                                onChange={(e) => {
-                                                    const v = parseFloat(e.target.value);
-                                                    if (!isNaN(v)) {
-                                                        onThresholdChange(catKey, v);
-                                                    }
-                                                }}
-                                            />
-                                        ) : null}
-                                        {catKey === "Blunder" && (
-                                            <button
-                                                style={{
-                                                    marginLeft: 8,
-                                                    fontSize: "0.8em",
-                                                    padding: "2px 6px",
-                                                }}
-                                                onClick={onResetThresholds}
-                                            >
-                                                ^ reset
-                                            </button>
-                                        )}
-                                    </td>
-                                </tr>
-                            );
-                        })}
-                        {this.props.categorization &&
-                            this.props.categorization.moves_pending > 0 && (
-                                <tr>
-                                    <td colSpan={5} style={{ textAlign: "right" }}>
-                                        {"Moves pending"}
-                                    </td>
-                                    <td>{this.props.categorization.moves_pending}</td>
-                                </tr>
-                            )}
+                                            }}
+                                        />
+                                    ) : null}
+                                    {catKey === "Blunder" && (
+                                        <button
+                                            style={{
+                                                marginLeft: 8,
+                                                fontSize: "0.8em",
+                                                padding: "2px 6px",
+                                            }}
+                                            onClick={onResetThresholds}
+                                        >
+                                            ^ reset
+                                        </button>
+                                    )}
+                                </td>
+                            </tr>
+                        );
+                    })}
+                    {categorization && categorization.moves_pending > 0 && (
                         <tr>
-                            <td colSpan={7}>{"Average score loss per move"}</td>
-                            <td>
-                                {" "}
-                                <button
-                                    style={{
-                                        marginLeft: 8,
-                                        fontSize: "0.8em",
-                                        padding: "2px 6px",
-                                        width: "4.5rem",
-                                    }}
-                                    onClick={this.props.onToggleNegativeScores}
-                                >
-                                    {this.props.includeNegativeScores ? "Δs ±" : "only + Δs"}
-                                </button>
+                            <td colSpan={5} style={{ textAlign: "right" }}>
+                                {"Moves pending"}
                             </td>
+                            <td>{categorization.moves_pending}</td>
                         </tr>
-                        <tr>
-                            <td colSpan={3}>{"Black"}</td>
-                            <td colSpan={2}>{formatted.avg_loss.black.toFixed(1)}</td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td colSpan={3}>{"White"}</td>
-                            <td colSpan={2}>{formatted.avg_loss.white.toFixed(1)}</td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td colSpan={7}>{"Median score loss per move"}</td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td colSpan={3}>{"Black"}</td>
-                            <td colSpan={2}>{formatted.median_score_loss.black.toFixed(1)}</td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td colSpan={3}>{"White"}</td>
-                            <td colSpan={2}>{formatted.median_score_loss.white.toFixed(1)}</td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td colSpan={7}>{"Strong Move Rate"}</td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td colSpan={3}>{"Black"}</td>
-                            <td colSpan={2}>{formatted.strong_move_rate.black.toFixed(0)}%</td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td colSpan={3}>{"White"}</td>
-                            <td colSpan={2}>{formatted.strong_move_rate.white.toFixed(0)}%</td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td colSpan={7} style={{ fontSize: "0.8em", color: "#666" }}>
-                                Review ID: {this.props.categorization?.uuid || "not available"}
-                            </td>
-                            <td></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        );
-    }
+                    )}
+                    <tr>
+                        <td colSpan={7}>{"Average score loss per move"}</td>
+                        <td>
+                            {" "}
+                            <button
+                                style={{
+                                    marginLeft: 8,
+                                    fontSize: "0.8em",
+                                    padding: "2px 6px",
+                                    width: "4.5rem",
+                                }}
+                                onClick={onToggleNegativeScores}
+                            >
+                                {includeNegativeScores ? "Δs ±" : "only + Δs"}
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colSpan={3}>{"Black"}</td>
+                        <td colSpan={2}>{formatted.avg_loss.black.toFixed(1)}</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td colSpan={3}>{"White"}</td>
+                        <td colSpan={2}>{formatted.avg_loss.white.toFixed(1)}</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td colSpan={7}>{"Median score loss per move"}</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td colSpan={3}>{"Black"}</td>
+                        <td colSpan={2}>{formatted.median_score_loss.black.toFixed(1)}</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td colSpan={3}>{"White"}</td>
+                        <td colSpan={2}>{formatted.median_score_loss.white.toFixed(1)}</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td colSpan={7}>{"Strong Move Rate"}</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td colSpan={3}>{"Black"}</td>
+                        <td colSpan={2}>{formatted.strong_move_rate.black.toFixed(0)}%</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td colSpan={3}>{"White"}</td>
+                        <td colSpan={2}>{formatted.strong_move_rate.white.toFixed(0)}%</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td colSpan={7} style={{ fontSize: "0.8em", color: "#666" }}>
+                            Review ID: {categorization?.uuid || "not available"}
+                        </td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    );
 }
