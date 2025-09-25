@@ -44,12 +44,12 @@ import {
     AIReviewData,
 } from "goban";
 import { alert } from "@/lib/swal_config";
-import { GobanControllerContext } from "./goban_context";
+import { GobanControllerContext } from "../../views/Game/goban_context";
 import { ReportContext } from "@/contexts/ReportContext";
 import { MODERATOR_POWERS } from "@/lib/moderation";
 import { DEFAULT_SCORE_DIFF_THRESHOLDS, ScoreDiffThresholds } from "goban";
 import { sameIntersection } from "@/lib/misc";
-import { AiSummaryTable } from "@/components/AIReview/AiSummaryTable";
+import { AISummaryTable } from "@/components/AIReview/AISummaryTable";
 
 export interface AIReviewEntry {
     move_number: number;
@@ -1267,7 +1267,7 @@ class AIReviewClass extends React.Component<AIReviewProperties, AIReviewState> {
                                     )) &&
                                     ai_review?.engine.includes("katago") && (
                                         <div>
-                                            <AiSummaryTable
+                                            <AISummaryTable
                                                 categorization={this.review_data?.categorize(
                                                     goban.engine,
                                                     this.state.scoreDiffThresholds,

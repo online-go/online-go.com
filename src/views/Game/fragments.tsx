@@ -27,8 +27,8 @@ import {
 import { _, interpolate } from "@/lib/translate";
 import { rulesText } from "@/lib/misc";
 import { KBShortcut } from "@/components/KBShortcut";
-import { AIDemoReview } from "./AIDemoReview";
-import { AIReview } from "./AIReview";
+import { AIDemoReview } from "@/components/AIReview/AIDemoReview";
+import { AIReview } from "@/components/AIReview/AIReview";
 import { GameTimings } from "./GameTimings";
 
 export function RengoHeader(): React.ReactElement | null {

@@ -41,7 +41,7 @@ interface AiSummaryTableProperties {
 const FAST_CATEGORIES = ["Good", "Inaccuracy", "Mistake", "Blunder"] as const;
 const FULL_CATEGORIES = ["Excellent", "Great", "Good", "Inaccuracy", "Mistake", "Blunder"] as const;
 
-export function AiSummaryTable({
+export function AISummaryTable({
     categorization,
     reviewType,
     table_hidden,
@@ -166,10 +166,7 @@ export function AiSummaryTable({
         };
     }, [categorization, reviewType]);
 
-    // All categories are now editable
     const editableCategories = ["Excellent", "Great", "Good", "Inaccuracy", "Mistake", "Blunder"];
-
-    // Default values for display
     const defaultThresholds: { [k: string]: number } = { ...DEFAULT_SCORE_DIFF_THRESHOLDS };
 
     // Add defensive check for required props
