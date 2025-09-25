@@ -36,9 +36,6 @@ export function GamePreferences(): React.ReactElement {
         preferences.get("dock-delay"),
     );
     const [ai_review_enabled, _setAiReviewEnabled] = usePreference("ai-review-enabled");
-    const [ai_review_categorization_method, setAiReviewCategorizationMethod] = usePreference(
-        "ai-review-categorization-method",
-    );
     const [variations_in_chat, _setVariationsInChat] = usePreference("variations-in-chat-enabled");
     const [_live_submit_mode, _setLiveSubmitMode]: [string, (x: string) => void] = React.useState(
         getSubmitMode("live"),
@@ -203,18 +200,6 @@ export function GamePreferences(): React.ReactElement {
                 description={_("Enable AI review for your games")}
             >
                 <Toggle checked={!ai_review_enabled} onChange={toggleAIReview} />
-            </PreferenceLine>
-
-            <PreferenceLine
-                title={_("Use new AI review categorization")}
-                description={_(
-                    "Use the new categorization method for AI reviews, which only counts positive score losses in the average score loss calculation",
-                )}
-            >
-                <Toggle
-                    checked={ai_review_categorization_method === "new"}
-                    onChange={(checked) => setAiReviewCategorizationMethod(checked ? "new" : "old")}
-                />
             </PreferenceLine>
 
             <PreferenceLine
