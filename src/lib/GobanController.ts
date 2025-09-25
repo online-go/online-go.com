@@ -446,12 +446,14 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
             this.goban.engine.phase !== "stone removal" &&
             !this.goban.isAnalysisDisabled()
         ) {
+            if (!move) {
+                move = this.goban.engine.cur_move;
+            }
+
             this.saveSubmitMove();
             this.setVariationName("");
-            this.goban.setMode("analyze", true);
-            if (move) {
-                this.goban.engine.jumpTo(move);
-            }
+            this.goban.setMode("analyze");
+            this.goban.engine.jumpTo(move);
             return true;
         }
 
