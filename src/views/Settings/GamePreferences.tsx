@@ -66,7 +66,7 @@ export function GamePreferences(): React.ReactElement {
         _setAiReviewEnabled(!checked);
     }
     function toggleVariationsInChat(checked: boolean) {
-        _setVariationsInChat(!checked);
+        _setVariationsInChat(checked);
     }
     function toggleZenMode(checked: boolean) {
         _setZenModeByDefault(checked);
@@ -228,7 +228,7 @@ export function GamePreferences(): React.ReactElement {
                 title={_("Variations in chat")}
                 description={_("Enable variations in chat")}
             >
-                <Toggle checked={!variations_in_chat} onChange={toggleVariationsInChat} />
+                <Toggle checked={variations_in_chat} onChange={toggleVariationsInChat} />
             </PreferenceLine>
 
             <PreferenceLine
