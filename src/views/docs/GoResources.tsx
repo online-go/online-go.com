@@ -1492,6 +1492,11 @@ export function GoResources(): React.ReactElement {
                         {scramble(
                             <BasicResource
                                 countries={[en]}
+                                title="Wave Games"
+                                href="https://wavecollector.com/wave-games/"
+                            />,
+                            <BasicResource
+                                countries={[en]}
                                 title="Playing A game of Go"
                                 href="https://www.youtube.com/watch?v=dVd959KJWEI"
                             />,
