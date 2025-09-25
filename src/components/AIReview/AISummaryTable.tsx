@@ -20,13 +20,13 @@ import { useState, useMemo } from "react";
 import {
     MoveCategory,
     ScoreDiffThresholds,
-    AiReviewCategorization,
+    AiReviewCategorization as AIReviewCategorization,
     DEFAULT_SCORE_DIFF_THRESHOLDS,
 } from "goban";
 import { MoveListPopover } from "@/components/AIReview/MoveListPopover";
 
-interface AiSummaryTableProperties {
-    categorization: AiReviewCategorization | null;
+interface AISummaryTableProperties {
+    categorization: AIReviewCategorization | null;
     reviewType: "fast" | "full";
     table_hidden: boolean;
     scoreDiffThresholds: ScoreDiffThresholds;
@@ -51,7 +51,7 @@ export function AISummaryTable({
     includeNegativeScores,
     onToggleNegativeScores,
     onPopupMovesChange,
-}: AiSummaryTableProperties): React.ReactElement {
+}: AISummaryTableProperties): React.ReactElement {
     // State management with useState hooks
     const [showMoveList, setShowMoveList] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState("");
