@@ -352,22 +352,22 @@ export const REPORTER_RESPONSE_TEMPLATES: MessageTemplates = {
             Thanks for your report, #REPORTED's chat privilege at OGS has been removed. Other users will no longer see any chat that they type.`,
             show_warning_button: false,
         },
-        "Repeat offender banned": {
+        "Repeat offender suspended": {
             message: `
                 Thank you for your report about #REPORTED.  That repeat offender's account has been suspended.`,
             show_warning_button: false,
         },
-        "Repeat offender banned, annulment": {
+        "Repeat offender suspended, annulment": {
             message: `
                 Thank you for your report about #REPORTED.  That repeat offender's account has been suspended.  Cheated games have been annulled.`,
             show_warning_button: false,
         },
-        "Reported player banned": {
+        "Reported player suspended": {
             message: `
                 Thank you for your report about #REPORTED. That player's account has been suspended.`,
             show_warning_button: false,
         },
-        "Reported player banned, annulment": {
+        "Reported player suspended, annulment": {
             message: `
                 Thank you for your report about #REPORTED. That player's account has been suspended.  Cheated games have been annulled.`,
             show_warning_button: false,
