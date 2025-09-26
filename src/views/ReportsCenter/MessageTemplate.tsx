@@ -106,9 +106,9 @@ export const WARNING_TEMPLATES: MessageTemplates = {
 We have noticed that some of your recent comments have not been in line with our community guidelines.
 
 While this may not have been your intention, it is your responsibility to ensure that your comments are \
-respectful and courteous to all users. Please review our terms of service and community guidelines:
+respectful and courteous to all users. Please review our terms of service and community guidelines: 
 
-https://online-go.com/docs/terms-of-service
+https://online-go.com/docs/terms-of-service 
 
 We expect all users to maintain a positive and friendly environment. If you have any disagreements or concerns, \
 please contact a moderator for assistance.
@@ -298,7 +298,9 @@ to protect other users from that.
 
 For more information, please refer to our Terms of Service.
 
-https://online-go.com/docs/terms-of-service`,
+https://online-go.com/docs/terms-of-service
+
+`,
             show_warning_button: true,
         },
     },
@@ -335,6 +337,11 @@ export const REPORTER_RESPONSE_TEMPLATES: MessageTemplates = {
                 Thank you for your report, #REPORTED has been given a formal warning, and their account will be suspended if that continues.`,
             show_warning_button: false,
         },
+        "Final warning given, annulment": {
+            message: `
+                Thank you for your report, #REPORTED has been given a formal warning, and their account will be suspended if that continues.  Cheated games have been annulled.`,
+            show_warning_button: false,
+        },
         "Formal warning about chat abuse": {
             message: `
             Thanks for your report, #REPORTED has been given a formal warning, and their chat privileges at OGS will be removed if that behavior continues.`,
@@ -350,9 +357,19 @@ export const REPORTER_RESPONSE_TEMPLATES: MessageTemplates = {
                 Thank you for your report about #REPORTED.  That repeat offender's account has been suspended.`,
             show_warning_button: false,
         },
+        "Repeat offender banned, annulment": {
+            message: `
+                Thank you for your report about #REPORTED.  That repeat offender's account has been suspended.  Cheated games have been annulled.`,
+            show_warning_button: false,
+        },
         "Reported player banned": {
             message: `
                 Thank you for your report about #REPORTED. That player's account has been suspended.`,
+            show_warning_button: false,
+        },
+        "Reported player banned, annulment": {
+            message: `
+                Thank you for your report about #REPORTED. That player's account has been suspended.  Cheated games have been annulled.`,
             show_warning_button: false,
         },
         "Contacted player": {
