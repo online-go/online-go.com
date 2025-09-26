@@ -47,7 +47,7 @@ interface ChartData {
  * This class encapsulates the chart creation, updates, and event handling,
  * keeping the React component layer clean and focused on React-specific concerns.
  */
-export class AIReviewChartD3 {
+export class ReviewChartD3 {
     private container: HTMLDivElement;
     private svg?: d3.Selection<SVGSVGElement, unknown, null, undefined>;
     private destroyed = false;

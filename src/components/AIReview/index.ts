@@ -16,7 +16,8 @@
  */
 
 export * from "./AIDemoReview";
-export * from "./AISummaryTable";
+export * from "./SummaryTable";
 export * from "./AIReview";
-export * from "./AIReviewChart";
+export * from "./ReviewChart";
 export * from "./MoveListPopover";
+export * from "./ReviewStrengthIcon";

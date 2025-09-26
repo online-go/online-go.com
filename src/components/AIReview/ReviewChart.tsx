@@ -20,9 +20,9 @@ import { OgsResizeDetector } from "@/components/OgsResizeDetector";
 import { AIReviewEntry } from "./AIReview";
 import { PersistentElement } from "@/components/PersistentElement";
 import { JGOFAIReview } from "goban";
-import { AIReviewChartD3 } from "./AIReviewChartD3";
+import { ReviewChartD3 } from "./ReviewChartD3";
 
-interface AIReviewChartProperties {
+interface ReviewChartProperties {
     entries: Array<AIReviewEntry>;
     ai_review: JGOFAIReview;
     update_count: number;
@@ -39,9 +39,9 @@ interface AIReviewChartProperties {
  * the lifecycle of an AIReviewChartManager instance. It handles React-specific
  * concerns while delegating all D3.js chart logic to the manager class.
  */
-export function AIReviewChart(props: AIReviewChartProperties) {
+export function ReviewChart(props: ReviewChartProperties) {
     const containerRef = React.useRef<HTMLDivElement>(null);
-    const chartManagerRef = React.useRef<AIReviewChartD3 | null>(null);
+    const chartManagerRef = React.useRef<ReviewChartD3 | null>(null);
     // Create chart div element once and store in ref
     const chartDivRef = React.useRef<HTMLDivElement>(
         React.useMemo(() => document.createElement("div"), []),
@@ -49,7 +49,7 @@ export function AIReviewChart(props: AIReviewChartProperties) {
 
     // Initialize chart manager on mount
     React.useEffect(() => {
-        const chartManager = new AIReviewChartD3(
+        const chartManager = new ReviewChartD3(
             chartDivRef.current,
             {
                 setMove: props.set_move,

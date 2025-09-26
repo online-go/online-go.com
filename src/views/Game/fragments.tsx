@@ -218,6 +218,7 @@ export function FragAIReview(): React.ReactElement | null {
                 game_id={game_id}
                 move={cur_move}
                 hidden={!ai_review_enabled}
+                bot_detection_results={undefined}
             />
         );
     }

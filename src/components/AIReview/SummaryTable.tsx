@@ -25,7 +25,7 @@ import {
 } from "goban";
 import { MoveListPopover } from "@/components/AIReview/MoveListPopover";
 
-interface AISummaryTableProperties {
+interface SummaryTableProperties {
     categorization: AIReviewCategorization | null;
     reviewType: "fast" | "full";
     table_hidden: boolean;
@@ -41,7 +41,7 @@ interface AISummaryTableProperties {
 const FAST_CATEGORIES = ["Good", "Inaccuracy", "Mistake", "Blunder"] as const;
 const FULL_CATEGORIES = ["Excellent", "Great", "Good", "Inaccuracy", "Mistake", "Blunder"] as const;
 
-export function AISummaryTable({
+export function SummaryTable({
     categorization,
     reviewType,
     table_hidden,
@@ -51,7 +51,7 @@ export function AISummaryTable({
     includeNegativeScores,
     onToggleNegativeScores,
     onPopupMovesChange,
-}: AISummaryTableProperties): React.ReactElement {
+}: SummaryTableProperties): React.ReactElement {
     // State management with useState hooks
     const [showMoveList, setShowMoveList] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState("");
