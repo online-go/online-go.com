@@ -19,10 +19,9 @@ import * as React from "react";
 import {
     MoveCategory,
     ScoreDiffThresholds,
-    CategorizationMethod,
     AiReviewCategorization,
     DEFAULT_SCORE_DIFF_THRESHOLDS,
-} from "@/lib/ai_review_move_categories";
+} from "goban";
 import { MoveListPopover } from "@/components/AIReview/MoveListPopover";
 
 interface AiSummaryTableProperties {
@@ -30,7 +29,6 @@ interface AiSummaryTableProperties {
     reviewType: "fast" | "full";
     table_hidden: boolean;
     scoreDiffThresholds: ScoreDiffThresholds;
-    categorization_method: CategorizationMethod;
     onThresholdChange: (category: string, value: number) => void;
     onResetThresholds: () => void;
     includeNegativeScores: boolean;
@@ -180,22 +178,20 @@ export class AiSummaryTable extends React.Component<AiSummaryTableProperties, Ai
 
     render(): React.ReactElement {
         const formatted = this.formatTableData();
-        const { scoreDiffThresholds, categorization_method, onThresholdChange, onResetThresholds } =
-            this.props;
+        const { scoreDiffThresholds, onThresholdChange, onResetThresholds } = this.props;
 
-        // Determine which categories should have editable thresholds
-        const editableCategories =
-            categorization_method === "new"
-                ? ["Excellent", "Great", "Good", "Inaccuracy", "Mistake", "Blunder"]
-                : ["Good", "Inaccuracy", "Mistake", "Blunder"];
+        // All categories are now editable
+        const editableCategories = [
+            "Excellent",
+            "Great",
+            "Good",
+            "Inaccuracy",
+            "Mistake",
+            "Blunder",
+        ];
 
         // Default values for display
         const defaultThresholds: { [k: string]: number } = { ...DEFAULT_SCORE_DIFF_THRESHOLDS };
-        if (categorization_method === "old") {
-            defaultThresholds.Good = 1;
-            defaultThresholds.Inaccuracy = 2;
-            defaultThresholds.Mistake = 5;
-        }
 
         // Add defensive check for required props
         if (!formatted.body_list || !formatted.heading_list) {
@@ -338,6 +334,7 @@ export class AiSummaryTable extends React.Component<AiSummaryTableProperties, Ai
                                                               catKey as keyof ScoreDiffThresholds
                                                           ]
                                                 }
+                                                step={0.1}
                                                 onChange={(e) => {
                                                     const v = parseFloat(e.target.value);
                                                     if (!isNaN(v)) {

@@ -105,6 +105,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
     public destroyed: boolean = false;
     private enable_sounds: boolean = true;
     private _estimating_score: boolean = false;
+    private _stashed_submit_move?: () => void;
 
     constructor(opts: GobanRendererConfig & { enable_sounds?: boolean }) {
         super();
@@ -445,11 +446,14 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
             this.goban.engine.phase !== "stone removal" &&
             !this.goban.isAnalysisDisabled()
         ) {
-            this.setVariationName("");
-            this.goban.setMode("analyze", true);
-            if (move) {
-                this.goban.engine.jumpTo(move);
+            if (!move) {
+                move = this.goban.engine.cur_move;
             }
+
+            this.saveSubmitMove();
+            this.setVariationName("");
+            this.goban.setMode("analyze");
+            this.goban.engine.jumpTo(move);
             return true;
         }
 
@@ -867,6 +871,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         if (this.goban.mode === "conditional") {
             return false;
         }
+        this.saveSubmitMove();
         const user = data.get("user");
         const is_player =
             user.id === this.goban.engine.players.black.id ||
@@ -900,7 +905,20 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         this.goban.hideScores();
         this.goban.score_estimator = null;
         this.goban.engine.jumpTo(ret);
+        this.restoreSubmitMove();
         return ret;
+    };
+
+    restoreSubmitMove = () => {
+        if (this._stashed_submit_move && this.goban.mode === "play") {
+            this.goban.submit_move = this._stashed_submit_move;
+            this._stashed_submit_move = undefined;
+        }
+    };
+    saveSubmitMove = () => {
+        if (this.goban.submit_move) {
+            this._stashed_submit_move = this.goban.submit_move;
+        }
     };
 
     /*** Branch stuff ***/

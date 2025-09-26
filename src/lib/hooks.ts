@@ -19,6 +19,7 @@ import * as React from "react";
 import * as data from "@/lib/data";
 import { DataSchema } from "./data_schema";
 import { Goban } from "goban";
+import { bot_event_emitter, bots_list, Bot } from "@/lib/bots";
 
 /**
  * React Hook that gives the value for a given key.  This should be preferred
@@ -84,4 +85,24 @@ export function useIsDesktop(): boolean {
     }, []);
 
     return isDesktop;
+}
+
+export function useBots() {
+    const [bots, setBots] = React.useState<Bot[]>(bots_list());
+    const [loading, setLoading] = React.useState<boolean>(bots_list().length === 0);
+
+    React.useEffect(() => {
+        const updateBots = () => {
+            setBots(bots_list());
+            setLoading(false);
+        };
+
+        bot_event_emitter.on("updated", updateBots);
+
+        return () => {
+            bot_event_emitter.off("updated", updateBots);
+        };
+    }, []);
+
+    return { bots, loading };
 }
