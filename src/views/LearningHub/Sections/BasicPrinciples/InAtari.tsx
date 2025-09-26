@@ -73,7 +73,7 @@ class Page01 extends LearningPage {
                             checked={value === "yes"}
                             onChange={handleChange}
                         />
-                        yes
+                        {_("Yes")}
                     </label>
                     <br />
                     <label>
@@ -84,7 +84,7 @@ class Page01 extends LearningPage {
                             checked={value === "no"}
                             onChange={handleChange}
                         />
-                        no
+                        {_("No")}
                     </label>
                     <br />
                 </div>
@@ -143,7 +143,7 @@ class Page02 extends LearningPage {
                             checked={value === "yes"}
                             onChange={handleChange}
                         />
-                        yes
+                        {_("Yes")}
                     </label>
                     <br />
                     <label>
@@ -154,7 +154,7 @@ class Page02 extends LearningPage {
                             checked={value === "no"}
                             onChange={handleChange}
                         />
-                        no
+                        {_("No")}
                     </label>
                     <br />
                 </div>
@@ -213,7 +213,7 @@ class Page03 extends LearningPage {
                             checked={value === "yes"}
                             onChange={handleChange}
                         />
-                        yes
+                        {_("Yes")}
                     </label>
                     <br />
                     <label>
@@ -224,7 +224,7 @@ class Page03 extends LearningPage {
                             checked={value === "no"}
                             onChange={handleChange}
                         />
-                        no
+                        {_("No")}
                     </label>
                     <br />
                 </div>
@@ -283,7 +283,7 @@ class Page04 extends LearningPage {
                             checked={value === "yes"}
                             onChange={handleChange}
                         />
-                        yes
+                        {_("Yes")}
                     </label>
                     <br />
                     <label>
@@ -294,7 +294,7 @@ class Page04 extends LearningPage {
                             checked={value === "no"}
                             onChange={handleChange}
                         />
-                        no
+                        {_("No")}
                     </label>
                     <br />
                 </div>
@@ -353,7 +353,7 @@ class Page05 extends LearningPage {
                             checked={value === "yes"}
                             onChange={handleChange}
                         />
-                        yes
+                        {_("Yes")}
                     </label>
                     <br />
                     <label>
@@ -364,7 +364,7 @@ class Page05 extends LearningPage {
                             checked={value === "no"}
                             onChange={handleChange}
                         />
-                        no
+                        {_("No")}
                     </label>
                     <br />
                 </div>
@@ -423,7 +423,7 @@ class Page06 extends LearningPage {
                             checked={value === "yes"}
                             onChange={handleChange}
                         />
-                        yes
+                        {_("Yes")}
                     </label>
                     <br />
                     <label>
@@ -434,7 +434,7 @@ class Page06 extends LearningPage {
                             checked={value === "no"}
                             onChange={handleChange}
                         />
-                        no
+                        {_("No")}
                     </label>
                     <br />
                 </div>
