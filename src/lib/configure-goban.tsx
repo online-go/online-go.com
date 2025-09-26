@@ -185,7 +185,7 @@ export function configure_goban() {
                     message = (
                         <div>
                             {_(
-                                "This group appears alive. Long press or shift+click to forcibly removal it.",
+                                "This group appears alive. Long press or shift+click to forcibly remove it.",
                             )}
                         </div>
                     );
