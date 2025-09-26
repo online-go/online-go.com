@@ -55,6 +55,9 @@ import { useAIReviewData, useAIReviewList, useWorstMoves } from "./hooks";
 
 // Constants
 const WORST_MOVES_SHOWN = 6;
+const TOAST_DURATION_MS = 2000;
+const COMPOSITE_KEY_MULTIPLIER = 1000000;
+
 import { generateHeatmapAndMarks } from "./generateHeatmapAndMarks";
 import { Errcode } from "@/components/Errcode";
 
@@ -74,8 +77,11 @@ interface AIReviewProperties {
 
 /**
  * AIReview - Refactored functional component for AI game review
+ *
  * This component displays AI analysis of Go game moves, including win rates,
- * score estimates, and move quality assessments.
+ * score estimates, and move quality assessments. It manages multiple AI reviews,
+ * handles real-time updates via WebSocket, and provides interactive visualization
+ * of AI-suggested variations.
  */
 export function AIReview({ move, game_id, hidden, onAIReviewSelected }: AIReviewProperties) {
     const reportContext = useContext(ReportContext);
@@ -193,7 +199,7 @@ export function AIReview({ move, game_id, hidden, onAIReviewSelected }: AIReview
                         engine: engine,
                     })
                         .then((newReview: JGOFAIReview) => {
-                            toast(<div>{_("Analysis started")}</div>, 2000);
+                            toast(<div>{_("Analysis started")}</div>, TOAST_DURATION_MS);
                             // Immediately select the new review
                             if (newReview.id && newReview.uuid) {
                                 // Add the new review to the list
@@ -445,7 +451,7 @@ export function AIReview({ move, game_id, hidden, onAIReviewSelected }: AIReview
         reviewData || null,
         gobanController?.goban || null,
         // Create a composite key that changes when either updateCount or goban availability changes
-        updateCount + (gobanController?.goban ? 1000000 : 0),
+        updateCount + (gobanController?.goban ? COMPOSITE_KEY_MULTIPLIER : 0),
     );
 
     // Update highlights and marks when review data or move changes

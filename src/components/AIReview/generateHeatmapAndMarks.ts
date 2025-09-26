@@ -112,10 +112,16 @@ export function generateHeatmapAndMarks({
             continue;
         }
 
+        // Skip if the intersection is already occupied - this shouldn't happen but defensive check
         if (goban.engine.board[mv.y][mv.x]) {
-            errorLogger(
-                new Error("AI is suggesting moves on intersections that have already been played"),
-            );
+            if (process.env.NODE_ENV === "development") {
+                errorLogger(
+                    new Error(
+                        "AI is suggesting moves on intersections that have already been played",
+                    ),
+                );
+            }
+            continue; // Skip this branch instead of processing it
         }
 
         heatmap[mv.y][mv.x] = branch.visits / strength;

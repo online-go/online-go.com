@@ -17,6 +17,8 @@
 
 import * as preferences from "@/lib/preferences";
 import { MODERATOR_POWERS } from "@/lib/moderation";
+import { GobanController } from "@/lib/GobanController";
+import { GobanRenderer } from "goban";
 
 // ==================== Engine Utils ====================
 
@@ -29,10 +31,7 @@ export function engineName(engine: string): string {
         case "katago:meijin":
             return "KataGo";
     }
-    // Log unknown engine names for debugging in development only
-    if (process.env.NODE_ENV === "development") {
-        console.warn("Unknown engine name", engine);
-    }
+    // Silently handle unknown engine names in production
     return "AI";
 }
 
@@ -127,30 +126,6 @@ export function powerToSeeTable(moderator_powers: number | undefined): boolean {
     );
 }
 
-interface User {
-    id?: number;
-    is_moderator?: boolean;
-    moderator_powers?: number;
-}
-
-interface GobanController {
-    creator_id?: number;
-}
-
-interface Goban {
-    engine?: {
-        players?: {
-            black?: { id?: number };
-            white?: { id?: number };
-        };
-        config?: {
-            black_player_id?: number;
-            white_player_id?: number;
-        };
-    };
-    review_controller_id?: number;
-}
-
 /**
  * Determines if a user has permission to start a full AI review
  * @param user Current user object
@@ -159,9 +134,9 @@ interface Goban {
  * @returns True if user can start a full review
  */
 export function canStartFullReview(
-    user: User,
+    user: rest_api.UserConfig,
     goban_controller: GobanController,
-    goban: Goban,
+    goban: GobanRenderer,
 ): boolean {
     try {
         if (
@@ -190,8 +165,8 @@ export function canStartFullReview(
  * @returns True if user can request variation analysis
  */
 export function canRequestVariationAnalysis(
-    user: User & { anonymous?: boolean; supporter?: boolean },
-    goban: Goban,
+    user: rest_api.UserConfig,
+    goban: GobanRenderer,
     goban_controller: GobanController,
 ): boolean {
     if (user.anonymous) {

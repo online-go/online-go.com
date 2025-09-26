@@ -53,7 +53,7 @@ export class ReviewChartD3 {
     private destroyed = false;
     private width = INITIAL_WIDTH;
     private height = INITIAL_HEIGHT;
-    private replot_timeout?: any;
+    private replot_timeout?: ReturnType<typeof setTimeout>;
 
     // D3 selections and scales
     private prediction_graph!: d3.Selection<SVGGElement, unknown, null, undefined>;
@@ -550,7 +550,10 @@ export class ReviewChartD3 {
 
         // Workaround for first pass rendering issue
         try {
-            if ((removes as any)._groups[0].length !== (adds as any)._groups[0].length) {
+            // Type-safe check for D3 selection length comparison
+            const removesSelection = removes as unknown as { _groups: Array<Array<unknown>> };
+            const addsSelection = adds as unknown as { _groups: Array<Array<unknown>> };
+            if (removesSelection._groups[0].length !== addsSelection._groups[0].length) {
                 setTimeout(() => this.plot(), 50);
             }
         } catch {

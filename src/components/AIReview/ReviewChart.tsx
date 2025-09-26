@@ -98,11 +98,14 @@ export function ReviewChart(props: ReviewChartProperties) {
 
     // Handle resize with built-in debouncing
     const handleResize = React.useMemo(() => {
-        let timeoutId: any;
+        let timeoutId: ReturnType<typeof setTimeout> | null = null;
         return () => {
-            clearTimeout(timeoutId);
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
             timeoutId = setTimeout(() => {
                 chartManagerRef.current?.resize();
+                timeoutId = null;
             }, 10);
         };
     }, []);
