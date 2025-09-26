@@ -15,9 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export * from "./AIDemoReview";
-export * from "./SummaryTable";
+// Export components used outside this directory
 export * from "./AIReview";
-export * from "./ReviewChart";
-export * from "./MoveListPopover";
-export * from "./ReviewStrengthIcon";
+export * from "./ReviewStrengthIcon"; // Used by moderator-ui submodule

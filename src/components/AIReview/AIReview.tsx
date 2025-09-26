@@ -52,6 +52,9 @@ import {
     fillAIMarksBacktracking,
 } from "./utils";
 import { useAIReviewData, useAIReviewList, useWorstMoves } from "./hooks";
+
+// Constants
+const WORST_MOVES_SHOWN = 6;
 import { generateHeatmapAndMarks } from "./generateHeatmapAndMarks";
 import { Errcode } from "@/components/Errcode";
 
@@ -80,7 +83,6 @@ export function AIReview({ move, game_id, hidden, onAIReviewSelected }: AIReview
 
     // State management
     const [useScore, setUseScore] = useState(preferences.get("ai-review-use-score"));
-    const worstMovesShown = 6; // Constant value, no need for state
     const [showTable, setShowTable] = useState(false);
     const [tableHidden, setTableHidden] = useState(!preferences.get("ai-summary-table-show"));
     const [scoreDiffThresholds, setScoreDiffThresholds] = useState<ScoreDiffThresholds>(() => {
@@ -95,12 +97,16 @@ export function AIReview({ move, game_id, hidden, onAIReviewSelected }: AIReview
         reviewing,
         aiReviews,
         selectedAiReview,
-        setSelectedAiReview,
+        setSelectedAiReview: setSelectedAiReviewInList,
         refresh,
         addReview,
     } = useAIReviewList(game_id);
 
-    const { reviewData, setSelectedAIReview, updateCount } = useAIReviewData({
+    const {
+        reviewData,
+        setSelectedAIReview: setSelectedAIReviewData,
+        updateCount,
+    } = useAIReviewData({
         gameId: game_id,
         moveTree: gobanController?.goban?.engine?.move_tree,
     });
@@ -110,10 +116,10 @@ export function AIReview({ move, game_id, hidden, onAIReviewSelected }: AIReview
         if (selectedAiReview && !reviewData) {
             // Only set if we have a selected review but no reviewData yet
             // This handles the initial auto-selection from useAIReviewList
-            setSelectedAIReview(selectedAiReview);
+            setSelectedAIReviewData(selectedAiReview);
             onAIReviewSelected(selectedAiReview);
         }
-    }, [selectedAiReview, reviewData, setSelectedAIReview, onAIReviewSelected]);
+    }, [selectedAiReview, reviewData, setSelectedAIReviewData, onAIReviewSelected]);
 
     // Get user and permissions
     const user = data.get("user");
@@ -138,12 +144,12 @@ export function AIReview({ move, game_id, hidden, onAIReviewSelected }: AIReview
     // Handle AI review selection
     const handleAIReviewSelect = useCallback(
         (ai_review: JGOFAIReview) => {
-            setSelectedAiReview(ai_review); // Update list selection
-            setSelectedAIReview(ai_review); // Update AIReviewData
+            setSelectedAiReviewInList(ai_review); // Update list selection
+            setSelectedAIReviewData(ai_review); // Update AIReviewData
             onAIReviewSelected(ai_review);
             setShowTable(canViewTable);
         },
-        [setSelectedAiReview, setSelectedAIReview, onAIReviewSelected, canViewTable],
+        [setSelectedAiReviewInList, setSelectedAIReviewData, onAIReviewSelected, canViewTable],
     );
 
     // Sync AI review data when reviewData or selectedAiReview changes
@@ -223,16 +229,12 @@ export function AIReview({ move, game_id, hidden, onAIReviewSelected }: AIReview
             return;
         }
 
-        const categorization = reviewData.categorize(
+        reviewData.categorize(
             gobanController.goban.engine,
             scoreDiffThresholds,
             includeNegativeScoreLoss,
         );
-
-        if (showTable !== !categorization) {
-            setShowTable(!categorization);
-        }
-    }, [gobanController, reviewData, scoreDiffThresholds, includeNegativeScoreLoss, showTable]);
+    }, [gobanController, reviewData, scoreDiffThresholds, includeNegativeScoreLoss]);
 
     // State for win rate and score from highlights update
     const [winRateScore, setWinRateScore] = useState<[number, number]>([0, 0]);
@@ -529,7 +531,6 @@ export function AIReview({ move, game_id, hidden, onAIReviewSelected }: AIReview
                     score={score}
                     useScore={useScore}
                     hasScores={!!reviewData.scores}
-                    isProcessing={win_rate < 0 || win_rate > 1.0}
                 />
             )}
 
@@ -555,7 +556,7 @@ export function AIReview({ move, game_id, hidden, onAIReviewSelected }: AIReview
                                     currentPopupMoves.length > 0
                                         ? currentPopupMoves
                                         : worst_move_list
-                                              .slice(0, worstMovesShown)
+                                              .slice(0, WORST_MOVES_SHOWN)
                                               .map((m) => m.move_number - 1)
                                 }
                             />
@@ -566,7 +567,7 @@ export function AIReview({ move, game_id, hidden, onAIReviewSelected }: AIReview
                                     onMoveClick={(moveNumber) =>
                                         gobanController.gotoMove(moveNumber)
                                     }
-                                    maxMovesShown={worstMovesShown}
+                                    maxMovesShown={WORST_MOVES_SHOWN}
                                 />
                             </div>
 

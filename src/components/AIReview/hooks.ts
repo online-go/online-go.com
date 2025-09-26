@@ -34,7 +34,6 @@ import { errorLogger } from "@/lib/misc";
 interface UseAIReviewDataProps {
     gameId: number;
     moveTree?: MoveTree;
-    onUpdate?: () => void;
 }
 
 interface UseAIReviewDataReturn {
@@ -48,11 +47,7 @@ interface UseAIReviewDataReturn {
  * @param props Hook configuration
  * @returns Review data, setter function, and update counter
  */
-export function useAIReviewData({
-    gameId,
-    moveTree,
-    onUpdate,
-}: UseAIReviewDataProps): UseAIReviewDataReturn {
+export function useAIReviewData({ gameId, moveTree }: UseAIReviewDataProps): UseAIReviewDataReturn {
     const reviewDataRef = useRef<AIReviewData | undefined>(undefined);
     const [updateCount, setUpdateCount] = useState(0);
 
@@ -72,7 +67,6 @@ export function useAIReviewData({
 
                 const handleUpdate = () => {
                     setUpdateCount((prev) => prev + 1);
-                    onUpdate?.();
                 };
 
                 reviewDataRef.current.on("update", handleUpdate);
@@ -80,10 +74,9 @@ export function useAIReviewData({
 
                 // Trigger initial sync
                 setUpdateCount((prev) => prev + 1);
-                onUpdate?.();
             }
         },
-        [gameId, moveTree, onUpdate],
+        [gameId, moveTree],
     );
 
     // Cleanup on unmount

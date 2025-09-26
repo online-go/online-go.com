@@ -118,17 +118,6 @@ export function trimMaxMoves(marks: { [mark: string]: string }): { [mark: string
     return result;
 }
 
-// ==================== Score/Win Rate Utils ====================
-
-export function formatWinRate(winRate: number): string {
-    const winRatePercent = winRate * 100.0;
-    return winRatePercent.toFixed(1);
-}
-
-export function formatScore(score: number): string {
-    return Math.abs(score).toFixed(1);
-}
-
 // ==================== Permissions Utils ====================
 
 export function powerToSeeTable(moderator_powers: number | undefined): boolean {

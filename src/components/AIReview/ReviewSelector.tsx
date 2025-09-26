@@ -33,7 +33,6 @@ interface ReviewSelectorProps {
     score: number;
     useScore: boolean;
     hasScores: boolean;
-    isProcessing?: boolean;
 }
 
 export function ReviewSelector({
@@ -46,7 +45,6 @@ export function ReviewSelector({
     score,
     useScore,
     hasScores,
-    isProcessing: _isProcessing, // Currently unused
 }: ReviewSelectorProps): React.ReactElement | null {
     if (reviews.length === 0) {
         return null;
