@@ -67,7 +67,6 @@ interface AIReviewProperties {
     game_id: number;
     hidden: boolean;
     onAIReviewSelected: (ai_review: JGOFAIReview) => void;
-    bot_detection_results?: unknown;
 }
 
 /**
@@ -75,13 +74,7 @@ interface AIReviewProperties {
  * This component displays AI analysis of Go game moves, including win rates,
  * score estimates, and move quality assessments.
  */
-export function AIReview({
-    move,
-    game_id,
-    hidden,
-    onAIReviewSelected,
-    bot_detection_results: _bot_detection_results, // Currently unused but kept for API compatibility
-}: AIReviewProperties) {
+export function AIReview({ move, game_id, hidden, onAIReviewSelected }: AIReviewProperties) {
     const reportContext = useContext(ReportContext);
     const gobanController = useGobanControllerOrNull();
 
