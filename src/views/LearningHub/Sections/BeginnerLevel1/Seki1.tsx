@@ -90,7 +90,7 @@ class Page01 extends LearningPage {
                             checked={value === "Black"}
                             onChange={handleChange}
                         />
-                        Black
+                        {_("Black")}
                     </label>
                     <br />
                     <label>
@@ -101,7 +101,7 @@ class Page01 extends LearningPage {
                             checked={value === "White"}
                             onChange={handleChange}
                         />
-                        White
+                        {_("White")}
                     </label>
                     <br />
                     <label>
@@ -112,7 +112,7 @@ class Page01 extends LearningPage {
                             checked={value === "seki"}
                             onChange={handleChange}
                         />
-                        seki
+                        {_("Seki")}
                     </label>
                     <br />
                 </div>
@@ -177,7 +177,7 @@ class Page02 extends LearningPage {
                             checked={value === "Black"}
                             onChange={handleChange}
                         />
-                        Black
+                        {_("Black")}
                     </label>
                     <br />
                     <label>
@@ -188,7 +188,7 @@ class Page02 extends LearningPage {
                             checked={value === "White"}
                             onChange={handleChange}
                         />
-                        White
+                        {_("White")}
                     </label>
                     <br />
                     <label>
@@ -199,7 +199,7 @@ class Page02 extends LearningPage {
                             checked={value === "seki"}
                             onChange={handleChange}
                         />
-                        seki
+                        {_("Seki")}
                     </label>
                     <br />
                 </div>
@@ -259,7 +259,7 @@ class Page03 extends LearningPage {
                             checked={value === "Black"}
                             onChange={handleChange}
                         />
-                        Black
+                        {_("Black")}
                     </label>
                     <br />
                     <label>
@@ -270,7 +270,7 @@ class Page03 extends LearningPage {
                             checked={value === "White"}
                             onChange={handleChange}
                         />
-                        White
+                        {_("White")}
                     </label>
                     <br />
                     <label>
@@ -281,7 +281,7 @@ class Page03 extends LearningPage {
                             checked={value === "seki"}
                             onChange={handleChange}
                         />
-                        seki
+                        {_("Seki")}
                     </label>
                     <br />
                 </div>
@@ -341,7 +341,7 @@ class Page04 extends LearningPage {
                             checked={value === "Black"}
                             onChange={handleChange}
                         />
-                        Black
+                        {_("Black")}
                     </label>
                     <br />
                     <label>
@@ -352,7 +352,7 @@ class Page04 extends LearningPage {
                             checked={value === "White"}
                             onChange={handleChange}
                         />
-                        White
+                        {_("White")}
                     </label>
                     <br />
                     <label>
@@ -363,7 +363,7 @@ class Page04 extends LearningPage {
                             checked={value === "seki"}
                             onChange={handleChange}
                         />
-                        seki
+                        {_("Seki")}
                     </label>
                     <br />
                 </div>
@@ -423,7 +423,7 @@ class Page05 extends LearningPage {
                             checked={value === "Black"}
                             onChange={handleChange}
                         />
-                        Black
+                        {_("Black")}
                     </label>
                     <br />
                     <label>
@@ -434,7 +434,7 @@ class Page05 extends LearningPage {
                             checked={value === "White"}
                             onChange={handleChange}
                         />
-                        White
+                        {_("White")}
                     </label>
                     <br />
                     <label>
@@ -445,7 +445,7 @@ class Page05 extends LearningPage {
                             checked={value === "seki"}
                             onChange={handleChange}
                         />
-                        seki
+                        {_("Seki")}
                     </label>
                     <br />
                 </div>
@@ -505,7 +505,7 @@ class Page06 extends LearningPage {
                             checked={value === "Black"}
                             onChange={handleChange}
                         />
-                        Black
+                        {_("Black")}
                     </label>
                     <br />
                     <label>
@@ -516,7 +516,7 @@ class Page06 extends LearningPage {
                             checked={value === "White"}
                             onChange={handleChange}
                         />
-                        White
+                        {_("White")}
                     </label>
                     <br />
                     <label>
@@ -527,7 +527,7 @@ class Page06 extends LearningPage {
                             checked={value === "seki"}
                             onChange={handleChange}
                         />
-                        seki
+                        {_("Seki")}
                     </label>
                     <br />
                 </div>
@@ -587,7 +587,7 @@ class Page07 extends LearningPage {
                             checked={value === "Black"}
                             onChange={handleChange}
                         />
-                        Black
+                        {_("Black")}
                     </label>
                     <br />
                     <label>
@@ -598,7 +598,7 @@ class Page07 extends LearningPage {
                             checked={value === "White"}
                             onChange={handleChange}
                         />
-                        White
+                        {_("White")}
                     </label>
                     <br />
                     <label>
@@ -609,7 +609,7 @@ class Page07 extends LearningPage {
                             checked={value === "seki"}
                             onChange={handleChange}
                         />
-                        seki
+                        {_("Seki")}
                     </label>
                     <br />
                 </div>
@@ -669,7 +669,7 @@ class Page08 extends LearningPage {
                             checked={value === "Black"}
                             onChange={handleChange}
                         />
-                        Black
+                        {_("Black")}
                     </label>
                     <br />
                     <label>
@@ -680,7 +680,7 @@ class Page08 extends LearningPage {
                             checked={value === "White"}
                             onChange={handleChange}
                         />
-                        White
+                        {_("White")}
                     </label>
                     <br />
                     <label>
@@ -691,7 +691,7 @@ class Page08 extends LearningPage {
                             checked={value === "seki"}
                             onChange={handleChange}
                         />
-                        seki
+                        {_("Seki")}
                     </label>
                     <br />
                 </div>
@@ -751,7 +751,7 @@ class Page09 extends LearningPage {
                             checked={value === "Black"}
                             onChange={handleChange}
                         />
-                        Black
+                        {_("Black")}
                     </label>
                     <br />
                     <label>
@@ -762,7 +762,7 @@ class Page09 extends LearningPage {
                             checked={value === "White"}
                             onChange={handleChange}
                         />
-                        White
+                        {_("White")}
                     </label>
                     <br />
                     <label>
@@ -773,7 +773,7 @@ class Page09 extends LearningPage {
                             checked={value === "seki"}
                             onChange={handleChange}
                         />
-                        seki
+                        {_("Seki")}
                     </label>
                     <br />
                 </div>
@@ -833,7 +833,7 @@ class Page10 extends LearningPage {
                             checked={value === "Black"}
                             onChange={handleChange}
                         />
-                        Black
+                        {_("Black")}
                     </label>
                     <br />
                     <label>
@@ -844,7 +844,7 @@ class Page10 extends LearningPage {
                             checked={value === "White"}
                             onChange={handleChange}
                         />
-                        White
+                        {_("White")}
                     </label>
                     <br />
                     <label>
@@ -855,7 +855,7 @@ class Page10 extends LearningPage {
                             checked={value === "seki"}
                             onChange={handleChange}
                         />
-                        seki
+                        {_("Seki")}
                     </label>
                     <br />
                 </div>
@@ -915,7 +915,7 @@ class Page11 extends LearningPage {
                             checked={value === "Black"}
                             onChange={handleChange}
                         />
-                        Black
+                        {_("Black")}
                     </label>
                     <br />
                     <label>
@@ -926,7 +926,7 @@ class Page11 extends LearningPage {
                             checked={value === "White"}
                             onChange={handleChange}
                         />
-                        White
+                        {_("White")}
                     </label>
                     <br />
                     <label>
@@ -937,7 +937,7 @@ class Page11 extends LearningPage {
                             checked={value === "seki"}
                             onChange={handleChange}
                         />
-                        seki
+                        {_("Seki")}
                     </label>
                     <br />
                 </div>
@@ -997,7 +997,7 @@ class Page12 extends LearningPage {
                             checked={value === "Black"}
                             onChange={handleChange}
                         />
-                        Black
+                        {_("Black")}
                     </label>
                     <br />
                     <label>
@@ -1008,7 +1008,7 @@ class Page12 extends LearningPage {
                             checked={value === "White"}
                             onChange={handleChange}
                         />
-                        White
+                        {_("White")}
                     </label>
                     <br />
                     <label>
@@ -1019,7 +1019,7 @@ class Page12 extends LearningPage {
                             checked={value === "seki"}
                             onChange={handleChange}
                         />
-                        seki
+                        {_("Seki")}
                     </label>
                     <br />
                 </div>
@@ -1079,7 +1079,7 @@ class Page13 extends LearningPage {
                             checked={value === "Black"}
                             onChange={handleChange}
                         />
-                        Black
+                        {_("Black")}
                     </label>
                     <br />
                     <label>
@@ -1090,7 +1090,7 @@ class Page13 extends LearningPage {
                             checked={value === "White"}
                             onChange={handleChange}
                         />
-                        White
+                        {_("White")}
                     </label>
                     <br />
                     <label>
@@ -1101,7 +1101,7 @@ class Page13 extends LearningPage {
                             checked={value === "seki"}
                             onChange={handleChange}
                         />
-                        seki
+                        {_("Seki")}
                     </label>
                     <br />
                 </div>
@@ -1161,7 +1161,7 @@ class Page14 extends LearningPage {
                             checked={value === "Black"}
                             onChange={handleChange}
                         />
-                        Black
+                        {_("Black")}
                     </label>
                     <br />
                     <label>
@@ -1172,7 +1172,7 @@ class Page14 extends LearningPage {
                             checked={value === "White"}
                             onChange={handleChange}
                         />
-                        White
+                        {_("White")}
                     </label>
                     <br />
                     <label>
@@ -1183,7 +1183,7 @@ class Page14 extends LearningPage {
                             checked={value === "seki"}
                             onChange={handleChange}
                         />
-                        seki
+                        {_("Seki")}
                     </label>
                     <br />
                 </div>

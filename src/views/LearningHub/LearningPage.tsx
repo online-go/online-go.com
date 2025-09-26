@@ -281,7 +281,7 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
                             <div className="failed">
                                 <h1>{_("Puzzle failed!")}</h1>
                                 <button className="reject" onClick={this.reset}>
-                                    Retry
+                                    {_("Retry")}
                                 </button>
                             </div>
                         )}
