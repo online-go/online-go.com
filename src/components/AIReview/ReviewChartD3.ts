@@ -288,6 +288,10 @@ export class ReviewChartD3 {
             if (entry.move_number !== lastMove) {
                 updateLastMove(entry.move_number);
                 this.callbacks.setMove(entry.move_number);
+                this.move_crosshair?.attr(
+                    "transform",
+                    `translate(${this.x(entry.move_number)}, 0)`,
+                );
             }
         }
     }
