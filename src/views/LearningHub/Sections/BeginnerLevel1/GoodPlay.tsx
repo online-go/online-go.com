@@ -71,7 +71,7 @@ class Page01 extends LearningPage {
                             checked={value === "good"}
                             onChange={handleChange}
                         />
-                        good
+                        {_("Good")}
                     </label>
                     <br />
                     <label>
@@ -82,7 +82,7 @@ class Page01 extends LearningPage {
                             checked={value === "not good"}
                             onChange={handleChange}
                         />
-                        not good
+                        {_("Not good")}
                     </label>
                     <br />
                 </div>
@@ -143,7 +143,7 @@ class Page02 extends LearningPage {
                             checked={value === "good"}
                             onChange={handleChange}
                         />
-                        good
+                        {_("Good")}
                     </label>
                     <br />
                     <label>
@@ -154,7 +154,7 @@ class Page02 extends LearningPage {
                             checked={value === "not good"}
                             onChange={handleChange}
                         />
-                        not good
+                        {_("Not good")}
                     </label>
                     <br />
                 </div>
@@ -215,7 +215,7 @@ class Page03 extends LearningPage {
                             checked={value === "good"}
                             onChange={handleChange}
                         />
-                        good
+                        {_("Good")}
                     </label>
                     <br />
                     <label>
@@ -226,7 +226,7 @@ class Page03 extends LearningPage {
                             checked={value === "not good"}
                             onChange={handleChange}
                         />
-                        not good
+                        {_("Not good")}
                     </label>
                     <br />
                 </div>
@@ -287,7 +287,7 @@ class Page04 extends LearningPage {
                             checked={value === "good"}
                             onChange={handleChange}
                         />
-                        good
+                        {_("Good")}
                     </label>
                     <br />
                     <label>
@@ -298,7 +298,7 @@ class Page04 extends LearningPage {
                             checked={value === "not good"}
                             onChange={handleChange}
                         />
-                        not good
+                        {_("Not good")}
                     </label>
                     <br />
                 </div>
@@ -359,7 +359,7 @@ class Page05 extends LearningPage {
                             checked={value === "good"}
                             onChange={handleChange}
                         />
-                        good
+                        {_("Good")}
                     </label>
                     <br />
                     <label>
@@ -370,7 +370,7 @@ class Page05 extends LearningPage {
                             checked={value === "not good"}
                             onChange={handleChange}
                         />
-                        not good
+                        {_("Not good")}
                     </label>
                     <br />
                 </div>
@@ -431,7 +431,7 @@ class Page06 extends LearningPage {
                             checked={value === "good"}
                             onChange={handleChange}
                         />
-                        good
+                        {_("Good")}
                     </label>
                     <br />
                     <label>
@@ -442,7 +442,7 @@ class Page06 extends LearningPage {
                             checked={value === "not good"}
                             onChange={handleChange}
                         />
-                        not good
+                        {_("Not good")}
                     </label>
                     <br />
                 </div>
@@ -503,7 +503,7 @@ class Page07 extends LearningPage {
                             checked={value === "good"}
                             onChange={handleChange}
                         />
-                        good
+                        {_("Good")}
                     </label>
                     <br />
                     <label>
@@ -514,7 +514,7 @@ class Page07 extends LearningPage {
                             checked={value === "not good"}
                             onChange={handleChange}
                         />
-                        not good
+                        {_("Not good")}
                     </label>
                     <br />
                 </div>
@@ -575,7 +575,7 @@ class Page08 extends LearningPage {
                             checked={value === "good"}
                             onChange={handleChange}
                         />
-                        good
+                        {_("Good")}
                     </label>
                     <br />
                     <label>
@@ -586,7 +586,7 @@ class Page08 extends LearningPage {
                             checked={value === "not good"}
                             onChange={handleChange}
                         />
-                        not good
+                        {_("Not good")}
                     </label>
                     <br />
                 </div>
@@ -647,7 +647,7 @@ class Page09 extends LearningPage {
                             checked={value === "good"}
                             onChange={handleChange}
                         />
-                        good
+                        {_("Good")}
                     </label>
                     <br />
                     <label>
@@ -658,7 +658,7 @@ class Page09 extends LearningPage {
                             checked={value === "not good"}
                             onChange={handleChange}
                         />
-                        not good
+                        {_("Not good")}
                     </label>
                     <br />
                 </div>

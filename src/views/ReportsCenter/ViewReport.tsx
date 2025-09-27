@@ -670,6 +670,7 @@ export function ViewReport({
                                 reported_at={report.reported_game_move}
                                 reported_by={report.reporting_user.id}
                                 onGobanCreated={setCurrentGoban}
+                                simul={report.simul}
                             />
                         )}
                         {report.report_type === "appeal" && (

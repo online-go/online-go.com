@@ -1322,8 +1322,7 @@ export function Tournament(): React.ReactElement {
                                             </span>
                                         ) : (
                                             <span>
-                                                {sorted_players.length} (was{" "}
-                                                {tournament.players_start}
+                                                {sorted_players.length} ({tournament.players_start}
                                                 {!tournament.settings.maximum_players
                                                     ? "+"
                                                     : parseInt(
@@ -1982,14 +1981,14 @@ export function Tournament(): React.ReactElement {
                                                                                                     ]
                                                                                                 }`}
                                                                                             >
-                                                                                                {
+                                                                                                {translateResult(
                                                                                                     selected_round
                                                                                                         .results[
                                                                                                         player.id +
                                                                                                             "x" +
                                                                                                             opponent?.id
-                                                                                                    ]
-                                                                                                }
+                                                                                                    ],
+                                                                                                )}
                                                                                             </Link>
                                                                                         </td>
                                                                                     ),
@@ -2120,11 +2119,11 @@ export function Tournament(): React.ReactElement {
                                                                     <Link
                                                                         to={`/game/${selected_round.game_ids[pxo]}`}
                                                                     >
-                                                                        {
+                                                                        {translateResult(
                                                                             selected_round.results[
                                                                                 pxo
-                                                                            ]
-                                                                        }
+                                                                            ],
+                                                                        )}
                                                                     </Link>
                                                                 </td>
 
@@ -2229,13 +2228,13 @@ export function Tournament(): React.ReactElement {
                                                                             ]
                                                                         }`}
                                                                     >
-                                                                        {
+                                                                        {translateResult(
                                                                             selected_round.results[
                                                                                 m.player?.id +
                                                                                     "x" +
                                                                                     m.opponent?.id
-                                                                            ]
-                                                                        }
+                                                                            ],
+                                                                        )}
                                                                     </Link>
                                                                 </td>
 
@@ -2375,6 +2374,19 @@ export function Tournament(): React.ReactElement {
             )}
         </div>
     );
+}
+
+function translateResult(result: string): string {
+    switch (result) {
+        case "win":
+            return pgettext("Tournament result", "win");
+        case "loss":
+            return pgettext("Tournament result", "loss");
+        case "tie":
+            return pgettext("Tournament result", "tie");
+        default:
+            return result;
+    }
 }
 
 function compareUserRankWithPlayers(
