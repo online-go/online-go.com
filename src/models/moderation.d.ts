@@ -148,6 +148,7 @@ declare namespace rest_api {
             escalation_note: string;
             dissenter_note: string;
             voter_notes: VoterNote[];
+            simul: boolean;
         }
     }
 }
