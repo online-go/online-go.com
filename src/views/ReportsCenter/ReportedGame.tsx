@@ -28,7 +28,6 @@ import { errorAlerter, showSecondsResolution } from "@/lib/misc";
 import { doAnnul } from "@/lib/moderation";
 
 import {
-    AIReview,
     GameTimings,
     GameChat,
     GobanControllerContext,
@@ -36,6 +35,7 @@ import {
     GameLog,
     useGobanController,
 } from "@/views/Game";
+import { AIReview } from "@/components/AIReview";
 import { GobanRenderer } from "goban";
 import { Resizable } from "@/components/Resizable";
 

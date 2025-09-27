@@ -19,13 +19,9 @@ import * as React from "react";
 import { _ } from "@/lib/translate";
 import { MiniGoban } from "@/components/MiniGoban";
 import { GobanRenderer } from "goban";
-import {
-    AIReview,
-    GameTimings,
-    GameChat,
-    GobanControllerContext,
-    GobanController,
-} from "@/views/Game";
+import { GameTimings, GameChat, GobanControllerContext } from "@/views/Game";
+import { AIReview } from "@/components/AIReview";
+import { GobanController } from "@/lib/GobanController";
 import { Player } from "@/components/Player";
 import { Resizable } from "@/components/Resizable";
 import { post, put } from "@/lib/requests";
