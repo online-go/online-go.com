@@ -31,7 +31,7 @@ export function engineName(engine: string): string {
         case "katago:meijin":
             return "KataGo";
     }
-    // Silently handle unknown engine names in production
+    // should be unreachable
     return "AI";
 }
 

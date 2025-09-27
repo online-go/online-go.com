@@ -76,8 +76,6 @@ interface AIReviewProperties {
 }
 
 /**
- * AIReview - Refactored functional component for AI game review
- *
  * This component displays AI analysis of Go game moves, including win rates,
  * score estimates, and move quality assessments. It manages multiple AI reviews,
  * handles real-time updates via WebSocket, and provides interactive visualization
@@ -150,8 +148,8 @@ export function AIReview({ move, game_id, hidden, onAIReviewSelected }: AIReview
     // Handle AI review selection
     const handleAIReviewSelect = useCallback(
         (ai_review: JGOFAIReview) => {
-            setSelectedAiReviewInList(ai_review); // Update list selection
-            setSelectedAIReviewData(ai_review); // Update AIReviewData
+            setSelectedAiReviewInList(ai_review);
+            setSelectedAIReviewData(ai_review);
             onAIReviewSelected(ai_review);
             setShowTable(canViewTable);
         },
@@ -202,11 +200,8 @@ export function AIReview({ move, game_id, hidden, onAIReviewSelected }: AIReview
                             toast(<div>{_("Analysis started")}</div>, TOAST_DURATION_MS);
                             // Immediately select the new review
                             if (newReview.id && newReview.uuid) {
-                                // Add the new review to the list
                                 addReview(newReview);
-                                // Select it immediately
                                 handleAIReviewSelect(newReview);
-                                // Also trigger a refresh to ensure the review list is fully updated
                                 refresh();
                             }
                         })
@@ -247,7 +242,6 @@ export function AIReview({ move, game_id, hidden, onAIReviewSelected }: AIReview
 
     /**
      * Retrieves AI review entries for the current variation branch
-     * @returns Array of review entries for the variation
      */
     const getVariationReviewEntries = useCallback((): Array<AIReviewEntry> => {
         if (!reviewData) {
