@@ -106,8 +106,10 @@ export function ReportedGame({
         <div className="reported-game">
             <div className="reported-game-container">
                 <div className="reported-game-element">
-                    <div className="reported-game-other-info">
-                        {(!!goban?.engine?.config && !goban.engine.config.ranked && "(Unranked)") ||
+                    <div className="reported-game-important-info">
+                        {(!!goban?.engine?.config &&
+                            !goban.engine.config.ranked &&
+                            _("Unranked")) ||
                             ""}
                     </div>
                     {/*  This element is providing the goban used by the goban provider wrapped around the rest of them */}
