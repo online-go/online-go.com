@@ -29,7 +29,7 @@ import { Browser, TestInfo } from "@playwright/test";
 import {
     assertIncidentReportIndicatorActive,
     assertIncidentReportIndicatorInactive,
-    goToUsersGame,
+    goToUsersFinishedGame,
     newTestUsername,
     prepareNewUser,
     reportUser,
@@ -53,7 +53,7 @@ export const cmVoteWarnNotAITest = async (
         );
 
         // Report someone for AI use
-        await goToUsersGame(reporterPage, "E2E_CM_VWNAI_ACCUSED", "E2E CM VWNAI Game");
+        await goToUsersFinishedGame(reporterPage, "E2E_CM_VWNAI_ACCUSED", "E2E CM VWNAI Game");
 
         await reportUser(
             reporterPage,

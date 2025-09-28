@@ -28,7 +28,7 @@
 import { Browser, TestInfo, expect } from "@playwright/test";
 
 import { expectOGSClickableByName } from "@helpers/matchers";
-import { goToUsersGame, reportUser, setupSeededUser } from "@helpers/user-utils";
+import { goToUsersFinishedGame, reportUser, setupSeededUser } from "@helpers/user-utils";
 
 import { withIncidentIndicatorLock } from "@helpers/report-utils";
 
@@ -39,7 +39,7 @@ export const cmVoteOnOwnReportTest = async (
     await withIncidentIndicatorLock(testInfo, async () => {
         const { userPage: reporterPage } = await setupSeededUser(browser, "E2E_CM_VOOR_REPORTER");
 
-        await goToUsersGame(reporterPage, "E2E_CM_VOOR_REPORTED", "E2E CM VOOR Game");
+        await goToUsersFinishedGame(reporterPage, "E2E_CM_VOOR_REPORTED", "E2E CM VOOR Game");
 
         // ... and report the user
         // (The username is truncated inside the player card!  So the "other player" name must not match here!)

@@ -98,6 +98,7 @@ export const playMoves = async (
     white: Page,
     moves: string[],
     boardSize: BoardSize = "19x19",
+    delay: number = 0,
     handicap: number = 0, // Japanese
 ) => {
     for (let i = 0; i < moves.length; i++) {
@@ -113,5 +114,24 @@ export const playMoves = async (
         const moveText = page.getByText("Your move", { exact: true });
         await expect(moveText).toBeVisible();
         await clickOnGobanIntersection(page, moves[i], boardSize);
+        await page.waitForTimeout(delay);
     }
+};
+
+export const resignActiveGame = async (page: Page) => {
+    const resign = page.locator(".play-buttons .cancel-button");
+    await expect(resign).toBeVisible();
+    await resign.click();
+
+    // Handle the confirmation dialog
+    const confirmDialog = page.locator('[role="dialog"]').filter({ hasText: "resign" });
+    await expect(confirmDialog).toBeVisible();
+
+    const confirmButton = confirmDialog.getByRole("button", { name: "Yes" });
+    await expect(confirmButton).toBeVisible();
+    await confirmButton.click();
+
+    // Verify the resignation was successful
+    const resignationText = page.getByText("by Resignation");
+    await expect(resignationText).toBeVisible();
 };
