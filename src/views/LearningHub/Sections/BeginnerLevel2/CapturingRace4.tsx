@@ -22,7 +22,7 @@ import { _, pgettext } from "@/lib/translate";
 import { LearningHubSection } from "../../LearningHubSection";
 import React from "react";
 
-export class BL2Endgame2 extends LearningHubSection {
+export class BL2CapturingRace4 extends LearningHubSection {
     static pages(): Array<typeof LearningPage> {
         return [
             Page01,
@@ -37,17 +37,16 @@ export class BL2Endgame2 extends LearningHubSection {
             Page10,
             Page11,
             Page12,
-            Page13,
         ];
     }
     static section(): string {
-        return "bl2-endgame2";
+        return "bl2-capturing-race-4";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning count 1", "Endgame 2");
+        return pgettext("Tutorial section name on learning can you win", "Capturing Race");
     }
     static subtext(): string {
-        return pgettext("Tutorial section subtext on learning on count 1", "Value of a move");
+        return pgettext("Tutorial section subtext on learning on can you win", "Can you win?");
     }
 }
 
@@ -64,7 +63,7 @@ class Page01 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "6") {
+                if (selectedValue === "White wins") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -73,42 +72,27 @@ class Page01 extends LearningPage {
 
             return (
                 <div>
-                    <p>
-                        {_(
-                            "You can calculate the value of a move in the endgame by adding the number of points of a white move at a position to the number of points of a black move there. The difference is the value of the move. Playing at A in this diagram yields White a captured stone and a point of territory. So, that is 2 points for White. If Black plays at A, he gets 2 captured stones and 2 points of territory, so 4 points for Black. The difference is 6 points. What is the value of playing at A?",
-                        )}
-                    </p>
+                    <p>{_("White to play. Can white win the capturing race?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="2"
-                            checked={value === "2"}
+                            value="White wins"
+                            checked={value === "White wins"}
                             onChange={handleChange}
                         />
-                        {_("2")}
+                        {_("White wins")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="4"
-                            checked={value === "4"}
+                            value="Black wins"
+                            checked={value === "Black wins"}
                             onChange={handleChange}
                         />
-                        {_("4")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="6"
-                            checked={value === "6"}
-                            onChange={handleChange}
-                        />
-                        {_("6")}
+                        {_("Black wins")}
                     </label>
                     <br />
                 </div>
@@ -126,12 +110,12 @@ class Page01 extends LearningPage {
             width: 19,
             height: 19,
             mode: "puzzle",
+            initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "bqbrbscncocpcqdr",
-                white: "crcsdndodpdqeqeres",
+                black: "anbncndneofogodpeqarbrcrdr",
+                white: "blcleldmenfnaobocodobpaqbq",
             },
-            marks: { A: "ds" },
             phase: "finished",
         };
     }
@@ -150,7 +134,7 @@ class Page02 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "1") {
+                if (selectedValue === "Black wins") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -159,38 +143,27 @@ class Page02 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("What is the value of playing at A?")}</p>
+                    <p>{_("White to play. Can white win the capturing race?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="1"
-                            checked={value === "1"}
+                            value="White wins"
+                            checked={value === "White wins"}
                             onChange={handleChange}
                         />
-                        {_("1")}
+                        {_("White wins")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="2"
-                            checked={value === "2"}
+                            value="Black wins"
+                            checked={value === "Black wins"}
                             onChange={handleChange}
                         />
-                        {_("2")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="3"
-                            checked={value === "3"}
-                            onChange={handleChange}
-                        />
-                        {_("3")}
+                        {_("Black wins")}
                     </label>
                     <br />
                 </div>
@@ -208,12 +181,12 @@ class Page02 extends LearningPage {
             width: 19,
             height: 19,
             mode: "puzzle",
+            initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "dmdncocpdqbrcrdrbs",
-                white: "endofodpeqgqeres",
+                black: "bocpdpdqarbrcrbs",
+                white: "aqbqcqgqdrer",
             },
-            marks: { A: "ds" },
             phase: "finished",
         };
     }
@@ -232,7 +205,7 @@ class Page03 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "2") {
+                if (selectedValue === "White wins") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -241,38 +214,27 @@ class Page03 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("What is the value of playing at A?")}</p>
+                    <p>{_("White to play. Can white win the capturing race?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="1"
-                            checked={value === "1"}
+                            value="White wins"
+                            checked={value === "White wins"}
                             onChange={handleChange}
                         />
-                        {_("1")}
+                        {_("White wins")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="2"
-                            checked={value === "2"}
+                            value="Black wins"
+                            checked={value === "Black wins"}
                             onChange={handleChange}
                         />
-                        {_("2")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="3"
-                            checked={value === "3"}
-                            onChange={handleChange}
-                        />
-                        {_("3")}
+                        {_("Black wins")}
                     </label>
                     <br />
                 </div>
@@ -290,12 +252,12 @@ class Page03 extends LearningPage {
             width: 19,
             height: 19,
             mode: "puzzle",
+            initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "dldmdndobpdpcqarbrcr",
-                white: "elemeneoepdqfqgqdrascsds",
+                black: "aobobpcpdqdrfrcs",
+                white: "clbmcndodpaqbqcqbrasbs",
             },
-            marks: { A: "bs" },
             phase: "finished",
         };
     }
@@ -314,7 +276,7 @@ class Page04 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "1") {
+                if (selectedValue === "White wins") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -323,38 +285,27 @@ class Page04 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("What is the value of playing at A?")}</p>
+                    <p>{_("White to play. Can white win the capturing race?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="1"
-                            checked={value === "1"}
+                            value="White wins"
+                            checked={value === "White wins"}
                             onChange={handleChange}
                         />
-                        {_("1")}
+                        {_("White wins")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="2"
-                            checked={value === "2"}
+                            value="Black wins"
+                            checked={value === "Black wins"}
                             onChange={handleChange}
                         />
-                        {_("2")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="3"
-                            checked={value === "3"}
-                            onChange={handleChange}
-                        />
-                        {_("3")}
+                        {_("Black wins")}
                     </label>
                     <br />
                 </div>
@@ -372,12 +323,12 @@ class Page04 extends LearningPage {
             width: 19,
             height: 19,
             mode: "puzzle",
+            initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "dmdncodobpcqdqbrdrcs",
-                white: "eneogofpeqgqerdses",
+                black: "ambmcmemdndpepaqbqcqfqhq",
+                white: "anbncnboapbpcpdqdr",
             },
-            marks: { A: "dp" },
             phase: "finished",
         };
     }
@@ -396,7 +347,7 @@ class Page05 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "3") {
+                if (selectedValue === "White wins") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -405,38 +356,27 @@ class Page05 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("What is the value of playing at A?")}</p>
+                    <p>{_("White to play. Can white win the capturing race?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="1"
-                            checked={value === "1"}
+                            value="White wins"
+                            checked={value === "White wins"}
                             onChange={handleChange}
                         />
-                        {_("1")}
+                        {_("White wins")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="2"
-                            checked={value === "2"}
+                            value="Black wins"
+                            checked={value === "Black wins"}
                             onChange={handleChange}
                         />
-                        {_("2")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="3"
-                            checked={value === "3"}
-                            onChange={handleChange}
-                        />
-                        {_("3")}
+                        {_("Black wins")}
                     </label>
                     <br />
                 </div>
@@ -454,12 +394,12 @@ class Page05 extends LearningPage {
             width: 19,
             height: 19,
             mode: "puzzle",
+            initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "dldmdnbododpaqbqcqcr",
-                white: "elemeneoepfpdqdrfrcsds",
+                black: "bnaobobpcpdqhqcrdrfr",
+                white: "bkbmcmfmdndodpaqbqcqbrasbs",
             },
-            marks: { A: "bs" },
             phase: "finished",
         };
     }
@@ -478,7 +418,7 @@ class Page06 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "2") {
+                if (selectedValue === "Black wins") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -487,38 +427,27 @@ class Page06 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("What is the value of playing at A?")}</p>
+                    <p>{_("White to play. Can white win the capturing race?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="1"
-                            checked={value === "1"}
+                            value="White wins"
+                            checked={value === "White wins"}
                             onChange={handleChange}
                         />
-                        {_("1")}
+                        {_("White wins")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="2"
-                            checked={value === "2"}
+                            value="Black wins"
+                            checked={value === "Black wins"}
                             onChange={handleChange}
                         />
-                        {_("2")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="3"
-                            checked={value === "3"}
-                            onChange={handleChange}
-                        />
-                        {_("3")}
+                        {_("Black wins")}
                     </label>
                     <br />
                 </div>
@@ -536,12 +465,12 @@ class Page06 extends LearningPage {
             width: 19,
             height: 19,
             mode: "puzzle",
+            initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "dmcnencoeobpdpcqdqbrbsds",
-                white: "fnfoepfpeqergrfs",
+                black: "aobocodoepfpgpdqbrcrerhr",
+                white: "dkbmcmemdneofoapbpcpdpbq",
             },
-            marks: { A: "dr" },
             phase: "finished",
         };
     }
@@ -560,7 +489,7 @@ class Page07 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "3") {
+                if (selectedValue === "Black wins") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -569,38 +498,27 @@ class Page07 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("What is the value of playing at A?")}</p>
+                    <p>{_("White to play. Can white win the capturing race?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="1"
-                            checked={value === "1"}
+                            value="White wins"
+                            checked={value === "White wins"}
                             onChange={handleChange}
                         />
-                        {_("1")}
+                        {_("White wins")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="2"
-                            checked={value === "2"}
+                            value="Black wins"
+                            checked={value === "Black wins"}
                             onChange={handleChange}
                         />
-                        {_("2")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="3"
-                            checked={value === "3"}
-                            onChange={handleChange}
-                        />
-                        {_("3")}
+                        {_("Black wins")}
                     </label>
                     <br />
                 </div>
@@ -618,12 +536,12 @@ class Page07 extends LearningPage {
             width: 19,
             height: 19,
             mode: "puzzle",
+            initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "dldmanbndnbodobpcpbq",
-                white: "elemeneoapdpepcqfqarbrcr",
+                black: "bmdmbndnaobocodobpcpdqgqhqcrdrfr",
+                white: "blcldlelamcmfmfnhodpepfpgpaqbqcqbrbs",
             },
-            marks: { A: "aq" },
             phase: "finished",
         };
     }
@@ -642,7 +560,7 @@ class Page08 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "2") {
+                if (selectedValue === "White wins") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -651,38 +569,27 @@ class Page08 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("What is the value of playing at A?")}</p>
+                    <p>{_("White to play. Can white win the capturing race?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="1"
-                            checked={value === "1"}
+                            value="White wins"
+                            checked={value === "White wins"}
                             onChange={handleChange}
                         />
-                        {_("1")}
+                        {_("White wins")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="2"
-                            checked={value === "2"}
+                            value="Black wins"
+                            checked={value === "Black wins"}
                             onChange={handleChange}
                         />
-                        {_("2")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="3"
-                            checked={value === "3"}
-                            onChange={handleChange}
-                        />
-                        {_("3")}
+                        {_("Black wins")}
                     </label>
                     <br />
                 </div>
@@ -700,12 +607,12 @@ class Page08 extends LearningPage {
             width: 19,
             height: 19,
             mode: "puzzle",
+            initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "dndodpbqdqeqcrerbs",
-                white: "fmeofoepfqfresfs",
+                black: "bnbodofobpcpepaqbqeqdrer",
+                white: "blbmcmemcncodpcqdqarbrcrbs",
             },
-            marks: { A: "ds" },
             phase: "finished",
         };
     }
@@ -724,7 +631,7 @@ class Page09 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "2") {
+                if (selectedValue === "White wins") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -733,38 +640,27 @@ class Page09 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("What is the value of playing at A?")}</p>
+                    <p>{_("White to play. Can white win the capturing race?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="1"
-                            checked={value === "1"}
+                            value="White wins"
+                            checked={value === "White wins"}
                             onChange={handleChange}
                         />
-                        {_("1")}
+                        {_("White wins")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="2"
-                            checked={value === "2"}
+                            value="Black wins"
+                            checked={value === "Black wins"}
                             onChange={handleChange}
                         />
-                        {_("2")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="3"
-                            checked={value === "3"}
-                            onChange={handleChange}
-                        />
-                        {_("3")}
+                        {_("Black wins")}
                     </label>
                     <br />
                 </div>
@@ -782,12 +678,12 @@ class Page09 extends LearningPage {
             width: 19,
             height: 19,
             mode: "puzzle",
+            initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "elemeneodpepcqcrercs",
-                white: "dldmcndndobpcpaqbqbr",
+                black: "bmdmbndnaobocodobpcpdqgqhqiqdrfr",
+                white: "bldlelflamcmenfnhodpepfpgpaqbqcqbrbs",
             },
-            marks: { A: "bs" },
             phase: "finished",
         };
     }
@@ -806,7 +702,7 @@ class Page10 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "2") {
+                if (selectedValue === "White wins") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -815,38 +711,27 @@ class Page10 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("What is the value of playing at A?")}</p>
+                    <p>{_("White to play. Can white win the capturing race?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="1"
-                            checked={value === "1"}
+                            value="White wins"
+                            checked={value === "White wins"}
                             onChange={handleChange}
                         />
-                        {_("1")}
+                        {_("White wins")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="2"
-                            checked={value === "2"}
+                            value="Black wins"
+                            checked={value === "Black wins"}
                             onChange={handleChange}
                         />
-                        {_("2")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="3"
-                            checked={value === "3"}
-                            onChange={handleChange}
-                        />
-                        {_("3")}
+                        {_("Black wins")}
                     </label>
                     <br />
                 </div>
@@ -864,12 +749,12 @@ class Page10 extends LearningPage {
             width: 19,
             height: 19,
             mode: "puzzle",
+            initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "cmemencodobpdpcqdqbrbsds",
-                white: "fneogoepeqcrdreres",
+                black: "dkblclbmcncocpbqhqbrcrdrerfr",
+                white: "elcmdmbnaoboeogobpcqdqeq",
             },
-            marks: { A: "cs" },
             phase: "finished",
         };
     }
@@ -888,7 +773,7 @@ class Page11 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "4") {
+                if (selectedValue === "White wins") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -897,38 +782,27 @@ class Page11 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("What is the value of playing at A?")}</p>
+                    <p>{_("White to play. Can white win the capturing race?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="2"
-                            checked={value === "2"}
+                            value="White wins"
+                            checked={value === "White wins"}
                             onChange={handleChange}
                         />
-                        {_("2")}
+                        {_("White wins")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="3"
-                            checked={value === "3"}
+                            value="Black wins"
+                            checked={value === "Black wins"}
                             onChange={handleChange}
                         />
-                        {_("3")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="4"
-                            checked={value === "4"}
-                            onChange={handleChange}
-                        />
-                        {_("4")}
+                        {_("Black wins")}
                     </label>
                     <br />
                 </div>
@@ -946,12 +820,12 @@ class Page11 extends LearningPage {
             width: 19,
             height: 19,
             mode: "puzzle",
+            initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "dldmdnaobocodocpbqcq",
-                white: "elemeneoapbpepdqeqarbrcr",
+                black: "ekbmcmdmgmeneoapbpcpdpcqbrcrasbs",
+                white: "aobocodoepgpdqeqiqdrds",
             },
-            marks: { A: "aq" },
             phase: "finished",
         };
     }
@@ -970,7 +844,7 @@ class Page12 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "2") {
+                if (selectedValue === "Black wins") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -979,38 +853,27 @@ class Page12 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("What is the value of playing at A?")}</p>
+                    <p>{_("White to play. Can white win the capturing race?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="1"
-                            checked={value === "1"}
+                            value="White wins"
+                            checked={value === "White wins"}
                             onChange={handleChange}
                         />
-                        {_("1")}
+                        {_("White wins")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="2"
-                            checked={value === "2"}
+                            value="Black wins"
+                            checked={value === "Black wins"}
                             onChange={handleChange}
                         />
-                        {_("2")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="3"
-                            checked={value === "3"}
-                            onChange={handleChange}
-                        />
-                        {_("3")}
+                        {_("Black wins")}
                     </label>
                     <br />
                 </div>
@@ -1028,94 +891,12 @@ class Page12 extends LearningPage {
             width: 19,
             height: 19,
             mode: "puzzle",
+            initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "enfndocpdpbqeqfqarcr",
-                white: "blelcmemanbndnbocobpepaq",
+                black: "ckclbmancngncodoeofogpdqeqfqarbrcrdrgrbs",
+                white: "bnboapcpdpepfpaqbqcqgqhqerfrhrds",
             },
-            marks: { A: "ap" },
-            phase: "finished",
-        };
-    }
-}
-
-class Page13 extends LearningPage {
-    constructor(props: LearningPageProperties) {
-        super(props);
-    }
-
-    text() {
-        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
-            const [value, setValue] = React.useState<string>("");
-
-            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-                const selectedValue = event.target.value;
-                setValue(selectedValue);
-
-                if (selectedValue === "5") {
-                    props.onCorrectAnswer();
-                } else if (selectedValue !== "") {
-                    props.onWrongAnswer();
-                }
-            };
-
-            return (
-                <div>
-                    <p>{_("What is the value of playing at A?")}</p>
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="3"
-                            checked={value === "3"}
-                            onChange={handleChange}
-                        />
-                        {_("3")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="4"
-                            checked={value === "4"}
-                            onChange={handleChange}
-                        />
-                        {_("4")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="5"
-                            checked={value === "5"}
-                            onChange={handleChange}
-                        />
-                        {_("5")}
-                    </label>
-                    <br />
-                </div>
-            );
-        }
-        return (
-            <MultipleChoice
-                onCorrectAnswer={this.onCorrectAnswer}
-                onWrongAnswer={this.onWrongAnswer}
-            />
-        );
-    }
-    config(): GobanConfig {
-        return {
-            width: 19,
-            height: 19,
-            mode: "puzzle",
-            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
-            initial_state: {
-                black: "dldmanbndncodocpbqcq",
-                white: "elemeneoapepdqeqarbrcr",
-            },
-            marks: { A: "aq" },
             phase: "finished",
         };
     }

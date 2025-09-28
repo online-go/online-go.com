@@ -93,7 +93,7 @@ class Page01 extends LearningPage {
                             checked={value === "1"}
                             onChange={handleChange}
                         />
-                        1
+                        {_("1")}
                     </label>
                     <br />
                     <label>
@@ -104,7 +104,7 @@ class Page01 extends LearningPage {
                             checked={value === "2"}
                             onChange={handleChange}
                         />
-                        2
+                        {_("2")}
                     </label>
                     <br />
                     <label>
@@ -115,7 +115,7 @@ class Page01 extends LearningPage {
                             checked={value === "3"}
                             onChange={handleChange}
                         />
-                        3
+                        {_("3")}
                     </label>
                     <br />
                 </div>
@@ -175,7 +175,7 @@ class Page02 extends LearningPage {
                             checked={value === "6"}
                             onChange={handleChange}
                         />
-                        6
+                        {_("6")}
                     </label>
                     <br />
                     <label>
@@ -186,7 +186,7 @@ class Page02 extends LearningPage {
                             checked={value === "8"}
                             onChange={handleChange}
                         />
-                        8
+                        {_("8")}
                     </label>
                     <br />
                     <label>
@@ -197,7 +197,7 @@ class Page02 extends LearningPage {
                             checked={value === "9"}
                             onChange={handleChange}
                         />
-                        9
+                        {_("9")}
                     </label>
                     <br />
                 </div>
@@ -257,7 +257,7 @@ class Page03 extends LearningPage {
                             checked={value === "1"}
                             onChange={handleChange}
                         />
-                        1
+                        {_("1")}
                     </label>
                     <br />
                     <label>
@@ -268,7 +268,7 @@ class Page03 extends LearningPage {
                             checked={value === "2"}
                             onChange={handleChange}
                         />
-                        2
+                        {_("2")}
                     </label>
                     <br />
                     <label>
@@ -279,7 +279,7 @@ class Page03 extends LearningPage {
                             checked={value === "3"}
                             onChange={handleChange}
                         />
-                        3
+                        {_("3")}
                     </label>
                     <br />
                 </div>
@@ -339,7 +339,7 @@ class Page04 extends LearningPage {
                             checked={value === "7"}
                             onChange={handleChange}
                         />
-                        7
+                        {_("7")}
                     </label>
                     <br />
                     <label>
@@ -350,7 +350,7 @@ class Page04 extends LearningPage {
                             checked={value === "8"}
                             onChange={handleChange}
                         />
-                        8
+                        {_("8")}
                     </label>
                     <br />
                     <label>
@@ -361,7 +361,7 @@ class Page04 extends LearningPage {
                             checked={value === "9"}
                             onChange={handleChange}
                         />
-                        9
+                        {_("9")}
                     </label>
                     <br />
                 </div>
@@ -421,7 +421,7 @@ class Page05 extends LearningPage {
                             checked={value === "1"}
                             onChange={handleChange}
                         />
-                        1
+                        {_("1")}
                     </label>
                     <br />
                     <label>
@@ -432,7 +432,7 @@ class Page05 extends LearningPage {
                             checked={value === "2"}
                             onChange={handleChange}
                         />
-                        2
+                        {_("2")}
                     </label>
                     <br />
                     <label>
@@ -443,7 +443,7 @@ class Page05 extends LearningPage {
                             checked={value === "3"}
                             onChange={handleChange}
                         />
-                        3
+                        {_("3")}
                     </label>
                     <br />
                 </div>
@@ -503,7 +503,7 @@ class Page06 extends LearningPage {
                             checked={value === "1"}
                             onChange={handleChange}
                         />
-                        1
+                        {_("1")}
                     </label>
                     <br />
                     <label>
@@ -514,7 +514,7 @@ class Page06 extends LearningPage {
                             checked={value === "2"}
                             onChange={handleChange}
                         />
-                        2
+                        {_("2")}
                     </label>
                     <br />
                     <label>
@@ -525,7 +525,7 @@ class Page06 extends LearningPage {
                             checked={value === "3"}
                             onChange={handleChange}
                         />
-                        3
+                        {_("3")}
                     </label>
                     <br />
                 </div>
@@ -585,7 +585,7 @@ class Page07 extends LearningPage {
                             checked={value === "2"}
                             onChange={handleChange}
                         />
-                        2
+                        {_("2")}
                     </label>
                     <br />
                     <label>
@@ -596,7 +596,7 @@ class Page07 extends LearningPage {
                             checked={value === "3"}
                             onChange={handleChange}
                         />
-                        3
+                        {_("3")}
                     </label>
                     <br />
                     <label>
@@ -607,7 +607,7 @@ class Page07 extends LearningPage {
                             checked={value === "4"}
                             onChange={handleChange}
                         />
-                        4
+                        {_("4")}
                     </label>
                     <br />
                 </div>
@@ -667,7 +667,7 @@ class Page08 extends LearningPage {
                             checked={value === "4"}
                             onChange={handleChange}
                         />
-                        4
+                        {_("4")}
                     </label>
                     <br />
                     <label>
@@ -678,7 +678,7 @@ class Page08 extends LearningPage {
                             checked={value === "5"}
                             onChange={handleChange}
                         />
-                        5
+                        {_("5")}
                     </label>
                     <br />
                     <label>
@@ -689,7 +689,7 @@ class Page08 extends LearningPage {
                             checked={value === "6"}
                             onChange={handleChange}
                         />
-                        6
+                        {_("6")}
                     </label>
                     <br />
                 </div>
@@ -749,7 +749,7 @@ class Page09 extends LearningPage {
                             checked={value === "3"}
                             onChange={handleChange}
                         />
-                        3
+                        {_("3")}
                     </label>
                     <br />
                     <label>
@@ -760,7 +760,7 @@ class Page09 extends LearningPage {
                             checked={value === "4"}
                             onChange={handleChange}
                         />
-                        4
+                        {_("4")}
                     </label>
                     <br />
                     <label>
@@ -771,7 +771,7 @@ class Page09 extends LearningPage {
                             checked={value === "5"}
                             onChange={handleChange}
                         />
-                        5
+                        {_("5")}
                     </label>
                     <br />
                 </div>
@@ -831,7 +831,7 @@ class Page10 extends LearningPage {
                             checked={value === "4"}
                             onChange={handleChange}
                         />
-                        4
+                        {_("4")}
                     </label>
                     <br />
                     <label>
@@ -842,7 +842,7 @@ class Page10 extends LearningPage {
                             checked={value === "7"}
                             onChange={handleChange}
                         />
-                        7
+                        {_("7")}
                     </label>
                     <br />
                     <label>
@@ -853,7 +853,7 @@ class Page10 extends LearningPage {
                             checked={value === "8"}
                             onChange={handleChange}
                         />
-                        8
+                        {_("8")}
                     </label>
                     <br />
                 </div>
@@ -913,7 +913,7 @@ class Page11 extends LearningPage {
                             checked={value === "2"}
                             onChange={handleChange}
                         />
-                        2
+                        {_("2")}
                     </label>
                     <br />
                     <label>
@@ -924,7 +924,7 @@ class Page11 extends LearningPage {
                             checked={value === "3"}
                             onChange={handleChange}
                         />
-                        3
+                        {_("3")}
                     </label>
                     <br />
                     <label>
@@ -935,7 +935,7 @@ class Page11 extends LearningPage {
                             checked={value === "4"}
                             onChange={handleChange}
                         />
-                        4
+                        {_("4")}
                     </label>
                     <br />
                 </div>
@@ -995,7 +995,7 @@ class Page12 extends LearningPage {
                             checked={value === "7"}
                             onChange={handleChange}
                         />
-                        7
+                        {_("7")}
                     </label>
                     <br />
                     <label>
@@ -1006,7 +1006,7 @@ class Page12 extends LearningPage {
                             checked={value === "8"}
                             onChange={handleChange}
                         />
-                        8
+                        {_("8")}
                     </label>
                     <br />
                     <label>
@@ -1017,7 +1017,7 @@ class Page12 extends LearningPage {
                             checked={value === "9"}
                             onChange={handleChange}
                         />
-                        9
+                        {_("9")}
                     </label>
                     <br />
                 </div>
@@ -1088,7 +1088,7 @@ class Page13 extends LearningPage {
                             checked={value === "3"}
                             onChange={handleChange}
                         />
-                        3
+                        {_("3")}
                     </label>
                     <br />
                     <label>
@@ -1099,7 +1099,7 @@ class Page13 extends LearningPage {
                             checked={value === "5"}
                             onChange={handleChange}
                         />
-                        5
+                        {_("5")}
                     </label>
                     <br />
                 </div>
@@ -1170,7 +1170,7 @@ class Page14 extends LearningPage {
                             checked={value === "1"}
                             onChange={handleChange}
                         />
-                        1
+                        {_("1")}
                     </label>
                     <br />
                     <label>
@@ -1181,7 +1181,7 @@ class Page14 extends LearningPage {
                             checked={value === "2"}
                             onChange={handleChange}
                         />
-                        2
+                        {_("2")}
                     </label>
                     <br />
                 </div>
@@ -1252,7 +1252,7 @@ class Page15 extends LearningPage {
                             checked={value === "5"}
                             onChange={handleChange}
                         />
-                        5
+                        {_("5")}
                     </label>
                     <br />
                     <label>
@@ -1263,7 +1263,7 @@ class Page15 extends LearningPage {
                             checked={value === "7"}
                             onChange={handleChange}
                         />
-                        7
+                        {_("7")}
                     </label>
                     <br />
                 </div>
@@ -1323,7 +1323,7 @@ class Page16 extends LearningPage {
                             checked={value === "1"}
                             onChange={handleChange}
                         />
-                        1
+                        {_("1")}
                     </label>
                     <br />
                     <label>
@@ -1334,7 +1334,7 @@ class Page16 extends LearningPage {
                             checked={value === "2"}
                             onChange={handleChange}
                         />
-                        2
+                        {_("2")}
                     </label>
                     <br />
                     <label>
@@ -1345,7 +1345,7 @@ class Page16 extends LearningPage {
                             checked={value === "3"}
                             onChange={handleChange}
                         />
-                        3
+                        {_("3")}
                     </label>
                     <br />
                 </div>
@@ -1405,7 +1405,7 @@ class Page17 extends LearningPage {
                             checked={value === "3"}
                             onChange={handleChange}
                         />
-                        3
+                        {_("3")}
                     </label>
                     <br />
                     <label>
@@ -1416,7 +1416,7 @@ class Page17 extends LearningPage {
                             checked={value === "4"}
                             onChange={handleChange}
                         />
-                        4
+                        {_("4")}
                     </label>
                     <br />
                     <label>
@@ -1427,7 +1427,7 @@ class Page17 extends LearningPage {
                             checked={value === "5"}
                             onChange={handleChange}
                         />
-                        5
+                        {_("5")}
                     </label>
                     <br />
                 </div>
@@ -1487,7 +1487,7 @@ class Page18 extends LearningPage {
                             checked={value === "3"}
                             onChange={handleChange}
                         />
-                        3
+                        {_("3")}
                     </label>
                     <br />
                     <label>
@@ -1498,7 +1498,7 @@ class Page18 extends LearningPage {
                             checked={value === "5"}
                             onChange={handleChange}
                         />
-                        5
+                        {_("5")}
                     </label>
                     <br />
                     <label>
@@ -1509,7 +1509,7 @@ class Page18 extends LearningPage {
                             checked={value === "6"}
                             onChange={handleChange}
                         />
-                        6
+                        {_("6")}
                     </label>
                     <br />
                 </div>
@@ -1569,7 +1569,7 @@ class Page19 extends LearningPage {
                             checked={value === "1"}
                             onChange={handleChange}
                         />
-                        1
+                        {_("1")}
                     </label>
                     <br />
                     <label>
@@ -1580,7 +1580,7 @@ class Page19 extends LearningPage {
                             checked={value === "2"}
                             onChange={handleChange}
                         />
-                        2
+                        {_("2")}
                     </label>
                     <br />
                     <label>
@@ -1591,7 +1591,7 @@ class Page19 extends LearningPage {
                             checked={value === "3"}
                             onChange={handleChange}
                         />
-                        3
+                        {_("3")}
                     </label>
                     <br />
                 </div>
@@ -1651,7 +1651,7 @@ class Page20 extends LearningPage {
                             checked={value === "1"}
                             onChange={handleChange}
                         />
-                        1
+                        {_("1")}
                     </label>
                     <br />
                     <label>
@@ -1662,7 +1662,7 @@ class Page20 extends LearningPage {
                             checked={value === "2"}
                             onChange={handleChange}
                         />
-                        2
+                        {_("2")}
                     </label>
                     <br />
                     <label>
@@ -1673,7 +1673,7 @@ class Page20 extends LearningPage {
                             checked={value === "3"}
                             onChange={handleChange}
                         />
-                        3
+                        {_("3")}
                     </label>
                     <br />
                 </div>
@@ -1733,7 +1733,7 @@ class Page21 extends LearningPage {
                             checked={value === "3"}
                             onChange={handleChange}
                         />
-                        3
+                        {_("3")}
                     </label>
                     <br />
                     <label>
@@ -1744,7 +1744,7 @@ class Page21 extends LearningPage {
                             checked={value === "5"}
                             onChange={handleChange}
                         />
-                        5
+                        {_("5")}
                     </label>
                     <br />
                     <label>
@@ -1755,7 +1755,7 @@ class Page21 extends LearningPage {
                             checked={value === "6"}
                             onChange={handleChange}
                         />
-                        6
+                        {_("6")}
                     </label>
                     <br />
                 </div>
@@ -1815,7 +1815,7 @@ class Page22 extends LearningPage {
                             checked={value === "1"}
                             onChange={handleChange}
                         />
-                        1
+                        {_("1")}
                     </label>
                     <br />
                     <label>
@@ -1826,7 +1826,7 @@ class Page22 extends LearningPage {
                             checked={value === "4"}
                             onChange={handleChange}
                         />
-                        4
+                        {_("4")}
                     </label>
                     <br />
                     <label>
@@ -1837,7 +1837,7 @@ class Page22 extends LearningPage {
                             checked={value === "6"}
                             onChange={handleChange}
                         />
-                        6
+                        {_("6")}
                     </label>
                     <br />
                 </div>
@@ -1897,7 +1897,7 @@ class Page23 extends LearningPage {
                             checked={value === "2"}
                             onChange={handleChange}
                         />
-                        2
+                        {_("2")}
                     </label>
                     <br />
                     <label>
@@ -1908,7 +1908,7 @@ class Page23 extends LearningPage {
                             checked={value === "3"}
                             onChange={handleChange}
                         />
-                        3
+                        {_("3")}
                     </label>
                     <br />
                     <label>
@@ -1919,7 +1919,7 @@ class Page23 extends LearningPage {
                             checked={value === "4"}
                             onChange={handleChange}
                         />
-                        4
+                        {_("4")}
                     </label>
                     <br />
                 </div>
@@ -1979,7 +1979,7 @@ class Page24 extends LearningPage {
                             checked={value === "6"}
                             onChange={handleChange}
                         />
-                        6
+                        {_("6")}
                     </label>
                     <br />
                     <label>
@@ -1990,7 +1990,7 @@ class Page24 extends LearningPage {
                             checked={value === "7"}
                             onChange={handleChange}
                         />
-                        7
+                        {_("7")}
                     </label>
                     <br />
                     <label>
@@ -2001,7 +2001,7 @@ class Page24 extends LearningPage {
                             checked={value === "8"}
                             onChange={handleChange}
                         />
-                        8
+                        {_("8")}
                     </label>
                     <br />
                 </div>

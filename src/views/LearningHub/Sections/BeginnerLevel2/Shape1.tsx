@@ -22,7 +22,7 @@ import { _, pgettext } from "@/lib/translate";
 import { LearningHubSection } from "../../LearningHubSection";
 import React from "react";
 
-export class BL2Endgame2 extends LearningHubSection {
+export class BL2Shape1 extends LearningHubSection {
     static pages(): Array<typeof LearningPage> {
         return [
             Page01,
@@ -38,16 +38,20 @@ export class BL2Endgame2 extends LearningHubSection {
             Page11,
             Page12,
             Page13,
+            Page14,
+            Page15,
+            Page16,
+            Page17,
         ];
     }
     static section(): string {
-        return "bl2-endgame2";
+        return "bl2-shape-1";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning count 1", "Endgame 2");
+        return pgettext("Tutorial section name on learning good shape", "Shape");
     }
     static subtext(): string {
-        return pgettext("Tutorial section subtext on learning on count 1", "Value of a move");
+        return pgettext("Tutorial section subtext on learning on good shape", "Good shape");
     }
 }
 
@@ -64,7 +68,7 @@ class Page01 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "6") {
+                if (selectedValue === "bad shape") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -75,40 +79,29 @@ class Page01 extends LearningPage {
                 <div>
                     <p>
                         {_(
-                            "You can calculate the value of a move in the endgame by adding the number of points of a white move at a position to the number of points of a black move there. The difference is the value of the move. Playing at A in this diagram yields White a captured stone and a point of territory. So, that is 2 points for White. If Black plays at A, he gets 2 captured stones and 2 points of territory, so 4 points for Black. The difference is 6 points. What is the value of playing at A?",
+                            "Shape is an important concept in Go. With shape we mean a formation of a group of stones on the board. This formation decides how well these stones can be used effectively in the game. There is good shape and bad shape. This shape is an empty triangle and is a bad shape. The three stones do not surround anything. One of the three stones is superfluous. Does the black group have good or bad shape?",
                         )}
                     </p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="2"
-                            checked={value === "2"}
+                            value="good shape"
+                            checked={value === "good shape"}
                             onChange={handleChange}
                         />
-                        {_("2")}
+                        {_("good shape")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="4"
-                            checked={value === "4"}
+                            value="bad shape"
+                            checked={value === "bad shape"}
                             onChange={handleChange}
                         />
-                        {_("4")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="6"
-                            checked={value === "6"}
-                            onChange={handleChange}
-                        />
-                        {_("6")}
+                        {_("bad shape")}
                     </label>
                     <br />
                 </div>
@@ -128,10 +121,8 @@ class Page01 extends LearningPage {
             mode: "puzzle",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "bqbrbscncocpcqdr",
-                white: "crcsdndodpdqeqeres",
+                black: "dndoeo",
             },
-            marks: { A: "ds" },
             phase: "finished",
         };
     }
@@ -150,7 +141,7 @@ class Page02 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "1") {
+                if (selectedValue === "bad shape") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -159,38 +150,31 @@ class Page02 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("What is the value of playing at A?")}</p>
+                    <p>
+                        {_(
+                            "This shape is a lump and is a bad shape. Far too many stones lay close to each other. You can take away a number of them, while the group stays as strong or useful. You have a number of superfluous stones on the board, so you have played a number of superfluous moves. Does the black group have good or bad shape?",
+                        )}
+                    </p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="1"
-                            checked={value === "1"}
+                            value="good shape"
+                            checked={value === "good shape"}
                             onChange={handleChange}
                         />
-                        {_("1")}
+                        {_("good shape")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="2"
-                            checked={value === "2"}
+                            value="bad shape"
+                            checked={value === "bad shape"}
                             onChange={handleChange}
                         />
-                        {_("2")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="3"
-                            checked={value === "3"}
-                            onChange={handleChange}
-                        />
-                        {_("3")}
+                        {_("bad shape")}
                     </label>
                     <br />
                 </div>
@@ -210,10 +194,8 @@ class Page02 extends LearningPage {
             mode: "puzzle",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "dmdncocpdqbrcrdrbs",
-                white: "endofodpeqgqeres",
+                black: "dodpeoepeqfp",
             },
-            marks: { A: "ds" },
             phase: "finished",
         };
     }
@@ -232,7 +214,7 @@ class Page03 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "2") {
+                if (selectedValue === "good shape") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -241,38 +223,31 @@ class Page03 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("What is the value of playing at A?")}</p>
+                    <p>
+                        {_(
+                            "This shape is a tiger-mouth and is a good shape. The tiger-mouth is a shape of three stones, which surround and protect a point on the board. The tiger-mouth is a good shape to cover a cutting point or to prepare an eye. Does the black group have good or bad shape?",
+                        )}
+                    </p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="1"
-                            checked={value === "1"}
+                            value="good shape"
+                            checked={value === "good shape"}
                             onChange={handleChange}
                         />
-                        {_("1")}
+                        {_("good shape")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="2"
-                            checked={value === "2"}
+                            value="bad shape"
+                            checked={value === "bad shape"}
                             onChange={handleChange}
                         />
-                        {_("2")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="3"
-                            checked={value === "3"}
-                            onChange={handleChange}
-                        />
-                        {_("3")}
+                        {_("bad shape")}
                     </label>
                     <br />
                 </div>
@@ -292,10 +267,8 @@ class Page03 extends LearningPage {
             mode: "puzzle",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "dldmdndobpdpcqarbrcr",
-                white: "elemeneoepdqfqgqdrascsds",
+                black: "eofpgo",
             },
-            marks: { A: "bs" },
             phase: "finished",
         };
     }
@@ -314,7 +287,7 @@ class Page04 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "1") {
+                if (selectedValue === "good shape") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -323,38 +296,31 @@ class Page04 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("What is the value of playing at A?")}</p>
+                    <p>
+                        {_(
+                            "This shape is a ponnuki and is a good shape. The ponnuki is a shape of four stones, which emerges after a single stone is captured. The ponnuki gives possibilities for an eye, is difficult to capture and is strong in an attack. The proverb is: 'A ponnuki is worth 30 points'. Does the black group have good or bad shape?",
+                        )}
+                    </p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="1"
-                            checked={value === "1"}
+                            value="good shape"
+                            checked={value === "good shape"}
                             onChange={handleChange}
                         />
-                        {_("1")}
+                        {_("good shape")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="2"
-                            checked={value === "2"}
+                            value="bad shape"
+                            checked={value === "bad shape"}
                             onChange={handleChange}
                         />
-                        {_("2")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="3"
-                            checked={value === "3"}
-                            onChange={handleChange}
-                        />
-                        {_("3")}
+                        {_("bad shape")}
                     </label>
                     <br />
                 </div>
@@ -374,10 +340,8 @@ class Page04 extends LearningPage {
             mode: "puzzle",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "dmdncodobpcqdqbrdrcs",
-                white: "eneogofpeqgqerdses",
+                black: "eofnfpgo",
             },
-            marks: { A: "dp" },
             phase: "finished",
         };
     }
@@ -396,7 +360,7 @@ class Page05 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "3") {
+                if (selectedValue === "good shape") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -405,38 +369,31 @@ class Page05 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("What is the value of playing at A?")}</p>
+                    <p>
+                        {_(
+                            "This shape is a turtle and is a good shape. The turtle is comparable to a ponnuki, but it is an even better shape. This shape emerges when two stones are captured. The proverb is: 'A turtle is worth 60 points'. Does the black group have good or bad shape?",
+                        )}
+                    </p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="1"
-                            checked={value === "1"}
+                            value="good shape"
+                            checked={value === "good shape"}
                             onChange={handleChange}
                         />
-                        {_("1")}
+                        {_("good shape")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="2"
-                            checked={value === "2"}
+                            value="bad shape"
+                            checked={value === "bad shape"}
                             onChange={handleChange}
                         />
-                        {_("2")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="3"
-                            checked={value === "3"}
-                            onChange={handleChange}
-                        />
-                        {_("3")}
+                        {_("bad shape")}
                     </label>
                     <br />
                 </div>
@@ -456,10 +413,8 @@ class Page05 extends LearningPage {
             mode: "puzzle",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "dldmdnbododpaqbqcqcr",
-                white: "elemeneoepfpdqdrfrcsds",
+                black: "doenepfnfpgo",
             },
-            marks: { A: "bs" },
             phase: "finished",
         };
     }
@@ -478,7 +433,7 @@ class Page06 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "2") {
+                if (selectedValue === "bad shape") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -487,38 +442,27 @@ class Page06 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("What is the value of playing at A?")}</p>
+                    <p>{_("Does the black group have good or bad shape?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="1"
-                            checked={value === "1"}
+                            value="good shape"
+                            checked={value === "good shape"}
                             onChange={handleChange}
                         />
-                        {_("1")}
+                        {_("good shape")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="2"
-                            checked={value === "2"}
+                            value="bad shape"
+                            checked={value === "bad shape"}
                             onChange={handleChange}
                         />
-                        {_("2")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="3"
-                            checked={value === "3"}
-                            onChange={handleChange}
-                        />
-                        {_("3")}
+                        {_("bad shape")}
                     </label>
                     <br />
                 </div>
@@ -538,10 +482,9 @@ class Page06 extends LearningPage {
             mode: "puzzle",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "dmcnencoeobpdpcqdqbrbsds",
-                white: "fnfoepfpeqergrfs",
+                black: "cpdpdq",
+                white: "codoeo",
             },
-            marks: { A: "dr" },
             phase: "finished",
         };
     }
@@ -560,7 +503,7 @@ class Page07 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "3") {
+                if (selectedValue === "good shape") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -569,38 +512,27 @@ class Page07 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("What is the value of playing at A?")}</p>
+                    <p>{_("Does the black group have good or bad shape?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="1"
-                            checked={value === "1"}
+                            value="good shape"
+                            checked={value === "good shape"}
                             onChange={handleChange}
                         />
-                        {_("1")}
+                        {_("good shape")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="2"
-                            checked={value === "2"}
+                            value="bad shape"
+                            checked={value === "bad shape"}
                             onChange={handleChange}
                         />
-                        {_("2")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="3"
-                            checked={value === "3"}
-                            onChange={handleChange}
-                        />
-                        {_("3")}
+                        {_("bad shape")}
                     </label>
                     <br />
                 </div>
@@ -620,10 +552,9 @@ class Page07 extends LearningPage {
             mode: "puzzle",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "dldmanbndnbodobpcpbq",
-                white: "elemeneoapdpepcqfqarbrcr",
+                black: "cpdpep",
+                white: "codoeo",
             },
-            marks: { A: "aq" },
             phase: "finished",
         };
     }
@@ -642,7 +573,7 @@ class Page08 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "2") {
+                if (selectedValue === "bad shape") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -651,38 +582,27 @@ class Page08 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("What is the value of playing at A?")}</p>
+                    <p>{_("Does the black group have good or bad shape?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="1"
-                            checked={value === "1"}
+                            value="good shape"
+                            checked={value === "good shape"}
                             onChange={handleChange}
                         />
-                        {_("1")}
+                        {_("good shape")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="2"
-                            checked={value === "2"}
+                            value="bad shape"
+                            checked={value === "bad shape"}
                             onChange={handleChange}
                         />
-                        {_("2")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="3"
-                            checked={value === "3"}
-                            onChange={handleChange}
-                        />
-                        {_("3")}
+                        {_("bad shape")}
                     </label>
                     <br />
                 </div>
@@ -702,10 +622,9 @@ class Page08 extends LearningPage {
             mode: "puzzle",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "dndodpbqdqeqcrerbs",
-                white: "fmeofoepfqfresfs",
+                black: "dpcqdqeq",
+                white: "codoeo",
             },
-            marks: { A: "ds" },
             phase: "finished",
         };
     }
@@ -724,7 +643,7 @@ class Page09 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "2") {
+                if (selectedValue === "good shape") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -733,38 +652,27 @@ class Page09 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("What is the value of playing at A?")}</p>
+                    <p>{_("Does the black group have good or bad shape?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="1"
-                            checked={value === "1"}
+                            value="good shape"
+                            checked={value === "good shape"}
                             onChange={handleChange}
                         />
-                        {_("1")}
+                        {_("good shape")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="2"
-                            checked={value === "2"}
+                            value="bad shape"
+                            checked={value === "bad shape"}
                             onChange={handleChange}
                         />
-                        {_("2")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="3"
-                            checked={value === "3"}
-                            onChange={handleChange}
-                        />
-                        {_("3")}
+                        {_("bad shape")}
                     </label>
                     <br />
                 </div>
@@ -784,10 +692,9 @@ class Page09 extends LearningPage {
             mode: "puzzle",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "elemeneodpepcqcrercs",
-                white: "dldmcndndobpcpaqbqbr",
+                black: "cpepcqdqeq",
+                white: "dncodoeodp",
             },
-            marks: { A: "bs" },
             phase: "finished",
         };
     }
@@ -806,7 +713,7 @@ class Page10 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "2") {
+                if (selectedValue === "bad shape") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -815,38 +722,27 @@ class Page10 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("What is the value of playing at A?")}</p>
+                    <p>{_("Does the black group have good or bad shape?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="1"
-                            checked={value === "1"}
+                            value="good shape"
+                            checked={value === "good shape"}
                             onChange={handleChange}
                         />
-                        {_("1")}
+                        {_("good shape")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="2"
-                            checked={value === "2"}
+                            value="bad shape"
+                            checked={value === "bad shape"}
                             onChange={handleChange}
                         />
-                        {_("2")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="3"
-                            checked={value === "3"}
-                            onChange={handleChange}
-                        />
-                        {_("3")}
+                        {_("bad shape")}
                     </label>
                     <br />
                 </div>
@@ -866,10 +762,9 @@ class Page10 extends LearningPage {
             mode: "puzzle",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "cmemencodobpdpcqdqbrbsds",
-                white: "fneogoepeqcrdreres",
+                black: "endoeofodpep",
+                white: "dncocpfpcqdqeq",
             },
-            marks: { A: "cs" },
             phase: "finished",
         };
     }
@@ -888,7 +783,7 @@ class Page11 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "4") {
+                if (selectedValue === "bad shape") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -897,38 +792,27 @@ class Page11 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("What is the value of playing at A?")}</p>
+                    <p>{_("Does the black group have good or bad shape?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="2"
-                            checked={value === "2"}
+                            value="good shape"
+                            checked={value === "good shape"}
                             onChange={handleChange}
                         />
-                        {_("2")}
+                        {_("good shape")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="3"
-                            checked={value === "3"}
+                            value="bad shape"
+                            checked={value === "bad shape"}
                             onChange={handleChange}
                         />
-                        {_("3")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="4"
-                            checked={value === "4"}
-                            onChange={handleChange}
-                        />
-                        {_("4")}
+                        {_("bad shape")}
                     </label>
                     <br />
                 </div>
@@ -948,10 +832,9 @@ class Page11 extends LearningPage {
             mode: "puzzle",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "dldmdnaobocodocpbqcq",
-                white: "elemeneoapbpepdqeqarbrcr",
+                black: "docpdpcqdq",
+                white: "cndncoeo",
             },
-            marks: { A: "aq" },
             phase: "finished",
         };
     }
@@ -970,7 +853,7 @@ class Page12 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "2") {
+                if (selectedValue === "good shape") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -979,38 +862,27 @@ class Page12 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("What is the value of playing at A?")}</p>
+                    <p>{_("Does the black group have good or bad shape?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="1"
-                            checked={value === "1"}
+                            value="good shape"
+                            checked={value === "good shape"}
                             onChange={handleChange}
                         />
-                        {_("1")}
+                        {_("good shape")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="2"
-                            checked={value === "2"}
+                            value="bad shape"
+                            checked={value === "bad shape"}
                             onChange={handleChange}
                         />
-                        {_("2")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="3"
-                            checked={value === "3"}
-                            onChange={handleChange}
-                        />
-                        {_("3")}
+                        {_("bad shape")}
                     </label>
                     <br />
                 </div>
@@ -1030,10 +902,9 @@ class Page12 extends LearningPage {
             mode: "puzzle",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "enfndocpdpbqeqfqarcr",
-                white: "blelcmemanbndnbocobpepaq",
+                black: "encoeodpdq",
+                white: "foepfpeq",
             },
-            marks: { A: "ap" },
             phase: "finished",
         };
     }
@@ -1052,7 +923,7 @@ class Page13 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "5") {
+                if (selectedValue === "good shape") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -1061,38 +932,27 @@ class Page13 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("What is the value of playing at A?")}</p>
+                    <p>{_("Does the black group have good or bad shape?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="3"
-                            checked={value === "3"}
+                            value="good shape"
+                            checked={value === "good shape"}
                             onChange={handleChange}
                         />
-                        {_("3")}
+                        {_("good shape")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="4"
-                            checked={value === "4"}
+                            value="bad shape"
+                            checked={value === "bad shape"}
                             onChange={handleChange}
                         />
-                        {_("4")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="5"
-                            checked={value === "5"}
-                            onChange={handleChange}
-                        />
-                        {_("5")}
+                        {_("bad shape")}
                     </label>
                     <br />
                 </div>
@@ -1112,10 +972,289 @@ class Page13 extends LearningPage {
             mode: "puzzle",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "dldmanbndncodocpbqcq",
-                white: "elemeneoapepdqeqarbrcr",
+                black: "cmdncocp",
+                white: "dofodpdq",
             },
-            marks: { A: "aq" },
+            phase: "finished",
+        };
+    }
+}
+
+class Page14 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
+            const [value, setValue] = React.useState<string>("");
+
+            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+                const selectedValue = event.target.value;
+                setValue(selectedValue);
+
+                if (selectedValue === "bad shape") {
+                    props.onCorrectAnswer();
+                } else if (selectedValue !== "") {
+                    props.onWrongAnswer();
+                }
+            };
+
+            return (
+                <div>
+                    <p>{_("Does the black group have good or bad shape?")}</p>
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="good shape"
+                            checked={value === "good shape"}
+                            onChange={handleChange}
+                        />
+                        {_("good shape")}
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="bad shape"
+                            checked={value === "bad shape"}
+                            onChange={handleChange}
+                        />
+                        {_("bad shape")}
+                    </label>
+                    <br />
+                </div>
+            );
+        }
+        return (
+            <MultipleChoice
+                onCorrectAnswer={this.onCorrectAnswer}
+                onWrongAnswer={this.onWrongAnswer}
+            />
+        );
+    }
+    config(): GobanConfig {
+        return {
+            width: 19,
+            height: 19,
+            mode: "puzzle",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            initial_state: {
+                black: "cncodocp",
+                white: "bpdpepfpcq",
+            },
+            phase: "finished",
+        };
+    }
+}
+
+class Page15 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
+            const [value, setValue] = React.useState<string>("");
+
+            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+                const selectedValue = event.target.value;
+                setValue(selectedValue);
+
+                if (selectedValue === "good shape") {
+                    props.onCorrectAnswer();
+                } else if (selectedValue !== "") {
+                    props.onWrongAnswer();
+                }
+            };
+
+            return (
+                <div>
+                    <p>{_("Does the black group have good or bad shape?")}</p>
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="good shape"
+                            checked={value === "good shape"}
+                            onChange={handleChange}
+                        />
+                        {_("good shape")}
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="bad shape"
+                            checked={value === "bad shape"}
+                            onChange={handleChange}
+                        />
+                        {_("bad shape")}
+                    </label>
+                    <br />
+                </div>
+            );
+        }
+        return (
+            <MultipleChoice
+                onCorrectAnswer={this.onCorrectAnswer}
+                onWrongAnswer={this.onWrongAnswer}
+            />
+        );
+    }
+    config(): GobanConfig {
+        return {
+            width: 19,
+            height: 19,
+            mode: "puzzle",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            initial_state: {
+                black: "bncpcqdq",
+                white: "dodpepeq",
+            },
+            phase: "finished",
+        };
+    }
+}
+
+class Page16 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
+            const [value, setValue] = React.useState<string>("");
+
+            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+                const selectedValue = event.target.value;
+                setValue(selectedValue);
+
+                if (selectedValue === "bad shape") {
+                    props.onCorrectAnswer();
+                } else if (selectedValue !== "") {
+                    props.onWrongAnswer();
+                }
+            };
+
+            return (
+                <div>
+                    <p>{_("Does the black group have good or bad shape?")}</p>
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="good shape"
+                            checked={value === "good shape"}
+                            onChange={handleChange}
+                        />
+                        {_("good shape")}
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="bad shape"
+                            checked={value === "bad shape"}
+                            onChange={handleChange}
+                        />
+                        {_("bad shape")}
+                    </label>
+                    <br />
+                </div>
+            );
+        }
+        return (
+            <MultipleChoice
+                onCorrectAnswer={this.onCorrectAnswer}
+                onWrongAnswer={this.onWrongAnswer}
+            />
+        );
+    }
+    config(): GobanConfig {
+        return {
+            width: 19,
+            height: 19,
+            mode: "puzzle",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            initial_state: {
+                black: "doeodpdq",
+                white: "dncocpcq",
+            },
+            phase: "finished",
+        };
+    }
+}
+
+class Page17 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
+            const [value, setValue] = React.useState<string>("");
+
+            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+                const selectedValue = event.target.value;
+                setValue(selectedValue);
+
+                if (selectedValue === "good shape") {
+                    props.onCorrectAnswer();
+                } else if (selectedValue !== "") {
+                    props.onWrongAnswer();
+                }
+            };
+
+            return (
+                <div>
+                    <p>{_("Does the black group have good or bad shape?")}</p>
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="good shape"
+                            checked={value === "good shape"}
+                            onChange={handleChange}
+                        />
+                        {_("good shape")}
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="bad shape"
+                            checked={value === "bad shape"}
+                            onChange={handleChange}
+                        />
+                        {_("bad shape")}
+                    </label>
+                    <br />
+                </div>
+            );
+        }
+        return (
+            <MultipleChoice
+                onCorrectAnswer={this.onCorrectAnswer}
+                onWrongAnswer={this.onWrongAnswer}
+            />
+        );
+    }
+    config(): GobanConfig {
+        return {
+            width: 19,
+            height: 19,
+            mode: "puzzle",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            initial_state: {
+                black: "dqfqcrer",
+                white: "dncpdpcq",
+            },
             phase: "finished",
         };
     }

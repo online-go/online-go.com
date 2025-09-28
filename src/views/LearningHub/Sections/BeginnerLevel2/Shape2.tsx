@@ -22,7 +22,7 @@ import { _, pgettext } from "@/lib/translate";
 import { LearningHubSection } from "../../LearningHubSection";
 import React from "react";
 
-export class BL2Endgame2 extends LearningHubSection {
+export class BL2Shape2 extends LearningHubSection {
     static pages(): Array<typeof LearningPage> {
         return [
             Page01,
@@ -38,16 +38,17 @@ export class BL2Endgame2 extends LearningHubSection {
             Page11,
             Page12,
             Page13,
+            Page14,
         ];
     }
     static section(): string {
-        return "bl2-endgame2";
+        return "bl2-shape-2";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning count 1", "Endgame 2");
+        return pgettext("Tutorial section name on learning strong shape", "Shape");
     }
     static subtext(): string {
-        return pgettext("Tutorial section subtext on learning on count 1", "Value of a move");
+        return pgettext("Tutorial section subtext on learning on strong shape", "Strong shape");
     }
 }
 
@@ -64,7 +65,7 @@ class Page01 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "6") {
+                if (selectedValue === "strong shape") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -75,40 +76,29 @@ class Page01 extends LearningPage {
                 <div>
                     <p>
                         {_(
-                            "You can calculate the value of a move in the endgame by adding the number of points of a white move at a position to the number of points of a black move there. The difference is the value of the move. Playing at A in this diagram yields White a captured stone and a point of territory. So, that is 2 points for White. If Black plays at A, he gets 2 captured stones and 2 points of territory, so 4 points for Black. The difference is 6 points. What is the value of playing at A?",
+                            "A group of stones is called strong if the group has no weak points and can be used effectively in a fight. In this example White has a strong wall. In comparison Black looks quite weak. Does the white group have a strong or weak shape?",
                         )}
                     </p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="2"
-                            checked={value === "2"}
+                            value="strong shape"
+                            checked={value === "strong shape"}
                             onChange={handleChange}
                         />
-                        {_("2")}
+                        {_("strong shape")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="4"
-                            checked={value === "4"}
+                            value="weak shape"
+                            checked={value === "weak shape"}
                             onChange={handleChange}
                         />
-                        {_("4")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="6"
-                            checked={value === "6"}
-                            onChange={handleChange}
-                        />
-                        {_("6")}
+                        {_("weak shape")}
                     </label>
                     <br />
                 </div>
@@ -128,10 +118,9 @@ class Page01 extends LearningPage {
             mode: "puzzle",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "bqbrbscncocpcqdr",
-                white: "crcsdndodpdqeqeres",
+                black: "dodp",
+                white: "eneoepeq",
             },
-            marks: { A: "ds" },
             phase: "finished",
         };
     }
@@ -150,7 +139,7 @@ class Page02 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "1") {
+                if (selectedValue === "weak shape") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -159,38 +148,31 @@ class Page02 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("What is the value of playing at A?")}</p>
+                    <p>
+                        {_(
+                            "A group is weak if it can easily be attacked and can be captured or cut off. A weak group does not have good eye-shape. In this example the white wall has two cutting points. That is why the shape of the stones is weak. Does the white group have a strong or weak shape?",
+                        )}
+                    </p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="1"
-                            checked={value === "1"}
+                            value="strong shape"
+                            checked={value === "strong shape"}
                             onChange={handleChange}
                         />
-                        {_("1")}
+                        {_("strong shape")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="2"
-                            checked={value === "2"}
+                            value="weak shape"
+                            checked={value === "weak shape"}
                             onChange={handleChange}
                         />
-                        {_("2")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="3"
-                            checked={value === "3"}
-                            onChange={handleChange}
-                        />
-                        {_("3")}
+                        {_("weak shape")}
                     </label>
                     <br />
                 </div>
@@ -210,10 +192,9 @@ class Page02 extends LearningPage {
             mode: "puzzle",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "dmdncocpdqbrcrdrbs",
-                white: "endofodpeqgqeres",
+                black: "cmcncocpcqcrdp",
+                white: "dndodqdrep",
             },
-            marks: { A: "ds" },
             phase: "finished",
         };
     }
@@ -232,7 +213,7 @@ class Page03 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "2") {
+                if (selectedValue === "strong shape") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -241,38 +222,27 @@ class Page03 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("What is the value of playing at A?")}</p>
+                    <p>{_("Does the white group have a strong or weak shape?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="1"
-                            checked={value === "1"}
+                            value="strong shape"
+                            checked={value === "strong shape"}
                             onChange={handleChange}
                         />
-                        {_("1")}
+                        {_("strong shape")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="2"
-                            checked={value === "2"}
+                            value="weak shape"
+                            checked={value === "weak shape"}
                             onChange={handleChange}
                         />
-                        {_("2")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="3"
-                            checked={value === "3"}
-                            onChange={handleChange}
-                        />
-                        {_("3")}
+                        {_("weak shape")}
                     </label>
                     <br />
                 </div>
@@ -292,10 +262,9 @@ class Page03 extends LearningPage {
             mode: "puzzle",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "dldmdndobpdpcqarbrcr",
-                white: "elemeneoepdqfqgqdrascsds",
+                black: "eofpcqdq",
+                white: "cpdpepeq",
             },
-            marks: { A: "bs" },
             phase: "finished",
         };
     }
@@ -314,7 +283,7 @@ class Page04 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "1") {
+                if (selectedValue === "strong shape") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -323,38 +292,27 @@ class Page04 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("What is the value of playing at A?")}</p>
+                    <p>{_("Does the white group have a strong or weak shape?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="1"
-                            checked={value === "1"}
+                            value="strong shape"
+                            checked={value === "strong shape"}
                             onChange={handleChange}
                         />
-                        {_("1")}
+                        {_("strong shape")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="2"
-                            checked={value === "2"}
+                            value="weak shape"
+                            checked={value === "weak shape"}
                             onChange={handleChange}
                         />
-                        {_("2")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="3"
-                            checked={value === "3"}
-                            onChange={handleChange}
-                        />
-                        {_("3")}
+                        {_("weak shape")}
                     </label>
                     <br />
                 </div>
@@ -374,10 +332,9 @@ class Page04 extends LearningPage {
             mode: "puzzle",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "dmdncodobpcqdqbrdrcs",
-                white: "eneogofpeqgqerdses",
+                black: "eogocq",
+                white: "codpeqgq",
             },
-            marks: { A: "dp" },
             phase: "finished",
         };
     }
@@ -396,7 +353,7 @@ class Page05 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "3") {
+                if (selectedValue === "strong shape") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -405,38 +362,27 @@ class Page05 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("What is the value of playing at A?")}</p>
+                    <p>{_("Does the white group have a strong or weak shape?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="1"
-                            checked={value === "1"}
+                            value="strong shape"
+                            checked={value === "strong shape"}
                             onChange={handleChange}
                         />
-                        {_("1")}
+                        {_("strong shape")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="2"
-                            checked={value === "2"}
+                            value="weak shape"
+                            checked={value === "weak shape"}
                             onChange={handleChange}
                         />
-                        {_("2")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="3"
-                            checked={value === "3"}
-                            onChange={handleChange}
-                        />
-                        {_("3")}
+                        {_("weak shape")}
                     </label>
                     <br />
                 </div>
@@ -456,10 +402,9 @@ class Page05 extends LearningPage {
             mode: "puzzle",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "dldmdnbododpaqbqcqcr",
-                white: "elemeneoepfpdqdrfrcsds",
+                black: "cncobpdpepbqbr",
+                white: "doeofocpcqdqfq",
             },
-            marks: { A: "bs" },
             phase: "finished",
         };
     }
@@ -478,7 +423,7 @@ class Page06 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "2") {
+                if (selectedValue === "weak shape") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -487,38 +432,27 @@ class Page06 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("What is the value of playing at A?")}</p>
+                    <p>{_("Does the white group have a strong or weak shape?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="1"
-                            checked={value === "1"}
+                            value="strong shape"
+                            checked={value === "strong shape"}
                             onChange={handleChange}
                         />
-                        {_("1")}
+                        {_("strong shape")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="2"
-                            checked={value === "2"}
+                            value="weak shape"
+                            checked={value === "weak shape"}
                             onChange={handleChange}
                         />
-                        {_("2")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="3"
-                            checked={value === "3"}
-                            onChange={handleChange}
-                        />
-                        {_("3")}
+                        {_("weak shape")}
                     </label>
                     <br />
                 </div>
@@ -538,10 +472,9 @@ class Page06 extends LearningPage {
             mode: "puzzle",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "dmcnencoeobpdpcqdqbrbsds",
-                white: "fnfoepfpeqergrfs",
+                black: "dmcncocpdpcq",
+                white: "cmdndoepdq",
             },
-            marks: { A: "dr" },
             phase: "finished",
         };
     }
@@ -560,7 +493,7 @@ class Page07 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "3") {
+                if (selectedValue === "strong shape") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -569,38 +502,27 @@ class Page07 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("What is the value of playing at A?")}</p>
+                    <p>{_("Does the white group have a strong or weak shape?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="1"
-                            checked={value === "1"}
+                            value="strong shape"
+                            checked={value === "strong shape"}
                             onChange={handleChange}
                         />
-                        {_("1")}
+                        {_("strong shape")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="2"
-                            checked={value === "2"}
+                            value="weak shape"
+                            checked={value === "weak shape"}
                             onChange={handleChange}
                         />
-                        {_("2")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="3"
-                            checked={value === "3"}
-                            onChange={handleChange}
-                        />
-                        {_("3")}
+                        {_("weak shape")}
                     </label>
                     <br />
                 </div>
@@ -620,10 +542,9 @@ class Page07 extends LearningPage {
             mode: "puzzle",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "dldmanbndnbodobpcpbq",
-                white: "elemeneoapdpepcqfqarbrcr",
+                black: "codpepfq",
+                white: "cpfpcqdqeq",
             },
-            marks: { A: "aq" },
             phase: "finished",
         };
     }
@@ -642,7 +563,7 @@ class Page08 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "2") {
+                if (selectedValue === "weak shape") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -651,38 +572,27 @@ class Page08 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("What is the value of playing at A?")}</p>
+                    <p>{_("Does the white group have a strong or weak shape?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="1"
-                            checked={value === "1"}
+                            value="strong shape"
+                            checked={value === "strong shape"}
                             onChange={handleChange}
                         />
-                        {_("1")}
+                        {_("strong shape")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="2"
-                            checked={value === "2"}
+                            value="weak shape"
+                            checked={value === "weak shape"}
                             onChange={handleChange}
                         />
-                        {_("2")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="3"
-                            checked={value === "3"}
-                            onChange={handleChange}
-                        />
-                        {_("3")}
+                        {_("weak shape")}
                     </label>
                     <br />
                 </div>
@@ -702,10 +612,9 @@ class Page08 extends LearningPage {
             mode: "puzzle",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "dndodpbqdqeqcrerbs",
-                white: "fmeofoepfqfresfs",
+                black: "codoeocqdqeq",
+                white: "fobpcpfpbqfq",
             },
-            marks: { A: "ds" },
             phase: "finished",
         };
     }
@@ -724,7 +633,7 @@ class Page09 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "2") {
+                if (selectedValue === "weak shape") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -733,38 +642,27 @@ class Page09 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("What is the value of playing at A?")}</p>
+                    <p>{_("Does the white group have a strong or weak shape?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="1"
-                            checked={value === "1"}
+                            value="strong shape"
+                            checked={value === "strong shape"}
                             onChange={handleChange}
                         />
-                        {_("1")}
+                        {_("strong shape")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="2"
-                            checked={value === "2"}
+                            value="weak shape"
+                            checked={value === "weak shape"}
                             onChange={handleChange}
                         />
-                        {_("2")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="3"
-                            checked={value === "3"}
-                            onChange={handleChange}
-                        />
-                        {_("3")}
+                        {_("weak shape")}
                     </label>
                     <br />
                 </div>
@@ -784,10 +682,9 @@ class Page09 extends LearningPage {
             mode: "puzzle",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "elemeneodpepcqcrercs",
-                white: "dldmcndndobpcpaqbqbr",
+                black: "cmdnbocodpepfpgpcqcr",
+                white: "endoeofobpcpdqeqfq",
             },
-            marks: { A: "bs" },
             phase: "finished",
         };
     }
@@ -806,7 +703,7 @@ class Page10 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "2") {
+                if (selectedValue === "weak shape") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -815,38 +712,27 @@ class Page10 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("What is the value of playing at A?")}</p>
+                    <p>{_("Does the white group have a strong or weak shape?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="1"
-                            checked={value === "1"}
+                            value="strong shape"
+                            checked={value === "strong shape"}
                             onChange={handleChange}
                         />
-                        {_("1")}
+                        {_("strong shape")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="2"
-                            checked={value === "2"}
+                            value="weak shape"
+                            checked={value === "weak shape"}
                             onChange={handleChange}
                         />
-                        {_("2")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="3"
-                            checked={value === "3"}
-                            onChange={handleChange}
-                        />
-                        {_("3")}
+                        {_("weak shape")}
                     </label>
                     <br />
                 </div>
@@ -866,10 +752,9 @@ class Page10 extends LearningPage {
             mode: "puzzle",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "cmemencodobpdpcqdqbrbsds",
-                white: "fneogoepeqcrdreres",
+                black: "cpdpepeqer",
+                white: "eofpcqdqfq",
             },
-            marks: { A: "cs" },
             phase: "finished",
         };
     }
@@ -888,7 +773,7 @@ class Page11 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "4") {
+                if (selectedValue === "strong shape") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -897,38 +782,27 @@ class Page11 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("What is the value of playing at A?")}</p>
+                    <p>{_("Does the white group have a strong or weak shape?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="2"
-                            checked={value === "2"}
+                            value="strong shape"
+                            checked={value === "strong shape"}
                             onChange={handleChange}
                         />
-                        {_("2")}
+                        {_("strong shape")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="3"
-                            checked={value === "3"}
+                            value="weak shape"
+                            checked={value === "weak shape"}
                             onChange={handleChange}
                         />
-                        {_("3")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="4"
-                            checked={value === "4"}
-                            onChange={handleChange}
-                        />
-                        {_("4")}
+                        {_("weak shape")}
                     </label>
                     <br />
                 </div>
@@ -948,10 +822,9 @@ class Page11 extends LearningPage {
             mode: "puzzle",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "dldmdnaobocodocpbqcq",
-                white: "elemeneoapbpepdqeqarbrcr",
+                black: "fpgpgqcrdr",
+                white: "epcqdqfqer",
             },
-            marks: { A: "aq" },
             phase: "finished",
         };
     }
@@ -970,7 +843,7 @@ class Page12 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "2") {
+                if (selectedValue === "strong shape") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -979,38 +852,27 @@ class Page12 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("What is the value of playing at A?")}</p>
+                    <p>{_("Does the white group have a strong or weak shape?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="1"
-                            checked={value === "1"}
+                            value="strong shape"
+                            checked={value === "strong shape"}
                             onChange={handleChange}
                         />
-                        {_("1")}
+                        {_("strong shape")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="2"
-                            checked={value === "2"}
+                            value="weak shape"
+                            checked={value === "weak shape"}
                             onChange={handleChange}
                         />
-                        {_("2")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="3"
-                            checked={value === "3"}
-                            onChange={handleChange}
-                        />
-                        {_("3")}
+                        {_("weak shape")}
                     </label>
                     <br />
                 </div>
@@ -1030,10 +892,9 @@ class Page12 extends LearningPage {
             mode: "puzzle",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "enfndocpdpbqeqfqarcr",
-                white: "blelcmemanbndnbocobpepaq",
+                black: "bqcqdqfqgqdr",
+                white: "bpcpdpfpeqer",
             },
-            marks: { A: "ap" },
             phase: "finished",
         };
     }
@@ -1052,7 +913,7 @@ class Page13 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "5") {
+                if (selectedValue === "weak shape") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -1061,38 +922,27 @@ class Page13 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("What is the value of playing at A?")}</p>
+                    <p>{_("Does the white group have a strong or weak shape?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="3"
-                            checked={value === "3"}
+                            value="strong shape"
+                            checked={value === "strong shape"}
                             onChange={handleChange}
                         />
-                        {_("3")}
+                        {_("strong shape")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="4"
-                            checked={value === "4"}
+                            value="weak shape"
+                            checked={value === "weak shape"}
                             onChange={handleChange}
                         />
-                        {_("4")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="5"
-                            checked={value === "5"}
-                            onChange={handleChange}
-                        />
-                        {_("5")}
+                        {_("weak shape")}
                     </label>
                     <br />
                 </div>
@@ -1112,10 +962,79 @@ class Page13 extends LearningPage {
             mode: "puzzle",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "dldmanbndncodocpbqcq",
-                white: "elemeneoapepdqeqarbrcr",
+                black: "eneobpcpdpdqbrdr",
+                white: "bocodoepeqer",
             },
-            marks: { A: "aq" },
+            phase: "finished",
+        };
+    }
+}
+
+class Page14 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
+            const [value, setValue] = React.useState<string>("");
+
+            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+                const selectedValue = event.target.value;
+                setValue(selectedValue);
+
+                if (selectedValue === "strong shape") {
+                    props.onCorrectAnswer();
+                } else if (selectedValue !== "") {
+                    props.onWrongAnswer();
+                }
+            };
+
+            return (
+                <div>
+                    <p>{_("Does the white group have a strong or weak shape?")}</p>
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="strong shape"
+                            checked={value === "strong shape"}
+                            onChange={handleChange}
+                        />
+                        {_("strong shape")}
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="weak shape"
+                            checked={value === "weak shape"}
+                            onChange={handleChange}
+                        />
+                        {_("weak shape")}
+                    </label>
+                    <br />
+                </div>
+            );
+        }
+        return (
+            <MultipleChoice
+                onCorrectAnswer={this.onCorrectAnswer}
+                onWrongAnswer={this.onWrongAnswer}
+            />
+        );
+    }
+    config(): GobanConfig {
+        return {
+            width: 19,
+            height: 19,
+            mode: "puzzle",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            initial_state: {
+                black: "dofodpcqcr",
+                white: "cncocpdqfqdr",
+            },
             phase: "finished",
         };
     }
