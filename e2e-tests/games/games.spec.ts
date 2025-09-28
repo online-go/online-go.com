@@ -18,8 +18,10 @@
 import { ogsTest } from "@helpers";
 import { basicScoringTest } from "./basic-scoring";
 import { conditionalMovesArrowBugTest } from "./conditional-moves-arrow";
+import { detectContainedSimulTest } from "./simul-detection";
 
 ogsTest.describe("@Games Tests", () => {
     ogsTest("Should be able to pass and score a game", basicScoringTest);
     ogsTest("Should be able to use arrow in conditional moves", conditionalMovesArrowBugTest);
+    ogsTest("Should be able to detect contained simultaneous game", detectContainedSimulTest);
 });

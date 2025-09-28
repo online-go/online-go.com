@@ -259,7 +259,7 @@ export const goToUsersProfile = async (page: Page, username: string) => {
 
 // Note: if there are multiple matches, this grabs the first.   This is avoids issues if we
 // accidentally have more seed games than intended.
-export const goToUsersGame = async (page: Page, username: string, gameName: string) => {
+export const goToUsersFinishedGame = async (page: Page, username: string, gameName: string) => {
     await goToUsersProfile(page, username);
 
     const gameHistory = page.getByText("Game History");
