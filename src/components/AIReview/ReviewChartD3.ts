@@ -82,6 +82,7 @@ export class ReviewChartD3 {
         SVGGElement,
         unknown
     >;
+    private pending_backgrounds_container!: d3.Selection<SVGGElement, unknown, null, undefined>;
 
     // Chart state
     private callbacks: ChartCallbacks;
@@ -117,6 +118,11 @@ export class ReviewChartD3 {
     }
 
     private setupChartElements(): void {
+        // Create pending backgrounds container (behind all other elements)
+        this.pending_backgrounds_container = this.prediction_graph
+            .append("g")
+            .attr("class", "pending-backgrounds");
+
         // Create chart elements
         this.win_rate_area_container = this.prediction_graph
             .append("path")
@@ -322,7 +328,8 @@ export class ReviewChartD3 {
         this.updateLines(entries, variation_entries, use_score_safe);
         this.updateGradient(use_score_safe);
         this.updateAxes(use_score_safe);
-        this.updateHighlightedMoves(entries, use_score_safe);
+        const hasPendingMoves = this.updatePendingBackgrounds();
+        this.updateHighlightedMoves(entries, use_score_safe, hasPendingMoves);
         this.updateCrosshairs();
     }
 
@@ -514,7 +521,11 @@ export class ReviewChartD3 {
         }
     }
 
-    private updateHighlightedMoves(entries: AIReviewEntry[], use_score_safe: boolean): void {
+    private updateHighlightedMoves(
+        entries: AIReviewEntry[],
+        use_score_safe: boolean,
+        useGoldColor: boolean = false,
+    ): void {
         const show_all = Object.keys(this.data.ai_review.moves).length <= 3;
         const circle_coords = entries.filter((entry) => {
             if (!this.data.ai_review.moves[entry.move_number]) {
@@ -544,13 +555,15 @@ export class ReviewChartD3 {
         const removes = this.highlighted_move_circles.exit().remove();
         const adds = this.highlighted_move_circles.enter().append("circle");
 
+        // Merge new and existing circles, then apply attributes to all
         this.highlighted_move_circles
+            .merge(adds)
             .transition()
             .duration(200)
             .attr("cx", (d) => this.x(d.move_number))
             .attr("cy", (d) => this.y(use_score_safe ? d.score : d.win_rate * 100))
             .attr("r", () => 3)
-            .attr("fill", () => "#FF0000");
+            .attr("fill", () => (useGoldColor ? "gold" : "#FF0000"));
 
         // Workaround for first pass rendering issue
         try {
@@ -571,6 +584,123 @@ export class ReviewChartD3 {
             "transform",
             `translate(${this.x(this.data.variation_move_number)}, 0)`,
         );
+    }
+
+    /**
+     * Identifies contiguous ranges of pending moves (moves not yet analyzed by AI)
+     * Returns an array of {start, end} objects representing move number ranges
+     */
+    private getPendingMoveRanges(): Array<{ start: number; end: number }> {
+        const ranges: Array<{ start: number; end: number }> = [];
+
+        // If no AI review data, everything is pending
+        if (!this.data.ai_review || !this.data.ai_review.moves) {
+            return [];
+        }
+
+        // Fast reviews only analyze a subset of moves by design - they're not "pending"
+        // Only show pending backgrounds for full reviews
+        if (this.data.ai_review.type === "fast") {
+            return [];
+        }
+
+        // Determine the total game length from available data
+        const totalGameMoves =
+            this.data.ai_review.win_rates?.length || this.data.entries.length || 0;
+
+        if (totalGameMoves === 0) {
+            return [];
+        }
+
+        // Count analyzed moves and find the highest analyzed move number
+        const moves = this.data.ai_review.moves;
+        let analyzedCount = 0;
+        let highestAnalyzedMove = 0;
+
+        for (const moveNum in moves) {
+            const num = parseInt(moveNum, 10);
+            if (moves[num]) {
+                analyzedCount++;
+                if (num > highestAnalyzedMove) {
+                    highestAnalyzedMove = num;
+                }
+            }
+        }
+
+        // If no moves have been analyzed yet, return empty (review hasn't started)
+        if (analyzedCount === 0) {
+            return [];
+        }
+
+        // Determine if the review is complete vs in progress
+        // Consider review complete only when 100% of moves are analyzed
+        const isReviewComplete = analyzedCount === totalGameMoves;
+
+        // If review is complete, don't show any pending ranges
+        if (isReviewComplete) {
+            return [];
+        }
+
+        // Review is in progress - check ALL moves for pending status
+        // We check up to the total game length, not just the highest analyzed move
+        let rangeStart: number | null = null;
+        const maxMoveToCheck = totalGameMoves;
+
+        // Check each move to find pending ranges
+        for (let i = 1; i <= maxMoveToCheck; i++) {
+            const isPending = !this.data.ai_review.moves[i];
+
+            if (isPending && rangeStart === null) {
+                // Start of a new pending range
+                rangeStart = i;
+            } else if (!isPending && rangeStart !== null) {
+                // End of a pending range
+                ranges.push({ start: rangeStart, end: i - 1 });
+                rangeStart = null;
+            }
+        }
+
+        // If we ended while still in a pending range
+        if (rangeStart !== null) {
+            ranges.push({ start: rangeStart, end: maxMoveToCheck });
+        }
+
+        return ranges;
+    }
+
+    /**
+     * Updates the gray background rectangles for pending moves
+     * @returns true if there are pending moves, false otherwise
+     */
+    private updatePendingBackgrounds(): boolean {
+        if (!this.pending_backgrounds_container) {
+            return false;
+        }
+
+        const pendingRanges = this.getPendingMoveRanges();
+
+        // Bind data to rectangles
+        const rects = this.pending_backgrounds_container
+            .selectAll<SVGRectElement, { start: number; end: number }>("rect")
+            .data(pendingRanges);
+
+        // Remove old rectangles
+        rects.exit().remove();
+
+        // Add new rectangles
+        const newRects = rects.enter().append("rect");
+
+        // Update all rectangles (both new and existing)
+        rects
+            .merge(newRects)
+            .attr("x", (d) => this.x(d.start - 0.5)) // Slight offset to center on moves
+            .attr("y", 0)
+            .attr("width", (d) => this.x(d.end + 0.5) - this.x(d.start - 0.5))
+            .attr("height", this.height)
+            .attr("fill", "#808080") // Gray color
+            .attr("opacity", 0.15); // Subtle opacity so it doesn't interfere with chart reading
+
+        return pendingRanges.length > 0;
     }
 
     public updateData(newData: ChartData): void {
