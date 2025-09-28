@@ -22,7 +22,7 @@ import { _, pgettext } from "@/lib/translate";
 import { LearningHubSection } from "../../LearningHubSection";
 import React from "react";
 
-export class BL2Cut2 extends LearningHubSection {
+export class BL2Shape1 extends LearningHubSection {
     static pages(): Array<typeof LearningPage> {
         return [
             Page01,
@@ -37,16 +37,21 @@ export class BL2Cut2 extends LearningHubSection {
             Page10,
             Page11,
             Page12,
+            Page13,
+            Page14,
+            Page15,
+            Page16,
+            Page17,
         ];
     }
     static section(): string {
-        return "bl2-cut-2";
+        return "bl2-shape-1";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning can you cut", "Cut 2");
+        return pgettext("Tutorial section name on learning good shape", "Shape");
     }
     static subtext(): string {
-        return pgettext("Tutorial section subtext on learning on can you cut", "Can you cut?");
+        return pgettext("Tutorial section subtext on learning on good shape", "Good shape");
     }
 }
 
@@ -63,7 +68,7 @@ class Page01 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "not cut") {
+                if (selectedValue === "bad shape") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -74,29 +79,29 @@ class Page01 extends LearningPage {
                 <div>
                     <p>
                         {_(
-                            "White to play. Black attempts to cut the white stones with the marked stone. Have the white stones really been cut, or is white able to connect them?",
+                            "Shape is an important concept in Go. With shape we mean a formation of a group of stones on the board. This formation decides how well these stones can be used effectively in the game. There is good shape and bad shape. This shape is an empty triangle and is a bad shape. The three stones do not surround anything. One of the three stones is superfluous. Does the black group have good or bad shape?",
                         )}
                     </p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="cut"
-                            checked={value === "cut"}
+                            value="good shape"
+                            checked={value === "good shape"}
                             onChange={handleChange}
                         />
-                        {_("cut")}
+                        {_("good shape")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="not cut"
-                            checked={value === "not cut"}
+                            value="bad shape"
+                            checked={value === "bad shape"}
                             onChange={handleChange}
                         />
-                        {_("not cut")}
+                        {_("bad shape")}
                     </label>
                     <br />
                 </div>
@@ -114,13 +119,10 @@ class Page01 extends LearningPage {
             width: 19,
             height: 19,
             mode: "puzzle",
-            initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "doeocpep",
-                white: "cncodpcqdq",
+                black: "dndoeo",
             },
-            marks: { triangle: "do" },
             phase: "finished",
         };
     }
@@ -139,7 +141,7 @@ class Page02 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "not cut") {
+                if (selectedValue === "bad shape") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -150,29 +152,29 @@ class Page02 extends LearningPage {
                 <div>
                     <p>
                         {_(
-                            "White to play. Black attempts to cut the white stones with the marked stone. Have the white stones really been cut, or is white able to connect them?",
+                            "This shape is a lump and is a bad shape. Far too many stones lay close to each other. You can take away a number of them, while the group stays as strong or useful. You have a number of superfluous stones on the board, so you have played a number of superfluous moves. Does the black group have good or bad shape?",
                         )}
                     </p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="cut"
-                            checked={value === "cut"}
+                            value="good shape"
+                            checked={value === "good shape"}
                             onChange={handleChange}
                         />
-                        {_("cut")}
+                        {_("good shape")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="not cut"
-                            checked={value === "not cut"}
+                            value="bad shape"
+                            checked={value === "bad shape"}
                             onChange={handleChange}
                         />
-                        {_("not cut")}
+                        {_("bad shape")}
                     </label>
                     <br />
                 </div>
@@ -190,13 +192,10 @@ class Page02 extends LearningPage {
             width: 19,
             height: 19,
             mode: "puzzle",
-            initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "cmcncodpdqfqcrer",
-                white: "bnbobqcqdrds",
+                black: "dodpeoepeqfp",
             },
-            marks: { triangle: "cr" },
             phase: "finished",
         };
     }
@@ -215,7 +214,7 @@ class Page03 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "cut") {
+                if (selectedValue === "good shape") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -226,29 +225,29 @@ class Page03 extends LearningPage {
                 <div>
                     <p>
                         {_(
-                            "White to play. Black attempts to cut the white stones with the marked stone. Have the white stones really been cut, or is white able to connect them?",
+                            "This shape is a tiger-mouth and is a good shape. The tiger-mouth is a shape of three stones, which surround and protect a point on the board. The tiger-mouth is a good shape to cover a cutting point or to prepare an eye. Does the black group have good or bad shape?",
                         )}
                     </p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="cut"
-                            checked={value === "cut"}
+                            value="good shape"
+                            checked={value === "good shape"}
                             onChange={handleChange}
                         />
-                        {_("cut")}
+                        {_("good shape")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="not cut"
-                            checked={value === "not cut"}
+                            value="bad shape"
+                            checked={value === "bad shape"}
                             onChange={handleChange}
                         />
-                        {_("not cut")}
+                        {_("bad shape")}
                     </label>
                     <br />
                 </div>
@@ -266,13 +265,10 @@ class Page03 extends LearningPage {
             width: 19,
             height: 19,
             mode: "puzzle",
-            initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "cndneoepdq",
-                white: "enfndo",
+                black: "eofpgo",
             },
-            marks: { triangle: "eo" },
             phase: "finished",
         };
     }
@@ -291,7 +287,7 @@ class Page04 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "cut") {
+                if (selectedValue === "good shape") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -302,29 +298,29 @@ class Page04 extends LearningPage {
                 <div>
                     <p>
                         {_(
-                            "White to play. Black attempts to cut the white stones with the marked stone. Have the white stones really been cut, or is white able to connect them?",
+                            "This shape is a ponnuki and is a good shape. The ponnuki is a shape of four stones, which emerges after a single stone is captured. The ponnuki gives possibilities for an eye, is difficult to capture and is strong in an attack. The proverb is: 'A ponnuki is worth 30 points'. Does the black group have good or bad shape?",
                         )}
                     </p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="cut"
-                            checked={value === "cut"}
+                            value="good shape"
+                            checked={value === "good shape"}
                             onChange={handleChange}
                         />
-                        {_("cut")}
+                        {_("good shape")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="not cut"
-                            checked={value === "not cut"}
+                            value="bad shape"
+                            checked={value === "bad shape"}
                             onChange={handleChange}
                         />
-                        {_("not cut")}
+                        {_("bad shape")}
                     </label>
                     <br />
                 </div>
@@ -342,13 +338,10 @@ class Page04 extends LearningPage {
             width: 19,
             height: 19,
             mode: "puzzle",
-            initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "eodqeqcreres",
-                white: "cobqcqdrds",
+                black: "eofnfpgo",
             },
-            marks: { triangle: "cr" },
             phase: "finished",
         };
     }
@@ -367,7 +360,7 @@ class Page05 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "not cut") {
+                if (selectedValue === "good shape") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -378,29 +371,29 @@ class Page05 extends LearningPage {
                 <div>
                     <p>
                         {_(
-                            "White to play. Black attempts to cut the white stones with the marked stone. Have the white stones really been cut, or is white able to connect them?",
+                            "This shape is a turtle and is a good shape. The turtle is comparable to a ponnuki, but it is an even better shape. This shape emerges when two stones are captured. The proverb is: 'A turtle is worth 60 points'. Does the black group have good or bad shape?",
                         )}
                     </p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="cut"
-                            checked={value === "cut"}
+                            value="good shape"
+                            checked={value === "good shape"}
                             onChange={handleChange}
                         />
-                        {_("cut")}
+                        {_("good shape")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="not cut"
-                            checked={value === "not cut"}
+                            value="bad shape"
+                            checked={value === "bad shape"}
                             onChange={handleChange}
                         />
-                        {_("not cut")}
+                        {_("bad shape")}
                     </label>
                     <br />
                 </div>
@@ -418,13 +411,10 @@ class Page05 extends LearningPage {
             width: 19,
             height: 19,
             mode: "puzzle",
-            initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "dnco",
-                white: "cndoeocpdq",
+                black: "doenepfnfpgo",
             },
-            marks: { triangle: "dn" },
             phase: "finished",
         };
     }
@@ -443,7 +433,7 @@ class Page06 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "not cut") {
+                if (selectedValue === "bad shape") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -452,31 +442,27 @@ class Page06 extends LearningPage {
 
             return (
                 <div>
-                    <p>
-                        {_(
-                            "White to play. Black attempts to cut the white stones with the marked stone. Have the white stones really been cut, or is white able to connect them?",
-                        )}
-                    </p>
+                    <p>{_("Does the black group have good or bad shape?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="cut"
-                            checked={value === "cut"}
+                            value="good shape"
+                            checked={value === "good shape"}
                             onChange={handleChange}
                         />
-                        {_("cut")}
+                        {_("good shape")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="not cut"
-                            checked={value === "not cut"}
+                            value="bad shape"
+                            checked={value === "bad shape"}
                             onChange={handleChange}
                         />
-                        {_("not cut")}
+                        {_("bad shape")}
                     </label>
                     <br />
                 </div>
@@ -494,13 +480,11 @@ class Page06 extends LearningPage {
             width: 19,
             height: 19,
             mode: "puzzle",
-            initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "dpdqdrfrcs",
-                white: "bocqcrds",
+                black: "cpdpdq",
+                white: "codoeo",
             },
-            marks: { triangle: "dr" },
             phase: "finished",
         };
     }
@@ -519,7 +503,7 @@ class Page07 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "not cut") {
+                if (selectedValue === "good shape") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -528,31 +512,27 @@ class Page07 extends LearningPage {
 
             return (
                 <div>
-                    <p>
-                        {_(
-                            "White to play. Black attempts to cut the white stones with the marked stone. Have the white stones really been cut, or is white able to connect them?",
-                        )}
-                    </p>
+                    <p>{_("Does the black group have good or bad shape?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="cut"
-                            checked={value === "cut"}
+                            value="good shape"
+                            checked={value === "good shape"}
                             onChange={handleChange}
                         />
-                        {_("cut")}
+                        {_("good shape")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="not cut"
-                            checked={value === "not cut"}
+                            value="bad shape"
+                            checked={value === "bad shape"}
                             onChange={handleChange}
                         />
-                        {_("not cut")}
+                        {_("bad shape")}
                     </label>
                     <br />
                 </div>
@@ -570,13 +550,11 @@ class Page07 extends LearningPage {
             width: 19,
             height: 19,
             mode: "puzzle",
-            initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "eneodp",
-                white: "codoepgpeq",
+                black: "cpdpep",
+                white: "codoeo",
             },
-            marks: { triangle: "dp" },
             phase: "finished",
         };
     }
@@ -595,7 +573,7 @@ class Page08 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "not cut") {
+                if (selectedValue === "bad shape") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -604,31 +582,27 @@ class Page08 extends LearningPage {
 
             return (
                 <div>
-                    <p>
-                        {_(
-                            "White to play. Black attempts to cut the white stones with the marked stone. Have the white stones really been cut, or is white able to connect them?",
-                        )}
-                    </p>
+                    <p>{_("Does the black group have good or bad shape?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="cut"
-                            checked={value === "cut"}
+                            value="good shape"
+                            checked={value === "good shape"}
                             onChange={handleChange}
                         />
-                        {_("cut")}
+                        {_("good shape")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="not cut"
-                            checked={value === "not cut"}
+                            value="bad shape"
+                            checked={value === "bad shape"}
                             onChange={handleChange}
                         />
-                        {_("not cut")}
+                        {_("bad shape")}
                     </label>
                     <br />
                 </div>
@@ -646,13 +620,11 @@ class Page08 extends LearningPage {
             width: 19,
             height: 19,
             mode: "puzzle",
-            initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "bocqfqcrfrhrdses",
-                white: "dndpepdrerfs",
+                black: "dpcqdqeq",
+                white: "codoeo",
             },
-            marks: { triangle: "fr" },
             phase: "finished",
         };
     }
@@ -671,7 +643,7 @@ class Page09 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "not cut") {
+                if (selectedValue === "good shape") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -680,31 +652,27 @@ class Page09 extends LearningPage {
 
             return (
                 <div>
-                    <p>
-                        {_(
-                            "White to play. Black attempts to cut the white stones with the marked stone. Have the white stones really been cut, or is white able to connect them?",
-                        )}
-                    </p>
+                    <p>{_("Does the black group have good or bad shape?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="cut"
-                            checked={value === "cut"}
+                            value="good shape"
+                            checked={value === "good shape"}
                             onChange={handleChange}
                         />
-                        {_("cut")}
+                        {_("good shape")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="not cut"
-                            checked={value === "not cut"}
+                            value="bad shape"
+                            checked={value === "bad shape"}
                             onChange={handleChange}
                         />
-                        {_("not cut")}
+                        {_("bad shape")}
                     </label>
                     <br />
                 </div>
@@ -722,13 +690,11 @@ class Page09 extends LearningPage {
             width: 19,
             height: 19,
             mode: "puzzle",
-            initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "codpepfp",
-                white: "cmdndocpcqdqeq",
+                black: "cpepcqdqeq",
+                white: "dncodoeodp",
             },
-            marks: { triangle: "co" },
             phase: "finished",
         };
     }
@@ -747,7 +713,7 @@ class Page10 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "not cut") {
+                if (selectedValue === "bad shape") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -756,31 +722,27 @@ class Page10 extends LearningPage {
 
             return (
                 <div>
-                    <p>
-                        {_(
-                            "White to play. Black attempts to cut the white stones with the marked stone. Have the white stones really been cut, or is white able to connect them?",
-                        )}
-                    </p>
+                    <p>{_("Does the black group have good or bad shape?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="cut"
-                            checked={value === "cut"}
+                            value="good shape"
+                            checked={value === "good shape"}
                             onChange={handleChange}
                         />
-                        {_("cut")}
+                        {_("good shape")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="not cut"
-                            checked={value === "not cut"}
+                            value="bad shape"
+                            checked={value === "bad shape"}
                             onChange={handleChange}
                         />
-                        {_("not cut")}
+                        {_("bad shape")}
                     </label>
                     <br />
                 </div>
@@ -798,13 +760,11 @@ class Page10 extends LearningPage {
             width: 19,
             height: 19,
             mode: "puzzle",
-            initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "bobphpcqfqarcrfrhrbsdses",
-                white: "cpdpepdrerfs",
+                black: "endoeofodpep",
+                white: "dncocpfpcqdqeq",
             },
-            marks: { triangle: "fr" },
             phase: "finished",
         };
     }
@@ -823,7 +783,7 @@ class Page11 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "cut") {
+                if (selectedValue === "bad shape") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -832,31 +792,27 @@ class Page11 extends LearningPage {
 
             return (
                 <div>
-                    <p>
-                        {_(
-                            "White to play. Black attempts to cut the white stones with the marked stone. Have the white stones really been cut, or is white able to connect them?",
-                        )}
-                    </p>
+                    <p>{_("Does the black group have good or bad shape?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="cut"
-                            checked={value === "cut"}
+                            value="good shape"
+                            checked={value === "good shape"}
                             onChange={handleChange}
                         />
-                        {_("cut")}
+                        {_("good shape")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="not cut"
-                            checked={value === "not cut"}
+                            value="bad shape"
+                            checked={value === "bad shape"}
                             onChange={handleChange}
                         />
-                        {_("not cut")}
+                        {_("bad shape")}
                     </label>
                     <br />
                 </div>
@@ -874,13 +830,11 @@ class Page11 extends LearningPage {
             width: 19,
             height: 19,
             mode: "puzzle",
-            initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "cncocpdqeqcr",
-                white: "dodpcq",
+                black: "docpdpcqdq",
+                white: "cndncoeo",
             },
-            marks: { triangle: "cp" },
             phase: "finished",
         };
     }
@@ -899,7 +853,7 @@ class Page12 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "cut") {
+                if (selectedValue === "good shape") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -908,31 +862,27 @@ class Page12 extends LearningPage {
 
             return (
                 <div>
-                    <p>
-                        {_(
-                            "White to play. Black attempts to cut the white stones with the marked stone. Have the white stones really been cut, or is white able to connect them?",
-                        )}
-                    </p>
+                    <p>{_("Does the black group have good or bad shape?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="cut"
-                            checked={value === "cut"}
+                            value="good shape"
+                            checked={value === "good shape"}
                             onChange={handleChange}
                         />
-                        {_("cut")}
+                        {_("good shape")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="not cut"
-                            checked={value === "not cut"}
+                            value="bad shape"
+                            checked={value === "bad shape"}
                             onChange={handleChange}
                         />
-                        {_("not cut")}
+                        {_("bad shape")}
                     </label>
                     <br />
                 </div>
@@ -950,13 +900,361 @@ class Page12 extends LearningPage {
             width: 19,
             height: 19,
             mode: "puzzle",
-            initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "bpaqcqcrfrgrcsdses",
-                white: "cnbocpdpepdrerfs",
+                black: "encoeodpdq",
+                white: "foepfpeq",
             },
-            marks: { triangle: "fr" },
+            phase: "finished",
+        };
+    }
+}
+
+class Page13 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
+            const [value, setValue] = React.useState<string>("");
+
+            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+                const selectedValue = event.target.value;
+                setValue(selectedValue);
+
+                if (selectedValue === "good shape") {
+                    props.onCorrectAnswer();
+                } else if (selectedValue !== "") {
+                    props.onWrongAnswer();
+                }
+            };
+
+            return (
+                <div>
+                    <p>{_("Does the black group have good or bad shape?")}</p>
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="good shape"
+                            checked={value === "good shape"}
+                            onChange={handleChange}
+                        />
+                        {_("good shape")}
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="bad shape"
+                            checked={value === "bad shape"}
+                            onChange={handleChange}
+                        />
+                        {_("bad shape")}
+                    </label>
+                    <br />
+                </div>
+            );
+        }
+        return (
+            <MultipleChoice
+                onCorrectAnswer={this.onCorrectAnswer}
+                onWrongAnswer={this.onWrongAnswer}
+            />
+        );
+    }
+    config(): GobanConfig {
+        return {
+            width: 19,
+            height: 19,
+            mode: "puzzle",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            initial_state: {
+                black: "cmdncocp",
+                white: "dofodpdq",
+            },
+            phase: "finished",
+        };
+    }
+}
+
+class Page14 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
+            const [value, setValue] = React.useState<string>("");
+
+            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+                const selectedValue = event.target.value;
+                setValue(selectedValue);
+
+                if (selectedValue === "bad shape") {
+                    props.onCorrectAnswer();
+                } else if (selectedValue !== "") {
+                    props.onWrongAnswer();
+                }
+            };
+
+            return (
+                <div>
+                    <p>{_("Does the black group have good or bad shape?")}</p>
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="good shape"
+                            checked={value === "good shape"}
+                            onChange={handleChange}
+                        />
+                        {_("good shape")}
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="bad shape"
+                            checked={value === "bad shape"}
+                            onChange={handleChange}
+                        />
+                        {_("bad shape")}
+                    </label>
+                    <br />
+                </div>
+            );
+        }
+        return (
+            <MultipleChoice
+                onCorrectAnswer={this.onCorrectAnswer}
+                onWrongAnswer={this.onWrongAnswer}
+            />
+        );
+    }
+    config(): GobanConfig {
+        return {
+            width: 19,
+            height: 19,
+            mode: "puzzle",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            initial_state: {
+                black: "cncodocp",
+                white: "bpdpepfpcq",
+            },
+            phase: "finished",
+        };
+    }
+}
+
+class Page15 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
+            const [value, setValue] = React.useState<string>("");
+
+            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+                const selectedValue = event.target.value;
+                setValue(selectedValue);
+
+                if (selectedValue === "good shape") {
+                    props.onCorrectAnswer();
+                } else if (selectedValue !== "") {
+                    props.onWrongAnswer();
+                }
+            };
+
+            return (
+                <div>
+                    <p>{_("Does the black group have good or bad shape?")}</p>
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="good shape"
+                            checked={value === "good shape"}
+                            onChange={handleChange}
+                        />
+                        {_("good shape")}
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="bad shape"
+                            checked={value === "bad shape"}
+                            onChange={handleChange}
+                        />
+                        {_("bad shape")}
+                    </label>
+                    <br />
+                </div>
+            );
+        }
+        return (
+            <MultipleChoice
+                onCorrectAnswer={this.onCorrectAnswer}
+                onWrongAnswer={this.onWrongAnswer}
+            />
+        );
+    }
+    config(): GobanConfig {
+        return {
+            width: 19,
+            height: 19,
+            mode: "puzzle",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            initial_state: {
+                black: "bncpcqdq",
+                white: "dodpepeq",
+            },
+            phase: "finished",
+        };
+    }
+}
+
+class Page16 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
+            const [value, setValue] = React.useState<string>("");
+
+            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+                const selectedValue = event.target.value;
+                setValue(selectedValue);
+
+                if (selectedValue === "bad shape") {
+                    props.onCorrectAnswer();
+                } else if (selectedValue !== "") {
+                    props.onWrongAnswer();
+                }
+            };
+
+            return (
+                <div>
+                    <p>{_("Does the black group have good or bad shape?")}</p>
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="good shape"
+                            checked={value === "good shape"}
+                            onChange={handleChange}
+                        />
+                        {_("good shape")}
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="bad shape"
+                            checked={value === "bad shape"}
+                            onChange={handleChange}
+                        />
+                        {_("bad shape")}
+                    </label>
+                    <br />
+                </div>
+            );
+        }
+        return (
+            <MultipleChoice
+                onCorrectAnswer={this.onCorrectAnswer}
+                onWrongAnswer={this.onWrongAnswer}
+            />
+        );
+    }
+    config(): GobanConfig {
+        return {
+            width: 19,
+            height: 19,
+            mode: "puzzle",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            initial_state: {
+                black: "doeodpdq",
+                white: "dncocpcq",
+            },
+            phase: "finished",
+        };
+    }
+}
+
+class Page17 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
+            const [value, setValue] = React.useState<string>("");
+
+            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+                const selectedValue = event.target.value;
+                setValue(selectedValue);
+
+                if (selectedValue === "good shape") {
+                    props.onCorrectAnswer();
+                } else if (selectedValue !== "") {
+                    props.onWrongAnswer();
+                }
+            };
+
+            return (
+                <div>
+                    <p>{_("Does the black group have good or bad shape?")}</p>
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="good shape"
+                            checked={value === "good shape"}
+                            onChange={handleChange}
+                        />
+                        {_("good shape")}
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="bad shape"
+                            checked={value === "bad shape"}
+                            onChange={handleChange}
+                        />
+                        {_("bad shape")}
+                    </label>
+                    <br />
+                </div>
+            );
+        }
+        return (
+            <MultipleChoice
+                onCorrectAnswer={this.onCorrectAnswer}
+                onWrongAnswer={this.onWrongAnswer}
+            />
+        );
+    }
+    config(): GobanConfig {
+        return {
+            width: 19,
+            height: 19,
+            mode: "puzzle",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            initial_state: {
+                black: "dqfqcrer",
+                white: "dncpdpcq",
+            },
             phase: "finished",
         };
     }

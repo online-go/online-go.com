@@ -22,7 +22,7 @@ import { _, pgettext } from "@/lib/translate";
 import { LearningHubSection } from "../../LearningHubSection";
 import React from "react";
 
-export class BL2Cut2 extends LearningHubSection {
+export class BL2Endgame2 extends LearningHubSection {
     static pages(): Array<typeof LearningPage> {
         return [
             Page01,
@@ -37,16 +37,17 @@ export class BL2Cut2 extends LearningHubSection {
             Page10,
             Page11,
             Page12,
+            Page13,
         ];
     }
     static section(): string {
-        return "bl2-cut-2";
+        return "bl2-endgame2";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning can you cut", "Cut 2");
+        return pgettext("Tutorial section name on learning count 1", "Endgame 2");
     }
     static subtext(): string {
-        return pgettext("Tutorial section subtext on learning on can you cut", "Can you cut?");
+        return pgettext("Tutorial section subtext on learning on count 1", "Value of a move");
     }
 }
 
@@ -63,7 +64,7 @@ class Page01 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "not cut") {
+                if (selectedValue === "6") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -74,29 +75,40 @@ class Page01 extends LearningPage {
                 <div>
                     <p>
                         {_(
-                            "White to play. Black attempts to cut the white stones with the marked stone. Have the white stones really been cut, or is white able to connect them?",
+                            "You can calculate the value of a move in the endgame by adding the number of points of a white move at a position to the number of points of a black move there. The difference is the value of the move. Playing at A in this diagram yields White a captured stone and a point of territory. So, that is 2 points for White. If Black plays at A, he gets 2 captured stones and 2 points of territory, so 4 points for Black. The difference is 6 points. What is the value of playing at A?",
                         )}
                     </p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="cut"
-                            checked={value === "cut"}
+                            value="2"
+                            checked={value === "2"}
                             onChange={handleChange}
                         />
-                        {_("cut")}
+                        {_("2")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="not cut"
-                            checked={value === "not cut"}
+                            value="4"
+                            checked={value === "4"}
                             onChange={handleChange}
                         />
-                        {_("not cut")}
+                        {_("4")}
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="6"
+                            checked={value === "6"}
+                            onChange={handleChange}
+                        />
+                        {_("6")}
                     </label>
                     <br />
                 </div>
@@ -114,13 +126,12 @@ class Page01 extends LearningPage {
             width: 19,
             height: 19,
             mode: "puzzle",
-            initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "doeocpep",
-                white: "cncodpcqdq",
+                black: "bqbrbscncocpcqdr",
+                white: "crcsdndodpdqeqeres",
             },
-            marks: { triangle: "do" },
+            marks: { A: "ds" },
             phase: "finished",
         };
     }
@@ -139,7 +150,7 @@ class Page02 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "not cut") {
+                if (selectedValue === "1") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -148,31 +159,38 @@ class Page02 extends LearningPage {
 
             return (
                 <div>
-                    <p>
-                        {_(
-                            "White to play. Black attempts to cut the white stones with the marked stone. Have the white stones really been cut, or is white able to connect them?",
-                        )}
-                    </p>
+                    <p>{_("What is the value of playing at A?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="cut"
-                            checked={value === "cut"}
+                            value="1"
+                            checked={value === "1"}
                             onChange={handleChange}
                         />
-                        {_("cut")}
+                        {_("1")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="not cut"
-                            checked={value === "not cut"}
+                            value="2"
+                            checked={value === "2"}
                             onChange={handleChange}
                         />
-                        {_("not cut")}
+                        {_("2")}
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="3"
+                            checked={value === "3"}
+                            onChange={handleChange}
+                        />
+                        {_("3")}
                     </label>
                     <br />
                 </div>
@@ -190,13 +208,12 @@ class Page02 extends LearningPage {
             width: 19,
             height: 19,
             mode: "puzzle",
-            initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "cmcncodpdqfqcrer",
-                white: "bnbobqcqdrds",
+                black: "dmdncocpdqbrcrdrbs",
+                white: "endofodpeqgqeres",
             },
-            marks: { triangle: "cr" },
+            marks: { A: "ds" },
             phase: "finished",
         };
     }
@@ -215,7 +232,7 @@ class Page03 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "cut") {
+                if (selectedValue === "2") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -224,31 +241,38 @@ class Page03 extends LearningPage {
 
             return (
                 <div>
-                    <p>
-                        {_(
-                            "White to play. Black attempts to cut the white stones with the marked stone. Have the white stones really been cut, or is white able to connect them?",
-                        )}
-                    </p>
+                    <p>{_("What is the value of playing at A?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="cut"
-                            checked={value === "cut"}
+                            value="1"
+                            checked={value === "1"}
                             onChange={handleChange}
                         />
-                        {_("cut")}
+                        {_("1")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="not cut"
-                            checked={value === "not cut"}
+                            value="2"
+                            checked={value === "2"}
                             onChange={handleChange}
                         />
-                        {_("not cut")}
+                        {_("2")}
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="3"
+                            checked={value === "3"}
+                            onChange={handleChange}
+                        />
+                        {_("3")}
                     </label>
                     <br />
                 </div>
@@ -266,13 +290,12 @@ class Page03 extends LearningPage {
             width: 19,
             height: 19,
             mode: "puzzle",
-            initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "cndneoepdq",
-                white: "enfndo",
+                black: "dldmdndobpdpcqarbrcr",
+                white: "elemeneoepdqfqgqdrascsds",
             },
-            marks: { triangle: "eo" },
+            marks: { A: "bs" },
             phase: "finished",
         };
     }
@@ -291,7 +314,7 @@ class Page04 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "cut") {
+                if (selectedValue === "1") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -300,31 +323,38 @@ class Page04 extends LearningPage {
 
             return (
                 <div>
-                    <p>
-                        {_(
-                            "White to play. Black attempts to cut the white stones with the marked stone. Have the white stones really been cut, or is white able to connect them?",
-                        )}
-                    </p>
+                    <p>{_("What is the value of playing at A?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="cut"
-                            checked={value === "cut"}
+                            value="1"
+                            checked={value === "1"}
                             onChange={handleChange}
                         />
-                        {_("cut")}
+                        {_("1")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="not cut"
-                            checked={value === "not cut"}
+                            value="2"
+                            checked={value === "2"}
                             onChange={handleChange}
                         />
-                        {_("not cut")}
+                        {_("2")}
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="3"
+                            checked={value === "3"}
+                            onChange={handleChange}
+                        />
+                        {_("3")}
                     </label>
                     <br />
                 </div>
@@ -342,13 +372,12 @@ class Page04 extends LearningPage {
             width: 19,
             height: 19,
             mode: "puzzle",
-            initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "eodqeqcreres",
-                white: "cobqcqdrds",
+                black: "dmdncodobpcqdqbrdrcs",
+                white: "eneogofpeqgqerdses",
             },
-            marks: { triangle: "cr" },
+            marks: { A: "dp" },
             phase: "finished",
         };
     }
@@ -367,7 +396,7 @@ class Page05 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "not cut") {
+                if (selectedValue === "3") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -376,31 +405,38 @@ class Page05 extends LearningPage {
 
             return (
                 <div>
-                    <p>
-                        {_(
-                            "White to play. Black attempts to cut the white stones with the marked stone. Have the white stones really been cut, or is white able to connect them?",
-                        )}
-                    </p>
+                    <p>{_("What is the value of playing at A?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="cut"
-                            checked={value === "cut"}
+                            value="1"
+                            checked={value === "1"}
                             onChange={handleChange}
                         />
-                        {_("cut")}
+                        {_("1")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="not cut"
-                            checked={value === "not cut"}
+                            value="2"
+                            checked={value === "2"}
                             onChange={handleChange}
                         />
-                        {_("not cut")}
+                        {_("2")}
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="3"
+                            checked={value === "3"}
+                            onChange={handleChange}
+                        />
+                        {_("3")}
                     </label>
                     <br />
                 </div>
@@ -418,13 +454,12 @@ class Page05 extends LearningPage {
             width: 19,
             height: 19,
             mode: "puzzle",
-            initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "dnco",
-                white: "cndoeocpdq",
+                black: "dldmdnbododpaqbqcqcr",
+                white: "elemeneoepfpdqdrfrcsds",
             },
-            marks: { triangle: "dn" },
+            marks: { A: "bs" },
             phase: "finished",
         };
     }
@@ -443,7 +478,7 @@ class Page06 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "not cut") {
+                if (selectedValue === "2") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -452,31 +487,38 @@ class Page06 extends LearningPage {
 
             return (
                 <div>
-                    <p>
-                        {_(
-                            "White to play. Black attempts to cut the white stones with the marked stone. Have the white stones really been cut, or is white able to connect them?",
-                        )}
-                    </p>
+                    <p>{_("What is the value of playing at A?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="cut"
-                            checked={value === "cut"}
+                            value="1"
+                            checked={value === "1"}
                             onChange={handleChange}
                         />
-                        {_("cut")}
+                        {_("1")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="not cut"
-                            checked={value === "not cut"}
+                            value="2"
+                            checked={value === "2"}
                             onChange={handleChange}
                         />
-                        {_("not cut")}
+                        {_("2")}
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="3"
+                            checked={value === "3"}
+                            onChange={handleChange}
+                        />
+                        {_("3")}
                     </label>
                     <br />
                 </div>
@@ -494,13 +536,12 @@ class Page06 extends LearningPage {
             width: 19,
             height: 19,
             mode: "puzzle",
-            initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "dpdqdrfrcs",
-                white: "bocqcrds",
+                black: "dmcnencoeobpdpcqdqbrbsds",
+                white: "fnfoepfpeqergrfs",
             },
-            marks: { triangle: "dr" },
+            marks: { A: "dr" },
             phase: "finished",
         };
     }
@@ -519,7 +560,7 @@ class Page07 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "not cut") {
+                if (selectedValue === "3") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -528,31 +569,38 @@ class Page07 extends LearningPage {
 
             return (
                 <div>
-                    <p>
-                        {_(
-                            "White to play. Black attempts to cut the white stones with the marked stone. Have the white stones really been cut, or is white able to connect them?",
-                        )}
-                    </p>
+                    <p>{_("What is the value of playing at A?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="cut"
-                            checked={value === "cut"}
+                            value="1"
+                            checked={value === "1"}
                             onChange={handleChange}
                         />
-                        {_("cut")}
+                        {_("1")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="not cut"
-                            checked={value === "not cut"}
+                            value="2"
+                            checked={value === "2"}
                             onChange={handleChange}
                         />
-                        {_("not cut")}
+                        {_("2")}
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="3"
+                            checked={value === "3"}
+                            onChange={handleChange}
+                        />
+                        {_("3")}
                     </label>
                     <br />
                 </div>
@@ -570,13 +618,12 @@ class Page07 extends LearningPage {
             width: 19,
             height: 19,
             mode: "puzzle",
-            initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "eneodp",
-                white: "codoepgpeq",
+                black: "dldmanbndnbodobpcpbq",
+                white: "elemeneoapdpepcqfqarbrcr",
             },
-            marks: { triangle: "dp" },
+            marks: { A: "aq" },
             phase: "finished",
         };
     }
@@ -595,7 +642,7 @@ class Page08 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "not cut") {
+                if (selectedValue === "2") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -604,31 +651,38 @@ class Page08 extends LearningPage {
 
             return (
                 <div>
-                    <p>
-                        {_(
-                            "White to play. Black attempts to cut the white stones with the marked stone. Have the white stones really been cut, or is white able to connect them?",
-                        )}
-                    </p>
+                    <p>{_("What is the value of playing at A?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="cut"
-                            checked={value === "cut"}
+                            value="1"
+                            checked={value === "1"}
                             onChange={handleChange}
                         />
-                        {_("cut")}
+                        {_("1")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="not cut"
-                            checked={value === "not cut"}
+                            value="2"
+                            checked={value === "2"}
                             onChange={handleChange}
                         />
-                        {_("not cut")}
+                        {_("2")}
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="3"
+                            checked={value === "3"}
+                            onChange={handleChange}
+                        />
+                        {_("3")}
                     </label>
                     <br />
                 </div>
@@ -646,13 +700,12 @@ class Page08 extends LearningPage {
             width: 19,
             height: 19,
             mode: "puzzle",
-            initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "bocqfqcrfrhrdses",
-                white: "dndpepdrerfs",
+                black: "dndodpbqdqeqcrerbs",
+                white: "fmeofoepfqfresfs",
             },
-            marks: { triangle: "fr" },
+            marks: { A: "ds" },
             phase: "finished",
         };
     }
@@ -671,7 +724,7 @@ class Page09 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "not cut") {
+                if (selectedValue === "2") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -680,31 +733,38 @@ class Page09 extends LearningPage {
 
             return (
                 <div>
-                    <p>
-                        {_(
-                            "White to play. Black attempts to cut the white stones with the marked stone. Have the white stones really been cut, or is white able to connect them?",
-                        )}
-                    </p>
+                    <p>{_("What is the value of playing at A?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="cut"
-                            checked={value === "cut"}
+                            value="1"
+                            checked={value === "1"}
                             onChange={handleChange}
                         />
-                        {_("cut")}
+                        {_("1")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="not cut"
-                            checked={value === "not cut"}
+                            value="2"
+                            checked={value === "2"}
                             onChange={handleChange}
                         />
-                        {_("not cut")}
+                        {_("2")}
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="3"
+                            checked={value === "3"}
+                            onChange={handleChange}
+                        />
+                        {_("3")}
                     </label>
                     <br />
                 </div>
@@ -722,13 +782,12 @@ class Page09 extends LearningPage {
             width: 19,
             height: 19,
             mode: "puzzle",
-            initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "codpepfp",
-                white: "cmdndocpcqdqeq",
+                black: "elemeneodpepcqcrercs",
+                white: "dldmcndndobpcpaqbqbr",
             },
-            marks: { triangle: "co" },
+            marks: { A: "bs" },
             phase: "finished",
         };
     }
@@ -747,7 +806,7 @@ class Page10 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "not cut") {
+                if (selectedValue === "2") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -756,31 +815,38 @@ class Page10 extends LearningPage {
 
             return (
                 <div>
-                    <p>
-                        {_(
-                            "White to play. Black attempts to cut the white stones with the marked stone. Have the white stones really been cut, or is white able to connect them?",
-                        )}
-                    </p>
+                    <p>{_("What is the value of playing at A?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="cut"
-                            checked={value === "cut"}
+                            value="1"
+                            checked={value === "1"}
                             onChange={handleChange}
                         />
-                        {_("cut")}
+                        {_("1")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="not cut"
-                            checked={value === "not cut"}
+                            value="2"
+                            checked={value === "2"}
                             onChange={handleChange}
                         />
-                        {_("not cut")}
+                        {_("2")}
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="3"
+                            checked={value === "3"}
+                            onChange={handleChange}
+                        />
+                        {_("3")}
                     </label>
                     <br />
                 </div>
@@ -798,13 +864,12 @@ class Page10 extends LearningPage {
             width: 19,
             height: 19,
             mode: "puzzle",
-            initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "bobphpcqfqarcrfrhrbsdses",
-                white: "cpdpepdrerfs",
+                black: "cmemencodobpdpcqdqbrbsds",
+                white: "fneogoepeqcrdreres",
             },
-            marks: { triangle: "fr" },
+            marks: { A: "cs" },
             phase: "finished",
         };
     }
@@ -823,7 +888,7 @@ class Page11 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "cut") {
+                if (selectedValue === "4") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -832,31 +897,38 @@ class Page11 extends LearningPage {
 
             return (
                 <div>
-                    <p>
-                        {_(
-                            "White to play. Black attempts to cut the white stones with the marked stone. Have the white stones really been cut, or is white able to connect them?",
-                        )}
-                    </p>
+                    <p>{_("What is the value of playing at A?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="cut"
-                            checked={value === "cut"}
+                            value="2"
+                            checked={value === "2"}
                             onChange={handleChange}
                         />
-                        {_("cut")}
+                        {_("2")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="not cut"
-                            checked={value === "not cut"}
+                            value="3"
+                            checked={value === "3"}
                             onChange={handleChange}
                         />
-                        {_("not cut")}
+                        {_("3")}
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="4"
+                            checked={value === "4"}
+                            onChange={handleChange}
+                        />
+                        {_("4")}
                     </label>
                     <br />
                 </div>
@@ -874,13 +946,12 @@ class Page11 extends LearningPage {
             width: 19,
             height: 19,
             mode: "puzzle",
-            initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "cncocpdqeqcr",
-                white: "dodpcq",
+                black: "dldmdnaobocodocpbqcq",
+                white: "elemeneoapbpepdqeqarbrcr",
             },
-            marks: { triangle: "cp" },
+            marks: { A: "aq" },
             phase: "finished",
         };
     }
@@ -899,7 +970,7 @@ class Page12 extends LearningPage {
                 const selectedValue = event.target.value;
                 setValue(selectedValue);
 
-                if (selectedValue === "cut") {
+                if (selectedValue === "2") {
                     props.onCorrectAnswer();
                 } else if (selectedValue !== "") {
                     props.onWrongAnswer();
@@ -908,31 +979,38 @@ class Page12 extends LearningPage {
 
             return (
                 <div>
-                    <p>
-                        {_(
-                            "White to play. Black attempts to cut the white stones with the marked stone. Have the white stones really been cut, or is white able to connect them?",
-                        )}
-                    </p>
+                    <p>{_("What is the value of playing at A?")}</p>
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="cut"
-                            checked={value === "cut"}
+                            value="1"
+                            checked={value === "1"}
                             onChange={handleChange}
                         />
-                        {_("cut")}
+                        {_("1")}
                     </label>
                     <br />
                     <label>
                         <input
                             type="radio"
                             name="options"
-                            value="not cut"
-                            checked={value === "not cut"}
+                            value="2"
+                            checked={value === "2"}
                             onChange={handleChange}
                         />
-                        {_("not cut")}
+                        {_("2")}
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="3"
+                            checked={value === "3"}
+                            onChange={handleChange}
+                        />
+                        {_("3")}
                     </label>
                     <br />
                 </div>
@@ -950,13 +1028,94 @@ class Page12 extends LearningPage {
             width: 19,
             height: 19,
             mode: "puzzle",
-            initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
             initial_state: {
-                black: "bpaqcqcrfrgrcsdses",
-                white: "cnbocpdpepdrerfs",
+                black: "enfndocpdpbqeqfqarcr",
+                white: "blelcmemanbndnbocobpepaq",
             },
-            marks: { triangle: "fr" },
+            marks: { A: "ap" },
+            phase: "finished",
+        };
+    }
+}
+
+class Page13 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
+            const [value, setValue] = React.useState<string>("");
+
+            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+                const selectedValue = event.target.value;
+                setValue(selectedValue);
+
+                if (selectedValue === "5") {
+                    props.onCorrectAnswer();
+                } else if (selectedValue !== "") {
+                    props.onWrongAnswer();
+                }
+            };
+
+            return (
+                <div>
+                    <p>{_("What is the value of playing at A?")}</p>
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="3"
+                            checked={value === "3"}
+                            onChange={handleChange}
+                        />
+                        {_("3")}
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="4"
+                            checked={value === "4"}
+                            onChange={handleChange}
+                        />
+                        {_("4")}
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="5"
+                            checked={value === "5"}
+                            onChange={handleChange}
+                        />
+                        {_("5")}
+                    </label>
+                    <br />
+                </div>
+            );
+        }
+        return (
+            <MultipleChoice
+                onCorrectAnswer={this.onCorrectAnswer}
+                onWrongAnswer={this.onWrongAnswer}
+            />
+        );
+    }
+    config(): GobanConfig {
+        return {
+            width: 19,
+            height: 19,
+            mode: "puzzle",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            initial_state: {
+                black: "dldmanbndncodocpbqcq",
+                white: "elemeneoapepdqeqarbrcr",
+            },
+            marks: { A: "aq" },
             phase: "finished",
         };
     }
