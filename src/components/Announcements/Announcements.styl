@@ -126,32 +126,6 @@
                         themed color fg;
                     }
 
-                    a {
-                        themed color primary;
-                        text-decoration: none;
-
-                        // External link indicator
-                        &[target="_blank"]::after {
-                            content: '\f08e';  // Font Awesome external link
-                            font-family: 'Font Awesome 5 Free';
-                            font-weight: 900;
-                            font-size: 0.75em;
-                            margin-left: 0.35rem;
-                            opacity: 0.6;
-                        }
-
-                        &:hover {
-                            text-decoration: underline;
-
-                            &::after {
-                                opacity: 1;
-                            }
-                        }
-
-                        &:active {
-                            opacity: 0.8;
-                        }
-                    }
                 }
 
                 .announcement-creator {
@@ -243,14 +217,6 @@ body.accessible .Announcements {
 
         .announcement-content {
             .announcement-entry {
-                a {
-                    text-decoration: underline;
-                    text-underline-offset: 2px;
-
-                    &:hover {
-                        text-decoration-thickness: 2px;
-                    }
-                }
             }
         }
     }

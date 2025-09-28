@@ -38,3 +38,4 @@ coverage
 submodules/moderator-ui
 old-*
 i18n/*.tar.gz
+*.old

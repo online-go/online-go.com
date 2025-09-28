@@ -15,10 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export * from "./Game";
-export * from "./GameChat";
-export * from "./GameHooks";
-export * from "./GameTimings";
-export * from "./goban_context";
-export * from "./util";
-export * from "./GameLog";
+// Export components used outside this directory
+export * from "./AIReview";
+export * from "./ReviewStrengthIcon"; // Used by moderator-ui submodule

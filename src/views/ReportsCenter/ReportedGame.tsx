@@ -28,7 +28,6 @@ import { errorAlerter, showSecondsResolution } from "@/lib/misc";
 import { doAnnul } from "@/lib/moderation";
 
 import {
-    AIReview,
     GameTimings,
     GameChat,
     GobanControllerContext,
@@ -36,6 +35,7 @@ import {
     GameLog,
     useGobanController,
 } from "@/views/Game";
+import { AIReview } from "@/components/AIReview";
 import { GobanRenderer } from "goban";
 import { Resizable } from "@/components/Resizable";
 
@@ -47,11 +47,13 @@ export function ReportedGame({
     reported_at,
     reported_by,
     onGobanCreated,
+    simul,
 }: {
     game_id: number;
     reported_at: number | undefined;
     reported_by: number;
     onGobanCreated?: (goban: GobanRenderer) => void;
+    simul?: boolean;
 }): React.ReactElement | null {
     const [goban, setGoban] = React.useState<GobanRenderer | null>(null);
     const [goban_controller, setGameController] = React.useState<GobanController | null>(null);
@@ -106,9 +108,19 @@ export function ReportedGame({
         <div className="reported-game">
             <div className="reported-game-container">
                 <div className="reported-game-element">
-                    <div className="reported-game-other-info">
-                        {(!!goban?.engine?.config && !goban.engine.config.ranked && "(Unranked)") ||
-                            ""}
+                    <div className="reported-game-important-info">
+                        <span>
+                            {simul &&
+                                pgettext(
+                                    "A label that means the game is played at the same time as another game",
+                                    "Simul",
+                                )}
+                        </span>
+                        <span>
+                            {!!goban?.engine?.config &&
+                                !goban.engine.config.ranked &&
+                                _("Unranked")}
+                        </span>
                     </div>
                     {/*  This element is providing the goban used by the goban provider wrapped around the rest of them */}
                     <MiniGoban

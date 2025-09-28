@@ -44,7 +44,7 @@ export function useGobanController(): GobanController {
  * Use this where we don't know if the component has a goban controller in context
  * (and handles that properly)
  */
-export function useGobanControllerSafe(): GobanController | null {
+export function useGobanControllerOrNull(): GobanController | null {
     const controller = React.useContext(GobanControllerContext);
     return controller;
 }
