@@ -52,6 +52,7 @@ import { load } from "@helpers";
  *
  * UI Preferences:
  * - turnOffDynamicHelp(): Disable dynamic help popups
+ * - setCorrespondenceClickToSubmit(): Set correspondence submit mode to one-click move
  *
  * Navigation:
  * - selectNavMenuItem(): Clicks a specified Nav Menu item & subitem
@@ -191,6 +192,31 @@ export const turnOffDynamicHelp = async (page: Page) => {
     if (isSwitchOn) {
         await parentElement.click();
     }
+};
+
+export const setCorrespondenceClickToSubmit = async (page: Page) => {
+    await page.goto("/settings/game");
+    await page.waitForLoadState("networkidle");
+
+    const correspondenceSubmitModeSection = page.locator(
+        'div.PreferenceLine:has-text("Correspondence submit mode")',
+    );
+    await expect(correspondenceSubmitModeSection).toBeVisible();
+
+    const dropdown = correspondenceSubmitModeSection.locator(
+        ".PreferenceDropdown .ogs-react-select__control",
+    );
+    await dropdown.click();
+
+    const oneClickOption = page.locator('.PreferenceDropdown-option:has-text("One-click to move")');
+    await expect(oneClickOption).toBeVisible();
+    await oneClickOption.click();
+
+    // Verify that the dropdown now shows "One-click to move" as selected
+    const selectedValue = correspondenceSubmitModeSection.locator(
+        ".PreferenceDropdown-value:has-text('One-click to move')",
+    );
+    await expect(selectedValue).toBeVisible();
 };
 
 // actually you could set up any user using this but its unusual to need to log in
