@@ -30,7 +30,7 @@ import { Browser, TestInfo } from "@playwright/test";
 
 import {
     assertIncidentReportIndicatorActive,
-    goToUsersGame,
+    goToUsersFinishedGame,
     newTestUsername,
     prepareNewUser,
     reportUser,
@@ -53,7 +53,7 @@ export const cmShowOnlyPostEscalationVotesTest = async (
         );
 
         // Report someone for escaping
-        await goToUsersGame(reporterPage, "E2E_CM_SOPEV_REPORTED", "E2E CM SOPEV Game");
+        await goToUsersFinishedGame(reporterPage, "E2E_CM_SOPEV_REPORTED", "E2E CM SOPEV Game");
 
         await reportUser(
             reporterPage,

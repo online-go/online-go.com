@@ -29,7 +29,7 @@ import { Browser, TestInfo } from "@playwright/test";
 import {
     assertIncidentReportIndicatorActive,
     assertIncidentReportIndicatorInactive,
-    goToUsersGame,
+    goToUsersFinishedGame,
     newTestUsername,
     prepareNewUser,
     reportUser,
@@ -53,7 +53,7 @@ export const cmAckAcknowledgementTest = async (
         );
 
         // Report someone for score cheating
-        await goToUsersGame(reporterPage, "E2E_CM_AA_ACCUSED", "E2E CM AA Game");
+        await goToUsersFinishedGame(reporterPage, "E2E_CM_AA_ACCUSED", "E2E CM AA Game");
 
         await reportUser(reporterPage, "E2E_CM_AA_ACCUSED", "score_cheating", "he's a cheater!");
 
