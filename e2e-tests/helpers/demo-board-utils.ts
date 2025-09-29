@@ -62,31 +62,31 @@ export const fillOutDemoBoardCreationForm = async (
         : settings;
 
     if (final_settings.gameName !== undefined) {
-        await page.fill("#challenge-game-name", final_settings.gameName);
+        await page.fill("#demo-board-modal-name", final_settings.gameName);
     }
 
     if (final_settings.private !== undefined) {
-        const checkbox = page.locator("#challenge-private");
+        const checkbox = page.locator("#demo-board-modal-private");
         await checkbox.setChecked(final_settings.private);
     }
 
     if (final_settings.rules) {
-        await page.locator("#challenge-rules").selectOption(final_settings.rules);
+        await page.locator("#demo-board-modal-rules").selectOption(final_settings.rules);
     }
     if (final_settings.boardSize !== undefined) {
-        await page.locator("#challenge-board-size").click();
-        await page.waitForSelector("#challenge-board-size", { state: "visible" });
+        await page.locator("#demo-board-modal-board-size").click();
+        await page.waitForSelector("#demo-board-modal-board-size", { state: "visible" });
         console.log("Board Size:", final_settings.boardSize);
         await page
-            .locator("select#challenge-board-size")
+            .locator("select#demo-board-modal-board-size")
             .selectOption({ label: final_settings.boardSize });
     }
 
     if (final_settings.komi !== undefined) {
         // First set komi to custom if needed
         if (final_settings.komi !== "automatic") {
-            await page.selectOption("#challenge-komi", { value: "custom" });
-            await page.fill("#challenge-komi-value", final_settings.komi.toString());
+            await page.selectOption("#demo-board-modal-komi", { value: "custom" });
+            await page.fill("#demo-board-modal-komi-value", final_settings.komi.toString());
         }
     }
 
@@ -94,9 +94,9 @@ export const fillOutDemoBoardCreationForm = async (
     await blackInput.fill(final_settings.black_name || "Fallback Black Player Name");
 
     const blackRankSelect = page
-        .locator("#challenge-advanced-fields .left-pane .form-group")
+        .locator(".demo-pane-container .left-pane .form-group")
         .filter({ has: page.locator('label:has-text("Rank")') })
-        .locator("select.challenge-dropdown");
+        .locator("select#demo-board-modal-black-rank");
 
     await blackRankSelect.selectOption(final_settings.black_ranking?.toString() || "1");
 
@@ -104,9 +104,9 @@ export const fillOutDemoBoardCreationForm = async (
     await whiteInput.fill(final_settings.white_name || "Fallback White Player Name");
 
     const whiteRankSelect = page
-        .locator("#challenge-advanced-fields .right-pane .form-group")
+        .locator(".demo-pane-container .right-pane .form-group")
         .filter({ has: page.locator('label:has-text("Rank")') })
-        .locator("select.challenge-dropdown");
+        .locator("select#demo-board-modal-white-rank");
 
     await whiteRankSelect.selectOption(final_settings.white_ranking?.toString() || "2");
 };

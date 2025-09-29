@@ -22,7 +22,6 @@ import { chBasicCreationTest } from "./ch-basic-creation";
 import { chHandicapPrefsTest } from "./ch-handicap-prefs";
 import { chPrivateInviteTest } from "./ch-private-invite";
 import { chRengoTest } from "./ch-rengo";
-import { chDemoBoardTest } from "./ch-demo-board";
 
 // Note: these "Challenge Modal" tests are front-end tests only at present.
 // POST payloads are inspected/tested but not sent to the server.
@@ -36,5 +35,4 @@ ogsTest.describe("@ChallengeModal Challenge Modal Tests", () => {
     ogsTest("Should handle handicap preferences correctly", chHandicapPrefsTest);
     ogsTest("Should handle rengo options correctly", chRengoTest);
     ogsTest("Should handle private and invite checkboxes correctly", chPrivateInviteTest);
-    ogsTest("Should handle demo board correctly", chDemoBoardTest);
 });

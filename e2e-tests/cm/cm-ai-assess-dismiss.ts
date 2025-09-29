@@ -85,7 +85,7 @@ export const cmAiAssessDismissTest = async (
         ).toBeVisible();
 
         // Select the "assess" option...
-        await aiDetectorCMPage.locator('.action-selector input[type="radio"]').nth(1).click();
+        await aiDetectorCMPage.locator('.action-selector input[type="radio"]').nth(2).click();
 
         // ... then we should be allowed to vote.
         const voteButton = await expectOGSClickableByName(aiDetectorCMPage, /Vote$/);
@@ -139,7 +139,7 @@ export const cmAiAssessDismissTest = async (
         // the AI Detector should be able to dismiss it
 
         // Select the "dismiss" option...
-        await aiDetectorCMPage.locator('.action-selector input[type="radio"]').nth(2).click();
+        await aiDetectorCMPage.locator('.action-selector input[type="radio"]').nth(3).click();
 
         await voteButton.click();
 
