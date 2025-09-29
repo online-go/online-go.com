@@ -103,7 +103,7 @@ export interface ChallengeModalConfig {
             time_control?: JGOFTimeControl;
             width?: number;
             height?: number;
-            komi?: number;
+            komi?: number | null;
             pause_on_weekends?: boolean;
         };
     };
