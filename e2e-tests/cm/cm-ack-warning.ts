@@ -81,7 +81,7 @@ export const cmAckWarningTest = async ({ browser }: { browser: Browser }, testIn
         ).toBeVisible();
 
         // Select the not-AI option...
-        await aiCMPage.locator('.action-selector input[type="radio"]').nth(3).click();
+        await aiCMPage.locator('.action-selector input[type="radio"]').nth(4).click();
 
         const voteButton = await expectOGSClickableByName(aiCMPage, /Vote$/);
         await voteButton.click();

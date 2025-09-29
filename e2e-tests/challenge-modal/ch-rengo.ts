@@ -41,7 +41,6 @@ export const chRengoTest = async ({ browser }: { browser: Browser }) => {
     // We expect the defaults to be "ranked, not private or rengo"
     await checkChallengeForm(challengerPage, {
         rengo: false,
-        private: false,
         ranked: true,
     });
 
@@ -60,7 +59,6 @@ export const chRengoTest = async ({ browser }: { browser: Browser }) => {
         gameName: "Rengo Match 1",
         rengo: true,
         rengo_casual_mode: true,
-        private: false,
         ranked: false,
         timeControl: "simple", // rengo forces this.
     });
@@ -79,12 +77,10 @@ export const chRengoTest = async ({ browser }: { browser: Browser }) => {
             ranked: false,
             width: 19,
             height: 19,
-            handicap: 0,
             komi_auto: "automatic",
             komi: null,
             disable_analysis: false,
             initial_state: null,
-            private: false,
             rengo: true,
             rengo_casual_mode: true,
             time_control: "simple", // rengo forces this.

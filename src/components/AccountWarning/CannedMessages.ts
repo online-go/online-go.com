@@ -372,7 +372,7 @@ Thank you for helping keep OGS enjoyable for everyone. We appreciate it.`,
                 `
     Thank you for bringing the possible instance of AI use in Game #{{game_id}} to our attention. We looked into the game and couldn't see evidence of AI use.   
     
-    Your report did not contain any real evidence of AI use - we'd prefer if you could provide more details, so our time is not wasted guessing.
+    Your report did not contain any real evidence of AI use - we'd prefer if you could provide more details, to help us find the problem quickly.
     
     If you have a good reason to suspect AI use, please take some time to provide a detailed report describing why.
 

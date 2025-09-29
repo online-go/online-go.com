@@ -41,8 +41,8 @@ export const chPrivateInviteTest = async ({ browser }: { browser: Browser }) => 
     // We expect the defaults to be "ranked, not private or rengo"
     await checkChallengeForm(challengerPage, {
         rengo: false,
-        private: false,
         ranked: true,
+        private: "none",
     });
 
     // First test interactions without submitting
@@ -54,6 +54,7 @@ export const chPrivateInviteTest = async ({ browser }: { browser: Browser }) => 
             gameName: "Private Match 1",
             ranked: false,
             private: true,
+            invite_only: true,
         },
         { fillWithDefaults: false }, // don't set any other values
     );
@@ -63,6 +64,7 @@ export const chPrivateInviteTest = async ({ browser }: { browser: Browser }) => 
         rengo: false,
         private: true,
         ranked: false, // set false by private
+        invite_only: true,
     });
 
     const auto_start_input = challengerPage.locator("#rengo-auto-start");
@@ -78,40 +80,20 @@ export const chPrivateInviteTest = async ({ browser }: { browser: Browser }) => 
     await fillOutStandardChallengeForm(
         challengerPage,
         {
-            invite_only: true,
+            invite_only: false,
         },
         { fillWithDefaults: false }, // don't set any other values
     );
 
     await checkChallengeForm(challengerPage, {
         rengo: false,
-        private: true,
         ranked: false,
-        invite_only: true,
-    });
-
-    await expect(ranked_checkbox).toBeDisabled();
-    await expect(rengo_checkbox).toBeDisabled();
-
-    // Turn off private
-    await fillOutStandardChallengeForm(
-        challengerPage,
-        {
-            private: false,
-        },
-        { fillWithDefaults: false }, // don't set any other values
-    );
-
-    await checkChallengeForm(challengerPage, {
-        rengo: false,
-        private: false,
-        ranked: false,
-        invite_only: true,
+        invite_only: false,
+        private: "none",
     });
 
     await expect(ranked_checkbox).toBeEnabled();
     await expect(rengo_checkbox).toBeEnabled();
-    await expect(auto_start_input).not.toBeVisible();
 
     // Now test POST payloads for the flags
     await testChallengePOSTPayload(challengerPage, {
@@ -145,34 +127,6 @@ export const chPrivateInviteTest = async ({ browser }: { browser: Browser }) => 
         invite_only: true,
         game: {
             name: "Private Match 2",
-            private: true,
-            rengo: false,
-            ranked: false,
-        },
-    });
-
-    await reloadChallengeModal(challengerPage);
-
-    await fillOutStandardChallengeForm(challengerPage, {
-        gameName: "Private Match 3",
-        private: true,
-        rengo: false,
-        ranked: false,
-        invite_only: false,
-    });
-
-    await checkChallengeForm(challengerPage, {
-        gameName: "Private Match 3",
-        rengo: false,
-        private: true,
-        ranked: false,
-        invite_only: false,
-    });
-
-    await testChallengePOSTPayload(challengerPage, {
-        invite_only: false,
-        game: {
-            name: "Private Match 3",
             private: true,
             rengo: false,
             ranked: false,

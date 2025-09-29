@@ -14,6 +14,8 @@ import { Page } from "@playwright/test";
 import { expectOGSClickableByName } from "@helpers/matchers";
 import { openUserDropdownFromOmniSearch } from "./user-utils";
 
+type checkboxTest = boolean | "none"; // None means "not present at all"
+
 // This defines the fields in the challenge modal form that need to be filled out.
 export interface ChallengeModalFields {
     gameName?: string;
@@ -24,7 +26,7 @@ export interface ChallengeModalFields {
     timePerPeriod?: string;
     periods?: string;
     color?: string;
-    private?: boolean;
+    private?: checkboxTest;
     invite_only?: boolean;
     ranked?: boolean;
     aga_ranked?: boolean; // I see we sent this, I don't know what sets it
@@ -287,14 +289,25 @@ export const fillOutChallengeForm = async (
     if (final_settings.color !== undefined) {
         await page.selectOption("#challenge-color", final_settings.color);
     }
-    if (final_settings.private !== undefined) {
-        const checkbox = page.locator("#challenge-private");
-        await checkbox.setChecked(final_settings.private);
+
+    if (final_settings.invite_only !== undefined) {
+        const checkbox = page.locator("#challenge-invite-only");
+        await checkbox.setChecked(final_settings.invite_only);
     }
+
     if (final_settings.ranked !== undefined) {
         const checkbox = page.locator("#challenge-ranked");
         await checkbox.setChecked(final_settings.ranked);
+
+        if (!final_settings.ranked) {
+            // Private not available for ranked games
+            if (final_settings.private !== undefined && final_settings.private !== "none") {
+                const checkbox = page.locator("#challenge-private");
+                await checkbox.setChecked(final_settings.private);
+            }
+        }
     }
+
     if (final_settings.restrict_rank !== undefined) {
         const checkbox = page.locator("#challenge-restrict-rank");
         await checkbox.setChecked(final_settings.restrict_rank);
@@ -335,11 +348,6 @@ export const fillOutChallengeForm = async (
             await auto_start_input.fill(final_settings.rengo_auto_start);
         }
     }
-
-    if (final_settings.invite_only !== undefined) {
-        const checkbox = page.locator("#challenge-invite-only");
-        await checkbox.setChecked(final_settings.invite_only);
-    }
 };
 
 // Verify that the challenge form fields match the expected values
@@ -369,12 +377,30 @@ export const checkChallengeForm = async (page: Page, settings: ChallengeModalFie
     if (settings.color) {
         await expect(page.locator("#challenge-color")).toHaveValue(settings.color);
     }
-    if (settings.private !== undefined) {
-        const checkbox = page.locator("#challenge-private");
-        if (settings.private) {
+
+    if (settings.ranked !== undefined) {
+        const checkbox = page.locator("#challenge-ranked");
+        if (settings.ranked) {
             await expect(checkbox).toBeChecked();
         } else {
             await expect(checkbox).not.toBeChecked();
+        }
+    }
+
+    if (settings.private !== undefined) {
+        if (settings.private !== "none" && (settings.ranked || settings.rengo)) {
+            throw new Error("Bad test:Private not available for ranked or rengo games");
+        } else {
+            const checkbox = page.locator("#challenge-private");
+            if (settings.private === "none") {
+                await expect(checkbox).not.toBeVisible();
+            } else {
+                if (settings.private) {
+                    await expect(checkbox).toBeChecked();
+                } else {
+                    await expect(checkbox).not.toBeChecked();
+                }
+            }
         }
     }
 
@@ -386,14 +412,7 @@ export const checkChallengeForm = async (page: Page, settings: ChallengeModalFie
             await expect(checkbox).not.toBeChecked();
         }
     }
-    if (settings.ranked !== undefined) {
-        const checkbox = page.locator("#challenge-ranked");
-        if (settings.ranked) {
-            await expect(checkbox).toBeChecked();
-        } else {
-            await expect(checkbox).not.toBeChecked();
-        }
-    }
+
     if (settings.restrict_rank !== undefined) {
         const checkbox = page.locator("#challenge-restrict-rank");
         if (settings.restrict_rank) {
