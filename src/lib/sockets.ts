@@ -21,10 +21,29 @@ import { lookingAtOurLiveGame } from "@/components/TimeControl/util";
 
 const debug = new Debug("sockets");
 
-// The ISP "BT" in the UK has a problem with ipv6 websocket connections to cloudflare. As a workaround, we'll
-// route through the google premium network instead of our default cloudflare route.
-const default_websocket_host =
-    window.ip_location?.country === "GB" ? "wss://wsp.online-go.com" : window.location.origin;
+// Detect if the user is on an Apple device (iOS or macOS)
+// This is used for routing WebSocket connections around CloudFlare connectivity issues
+export function isAppleDevice(): boolean {
+    return /iPhone|iPad|iPod|Mac/.test(navigator?.userAgent || "");
+}
+
+// Route selection logic:
+// - Apple devices through CloudFlare have connectivity issues, route through Google Cloud
+// - The ISP "BT" in the UK has ipv6 websocket issues with CloudFlare, route through Google Cloud
+// - Otherwise use CloudFlare (default)
+function getDefaultWebsocketHost(): string {
+    if (isAppleDevice()) {
+        console.log("Apple device detected, routing through Google Cloud");
+        return "wss://wsp.online-go.com";
+    }
+    if (window.ip_location?.country === "GB") {
+        console.log("UK connection detected, routing through Google Cloud");
+        return "wss://wsp.online-go.com";
+    }
+    return window.location.origin;
+}
+
+const default_websocket_host = getDefaultWebsocketHost();
 
 let main_websocket_host: string = window.websocket_host ?? default_websocket_host;
 try {
@@ -42,7 +61,15 @@ if (typeof process !== "undefined" && process.env.NODE_ENV === "development") {
     main_websocket_host = window.location.origin;
     console.log("%cConnecting locally (development mode)", "color: #888888; font-weight: bold;");
 } else if (main_websocket_host === "wss://wsp.online-go.com") {
-    console.log("%cConnecting via Google Premium Network", "color: #4285f4; font-weight: bold;");
+    const reason = isAppleDevice()
+        ? " (Apple device detected)"
+        : window.ip_location?.country === "GB"
+          ? " (UK connection)"
+          : "";
+    console.log(
+        `%cConnecting via Google Premium Network${reason}`,
+        "color: #4285f4; font-weight: bold;",
+    );
 } else if (main_websocket_host === "wss://wss.online-go.com") {
     console.log("%cConnecting via Public Internet", "color: #ff6b35; font-weight: bold;");
 } else {
