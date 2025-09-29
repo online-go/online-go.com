@@ -224,6 +224,7 @@ export const defaults = {
     "user-history.show-mod-log": false,
     "user-history.warnings-only": false,
     "debug.test-wanted": false,
+    "learning-hub-expanded-section": "Fundamentals",
 };
 
 defaults["profanity-filter"][current_language] = true;

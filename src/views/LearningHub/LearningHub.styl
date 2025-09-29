@@ -30,7 +30,7 @@
 
 #LearningHub {
     width: 100%;
-    max-width: 80rem;
+    max-width: 120rem;  // Further increased for 3 cards with comfortable spacing
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
@@ -77,40 +77,165 @@
     }
 
     #LearningHub-list {
-        text-align: center;
         display: flex;
         flex-direction: column;
         justify-content: center;
         margin-bottom: 4rem;
+        width: 100%;
+        max-width: 120rem; // Further increased for 3 cards with comfortable spacing
+        margin-left: auto;
+        margin-right: auto;
+
+        // Remove filter and view controls - no longer needed
 
         .section {
-            margin-top: 3rem;
+            margin-top: 2rem;
             display: flex;
-            flex-direction: row;
-            flex-wrap: wrap;
+            flex-direction: column;
+            width: 100%;
+            max-width: 120rem; // Match the parent max-width for 3 cards
+            margin-left: auto;
+            margin-right: auto;
 
-            > h2 {
-                flex: 1;
-                text-align: right;
-                width: 30%;
-                min-width: 15rem;
-                letter-spacing: 8px;
-                text-transform: uppercase;
-                themed(color, shade2);
-                padding-right: 3rem;
+            // Collapsible section header with progress on the right
+            .section-header {
+                height: 80px; // Fixed height for consistency
+                padding: 1rem 1.5rem;
+                themed(background-color, shade5);
+                border-radius: 0.5rem 0.5rem 0 0;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                cursor: pointer;
+                transition: background-color 0.2s ease;
+                width: 100%;
+                box-sizing: border-box;
 
-                .section-number {
-                    padding-right: 1.5rem;
+                &.clickable:hover {
+                    themed(background-color, shade4);
+                }
+
+                .section-left {
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+
+                    .section-chevron {
+                        themed(color, shade2);
+                        font-size: 1rem;
+                        transition: color 0.2s ease, transform 0.2s ease;
+                    }
+
+                    h2 {
+                        margin: 0;
+                        display: flex;
+                        align-items: center;
+                        font-size: 1.3rem;
+                        themed(color, shade0);
+
+                        .section-number {
+                            padding-right: 1rem;
+                            font-weight: bold;
+                        }
+                    }
+                }
+
+                .section-right {
+                    display: flex;
+                    align-items: center;
+
+                    .progress-info {
+                        display: flex;
+                        align-items: center;
+                        gap: 1rem;
+
+                        .progress-bar {
+                            width: 120px;
+                            height: 8px;
+                            themed(background-color, shade4);
+                            border-radius: 4px;
+                            overflow: hidden;
+
+                            .progress-fill {
+                                height: 100%;
+                                themed(background-color, primary);
+                                transition: width 0.3s ease;
+                            }
+                        }
+
+                        .lesson-count {
+                            font-size: 0.9rem;
+                            themed(color, shade2);
+                            white-space: nowrap;
+                        }
+                    }
                 }
             }
 
+            // Collapsible content area with proper card styling
             > .contents {
-                flex: 1;
-                min-width: 24rem;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
+                padding: 1.5rem;
+                themed(background-color, shade5); // Use shade5 instead of shade6 for compatibility
+                border-radius: 0 0 0.5rem 0.5rem;
+                border: 1px solid;
+                themed(border-color, shade4);
+                border-top: none;
+                display: grid;
+                // Use auto-fit with a smaller minimum to allow more flexibility
+                grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+                column-gap: 1.5rem; // Reduced gap for more space
+                row-gap: 1rem; // Keep vertical spacing at 1rem
+                justify-content: space-around; // Space cards evenly
+                transition: max-height 0.3s ease, padding 0.3s ease, opacity 0.3s ease;
+                overflow: hidden;
+                width: 100%;
+                box-sizing: border-box;
+
+                &.expanded {
+                    max-height: 3000px; // Increased to accommodate more rows of cards
+                    opacity: 1;
+                    padding: 1.5rem;
+                }
+
+                &.collapsed {
+                    max-height: 0;
+                    opacity: 0;
+                    padding: 0 1.5rem;
+                }
+
             }
+
+            // Special styling for "What's Next" section
+            &.whats-next {
+                .contents {
+                    max-height: none !important;
+                    opacity: 1 !important;
+                    padding: 1.5rem !important;
+                    display: grid;
+                    // Keep consistent grid layout with other sections
+                    grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+                    column-gap: 1.5rem; // Reduced gap for more space
+                    row-gap: 1rem; // Keep vertical spacing at 1rem
+                    justify-content: space-around;
+                    width: 100%;
+                    box-sizing: border-box;
+                }
+
+                .section-header {
+                    height: auto; // Allow auto height for this section
+                    padding-bottom: 1rem;
+
+                    h2 {
+                        font-size: 1.5rem;
+                        letter-spacing: 2px;
+                        text-transform: uppercase;
+                    }
+                }
+            }
+
+            // Removed obsolete styles that were overriding the grid layout
+            // The h2 is now inside .section-header, not a direct child of .section
+            // The .contents now properly uses CSS Grid as defined above
 
             .under-construction {
                 background-image: repeating-linear-gradient(-45deg, darken(#FFCC00, 30%), darken(#FFCC00, 10%) 10px, #000 10px, #000 20px);
@@ -120,7 +245,8 @@
                 display: flex;
                 align-items: center;
                 text-decoration: none;
-                width: 23rem;
+                width: 100%; // Make cards responsive to grid cell width
+                max-width: 23rem; // But don't exceed original max size
                 height: 5rem;
                 color: #f9f9f9;
                 border-radius: 0.3rem;
@@ -180,6 +306,32 @@
                 cursor: pointer;
             }
         }
+
+        // KidsGoServer.com section at the bottom
+        .kids-go-server {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            margin-top: 3rem;
+            padding: 2rem;
+            themed(background-color, shade5);
+            border-radius: 0.5rem;
+
+            img {
+                width: 8rem;
+                height: 8rem;
+                margin-right: 1rem;
+            }
+
+            a {
+                display: block;
+                font-size: 1.3rem;
+                margin-left: 0.5rem;
+            }
+        }
+
     }
 }
 
@@ -299,7 +451,7 @@
         align-items: stretch;
         align-content: center;
         justify-content: center;
-        text-align: center;
+        text-align: left; // Changed from center to left
 
         > div {
             flex: 1;
@@ -360,6 +512,67 @@
     }
 }
 
+// Large screens: Natural grid layout with auto-fill handles this
+// The grid-template-columns with auto-fill and 18-22rem cards will naturally create 3+ columns
+
+// Large screens: Force 3 cards per row when space allows
+@media (min-width: 75rem) {
+    #LearningHub-Index {
+        #LearningHub-list {
+            .section > .contents {
+                // Explicitly set 3-column layout on large screens
+                grid-template-columns: repeat(3, 1fr);
+                column-gap: 1.5rem; // Reduced gap for more space
+                row-gap: 1rem;
+                justify-content: center; // Center the grid
+            }
+        }
+    }
+}
+
+// Medium screens: 2 cards per row
+@media (min-width: 48rem) and (max-width: 75rem) {
+    #LearningHub-Index {
+        #LearningHub-list {
+            .section > .contents {
+                // Adjust grid for 2 cards on medium screens
+                grid-template-columns: repeat(2, 1fr);
+                column-gap: 1.5rem; // Reduced gap for more space
+                row-gap: 1rem;
+                justify-content: center;
+            }
+        }
+    }
+}
+
+// Small screens: Show 1 card per row
+@media (max-width: 48rem) {
+    #LearningHub-Index {
+        #LearningHub-list {
+            .section > .contents {
+                // Single column on small screens
+                grid-template-columns: 1fr;
+                justify-content: center;
+
+                // Make cards fill available width in single column mode
+                .Card {
+                    max-width: calc(100% - 2rem) !important;
+                }
+            }
+
+            // Also apply to What's Next section
+            .whats-next .contents {
+                grid-template-columns: 1fr;
+
+                .Card {
+                    max-width: calc(100% - 2rem) !important;
+                }
+            }
+        }
+    }
+}
+
+// Mobile-specific adjustments
 @media (max-width: 40rem) {
     .LearningPage {
         padding-top: 0rem;
@@ -371,5 +584,82 @@
 
     .LearningHub-section-nav {
         width: 95%;
+    }
+
+    #LearningHub-Index {
+        #LearningHub-list {
+
+            .section {
+                .section-header {
+                    height: auto; // Allow flexible height on mobile
+                    min-height: 70px;
+                    padding: 0.75rem 1rem;
+                    flex-direction: column;
+                    align-items: flex-start;
+
+                    .section-left {
+                        width: 100%;
+                        margin-bottom: 0.5rem;
+
+                        h2 {
+                            font-size: 1.1rem;
+                        }
+                    }
+
+                    .section-right {
+                        width: 100%;
+
+                        .progress-info {
+                            width: 100%;
+                            justify-content: space-between;
+
+                            .lesson-count {
+                                font-size: 0.8rem;
+                            }
+
+                            .progress-bar {
+                                flex: 1;
+                                max-width: 100px;
+                                margin: 0 0.5rem;
+                            }
+
+                            .progress-percentage {
+                                font-size: 0.85rem;
+                            }
+                        }
+                    }
+                }
+
+                > .contents {
+                    &.expanded {
+                        padding: 1rem; // Smaller padding on mobile
+                    }
+
+                    column-gap: 0; // No gap needed for single column
+                    row-gap: 0.75rem;
+                    grid-template-columns: 1fr;
+                    justify-content: center;
+
+                    // Make cards fill available width on mobile
+                    .Card {
+                        width: 100%;
+                        max-width: none;
+                    }
+                }
+            }
+
+            .kids-go-server {
+                flex-direction: column;
+                text-align: center;
+                padding: 1.5rem 1rem;
+
+                img {
+                    margin-right: 0;
+                    margin-bottom: 1rem;
+                    width: 6rem;
+                    height: 6rem;
+                }
+            }
+        }
     }
 }
