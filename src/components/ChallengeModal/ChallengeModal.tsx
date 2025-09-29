@@ -1806,9 +1806,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
     upstate_object: any = null;
 
     nextState(): any {
-        if (this.upstate_object == null) {
-            this.upstate_object = dup(this.state);
-        }
+        this.upstate_object = dup(this.state);
         return this.upstate_object;
     }
     next(): any {
