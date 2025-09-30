@@ -115,6 +115,13 @@ export default defineConfig({
                   output: {
                       assetFileNames: "[name].[ext]",
                       entryFileNames: "[name].js",
+                      chunkFileNames: (chunkInfo) => {
+                          // All chunks (including dynamically imported ones) go to modules/
+                          // React.lazy() chunks may not be marked as isDynamicEntry consistently
+                          return "modules/[name]-[hash].js";
+                      },
+                      // No manual chunking - React.lazy() handles dynamic imports naturally
+                      manualChunks: undefined,
                   },
               },
           }
