@@ -27,10 +27,9 @@
     }
 }
 
-
 #LearningHub {
     width: 100%;
-    max-width: 120rem;  // Further increased for 3 cards with comfortable spacing
+    max-width: 120rem; // Further increased for 3 cards with comfortable spacing
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
@@ -54,11 +53,13 @@
         justify-content: center;
         font-size: 1.2rem;
         margin-top: 2rem;
+
         img {
             width: 8rem;
             height: 8rem;
             margin-right: 0.5rem;
         }
+
         a {
             display: block;
             font-size: 1.3rem;
@@ -87,7 +88,6 @@
         margin-right: auto;
 
         // Remove filter and view controls - no longer needed
-
         .section {
             margin-top: 2rem;
             display: flex;
@@ -172,6 +172,16 @@
                 }
             }
 
+            &:has(.contents.expanded) .section-header {
+                position: sticky;
+                top: 0;
+                z-index: 10;
+                //border-top-left-radius: 0.5rem;
+                //border-top-right-radius: 0.5rem;
+                border: 1px solid;
+                themed(border-color, shade4);
+            }
+
             // Collapsible content area with proper card styling
             > .contents {
                 padding: 1.5rem;
@@ -202,7 +212,6 @@
                     opacity: 0;
                     padding: 0 1.5rem;
                 }
-
             }
 
             // Special styling for "What's Next" section
@@ -236,7 +245,6 @@
             // Removed obsolete styles that were overriding the grid layout
             // The h2 is now inside .section-header, not a direct child of .section
             // The .contents now properly uses CSS Grid as defined above
-
             .under-construction {
                 background-image: repeating-linear-gradient(-45deg, darken(#FFCC00, 30%), darken(#FFCC00, 10%) 10px, #000 10px, #000 20px);
             }
@@ -331,7 +339,6 @@
                 margin-left: 0.5rem;
             }
         }
-
     }
 }
 
@@ -588,7 +595,6 @@
 
     #LearningHub-Index {
         #LearningHub-list {
-
             .section {
                 .section-header {
                     height: auto; // Allow flexible height on mobile
