@@ -82,7 +82,9 @@ import { AccessibilityMenu } from "@/components/AccessibilityMenu";
 import { AIDetection } from "@moderator-ui/AIDetection";
 
 const LearningHub = React.lazy(() =>
-    import("@/views/LearningHub").then((m) => ({ default: m.LearningHub })),
+    import(/* webpackChunkName: "learning-hub" */ "@/views/LearningHub").then((m) => ({
+        default: m.LearningHub,
+    })),
 );
 
 function LearningHubWithLoading() {
