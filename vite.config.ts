@@ -115,6 +115,12 @@ export default defineConfig({
                   output: {
                       assetFileNames: "[name].[ext]",
                       entryFileNames: "[name].js",
+                      manualChunks: (id: string) => {
+                          if (id.includes("/views/LearningHub/")) {
+                              return "learning-hub";
+                          }
+                          return;
+                      },
                   },
               },
           }

@@ -107,6 +107,8 @@ interface ExpandedSectionsState {
 const LAST_EXPANDED_SECTION_KEY = "learning-hub-expanded-section" as const;
 
 // Helper functions extracted for reusability
+
+// Calculates completion statistics for a section's lessons
 function calculateSectionProgress(lessons: any[]): SectionProgress {
     const progress = lessons.reduce(
         (acc, lesson) => {
@@ -127,6 +129,7 @@ function calculateSectionProgress(lessons: any[]): SectionProgress {
     return progress;
 }
 
+// Initializes section expansion state from saved preferences or defaults to first section
 function initializeExpandedSections(): ExpandedSectionsState {
     const expandedSections: ExpandedSectionsState = {};
     const lastExpandedSection = preferences.get(LAST_EXPANDED_SECTION_KEY);
@@ -141,6 +144,7 @@ function initializeExpandedSections(): ExpandedSectionsState {
     return expandedSections;
 }
 
+// Returns the appropriate ribbon content based on lesson completion status
 function getRibbonContent(sectionName: string): React.ReactNode {
     const sc = getSectionCompletion(sectionName);
 
@@ -174,20 +178,19 @@ function Index(): React.ReactElement {
 
     const toggleSection = React.useCallback((sectionName: string) => {
         setExpandedSections((prevState) => {
-            const newExpandedState = !prevState[sectionName];
-
-            // Create new state with only one section expanded at a time
-            const newState: ExpandedSectionsState = {};
-            sections.forEach(([name]) => {
-                newState[name] = false;
-            });
-
-            // Expand the clicked section if it was closed
-            if (newExpandedState) {
-                newState[sectionName] = true;
-                preferences.set(LAST_EXPANDED_SECTION_KEY, sectionName);
+            // Accordion behavior: always keep exactly one section expanded.
+            // If user clicks the currently expanded section, ignore the click.
+            if (prevState[sectionName]) {
+                return prevState;
             }
 
+            // Collapse all sections except the clicked one
+            const newState = Object.keys(prevState).reduce<ExpandedSectionsState>((acc, key) => {
+                acc[key] = key === sectionName;
+                return acc;
+            }, {});
+
+            preferences.set(LAST_EXPANDED_SECTION_KEY, sectionName);
             return newState;
         });
     }, []);
@@ -195,14 +198,14 @@ function Index(): React.ReactElement {
     return (
         <div id="LearningHub-Index">
             <div id="LearningHub-list">
-                {sections.map((arr) => {
-                    const isExpanded = expandedSections[arr[0]];
-                    const progress = calculateSectionProgress(arr[1]);
+                {sections.map(([sectionName, lessons]) => {
+                    const isExpanded = expandedSections[sectionName];
+                    const progress = calculateSectionProgress(lessons);
                     return (
-                        <div key={arr[0]} className="section">
+                        <div key={sectionName} className="section">
                             <div
                                 className="section-header clickable"
-                                onClick={() => toggleSection(arr[0])}
+                                onClick={() => toggleSection(sectionName)}
                             >
                                 <div className="section-left">
                                     <i
@@ -212,9 +215,9 @@ function Index(): React.ReactElement {
                                     />
                                     <h2>
                                         <span className="section-number">
-                                            {arr[1][0].sectionIndex + 1}
+                                            {lessons[0].sectionIndex + 1}
                                         </span>
-                                        {arr[0]}
+                                        {sectionName}
                                     </h2>
                                 </div>
                                 <div className="section-right">
@@ -232,51 +235,57 @@ function Index(): React.ReactElement {
                                 </div>
                             </div>
                             <div className={`contents ${isExpanded ? "expanded" : "collapsed"}`}>
-                                {arr[1].map((S) => {
-                                    const className = getSectionClassName(S.section());
-                                    const sectionNumber = `${S.sectionIndex + 1}.${
-                                        S.lessonIndex + 1
-                                    }`;
-                                    // Extract MiniGoban configuration
-                                    const p = new (S.pages()[0])();
-                                    const config = {
-                                        ...p.config(),
-                                        width: p.config().width || 9,
-                                        height: p.config().height || 9,
-                                    };
-                                    // Remove unnecessary properties
-                                    delete config["mode"];
-                                    delete config["move_tree"];
+                                {isExpanded &&
+                                    lessons.map((S) => {
+                                        const className = getSectionClassName(S.section());
+                                        const sectionNumber = `${S.sectionIndex + 1}.${
+                                            S.lessonIndex + 1
+                                        }`;
+                                        // Extract MiniGoban configuration
+                                        const DEFAULT_BOARD_SIZE = 9;
+                                        const firstPage = new (S.pages()[0])();
+                                        const pageConfig = firstPage.config();
+                                        const {
+                                            mode: _unused,
+                                            move_tree: _unused2,
+                                            ...baseConfig
+                                        } = pageConfig;
 
-                                    return (
-                                        <CardLink
-                                            key={S.section()}
-                                            className={className + " Ribboned"}
-                                            to={`/learn-to-play-go/${S.section()}`}
-                                        >
-                                            <MiniGoban
-                                                noLink
-                                                game_id={undefined}
-                                                json={config}
-                                                displayWidth={64}
-                                                white={undefined}
-                                                black={undefined}
-                                            />
-                                            <div>
-                                                <h1>
-                                                    <span className="lesson-number">
-                                                        {sectionNumber}
-                                                    </span>
-                                                    {S.title()}
-                                                </h1>
-                                                <h3>{S.subtext()}</h3>
-                                            </div>
-                                            {className !== "todo" ? (
-                                                <Ribbon>{getRibbonContent(S.section())}</Ribbon>
-                                            ) : null}
-                                        </CardLink>
-                                    );
-                                })}
+                                        const config = {
+                                            ...baseConfig,
+                                            width: pageConfig.width || DEFAULT_BOARD_SIZE,
+                                            height: pageConfig.height || DEFAULT_BOARD_SIZE,
+                                        };
+
+                                        return (
+                                            <CardLink
+                                                key={S.section()}
+                                                className={className + " Ribboned"}
+                                                to={`/learn-to-play-go/${S.section()}`}
+                                            >
+                                                <MiniGoban
+                                                    noLink
+                                                    game_id={undefined}
+                                                    json={config}
+                                                    displayWidth={64}
+                                                    white={undefined}
+                                                    black={undefined}
+                                                />
+                                                <div>
+                                                    <h1>
+                                                        <span className="lesson-number">
+                                                            {sectionNumber}
+                                                        </span>
+                                                        {S.title()}
+                                                    </h1>
+                                                    <h3>{S.subtext()}</h3>
+                                                </div>
+                                                {className !== "todo" ? (
+                                                    <Ribbon>{getRibbonContent(S.section())}</Ribbon>
+                                                ) : null}
+                                            </CardLink>
+                                        );
+                                    })}
                             </div>
                         </div>
                     );

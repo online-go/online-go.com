@@ -53,7 +53,6 @@ import { Supporter } from "@/views/Supporter";
 import { Tournament } from "@/views/Tournament";
 import { TournamentRecord } from "@/views/TournamentRecord";
 import { TournamentListMainView } from "@/views/TournamentList";
-import { LearningHub } from "@/views/LearningHub";
 import { User, UserByName } from "@/views/User";
 import { Settings } from "@/views/Settings";
 import { Styling } from "@/views/Styling";
@@ -74,12 +73,42 @@ import { AccountWarning } from "@/components/AccountWarning";
 import { NetworkStatus } from "@/components/NetworkStatus";
 import { PrizeBatchList, PrizeBatch, PrizeRedemption } from "@/views/Prizes";
 import { GoTV } from "@/views/GoTV";
+import { Loading } from "@/components/Loading";
 
 import * as docs from "@/views/docs";
 import { useData } from "./lib/hooks";
 import { MainSection } from "@/components/MainSection";
 import { AccessibilityMenu } from "@/components/AccessibilityMenu";
 import { AIDetection } from "@moderator-ui/AIDetection";
+
+const LearningHub = React.lazy(() =>
+    import("@/views/LearningHub").then((m) => ({ default: m.LearningHub })),
+);
+
+function LearningHubWithLoading() {
+    return (
+        <React.Suspense
+            fallback={
+                <div
+                    style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        position: "fixed",
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                    }}
+                >
+                    <Loading />
+                </div>
+            }
+        >
+            <LearningHub />
+        </React.Suspense>
+    );
+}
 
 /*** Layout our main view and routes ***/
 function AppLayout(props: { children: any }): React.ReactElement {
@@ -343,15 +372,24 @@ export const routes = (
                   <Route path="/admin/tournament-schedule-list" element={<AdminTournamentScheduleList />}/>
                 */}
                 <Route path="/moderator" element={<Moderator />} />
-                <Route path="/learning-hub/:section/:page" element={<LearningHub />} />
-                <Route path="/learning-hub/:section" element={<LearningHub />} />
-                <Route path="/learning-hub" element={<LearningHub />} />
-                <Route path="/learn-to-play-go/:section/:page" element={<LearningHub />} />
-                <Route path="/learn-to-play-go/:section" element={<LearningHub />} />
-                <Route path="/learn-to-play-go" element={<LearningHub />} />
-                <Route path="/docs/learn-to-play-go/:section/:page" element={<LearningHub />} />
-                <Route path="/docs/learn-to-play-go/:section" element={<LearningHub />} />
-                <Route path="/docs/learn-to-play-go" element={<LearningHub />} />
+                <Route path="/learning-hub/:section/:page" element={<LearningHubWithLoading />} />
+                <Route path="/learning-hub/:section" element={<LearningHubWithLoading />} />
+                <Route path="/learning-hub" element={<LearningHubWithLoading />} />
+                <Route
+                    path="/learn-to-play-go/:section/:page"
+                    element={<LearningHubWithLoading />}
+                />
+                <Route path="/learn-to-play-go/:section" element={<LearningHubWithLoading />} />
+                <Route path="/learn-to-play-go" element={<LearningHubWithLoading />} />
+                <Route
+                    path="/docs/learn-to-play-go/:section/:page"
+                    element={<LearningHubWithLoading />}
+                />
+                <Route
+                    path="/docs/learn-to-play-go/:section"
+                    element={<LearningHubWithLoading />}
+                />
+                <Route path="/docs/learn-to-play-go" element={<LearningHubWithLoading />} />
                 <Route path="/gotv" element={<GoTV />} />
                 {/* these aren't meant to be linked anywhere, just entered by hand
                     for developers looking to test and play with things */}
