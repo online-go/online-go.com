@@ -27,18 +27,24 @@ export function isAppleDevice(): boolean {
     return /iPhone|iPad|iPod|Mac/.test(navigator?.userAgent || "");
 }
 
-// Route selection logic:
+// Route selection logic (production only):
 // - Apple devices through CloudFlare have connectivity issues, route through Google Cloud
 // - The ISP "BT" in the UK has ipv6 websocket issues with CloudFlare, route through Google Cloud
 // - Otherwise use CloudFlare (default)
 function getDefaultWebsocketHost(): string {
-    if (isAppleDevice()) {
-        console.log("Apple device detected, routing through Google Cloud");
-        return "wss://wsp.online-go.com";
-    }
-    if (window.ip_location?.country === "GB") {
-        console.log("UK connection detected, routing through Google Cloud");
-        return "wss://wsp.online-go.com";
+    const isProduction =
+        window.location.hostname === "online-go.com" ||
+        window.location.hostname === "www.online-go.com";
+
+    if (isProduction) {
+        if (isAppleDevice()) {
+            console.log("Apple device detected, routing through Google Cloud");
+            return "wss://wsp.online-go.com";
+        }
+        if (window.ip_location?.country === "GB") {
+            console.log("UK connection detected, routing through Google Cloud");
+            return "wss://wsp.online-go.com";
+        }
     }
     return window.location.origin;
 }
