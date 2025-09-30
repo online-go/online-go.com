@@ -1,9 +1,19 @@
+# Using AI to Contribute
+
+We welcome contributions made with AI assistance! If you're using AI tools like Claude Code, Cursor, GitHub Copilot, Codex, or any other AI tool to help with your contributions, please keep these guidelines in mind:
+
+-   **Follow project standards**: All code must adhere to the guidelines in [AGENTS.md](AGENTS.md), including our development commands, architecture patterns, and code quality standards. When in doubt, it should look and feel like the other code in the project.
+-   **Review and understand**: You are responsible for fully reviewing, understanding, and testing all AI-generated code before submitting. Don't submit code you haven't personally verified or don't understand.
+-   **Test thoroughly**: Ensure the changes you've made are working as expected. Ensure they work on both mobile and desktop browsers. When applicable, ensure they work as expected when you're logged in or anonymous.
+-   **Code quality**: Ensure the code builds successfully and passes all linting and formatting checks (`npm run build`, `npm run lint`, `npm run prettier`).
+
+AI is a powerful tool for productivity, but the quality and correctness of your contribution is ultimately your responsibility.
+
 # Development Environment Quick Start
 
 If you're familiar with GitHub and want to dive into the code, all you'll need
 is to have [Node.js](https://nodejs.org/) installed then clone the repository
 or your fork with the `--recurse-submodules` flag:
-
 
 ```
 git clone --recurse-submodules git@github.com:online-go/online-go.com.git
