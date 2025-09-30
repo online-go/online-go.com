@@ -474,6 +474,11 @@ export function GoResources(): React.ReactElement {
                                 </a>
                             </span>,
                             <BasicResource
+                                countries={["us"]}
+                                title="JoblessBaduk"
+                                href="https://www.youtube.com/@JoblessBaduk"
+                            />,
+                            <BasicResource
                                 countries={["ma"]}
                                 title="MrGo 66"
                                 href="https://www.youtube.com/@mrgo66"
