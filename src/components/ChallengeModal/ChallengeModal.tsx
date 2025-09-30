@@ -430,6 +430,13 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         challenge.game.rengo = next.challenge.game.rengo;
         challenge.game.rengo_casual_mode = next.challenge.game.rengo_casual_mode;
 
+        if (challenge.game.ranked) {
+            challenge.game.komi_auto = "automatic";
+        }
+        if (challenge.game.komi_auto === "automatic") {
+            challenge.game.komi = undefined;
+        }
+
         return challenge;
     }
 
@@ -446,13 +453,6 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         if (this.gameStateOf(next).komi_auto === "custom" && this.gameStateOf(next).komi === null) {
             void alert.fire(_("Invalid custom komi, please correct and try again"));
             return;
-        }
-
-        if (this.gameStateOf(next).ranked) {
-            this.gameStateOf(next).komi_auto = "automatic";
-        }
-        if (this.gameStateOf(next).komi_auto === "automatic") {
-            this.gameStateOf(next).komi = null;
         }
 
         let player_id: number | undefined = 0;
@@ -1806,9 +1806,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
     upstate_object: any = null;
 
     nextState(): any {
-        if (this.upstate_object == null) {
-            this.upstate_object = dup(this.state);
-        }
+        this.upstate_object = dup(this.state);
         return this.upstate_object;
     }
     next(): any {

@@ -278,7 +278,7 @@ describe("ChallengeModalBody", () => {
                 width: 19,
                 height: 19,
                 handicap: 0,
-                komi: null,
+                komi: undefined,
                 komi_auto: "automatic",
                 disable_analysis: false,
                 initial_state: null,
