@@ -434,7 +434,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
             challenge.game.komi_auto = "automatic";
         }
         if (challenge.game.komi_auto === "automatic") {
-            challenge.game.komi = null;
+            challenge.game.komi = undefined;
         }
 
         return challenge;
