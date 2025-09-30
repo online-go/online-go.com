@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { useState, useContext, useCallback, useEffect, useMemo } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import * as data from "@/lib/data";
 import * as preferences from "@/lib/preferences";
 import { UIPush } from "@/components/UIPush";
@@ -37,7 +37,6 @@ import {
 } from "goban";
 import { alert } from "@/lib/swal_config";
 import { useGobanControllerOrNull } from "@/views/Game/goban_context";
-import { ReportContext } from "@/contexts/ReportContext";
 import { MODERATOR_POWERS } from "@/lib/moderation";
 
 // Sub components and utilities
@@ -82,7 +81,6 @@ interface AIReviewProperties {
  * of AI-suggested variations.
  */
 export function AIReview({ move, game_id, hidden, onAIReviewSelected }: AIReviewProperties) {
-    const reportContext = useContext(ReportContext);
     const gobanController = useGobanControllerOrNull();
 
     // State management
@@ -128,8 +126,8 @@ export function AIReview({ move, game_id, hidden, onAIReviewSelected }: AIReview
     // Get user and permissions
     const user = data.get("user");
     const canViewTable = useMemo(
-        () => user.is_moderator || powerToSeeTable(reportContext?.moderator_powers),
-        [user.is_moderator, reportContext?.moderator_powers],
+        () => user.is_moderator || powerToSeeTable(user.moderator_powers),
+        [user.is_moderator, user.moderator_powers],
     );
 
     const showFullReviewButton = useMemo(
