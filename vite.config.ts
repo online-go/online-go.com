@@ -141,6 +141,7 @@ export default defineConfig({
                       format: "commonjs",
                       assetFileNames: "[name].strings.[ext]",
                       entryFileNames: "[name].strings.js",
+                      chunkFileNames: "[name].strings.js",
                       manualChunks: (id: string) => {
                           if (id.includes("node_modules")) {
                               return "vendor";
@@ -151,7 +152,9 @@ export default defineConfig({
                           if (id.includes("react-dynamic-help")) {
                               return "rdh";
                           }
-                          return;
+                          // Bundle everything else (including LearningHub and other lazy-loaded modules)
+                          // into the main ogs.strings.js file so the extraction scripts can process it
+                          return "ogs";
                       },
                   },
               },
