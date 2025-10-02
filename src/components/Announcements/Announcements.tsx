@@ -255,9 +255,8 @@ export const Announcements: React.FC = React.memo(() => {
                     return null;
                 }
 
-                const displayableEntries = getDisplayableEntries(announcement.entries);
+                const displayableEntries = getDisplayableEntries(announcement);
 
-                // If no displayable entries, don't show the announcement
                 if (displayableEntries.length === 0) {
                     return null;
                 }

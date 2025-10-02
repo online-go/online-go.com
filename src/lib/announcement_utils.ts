@@ -146,33 +146,33 @@ export function isTwitchUrl(url: string | undefined): boolean {
 /**
  * Checks if an announcement entry should be displayed
  * @param entry - The announcement entry to check
+ * @param announcement - The parent announcement (used to determine if Twitch links are allowed)
  * @returns True if the entry should be displayed
  */
-export function isDisplayableEntry(entry: AnnouncementEntry): boolean {
+export function isDisplayableEntry(entry: AnnouncementEntry, announcement: Announcement): boolean {
     const text = getLocalizedText(entry);
-    // Skip entries with no text
     if (!text) {
         return false;
     }
-    // Skip twitch.tv links
-    if (isTwitchUrl(entry.link)) {
+
+    // Event announcements can show Twitch links, all other types cannot
+    if (isTwitchUrl(entry.link) && announcement.type !== "event") {
         return false;
     }
+
     return true;
 }
 
 /**
  * Filters announcement entries to only include displayable ones
- * @param entries - The entries to filter
+ * @param announcement - The announcement to filter entries for
  * @returns Array of displayable entries
  */
-export function getDisplayableEntries(
-    entries: AnnouncementEntry[] | undefined,
-): AnnouncementEntry[] {
-    if (!entries || entries.length === 0) {
+export function getDisplayableEntries(announcement: Announcement): AnnouncementEntry[] {
+    if (!announcement.entries || announcement.entries.length === 0) {
         return [];
     }
-    return entries.filter(isDisplayableEntry);
+    return announcement.entries.filter((entry) => isDisplayableEntry(entry, announcement));
 }
 
 /**
@@ -181,13 +181,8 @@ export function getDisplayableEntries(
  * @returns True if the announcement contains only Twitch links and should be hidden
  */
 export function isAnnouncementAllTwitch(announcement: Announcement): boolean {
-    if (announcement.entries && announcement.entries.length > 0) {
-        const displayableEntries = getDisplayableEntries(announcement.entries);
-        // If all entries are filtered out (no displayable entries), it's all Twitch
-        return displayableEntries.length === 0;
-    }
-
-    return false;
+    const displayableEntries = getDisplayableEntries(announcement);
+    return announcement.entries.length > 0 && displayableEntries.length === 0;
 }
 
 /**
