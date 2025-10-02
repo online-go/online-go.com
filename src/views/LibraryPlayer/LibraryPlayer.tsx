@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import * as data from "@/lib/data";
-import { _, interpolate, llm_pgettext } from "@/lib/translate";
+import { _, interpolate, llm_pgettext, moment } from "@/lib/translate";
 import { Link } from "react-router-dom";
 import { RouteComponentProps, rr6ClassShim } from "@/lib/ogs-rr6-shims";
 import { browserHistory } from "@/lib/ogsHistory";
@@ -27,7 +27,6 @@ import { Player } from "@/components/Player";
 import { Card } from "@/components/material";
 import Dropzone from "react-dropzone";
 import { DropzoneRef } from "react-dropzone";
-import moment from "moment";
 import { IdType } from "@/lib/types";
 import { openSGFPasteModal } from "@/components/SGFPasteModal";
 import * as preferences from "@/lib/preferences";

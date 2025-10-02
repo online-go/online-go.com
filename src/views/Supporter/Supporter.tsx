@@ -19,11 +19,10 @@
 
 import * as React from "react";
 import * as data from "@/lib/data";
-import moment from "moment";
 import { FreeTrialBanner } from "@/components/FreeTrialBanner";
 import { useParams, useSearchParams } from "react-router-dom";
 import { get, post, put } from "@/lib/requests";
-import { _, pgettext, interpolate, sorted_locale_countries } from "@/lib/translate";
+import { _, pgettext, interpolate, sorted_locale_countries, moment } from "@/lib/translate";
 import { alert } from "@/lib/swal_config";
 import { ignore, errorAlerter } from "@/lib/misc";
 import { currencies } from "./currencies";

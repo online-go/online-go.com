@@ -19,14 +19,13 @@
 
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { _, pgettext, interpolate } from "@/lib/translate";
+import { _, pgettext, interpolate, moment } from "@/lib/translate";
 import { get } from "@/lib/requests";
 import * as preferences from "@/lib/preferences";
 import { errorAlerter } from "@/lib/misc";
 import { shortShortTimeControl } from "@/components/TimeControl";
 import { computeAverageMoveTime } from "goban";
 import { PaginatedTable, Filter } from "@/components/PaginatedTable";
-import moment from "moment";
 import { TOURNAMENT_TYPE_NAMES, shortRankRestrictionText } from "@/views/Tournament";
 import tooltip from "@/lib/tooltip";
 import { Toggle } from "@/components/Toggle";

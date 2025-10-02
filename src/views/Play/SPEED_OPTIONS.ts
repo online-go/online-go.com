@@ -15,8 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import moment from "moment";
-import { pgettext } from "@/lib/translate";
+import { pgettext, moment } from "@/lib/translate";
 
 export interface GameSpeedOptions {
     [size: string]: {

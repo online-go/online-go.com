@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { moment } from "@/lib/translate";
 import * as React from "react";
 import { Card, FabX, FabCheck, FabAdd } from "@/components/material";
 import { Link } from "react-router-dom";
@@ -29,7 +30,6 @@ import { GroupAutocomplete } from "@/components/GroupAutocomplete";
 import { Markdown } from "@/components/Markdown";
 import { Steps } from "@/components/Steps";
 import { errcodeAlerter } from "@/components/ErrcodeModal";
-import moment from "moment";
 import { alert } from "@/lib/swal_config";
 import { PlayerCacheEntry } from "@/lib/player_cache";
 

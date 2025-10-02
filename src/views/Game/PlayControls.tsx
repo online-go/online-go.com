@@ -16,7 +16,7 @@
  */
 import * as React from "react";
 import { useSearchParams } from "react-router-dom";
-import { _, interpolate, pgettext } from "@/lib/translate";
+import { _, interpolate, pgettext, moment } from "@/lib/translate";
 import * as DynamicHelp from "react-dynamic-help";
 import * as data from "@/lib/data";
 import * as preferences from "@/lib/preferences";
@@ -69,7 +69,6 @@ import { ConditionalMoveTreeDisplay } from "./ConditionalMoveTreeDisplay";
 import { useUser } from "@/lib/hooks";
 import { AntiGrief } from "./AntiGrief";
 
-import moment from "moment";
 import { EstimateScore } from "./fragments";
 
 const MAX_SEALING_LOCATIONS_TO_LIST = 5;

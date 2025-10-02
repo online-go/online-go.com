@@ -22,10 +22,9 @@
 /* (Which is why it's structure is the same) */
 
 import * as d3 from "d3";
-import moment from "moment";
 import * as React from "react";
 import { OgsResizeDetector } from "@/components/OgsResizeDetector";
-import { _, pgettext, interpolate } from "@/lib/translate";
+import { _, pgettext, interpolate, moment } from "@/lib/translate";
 import { PersistentElement } from "@/components/PersistentElement";
 import { RatingEntry, makeRatingEntry } from "./RatingEntry";
 import { errorLogger } from "@/lib/misc";

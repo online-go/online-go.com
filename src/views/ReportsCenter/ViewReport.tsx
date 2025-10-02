@@ -16,7 +16,6 @@
  */
 
 import * as React from "react";
-import moment from "moment";
 import Select from "react-select";
 
 import { useUser } from "@/lib/hooks";
@@ -24,7 +23,7 @@ import { report_categories, ReportType } from "@/components/Report";
 import { report_manager } from "@/lib/report_manager";
 import { ReportNotification } from "@/lib/report_util";
 import { AutoTranslate } from "@/components/AutoTranslate";
-import { interpolate, _, pgettext, llm_pgettext } from "@/lib/translate";
+import { interpolate, _, pgettext, llm_pgettext, moment } from "@/lib/translate";
 import { Player } from "@/components/Player";
 import { Link } from "react-router-dom";
 import { post, get } from "@/lib/requests";

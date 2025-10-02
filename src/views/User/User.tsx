@@ -17,11 +17,10 @@
 
 import * as React from "react";
 import { useLocation, useParams } from "react-router-dom";
-import { _, pgettext } from "@/lib/translate";
+import { _, pgettext, moment } from "@/lib/translate";
 import { get, put } from "@/lib/requests";
 import { parse } from "query-string";
 import * as data from "@/lib/data";
-import moment from "moment";
 
 import * as preferences from "@/lib/preferences";
 import * as player_cache from "@/lib/player_cache";

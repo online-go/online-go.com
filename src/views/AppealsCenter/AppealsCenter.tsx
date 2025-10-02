@@ -17,8 +17,7 @@
 
 import * as React from "react";
 import { Player } from "@/components/Player";
-import { _ } from "@/lib/translate";
-import moment from "moment";
+import { _, moment } from "@/lib/translate";
 import { PaginatedTable } from "@/components/PaginatedTable";
 import * as data from "@/lib/data";
 //import { alert } from "@/lib/swal_config";

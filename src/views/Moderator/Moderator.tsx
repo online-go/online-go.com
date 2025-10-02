@@ -18,10 +18,9 @@
 /* spell-checker: disable */
 
 import * as React from "react";
-import moment from "moment";
 import * as data from "@/lib/data";
 import { Link } from "react-router-dom";
-import { _ } from "@/lib/translate";
+import { _, moment } from "@/lib/translate";
 import { PaginatedTable } from "@/components/PaginatedTable";
 import { Card } from "@/components/material";
 import { SearchInput } from "@/components/misc-ui";

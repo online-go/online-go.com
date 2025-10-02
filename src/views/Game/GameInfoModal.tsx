@@ -16,9 +16,8 @@
  */
 
 import * as React from "react";
-import moment from "moment";
 import * as data from "@/lib/data";
-import { _ } from "@/lib/translate";
+import { _, moment } from "@/lib/translate";
 import { post, patch, del } from "@/lib/requests";
 import { openModal, Modal, ModalConstructorInput } from "@/components/Modal";
 import { timeControlDescription } from "@/components/TimeControl";

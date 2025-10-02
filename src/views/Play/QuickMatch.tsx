@@ -18,7 +18,6 @@
 import * as React from "react";
 import * as data from "@/lib/data";
 import * as preferences from "@/lib/preferences";
-import moment from "moment";
 
 import {
     AutomatchPreferences,
@@ -28,7 +27,7 @@ import {
     Size,
     Speed,
 } from "goban";
-import { _, llm_pgettext, pgettext } from "@/lib/translate";
+import { _, llm_pgettext, pgettext, moment } from "@/lib/translate";
 import { automatch_manager } from "@/lib/automatch_manager";
 import { Bot, bot_event_emitter, bots_list, getAcceptableTimeSetting } from "@/lib/bots";
 import { alert } from "@/lib/swal_config";

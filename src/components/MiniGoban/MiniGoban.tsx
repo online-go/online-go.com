@@ -17,8 +17,7 @@
 
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { npgettext, interpolate } from "@/lib/translate";
-import moment from "moment";
+import { npgettext, interpolate, moment } from "@/lib/translate";
 import * as preferences from "@/lib/preferences";
 import { GobanRenderer, JGOFMove } from "goban";
 import { GobanController } from "@/lib/GobanController";
