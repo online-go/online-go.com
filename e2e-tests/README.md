@@ -148,10 +148,10 @@ Things of note:
     -   `newTestUsername` provides a means of creating a unique new username.
     -   It takes as an argument a user-identifier, which is intended to help understand what test
         and what role this user plays in it.
-    -   \*\* _This can be at most 12 characters_
+    -   \*\* _This can be at most 21 characters_
         unfortunately a run-time failure because typing can't specify this
         -   The reason is because it uses time to generate the uniquifier, and we only have a total
-            of 20 characters to play with in an OGS username! 8 characters gives us unique names at about 1 minute intervals.
+            of 30 characters to play with in an OGS username! 9 characters gives us unique names at about 1.3 second intervals.
 
 ## Seeded Data
 

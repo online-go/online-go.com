@@ -47,9 +47,9 @@ if (!process.env.TEST_WORKER_INDEX && !process.env.PW_UI) {
         console.log("Running in local mode: FULL TEST SUITE (except smoketests)");
     }
 
-    // This chicanery is all due to OGS having a 20 char limit on usernames :p
+    // This chicanery is all due to OGS having a 30 char limit on usernames
     // That limits the resolution of unique test users based on time, so we need to
-    // make sure we don't run more tests closer together than 60 seconds.
+    // make sure we don't run more tests closer together than ~2 seconds.
 
     checkLastRunTime()
         .then(() => {
@@ -64,7 +64,8 @@ export default defineConfig({
     globalTeardown: "./e2e-tests/global-teardown.ts",
     testDir: "./e2e-tests",
     testMatch: process.env.CI ? ["smoketests.spec.ts"] : ["**/*.spec.ts", "!**/smoketests/**"],
-    timeout: 120 * 1000, // overall test timeout - we have some long multi-user tests
+    // If you change this you need to change report-utils to match
+    timeout: 150 * 1000, // overall test timeout - we have some long multi-user tests
     expect: {
         timeout: process.env.CI ? 30000 : 10000,
     },
