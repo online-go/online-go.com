@@ -199,8 +199,10 @@ export const cmVoteSuspendUserTest = async (
         });
         await expect(reasonHeading).toBeVisible();
 
-        // Check that the heading contains human-readable "Stopped Playing"
-        await expect(reasonHeading).toContainText("Stopped Playing");
+        // Check that the heading contains the full sentence with human-readable report type
+        await expect(reasonHeading).toContainText(
+            "Community moderation vote for suspension based on Stopped Playing reports",
+        );
 
         // Verify the ugly code-style version "escaping" is NOT shown
         const reasonText = await reasonHeading.textContent();
