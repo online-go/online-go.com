@@ -39,4 +39,5 @@ module.exports = {
     setupFiles: ["./setup-jest.cjs"],
     setupFilesAfterEnv: ["jest-chain", "@testing-library/jest-dom"],
     globalTeardown: "<rootDir>/teardown-jest.cjs",
+    silent: true,
 };

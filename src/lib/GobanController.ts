@@ -906,6 +906,10 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         this.goban.score_estimator = null;
         this.goban.engine.jumpTo(ret);
         this.restoreSubmitMove();
+        this.goban.updateTitleAndStonePlacement();
+        if (this.goban.submit_move) {
+            this.goban.enableStonePlacement();
+        }
         return ret;
     };
 

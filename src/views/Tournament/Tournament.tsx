@@ -2384,6 +2384,8 @@ function translateResult(result: string): string {
             return pgettext("Tournament result", "loss");
         case "tie":
             return pgettext("Tournament result", "tie");
+        case "no-result":
+            return pgettext("Tournament result", "no-result");
         default:
             return result;
     }
