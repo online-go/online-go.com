@@ -30,14 +30,39 @@ with open("build/ogs.strings.js", "r") as input_file:
         contents,
     )
 
-    # The vite build system may rename functions if there are naming conflicts.
-    # Detect and fix any renamed translation functions (e.g., pgettext$1 -> pgettext)
-    for func_name in translation_functions:
-        pattern = rf"\b{re.escape(func_name)}\$\d+\b"
-        count = len(re.findall(pattern, new_contents))
-        if count > 0:
-            new_contents = re.sub(pattern, func_name, new_contents)
-            print(f"Fixed {count} occurrences of {func_name}$N -> {func_name}")
+    # The vite build system renames functions that have conflicting names amongst packages.
+    # If conflicts exist for our translation functions we'll silently fail to extract
+    # the strings, so we throw an error here so we are aware of it and can fix it.
+    if re.search(r"_[$][0-9]+", new_contents):
+        m = re.search(r"_[$][0-9]+", new_contents)
+        if m:
+            raise Exception(
+                "Found possible translation function name conflict: %s" % m.group(0)
+            )
+    if re.search(r"interpolate[$][0-9]+", new_contents):
+        raise Exception(
+            "Found possible translation function name conflict: interpolate[$][0-9]+"
+        )
+    if re.search(r"gettext[$][0-9]+", new_contents):
+        raise Exception(
+            "Found possible translation function name conflict: gettext[$][0-9]+"
+        )
+    if re.search(r"ngettext[$][0-9]+", new_contents):
+        raise Exception(
+            "Found possible translation function name conflict: ngettext[$][0-9]+"
+        )
+    if re.search(r"pgettext[$][0-9]+", new_contents):
+        raise Exception(
+            "Found possible translation function name conflict: pgettext[$][0-9]+"
+        )
+    if re.search(r"npgettext[$][0-9]+", new_contents):
+        raise Exception(
+            "Found possible translation function name conflict: npgettext[$][0-9]+"
+        )
+    if re.search(r"llm_pgettext[$][0-9]+", new_contents):
+        raise Exception(
+            "Found possible translation function name conflict: llm_pgettext[$][0-9]+"
+        )
 
 
 print(
