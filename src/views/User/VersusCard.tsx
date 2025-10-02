@@ -16,8 +16,7 @@
  */
 
 import { Card } from "@/components/material";
-import { interpolate } from "@/lib/translate";
-import moment from "moment";
+import { interpolate, moment } from "@/lib/translate";
 import * as React from "react";
 
 type VersusCardProps = rest_api.FullPlayerDetail["vs"] & { username: string };

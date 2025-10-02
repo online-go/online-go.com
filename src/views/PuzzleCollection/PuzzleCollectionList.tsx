@@ -16,8 +16,7 @@
  */
 
 import * as React from "react";
-import moment from "moment";
-import { _ } from "@/lib/translate";
+import { _, moment } from "@/lib/translate";
 import { post } from "@/lib/requests";
 import { errorAlerter, navigateTo, unitify } from "@/lib/misc";
 import { PaginatedTable } from "@/components/PaginatedTable";

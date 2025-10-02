@@ -16,9 +16,8 @@
  */
 
 import * as React from "react";
-import moment from "moment";
 
-import { _, pgettext } from "@/lib/translate";
+import { _, pgettext, moment } from "@/lib/translate";
 
 import { errorAlerter } from "@/lib/misc";
 

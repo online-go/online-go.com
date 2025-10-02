@@ -22,12 +22,11 @@
 
 import * as React from "react";
 
-import moment from "moment";
 import { post } from "@/lib/requests";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 
-import { _ } from "@/lib/translate";
+import { _, moment } from "@/lib/translate";
 
 import { Player } from "@/components/Player";
 

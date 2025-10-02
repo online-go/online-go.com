@@ -18,6 +18,9 @@
 /* cspell:disable */
 
 import { Goban } from "goban";
+import moment from "moment/min/moment-with-locales";
+
+export { moment };
 
 const w = window as { [key: string]: any }; // Add index signature
 export let current_language: string = (w["ogs_current_language"] as string) || "en";
@@ -510,6 +513,7 @@ export function getCountryFlagClass(country_code: string) {
 
 export function setCurrentLanguage(language_code: string) {
     current_language = language_code;
+    moment.locale(language_code);
 
     Goban.setTranslations({
         "Your move": _("Your move"),

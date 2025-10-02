@@ -17,12 +17,11 @@
 
 import * as React from "react";
 import * as data from "@/lib/data";
-import moment from "moment";
 import Linkify from "react-linkify";
 import Split from "react-split";
 import { Card } from "@/components/material";
 import { socket } from "@/lib/sockets";
-import { _, pgettext, interpolate } from "@/lib/translate";
+import { _, pgettext, interpolate, moment } from "@/lib/translate";
 import { localize_time_strings } from "@/lib/localize-time";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { Timeout, errorLogger } from "@/lib/misc";

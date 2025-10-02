@@ -16,14 +16,13 @@
  */
 
 import * as React from "react";
-import { _, pgettext } from "@/lib/translate";
+import { _, pgettext, moment } from "@/lib/translate";
 import { PlayerAutocomplete } from "@/components/PlayerAutocomplete";
 import { Card } from "@/components/material";
 import { PaginatedTable } from "@/components/PaginatedTable";
 import { effective_outcome } from "@/lib/rank_utils";
 import { capitalize, getGameResultText } from "@/lib/misc";
 import { openUrlIfALinkWasNotClicked, maskedRank } from "./common";
-import moment from "moment";
 import { rankString } from "@/lib/rank_utils";
 import { Player } from "@/components/Player";
 import { Link } from "react-router-dom";

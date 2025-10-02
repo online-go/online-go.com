@@ -27,7 +27,7 @@ import { Clock } from "@/components/Clock";
 import { useUser } from "@/lib/hooks";
 import { Player } from "@/components/Player";
 import { lookup, fetch } from "@/lib/player_cache";
-import { _, interpolate, ngettext } from "@/lib/translate";
+import { _, interpolate, ngettext, moment } from "@/lib/translate";
 import * as data from "@/lib/data";
 import { generateGobanHook, usePlayerToMove, useZenMode } from "./GameHooks";
 import { get_network_latency, get_clock_drift } from "@/lib/sockets";
@@ -36,7 +36,6 @@ import { usePreference } from "@/lib/preferences";
 import { browserHistory } from "@/lib/ogsHistory";
 import { player_is_ignored } from "@/components/BlockPlayer";
 import { doAnnul } from "@/lib/moderation";
-import moment from "moment";
 
 type PlayerType = rest_api.games.Player;
 

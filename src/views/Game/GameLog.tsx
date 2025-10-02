@@ -15,9 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 import * as React from "react";
-import moment from "moment";
 
-import { _, llm_pgettext, pgettext } from "@/lib/translate";
+import { _, llm_pgettext, pgettext, moment } from "@/lib/translate";
 import * as DynamicHelp from "react-dynamic-help";
 
 import { GobanEngineConfig } from "goban";

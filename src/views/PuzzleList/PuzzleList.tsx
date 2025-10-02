@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { _ } from "@/lib/translate";
+import { _, moment } from "@/lib/translate";
 import { PaginatedTable } from "@/components/PaginatedTable";
 import { Player } from "@/components/Player";
 import { MiniGoban } from "@/components/MiniGoban";
@@ -26,7 +26,6 @@ import { StarRating } from "@/components/StarRating";
 import { longRankString, rankString } from "@/lib/rank_utils";
 import { navigateTo, unitify } from "@/lib/misc";
 import * as data from "@/lib/data";
-import moment from "moment";
 
 interface PuzzleListState {
     name_contains_filter: string; // string to be used for filtering search results by name

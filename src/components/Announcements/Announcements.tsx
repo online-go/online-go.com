@@ -15,13 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { moment } from "@/lib/translate";
 import * as React from "react";
 import { useLocation } from "react-router-dom";
 import { get } from "@/lib/requests";
 import { UIPush } from "@/components/UIPush";
 import { TypedEventEmitter } from "@/lib/TypedEventEmitter";
 import { errorLogger } from "@/lib/misc";
-import moment from "moment";
 import ITC from "@/lib/ITC";
 import * as data from "@/lib/data";
 import { getBlocks } from "../BlockPlayer";

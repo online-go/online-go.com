@@ -18,10 +18,9 @@
 import * as data from "@/lib/data";
 import * as preferences from "@/lib/preferences";
 import * as React from "react";
-import moment from "moment";
 import { LineText } from "@/components/misc-ui";
 import { Link } from "react-router-dom";
-import { _, pgettext, interpolate, current_language } from "@/lib/translate";
+import { _, pgettext, interpolate, current_language, moment } from "@/lib/translate";
 import { Player } from "@/components/Player";
 import { profanity_filter } from "@/lib/profanity_filter";
 import { GobanRenderer, Goban, protocol } from "goban";

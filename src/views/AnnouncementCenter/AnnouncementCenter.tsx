@@ -17,14 +17,13 @@
 
 import * as React from "react";
 import * as data from "@/lib/data";
-import { _, interpolate, llm_pgettext, pgettext } from "@/lib/translate";
+import { _, interpolate, llm_pgettext, pgettext, moment } from "@/lib/translate";
 import { post, get, del, put } from "@/lib/requests";
 import { PaginatedTable } from "@/components/PaginatedTable";
 import { Card } from "@/components/material";
 import { UIPush } from "@/components/UIPush";
 import { errorAlerter } from "@/lib/misc";
 import { Player } from "@/components/Player";
-import moment from "moment";
 import { useUser } from "@/lib/hooks";
 import { alert } from "@/lib/swal_config";
 import { languages, current_language } from "@/lib/translate";

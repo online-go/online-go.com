@@ -16,10 +16,9 @@
  */
 
 import * as React from "react";
-import moment from "moment";
 import Select, { components } from "react-select";
 import { JGOFAIReview } from "goban";
-import { _, pgettext, interpolate } from "@/lib/translate";
+import { _, pgettext, interpolate, moment } from "@/lib/translate";
 import { ReviewStrengthIcon } from "./ReviewStrengthIcon";
 import { engineName, extractShortNetworkVersion } from "./utils";
 

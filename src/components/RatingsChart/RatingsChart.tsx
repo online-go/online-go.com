@@ -19,10 +19,9 @@
  * is a d3.js v4 port of https://github.com/arnauddri/d3-stock */
 
 import * as d3 from "d3";
-import moment from "moment";
 import * as React from "react";
 import { OgsResizeDetector } from "@/components/OgsResizeDetector";
-import { _, pgettext, interpolate } from "@/lib/translate";
+import { _, pgettext, interpolate, moment } from "@/lib/translate";
 import { PersistentElement } from "@/components/PersistentElement";
 import { RatingEntry, makeRatingEntry } from "./RatingEntry";
 import { errorLogger } from "@/lib/misc";

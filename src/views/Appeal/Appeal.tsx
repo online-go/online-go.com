@@ -17,10 +17,9 @@
 
 import * as React from "react";
 import * as data from "@/lib/data";
-import moment from "moment";
 import { Card } from "@/components/material";
 import { post, get, patch } from "@/lib/requests";
-import { _, pgettext, interpolate } from "@/lib/translate";
+import { _, pgettext, interpolate, moment } from "@/lib/translate";
 import { errorAlerter } from "@/lib/misc";
 import { useParams } from "react-router-dom";
 import { Player } from "@/components/Player";

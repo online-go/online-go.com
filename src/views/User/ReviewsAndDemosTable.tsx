@@ -18,11 +18,10 @@
 import * as React from "react";
 import { PlayerAutocomplete } from "@/components/PlayerAutocomplete";
 import { PaginatedTable } from "@/components/PaginatedTable";
-import { _ } from "@/lib/translate";
+import { _, moment } from "@/lib/translate";
 import { Card } from "@/components/material";
 import { Link } from "react-router-dom";
 import { openUrlIfALinkWasNotClicked } from "./common";
-import moment from "moment";
 import { Player } from "@/components/Player";
 
 interface ReviewsAndDemosProps {

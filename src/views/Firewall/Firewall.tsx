@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { moment } from "@/lib/translate";
 import * as React from "react";
-import moment from "moment";
 import * as data from "@/lib/data";
 import { post, put, del } from "@/lib/requests";
 import { deepCompare, errorAlerter } from "@/lib/misc";

@@ -16,10 +16,9 @@
  */
 
 import * as React from "react";
-import moment from "moment";
 import { useRefresh } from "@/lib/hooks";
 import { shortTimeControl } from "@/components/TimeControl";
-import { _, pgettext } from "@/lib/translate";
+import { _, pgettext, moment } from "@/lib/translate";
 import { Link } from "react-router-dom";
 import { MiniGoban } from "@/components/MiniGoban";
 import { alert } from "@/lib/swal_config";

@@ -186,7 +186,6 @@ import { _, setCurrentLanguage } from "@/lib/translate";
 import * as player_cache from "@/lib/player_cache";
 import { toast } from "@/lib/toast";
 import cached from "@/lib/cached";
-import moment from "moment";
 import { get_device_id } from "@/views/SignIn";
 
 import { ConfigSchema } from "@/lib/data_schema";
@@ -200,7 +199,6 @@ import "@/ogs.styl";
 declare function getPreferredLanguage(): string;
 
 // Initialize moment in our current language
-moment.locale(getPreferredLanguage());
 setCurrentLanguage(getPreferredLanguage());
 
 /*** Load our config ***/

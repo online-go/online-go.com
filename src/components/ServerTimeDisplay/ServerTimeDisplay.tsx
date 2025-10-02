@@ -16,8 +16,7 @@
  */
 
 import * as React from "react";
-import moment from "moment";
-import { _, interpolate } from "@/lib/translate";
+import { _, interpolate, moment } from "@/lib/translate";
 
 interface ServerTimeState {
     time: moment.Moment;
