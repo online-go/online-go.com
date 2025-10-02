@@ -24,6 +24,7 @@ import { cmVoteWarnNotAITest } from "./cm-vote-warn-not-ai";
 import { cmAckWarningTest } from "./cm-ack-warning";
 import { cmAckAcknowledgementTest } from "./cm-ack-ack";
 import { cmAiAssessDismissTest } from "./cm-ai-assess-dismiss";
+import { cmVoteSuspendUserTest } from "./cm-vote-suspend-user";
 
 ogsTest.describe("@CM Community Moderation Tests", () => {
     ogsTest("CM should be able to vote on their own report", cmVoteOnOwnReportTest);
@@ -33,4 +34,8 @@ ogsTest.describe("@CM Community Moderation Tests", () => {
     ogsTest("We should be able to acknowledge warnings", cmAckWarningTest);
     ogsTest("We should be able to acknowledge acknowledgements", cmAckAcknowledgementTest);
     ogsTest("AI Assessors should be able to dismiss AI reports", cmAiAssessDismissTest);
+    ogsTest(
+        "CMs should be able to vote to suspend users with human-readable ban reasons",
+        cmVoteSuspendUserTest,
+    );
 });

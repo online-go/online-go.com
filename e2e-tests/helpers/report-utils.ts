@@ -46,7 +46,8 @@ export async function withIncidentIndicatorLock<T>(
 ): Promise<T> {
     testInfo.setTimeout(0); // Disable timeout while waiting for lock
     await IncidentIndicatorLock.acquire();
-    testInfo.setTimeout(120000); // Restore a timeout after acquiring lock (yuk, hardcoded here)
+    // Added a 42 here to make it clear if this is the one that gets activated!
+    testInfo.setTimeout(150042); // Restore a timeout after acquiring lock (matches playwright.config.ts)
 
     try {
         return await fn();
