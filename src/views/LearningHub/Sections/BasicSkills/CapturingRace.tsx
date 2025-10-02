@@ -65,7 +65,7 @@ class Page01 extends LearningPage {
 
     text() {
         return _(
-            "The two marked chains have both two liberties. White can capture the black chain by reducing its liberties. Black can do the same if it was Black's turn to play. This is called a 'capturing race'. If both players have the same number of liberties, the player that plays first will win the capturing race. White to play. Win the capturing race.",
+            "The two marked chains both have two liberties. White can capture the black chain by reducing its liberties. Black can do the same if it was Black's turn to play. This is called a 'capturing race'. If both players have the same number of liberties, the player that plays first will win the capturing race. White to play. Win the capturing race.",
         );
     }
     config(): GobanConfig {
