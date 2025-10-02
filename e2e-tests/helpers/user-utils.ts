@@ -22,6 +22,7 @@ import { load } from "@helpers";
  *
  * User Creation & Registration:
  * - newTestUsername(): Generate unique test usernames with timestamp
+ * - generateUniqueTestIPv6(): Generate unique IPv6 addresses for test users
  * - registerNewUser(): Register a new user account
  * - prepareNewUser(): Register and set up a new user with basic preferences
  *
@@ -58,21 +59,46 @@ import { load } from "@helpers";
  */
 
 // This is tweaked to provide us with lots of unique usernames but also
-// a decent number of readable user-role characters, within the OGS username 20 character limit
+// a decent number of readable user-role characters, within the OGS username 30 character limit
 // on registration.
 export const newTestUsername = (user_role: string) => {
-    if (user_role.length > 12) {
-        throw new Error("user_role must be less than 13 characters");
+    if (user_role.length > 21) {
+        throw new Error("user_role must be less than 22 characters");
     }
     const timestamp = Date.now().toString(36);
-    // Tests take longer than a minute to run, so we can take 4 chars that change roughly minutely
-    // This assumes that you don't re-run a single test more than once per minute or so (47 seconds actually)
-    const midChars = timestamp.slice(-6, -2);
+    // Using 5 chars provides uniqueness roughly every 1.3 seconds
+    // This allows re-running tests with <10 second intervals
+    const midChars = timestamp.slice(-7, -2);
     return `e2e${user_role}_${midChars}`;
 };
 
+// Counter for same-millisecond IPv6 generation
+let ipv6Counter = 0;
+
+// Generate unique IPv6 addresses for test users using timestamp + counter
+// Similar approach to newTestUsername - timestamp ensures uniqueness across test runs
+// without needing shared state files
+export const generateUniqueTestIPv6 = (): string => {
+    const timestamp = Date.now().toString(16); // Use hex (base-16) for valid IPv6
+    const counter = (ipv6Counter++).toString(16).padStart(4, "0");
+
+    // Use fd00::/8 private IPv6 range for testing
+    // IPv6 segments must be 4 hex chars max, so split 8-char timestamp into two segments
+    // Format: fd00:e2e::abcd:1234:0001 where abcd:1234 is the timestamp
+    // Example: fd00:e2e::12ab:34cd:0001
+    const timestampHex = timestamp.slice(-8).padStart(8, "0");
+    const seg1 = timestampHex.slice(0, 4);
+    const seg2 = timestampHex.slice(4, 8);
+    return `fd00:e2e::${seg1}:${seg2}:${counter}`;
+};
+
 export const registerNewUser = async (browser: Browser, username: string, password: string) => {
-    const userContext = await browser.newContext();
+    const uniqueIPv6 = generateUniqueTestIPv6();
+    const userContext = await browser.newContext({
+        extraHTTPHeaders: {
+            "X-Forwarded-For": uniqueIPv6,
+        },
+    });
     const userPage = await userContext.newPage();
     await userPage.goto("/");
     // Go from "landing page" to the "sign in" page.
@@ -197,7 +223,12 @@ export const turnOffDynamicHelp = async (page: Page) => {
 // a newly registered user.
 
 export const setupSeededUser = async (browser: Browser, username: string) => {
-    const userContext = await browser.newContext();
+    const uniqueIPv6 = generateUniqueTestIPv6();
+    const userContext = await browser.newContext({
+        extraHTTPHeaders: {
+            "X-Forwarded-For": uniqueIPv6,
+        },
+    });
     const userPage = await userContext.newPage();
     await loginAsUser(userPage, username, "test");
     await turnOffDynamicHelp(userPage); // the popups can get in the way.
@@ -209,7 +240,12 @@ export const setupSeededUser = async (browser: Browser, username: string) => {
 };
 
 export const setupSeededCM = async (browser: Browser, username: string) => {
-    const seededCMContext = await browser.newContext();
+    const uniqueIPv6 = generateUniqueTestIPv6();
+    const seededCMContext = await browser.newContext({
+        extraHTTPHeaders: {
+            "X-Forwarded-For": uniqueIPv6,
+        },
+    });
     const seededCMPage = await seededCMContext.newPage();
     await loginAsUser(seededCMPage, username, "test");
     await turnOffDynamicHelp(seededCMPage); // the popups can get in the way.

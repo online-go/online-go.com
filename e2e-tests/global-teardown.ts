@@ -41,18 +41,19 @@ export async function checkLastRunTime() {
         const lastRunTime = new Date(fs.readFileSync(lastRunFile, "utf8").trim());
         const now = new Date();
         const diffMs = now.getTime() - lastRunTime.getTime();
-        const diffMinutes = diffMs / (1000 * 60);
+        const diffSeconds = diffMs / 1000;
+        const minWaitMs = 2000; // Wait minimum 2 seconds for username uniqueness (~1.3s actual)
 
-        if (diffMinutes < 1) {
-            const waitTime = Math.ceil((60000 - diffMs) / 1000);
+        if (diffMs < minWaitMs) {
+            const waitTime = Math.ceil((minWaitMs - diffMs) / 1000);
             console.log(
                 `Waiting ${waitTime} seconds for next unique username, since last run was ${Math.round(
-                    diffMinutes * 60,
+                    diffSeconds,
                 )} seconds ago`,
             );
             const sharedArray = new SharedArrayBuffer(4);
             const sharedArrayView = new Int32Array(sharedArray);
-            Atomics.wait(sharedArrayView, 0, 0, 60000 - diffMs);
+            Atomics.wait(sharedArrayView, 0, 0, minWaitMs - diffMs);
         }
     } else {
         console.log("No last run time found");
