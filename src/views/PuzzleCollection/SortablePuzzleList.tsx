@@ -179,7 +179,7 @@ function SortablePuzzleListContainer({
         // Without this activation constraint, the "Edit" button doesn't work
         // because dnd swallows click events.
         useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
-        useSensor(TouchSensor),
+        useSensor(TouchSensor, { activationConstraint: { delay: 100, tolerance: 0 } }),
     );
     return (
         <DndContext onDragEnd={onDragEnd} sensors={sensors}>
