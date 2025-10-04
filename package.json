@@ -28,7 +28,7 @@
         "test": "jest",
         "fresh-test": "clear && jest",
         "test:e2e": "node scripts/run-playwright.js ",
-        "test:e2e:quick": "node scripts/run-playwright.js --grep-invert \"@Smoke\\|@Slow\"",
+        "test:e2e:quick": "node scripts/run-playwright.js --grep-invert \"@Smoke\\|@Slow\\|@ModUse\"",
         "test:e2e:smoke": "yarn test:e2e:docker:smoke",
         "test:e2e:ui": "PW_UI=true node scripts/run-playwright.js --ui",
         "test:e2e:debug": "node scripts/run-playwright.js --debug",

@@ -4,6 +4,11 @@ This is information for Agents to take into account when working on e2e tests.
 
 When creating e2e tests, note that:
 
+-   When writing tests that use UI elements to achieve outcomes, always check the UI code of of the elements you're using to make sure you are using them correctly.
+    -- DO NOT guess how the UI works when developing tests, check how it works in the code.
+
+-   When entering inputs, include a check to make sure the input was accepted before proceeding to the next action.
+
 -   Any actions involving looking at reports should be wrapped in `withIncidentIndicatorLock`, and should check that there are no open reports at the start, so that debug of "already open reports" is easy.
 
 (The problem is that tests can fail if the wrong number of reports is open, due to previously failed tests)
