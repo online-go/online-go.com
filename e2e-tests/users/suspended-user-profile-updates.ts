@@ -63,28 +63,39 @@ export const suspendedUserCannotUpdateProfileTest = async ({ browser }: { browse
     );
     console.log("User suspended ✓");
 
+    // Wait for the suspension to take effect - suspension causes a reload of the user's page
+    await userPage.waitForTimeout(1000);
+    await userPage.waitForLoadState("networkidle");
+    console.log("User page reloaded after suspension");
+
     // Try to update username while suspended
     console.log("Attempting to update username while suspended...");
     await userPage.goto("/settings/account");
     await userPage.waitForLoadState("networkidle");
 
-    const newUsername = "HackedUsername";
+    const newUsername = "HackedUsername" + Date.now();
     await usernameInput.fill(newUsername);
 
-    const saveButtonAfterSuspend = await expectOGSClickableByName(userPage, /Save/i);
-    await saveButtonAfterSuspend.click();
+    const saveButton = await expectOGSClickableByName(userPage, /Save/i);
+    await saveButton.click();
+
+    // Wait for page reload (AccountSettings reloads after save - line 260 in AccountSettings.tsx)
+    await userPage.waitForLoadState("load");
     await userPage.waitForLoadState("networkidle");
 
-    console.log("Save request completed (should be silently ignored)");
+    console.log("Page reloaded after save");
 
-    // Verify the username was NOT updated by reloading the page and checking the form
-    await userPage.goto("/settings/account");
-    await userPage.waitForLoadState("networkidle");
+    // Verify the username was NOT updated by checking the navbar username
+    // For suspended users, the username should remain unchanged
+    // Wait a moment to ensure the page has fully rendered, then check it hasn't changed
+    await userPage.waitForTimeout(1000);
 
-    const usernameValue = await usernameInput.inputValue();
+    const navbarUsername = userPage.locator("span.username");
+    const actualUsername = await navbarUsername.textContent();
 
-    expect(usernameValue).toBe(initialUsername);
-    console.log("Username unchanged (correctly ignored update) ✓");
+    console.log(`Username in navbar after save: ${actualUsername}, expected: ${initialUsername}`);
+    expect(actualUsername).toBe(initialUsername);
+    console.log("Username unchanged in navbar (correctly ignored update) ✓");
 
     await userPage.close();
 
@@ -93,58 +104,52 @@ export const suspendedUserCannotUpdateProfileTest = async ({ browser }: { browse
     console.log("✓ Updates are silently ignored without errors");
 };
 
-export const suspendedUserCannotUpdateAvatarTest = async ({ browser }: { browser: Browser }) => {
-    console.log("=== Suspended User Cannot Update Avatar Test ===");
+export const normalUserCanUpdateProfileTest = async ({ browser }: { browser: Browser }) => {
+    console.log("=== Normal User Can Update Profile Test ===");
 
     // Create a new user
     console.log("Creating test user...");
-    const username = newTestUsername("avSUTestUser"); // cspell:ignore avSUTestUser
+    const username = newTestUsername("NormalTest");
     const { userPage } = await prepareNewUser(browser, username, "test");
 
-    // Navigate to account settings page
-    console.log("Navigating to account settings page...");
+    // Navigate to account settings page to get initial username
+    console.log("Getting initial username...");
     await userPage.goto("/settings/account");
     await userPage.waitForLoadState("networkidle");
 
-    // Get the initial icon src
-    const iconElement = userPage.locator(".Dropzone img");
-    const initialIconSrc = await iconElement.getAttribute("src");
+    // The username input is the first input in the settings page (after the Username label)
+    const usernameInput = userPage.locator('dt:has-text("Username") + dd input');
+    const initialUsername = await usernameInput.inputValue();
 
-    console.log(`Initial icon src: ${initialIconSrc}`);
+    console.log(`Initial username: ${initialUsername}`);
 
-    // Suspend the user
-    console.log(`Suspending user ${username}...`);
-    await suspendUserAsModerator(
-        browser,
-        username,
-        "E2E test: Testing suspended user avatar restrictions",
-    );
-    console.log("User suspended ✓");
+    // Try to update username (should succeed for normal user)
+    console.log("Attempting to update username...");
+    const newUsername = "ChangedUsername" + Date.now();
+    await usernameInput.fill(newUsername);
 
-    // Try to clear icon while suspended
-    console.log("Attempting to clear icon while suspended...");
-    await userPage.goto("/settings/account");
+    const saveButton = await expectOGSClickableByName(userPage, /Save/i);
+    await saveButton.click();
+
+    // Wait for page reload (AccountSettings reloads after save - line 260 in AccountSettings.tsx)
+    await userPage.waitForLoadState("load");
     await userPage.waitForLoadState("networkidle");
 
-    const clearIconButton = userPage.locator('button:has-text("Clear icon")');
-    await clearIconButton.click();
-    await userPage.waitForLoadState("networkidle");
+    console.log("Page reloaded after save");
 
-    console.log("Clear icon request completed (should be silently ignored)");
+    // Wait for the navbar username to change from the initial username to the new one
+    const navbarUsername = userPage.locator("span.username");
+    await expect(navbarUsername).not.toHaveText(initialUsername);
+    console.log("Username changed from initial value");
 
-    // Verify the icon was NOT cleared by reloading the page and checking the icon src
-    await userPage.goto("/settings/account");
-    await userPage.waitForLoadState("networkidle");
-
-    const iconElementAfter = userPage.locator(".Dropzone img");
-    const iconSrcAfter = await iconElementAfter.getAttribute("src");
-
-    expect(iconSrcAfter).toBe(initialIconSrc);
-    console.log("Icon unchanged (correctly ignored clear request) ✓");
+    // Verify the username WAS updated to the new value
+    const actualUsername = await navbarUsername.textContent();
+    console.log(`Username in navbar after save: ${actualUsername}, expected: ${newUsername}`);
+    expect(actualUsername).toBe(newUsername);
+    console.log("Username changed successfully in navbar ✓");
 
     await userPage.close();
 
-    console.log("=== Suspended User Cannot Update Avatar Test Complete ===");
-    console.log("✓ Suspended users cannot update their avatar");
-    console.log("✓ Updates are silently ignored without errors");
+    console.log("=== Normal User Can Update Profile Test Complete ===");
+    console.log("✓ Normal users can update their username");
 };

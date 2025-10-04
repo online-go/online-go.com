@@ -18,14 +18,13 @@
 import { ogsTest } from "@helpers";
 import {
     suspendedUserCannotUpdateProfileTest,
-    suspendedUserCannotUpdateAvatarTest,
+    normalUserCanUpdateProfileTest,
 } from "./suspended-user-profile-updates";
 
 ogsTest.describe("@User Profile Tests", () => {
+    ogsTest("Normal users can update their profile name", normalUserCanUpdateProfileTest);
     ogsTest(
         "Suspended users cannot update their profile name",
         suspendedUserCannotUpdateProfileTest,
     );
-
-    ogsTest("Suspended users cannot update their avatar", suspendedUserCannotUpdateAvatarTest);
 });

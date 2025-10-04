@@ -1,6 +1,6 @@
 This is information for Agents to take into account when working on e2e tests.
 
-(Also useful for humans to know :) )
+(Some useful information for humans to know as well :) )
 
 When creating e2e tests, note that:
 
@@ -23,3 +23,6 @@ When creating e2e tests, note that:
 -   We do all our testing in English, we don't have to worry about pgettext
 
 -   Community Moderation is controlled by MODERATOR_POWERS. This is different to "full moderation", which is controlled by is_moderator.
+
+-   When writing tests that use UI elements to achieve outcomes, always check the UI code of of the elements you're using to make sure you are using them correctly.
+    -- DO NOT guess how the UI works when developing tests, check how it works in the code.
