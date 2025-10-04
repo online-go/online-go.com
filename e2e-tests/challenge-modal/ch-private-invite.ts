@@ -97,7 +97,7 @@ export const chPrivateInviteTest = async ({ browser }: { browser: Browser }) => 
 
     // Now test POST payloads for the flags
     await testChallengePOSTPayload(challengerPage, {
-        invite_only: true,
+        invite_only: false,
         game: {
             name: "Private Match 1",
             private: false,

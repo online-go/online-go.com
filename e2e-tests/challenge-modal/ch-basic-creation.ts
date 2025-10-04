@@ -51,7 +51,7 @@ export const chBasicCreationTest = async ({ browser }: { browser: Browser }) => 
             height: 19,
             handicap: 0,
             komi_auto: "automatic",
-            komi: null,
+            komi: undefined,
             disable_analysis: false,
             initial_state: null,
             private: false,
