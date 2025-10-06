@@ -30,8 +30,5 @@ ogsTest.describe("@Mod Moderation Tests", () => {
     ogsTest("@Slow We should warn first turn escapers", modWarnFirstTurnEscapersTest);
     ogsTest("We should block early escape reports", modBlockEarlyEscapeReportTest);
     ogsTest("We should block early stalling reports", modBlockEarlyStallingReportTest);
-    ogsTest(
-        "We should reject escaping reports during game but allow after",
-        modRejectEscapeReportDuringGameTest,
-    );
+    ogsTest("We should reject escaping reports during game", modRejectEscapeReportDuringGameTest);
 });
