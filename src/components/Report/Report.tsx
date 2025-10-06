@@ -28,6 +28,7 @@ import { setIgnore } from "@/components/BlockPlayer";
 import { useUser } from "@/lib/hooks";
 import { get } from "@/lib/requests";
 import { toast } from "@/lib/toast";
+import { getPrintableError } from "@/lib/misc";
 
 export type ReportType =
     | "all" // not a type, just useful for the enumeration
@@ -345,10 +346,14 @@ export function Report(props: ReportProperties): React.ReactElement {
                 onClose?.();
                 void alert.fire({ text: _("Thanks for the report!") });
             })
-            .catch(() => {
+            .catch((err) => {
                 set_submitting(false);
                 onClose?.();
-                void alert.fire({ text: _("There was an error submitting your report") });
+                const server_error = getPrintableError(err);
+                const message = server_error
+                    ? `${_("There was an error submitting your report")}: ${server_error}`
+                    : _("There was an error submitting your report");
+                void alert.fire({ text: message });
             });
     }
 
@@ -372,10 +377,14 @@ export function Report(props: ReportProperties): React.ReactElement {
                 onClose?.();
                 void alert.fire("Warning sent");
             })
-            .catch(() => {
+            .catch((err) => {
                 set_submitting(false);
                 onClose?.();
-                void alert.fire({ text: _("There was an error submitting the warning!") });
+                const server_error = getPrintableError(err);
+                const message = server_error
+                    ? `${_("There was an error submitting the warning!")}: ${server_error}`
+                    : _("There was an error submitting the warning!");
+                void alert.fire({ text: message });
             });
     }
 
