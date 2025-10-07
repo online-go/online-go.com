@@ -76,6 +76,9 @@ export const Announcements: React.FC = React.memo(() => {
     const [hasActiveAnnouncements, setHasActiveAnnouncements] = React.useState(
         activeAnnouncementsTracker.getIsPresent(),
     );
+    const [currentIndices, setCurrentIndices] = React.useState<{
+        [announcementId: number]: number;
+    }>({});
 
     const clearAnnouncement = React.useCallback(
         (id: number, dont_send_clear_announcement: boolean) => {
@@ -153,6 +156,13 @@ export const Announcements: React.FC = React.memo(() => {
         },
         [clearAnnouncement],
     );
+
+    const cycleToNextEntry = React.useCallback((announcementId: number, totalCount: number) => {
+        setCurrentIndices((prev) => ({
+            ...prev,
+            [announcementId]: ((prev[announcementId] || 0) + 1) % totalCount,
+        }));
+    }, []);
 
     // Register ITC handler (only once on mount)
     React.useEffect(() => {
@@ -261,6 +271,21 @@ export const Announcements: React.FC = React.memo(() => {
                     return null;
                 }
 
+                // Check if the first entry is a title (no link)
+                const firstEntryIsTitle = displayableEntries[0] && !displayableEntries[0].link;
+                const titleEntry = firstEntryIsTitle ? displayableEntries[0] : null;
+                const linkEntries = firstEntryIsTitle
+                    ? displayableEntries.slice(1)
+                    : displayableEntries;
+
+                // Get current index for this announcement (defaults to 0)
+                const currentIndex = currentIndices[announcement.id] || 0;
+                const currentEntry =
+                    linkEntries.length > 0 ? linkEntries[currentIndex % linkEntries.length] : null;
+
+                // Only show navigation if there are multiple link entries
+                const showNavigation = linkEntries.length > 1;
+
                 return (
                     <div
                         className={`announcement multi-link announcement-${announcement.type}`}
@@ -282,15 +307,45 @@ export const Announcements: React.FC = React.memo(() => {
                             }}
                         />
                         <div className="announcement-content">
-                            {displayableEntries.map((entry, entryIdx) => (
-                                <div className="announcement-entry" key={entryIdx}>
-                                    <AnnouncementEntry entry={entry} />
+                            <div className="announcement-link-container">
+                                <div className="announcement-text-content">
+                                    {titleEntry && (
+                                        <div className="announcement-title">
+                                            <AnnouncementEntry entry={titleEntry} />
+                                        </div>
+                                    )}
+                                    {currentEntry && (
+                                        <div className="announcement-link-entry">
+                                            <AnnouncementEntry entry={currentEntry} />
+                                        </div>
+                                    )}
                                 </div>
-                            ))}
-                            {announcement.type !== "system" && (
-                                <i className="announcement-creator">
-                                    &nbsp; - {announcement.creator.username}
-                                </i>
+                                {showNavigation && (
+                                    <button
+                                        className="announcement-nav-button"
+                                        onClick={() =>
+                                            cycleToNextEntry(announcement.id, linkEntries.length)
+                                        }
+                                        aria-label="Next announcement"
+                                        title="Next announcement"
+                                    >
+                                        <i className="fa fa-chevron-right" />
+                                    </button>
+                                )}
+                            </div>
+                            {(announcement.type !== "system" || showNavigation) && (
+                                <div className="announcement-footer">
+                                    {announcement.type !== "system" && (
+                                        <i className="announcement-creator">
+                                            &nbsp; - {announcement.creator.username}
+                                        </i>
+                                    )}
+                                    {showNavigation && (
+                                        <div className="announcement-counter">
+                                            {currentIndex + 1}/{linkEntries.length}
+                                        </div>
+                                    )}
+                                </div>
                             )}
                         </div>
                     </div>
