@@ -43,6 +43,9 @@ jobs:
             Please analyze this pull request for bugs and performance issues. If you find any,
             please leave concise professional comments describing what you found. Avoid nit picking.
 
+            After your first pass, please verify your analysis and remove any comments that are not
+            relevant or accurate, or that turned out to not be real issues.
+
             Use `gh pr comment` with your Bash tool to leave your review as a comment on the PR.
 
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
