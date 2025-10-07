@@ -21,11 +21,13 @@ import * as React from "react";
 import { useLocation } from "react-router-dom";
 import { post } from "@/lib/requests";
 import { _ } from "@/lib/translate";
+import { errorAlerter } from "@/lib/misc";
 
 export function VerifyEmail() {
     const location = useLocation();
     const [verifying, setVerifying] = React.useState(true);
     const [message, setMessage] = React.useState<string>();
+    const [isError, setIsError] = React.useState(false);
 
     React.useEffect(() => {
         const q = parse(location.search);
@@ -36,6 +38,7 @@ export function VerifyEmail() {
         })
             .then(() => {
                 setVerifying(false);
+                setIsError(false);
                 setMessage(_("Great, your email address has been verified!"));
                 const user = data.get("user");
                 user.email_validated = new Date().toString();
@@ -43,7 +46,14 @@ export function VerifyEmail() {
             })
             .catch((err) => {
                 setVerifying(false);
-                setMessage(JSON.parse(err.responseText).error);
+                setIsError(true);
+                errorAlerter(err);
+                try {
+                    const errorData = JSON.parse(err.responseText);
+                    setMessage(errorData.error || _("Failed to verify email address"));
+                } catch {
+                    setMessage(_("Failed to verify email address"));
+                }
             });
     }, [location.search]);
 
@@ -51,7 +61,9 @@ export function VerifyEmail() {
         <div className="VerifyEmail">
             <h3>
                 {verifying && <div>{_("Verifying...")}</div>}
-                {message && <div>{message}</div>}
+                {message && (
+                    <div className={isError ? "error-message" : "success-message"}>{message}</div>
+                )}
             </h3>
         </div>
     );
