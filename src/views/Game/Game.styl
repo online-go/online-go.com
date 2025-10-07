@@ -38,6 +38,12 @@
     .submit-button {
         white-space: nowrap;
     }
+    .autofocus-submit-button:focus::after {
+        content: ' ⏎';
+    }
+    .autofocus-submit-button:active::after {
+        content: none;
+    }
 }
 
 .condensed-game-information {

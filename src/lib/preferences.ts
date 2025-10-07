@@ -45,6 +45,7 @@ export const defaults = {
     "always-disable-analysis": false,
     "asked-to-enable-desktop-notifications": false,
     "auto-advance-after-submit": true,
+    "autofocus-submit-button": false,
     "autoplay-delay": 10000,
     "play.tab": "automatch" as "automatch" | "custom",
     "automatch.size": "9x9" as Size,
