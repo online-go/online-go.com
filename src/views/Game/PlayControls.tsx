@@ -105,7 +105,7 @@ export function PlayControls({ annulment_reason }: PlayControlsProps): React.Rea
     const show_title = useShowTitle(goban);
     const view_mode = useViewMode(goban_controller);
     const zen_mode = useZenMode(goban_controller);
-    const show_cancel = view_mode !== "portrait" && !zen_mode;
+    const show_cancel = view_mode !== "portrait";
     const variation_name = useVariationName(goban_controller);
     const selected_chat_log = useSelectedChatLog(goban_controller);
     const phase = usePhase(goban);
