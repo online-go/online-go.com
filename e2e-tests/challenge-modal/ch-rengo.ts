@@ -78,7 +78,7 @@ export const chRengoTest = async ({ browser }: { browser: Browser }) => {
             width: 19,
             height: 19,
             komi_auto: "automatic",
-            komi: null,
+            komi: undefined,
             disable_analysis: false,
             initial_state: null,
             rengo: true,

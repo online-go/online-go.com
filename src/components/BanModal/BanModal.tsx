@@ -79,7 +79,7 @@ export class BanModal extends Modal<Events, BanModalProperties, any> {
                         onClick={ban}
                         disabled={this.state.details.public_reason.length < 3}
                     >
-                        {_("Ban")}
+                        {_("Suspend")}
                     </button>
                 </div>
             </div>

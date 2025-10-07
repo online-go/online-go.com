@@ -422,7 +422,7 @@ export class PlayerDetails extends React.PureComponent<
                     <div className="actions">
                         <button className="xs no-shadow reject" onClick={this.ban}>
                             <i className="fa fa-gavel" />
-                            {pgettext("Ban user from the server", "Ban")}
+                            {pgettext("Suspend user's account", "Suspend")}
                         </button>
                         <button className="xs no-shadow danger" onClick={this.shadowban}>
                             <i className="fa fa-commenting" />
@@ -434,7 +434,7 @@ export class PlayerDetails extends React.PureComponent<
                     <div className="actions">
                         <button className="xs no-shadow" onClick={this.removeBan}>
                             <i className="fa fa-thumbs-o-up" />
-                            {pgettext("Allow user on the server", "Un-Ban")}
+                            {pgettext("Allow user to use their account", "Restore")}
                         </button>
                         <button className="xs no-shadow" onClick={this.removeShadowban}>
                             <i className="fa fa-commenting-o" />

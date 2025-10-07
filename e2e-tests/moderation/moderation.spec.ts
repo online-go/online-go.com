@@ -22,6 +22,8 @@ import { modWarnFirstTurnDisconnectorTest } from "./mod-auto-warn-first-turn-dis
 import { modDontAutoWarnBlitzTest } from "./mod-dont-auto-warn-first-turn-blitz";
 import { modBlockEarlyEscapeReportTest } from "./mod-block-early-escape-report";
 import { modBlockEarlyStallingReportTest } from "./mod-block-early-stall-report";
+import { modRejectEscapeReportDuringGameTest } from "./mod-reject-escape-report-during-game";
+import { autoSuspensionTest } from "../../submodules/moderator-ui/e2e/moderation/auto-suspension";
 
 ogsTest.describe("@Mod Moderation Tests", () => {
     ogsTest("@Slow We should warn first turn disconnectors", modWarnFirstTurnDisconnectorTest);
@@ -29,4 +31,6 @@ ogsTest.describe("@Mod Moderation Tests", () => {
     ogsTest("@Slow We should warn first turn escapers", modWarnFirstTurnEscapersTest);
     ogsTest("We should block early escape reports", modBlockEarlyEscapeReportTest);
     ogsTest("We should block early stalling reports", modBlockEarlyStallingReportTest);
+    ogsTest("We should reject escaping reports during game", modRejectEscapeReportDuringGameTest);
+    ogsTest("@ModUse Auto-suspension should work properly", autoSuspensionTest);
 });
