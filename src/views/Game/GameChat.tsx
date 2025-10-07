@@ -88,6 +88,14 @@ export function GameChat(props: GameChatProperties): React.ReactElement {
     }, [goban_controller]);
 
     React.useEffect(() => {
+        if (!userIsPlayer && !data.get("user").is_moderator) {
+            goban_controller.setSelectedChatLog("main");
+        } else {
+            goban_controller.setSelectedChatLog(defaultChatMode);
+        }
+    }, [userIsPlayer, goban_controller]);
+
+    React.useEffect(() => {
         if (!goban) {
             return;
         }
