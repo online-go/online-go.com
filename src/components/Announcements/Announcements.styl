@@ -35,7 +35,7 @@
     .announcement {
         width: 100%;  // Use full container width
         display: inline-flex;
-        padding: 0.75rem 1rem;  // More generous padding
+        padding: 0.5rem 1rem;
         themed background-color bg;
         align-items: center;
         box-sizing: border-box;
@@ -77,65 +77,114 @@
         }
 
         &.multi-link {
-            padding: 0.875rem 1rem;
+            padding: 0.5rem 1rem;
             align-items: flex-start;
 
             .fa-times-circle {
-                align-self: center;  // Center the dismiss button vertically
+                align-self: flex-start;
             }
 
             .announcement-content {
                 display: flex;
                 flex-direction: column;
-                gap: 0.5rem;  // More space between entries
+                gap: 0.25rem;
                 flex: 1;
                 padding-left: 0.25rem;
 
-                .announcement-entry {
+                .announcement-link-container {
                     display: flex;
-                    align-items: center;
-                    position: relative;
+                    align-items: flex-start;
+                    gap: 0.5rem;
+                    width: 100%;
 
-                    // Visual separator for multiple entries
-                    &:not(:first-child)::before {
-                        content: '';
-                        position: absolute;
-                        top: -0.25rem;
-                        left: 0;
-                        right: 0;
-                        height: 1px;
-                        themed background-color shade5;
-                        opacity: 0.5;
+                    .announcement-text-content {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 0.1rem;
+                        flex: 1;
+                        min-width: 0;
+
+                        .announcement-title {
+                            font-weight: 600;
+
+                            a, span {
+                                display: inline-flex;
+                                align-items: center;
+                                padding: 0.15rem 0.35rem;
+                                border-radius: 4px;
+                                transition: all 0.15s ease;
+                                font-size: 0.95rem;
+                                line-height: 1.4;
+                            }
+
+                            span {
+                                themed color fg;
+                            }
+                        }
+
+                        .announcement-link-entry {
+                            a, span {
+                                display: inline-flex;
+                                align-items: center;
+                                padding: 0.15rem 0.35rem;
+                                border-radius: 4px;
+                                transition: all 0.15s ease;
+                                font-size: 0.95rem;
+                                line-height: 1.4;
+                            }
+
+                            span {
+                                themed color fg;
+                            }
+                        }
                     }
 
-                    a, span {
-                        display: inline-flex;
+                    .announcement-nav-button {
+                        display: flex;
                         align-items: center;
-                        padding: 0.25rem 0.5rem;
-                        border-radius: 4px;
-                        transition: all 0.15s ease;
-                        font-size: 0.95rem;
-                        line-height: 1.4;
-                        position: relative;
-
-                        // Support for CJK characters
-                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans CJK SC', 'Noto Sans CJK JP', 'Noto Sans CJK KR', sans-serif;
-                    }
-
-                    span {
+                        justify-content: center;
+                        width: 2rem;
+                        height: 2rem;
+                        border: none;
+                        themed background-color shade4;
                         themed color fg;
-                    }
+                        border-radius: 4px;
+                        cursor: pointer;
+                        transition: all 0.15s ease;
+                        flex-shrink: 0;
 
+                        &:hover {
+                            themed background-color shade3;
+                            opacity: 0.8;
+                        }
+
+                        i {
+                            font-size: 0.9rem;
+                        }
+                    }
                 }
 
-                .announcement-creator {
-                    margin-top: 0.5rem;
-                    padding-top: 0.5rem;
-                    font-size: 0.8rem;
-                    opacity: 0.6;
+                .announcement-footer {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-top: 0.25rem;
+                    padding-top: 0.25rem;
                     themed border-top-color shade5;
                     border-top: 1px solid;
-                    font-style: italic;
+
+                    .announcement-creator {
+                        font-size: 0.8rem;
+                        opacity: 0.6;
+                        font-style: italic;
+                    }
+
+                    .announcement-counter {
+                        themed color fg;
+                        font-size: 0.75rem;
+                        opacity: 0.7;
+                        white-space: nowrap;
+                    }
                 }
             }
         }
