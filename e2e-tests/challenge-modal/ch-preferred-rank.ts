@@ -98,7 +98,7 @@ export const chPreferredSettingsRankTest = async ({ browser }: { browser: Browse
             height: 19,
             handicap: -1,
             komi_auto: "automatic",
-            komi: null,
+            komi: undefined,
             disable_analysis: false,
             initial_state: null,
             private: false,

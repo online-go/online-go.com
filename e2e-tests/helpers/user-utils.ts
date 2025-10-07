@@ -446,3 +446,64 @@ export const selectNavMenuItem = async (
     // Click the subitem link
     await subItemLink.click();
 };
+
+/**
+ * Suspend a user as a full moderator using the UI
+ * Requires E2E_MODERATOR_PASSWORD environment variable to be set
+ */
+export const banUserAsModerator = async (
+    browser: Browser,
+    targetUsername: string,
+    banReason: string = "E2E test suspension",
+) => {
+    const moderatorPassword = process.env.E2E_MODERATOR_PASSWORD;
+    if (!moderatorPassword) {
+        throw new Error(
+            "E2E_MODERATOR_PASSWORD environment variable must be set to suspend users in e2e tests",
+        );
+    }
+
+    const uniqueIPv6 = generateUniqueTestIPv6();
+    const modContext = await browser.newContext({
+        extraHTTPHeaders: {
+            "X-Forwarded-For": uniqueIPv6,
+        },
+    });
+    const modPage = await modContext.newPage();
+
+    await loginAsUser(modPage, "E2E_MODERATOR", moderatorPassword);
+
+    // Navigate to the user's profile
+    await goToUsersProfile(modPage, targetUsername);
+
+    // Click on the player link to open the dropdown menu
+    const playerLink = modPage.locator(`a.Player:has-text("${targetUsername}")`);
+    await expect(playerLink).toBeVisible();
+    await playerLink.hover();
+    await playerLink.click();
+
+    // Click the Suspend button
+    const banButton = await expectOGSClickableByName(modPage, /Suspend/);
+    await banButton.click();
+
+    // Fill in the ban modal
+    await expect(modPage.locator(".BanModal")).toBeVisible();
+
+    // Fill in the public reason (required, minimum 3 characters)
+    const publicReasonTextarea = modPage.locator(".BanModal textarea").first();
+    await publicReasonTextarea.fill(banReason);
+
+    // Click the Suspend button in the modal
+    const confirmSuspendButton = await expectOGSClickableByName(modPage, /^Suspend$/);
+    await confirmSuspendButton.click();
+
+    // Wait for the modal to close as confirmation the suspension was successful
+    await expect(modPage.locator(".BanModal")).toBeHidden();
+    console.log("Suspend modal closed - suspension request completed");
+
+    // Give the server a moment to process the suspension
+    await modPage.waitForTimeout(500);
+
+    await modPage.close();
+    await modContext.close();
+};
