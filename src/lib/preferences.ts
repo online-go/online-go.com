@@ -54,7 +54,7 @@ export const defaults = {
     "automatch.handicaps": "standard" as "enabled" | "standard" | "disabled",
     "automatch.time-control": "fischer" as "fischer" | "byoyomi",
     "automatch.opponent": "human" as "human" | "bot",
-    "automatch.bot": 0,
+    "automatch.bot": 0 as number | string,
     "automatch.lower-rank-diff": 3,
     "automatch.upper-rank-diff": 3,
     "automatch.show-custom-games": false,
@@ -226,6 +226,10 @@ export const defaults = {
     "user-history.warnings-only": false,
     "debug.test-wanted": false,
     "learning-hub-expanded-section": "Fundamentals",
+
+    "bot.challenge-level": 2 as 1 | 2 | 3,
+    "bot.slug": "" as string,
+    "bot.color": "random" as "random" | "white" | "black",
 };
 
 defaults["profanity-filter"][current_language] = true;
