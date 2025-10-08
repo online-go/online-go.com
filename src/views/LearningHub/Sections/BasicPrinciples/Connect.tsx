@@ -42,7 +42,7 @@ class Page01 extends LearningPage {
 
     text() {
         return _(
-            "Stones can help each other by forming a chain. Chains are harder to capture then single stones. You can form a chain by connecting your stones. Connect the white stones.",
+            "Stones can help each other by forming a chain. Chains are harder to capture than single stones. You can form a chain by connecting your stones. Connect the white stones.",
         );
     }
     config(): GobanConfig {
