@@ -229,7 +229,11 @@ function Index(): React.ReactElement {
                                             />
                                         </div>
                                         <span className="lesson-count">
-                                            {progress.completed}/{progress.total} {_("lessons")}
+                                            {progress.completed}/{progress.total}{" "}
+                                            {pgettext(
+                                                "Tutorial - counter of learnt lessons",
+                                                "lessons",
+                                            )}
                                         </span>
                                     </div>
                                 </div>
