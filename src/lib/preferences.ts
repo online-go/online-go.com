@@ -159,6 +159,7 @@ export const defaults = {
     "sound.countdown.every-second.start": 10,
     "sound.countdown.byoyomi-direction": "auto",
     "sound.vibrate-on-stone-placement": true,
+    "sound.vibrate-on-game-start": true,
     "sound.positional-stone-placement-effect": true,
 
     "supporter.currency": "auto",

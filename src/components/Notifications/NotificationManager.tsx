@@ -488,8 +488,15 @@ export class NotificationManager {
                             body = _("Your game has started");
                             if (time_since_connect() > 5000) {
                                 sfx.play("game_started");
-                                if (sfx.getSpriteEnabled("game_started") && navigator.vibrate) {
-                                    navigator.vibrate(30);
+                                try {
+                                    if (
+                                        preferences.get("sound.vibrate-on-game-start") &&
+                                        navigator.vibrate
+                                    ) {
+                                        navigator.vibrate(100);
+                                    }
+                                } catch (e) {
+                                    console.error(e);
                                 }
                                 //sfx.play("setup-bowl");
                             }
