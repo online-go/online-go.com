@@ -159,124 +159,21 @@ import { BL2CapturingRace2 } from "./Sections/BeginnerLevel2/CapturingRace2";
 import { BL2CapturingRace3 } from "./Sections/BeginnerLevel2/CapturingRace3";
 import { BL2CapturingRace4 } from "./Sections/BeginnerLevel2/CapturingRace4";
 import { BL2CapturingRace5 } from "./Sections/BeginnerLevel2/CapturingRace5";
-
-// export class FalseEyes extends LearningHubSection {
-//     static section(): string {
-//         return "false-eyes";
-//     }
-//     static title(): string {
-//         return pgettext("Tutorial section on false eyes", "False Eyes");
-//     }
-//     static subtext(): string {
-//         return pgettext("Tutorial section on false eyes", "Some eyes aren't really eyes");
-//     }
-// }
-// export class CuttingStones extends LearningHubSection {
-//     static section(): string {
-//         return "cutting-stones";
-//     }
-//     static title(): string {
-//         return pgettext("Tutorial section on cutting stones", "Cutting Stones");
-//     }
-//     static subtext(): string {
-//         return pgettext("Tutorial section on cutting stones", "");
-//     }
-// }
-// export class JumpingStones extends LearningHubSection {
-//     static section(): string {
-//         return "jumping-stones";
-//     }
-//     static title(): string {
-//         return pgettext("Tutorial section on jumping stones", "Jumping Stones");
-//     }
-//     static subtext(): string {
-//         return pgettext("Tutorial section on jumping stones", "");
-//     }
-// }
-
-// export class Semeai extends LearningHubSection {
-//     static section(): string {
-//         return "semeai";
-//     }
-//     static title(): string {
-//         return pgettext("Tutorial section on semeai", "Semeai");
-//     }
-//     static subtext(): string {
-//         return pgettext("Tutorial section on semeai", "Attacking each other");
-//     }
-// }
-// export class CountingLiberties extends LearningHubSection {
-//     static section(): string {
-//         return "counting-liberties";
-//     }
-//     static title(): string {
-//         return pgettext("Tutorial section on counting liberties", "Counting Liberties");
-//     }
-//     static subtext(): string {
-//         return pgettext(
-//             "Tutorial section on counting liberties",
-//             "Known when you can win a battle",
-//         );
-//     }
-// }
-// export class WhatIsGo extends LearningHubSection {
-//     static section(): string {
-//         return "what-is-go";
-//     }
-//     static title(): string {
-//         return pgettext("Tutorial section on what is go", "What is Go?");
-//     }
-//     static subtext(): string {
-//         return pgettext("Tutorial section on what is go", "");
-//     }
-// }
-// export class SportOfGoAndGoAsArt extends LearningHubSection {
-//     static section(): string {
-//         return "sport-of-go-and-go-as-art";
-//     }
-//     static title(): string {
-//         return pgettext("Tutorial section on the sport of Go", "Sport of Go");
-//     }
-//     static subtext(): string {
-//         return pgettext("Tutorial section on the sport of Go", "Go as Art");
-//     }
-// }
-// export class BenefitsOfLearningGo extends LearningHubSection {
-//     static section(): string {
-//         return "benefits-of-learning-go";
-//     }
-//     static title(): string {
-//         return pgettext("Tutorial section on benefits to learning go", "Benefits of learning Go");
-//     }
-//     static subtext(): string {
-//         return pgettext(
-//             "Tutorial section on benefits to learning go",
-//             "It's more than just a game!",
-//         );
-//     }
-// }
-// export class BasicMannersOfGo extends LearningHubSection {
-//     static section(): string {
-//         return "basic-manners-of-go";
-//     }
-//     static title(): string {
-//         return pgettext("Tutorial section on the manners in the game", "Basic manners of Go");
-//     }
-//     static subtext(): string {
-//         return pgettext("Tutorial section on the manners in the game", "Be polite, it's Go!");
-//     }
-// }
-// export class Terminology extends LearningHubSection {
-//     static section(): string {
-//         return "terminology";
-//     }
-//     static title(): string {
-//         return pgettext("Tutorial section on terminology", "Terminology");
-//     }
-//     static subtext(): string {
-//         return pgettext("Tutorial section on terminology", "Say what now?");
-//     }
-// }
+import { BL3Capture1 } from "./Sections/BeginnerLevel3/Capture1";
+import { BL3Capture2 } from "./Sections/BeginnerLevel3/Capture2";
+import { BL3Capture3 } from "./Sections/BeginnerLevel3/Capture3";
+import { BL3Capture4 } from "./Sections/BeginnerLevel3/Capture4";
+import { BL3Capture5 } from "./Sections/BeginnerLevel3/Capture5";
+import { BL3Capture6 } from "./Sections/BeginnerLevel3/Capture6";
+import { BL3Capture7 } from "./Sections/BeginnerLevel3/Capture7";
+import { BL3Joseki1 } from "./Sections/BeginnerLevel3/Joseki1";
+import { BL3Joseki2 } from "./Sections/BeginnerLevel3/Joseki2";
+import { BL3Joseki3 } from "./Sections/BeginnerLevel3/Joseki3";
+import { BL3Joseki4 } from "./Sections/BeginnerLevel3/Joseki4";
+import { BL3Opening1 } from "./Sections/BeginnerLevel3/Opening1";
+import { BL3Opening2 } from "./Sections/BeginnerLevel3/Opening2";
+import { BL3Opening3 } from "./Sections/BeginnerLevel3/Opening3";
+import { BL3Opening4 } from "./Sections/BeginnerLevel3/Opening4";
 
 export const sections: [string, any[]][] = [
     [
@@ -434,6 +331,26 @@ export const sections: [string, any[]][] = [
             BL2CapturingRace3,
             BL2CapturingRace4,
             BL2CapturingRace5,
+        ],
+    ],
+    [
+        pgettext("Learning hub section title", "Beginner Level 3"),
+        [
+            BL3Capture1,
+            BL3Capture2,
+            BL3Capture3,
+            BL3Capture4,
+            BL3Capture5,
+            BL3Capture6,
+            BL3Capture7,
+            BL3Joseki1,
+            BL3Joseki2,
+            BL3Joseki3,
+            BL3Joseki4,
+            BL3Opening1,
+            BL3Opening2,
+            BL3Opening3,
+            BL3Opening4,
         ],
     ],
 
