@@ -790,6 +790,15 @@ export function SoundPreferences(): React.ReactElement {
                                 preference="sound.vibrate-on-stone-placement"
                             />
                         ) : null}
+                        {(navigator.vibrate as any) ? (
+                            <PreferenceToggle
+                                name={pgettext(
+                                    "On mobile devices, vibrate when a game starts?",
+                                    "Vibrate when a game starts",
+                                )}
+                                preference="sound.vibrate-on-game-start"
+                            />
+                        ) : null}
                     </Card>
                 </div>
             </div>
