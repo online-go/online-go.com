@@ -229,7 +229,7 @@ function Index(): React.ReactElement {
                                             />
                                         </div>
                                         <span className="lesson-count">
-                                            {progress.completed}/{progress.total} lessons
+                                            {progress.completed}/{progress.total} {_("lessons")}
                                         </span>
                                     </div>
                                 </div>
