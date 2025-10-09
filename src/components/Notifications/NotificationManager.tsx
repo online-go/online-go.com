@@ -488,7 +488,9 @@ export class NotificationManager {
                             body = _("Your game has started");
                             if (time_since_connect() > 5000) {
                                 sfx.play("game_started");
-                                navigator.vibrate(30);
+                                if (navigator.vibrate) {
+                                    navigator.vibrate(30);
+                                }
                                 //sfx.play("setup-bowl");
                             }
                         } else if (notification.type === "gameEnded") {
