@@ -970,6 +970,7 @@ export function AnnouncementCenter(): React.ReactElement {
                                             <div className="edit-info">
                                                 <i className="fa fa-history" />
                                                 <span>
+                                                    // TODO use npgettext
                                                     {announcement.edit_count}{" "}
                                                     {announcement.edit_count === 1
                                                         ? _("edit")

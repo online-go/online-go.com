@@ -18,7 +18,7 @@
 import * as React from "react";
 import Datetime from "react-datetime";
 import { put } from "@/lib/requests";
-import { _ } from "@/lib/translate";
+import { _, pgettext } from "@/lib/translate";
 import { errorAlerter } from "@/lib/misc";
 import { Modal } from "@/components/Modal";
 import * as player_cache from "@/lib/player_cache";
@@ -79,7 +79,7 @@ export class BanModal extends Modal<Events, BanModalProperties, any> {
                         onClick={ban}
                         disabled={this.state.details.public_reason.length < 3}
                     >
-                        {_("Suspend")}
+                        {pgettext("Suspend user's account", "Suspend")}
                     </button>
                 </div>
             </div>

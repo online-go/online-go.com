@@ -229,7 +229,7 @@ export function MiniGoban(props: MiniGobanProps): React.ReactElement {
             setBlackPoints(
                 interpolate(
                     npgettext(
-                        "Plural form 0 is the singular form, Plural form 1 is the plural form",
+                        "Plural form 0 is the singular form, Plural form 1 is the plural (few) form, Plural form 2 is the plural (many) form",
                         "{{num}} point",
                         "{{num}} points",
                         black_points,

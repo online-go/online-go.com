@@ -17,7 +17,7 @@
 
 import * as React from "react";
 
-import { _, interpolate } from "@/lib/translate";
+import { _, interpolate, pgettext } from "@/lib/translate";
 
 import * as preferences from "@/lib/preferences";
 import { usePreference, ValidPreference } from "@/lib/preferences";
@@ -176,7 +176,12 @@ export function GamePreferences(): React.ReactElement {
                 />
             </PreferenceLine>
 
-            <PreferenceLine title={_("Autofocus submit button")}>
+            <PreferenceLine
+                title={pgettext(
+                    "Game Preferences - Allows autofocus on the submit move button, this way a user may submit the move by pressing an Enter key",
+                    "Autofocus submit button",
+                )}
+            >
                 <Toggle checked={autofocus_submit_button} onChange={setAutoFocusSubmitButton} />
             </PreferenceLine>
 

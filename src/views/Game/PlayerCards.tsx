@@ -27,7 +27,7 @@ import { Clock } from "@/components/Clock";
 import { useUser } from "@/lib/hooks";
 import { Player } from "@/components/Player";
 import { lookup, fetch } from "@/lib/player_cache";
-import { _, interpolate, ngettext, moment } from "@/lib/translate";
+import { _, interpolate, ngettext, moment, npgettext } from "@/lib/translate";
 import * as data from "@/lib/data";
 import { generateGobanHook, usePlayerToMove, useZenMode } from "./GameHooks";
 import { get_network_latency, get_clock_drift } from "@/lib/sockets";
@@ -335,7 +335,12 @@ export function PlayerCard({
                     <div className="points">
                         {interpolate(_("{{total}} {{unit}}"), {
                             total: score.total,
-                            unit: ngettext("point", "points", score.total),
+                            unit: npgettext(
+                                "Plural form 0 is the singular form, Plural forms 1-3 are the plural forms",
+                                "point",
+                                "points",
+                                score.total,
+                            ),
                         })}
                     </div>
                 )}

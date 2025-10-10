@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { _ } from "@/lib/translate";
+import { _, pgettext } from "@/lib/translate";
 import { isLiveGame } from "@/components/TimeControl";
 import * as preferences from "@/lib/preferences";
 import * as data from "@/lib/data";
@@ -205,7 +205,7 @@ export function PlayButtons({ show_cancel = true }: PlayButtonsProps): React.Rea
                             }
                         }}
                     >
-                        {_("Submit Move")}
+                        {pgettext("A button to send a move", "Submit Move")}
                     </button>
                 )}
             </span>
