@@ -135,7 +135,7 @@ export function AIReview({ move, game_id, hidden, onAIReviewSelected }: AIReview
             gobanController
                 ? canStartFullReview(user, gobanController, gobanController.goban)
                 : false,
-        [user, gobanController],
+        [user, gobanController, gobanController?.creator_id, gobanController?.goban],
     );
 
     // Initialize table visibility
