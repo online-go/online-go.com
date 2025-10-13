@@ -63,6 +63,7 @@ export class GobanLineSummary extends React.Component<
     GobanLineSummaryState
 > {
     goban!: GobanRenderer;
+    sync_state_debounce_timer: NodeJS.Timeout | null = null;
 
     constructor(props: GobanLineSummaryProps) {
         super(props);
@@ -111,7 +112,7 @@ export class GobanLineSummary extends React.Component<
             });
 
             this.goban.on("update", () => {
-                this.sync_state();
+                this.sync_state_debounced();
             });
 
             if (this.props.gobanRef) {
@@ -121,6 +122,10 @@ export class GobanLineSummary extends React.Component<
     }
 
     destroy() {
+        if (this.sync_state_debounce_timer) {
+            clearTimeout(this.sync_state_debounce_timer);
+            this.sync_state_debounce_timer = null;
+        }
         if (this.goban) {
             /* This is guarded because we hit this being called before
              * initialize ran a few times, so I guess componentWillUnmount can
@@ -128,6 +133,16 @@ export class GobanLineSummary extends React.Component<
              * something else fuggly is going on. */
             this.goban.destroy();
         }
+    }
+
+    sync_state_debounced() {
+        if (this.sync_state_debounce_timer) {
+            clearTimeout(this.sync_state_debounce_timer);
+        }
+        this.sync_state_debounce_timer = setTimeout(() => {
+            this.sync_state();
+            this.sync_state_debounce_timer = null;
+        }, 50);
     }
 
     sync_state() {
