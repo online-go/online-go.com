@@ -1139,7 +1139,7 @@ export function GoResources(): React.ReactElement {
                                 href="https://www.govariants.com/"
                             />,
                             <BasicResource
-                                countries={[Scotland]}
+                                countries={[_Scotland]}
                                 title="DipGo (Multicolour Go)"
                                 href="https://www.dipgo.net"
                             />,
