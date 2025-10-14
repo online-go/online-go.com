@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import * as data from "@/lib/data";
-import { _, interpolate, llm_pgettext, pgettext, moment } from "@/lib/translate";
+import { _, interpolate, llm_pgettext, pgettext, moment, npgettext } from "@/lib/translate";
 import { post, get, del, put } from "@/lib/requests";
 import { PaginatedTable } from "@/components/PaginatedTable";
 import { Card } from "@/components/material";
@@ -532,17 +532,32 @@ export function AnnouncementCenter(): React.ReactElement {
                             <span className="text">
                                 {duration_options[duration_idx] > SECONDS_PER_HOUR &&
                                 duration_options[duration_idx] % SECONDS_PER_HOUR === HALF_HOUR
-                                    ? interpolate(_("%s hours"), [
-                                          (
+                                    ? interpolate("{{time}} {{unit}}", {
+                                          time: (
                                               duration_options[duration_idx] / SECONDS_PER_HOUR
                                           ).toFixed(1),
-                                      ])
+                                          unit: npgettext(
+                                              "Announcements: duration",
+                                              "hour",
+                                              "hours",
+                                              duration_options[duration_idx] / SECONDS_PER_HOUR,
+                                          ),
+                                      })
                                     : duration_options[duration_idx] >= SECONDS_PER_DAY
-                                      ? interpolate(_("%s days"), [
-                                            Math.round(
+                                      ? interpolate("{{time}} {{unit}}", {
+                                            time: Math.round(
                                                 duration_options[duration_idx] / SECONDS_PER_DAY,
                                             ),
-                                        ])
+                                            unit: npgettext(
+                                                "Announcements: duration",
+                                                "day",
+                                                "days",
+                                                Math.round(
+                                                    duration_options[duration_idx] /
+                                                        SECONDS_PER_DAY,
+                                                ),
+                                            ),
+                                        })
                                       : moment
                                             .duration(duration_options[duration_idx], "seconds")
                                             .humanize(false, { h: 24, m: 59, s: 59 })}
@@ -553,12 +568,15 @@ export function AnnouncementCenter(): React.ReactElement {
                                 <div
                                     style={{ fontSize: "0.9em", marginTop: "0.5em", color: "#666" }}
                                 >
-                                    {_("Event announcements can be up to 14 days")}
+                                    {pgettext(
+                                        "Announcements: maximum duration alert",
+                                        "Event announcements can be up to 14 days",
+                                    )}
                                 </div>
                             )}
                     </dd>
 
-                    <dt>{_("Content")}</dt>
+                    <dt>{pgettext("Announcements: an announcement's content", "Content")}</dt>
                     <dd>
                         <div className="links-container-v2">
                             <div className="links-list-v2">
@@ -668,7 +686,8 @@ export function AnnouncementCenter(): React.ReactElement {
                                                                 e.target.value,
                                                             )
                                                         }
-                                                        placeholder={_(
+                                                        placeholder={pgettext(
+                                                            "Announcements: an example of how a pasted URL must look like",
                                                             "URL or path (optional) - e.g., /game/123 or https://...",
                                                         )}
                                                         className="link-url-input-v3"
@@ -699,7 +718,10 @@ export function AnnouncementCenter(): React.ReactElement {
                                                     <LoadingButton
                                                         className="primary xs"
                                                         onClick={() => translateEntry(index)}
-                                                        title={_("Auto-translate to all languages")}
+                                                        title={pgettext(
+                                                            "Announcements: Add the auto-generated translations",
+                                                            "Auto-translate to all languages",
+                                                        )}
                                                         loading={translatingEntries.has(index)}
                                                         disabled={translatingEntries.has(index)}
                                                         icon={<i className="fa fa-language" />}
@@ -710,7 +732,8 @@ export function AnnouncementCenter(): React.ReactElement {
                                                     <button
                                                         className="xs"
                                                         onClick={() => clearTranslations(index)}
-                                                        title={_(
+                                                        title={pgettext(
+                                                            "Announcements: Clear all translations except the first one",
                                                             "Clear all translations except the first",
                                                         )}
                                                     >
@@ -725,7 +748,11 @@ export function AnnouncementCenter(): React.ReactElement {
 
                             <div className="link-actions-v2">
                                 <button className="primary sm" onClick={addEntry}>
-                                    <i className="fa fa-plus" /> {_("Add Content")}
+                                    <i className="fa fa-plus" />{" "}
+                                    {pgettext(
+                                        "Announcements: Add content to an announcement",
+                                        "Add Content",
+                                    )}
                                 </button>
                             </div>
                         </div>
@@ -754,7 +781,10 @@ export function AnnouncementCenter(): React.ReactElement {
 
                 {hasInvalidEntries && !user.is_moderator && (
                     <div style={{ color: "red", marginTop: "1em" }}>
-                        {_("Please ensure all entries have valid URLs")}
+                        {pgettext(
+                            "Announcements: A check to verify that all the entries in the form have valid URLs.",
+                            "Please ensure all entries have valid URLs",
+                        )}
                     </div>
                 )}
 
@@ -962,19 +992,28 @@ export function AnnouncementCenter(): React.ReactElement {
                                         <div className="expiration-info">
                                             <i className="fa fa-clock-o" />
                                             <span>
-                                                {_("Expires")}{" "}
-                                                {moment(announcement.expiration).fromNow()}
+                                                {interpolate("{{text}} {{time}}", {
+                                                    text: pgettext(
+                                                        "Announcements: When does the announcement expire",
+                                                        "Expires",
+                                                    ),
+                                                    time: moment(announcement.expiration).fromNow(),
+                                                })}
                                             </span>
                                         </div>
                                         {announcement.edit_count > 0 && (
                                             <div className="edit-info">
                                                 <i className="fa fa-history" />
                                                 <span>
-                                                    // TODO use npgettext
-                                                    {announcement.edit_count}{" "}
-                                                    {announcement.edit_count === 1
-                                                        ? _("edit")
-                                                        : _("edits")}
+                                                    {interpolate("{{count}} {{unit}}", {
+                                                        count: announcement.edit_count,
+                                                        unit: npgettext(
+                                                            "Announcements: Number of edits. (Plural form 0 is the singular form, Plural forms 1-3 are the plural forms)",
+                                                            "edit",
+                                                            "edits",
+                                                            announcement.edit_count,
+                                                        ),
+                                                    })}
                                                 </span>
                                             </div>
                                         )}

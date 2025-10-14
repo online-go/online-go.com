@@ -333,7 +333,7 @@ export function PlayerCard({
             >
                 {show_points && !estimating_score && (
                     <div className="points">
-                        {interpolate(_("{{total}} {{unit}}"), {
+                        {interpolate("{{total}} {{unit}}", {
                             total: score.total,
                             unit: npgettext(
                                 "Plural form 0 is the singular form, Plural forms 1-3 are the plural forms",
