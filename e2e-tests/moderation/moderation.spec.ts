@@ -24,6 +24,7 @@ import { modBlockEarlyEscapeReportTest } from "./mod-block-early-escape-report";
 import { modBlockEarlyStallingReportTest } from "./mod-block-early-stall-report";
 import { modRejectEscapeReportDuringGameTest } from "./mod-reject-escape-report-during-game";
 import { autoSuspensionTest } from "./mod-auto-suspension";
+import { suspendAppealRestoreTest } from "./mod-suspend-appeal-restore";
 
 ogsTest.describe("@Mod Moderation Tests", () => {
     ogsTest("@Slow We should warn first turn disconnectors", modWarnFirstTurnDisconnectorTest);
@@ -33,4 +34,8 @@ ogsTest.describe("@Mod Moderation Tests", () => {
     ogsTest("We should block early stalling reports", modBlockEarlyStallingReportTest);
     ogsTest("We should reject escaping reports during game", modRejectEscapeReportDuringGameTest);
     ogsTest("We should suspend users when appropriate", autoSuspensionTest);
+    ogsTest(
+        "Complete suspend-appeal-restore flow with two-button functionality",
+        suspendAppealRestoreTest,
+    );
 });
