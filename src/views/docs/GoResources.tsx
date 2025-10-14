@@ -1141,7 +1141,7 @@ export function GoResources(): React.ReactElement {
                             <BasicResource
                                 countries={[eu]}
                                 title="DipGo (Multicolour Go)"
-                                href="https://www.dipgo.net"
+                                href="https://dipgo.net"
                             />,
                         ).map((elt, idx) => (
                             <dd key={idx}>{elt}</dd>
