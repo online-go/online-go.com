@@ -26,15 +26,17 @@ import { post, get, put, del, getCookie } from "@/lib/requests";
 import { errorAlerter, errorLogger, ignore } from "@/lib/misc";
 import { SocialLoginButtons } from "@/components/SocialLoginButtons";
 import { SettingGroupPageProps } from "@/lib/SettingsCommon";
-import { useUser } from "@/lib/hooks";
+import { useUser, useData } from "@/lib/hooks";
 import { image_resizer } from "@/lib/image_resizer";
 import { Flag } from "@/components/Flag";
 import { toast } from "@/lib/toast";
 import { InfoBall } from "@/components/InfoBall";
 import { pgettext, sorted_locale_countries, _ } from "@/lib/translate";
+import { Link } from "react-router-dom";
 
 export function AccountSettings(props: SettingGroupPageProps): React.ReactElement {
     const user = useUser();
+    const [banned_user_id] = useData("appeals.banned_user_id");
 
     const [username, _setUsername] = React.useState(user.username);
     const [first_name, setFirstName] = React.useState("");
@@ -506,18 +508,28 @@ export function AccountSettings(props: SettingGroupPageProps): React.ReactElemen
                     <dd>
                         <SocialLoginButtons />
                     </dd>
-                    <dt>{_("Delete account")}</dt>
+                    <dt>{banned_user_id ? _("Deletion request") : _("Delete account")}</dt>
                     <dd>
                         <i>
-                            {_(
-                                "Warning: this action is permanent, there is no way to recover an account after it's been deleted.",
-                            )}
+                            {banned_user_id
+                                ? _(
+                                      "Your account is currently suspended. To request account deletion, please use the appeal system.",
+                                  )
+                                : _(
+                                      "Warning: this action is permanent, there is no way to recover an account after it's been deleted.",
+                                  )}
                         </i>
                     </dd>
                     <dd>
-                        <button className="reject" onClick={deleteAccount}>
-                            {_("Delete account")}
-                        </button>
+                        {banned_user_id ? (
+                            <Link to="/appeal" className="btn reject">
+                                {_("Deletion request")}
+                            </Link>
+                        ) : (
+                            <button className="reject" onClick={deleteAccount}>
+                                {_("Delete account")}
+                            </button>
+                        )}
                     </dd>
                 </dl>
             </div>
