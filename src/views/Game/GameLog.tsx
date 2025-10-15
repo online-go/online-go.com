@@ -226,8 +226,8 @@ export function LogData({
                 // Remove these stones from the removal string so the crosses are visible
                 // (can't see marks on already-removed stones)
                 if (removed_string && data.stones) {
-                    const removedSet = new Set(removed_string.split(""));
-                    const changedSet = new Set(data.stones.split(""));
+                    const removedSet = new Set(removed_string ? removed_string.split("") : []);
+                    const changedSet = new Set(data.stones ? data.stones.split("") : []);
                     changedSet.forEach((stone) => removedSet.delete(stone));
                     removed_string = Array.from(removedSet).join("");
                 }
