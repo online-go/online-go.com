@@ -174,6 +174,10 @@ import { BL3Opening1 } from "./Sections/BeginnerLevel3/Opening1";
 import { BL3Opening2 } from "./Sections/BeginnerLevel3/Opening2";
 import { BL3Opening3 } from "./Sections/BeginnerLevel3/Opening3";
 import { BL3Opening4 } from "./Sections/BeginnerLevel3/Opening4";
+import { BL3Haengma1 } from "./Sections/BeginnerLevel3/Haengma1";
+import { BL3Haengma2 } from "./Sections/BeginnerLevel3/Haengma2";
+import { BL3Haengma3 } from "./Sections/BeginnerLevel3/Haengma3";
+import { BL3Haengma4 } from "./Sections/BeginnerLevel3/Haengma4";
 
 export const sections: [string, any[]][] = [
     [
@@ -351,6 +355,10 @@ export const sections: [string, any[]][] = [
             BL3Opening2,
             BL3Opening3,
             BL3Opening4,
+            BL3Haengma1,
+            BL3Haengma2,
+            BL3Haengma3,
+            BL3Haengma4,
         ],
     ],
 
