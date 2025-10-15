@@ -226,6 +226,7 @@ export function LogData({
                 // Remove these stones from the removal string so the crosses are visible
                 // (can't see marks on already-removed stones)
                 if (removed_string && data.stones) {
+                    // cspell:disable-next-line
                     // Parse coordinate strings as 2-character pairs (e.g., "fafbgb" -> ["fa","fb","gb"])
                     const parseCoords = (str: string): string[] => {
                         const coords: string[] = [];
