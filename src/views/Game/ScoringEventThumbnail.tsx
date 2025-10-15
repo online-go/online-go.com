@@ -52,7 +52,7 @@ export function ScoringEventThumbnail({
         return () => {
             goban.current?.destroy();
         };
-    }, [config]);
+    }, [config, move_number]);
 
     return <PersistentElement className={"goban-thumbnail"} elt={goban_div.current} />;
 }
