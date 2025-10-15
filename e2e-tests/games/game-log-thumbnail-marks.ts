@@ -102,20 +102,24 @@ export const gameLogThumbnailMarksTest = async (
     await expect(challengersMove).toBeVisible();
     console.log("Game ready ✓");
 
-    // 4. Play a simple game to create dead stones
-    // Create a small black group that can be marked dead
+    // 4. Play a simple game to create multiple groups that can be marked dead
+    // Create groups with coordinates that share characters to test coordinate parsing
     console.log("Playing moves to create dead stones...");
     const moves = [
-        // Black creates a small group in corner
-        "B2", // White plays elsewhere
-        "H8",
-        "B3",
-        "H7",
-        "C3",
-        "H6",
-        "C2",
-        "G7",
-        // Black group at B2-C2-B3-C3 can be marked dead
+        // Black creates groups that will have overlapping coordinate characters
+        // Group 1: B2, B3 (coordinates: ba, bb)
+        "B2", // Black
+        "H8", // White plays elsewhere
+        "B3", // Black
+        "H7", // White plays elsewhere
+        // Group 2: C2, D2 (coordinates: ca, da) - shares 'a' with B2
+        "C2", // Black
+        "H6", // White plays elsewhere
+        "D2", // Black
+        "G7", // White plays elsewhere
+        // Group 3: B4 (coordinate: bc) - shares 'b' with B2, B3
+        "B4", // Black
+        "G6", // White plays elsewhere
     ];
 
     await playMoves(challengerPage, acceptorPage, moves, "9x9", 500);
@@ -137,28 +141,37 @@ export const gameLogThumbnailMarksTest = async (
     await challengerPage.waitForTimeout(1000);
     console.log("Entered stone removal phase ✓");
 
-    // 6. Mark the black corner group as dead
-    console.log("Marking black corner group (B2-C2-B3-C3) as dead...");
+    // 6. Mark first group (B2-B3) as dead - coordinates: ba, bb
+    console.log("Marking first group (B2-B3) as dead...");
     await clickOnGobanIntersection(challengerPage, "B2", "9x9");
     await challengerPage.waitForTimeout(500);
-    console.log("Black stones marked dead ✓");
-    await challengerPage.waitForTimeout(500); // Extra delay between scoring events
+    console.log("First group marked dead ✓");
+    await challengerPage.waitForTimeout(500);
 
-    // 7. Toggle stones back to alive to create another log entry
-    console.log("Toggling stones back to alive...");
-    await clickOnGobanIntersection(challengerPage, "B2", "9x9");
+    // 7. Mark second group (C2-D2) as dead - coordinates: ca, da
+    // This tests the bug: if we split by character, 'a' from 'ca' and 'da' would
+    // incorrectly remove 'a' from 'ba' and 'bb', corrupting the first group
+    console.log("Marking second group (C2-D2) as dead...");
+    await clickOnGobanIntersection(challengerPage, "C2", "9x9");
     await challengerPage.waitForTimeout(500);
-    console.log("Black stones marked alive ✓");
-    await challengerPage.waitForTimeout(500); // Extra delay between scoring events
+    console.log("Second group marked dead ✓");
+    await challengerPage.waitForTimeout(500);
 
-    // 8. Mark them dead again
-    console.log("Marking stones dead again...");
-    await clickOnGobanIntersection(challengerPage, "B2", "9x9");
+    // 8. Toggle second group back to alive
+    console.log("Toggling second group back to alive...");
+    await clickOnGobanIntersection(challengerPage, "C2", "9x9");
     await challengerPage.waitForTimeout(500);
-    console.log("Black stones marked dead again ✓");
+    console.log("Second group marked alive ✓");
+    await challengerPage.waitForTimeout(500);
+
+    // 9. Mark second group dead again
+    console.log("Marking second group dead again...");
+    await clickOnGobanIntersection(challengerPage, "C2", "9x9");
+    await challengerPage.waitForTimeout(500);
+    console.log("Second group marked dead again ✓");
     await challengerPage.waitForTimeout(500); // Extra delay before accepting
 
-    // 9. Accept stone removal
+    // 10. Accept stone removal
     console.log("Accepting stone removal...");
     const acceptorAccept = acceptorPage.getByText("Accept");
     await expect(acceptorAccept).toBeVisible();
@@ -180,7 +193,7 @@ export const gameLogThumbnailMarksTest = async (
     const gameUrl = challengerPage.url();
     console.log(`Game URL: ${gameUrl}`);
 
-    // 10. Login as moderator and navigate to the game
+    // 11. Login as moderator and navigate to the game
     console.log("Logging in as moderator...");
     const moderatorPassword = process.env.E2E_MODERATOR_PASSWORD;
     if (!moderatorPassword) {
@@ -202,7 +215,7 @@ export const gameLogThumbnailMarksTest = async (
     await modPage.waitForLoadState("networkidle");
     console.log("Game page loaded ✓");
 
-    // 11. Open GameLog modal via the dock
+    // 12. Open GameLog modal via the dock
     console.log("Opening GameLog modal via dock...");
 
     // Hover over the dock to make it visible
@@ -226,7 +239,7 @@ export const gameLogThumbnailMarksTest = async (
     await modPage.waitForTimeout(1000);
     console.log("GameLog modal opened ✓");
 
-    // 12. Verify GameLog entries
+    // 13. Verify GameLog entries
     console.log("Verifying GameLog entries...");
 
     // Check if we need to click "Show all" to see all log entries
@@ -245,10 +258,10 @@ export const gameLogThumbnailMarksTest = async (
 
     // Check for "stones marked alive" entry
     const markedAliveEntry = modPage.getByText("stones marked alive");
-    await expect(markedAliveEntry).toBeVisible();
+    await expect(markedAliveEntry.first()).toBeVisible();
     console.log("Found 'stones marked alive' entry ✓");
 
-    // 13. Verify thumbnails exist
+    // 14. Verify thumbnails exist
     console.log("Verifying thumbnails exist...");
     const thumbnails = modPage.locator(".goban-thumbnail");
     const thumbnailCount = await thumbnails.count();
@@ -260,7 +273,7 @@ export const gameLogThumbnailMarksTest = async (
         console.log("Thumbnails present ✓");
     }
 
-    // 14. Take screenshot for visual inspection
+    // 15. Take screenshot for visual inspection
     console.log("Taking screenshot for visual inspection...");
     await modPage.screenshot({
         path: `test-results/game-log-thumbnails-${testInfo.testId}.png`,
@@ -268,7 +281,7 @@ export const gameLogThumbnailMarksTest = async (
     });
     console.log("Screenshot saved to test-results/ ✓");
 
-    // 15. Print information for manual inspection
+    // 16. Print information for manual inspection
     console.log("\n=== VISUAL INSPECTION REQUIRED ===");
     console.log("Please check the screenshot at:");
     console.log(`  test-results/game-log-thumbnails-${testInfo.testId}.png`);

@@ -226,8 +226,17 @@ export function LogData({
                 // Remove these stones from the removal string so the crosses are visible
                 // (can't see marks on already-removed stones)
                 if (removed_string && data.stones) {
-                    const removedSet = new Set(removed_string ? removed_string.split("") : []);
-                    const changedSet = new Set(data.stones ? data.stones.split("") : []);
+                    // Parse coordinate strings as 2-character pairs (e.g., "fafbgb" -> ["fa","fb","gb"])
+                    const parseCoords = (str: string): string[] => {
+                        const coords: string[] = [];
+                        for (let i = 0; i < str.length; i += 2) {
+                            coords.push(str.substring(i, i + 2));
+                        }
+                        return coords;
+                    };
+
+                    const removedSet = new Set(parseCoords(removed_string));
+                    const changedSet = new Set(parseCoords(data.stones));
                     changedSet.forEach((stone) => removedSet.delete(stone));
                     removed_string = Array.from(removedSet).join("");
                 }
