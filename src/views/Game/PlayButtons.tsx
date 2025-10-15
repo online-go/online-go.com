@@ -26,6 +26,7 @@ import {
     useCurrentMoveNumber,
     usePlayerToMove,
     useShowUndoRequested,
+    useZenMode,
 } from "./GameHooks";
 import * as DynamicHelp from "react-dynamic-help";
 import { useGobanController } from "./goban_context";
@@ -46,6 +47,7 @@ export function PlayButtons({ show_cancel = true }: PlayButtonsProps): React.Rea
     const goban = goban_controller.goban;
     const engine = goban.engine;
     const phase = engine.phase;
+    const zen_mode = useZenMode(goban_controller);
 
     const { registerTargetItem } = React.useContext(DynamicHelp.Api);
     const { ref: accept_button, used: signalUndoAcceptUsed } =
@@ -210,7 +212,9 @@ export function PlayButtons({ show_cancel = true }: PlayButtonsProps): React.Rea
                 )}
             </span>
             <span>
-                {show_cancel && phase !== "finished" && <CancelButton className={"bold xs"} />}
+                {show_cancel && phase !== "finished" && (
+                    <CancelButton className={!zen_mode ? "bold xs" : "bold xs cancel-button-zen"} />
+                )}
             </span>
         </span>
     );
