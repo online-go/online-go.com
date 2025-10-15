@@ -16,18 +16,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { GobanRenderer, GobanRendererConfig, decodeMoves, createGoban } from "goban";
+import { GobanRenderer, GobanRendererConfig, createGoban } from "goban";
 import React from "react";
 import { PersistentElement } from "../../components/PersistentElement";
 
 export function ScoringEventThumbnail({
     config,
     move_number,
-    removal_string,
 }: {
     config: GobanRendererConfig;
     move_number: number | undefined;
-    removal_string: string | undefined;
 }) {
     const goban_div = React.useRef<HTMLDivElement>(
         (() => {
@@ -48,20 +46,13 @@ export function ScoringEventThumbnail({
         if (move_number != null) {
             engine.jumpToOfficialMoveNumber(move_number);
         }
-        if (removal_string != null) {
-            decodeMoves(removal_string, config.width ?? 19, config.height ?? 19).forEach(
-                ({ x, y }) => {
-                    engine.setRemoved(x, y, true);
-                },
-            );
-        }
         const score = engine.computeScore();
         goban.current?.showScores(score);
 
         return () => {
             goban.current?.destroy();
         };
-    }, [config]);
+    }, [config, move_number]);
 
     return <PersistentElement className={"goban-thumbnail"} elt={goban_div.current} />;
 }
