@@ -20,11 +20,16 @@ import {
     suspendedUserCannotUpdateProfileTest,
     normalUserCanUpdateProfileTest,
 } from "./suspended-user-profile-updates";
+import { suspendedUserDeletionRequestTest } from "./suspended-user-deletion-request";
 
 ogsTest.describe("@User Profile Tests", () => {
     ogsTest("Normal users can update their profile name", normalUserCanUpdateProfileTest);
     ogsTest(
         "Suspended users cannot update their profile name",
         suspendedUserCannotUpdateProfileTest,
+    );
+    ogsTest(
+        "Suspended users see deletion request button in account settings",
+        suspendedUserDeletionRequestTest,
     );
 });

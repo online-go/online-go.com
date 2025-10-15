@@ -138,6 +138,7 @@ ComponentName/
 -   The use of emojis is discouraged, they are unprofessional and tacky
 -   Use comments sparingly but should be used to explain complex code or non-obvious code
 -   Always ensure the code builds and passes linting and formatting
+-   Do not use `any` type, ensure that all variables are correctly typed
 
 ### Animation Guidelines
 
