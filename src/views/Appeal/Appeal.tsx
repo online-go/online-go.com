@@ -151,22 +151,40 @@ export function Appeal(props: { player_id?: number }): React.ReactElement | null
                     placeholder={placeholder}
                 />
                 <div className="submit-and-hidden">
-                    {mod && !hidden ? (
+                    {mod ? (
                         <>
-                            <button
-                                className="primary"
-                                onClick={submit}
-                                disabled={messageText.length < 2}
-                            >
-                                {_("Leave Suspended")}
-                            </button>
-                            {still_banned && (
+                            {!hidden && still_banned ? (
+                                <>
+                                    <button
+                                        className="primary"
+                                        onClick={submit}
+                                        disabled={messageText.length < 2}
+                                    >
+                                        {_("Leave Suspended")}
+                                    </button>
+                                    <button
+                                        className="success"
+                                        onClick={restoreAndSubmit}
+                                        disabled={messageText.length < 2}
+                                    >
+                                        {_("Restore Account")}
+                                    </button>
+                                </>
+                            ) : !hidden && !still_banned ? (
                                 <button
-                                    className="success"
-                                    onClick={restoreAndSubmit}
+                                    className="primary"
+                                    onClick={sendSystemPMOnly}
                                     disabled={messageText.length < 2}
                                 >
-                                    {_("Restore Account")}
+                                    {_("System PM")}
+                                </button>
+                            ) : (
+                                <button
+                                    className="primary"
+                                    onClick={submit}
+                                    disabled={messageText.length < 2}
+                                >
+                                    {_("Submit")}
                                 </button>
                             )}
                         </>
@@ -277,6 +295,16 @@ export function Appeal(props: { player_id?: number }): React.ReactElement | null
                 pc.sendChat(messageText, true);
             })
             .catch(errorAlerter);
+    }
+
+    function sendSystemPMOnly() {
+        if (!messageText.trim()) {
+            errorAlerter(new Error("Please enter a message before sending."));
+            return;
+        }
+
+        sendSystemPM();
+        setMessageText("");
     }
 
     function refresh() {

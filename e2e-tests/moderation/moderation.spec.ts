@@ -25,6 +25,7 @@ import { modBlockEarlyStallingReportTest } from "./mod-block-early-stall-report"
 import { modRejectEscapeReportDuringGameTest } from "./mod-reject-escape-report-during-game";
 import { autoSuspensionTest } from "./mod-auto-suspension";
 import { suspendAppealRestoreTest } from "./mod-suspend-appeal-restore";
+import { systemPMButtonTest } from "./mod-system-pm-button";
 
 ogsTest.describe("@Mod Moderation Tests", () => {
     ogsTest("@Slow We should warn first turn disconnectors", modWarnFirstTurnDisconnectorTest);
@@ -38,4 +39,5 @@ ogsTest.describe("@Mod Moderation Tests", () => {
         "Complete suspend-appeal-restore flow with two-button functionality",
         suspendAppealRestoreTest,
     );
+    ogsTest("System PM button appears for non-suspended users", systemPMButtonTest);
 });

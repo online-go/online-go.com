@@ -217,10 +217,32 @@ export function LogData({
         }
 
         let marks: { [mark: string]: string };
+        let removed_string = data.current_removal_string || "";
+
         if (event === "stone_removal_stones_set") {
             if (data.removed) {
+                // Stones are being marked dead - show crosses on them
                 marks = { cross: data.stones };
+                // Remove these stones from the removal string so the crosses are visible
+                // (can't see marks on already-removed stones)
+                if (removed_string && data.stones) {
+                    // cspell:disable-next-line
+                    // Parse coordinate strings as 2-character pairs (e.g., "fafbgb" -> ["fa","fb","gb"])
+                    const parseCoords = (str: string): string[] => {
+                        const coords: string[] = [];
+                        for (let i = 0; i < str.length; i += 2) {
+                            coords.push(str.substring(i, i + 2));
+                        }
+                        return coords;
+                    };
+
+                    const removedSet = new Set(parseCoords(removed_string));
+                    const changedSet = new Set(parseCoords(data.stones));
+                    changedSet.forEach((stone) => removedSet.delete(stone));
+                    removed_string = Array.from(removedSet).join("");
+                }
             } else {
+                // Stones are being marked alive - show triangles on them
                 marks = { triangle: data.stones };
             }
         } else {
@@ -230,9 +252,9 @@ export function LogData({
         setMarkedConfig({
             ...config,
             marks,
-            removed: "",
+            removed: removed_string,
         });
-    }, [config, event, data?.removed, data?.stones]);
+    }, [config, event, data?.removed, data?.stones, data?.current_removal_string]);
 
     const ret: Array<React.ReactElement> = [];
 
@@ -280,7 +302,6 @@ export function LogData({
                                 key={k}
                                 config={markedConfig}
                                 move_number={data.move_number}
-                                removal_string={data.stones}
                             />,
                         );
                     }
@@ -292,7 +313,6 @@ export function LogData({
                                 key={k}
                                 config={markedConfig}
                                 move_number={data.move_number}
-                                removal_string={data.current_removal_string || data.stones}
                             />,
                         );
                     }
