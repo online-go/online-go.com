@@ -22,11 +22,11 @@ import { detectContainedSimulTest } from "./simul-detection";
 import { gameLogThumbnailMarksTest } from "./game-log-thumbnail-marks";
 
 ogsTest.describe("@Games Tests", () => {
-    ogsTest("Should be able to pass and score a game", basicScoringTest);
-    ogsTest("Should be able to use arrow in conditional moves", conditionalMovesArrowBugTest);
-    ogsTest("Should be able to detect contained simultaneous game", detectContainedSimulTest);
+    ogsTest("Pass and score a game", basicScoringTest);
+    ogsTest("Use arrow in conditional moves", conditionalMovesArrowBugTest);
+    ogsTest("Detect contained simultaneous game", detectContainedSimulTest);
     ogsTest(
-        "GameLog thumbnails should display marks correctly VISUAL INSPECTION REQUIRED",
+        "GameLog thumbnails display marks correctly VISUAL INSPECTION REQUIRED",
         gameLogThumbnailMarksTest,
     );
 });
