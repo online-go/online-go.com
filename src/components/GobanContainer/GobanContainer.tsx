@@ -138,10 +138,13 @@ export function GobanContainer({
         if (!goban || !goban_div || !ref_goban_container.current) {
             return;
         }
+        if (!goban.engine.game_id) {
+            return;
+        }
         const gobanTransformArray: GobanTransformSetting[] | undefined =
             data.get("goban-transform");
         if (gobanTransformArray) {
-            const transformValue = gobanTransformArray.find((e) => e.game === goban.game_id)
+            const transformValue = gobanTransformArray.find((e) => e.game === goban.engine.game_id)
                 ?.transform;
             if (transformValue) {
                 goban_div.style.transform = `rotate(${transformValue}deg)`;

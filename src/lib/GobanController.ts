@@ -687,17 +687,21 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
             gobanTransformArray = [];
         }
 
-        const foundGame = gobanTransformArray.find((e) => e.game === this.goban.game_id);
+        const foundGame = gobanTransformArray.find((e) => e.game === this.goban.engine.game_id);
 
         if (foundGame) {
             gobanTransformArray = gobanTransformArray.map((e) => {
-                if (e.game === this.goban.game_id) {
+                if (e.game === this.goban.engine.game_id) {
                     e.transform = newD;
                 }
                 return e;
             });
         } else {
-            gobanTransformArray.push({ game: this.goban.game_id, transform: newD });
+            gobanTransformArray.push({ game: this.goban.engine.game_id, transform: newD });
+        }
+
+        if (gobanTransformArray.length > 10) {
+            gobanTransformArray = gobanTransformArray.slice(-10);
         }
 
         data.set("goban-transform", gobanTransformArray);
