@@ -374,7 +374,7 @@ export const assertIncidentReportIndicatorActive = async (page: Page, count: num
 
     await expect(indicator).toBeVisible();
     await expect(icon).toBeVisible();
-    await expect(countDisplay).toHaveText(`${count}`);
+    await expect(countDisplay, "Unexpected number of reports open!").toHaveText(`${count}`);
 
     return indicator;
 };
