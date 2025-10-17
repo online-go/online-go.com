@@ -27,6 +27,7 @@ import type { defaults as defaultPreferences, ValidPreference } from "./preferen
 import type { TimeControl, TimeControlTypes } from "@/components/TimeControl";
 import type { JosekiFilter } from "@/components/JosekiVariationFilter";
 import type { Challenge } from "@/lib/challenge_utils";
+import { GobanTransformSetting } from "@/lib/GobanController";
 
 type TimeControlSpeed = TimeControlTypes.TimeControlSpeed;
 type TimeControlSystem = TimeControlTypes.TimeControlSystem;
@@ -297,4 +298,6 @@ export interface DataSchema
     // be desired when prototyping a new feature and the structure of the data
     // is not known.
     [untyped_key: `_${string}`]: any;
+
+    "goban-transform": GobanTransformSetting[];
 }

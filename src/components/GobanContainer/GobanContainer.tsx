@@ -25,6 +25,8 @@ import { goban_view_mode } from "@/views/Game/util";
 
 import { usePreference } from "@/lib/preferences";
 import { useGobanControllerOrNull } from "@/views/Game/goban_context";
+import * as data from "@/lib/data";
+import { GobanTransformSetting } from "@/lib/GobanController";
 
 interface GobanContainerProps {
     /** The goban to render. If not provided, the goban context goban will be used */
@@ -131,6 +133,19 @@ export function GobanContainer({
         }
         onResize(/* no_debounce */ true, /* do_cb */ true);
     }, [goban, goban_div, ref_goban_container.current, onResize]);
+
+    React.useEffect(() => {
+        if (!goban || !goban_div || !ref_goban_container.current) {
+            return;
+        }
+        const gobanTransformArray: GobanTransformSetting[] | undefined =
+            data.get("goban-transform");
+        if (gobanTransformArray) {
+            const transformValue = gobanTransformArray.find((e) => e.game === goban.game_id)
+                ?.transform;
+            goban_div.style.transform = `rotate(${transformValue}deg`;
+        }
+    }, []);
 
     if (!goban || !goban_div) {
         return <React.Fragment />;

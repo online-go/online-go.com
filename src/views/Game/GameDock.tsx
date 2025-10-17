@@ -411,6 +411,12 @@ export function GameDock({
                 </a>
             </Tooltip>
 
+            <Tooltip tooltipRequired={tooltipRequired} title={_("Rotate goban CW")}>
+                <a onClick={goban_controller.rotateGoban}>
+                    <i className="fa fa-rotate-right"></i> {_("Rotate goban CW")}
+                </a>
+            </Tooltip>
+
             <Tooltip
                 tooltipRequired={tooltipRequired}
                 title={ai_review_enabled ? _("Disable AI review") : _("Enable AI review")}

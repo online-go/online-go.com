@@ -71,6 +71,11 @@ export interface ReviewListEntry {
     id: number;
 }
 
+export interface GobanTransformSetting {
+    game: number;
+    transform: number;
+}
+
 /*
  * This class is a wrapper around the Goban class that stacks on various
  * non-react functionality that we need in the various components within
@@ -656,6 +661,44 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         preferences.set("label-positioning", label_position);
 
         this.goban.setLabelPosition(label_position);
+    };
+
+    rotateGoban = () => {
+        const goban_div = this.goban.config.board_div;
+
+        if (!goban_div) {
+            return;
+        }
+
+        const d =
+            goban_div.style.transform === ""
+                ? 0
+                : parseInt(goban_div.style.transform.split("(")[1].split("deg")[0]);
+
+        const newD: number = d !== 270 ? d + 90 : 0;
+
+        goban_div.style.transform = `rotate(${newD}deg)`;
+
+        let gobanTransformArray: GobanTransformSetting[] | undefined = data.get("goban-transform");
+
+        if (!gobanTransformArray) {
+            gobanTransformArray = [];
+        }
+
+        const foundGame = gobanTransformArray.find((e) => e.game === this.goban.game_id);
+
+        if (foundGame) {
+            gobanTransformArray = gobanTransformArray.map((e) => {
+                if (e.game === this.goban.game_id) {
+                    e.transform = newD;
+                }
+                return e;
+            });
+        } else {
+            gobanTransformArray.push({ game: this.goban.game_id, transform: newD });
+        }
+
+        data.set("goban-transform", gobanTransformArray);
     };
 
     toggleShowTiming = () => {
