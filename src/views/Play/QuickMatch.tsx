@@ -370,16 +370,19 @@ export function QuickMatch(): React.ReactElement {
                   pause_on_weekends: false,
               };
 
-    const playComputerX = React.useCallback(() => {
-        // Try to guess whether the player wants a ranked game or not by looking at
-        // the past challenges.
-        let ranked = data.get(`challenge.challenge.${game_speed}`)?.game?.ranked;
-        if (ranked === undefined) {
-            ranked =
-                data.get(`challenge.challenge.blitz`)?.game?.ranked ??
-                data.get(`challenge.challenge.rapid`)?.game?.ranked ??
-                data.get(`challenge.challenge.live`)?.game?.ranked ??
-                true;
+    const playComputer = React.useCallback(() => {
+        const ranked = preferences.get("automatch.bot-ranked");
+
+        let size = parseInt(board_size);
+        if (game_clock === "multiple") {
+            console.log(multiple_sizes);
+            if (multiple_sizes["9x9"]) {
+                size = 9;
+            } else if (multiple_sizes["13x13"]) {
+                size = 13;
+            } else if (multiple_sizes["19x19"]) {
+                size = 19;
+            }
         }
 
         const settings: ChallengeModalConfig = {
@@ -387,8 +390,8 @@ export function QuickMatch(): React.ReactElement {
                 challenger_color: "automatic",
                 invite_only: false,
                 game: {
-                    width: parseInt(board_size),
-                    height: parseInt(board_size),
+                    width: size,
+                    height: size,
                     ranked,
                     handicap: handicaps === "disabled" ? 0 : -1,
                     time_control,
@@ -408,7 +411,7 @@ export function QuickMatch(): React.ReactElement {
         console.log(settings);
 
         challengeComputer(settings);
-    }, [board_size, handicaps, time_control_system, game_speed]);
+    }, [board_size, game_clock, multiple_sizes, handicaps, time_control_system, game_speed]);
 
     const play = React.useCallback(() => {
         if (data.get("user").anonymous) {
@@ -1126,7 +1129,7 @@ export function QuickMatch(): React.ReactElement {
                 {!automatch_search_active && !user.anonymous && (
                     <button
                         className="play-button"
-                        onClick={playComputerX}
+                        onClick={playComputer}
                         disabled={anon || warned || have_active_game_search}
                     >
                         {_("Play Computer")}

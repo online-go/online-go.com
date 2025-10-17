@@ -55,6 +55,7 @@ export const defaults = {
     "automatch.time-control": "fischer" as "fischer" | "byoyomi",
     "automatch.opponent": "human" as "human" | "bot",
     "automatch.bot": 0 as number | string,
+    "automatch.bot-ranked": false as boolean,
     "automatch.lower-rank-diff": 3,
     "automatch.upper-rank-diff": 3,
     "automatch.show-custom-games": false,
