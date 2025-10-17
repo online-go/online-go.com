@@ -27,15 +27,12 @@ import { cmAiAssessDismissTest } from "./cm-ai-assess-dismiss";
 import { cmVoteSuspendUserTest } from "./cm-vote-suspend-user";
 
 ogsTest.describe("@CM Community Moderation Tests", () => {
-    ogsTest("CM should be able to vote on their own report", cmVoteOnOwnReportTest);
-    ogsTest("We should not notify escalated AI reports", cmDontNotifyEscalatedAiTest);
-    ogsTest("We should show only post-escalation votes", cmShowOnlyPostEscalationVotesTest);
-    ogsTest("We should warn when an AI report is unfounded", cmVoteWarnNotAITest);
-    ogsTest("We should be able to acknowledge warnings", cmAckWarningTest);
-    ogsTest("We should be able to acknowledge acknowledgements", cmAckAcknowledgementTest);
-    ogsTest("AI Assessors should be able to dismiss AI reports", cmAiAssessDismissTest);
-    ogsTest(
-        "CMs should be able to vote to suspend users with human-readable ban reasons",
-        cmVoteSuspendUserTest,
-    );
+    ogsTest("CM Vote on own report", cmVoteOnOwnReportTest);
+    ogsTest("Don't notify CMs about escalated AI reports", cmDontNotifyEscalatedAiTest);
+    ogsTest("Show only post-escalation votes", cmShowOnlyPostEscalationVotesTest);
+    ogsTest("Warn when AI report is unfounded", cmVoteWarnNotAITest);
+    ogsTest("Acknowledge warnings", cmAckWarningTest);
+    ogsTest("Acknowledge acknowledgements", cmAckAcknowledgementTest);
+    ogsTest("Dismiss AI reports as AI Assessor", cmAiAssessDismissTest);
+    ogsTest("Vote to suspend users with human-readable ban reasons", cmVoteSuspendUserTest);
 });
