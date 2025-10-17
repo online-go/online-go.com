@@ -1524,8 +1524,6 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         const user = data.get("user");
         let available_bots: (Bot & { category?: Category })[] = bots_list().filter((b) => b.id > 0);
         const board_size = `${this.state.challenge.game.width}x${this.state.challenge.game.height}`;
-        console.log(board_size, this.state.challenge.game.speed, this.state.time_control.system);
-        console.log(this.state.challenge.game.speed);
 
         const categories = [
             {

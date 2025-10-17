@@ -375,7 +375,6 @@ export function QuickMatch(): React.ReactElement {
 
         let size = parseInt(board_size);
         if (game_clock === "multiple") {
-            console.log(multiple_sizes);
             if (multiple_sizes["9x9"]) {
                 size = 9;
             } else if (multiple_sizes["13x13"]) {
@@ -408,7 +407,7 @@ export function QuickMatch(): React.ReactElement {
             time_control,
         };
 
-        console.log(settings);
+        // console.log(settings);
 
         challengeComputer(settings);
     }, [board_size, game_clock, multiple_sizes, handicaps, time_control_system, game_speed]);
