@@ -231,6 +231,7 @@ export const defaults = {
     "bot.challenge-level": 2 as 1 | 2 | 3,
     "bot.slug": "" as string,
     "bot.color": "random" as "random" | "white" | "black",
+    "bot.last-selected-id": undefined as string | number | undefined,
 };
 
 defaults["profanity-filter"][current_language] = true;
