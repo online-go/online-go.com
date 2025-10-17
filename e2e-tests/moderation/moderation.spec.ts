@@ -26,6 +26,7 @@ import { modRejectEscapeReportDuringGameTest } from "./mod-reject-escape-report-
 import { autoSuspensionTest } from "./mod-auto-suspension";
 import { suspendAppealRestoreTest } from "./mod-suspend-appeal-restore";
 import { systemPMButtonTest } from "./mod-system-pm-button";
+import { aiDetectionPlayerFilterTest } from "./ai-detection-player-filter";
 
 ogsTest.describe("@Mod Moderation Tests", () => {
     ogsTest("@Slow We should warn first turn disconnectors", modWarnFirstTurnDisconnectorTest);
@@ -40,4 +41,5 @@ ogsTest.describe("@Mod Moderation Tests", () => {
         suspendAppealRestoreTest,
     );
     ogsTest("System PM button appears for non-suspended users", systemPMButtonTest);
+    ogsTest("AI Detection player filter button works correctly", aiDetectionPlayerFilterTest);
 });
