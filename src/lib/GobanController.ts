@@ -673,7 +673,9 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         const d =
             goban_div.style.transform === ""
                 ? 0
-                : parseInt(goban_div.style.transform.split("(")[1].split("deg")[0]);
+                : goban_div.style.transform.includes("rotate")
+                  ? parseInt(goban_div.style.transform.split("(")[1].split("deg")[0])
+                  : 0;
 
         const newD: number = d !== 270 ? d + 90 : 0;
 

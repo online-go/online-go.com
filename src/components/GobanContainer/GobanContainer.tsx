@@ -143,7 +143,9 @@ export function GobanContainer({
         if (gobanTransformArray) {
             const transformValue = gobanTransformArray.find((e) => e.game === goban.game_id)
                 ?.transform;
-            goban_div.style.transform = `rotate(${transformValue}deg`;
+            if (transformValue) {
+                goban_div.style.transform = `rotate(${transformValue}deg)`;
+            }
         }
     }, []);
 
