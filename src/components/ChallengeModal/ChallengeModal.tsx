@@ -204,6 +204,14 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
             if (this.props.config.time_control) {
                 state.time_control = this.props.config.time_control;
             }
+
+            // Update selected_board_size to match the potentially updated width/height
+            if (this.props.config.challenge?.game) {
+                const width = state.challenge.game.width;
+                const height = state.challenge.game.height;
+                state.conf.selected_board_size =
+                    standard_board_sizes[`${width}x${height}`] || "custom";
+            }
         }
 
         if (this.state.conf.mode === "computer" && bot_count()) {
@@ -471,6 +479,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
             }
 
             console.log("Bot set to ", player_id);
+            preferences.set("automatch.bot-ranked", next.challenge.game.ranked);
         }
 
         const challenge = this.getChallenge();
@@ -1515,8 +1524,6 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         const user = data.get("user");
         let available_bots: (Bot & { category?: Category })[] = bots_list().filter((b) => b.id > 0);
         const board_size = `${this.state.challenge.game.width}x${this.state.challenge.game.height}`;
-        console.log(board_size, this.state.challenge.game.speed, this.state.time_control.system);
-        console.log(this.state.challenge.game.speed);
 
         const categories = [
             {

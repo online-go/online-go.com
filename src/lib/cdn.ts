@@ -47,15 +47,17 @@ export function user_uploads_url(
         return undefined;
     }
 
-    if (!url_or_hash.includes("rackcdn")) {
-        return url_or_hash;
-    }
-
     if (size !== "original" && !valid_sizes.includes(size as number)) {
         throw new Error(`Invalid size: ${size}`);
     }
     const hash = get_image_hash(url_or_hash);
     if (!hash) {
+        if (
+            !url_or_hash.includes("rackcdn") &&
+            !url_or_hash.includes("user-uploads.online-go.com")
+        ) {
+            return url_or_hash;
+        }
         console.warn("Invalid image url: ", url_or_hash);
         return url_or_hash;
     }
