@@ -28,13 +28,13 @@ import { suspendAppealRestoreTest } from "./mod-suspend-appeal-restore";
 import { systemPMButtonTest } from "./mod-system-pm-button";
 
 ogsTest.describe("@Mod Moderation Tests", () => {
-    ogsTest("@Slow We should warn first turn disconnectors", modWarnFirstTurnDisconnectorTest);
-    ogsTest("@Slow We should not auto-warn blitz games", modDontAutoWarnBlitzTest);
-    ogsTest("@Slow We should warn first turn escapers", modWarnFirstTurnEscapersTest);
-    ogsTest("We should block early escape reports", modBlockEarlyEscapeReportTest);
-    ogsTest("We should block early stalling reports", modBlockEarlyStallingReportTest);
-    ogsTest("We should reject escaping reports during game", modRejectEscapeReportDuringGameTest);
-    ogsTest("We should suspend users when appropriate", autoSuspensionTest);
+    ogsTest("@Slow Auto-warn first turn disconnectors", modWarnFirstTurnDisconnectorTest);
+    ogsTest("@Slow Skip auto-warn for blitz games", modDontAutoWarnBlitzTest);
+    ogsTest("@Slow Auto-warn first turn escapers", modWarnFirstTurnEscapersTest);
+    ogsTest("Block early escape reports", modBlockEarlyEscapeReportTest);
+    ogsTest("Block early stalling reports", modBlockEarlyStallingReportTest);
+    ogsTest("Reject escape reports during active game", modRejectEscapeReportDuringGameTest);
+    ogsTest("Auto-suspend users with previously suspended accounts", autoSuspensionTest);
     ogsTest(
         "Complete suspend-appeal-restore flow with two-button functionality",
         suspendAppealRestoreTest,

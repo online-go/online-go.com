@@ -20,5 +20,5 @@ import { declineFriendRequestNotificationTest } from "./decline";
 //import { runBotDetectionTest } from "./bot-detect";
 
 ogsTest.describe("@Friends Tests", () => {
-    ogsTest("Should be able to decline a friend request", declineFriendRequestNotificationTest);
+    ogsTest("Decline friend request", declineFriendRequestNotificationTest);
 });
