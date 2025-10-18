@@ -150,6 +150,17 @@ export function Appeal(props: { player_id?: number }): React.ReactElement | null
                     onChange={(ev) => setMessageText(ev.target.value)}
                     placeholder={placeholder}
                 />
+                {(mod || null) && (
+                    <div className="hidden-checkbox">
+                        <label htmlFor="hidden">Hidden</label>
+                        <input
+                            id="hidden"
+                            type="checkbox"
+                            checked={hidden}
+                            onChange={(ev) => setHidden(ev.target.checked)}
+                        />
+                    </div>
+                )}
                 <div className="submit-and-hidden">
                     {mod ? (
                         <>
@@ -196,17 +207,6 @@ export function Appeal(props: { player_id?: number }): React.ReactElement | null
                         >
                             {_("Submit")}
                         </button>
-                    )}
-                    {(mod || null) && (
-                        <span>
-                            <label htmlFor="hidden">Hidden</label>
-                            <input
-                                id="hidden"
-                                type="checkbox"
-                                checked={hidden}
-                                onChange={(ev) => setHidden(ev.target.checked)}
-                            />
-                        </span>
                     )}
                 </div>
             </Card>
