@@ -24,7 +24,7 @@
  * 3. The player autocomplete input shows the filtered player's name
  * 4. No popup appears when clicking player names (direct filtering behavior)
  * 5. Clicking a different player updates the filter to that player
- * 6. Clicking the currently filtered player navigates to their profile page
+ * 6. Clicking the currently filtered player opens their profile page in a new tab
  *
  * Uses E2E_MODERATOR from init_e2e data for moderator functionality.
  * Requires E2E_MODERATOR_PASSWORD environment variable to be set.
@@ -169,15 +169,21 @@ export const aiDetectionPlayerFilterTest = async ({ browser }: { browser: Browse
         console.log(`Filtered player ID: ${filteredPlayerId}`);
 
         if (filteredPlayerId) {
-            // Click the filtered player (should navigate to profile)
-            console.log("Clicking filtered player to navigate to profile...");
-            await filteredPlayerLink.click();
-            await modPage.waitForLoadState("networkidle");
+            // Click the filtered player (should open profile in new tab)
+            console.log("Clicking filtered player to open profile in new tab...");
+            const [newPage] = await Promise.all([
+                modContext.waitForEvent("page"),
+                filteredPlayerLink.click(),
+            ]);
+            await newPage.waitForLoadState("networkidle");
 
-            // Verify we navigated to the player's profile page
-            const profileUrl = modPage.url();
+            // Verify the new tab opened to the player's profile page
+            const profileUrl = newPage.url();
             expect(profileUrl).toContain(`/player/${filteredPlayerId}`);
-            console.log(`Navigated to player profile: ${profileUrl} ✓`);
+            console.log(`Opened player profile in new tab: ${profileUrl} ✓`);
+
+            // Close the new tab
+            await newPage.close();
         } else {
             console.log("⚠ Could not extract player ID from URL, skipping profile navigation test");
         }
@@ -194,6 +200,6 @@ export const aiDetectionPlayerFilterTest = async ({ browser }: { browser: Browse
     console.log("✓ Clicked player link directly set the filter (no popup)");
     console.log("✓ URL was updated with player parameter");
     console.log("✓ Clicking different player updates the filter");
-    console.log("✓ Clicking filtered player navigates to their profile");
+    console.log("✓ Clicking filtered player opens their profile in a new tab");
     console.log("✓ Player filter functionality fully verified");
 };
