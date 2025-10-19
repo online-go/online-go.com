@@ -7,6 +7,9 @@ VERSION=$(shell git describe --long)
 OGS_HASH=$(shell md5sum dist/ogs.js | awk '{print $$1}')
 OGS_VERSION_HASH=$(VERSION)-$(OGS_HASH)
 
+# List of submodules to notify about when they change
+NOTIFY_SUBMODULES = moderator-ui goban react-dynamic-help
+
 LANGUAGE_VERSION=`md5sum i18n/locale/*.js | sort | md5sum | awk '{print $$1}'`
 SUPPORTED_LANGUAGES=`python -c 'import json; print(json.dumps(json.loads(open("i18n/languages.json", "r").read())))'`
 
@@ -27,10 +30,12 @@ PROD_INDEX_HEADERS=$(BASE_INDEX_HEADERS) -H "X-OGS-Index-Auth: $(PROD_INDEX_AUTH
 deploy-to-beta: build sync-translations build-i18n create-unified-pot audit-translations jsonify-po-files push-cdn upload-sentry-source-maps save-translation-artifacts
 	OGS_VERSION_HASH=$(OGS_VERSION_HASH) npm run minify-index --silent | curl -X PUT $(BETA_INDEX_HEADERS) -d @- https://beta.online-go.com/_index
 	make beta-notify-slack
+	make notify-submodule-changes
 
 deploy-to-production: load-translation-artifacts build push-cdn
 	OGS_VERSION_HASH=$(OGS_VERSION_HASH) npm run minify-index --silent | curl -X PUT $(PROD_INDEX_HEADERS) -d @- https://online-go.com/_index
 	make live-notify-slack
+	make notify-submodule-changes
 	
 
 save-translation-artifacts:	
@@ -147,6 +152,30 @@ live-notify-slack:
 	echo $$VERSION $$MSG; \
 	curl -X POST -H 'Content-type: application/json' --data '{"text":"'"[PRODUCTION UI] $$VERSION $$MSG"'"}' $(SLACK_WEBHOOK_URL)
 
+notify-submodule-changes:
+	@for submod in $(NOTIFY_SUBMODULES); do \
+		if git diff HEAD~1 HEAD -- submodules/$$submod | grep -q "Subproject commit"; then \
+			SUBMOD_VERSION=`cd submodules/$$submod && git describe --long 2>/dev/null || git rev-parse --short HEAD`; \
+			SUBMOD_MSG=`cd submodules/$$submod && git log -1 --pretty="%B" | sed s/\"//g | sed s/\'//g`; \
+			echo "Notifying about $$submod update: $$SUBMOD_VERSION"; \
+			curl -X POST -H 'Content-type: application/json' --data '{"text":"'"[$$submod] $$SUBMOD_VERSION - $$SUBMOD_MSG"'"}' $(SLACK_WEBHOOK_URL); \
+		fi; \
+	done
+
+notify-submodule-changes-dry-run:
+	@echo "=== DRY RUN: Checking for submodule changes ==="
+	@for submod in $(NOTIFY_SUBMODULES); do \
+		echo "Checking $$submod..."; \
+		if git diff HEAD~1 HEAD -- submodules/$$submod | grep -q "Subproject commit"; then \
+			SUBMOD_VERSION=`cd submodules/$$submod && git describe --long 2>/dev/null || git rev-parse --short HEAD`; \
+			SUBMOD_MSG=`cd submodules/$$submod && git log -1 --pretty="%B" | sed s/\"//g | sed s/\'//g`; \
+			echo "  ✓ WOULD NOTIFY: [$$submod] $$SUBMOD_VERSION - $$SUBMOD_MSG"; \
+		else \
+			echo "  - No changes detected"; \
+		fi; \
+	done
+	@echo "=== END DRY RUN ==="
+
 confirm-go-live:
 	@read -p "Go live? " yesno; \
 	test $$yesno == 'yes';
@@ -156,5 +185,5 @@ confirm-go-live:
 	
 
 
-.PHONY: dev stats todo update install default server dist push-cdn sync-translations
+.PHONY: dev stats todo update install default server dist push-cdn sync-translations notify-submodule-changes notify-submodule-changes-dry-run
 
