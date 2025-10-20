@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { _, interpolate } from "@/lib/translate";
+import { _, interpolate, npgettext } from "@/lib/translate";
 import { Modal, openModal } from "@/components/Modal";
 import { get, post } from "@/lib/requests";
 import { errorAlerter } from "@/lib/misc";
@@ -162,7 +162,15 @@ export class SGFCollectionModal extends Modal<
             <option key={collection.id} value={collection.id}>
                 {name}
                 {collection.game_ct !== undefined &&
-                    ` (${interpolate(_("{{count}} games"), { count: collection.game_ct })})`}
+                    `(${interpolate(_("{{count}} {{unit}}"), {
+                        count: collection.game_ct,
+                        unit: npgettext(
+                            "SGF Library: number of games in a collection",
+                            "game",
+                            "games",
+                            collection.game_ct,
+                        ),
+                    })})`}
             </option>,
             ...collection.collections.flatMap((child) =>
                 this.renderCollectionOption(child, depth + 1),

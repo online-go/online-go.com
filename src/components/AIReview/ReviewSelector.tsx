@@ -18,7 +18,7 @@
 import * as React from "react";
 import Select, { components } from "react-select";
 import { JGOFAIReview } from "goban";
-import { _, pgettext, interpolate, moment } from "@/lib/translate";
+import { pgettext, interpolate, moment } from "@/lib/translate";
 import { ReviewStrengthIcon } from "./ReviewStrengthIcon";
 import { engineName, extractShortNetworkVersion } from "./utils";
 
@@ -167,7 +167,10 @@ export function ReviewSelector({
                         ) : (
                             <div className="pending">
                                 <i className="fa fa-desktop slowstrobe"></i>
-                                {_("Processing")}
+                                {pgettext(
+                                    "AI Review: Shown while the AI review is being loaded",
+                                    "Processing",
+                                )}
                             </div>
                         )}
                     </React.Fragment>
@@ -189,7 +192,11 @@ export function ReviewSelector({
                                             props.selectProps.onMenuClose?.();
                                         }}
                                     >
-                                        <i className="fa fa-plus" /> {_("New Full Review")}
+                                        <i className="fa fa-plus" />{" "}
+                                        {pgettext(
+                                            "AI Review: Start a new full review",
+                                            "New Full Review",
+                                        )}
                                     </button>
                                 </div>
                             )}

@@ -65,6 +65,7 @@ function setPluralIdx() {
         case "zh-cn": // Simplified Chinese
         case "ja": // Japanese
         case "ko": // Korean
+        case "th": // Thai
             // No differentiation between singular and plural
             pluralidx = () => 0;
             break;
@@ -82,10 +83,25 @@ function setPluralIdx() {
                 return 3;
             };
             break;
-        case "ru": // Russian
         case "pl": // Polish
+            pluralidx = (count: number) => {
+                if (!isInteger(count)) {
+                    return 3;
+                }
+                if (count === 1) {
+                    return 0;
+                } // 1
+                if (isInRange(count % 10, 2, 4) && !isInRange(count % 100, 12, 14)) {
+                    return 1;
+                } // 2, 3, 4, 22, 23, 24...
+                return 2; // 0, 5, 6, 7, 8, 9, 11, 12, 21, 31
+            };
+            break;
+        case "be": // Belarusian
+        case "ru": // Russian
         case "uk": // Ukrainian
-        // Croatian and Serbian are not strictly the same as Russian and Polish, but since this function does not take a string,
+        // Croatian and Serbian are not strictly the same as Belarusian, Russian and Ukrainian,
+        // but since this function does not take a string,
         // we cannot properly handle decimals.
         // TODO: allow this function to take a string and handle this case accordingly
         // break omitted
@@ -95,10 +111,9 @@ function setPluralIdx() {
                 if (!isInteger(count)) {
                     return 3;
                 }
-
                 if (count % 10 === 1 && count % 100 !== 11) {
                     return 0;
-                } // 1, 21, 31, 41, 51, 61...
+                } // 1, 21, 31, 41, 51, 61, 101, 121, 131...
                 if (isInRange(count % 10, 2, 4) && !isInRange(count % 100, 12, 14)) {
                     return 1;
                 } // 2, 3, 4, 22, 23, 24...
@@ -116,17 +131,11 @@ function setPluralIdx() {
                 return 2;
             };
             break;
+        case "fa": // Farsi (Persian)
         case "fr": // French
+        case "hi": // Hindi
             pluralidx = (count: number) => {
                 if (isInRange(Math.trunc(count), 0, 1)) {
-                    return 0;
-                }
-                return 1;
-            };
-            break;
-        case "da": // Danish
-            pluralidx = (count: number) => {
-                if (count > 0 && count < 2) {
                     return 0;
                 }
                 return 1;
@@ -144,6 +153,53 @@ function setPluralIdx() {
                     return 2;
                 }
                 return 3;
+            };
+            break;
+        case "is": // Icelandic
+            pluralidx = (count: number) => {
+                if (count % 10 === 1 && !isInRange(count % 100, 11, 19)) {
+                    return 0;
+                }
+                return 1;
+            };
+            break;
+        case "fil": // Filipino
+            pluralidx = (count: number) => {
+                if (count % 10 === 4 || count % 10 === 6 || count % 10 === 9) {
+                    return 1; // 4, 6, 9, 14, 16, 19, 104, 106, 109, etc.
+                }
+                return 0;
+            };
+            break;
+        case "lt": // Lithuanian
+            pluralidx = (count: number) => {
+                if (count % 10 === 1 && !isInRange(count % 100, 11, 19)) {
+                    return 0; // 1, 21, 31, 41, 51, 101, 121
+                }
+                if (isInRange(count % 10, 2, 9) && !isInRange(count % 100, 11, 19)) {
+                    return 1; // 2-9, 22-29, 122-129
+                }
+                return 2;
+            };
+            break;
+        case "ar": // Arabic
+            pluralidx = (count: number) => {
+                if (count === 0) {
+                    return 5; // 0 - zero (z)
+                }
+                if (count === 1) {
+                    return 0; // 1 - one (o)
+                }
+                if (count === 2) {
+                    return 1; // 2 - two (t)
+                }
+                if (isInRange(count % 100, 3, 10)) {
+                    return 3; // 3-10, 103-110, 203-210, etc. - few (f)
+                }
+                if (isInRange(count % 100, 0, 2)) {
+                    return 4; // 100-102, 200-202, etc. - other (x)
+                }
+                return 2; // 11-99, 111-119, etc. - many (m)
             };
             break;
         default:
