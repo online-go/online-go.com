@@ -174,6 +174,28 @@ import { BL3Opening1 } from "./Sections/BeginnerLevel3/Opening1";
 import { BL3Opening2 } from "./Sections/BeginnerLevel3/Opening2";
 import { BL3Opening3 } from "./Sections/BeginnerLevel3/Opening3";
 import { BL3Opening4 } from "./Sections/BeginnerLevel3/Opening4";
+import { BL3Haengma1 } from "./Sections/BeginnerLevel3/Haengma1";
+import { BL3Haengma2 } from "./Sections/BeginnerLevel3/Haengma2";
+import { BL3Haengma3 } from "./Sections/BeginnerLevel3/Haengma3";
+import { BL3Haengma4 } from "./Sections/BeginnerLevel3/Haengma4";
+import { BL3Seki1 } from "./Sections/BeginnerLevel3/Seki1";
+import { BL3Seki2 } from "./Sections/BeginnerLevel3/Seki2";
+import { BL3Skills1 } from "./Sections/BeginnerLevel3/Skills1";
+import { BL3Skills2 } from "./Sections/BeginnerLevel3/Skills2";
+import { BL3Skills3 } from "./Sections/BeginnerLevel3/Skills3";
+import { BL3Skills4 } from "./Sections/BeginnerLevel3/Skills4";
+import { BL3Skills5 } from "./Sections/BeginnerLevel3/Skills5";
+import { BL3Skills6 } from "./Sections/BeginnerLevel3/Skills6";
+import { BL3Skills7 } from "./Sections/BeginnerLevel3/Skills7";
+import { BL3Endgame1 } from "./Sections/BeginnerLevel3/Endgame1";
+import { BL3Endgame2 } from "./Sections/BeginnerLevel3/Endgame2";
+import { BL3Endgame3 } from "./Sections/BeginnerLevel3/Endgame3";
+import { BL3Endgame4 } from "./Sections/BeginnerLevel3/Endgame4";
+import { BL3Endgame5 } from "./Sections/BeginnerLevel3/Endgame5";
+import { BL3FalseEye1 } from "./Sections/BeginnerLevel3/FalseEye1";
+import { BL3FalseEye2 } from "./Sections/BeginnerLevel3/FalseEye2";
+import { BL3FalseEye3 } from "./Sections/BeginnerLevel3/FalseEye3";
+import { BL3FalseEye4 } from "./Sections/BeginnerLevel3/FalseEye4";
 
 export const sections: [string, any[]][] = [
     [
@@ -351,6 +373,28 @@ export const sections: [string, any[]][] = [
             BL3Opening2,
             BL3Opening3,
             BL3Opening4,
+            BL3Haengma1,
+            BL3Haengma2,
+            BL3Haengma3,
+            BL3Haengma4,
+            BL3Seki1,
+            BL3Seki2,
+            BL3Skills1,
+            BL3Skills2,
+            BL3Skills3,
+            BL3Skills4,
+            BL3Skills5,
+            BL3Skills6,
+            BL3Skills7,
+            BL3Endgame1,
+            BL3Endgame2,
+            BL3Endgame3,
+            BL3Endgame4,
+            BL3Endgame5,
+            BL3FalseEye1,
+            BL3FalseEye2,
+            BL3FalseEye3,
+            BL3FalseEye4,
         ],
     ],
 
