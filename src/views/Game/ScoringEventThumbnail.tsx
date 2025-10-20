@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { GobanRenderer, GobanRendererConfig, createGoban } from "goban";
+import { GobanRenderer, GobanRendererConfig, createGoban, decodeMoves } from "goban";
 import React from "react";
 import { PersistentElement } from "../../components/PersistentElement";
 
@@ -46,6 +46,17 @@ export function ScoringEventThumbnail({
         if (move_number != null) {
             engine.jumpToOfficialMoveNumber(move_number);
         }
+
+        // Apply the removed stones from the config before computing score
+        // This ensures the score computation uses the stones players marked as dead/alive,
+        // not just the current board position
+        if (config.removed) {
+            const removed_moves = decodeMoves(config.removed, engine.width, engine.height);
+            for (const move of removed_moves) {
+                engine.setRemoved(move.x, move.y, true, false);
+            }
+        }
+
         const score = engine.computeScore();
         goban.current?.showScores(score);
 

@@ -223,8 +223,12 @@ export function LogData({
             if (data.removed) {
                 // Stones are being marked dead - show crosses on them
                 marks = { cross: data.stones };
-                // Remove these stones from the removal string so the crosses are visible
-                // (can't see marks on already-removed stones)
+                // The removed_string already contains all removed stones (current_removal_string)
+                // No need to modify it - keep all removed stones for score computation
+            } else {
+                // Stones are being marked alive - show triangles on them
+                marks = { triangle: data.stones };
+                // Remove these stones from the removal string since they're now alive
                 if (removed_string && data.stones) {
                     // cspell:disable-next-line
                     // Parse coordinate strings as 2-character pairs (e.g., "fafbgb" -> ["fa","fb","gb"])
@@ -241,9 +245,6 @@ export function LogData({
                     changedSet.forEach((stone) => removedSet.delete(stone));
                     removed_string = Array.from(removedSet).join("");
                 }
-            } else {
-                // Stones are being marked alive - show triangles on them
-                marks = { triangle: data.stones };
             }
         } else {
             marks = { cross: data.stones }; // TBD: What is this case?
