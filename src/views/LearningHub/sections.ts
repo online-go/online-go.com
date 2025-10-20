@@ -192,6 +192,10 @@ import { BL3Endgame2 } from "./Sections/BeginnerLevel3/Endgame2";
 import { BL3Endgame3 } from "./Sections/BeginnerLevel3/Endgame3";
 import { BL3Endgame4 } from "./Sections/BeginnerLevel3/Endgame4";
 import { BL3Endgame5 } from "./Sections/BeginnerLevel3/Endgame5";
+import { BL3FalseEye1 } from "./Sections/BeginnerLevel3/FalseEye1";
+import { BL3FalseEye2 } from "./Sections/BeginnerLevel3/FalseEye2";
+import { BL3FalseEye3 } from "./Sections/BeginnerLevel3/FalseEye3";
+import { BL3FalseEye4 } from "./Sections/BeginnerLevel3/FalseEye4";
 
 export const sections: [string, any[]][] = [
     [
@@ -387,6 +391,10 @@ export const sections: [string, any[]][] = [
             BL3Endgame3,
             BL3Endgame4,
             BL3Endgame5,
+            BL3FalseEye1,
+            BL3FalseEye2,
+            BL3FalseEye3,
+            BL3FalseEye4,
         ],
     ],
 
