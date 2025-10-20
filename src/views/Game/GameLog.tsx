@@ -135,7 +135,7 @@ export function GameLog({
                                         }
                                     >
                                         <td className="timestamp">
-                                            {moment(entry.timestamp).format("L LTS")}
+                                            {moment(entry.timestamp).utc().format("L LTS")} UTC
                                         </td>
                                         <td className="event">{decodeLogEvent(entry.event)}</td>
                                         <td className="data">
