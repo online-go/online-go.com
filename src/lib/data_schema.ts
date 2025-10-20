@@ -254,6 +254,7 @@ export interface DataSchema
     "free-trial-saved-for-later-timestamp": number;
     "free-trial-survey-submitted-timestamp": number;
     "price-increase-message-dismissed-timestamp": number;
+    "can-create-groups": boolean;
 
     "chat-manager.last-seen": { [channel: string]: number };
     "device.uuid": string;
