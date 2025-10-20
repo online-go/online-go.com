@@ -48,6 +48,7 @@ export function PlayButtons({ show_cancel = true }: PlayButtonsProps): React.Rea
     const engine = goban.engine;
     const phase = engine.phase;
     const zen_mode = useZenMode(goban_controller);
+    const user_id = data.get("user").id;
 
     const { registerTargetItem } = React.useContext(DynamicHelp.Api);
     const { ref: accept_button, used: signalUndoAcceptUsed } =
@@ -56,7 +57,7 @@ export function PlayButtons({ show_cancel = true }: PlayButtonsProps): React.Rea
     const official_move_number = useOfficialMoveNumber(goban);
     const cur_move_number = useCurrentMoveNumber(goban);
     const player_to_move = usePlayerToMove(goban);
-    const is_my_move = player_to_move === data.get("user").id;
+    const is_my_move = player_to_move === user_id;
     const [in_pushed_analysis, set_in_pushed_analysis] = React.useState(
         goban_controller.in_pushed_analysis,
     );
@@ -89,32 +90,62 @@ export function PlayButtons({ show_cancel = true }: PlayButtonsProps): React.Rea
     }, [goban_controller, goban, set_in_pushed_analysis]);
 
     const [show_accept_undo, setShowAcceptUndo] = React.useState<boolean>(false);
+    const [show_cancel_undo, setShowCancelUndo] = React.useState<boolean>(false);
     React.useEffect(() => {
-        const syncShowAcceptUndo = () => {
+        const syncShowUndoButtons = () => {
             if (in_pushed_analysis) {
+                setShowAcceptUndo(false);
+                setShowCancelUndo(false);
+                return;
+            }
+
+            if (!goban.engine.undo_requested || !goban.engine.isParticipant(user_id)) {
+                setShowAcceptUndo(false);
+                setShowCancelUndo(false);
+                return;
+            }
+
+            const requested_by = goban.engine.undo_requested_by;
+            if (requested_by !== undefined) {
+                setShowAcceptUndo(requested_by !== user_id);
+                setShowCancelUndo(requested_by === user_id);
                 return;
             }
 
             setShowAcceptUndo(
-                goban.engine.playerToMove() === data.get("user").id ||
-                    (goban.submit_move != null &&
-                        goban.engine.playerNotToMove() === data.get("user").id),
+                goban.engine.playerToMove() === user_id ||
+                    (goban.submit_move != null && goban.engine.playerNotToMove() === user_id),
             );
+            setShowCancelUndo(false);
         };
-        syncShowAcceptUndo();
+        syncShowUndoButtons();
 
-        goban.on("cur_move", syncShowAcceptUndo);
-        goban.on("submit_move", syncShowAcceptUndo);
+        goban.on("cur_move", syncShowUndoButtons);
+        goban.on("submit_move", syncShowUndoButtons);
+        goban.on("undo_requested", syncShowUndoButtons);
+        goban.on("undo_canceled", syncShowUndoButtons);
+        goban.on("undo_requested_by", syncShowUndoButtons);
         return () => {
-            goban.off("cur_move", syncShowAcceptUndo);
-            goban.off("submit_move", syncShowAcceptUndo);
+            goban.off("cur_move", syncShowUndoButtons);
+            goban.off("submit_move", syncShowUndoButtons);
+            goban.off("undo_requested", syncShowUndoButtons);
+            goban.off("undo_canceled", syncShowUndoButtons);
+            goban.off("undo_requested_by", syncShowUndoButtons);
         };
-    }, [goban, in_pushed_analysis]);
+    }, [goban, in_pushed_analysis, user_id]);
     const show_undo_requested = useShowUndoRequested(goban);
 
     const onUndo = () => {
+        if (!goban.engine.isParticipant(user_id)) {
+            return;
+        }
+
+        const is_player_turn =
+            user_id === goban.engine.playerToMove() || user_id === goban.engine.playerNotToMove();
+
         if (
-            data.get("user").id === goban.engine.playerNotToMove() &&
+            is_player_turn &&
+            goban.engine.getMoveNumber() > 0 &&
             goban.engine.undo_requested !== goban.engine.getMoveNumber()
         ) {
             goban.requestUndo();
@@ -143,6 +174,10 @@ export function PlayButtons({ show_cancel = true }: PlayButtonsProps): React.Rea
         signalUndoAcceptUsed();
     };
 
+    const cancelUndo = () => {
+        goban.cancelUndo();
+    };
+
     const [submitting_move, setSubmittingMove] = React.useState(false);
     React.useEffect(() => {
         goban.on("submitting-move", setSubmittingMove);
@@ -158,7 +193,6 @@ export function PlayButtons({ show_cancel = true }: PlayButtonsProps): React.Rea
                     <>
                         {cur_move_number >= 1 &&
                             !engine.rengo &&
-                            (player_to_move !== data.get("user").id || engine.is_game_record) &&
                             !((engine.undo_requested ?? -1) >= engine.getMoveNumber()) &&
                             goban.submit_move == null && (
                                 <button className="bold undo-button xs" onClick={onUndo}>
@@ -173,7 +207,15 @@ export function PlayButtons({ show_cancel = true }: PlayButtonsProps): React.Rea
                                         onClick={() => acceptUndo()}
                                         ref={accept_button}
                                     >
-                                        {_("Accept Undo")}
+                                        ↶ {_("Accept Undo")}
+                                    </button>
+                                )}
+                                {show_cancel_undo && (
+                                    <button
+                                        className="bold cancel-undo-button xs"
+                                        onClick={() => cancelUndo()}
+                                    >
+                                        {_("Cancel Undo")}
                                     </button>
                                 )}
                             </span>

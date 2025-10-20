@@ -289,9 +289,9 @@ describe("PlayButtons", () => {
         // Present
         expect(screen.getByText("Cancel game")).toBeDefined();
         expect(screen.getByText("Pass")).toBeDefined();
+        expect(screen.getByText("Undo")).toBeDefined();
 
         // Absent
-        expect(screen.queryByText("Undo")).toBeNull();
         expect(screen.queryByText("Accept Undo")).toBeNull();
         expect(screen.queryByText("Submit Move")).toBeNull();
     });
@@ -309,6 +309,7 @@ describe("PlayButtons", () => {
                 white: { id: 456, username: "test_user2" },
             },
         });
+        controller.goban.engine.undo_requested_by = 456;
         controller.goban.engine.undo_requested = 4;
         render(
             <WrapTest controller={controller}>
@@ -324,6 +325,7 @@ describe("PlayButtons", () => {
         // Absent
         expect(screen.queryByText("Undo")).toBeNull();
         expect(screen.queryByText("Submit Move")).toBeNull();
+        expect(screen.queryByText("Cancel Undo")).toBeNull();
     });
 
     test('shows "Accept undo" if undo was requested after initial render', () => {
@@ -346,6 +348,7 @@ describe("PlayButtons", () => {
         );
 
         act(() => {
+            controller.goban.engine.undo_requested_by = 456;
             controller.goban.engine.undo_requested = 4;
         });
 
@@ -357,6 +360,66 @@ describe("PlayButtons", () => {
         // Absent
         expect(screen.queryByText("Undo")).toBeNull();
         expect(screen.queryByText("Submit Move")).toBeNull();
+        expect(screen.queryByText("Cancel Undo")).toBeNull();
+    });
+
+    test("shows Cancel Undo to the player who requested it", () => {
+        const controller = new GobanController({
+            moves: [
+                [16, 3, 9136.12], // B
+                [3, 2, 1897.853], // W
+                [15, 16, 4274.0], // B
+                [14, 2, 3816], // White went last
+            ],
+            players: {
+                black: { id: 987, username: "opponent" },
+                white: { id: LOGGED_IN_USER.id, username: LOGGED_IN_USER.username },
+            },
+        });
+
+        act(() => {
+            controller.goban.engine.undo_requested_by = LOGGED_IN_USER.id;
+            controller.goban.engine.undo_requested = 4;
+        });
+
+        render(
+            <WrapTest controller={controller}>
+                <PlayButtons />
+            </WrapTest>,
+        );
+
+        // Present
+        expect(screen.getByText("Cancel Undo")).toBeDefined();
+
+        // Absent
+        expect(screen.queryByText("Accept Undo")).toBeNull();
+    });
+
+    test("engine reports both stones when undoing two moves", () => {
+        const controller = new GobanController({
+            moves: [
+                [16, 3, 9136.12], // B
+                [3, 2, 1897.853], // W
+                [15, 16, 4274.0], // B
+                [14, 2, 3816], // W
+            ],
+            players: {
+                black: { id: LOGGED_IN_USER.id, username: LOGGED_IN_USER.username },
+                white: { id: 456, username: "test_user2" },
+            },
+        });
+
+        controller.goban.engine.undo_requested = controller.goban.engine.getMoveNumber();
+        controller.goban.engine.undo_requested_move_count = 2;
+
+        const stones = controller.goban.engine.getUndoRequestStones();
+        expect(stones.length).toBeGreaterThanOrEqual(2);
+        expect(stones).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({ x: 14, y: 2 }),
+                expect.objectContaining({ x: 15, y: 16 }),
+            ]),
+        );
     });
 
     test('shows "Submit Move" when user staged a move.', () => {
@@ -501,6 +564,7 @@ describe("PlayButtons", () => {
         );
         // opponent requests undo
         act(() => {
+            goban.engine.undo_requested_by = 456;
             goban.engine.undo_requested = 4;
         });
         // go back two moves
