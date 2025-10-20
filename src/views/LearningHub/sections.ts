@@ -187,6 +187,11 @@ import { BL3Skills4 } from "./Sections/BeginnerLevel3/Skills4";
 import { BL3Skills5 } from "./Sections/BeginnerLevel3/Skills5";
 import { BL3Skills6 } from "./Sections/BeginnerLevel3/Skills6";
 import { BL3Skills7 } from "./Sections/BeginnerLevel3/Skills7";
+import { BL3Endgame1 } from "./Sections/BeginnerLevel3/Endgame1";
+import { BL3Endgame2 } from "./Sections/BeginnerLevel3/Endgame2";
+import { BL3Endgame3 } from "./Sections/BeginnerLevel3/Endgame3";
+import { BL3Endgame4 } from "./Sections/BeginnerLevel3/Endgame4";
+import { BL3Endgame5 } from "./Sections/BeginnerLevel3/Endgame5";
 
 export const sections: [string, any[]][] = [
     [
@@ -377,6 +382,11 @@ export const sections: [string, any[]][] = [
             BL3Skills5,
             BL3Skills6,
             BL3Skills7,
+            BL3Endgame1,
+            BL3Endgame2,
+            BL3Endgame3,
+            BL3Endgame4,
+            BL3Endgame5,
         ],
     ],
 
