@@ -25,6 +25,9 @@ npm-debug.log
 .yalc
 yalc.lock
 
+# Specifically intended by claude for non-committed settings
+.claude/settings.local.json
+
 # Coverage directory used by Jest (yarn test --coverage)
 coverage
 
