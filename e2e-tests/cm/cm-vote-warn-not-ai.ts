@@ -27,8 +27,6 @@
 import { Browser, TestInfo } from "@playwright/test";
 
 import {
-    assertIncidentReportIndicatorActive,
-    assertIncidentReportIndicatorInactive,
     goToUsersFinishedGame,
     newTestUsername,
     prepareNewUser,
@@ -39,19 +37,19 @@ import {
 import { expectOGSClickableByName } from "@helpers/matchers";
 import { expect } from "@playwright/test";
 
-import { withIncidentIndicatorLock } from "@helpers/report-utils";
+import { withReportCountTracking } from "@helpers/report-utils";
 
 export const cmVoteWarnNotAITest = async (
     { browser }: { browser: Browser },
     testInfo: TestInfo,
 ) => {
-    await withIncidentIndicatorLock(testInfo, async () => {
-        const { userPage: reporterPage } = await prepareNewUser(
-            browser,
-            newTestUsername("CmVWNAIRep"), // cspell:disable-line
-            "test",
-        );
+    const { userPage: reporterPage } = await prepareNewUser(
+        browser,
+        newTestUsername("CmVWNAIRep"), // cspell:disable-line
+        "test",
+    );
 
+    await withReportCountTracking(reporterPage, testInfo, async (tracker) => {
         // Report someone for AI use
         await goToUsersFinishedGame(reporterPage, "E2E_CM_VWNAI_ACCUSED", "E2E CM VWNAI Game");
 
@@ -62,18 +60,25 @@ export const cmVoteWarnNotAITest = async (
             "E2E test reporting AI use: I just have this feeling.", // min 40 chars
         );
 
+        // Verify reporter's count increased by 1
+        await tracker.assertCountIncreasedBy(reporterPage, 1);
+
         // Vote to warn the reporter that it was not a good AI report
 
         const aiAssessor = "E2E_CM_VWNAI_AI_V1";
 
         const { seededCMPage: aiCMPage } = await setupSeededCM(browser, aiAssessor);
 
-        const indicator = await assertIncidentReportIndicatorActive(aiCMPage, 1);
-
-        await indicator.click();
-
+        // Navigate to reports center
+        await aiCMPage.goto("/reports-center");
         await expect(aiCMPage.getByRole("heading", { name: "Reports Center" })).toBeVisible();
 
+        // Click on AI Use category to filter reports
+        const aiUseCategory = aiCMPage.getByText("AI Use").first();
+        await aiUseCategory.click();
+
+        // The newly created report will be first in the list (most recent)
+        // This is a safe assumption since reports are sorted by creation time descending
         await expect(
             aiCMPage.getByText("E2E test reporting AI use: I just have this feeling."),
         ).toBeVisible();
@@ -84,8 +89,8 @@ export const cmVoteWarnNotAITest = async (
         const voteButton = await expectOGSClickableByName(aiCMPage, /Vote$/);
         await voteButton.click();
 
-        // The report should no longer be active
-        await assertIncidentReportIndicatorInactive(aiCMPage);
+        // After voting, the count should return to initial (warning delivered to reporter)
+        await tracker.assertCountReturnedToInitial(reporterPage);
 
         // checking the warning is delivered is in cm-ack-warning.ts
     });

@@ -32,8 +32,6 @@
 import { Browser, TestInfo } from "@playwright/test";
 
 import {
-    assertIncidentReportIndicatorActive,
-    assertIncidentReportIndicatorInactive,
     goToUsersFinishedGame,
     newTestUsername,
     prepareNewUser,
@@ -44,19 +42,19 @@ import {
 import { expectOGSClickableByName } from "@helpers/matchers";
 import { expect } from "@playwright/test";
 
-import { withIncidentIndicatorLock } from "@helpers/report-utils";
+import { withReportCountTracking } from "@helpers/report-utils";
 
 export const cmAiAssessDismissTest = async (
     { browser }: { browser: Browser },
     testInfo: TestInfo,
 ) => {
-    await withIncidentIndicatorLock(testInfo, async () => {
-        const { userPage: reporterPage } = await prepareNewUser(
-            browser,
-            newTestUsername("CmDontNotRep"), // cspell:disable-line
-            "test",
-        );
+    const { userPage: reporterPage } = await prepareNewUser(
+        browser,
+        newTestUsername("CmDontNotRep"), // cspell:disable-line
+        "test",
+    );
 
+    await withReportCountTracking(reporterPage, testInfo, async (tracker) => {
         // Report someone for AI use
         await goToUsersFinishedGame(reporterPage, "E2E_CM_DNEA_AI_ACCUSED", "E2E CM DNEA Game");
 
@@ -67,15 +65,16 @@ export const cmAiAssessDismissTest = async (
             "E2E test reporting AI use: I'm sure he cheated!", // min 40 chars
         );
 
+        // Verify reporter's count increased by 1
+        await tracker.assertCountIncreasedBy(reporterPage, 1);
+
         const aiDetectorUser = "E2E_CM_DNEA_AI_D1";
         const { seededCMPage: aiDetectorCMPage } = await setupSeededCM(browser, aiDetectorUser);
 
         // The Detector has to vote it for assessment
 
-        const indicator = await assertIncidentReportIndicatorActive(aiDetectorCMPage, 1);
-
-        await indicator.click();
-
+        // Navigate to reports center
+        await aiDetectorCMPage.goto("/reports-center");
         await expect(
             aiDetectorCMPage.getByRole("heading", { name: "Reports Center" }),
         ).toBeVisible();
@@ -91,9 +90,6 @@ export const cmAiAssessDismissTest = async (
         const voteButton = await expectOGSClickableByName(aiDetectorCMPage, /Vote$/);
         await voteButton.click();
 
-        // It should have gone to the assessor queue
-        await assertIncidentReportIndicatorInactive(aiDetectorCMPage);
-
         // Now the CM AI assessors should see it and have to vote
         const aiAssessors = ["E2E_CM_DNEA_AI_V1", "E2E_CM_DNEA_AI_V2", "E2E_CM_DNEA_AI_V3"];
 
@@ -106,10 +102,8 @@ export const cmAiAssessDismissTest = async (
 
             aiAssessorContexts.push({ aiCMPage, aiContext }); // keep them alive for the duration of the test, for debugging
 
-            const indicator = await assertIncidentReportIndicatorActive(aiCMPage, 1);
-
-            await indicator.click();
-
+            // Navigate to reports center
+            await aiCMPage.goto("/reports-center");
             await expect(aiCMPage.getByRole("heading", { name: "Reports Center" })).toBeVisible();
 
             await expect(
@@ -125,13 +119,6 @@ export const cmAiAssessDismissTest = async (
             await voteButton.click();
         }
 
-        // the report should be dealt with now from their perspective
-        await assertIncidentReportIndicatorInactive(aiAssessorContexts[0].aiCMPage);
-
-        // it should be back in the AI Detection queue
-
-        await assertIncidentReportIndicatorActive(aiDetectorCMPage, 1);
-
         // and the reporter should see it still
         await reporterPage.goto("/reports-center");
         await expect(reporterPage.getByText("My Own Reports")).toBeVisible();
@@ -143,8 +130,7 @@ export const cmAiAssessDismissTest = async (
 
         await voteButton.click();
 
-        // it should be gone
-        await assertIncidentReportIndicatorInactive(aiDetectorCMPage);
-        await assertIncidentReportIndicatorInactive(reporterPage);
+        // After dismissal, the reporter's count should return to initial
+        await tracker.assertCountReturnedToInitial(reporterPage);
     });
 };

@@ -30,15 +30,15 @@ import { Browser, TestInfo, expect } from "@playwright/test";
 import { expectOGSClickableByName } from "@helpers/matchers";
 import { goToUsersFinishedGame, reportUser, setupSeededUser } from "@helpers/user-utils";
 
-import { withIncidentIndicatorLock } from "@helpers/report-utils";
+import { withReportCountTracking } from "@helpers/report-utils";
 
 export const cmVoteOnOwnReportTest = async (
     { browser }: { browser: Browser },
     testInfo: TestInfo,
 ) => {
-    await withIncidentIndicatorLock(testInfo, async () => {
-        const { userPage: reporterPage } = await setupSeededUser(browser, "E2E_CM_VOOR_REPORTER");
+    const { userPage: reporterPage } = await setupSeededUser(browser, "E2E_CM_VOOR_REPORTER");
 
+    await withReportCountTracking(reporterPage, testInfo, async (tracker) => {
         await goToUsersFinishedGame(reporterPage, "E2E_CM_VOOR_REPORTED", "E2E CM VOOR Game");
 
         // ... and report the user
@@ -50,13 +50,17 @@ export const cmVoteOnOwnReportTest = async (
             "E2E test reporting a score cheat",
         );
 
+        // Verify reporter's count increased by 1
+        await tracker.assertCountIncreasedBy(reporterPage, 1);
+
         // Go to the report page
         await reporterPage.goto("/reports-center");
         const myReports = reporterPage.getByText("My Own Reports");
         await expect(myReports).toBeVisible();
         await myReports.click();
 
-        // We assume that the report is the first one in the list
+        // The newly created report will be first in the list (most recent)
+        // This is a safe assumption since reports are sorted by creation time descending
         const reportButton = reporterPage.locator(".report-id > button");
         await reportButton.click();
 
@@ -74,5 +78,8 @@ export const cmVoteOnOwnReportTest = async (
         await cancelButton.click();
 
         await expect(reportButton).toBeHidden();
+
+        // After canceling the report, the count should return to initial
+        await tracker.assertCountReturnedToInitial(reporterPage);
     });
 };
