@@ -32,7 +32,7 @@ node_modules: package.json
 	npm ls yarn || npm install yarn
 	yarn install
 
-pretty prettier lint-fix:
+pretty prettier lint-fix format:
 	npm run prettier
 	npm run lint:fix
 	
