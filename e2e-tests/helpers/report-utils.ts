@@ -18,17 +18,16 @@ class IncidentIndicatorLock {
     private static lockHandle: fs.promises.FileHandle | null = null;
 
     static async acquire(): Promise<void> {
-        while (true) {
-            try {
-                this.lockHandle = await fs.promises.open(this.lockFile, "wx");
-                return;
-            } catch (err) {
-                if ((err as NodeJS.ErrnoException).code === "EEXIST") {
-                    await new Promise((resolve) => setTimeout(resolve, 1000));
-                    continue;
-                }
-                throw err;
+        try {
+            this.lockHandle = await fs.promises.open(this.lockFile, "wx");
+        } catch (err) {
+            if ((err as NodeJS.ErrnoException).code === "EEXIST") {
+                throw new Error(
+                    `Incident indicator lock file already exists at ${this.lockFile}. ` +
+                        `Another test is processing reports. Tests should not run in parallel.`,
+                );
             }
+            throw err;
         }
     }
 
