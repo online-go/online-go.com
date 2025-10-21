@@ -136,7 +136,14 @@ export const detectContainedSimulTest = async (
     await resignActiveGame(acceptor1Page);
 
     // Use tracker to handle variable initial report count
-    await withReportCountTracking(acceptor1Page, testInfo, async (tracker) => {
+    await withReportCountTracking(acceptor1Page, testInfo, async (reporterTracker) => {
+        // Set up CM and capture their baseline BEFORE creating the report
+        const cm = "E2E_GAMES_SIMUL_CM";
+        const { seededCMPage: cmPage } = await setupSeededCM(browser, cm);
+
+        // Capture CM's initial count
+        const cmInitialCount = await reporterTracker["getCurrentCount"](cmPage);
+
         // Create a report so we can check the log for Simul detected
         await reportUser(
             acceptor1Page,
@@ -145,16 +152,15 @@ export const detectContainedSimulTest = async (
             "reporting to see simul flag",
         );
 
-        // Verify report was created (count increased by 1)
-        const reportIndicator = await tracker.assertCountIncreasedBy(acceptor1Page, 1);
+        // Verify report was created (reporter's count increased by 1)
+        const reportIndicator = await reporterTracker.assertCountIncreasedBy(acceptor1Page, 1);
 
-        const cm = "E2E_GAMES_SIMUL_CM";
-        const { seededCMPage: cmPage } = await setupSeededCM(browser, cm);
+        // Verify CM's count also increased by 1
+        const cmCurrentCount = await reporterTracker["getCurrentCount"](cmPage);
+        expect(cmCurrentCount).toBe(cmInitialCount + 1);
 
-        // CM's count may be different (they see all reports in system)
-        // Just verify the indicator is active and click it
+        // Click the CM's indicator to view the report
         const cmIndicator = cmPage.locator(".IncidentReportIndicator");
-        await expect(cmIndicator).toBeVisible();
         await cmIndicator.click();
 
         await expect(cmPage.getByRole("heading", { name: "Reports Center" })).toBeVisible();
@@ -171,6 +177,6 @@ export const detectContainedSimulTest = async (
         await cancelButton.click();
 
         // Verify count returned to initial baseline
-        await tracker.assertCountReturnedToInitial(acceptor1Page);
+        await reporterTracker.assertCountReturnedToInitial(acceptor1Page);
     });
 };

@@ -25,8 +25,6 @@ import { Browser, TestInfo } from "@playwright/test";
 import { expect } from "@playwright/test";
 
 import {
-    assertIncidentReportIndicatorActive,
-    assertIncidentReportIndicatorInactive,
     newTestUsername,
     prepareNewUser,
     reportUser,
@@ -38,7 +36,7 @@ import {
     defaultChallengeSettings,
 } from "@helpers/challenge-utils";
 import { playMoves } from "@helpers/game-utils";
-import { withIncidentIndicatorLock } from "@helpers/report-utils";
+import { withReportCountTracking } from "@helpers/report-utils";
 
 export const basicScoringTest = async ({ browser }: { browser: Browser }, testInfo: TestInfo) => {
     const { userPage: challengerPage } = await prepareNewUser(
@@ -128,44 +126,50 @@ export const basicScoringTest = async ({ browser }: { browser: Browser }, testIn
     const challengerFinished = challengerPage.getByText("wins by");
     await expect(challengerFinished).toBeVisible();
 
-    // Create a report so we can check the log
-    await reportUser(
-        challengerPage,
-        "e2egamesBasicA", // cspell:disable-line
-        "score_cheating",
-        "E2E test reporting a score cheat",
-    );
-
-    // Check the log: should show stone acceptance and game end
-    await withIncidentIndicatorLock(testInfo, async () => {
+    // Use tracker to handle variable initial report count
+    await withReportCountTracking(challengerPage, testInfo, async (reporterTracker) => {
+        // Set up CM and capture their baseline BEFORE creating the report
         const cm = "E2E_GAMES_BS_CM";
-
         const { seededCMPage: cmPage } = await setupSeededCM(browser, cm);
 
-        const indicator = await assertIncidentReportIndicatorActive(cmPage, 1);
+        // Capture CM's initial count
+        const cmInitialCount = await reporterTracker["getCurrentCount"](cmPage);
 
-        await indicator.click();
+        // Create a report so we can check the log
+        await reportUser(
+            challengerPage,
+            "e2egamesBasicA", // cspell:disable-line
+            "score_cheating",
+            "E2E test reporting a score cheat",
+        );
+
+        // Verify report was created (reporter's count increased by 1)
+        const reportIndicator = await reporterTracker.assertCountIncreasedBy(challengerPage, 1);
+
+        // Verify CM's count also increased by 1
+        const cmCurrentCount = await reporterTracker["getCurrentCount"](cmPage);
+        expect(cmCurrentCount).toBe(cmInitialCount + 1);
+
+        // Click the CM's indicator to view the report
+        const cmIndicator = cmPage.locator(".IncidentReportIndicator");
+        await cmIndicator.click();
 
         await expect(cmPage.getByRole("heading", { name: "Reports Center" })).toBeVisible();
-
         await expect(cmPage.getByText("E2E test reporting a score cheat")).toBeVisible();
 
         const events = await cmPage.locator("tr.entry td.event").allTextContents();
         expect(events[0].trim()).toBe("game ended");
         expect(events[1].trim()).toBe("stone removal stones accepted");
         expect(events[2].trim()).toBe("stone removal stones accepted");
+
+        // Clean up the report
+        await reportIndicator.click();
+
+        const cancelButton = challengerPage.getByText("Cancel");
+        await expect(cancelButton).toBeVisible();
+        await cancelButton.click();
+
+        // Verify count returned to initial baseline
+        await reporterTracker.assertCountReturnedToInitial(challengerPage);
     });
-
-    // clean up the report
-
-    const indicator = await assertIncidentReportIndicatorActive(challengerPage, 1);
-
-    await indicator.click();
-
-    const cancelButton = challengerPage.getByText("Cancel");
-    await expect(cancelButton).toBeVisible();
-
-    await cancelButton.click();
-
-    await assertIncidentReportIndicatorInactive(challengerPage);
 };
