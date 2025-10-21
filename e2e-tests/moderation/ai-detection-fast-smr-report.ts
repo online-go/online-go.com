@@ -135,7 +135,7 @@ export const aiDetectionFastSMRReportTest = async ({ browser }: { browser: Brows
     console.log("Report note contains correct color icon (○ black stone) ✓");
 
     // Verify the note mentions AI use (note: text is truncated in history table)
-    expect(noteText).toContain("AI use");
+    expect(noteText).toContain("from AI");
     console.log("Report note contains AI use message ✓");
 
     // 11. Click the report button to open it and close it for cleanup
