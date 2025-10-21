@@ -19,11 +19,11 @@
  * Test the AI Detection player filter functionality
  *
  * This test verifies that:
- * 1. When on the AI Detection page, clicking a player name directly sets the filter
- * 2. The URL is updated with the player parameter
+ * 1. When on the AI Detection page, clicking a player name opens a filtered view in a new tab
+ * 2. The URL in the new tab contains the player parameter
  * 3. The player autocomplete input shows the filtered player's name
- * 4. No popup appears when clicking player names (direct filtering behavior)
- * 5. Clicking a different player updates the filter to that player
+ * 4. No popup appears when clicking player names (new tab behavior, not popup)
+ * 5. Clicking a different player opens another filtered view in a new tab
  * 6. Clicking the currently filtered player opens their profile page in a new tab
  *
  * Uses E2E_MODERATOR from init_e2e data for moderator functionality.
@@ -94,27 +94,30 @@ export const aiDetectionPlayerFilterTest = async ({ browser }: { browser: Browse
     const playerName = await firstPlayerLink.textContent();
     console.log(`Found player link: ${playerName} ✓`);
 
-    // 5. Click on the player link to directly set the filter (no popup should appear)
+    // 5. Click on the player link to open filtered view in new tab
     console.log("Clicking player link to set filter...");
-    await firstPlayerLink.click();
-    await modPage.waitForTimeout(500);
+    const [filterPage] = await Promise.all([
+        modContext.waitForEvent("page"),
+        firstPlayerLink.click(),
+    ]);
+    await filterPage.waitForLoadState("networkidle");
     console.log("Player link clicked ✓");
 
-    // 6. Verify no popup appeared (the click should directly set the filter)
+    // 6. Verify no popup appeared (the click should open new tab, not popup)
     console.log("Verifying no popup appeared...");
     const playerPopup = modPage.locator(".PlayerDetails");
     await expect(playerPopup).not.toBeVisible();
     console.log("No popup appeared (direct filter behavior confirmed) ✓");
 
-    // 9. Verify the URL contains the player parameter
+    // 9. Verify the URL contains the player parameter in the new tab
     console.log("Verifying URL updated with player parameter...");
-    const currentUrl = modPage.url();
+    const currentUrl = filterPage.url();
     expect(currentUrl).toContain("player=");
     console.log(`URL updated: ${currentUrl} ✓`);
 
-    // 10. Verify the player autocomplete input shows the filtered player
+    // 10. Verify the player autocomplete input shows the filtered player in the new tab
     console.log("Verifying player autocomplete shows filtered player...");
-    const playerAutocomplete = modPage.locator(".search input[type='text']");
+    const playerAutocomplete = filterPage.locator(".search input[type='text']");
     await expect(playerAutocomplete).toBeVisible();
 
     // The autocomplete should have the player's name
@@ -123,41 +126,49 @@ export const aiDetectionPlayerFilterTest = async ({ browser }: { browser: Browse
 
     // The value might be empty initially if still loading, wait a bit
     if (!autocompleteValue) {
-        await modPage.waitForTimeout(1000);
+        await filterPage.waitForTimeout(1000);
         const newAutocompleteValue = await playerAutocomplete.inputValue();
         console.log(`Autocomplete value after wait: "${newAutocompleteValue}"`);
     }
 
     console.log("Player filter applied successfully ✓");
 
-    // 11. Verify we can update the filter by clicking on another player
+    // 11. Verify we can update the filter by clicking on another player in the filtered view
     console.log("Testing filter update by clicking another player...");
 
-    // Find a different player name (skip the first one)
-    const secondPlayerLink = modPage.locator(".ai-detection .Player").nth(1);
+    // Wait for the loading to complete in the filtered page
+    const loadingOverlayFiltered = filterPage.locator(".ai-detection .loading-overlay");
+    await loadingOverlayFiltered.waitFor({ state: "hidden", timeout: 10000 });
+
+    // Find a different player name in the filtered page
+    const secondPlayerLink = filterPage.locator(".ai-detection .Player").nth(1);
     const secondPlayerLinkCount = await secondPlayerLink.count();
 
     if (secondPlayerLinkCount > 0) {
         const secondPlayerName = await secondPlayerLink.textContent();
         console.log(`Found second player: ${secondPlayerName}`);
 
-        await secondPlayerLink.click();
-        await modPage.waitForTimeout(500);
+        // Clicking should open another new tab
+        const [secondFilterPage] = await Promise.all([
+            modContext.waitForEvent("page"),
+            secondPlayerLink.click(),
+        ]);
+        await secondFilterPage.waitForLoadState("networkidle");
 
         // Verify URL updated again
-        const newUrl = modPage.url();
+        const newUrl = secondFilterPage.url();
         expect(newUrl).toContain("player=");
         console.log(`URL updated for second player: ${newUrl} ✓`);
 
         // 12. Now test that clicking the filtered player navigates to their profile
         console.log("Testing that clicking filtered player navigates to profile...");
 
-        // The first player in the table should now be the second player (since we filtered by them)
-        // Wait for table to reload with new filter
-        await loadingOverlay.waitFor({ state: "hidden", timeout: 10000 });
+        // Wait for table to reload with new filter in the second filtered page
+        const loadingOverlaySecond = secondFilterPage.locator(".ai-detection .loading-overlay");
+        await loadingOverlaySecond.waitFor({ state: "hidden", timeout: 10000 });
 
         // Get the first player link again (should be the filtered player)
-        const filteredPlayerLink = modPage.locator(".ai-detection .Player").first();
+        const filteredPlayerLink = secondFilterPage.locator(".ai-detection .Player").first();
         await expect(filteredPlayerLink).toBeVisible();
 
         const filteredPlayerName = await filteredPlayerLink.textContent();
@@ -171,35 +182,39 @@ export const aiDetectionPlayerFilterTest = async ({ browser }: { browser: Browse
         if (filteredPlayerId) {
             // Click the filtered player (should open profile in new tab)
             console.log("Clicking filtered player to open profile in new tab...");
-            const [newPage] = await Promise.all([
+            const [profilePage] = await Promise.all([
                 modContext.waitForEvent("page"),
                 filteredPlayerLink.click(),
             ]);
-            await newPage.waitForLoadState("networkidle");
+            await profilePage.waitForLoadState("networkidle");
 
             // Verify the new tab opened to the player's profile page
-            const profileUrl = newPage.url();
+            const profileUrl = profilePage.url();
             expect(profileUrl).toContain(`/player/${filteredPlayerId}`);
             console.log(`Opened player profile in new tab: ${profileUrl} ✓`);
 
-            // Close the new tab
-            await newPage.close();
+            // Close the profile page
+            await profilePage.close();
         } else {
             console.log("⚠ Could not extract player ID from URL, skipping profile navigation test");
         }
+
+        // Close the second filter page
+        await secondFilterPage.close();
     } else {
         console.log("Only one player in table, skipping second player and profile navigation tests");
     }
 
-    // Clean up
+    // Clean up all pages
+    await filterPage.close();
     await modPage.close();
     await modContext.close();
 
     console.log("=== AI Detection Player Filter Test Complete ===");
     console.log("✓ Navigated to AI Detection page");
-    console.log("✓ Clicked player link directly set the filter (no popup)");
-    console.log("✓ URL was updated with player parameter");
-    console.log("✓ Clicking different player updates the filter");
+    console.log("✓ Clicked player link opened filtered view in new tab (no popup)");
+    console.log("✓ URL in new tab contains player parameter");
+    console.log("✓ Clicking different player opens another filtered view");
     console.log("✓ Clicking filtered player opens their profile in a new tab");
     console.log("✓ Player filter functionality fully verified");
 };

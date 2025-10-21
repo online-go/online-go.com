@@ -40,6 +40,7 @@ import { openPlayerNotesModal } from "@/components/PlayerNotesModal";
 import { alert } from "@/lib/swal_config";
 import { PlayerCacheEntry } from "@/lib/player_cache";
 import { openReport } from "@/components/Report";
+import { MODERATOR_POWERS } from "@/lib/moderation";
 
 interface PlayerDetailsProperties {
     playerId: number;
@@ -210,6 +211,16 @@ export class PlayerDetails extends React.PureComponent<
     editPlayerNotes = () => {
         this.close_all_modals_and_popovers();
         openPlayerNotesModal(this.props.playerId);
+    };
+
+    checkAI = (ev: React.MouseEvent<HTMLButtonElement>) => {
+        this.close_all_modals_and_popovers();
+        const url = `/moderator/ai-detection?player=${this.props.playerId}`;
+        if (shouldOpenNewTab(ev)) {
+            window.open(url, "_blank");
+        } else {
+            browserHistory.push(url);
+        }
     };
 
     addFriend = () => {
@@ -416,6 +427,12 @@ export class PlayerDetails extends React.PureComponent<
                             <i className="fa fa-times-circle" />
                             {pgettext("Remove all chat lines from this user", "Remove all chats")}
                         </button>
+                        {((user.is_superuser && this.props.playerId > 0) || null) && (
+                            <button className="xs no-shadow" onClick={this.openSupporterPage}>
+                                <i className="fa fa-star" />
+                                Supporter Page
+                            </button>
+                        )}
                     </div>
                 )}
                 {((user.is_moderator && this.props.playerId > 0) || null) && (
@@ -442,14 +459,17 @@ export class PlayerDetails extends React.PureComponent<
                         </button>
                     </div>
                 )}
-                {((user.is_superuser && this.props.playerId > 0) || null) && (
+                {((user.is_moderator ||
+                    (user.moderator_powers & MODERATOR_POWERS.AI_DETECTOR) !== 0) &&
+                    this.props.playerId > 0) ||
+                null ? (
                     <div className="actions">
-                        <button className="xs no-shadow" onClick={this.openSupporterPage}>
-                            <i className="fa fa-star" />
-                            Supporter Page
+                        <button className="xs no-shadow" onClick={this.checkAI}>
+                            <i className="fa fa-search" />
+                            {_("Check AI")}
                         </button>
                     </div>
-                )}
+                ) : null}
             </div>
         );
     }

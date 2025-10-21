@@ -139,6 +139,7 @@ ComponentName/
 -   Use comments sparingly but should be used to explain complex code or non-obvious code
 -   Always ensure the code builds and passes linting and formatting
 -   Do not use `any` type, ensure that all variables are correctly typed
+-   We use `yarn`, not `npm`
 
 ### Animation Guidelines
 
