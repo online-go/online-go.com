@@ -163,6 +163,29 @@ test("Renders undo if it is not the players turn", () => {
     expect(screen.queryByText("Accept Undo")).toBeNull();
 });
 
+test("Renders undo if it is the players turn", () => {
+    const controller = new GobanController({
+        game_id: 1234,
+        moves: [
+            [15, 15, 5241],
+            [2, 2, 68110],
+        ],
+        players: {
+            black: { id: 456, username: "test_user2" },
+            white: { id: 123, username: "test_user" },
+        },
+    });
+    data.set("user", TEST_USER);
+
+    render(
+        <WrapTest controller={controller}>
+            <PlayControls {...PLAY_CONTROLS_DEFAULTS} />
+        </WrapTest>,
+    );
+
+    expect(screen.getByText("Undo")).toBeDefined();
+});
+
 test("Renders accept undo if undo requested", () => {
     const controller = new GobanController({
         game_id: 1234,
@@ -179,6 +202,7 @@ test("Renders accept undo if undo requested", () => {
             black: { id: 456, username: "test_user2" },
         },
     });
+    controller.goban.engine.undo_requested_by = 456;
     controller.goban.engine.undo_requested = 3;
     data.set("user", TEST_USER);
 
@@ -189,7 +213,7 @@ test("Renders accept undo if undo requested", () => {
     );
 
     expect(screen.queryByText("Undo")).toBeNull();
-    expect(screen.getByText("Accept Undo")).toBeDefined();
+    expect(screen.getByText("Accept Undo", { exact: false })).toBeDefined();
     expect(screen.getByText("Undo Requested")).toBeDefined();
 });
 

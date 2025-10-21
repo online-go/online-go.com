@@ -324,7 +324,7 @@ Fix any errors before proceeding.
 
 ### Step 8: Run the Test
 
-**IMPORTANT**: You must test your test before submitting it. This ensures it works correctly and doesn't break the test suite.
+**IMPORTANT**: You must test your test before considering the task complete. This ensures it works correctly and doesn't break the test suite.
 
 #### Prerequisites
 

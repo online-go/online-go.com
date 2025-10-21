@@ -28,6 +28,7 @@ import { suspendAppealRestoreTest } from "./mod-suspend-appeal-restore";
 import { systemPMButtonTest } from "./mod-system-pm-button";
 import { aiDetectionPlayerFilterTest } from "./ai-detection-player-filter";
 import { aiDetectionFastSMRReportTest } from "./ai-detection-fast-smr-report";
+import { playerCheckAIButtonTest } from "./player-check-ai-button";
 
 ogsTest.describe("@Mod Moderation Tests", () => {
     ogsTest("@Slow Auto-warn first turn disconnectors", modWarnFirstTurnDisconnectorTest);
@@ -44,4 +45,5 @@ ogsTest.describe("@Mod Moderation Tests", () => {
     ogsTest("System PM button appears for non-suspended users", systemPMButtonTest);
     ogsTest("AI Detection player filter button works correctly", aiDetectionPlayerFilterTest);
     ogsTest("AI Detection FastSMR report button works correctly", aiDetectionFastSMRReportTest);
+    ogsTest("Player dropdown Check AI button navigates to AI Detection", playerCheckAIButtonTest);
 });

@@ -128,24 +128,128 @@ dev-put:
 dev-del:
 	curl -X DELETE $(DEV_INDEX_HEADERS)  http://localhost:1080/_index
 
-beta-put: deploy-to-beta
+beta-put: check-submodules deploy-to-beta
 
-live-put: confirm-go-live  deploy-to-production
+live-put: check-submodules confirm-go-live deploy-to-production
 
 #live-maint: confirm-go-live 
 #	curl -X PUT $(PROD_INDEX_HEADERS) -T src/maint.html  https://online-go.com/_index
 
+save-beta-refs:
+	@mkdir -p .deployment-refs
+	@git rev-parse HEAD > .deployment-refs/beta-main
+	@cd submodules/goban && git rev-parse HEAD > ../../.deployment-refs/beta-goban
+	@cd submodules/moderator-ui && git rev-parse HEAD > ../../.deployment-refs/beta-moderator-ui
+	@cd submodules/react-dynamic-help && git rev-parse HEAD > ../../.deployment-refs/beta-react-dynamic-help
+
+save-live-refs:
+	@mkdir -p .deployment-refs
+	@git rev-parse HEAD > .deployment-refs/live-main
+	@cd submodules/goban && git rev-parse HEAD > ../../.deployment-refs/live-goban
+	@cd submodules/moderator-ui && git rev-parse HEAD > ../../.deployment-refs/live-moderator-ui
+	@cd submodules/react-dynamic-help && git rev-parse HEAD > ../../.deployment-refs/live-react-dynamic-help
+
 beta-notify-slack:
-	MSG=`git log -1 --pretty="%B" | sed s/\"//g | sed s/\'//g `; \
+	@mkdir -p .deployment-refs; \
 	VERSION=`git describe --long`; \
-	echo $$VERSION $$MSG; \
-	curl -X POST -H 'Content-type: application/json' --data '{"text":"'"[BETA UI] $$VERSION $$MSG"'"}' $(SLACK_WEBHOOK_URL)
+	CHANGELOG=""; \
+	if [ -f .deployment-refs/beta-main ]; then \
+		LAST_REF=$$(cat .deployment-refs/beta-main); \
+		MAIN_CHANGES=$$(git log --oneline $$LAST_REF..HEAD 2>/dev/null || echo ""); \
+		if [ -n "$$MAIN_CHANGES" ]; then \
+			CHANGELOG="$$CHANGELOG\n*online-go.com changes:*\n$$MAIN_CHANGES"; \
+		fi; \
+	else \
+		MAIN_CHANGES=$$(git log --oneline HEAD^..HEAD); \
+		CHANGELOG="$$CHANGELOG\n*online-go.com:*\n$$MAIN_CHANGES"; \
+		git rev-parse HEAD^ > .deployment-refs/beta-main; \
+	fi; \
+	for submodule in goban moderator-ui react-dynamic-help; do \
+		if [ -f .deployment-refs/beta-$$submodule ]; then \
+			LAST_REF=$$(cat .deployment-refs/beta-$$submodule); \
+			SUB_CHANGES=$$(cd submodules/$$submodule && git log --oneline $$LAST_REF..HEAD 2>/dev/null || echo ""); \
+			if [ -n "$$SUB_CHANGES" ]; then \
+				CHANGELOG="$$CHANGELOG\n\n*$$submodule changes:*\n$$SUB_CHANGES"; \
+			fi; \
+		else \
+			SUB_CHANGES=$$(cd submodules/$$submodule && git log --oneline HEAD^..HEAD 2>/dev/null); \
+			if [ -n "$$SUB_CHANGES" ]; then \
+				CHANGELOG="$$CHANGELOG\n\n*$$submodule:*\n$$SUB_CHANGES"; \
+				(cd submodules/$$submodule && git rev-parse HEAD^ > ../../.deployment-refs/beta-$$submodule); \
+			fi; \
+		fi; \
+	done; \
+	if [ -z "$$CHANGELOG" ]; then \
+		CHANGELOG="No changes detected"; \
+	fi; \
+	echo "$$VERSION"; \
+	echo -e "$$CHANGELOG"; \
+	ESCAPED_CHANGELOG=$$(echo -e "$$CHANGELOG" | sed 's/"/\\"/g' | sed ':a;N;$$!ba;s/\n/\\n/g'); \
+	curl -X POST -H 'Content-type: application/json' --data '{"text":"'"*[BETA UI]* $$VERSION\n$$ESCAPED_CHANGELOG"'"}' $(SLACK_WEBHOOK_URL)
+	@make save-beta-refs
 
 live-notify-slack:
-	MSG=`git log -1 --pretty="%B" | sed s/\"//g | sed s/\'//g `; \
+	@mkdir -p .deployment-refs; \
 	VERSION=`git describe --long`; \
-	echo $$VERSION $$MSG; \
-	curl -X POST -H 'Content-type: application/json' --data '{"text":"'"[PRODUCTION UI] $$VERSION $$MSG"'"}' $(SLACK_WEBHOOK_URL)
+	CHANGELOG=""; \
+	if [ -f .deployment-refs/live-main ]; then \
+		LAST_REF=$$(cat .deployment-refs/live-main); \
+		MAIN_CHANGES=$$(git log --oneline $$LAST_REF..HEAD 2>/dev/null || echo ""); \
+		if [ -n "$$MAIN_CHANGES" ]; then \
+			CHANGELOG="$$CHANGELOG\n*online-go.com changes:*\n$$MAIN_CHANGES"; \
+		fi; \
+	else \
+		MAIN_CHANGES=$$(git log --oneline HEAD^..HEAD); \
+		CHANGELOG="$$CHANGELOG\n*online-go.com:*\n$$MAIN_CHANGES"; \
+		git rev-parse HEAD^ > .deployment-refs/live-main; \
+	fi; \
+	for submodule in goban moderator-ui react-dynamic-help; do \
+		if [ -f .deployment-refs/live-$$submodule ]; then \
+			LAST_REF=$$(cat .deployment-refs/live-$$submodule); \
+			SUB_CHANGES=$$(cd submodules/$$submodule && git log --oneline $$LAST_REF..HEAD 2>/dev/null || echo ""); \
+			if [ -n "$$SUB_CHANGES" ]; then \
+				CHANGELOG="$$CHANGELOG\n\n*$$submodule changes:*\n$$SUB_CHANGES"; \
+			fi; \
+		else \
+			SUB_CHANGES=$$(cd submodules/$$submodule && git log --oneline HEAD^..HEAD 2>/dev/null); \
+			if [ -n "$$SUB_CHANGES" ]; then \
+				CHANGELOG="$$CHANGELOG\n\n*$$submodule:*\n$$SUB_CHANGES"; \
+				(cd submodules/$$submodule && git rev-parse HEAD^ > ../../.deployment-refs/live-$$submodule); \
+			fi; \
+		fi; \
+	done; \
+	if [ -z "$$CHANGELOG" ]; then \
+		CHANGELOG="No changes detected"; \
+	fi; \
+	echo "$$VERSION"; \
+	echo -e "$$CHANGELOG"; \
+	ESCAPED_CHANGELOG=$$(echo -e "$$CHANGELOG" | sed 's/"/\\"/g' | sed ':a;N;$$!ba;s/\n/\\n/g'); \
+	curl -X POST -H 'Content-type: application/json' --data '{"text":"'"*[PRODUCTION UI]* $$VERSION\n$$ESCAPED_CHANGELOG"'"}' $(SLACK_WEBHOOK_URL)
+	@make save-live-refs
+
+check-submodules:
+	@echo "Checking submodules for unpulled changes..."
+	@UNPULLED=0; \
+	for submodule in goban moderator-ui react-dynamic-help; do \
+		echo "Checking submodules/$$submodule..."; \
+		BEHIND=$$(cd submodules/$$submodule && git fetch --quiet && git rev-list HEAD..@{u} --count 2>/dev/null || echo "0"); \
+		if [ "$$BEHIND" != "0" ]; then \
+			echo "  ⚠️  submodules/$$submodule is $$BEHIND commit(s) behind"; \
+			echo "  Recent changes:"; \
+			(cd submodules/$$submodule && git log --oneline HEAD..@{u} | sed 's/^/    /'); \
+			UNPULLED=1; \
+		else \
+			echo "  ✓ submodules/$$submodule is up to date"; \
+		fi; \
+	done; \
+	if [ $$UNPULLED -eq 1 ]; then \
+		echo ""; \
+		read -p "Submodules have unpulled changes. Continue anyway? (yes/no) " response; \
+		if [ "$$response" != "yes" ]; then \
+			echo "Deployment cancelled."; \
+			exit 1; \
+		fi; \
+	fi
 
 confirm-go-live:
 	@read -p "Go live? " yesno; \
@@ -156,5 +260,5 @@ confirm-go-live:
 	
 
 
-.PHONY: dev stats todo update install default server dist push-cdn sync-translations
+.PHONY: dev stats todo update install default server dist push-cdn sync-translations check-submodules save-beta-refs save-live-refs
 
