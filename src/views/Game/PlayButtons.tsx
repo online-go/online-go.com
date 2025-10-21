@@ -124,13 +124,11 @@ export function PlayButtons({ show_cancel = true }: PlayButtonsProps): React.Rea
         goban.on("submit_move", syncShowUndoButtons);
         goban.on("undo_requested", syncShowUndoButtons);
         goban.on("undo_canceled", syncShowUndoButtons);
-        goban.on("undo_requested_by", syncShowUndoButtons);
         return () => {
             goban.off("cur_move", syncShowUndoButtons);
             goban.off("submit_move", syncShowUndoButtons);
             goban.off("undo_requested", syncShowUndoButtons);
             goban.off("undo_canceled", syncShowUndoButtons);
-            goban.off("undo_requested_by", syncShowUndoButtons);
         };
     }, [goban, in_pushed_analysis, user_id]);
     const show_undo_requested = useShowUndoRequested(goban);

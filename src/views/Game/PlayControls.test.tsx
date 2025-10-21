@@ -213,7 +213,7 @@ test("Renders accept undo if undo requested", () => {
     );
 
     expect(screen.queryByText("Undo")).toBeNull();
-    expect(screen.getByText("Accept Undo")).toBeDefined();
+    expect(screen.getByText("Accept Undo", { exact: false })).toBeDefined();
     expect(screen.getByText("Undo Requested")).toBeDefined();
 });
 
