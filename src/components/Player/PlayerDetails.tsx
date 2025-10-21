@@ -459,17 +459,17 @@ export class PlayerDetails extends React.PureComponent<
                         </button>
                     </div>
                 )}
-                {((user.is_moderator ||
+                {(((user.is_moderator ||
                     (user.moderator_powers & MODERATOR_POWERS.AI_DETECTOR) !== 0) &&
                     this.props.playerId > 0) ||
-                null ? (
+                    null) && (
                     <div className="actions">
                         <button className="xs no-shadow" onClick={this.checkAI}>
                             <i className="fa fa-search" />
                             {_("Check AI")}
                         </button>
                     </div>
-                ) : null}
+                )}
             </div>
         );
     }
