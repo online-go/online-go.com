@@ -232,18 +232,15 @@ check-submodules:
 	@UNPULLED=0; \
 	for submodule in goban moderator-ui react-dynamic-help; do \
 		echo "Checking submodules/$$submodule..."; \
-		cd submodules/$$submodule && \
-		git fetch --quiet && \
-		BEHIND=$$(git rev-list HEAD..@{u} --count 2>/dev/null || echo "0"); \
+		BEHIND=$$(cd submodules/$$submodule && git fetch --quiet && git rev-list HEAD..@{u} --count 2>/dev/null || echo "0"); \
 		if [ "$$BEHIND" != "0" ]; then \
 			echo "  ⚠️  submodules/$$submodule is $$BEHIND commit(s) behind"; \
 			echo "  Recent changes:"; \
-			git log --oneline HEAD..@{u} | sed 's/^/    /'; \
+			(cd submodules/$$submodule && git log --oneline HEAD..@{u} | sed 's/^/    /'); \
 			UNPULLED=1; \
 		else \
 			echo "  ✓ submodules/$$submodule is up to date"; \
 		fi; \
-		cd ../..; \
 	done; \
 	if [ $$UNPULLED -eq 1 ]; then \
 		echo ""; \
