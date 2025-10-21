@@ -30,6 +30,7 @@ import {
 } from "./GameHooks";
 import * as DynamicHelp from "react-dynamic-help";
 import { useGobanController } from "./goban_context";
+import { useUser } from "@/lib/hooks";
 
 const useOfficialMoveNumber = generateGobanHook(
     (goban) => goban!.engine.last_official_move?.move_number || -1,
@@ -48,7 +49,7 @@ export function PlayButtons({ show_cancel = true }: PlayButtonsProps): React.Rea
     const engine = goban.engine;
     const phase = engine.phase;
     const zen_mode = useZenMode(goban_controller);
-    const user_id = data.get("user").id;
+    const user_id = useUser().id;
 
     const { registerTargetItem } = React.useContext(DynamicHelp.Api);
     const { ref: accept_button, used: signalUndoAcceptUsed } =
