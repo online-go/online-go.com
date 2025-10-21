@@ -20,13 +20,15 @@ import { basicScoringTest } from "./basic-scoring";
 import { conditionalMovesArrowBugTest } from "./conditional-moves-arrow";
 import { detectContainedSimulTest } from "./simul-detection";
 import { gameLogThumbnailMarksTest } from "./game-log-thumbnail-marks";
+import { gameLogScoringAreasTest } from "./game-log-scoring-areas";
 
 ogsTest.describe("@Games Tests", () => {
     ogsTest("Pass and score a game", basicScoringTest);
     ogsTest("Use arrow in conditional moves", conditionalMovesArrowBugTest);
     ogsTest("Detect contained simultaneous game", detectContainedSimulTest);
     ogsTest(
-        "GameLog thumbnails display marks correctly VISUAL INSPECTION REQUIRED",
+        "@Visual GameLog thumbnails display marks correctly VISUAL INSPECTION REQUIRED",
         gameLogThumbnailMarksTest,
     );
+    ogsTest("@Visual Scored area marking VISUAL INSPECTION REQUIRED", gameLogScoringAreasTest);
 });
