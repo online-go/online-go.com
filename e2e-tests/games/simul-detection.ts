@@ -158,7 +158,7 @@ export const detectContainedSimulTest = async (
         await expect(cmPage.getByText("reporting to see simul flag")).toBeVisible();
 
         await expect(
-            cmPage.locator(".reported-game-important-info").getByText("Simul", { exact: true }),
+            cmPage.locator(".simul-warning").getByText("Simul", { exact: true }),
         ).toBeVisible();
     });
 
