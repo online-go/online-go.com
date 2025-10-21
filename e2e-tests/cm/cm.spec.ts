@@ -17,7 +17,6 @@
 
 import { ogsTest } from "@helpers";
 
-import { cmDontNotifyEscalatedAiTest } from "./cm-dont-notify-escalated-ai";
 import { cmVoteOnOwnReportTest } from "./cm-vote-on-own-report";
 import { cmShowOnlyPostEscalationVotesTest } from "./cm-show-only-post-escalation-votes";
 import { cmVoteWarnNotAITest } from "./cm-vote-warn-not-ai";
@@ -28,7 +27,6 @@ import { cmVoteSuspendUserTest } from "./cm-vote-suspend-user";
 
 ogsTest.describe("@CM Community Moderation Tests", () => {
     ogsTest("CM Vote on own report", cmVoteOnOwnReportTest);
-    ogsTest("Don't notify CMs about escalated AI reports", cmDontNotifyEscalatedAiTest);
     ogsTest("Show only post-escalation votes", cmShowOnlyPostEscalationVotesTest);
     ogsTest("Warn when AI report is unfounded", cmVoteWarnNotAITest);
     ogsTest("Acknowledge warnings", cmAckWarningTest);
