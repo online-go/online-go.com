@@ -142,7 +142,7 @@ export const detectContainedSimulTest = async (
         const { seededCMPage: cmPage } = await setupSeededCM(browser, cm);
 
         // Capture CM's initial count
-        const cmInitialCount = await reporterTracker["getCurrentCount"](cmPage);
+        const cmInitialCount = await reporterTracker.checkCurrentCount(cmPage);
 
         // Create a report so we can check the log for Simul detected
         await reportUser(
@@ -156,7 +156,7 @@ export const detectContainedSimulTest = async (
         const reportIndicator = await reporterTracker.assertCountIncreasedBy(acceptor1Page, 1);
 
         // Verify CM's count also increased by 1
-        const cmCurrentCount = await reporterTracker["getCurrentCount"](cmPage);
+        const cmCurrentCount = await reporterTracker.checkCurrentCount(cmPage);
         expect(cmCurrentCount).toBe(cmInitialCount + 1);
 
         // Click the CM's indicator to view the report

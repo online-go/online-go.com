@@ -16,18 +16,32 @@ import { expect, type Page, type Locator } from "@playwright/test";
 class IncidentIndicatorLock {
     private static lockFile = path.join(process.cwd(), ".incident-indicator.lock");
     private static lockHandle: fs.promises.FileHandle | null = null;
+    private static readonly RETRY_TIMEOUT_MS = 5000; // 5 seconds - fail fast if lock is held
+    private static readonly RETRY_INTERVAL_MS = 500; // 500ms between retries
 
     static async acquire(): Promise<void> {
-        try {
-            this.lockHandle = await fs.promises.open(this.lockFile, "wx");
-        } catch (err) {
-            if ((err as NodeJS.ErrnoException).code === "EEXIST") {
-                throw new Error(
-                    `Incident indicator lock file already exists at ${this.lockFile}. ` +
-                        `Another test is processing reports. Tests should not run in parallel.`,
-                );
+        const startTime = Date.now();
+
+        while (true) {
+            try {
+                this.lockHandle = await fs.promises.open(this.lockFile, "wx");
+                return; // Successfully acquired lock
+            } catch (err) {
+                if ((err as NodeJS.ErrnoException).code === "EEXIST") {
+                    const elapsedTime = Date.now() - startTime;
+                    if (elapsedTime >= this.RETRY_TIMEOUT_MS) {
+                        throw new Error(
+                            `Failed to acquire incident indicator lock after ${this.RETRY_TIMEOUT_MS}ms. ` +
+                                `Lock file at ${this.lockFile} exists. ` +
+                                `Another test may be running or a previous test may have crashed without releasing the lock.`,
+                        );
+                    }
+                    // Wait before retrying
+                    await new Promise((resolve) => setTimeout(resolve, this.RETRY_INTERVAL_MS));
+                    continue;
+                }
+                throw err;
             }
-            throw err;
         }
     }
 
@@ -70,6 +84,23 @@ export class IncidentReportCountTracker {
     async captureInitialCount(page: Page): Promise<void> {
         this.initialCount = await this.getCurrentCount(page);
         console.log(`[ReportCountTracker] Captured initial count: ${this.initialCount}`);
+    }
+
+    /**
+     * Get the initial count that was captured.
+     * Public accessor for the private initialCount field.
+     */
+    getInitialCount(): number | null {
+        return this.initialCount;
+    }
+
+    /**
+     * Get the current report count from the page (public wrapper).
+     * This public method allows external code to check the current count
+     * without needing to access protected methods.
+     */
+    async checkCurrentCount(page: Page): Promise<number> {
+        return this.getCurrentCount(page);
     }
 
     /**
@@ -130,14 +161,13 @@ export class IncidentReportCountTracker {
             throw new Error("Must call captureInitialCount() before asserting count changes");
         }
 
-        const currentCount = await this.getCurrentCount(page);
-
+        // Use Playwright expectations which wait/retry for the condition
         if (this.initialCount === 0) {
-            // Should be inactive
+            // Should be inactive - wait for indicator to be empty
             const indicator = page.locator(".IncidentReportIndicator");
             await expect(indicator).toBeEmpty();
         } else {
-            // Should show initial count
+            // Should show initial count - wait for it to appear
             const countDisplay = page.locator(".IncidentReportIndicator .count.active");
             await expect(
                 countDisplay,
@@ -145,6 +175,8 @@ export class IncidentReportCountTracker {
             ).toHaveText(`${this.initialCount}`);
         }
 
+        // Get final count for logging
+        const currentCount = await this.getCurrentCount(page);
         console.log(
             `[ReportCountTracker] Verified count returned to initial: ${currentCount} === ${this.initialCount}`,
         );
@@ -153,12 +185,14 @@ export class IncidentReportCountTracker {
     /**
      * Get the current report count from the page.
      * Returns 0 if the indicator is inactive.
+     * Protected so it can be accessed by helper functions while still being testable.
      */
-    private async getCurrentCount(page: Page): Promise<number> {
+    protected async getCurrentCount(page: Page): Promise<number> {
         const indicator = page.locator(".IncidentReportIndicator");
         const countDisplay = indicator.locator(".count.active");
 
-        // Check if indicator is active
+        // Check if indicator is active - matching original logic exactly
+        // Original: (await indicator.count()) > 0 && !(await indicator.evaluate((el) => el.textContent?.trim() === ""))
         const isActive =
             (await indicator.count()) > 0 &&
             !(await indicator.evaluate((el) => el.textContent?.trim() === ""));
@@ -167,11 +201,13 @@ export class IncidentReportCountTracker {
             return 0;
         }
 
+        // Indicator is active, try to get the count value from .count.active
         try {
             const countText = await countDisplay.textContent();
             const count = parseInt(countText?.trim() || "0", 10);
             return isNaN(count) ? 0 : count;
         } catch {
+            // .count.active doesn't exist or failed to read - return 0
             return 0;
         }
     }
@@ -195,10 +231,12 @@ export async function withReportCountTracking<T>(
             return await fn(tracker);
         } finally {
             // Log if count didn't return to initial (useful for debugging)
-            const finalCount = await tracker["getCurrentCount"](page);
-            if (tracker["initialCount"] !== null && finalCount !== tracker["initialCount"]) {
+            // Use public accessor methods for type safety
+            const initialCount = tracker.getInitialCount();
+            const finalCount = await tracker.checkCurrentCount(page);
+            if (initialCount !== null && finalCount !== initialCount) {
                 console.warn(
-                    `[ReportCountTracker] Warning: Count did not return to initial baseline. Initial: ${tracker["initialCount"]}, Final: ${finalCount}`,
+                    `[ReportCountTracker] Warning: Count did not return to initial baseline. Initial: ${initialCount}, Final: ${finalCount}`,
                 );
             }
         }
