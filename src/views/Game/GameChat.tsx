@@ -291,7 +291,6 @@ export function GameChat(props: GameChatProperties): React.ReactElement {
                 <TabCompleteInput
                     className={`chat-input  ${selected_chat_log}`}
                     disabled={user.anonymous || !data.get("user").email_validated}
-                    tabIndex={0}
                     placeholder={
                         user.anonymous
                             ? _("Sign in to chat")
@@ -547,7 +546,7 @@ export function GameChatLine(props: GameChatLineProperties): React.ReactElement 
                     </span>
                 )}
                 {(line.player_id || null) && (
-                    <Player user={line} flare disableCacheUpdate tabIndex={1} />
+                    <Player user={line} flare disableCacheUpdate tabIndex={-1} />
                 )}
                 <span className="body">
                     {third_person ? " " : ": "}
