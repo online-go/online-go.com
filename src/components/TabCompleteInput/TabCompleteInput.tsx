@@ -116,7 +116,6 @@ export const TabCompleteInput = React.forwardRef<HTMLInputElement, TabCompleteIn
 
         const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
             if (e.key === "Tab") {
-                e.preventDefault();
                 const input = inputRef.current;
                 if (!input) {
                     return;
@@ -126,6 +125,7 @@ export const TabCompleteInput = React.forwardRef<HTMLInputElement, TabCompleteIn
                 const start = input.selectionStart || 0;
                 const text = value.substr(0, start);
                 const nickMatch = /([-_a-z0-9]+)$/i;
+                let autocompletedSomething = false;
 
                 if (nickMatch.test(text)) {
                     const match = text.match(nickMatch);
@@ -135,6 +135,8 @@ export const TabCompleteInput = React.forwardRef<HTMLInputElement, TabCompleteIn
 
                     const matchResult = matchName(match[1], player_cache.nicknames);
                     if (matchResult.value) {
+                        e.preventDefault();
+                        autocompletedSomething = true;
                         const first = value.substr(0, start - match[1].length);
                         const last = value.substr(start);
                         const space =
@@ -163,6 +165,8 @@ export const TabCompleteInput = React.forwardRef<HTMLInputElement, TabCompleteIn
                     const matchResult = matchFullName(textWithoutSpace, player_cache.nicknames);
 
                     if (matchResult.value) {
+                        e.preventDefault();
+                        autocompletedSomething = true;
                         const first = value.substr(
                             0,
                             start - matchResult.value.length - space.length,
@@ -185,7 +189,9 @@ export const TabCompleteInput = React.forwardRef<HTMLInputElement, TabCompleteIn
                     }
                 }
 
-                setLastKey(9);
+                if (autocompletedSomething) {
+                    setLastKey(9);
+                }
             }
             props.onKeyPress?.(e);
         };

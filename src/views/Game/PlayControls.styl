@@ -93,6 +93,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            gap: 0.5rem;
         }
 
         > span:first-child {
@@ -101,6 +102,54 @@
 
         > span:last-child {
             justify-content: flex-end;
+        }
+
+        .keyboard-coordinate-input {
+            display: inline-flex;
+            align-items: center;
+            margin-right: 0.5rem;
+
+            input {
+                width: 4rem;
+                padding: 0.3rem 0.5rem;
+                border: 1px solid;
+                themed: border-color shade3;
+                border-radius: 0.25rem;
+                font-size: 0.9rem;
+                text-align: center;
+                text-transform: uppercase;
+                themed: background-color shade5;
+                themed: color fg;
+                transition: border-color 0.2s ease, background-color 0.2s ease;
+
+                &::placeholder {
+                    text-transform: none;
+                    themed: color shade2;
+                }
+
+                &:focus {
+                    outline: 2px solid;
+                    themed: outline-color primary;
+                    outline-offset: 1px;
+                }
+
+                &:disabled {
+                    opacity: 0.5;
+                    cursor: not-allowed;
+                }
+            }
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
         }
     }
 

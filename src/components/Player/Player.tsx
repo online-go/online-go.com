@@ -73,6 +73,7 @@ export interface PlayerProperties {
     disableCacheUpdate?: boolean;
     forceShowRank?: boolean;
     showAsBanned?: boolean; // client can request us to render as banned (we can't find out here)
+    tabIndex?: number; // control tab order for accessibility
 }
 
 export function Player(props: PlayerProperties): React.ReactElement {
@@ -390,7 +391,13 @@ export function Player(props: PlayerProperties): React.ReactElement {
         return (
             // if only we could put {...main_attrs} on the span, we could put the styles in .Player.  But router seems to hate that.
             <span>
-                <a href={uri} ref={elt_ref} {...main_attrs} onClick={display_details}>
+                <a
+                    href={uri}
+                    ref={elt_ref}
+                    {...main_attrs}
+                    onClick={display_details}
+                    tabIndex={props.tabIndex}
+                >
                     {(props.icon || null) && (
                         <PlayerIcon user={combined} size={props.iconSize || 16} />
                     )}
