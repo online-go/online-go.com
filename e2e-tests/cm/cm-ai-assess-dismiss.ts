@@ -32,7 +32,9 @@
 import { Browser, TestInfo } from "@playwright/test";
 
 import {
+    captureReportNumber,
     goToUsersFinishedGame,
+    navigateToReport,
     newTestUsername,
     prepareNewUser,
     reportUser,
@@ -68,17 +70,17 @@ export const cmAiAssessDismissTest = async (
         // Verify reporter's count increased by 1
         await tracker.assertCountIncreasedBy(reporterPage, 1);
 
+        // Capture the report number from the reporter's "My Own Reports" page
+        const reportNumber = await captureReportNumber(reporterPage);
+
         const aiDetectorUser = "E2E_CM_DNEA_AI_D1";
         const { seededCMPage: aiDetectorCMPage } = await setupSeededCM(browser, aiDetectorUser);
 
         // The Detector has to vote it for assessment
+        // Navigate directly to the report using the captured report number
+        await navigateToReport(aiDetectorCMPage, reportNumber);
 
-        // Navigate to reports center
-        await aiDetectorCMPage.goto("/reports-center");
-        await expect(
-            aiDetectorCMPage.getByRole("heading", { name: "Reports Center" }),
-        ).toBeVisible();
-
+        // Verify we can see the full report with the message
         await expect(
             aiDetectorCMPage.getByText("E2E test reporting AI use: I'm sure he cheated!"),
         ).toBeVisible();
@@ -102,10 +104,10 @@ export const cmAiAssessDismissTest = async (
 
             aiAssessorContexts.push({ aiCMPage, aiContext }); // keep them alive for the duration of the test, for debugging
 
-            // Navigate to reports center
-            await aiCMPage.goto("/reports-center");
-            await expect(aiCMPage.getByRole("heading", { name: "Reports Center" })).toBeVisible();
+            // Navigate directly to the report using the captured report number
+            await navigateToReport(aiCMPage, reportNumber);
 
+            // Verify we can see the full report with the message
             await expect(
                 aiCMPage.getByText("E2E test reporting AI use: I'm sure he cheated!"),
             ).toBeVisible();
@@ -124,11 +126,21 @@ export const cmAiAssessDismissTest = async (
         await expect(reporterPage.getByText("My Own Reports")).toBeVisible();
 
         // the AI Detector should be able to dismiss it
+        // After the assessors vote, navigate directly back to the report
+        await navigateToReport(aiDetectorCMPage, reportNumber);
+
+        // Verify we can see the full report with the message
+        await expect(
+            aiDetectorCMPage.getByText("E2E test reporting AI use: I'm sure he cheated!"),
+        ).toBeVisible();
 
         // Select the "dismiss" option...
+        // Note: Index may vary based on what options are available
         await aiDetectorCMPage.locator('.action-selector input[type="radio"]').nth(3).click();
 
-        await voteButton.click();
+        // Click the vote button (find it fresh on this page)
+        const dismissVoteButton = await expectOGSClickableByName(aiDetectorCMPage, /Vote$/);
+        await dismissVoteButton.click();
 
         // After dismissal, the reporter's count should return to initial
         await tracker.assertCountReturnedToInitial(reporterPage);

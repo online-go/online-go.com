@@ -71,16 +71,27 @@ export const cmAckWarningTest = async ({ browser }: { browser: Browser }, testIn
 
         const { seededCMPage: aiCMPage } = await setupSeededCM(browser, aiAssessor);
 
-        // Navigate to reports center
-        await aiCMPage.goto("/reports-center");
-        await expect(aiCMPage.getByRole("heading", { name: "Reports Center" })).toBeVisible();
+        // Navigate to reports center history (newest reports at top)
+        await aiCMPage.goto("/reports-center/history");
+        await aiCMPage.waitForLoadState("networkidle");
 
-        // Click on AI Use category to filter reports
-        const aiUseCategory = aiCMPage.getByText("AI Use").first();
-        await aiUseCategory.click();
+        // Wait for the history table to load
+        await aiCMPage.waitForTimeout(1000);
 
-        // The newly created report will be first in the list (most recent)
-        // This is a safe assumption since reports are sorted by creation time descending
+        // The newly created report should be in the first row (most recent)
+        const historyTable = aiCMPage.locator(".ReportsCenterHistory table");
+        await expect(historyTable).toBeVisible({ timeout: 5000 });
+
+        const firstHistoryRow = historyTable.locator("tbody tr").first();
+        await expect(firstHistoryRow).toBeVisible();
+
+        // Click the report link/button in the first row to open it
+        // The report ID is in the first column
+        const reportLink = firstHistoryRow.locator("td").first().locator("a, button");
+        await reportLink.click();
+        await aiCMPage.waitForLoadState("networkidle");
+
+        // Now we should see the full report with the message
         await expect(
             aiCMPage.getByText("E2E test reporting AI use: I just have this feeling."),
         ).toBeVisible();
