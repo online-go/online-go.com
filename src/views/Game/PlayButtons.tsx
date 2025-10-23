@@ -418,10 +418,7 @@ export function PlayButtons({ show_cancel = true }: PlayButtonsProps): React.Rea
                                 : "")
                         }
                         id="game-submit-move"
-                        autoFocus={
-                            preferences.get("autofocus-submit-button") ||
-                            document.activeElement?.id === "coordinate-input"
-                        }
+                        autoFocus={preferences.get("autofocus-submit-button")}
                         disabled={submitting_move || !goban.submit_move}
                         onClick={() => {
                             if (goban.submit_move) {
