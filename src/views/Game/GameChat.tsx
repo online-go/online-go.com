@@ -545,7 +545,9 @@ export function GameChatLine(props: GameChatLineProperties): React.ReactElement 
                         ]{" "}
                     </span>
                 )}
-                {(line.player_id || null) && <Player user={line} flare disableCacheUpdate />}
+                {(line.player_id || null) && (
+                    <Player user={line} flare disableCacheUpdate tabIndex={-1} />
+                )}
                 <span className="body">
                     {third_person ? " " : ": "}
                     <MarkupChatLine line={line} />

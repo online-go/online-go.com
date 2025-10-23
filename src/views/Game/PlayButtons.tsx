@@ -31,11 +31,172 @@ import {
 import * as DynamicHelp from "react-dynamic-help";
 import { useGobanController } from "./goban_context";
 import { useUser } from "@/lib/hooks";
+import { sfx } from "@/lib/sfx";
+import { decodeMoves } from "goban";
 
 const useOfficialMoveNumber = generateGobanHook(
     (goban) => goban!.engine.last_official_move?.move_number || -1,
     ["last_official_move"],
 );
+
+function KeyboardCoordinateInput(): React.ReactElement | null {
+    const goban_controller = useGobanController();
+    const goban = goban_controller.goban;
+    const engine = goban.engine;
+    const [coordinate_input, setCoordinateInput] = React.useState("");
+    const [has_error, setHasError] = React.useState(false);
+    const input_ref = React.useRef<HTMLInputElement>(null);
+    const [keyboard_coordinates_enabled] = preferences.usePreference(
+        "accessibility.keyboard-coordinate-input",
+    );
+
+    const player_to_move = usePlayerToMove(goban);
+    const user_id = useUser().id;
+    const is_my_move = player_to_move === user_id;
+    const official_move_number = useOfficialMoveNumber(goban);
+    const cur_move_number = useCurrentMoveNumber(goban);
+
+    const can_place =
+        is_my_move &&
+        cur_move_number === official_move_number &&
+        engine.phase === "play" &&
+        engine.handicapMovesLeft() === 0;
+
+    // Mirrors the hover behavior from goban's onMouseMove handler
+    // Note: last_hover_square is a protected property, so we use 'as any' to access it
+    const clearHover = React.useCallback(() => {
+        const gobanWithHover = goban as any;
+        const last_hover = gobanWithHover.last_hover_square;
+        if (last_hover) {
+            delete gobanWithHover.last_hover_square;
+            goban.drawSquare(last_hover.x, last_hover.y);
+        }
+    }, [goban]);
+
+    const parseCoordinates = React.useCallback(
+        (input: string): { x: number; y: number } | null => {
+            if (!/^[A-Z]\d{1,2}$/.test(input)) {
+                return null;
+            }
+            try {
+                const moves = decodeMoves(input, engine.width, engine.height);
+                if (moves.length > 0 && moves[0].x >= 0 && moves[0].y >= 0) {
+                    return moves[0];
+                }
+            } catch {
+                return null;
+            }
+            return null;
+        },
+        [engine.width, engine.height],
+    );
+
+    const setHover = React.useCallback(
+        (x: number, y: number) => {
+            (goban as any).last_hover_square = { x, y };
+            goban.drawSquare(x, y);
+        },
+        [goban],
+    );
+
+    const refocusInput = React.useCallback(() => {
+        setTimeout(() => input_ref.current?.focus(), 0);
+    }, []);
+
+    React.useEffect(() => {
+        if (keyboard_coordinates_enabled && can_place && input_ref.current) {
+            input_ref.current.focus();
+        }
+    }, [keyboard_coordinates_enabled, can_place, cur_move_number]);
+
+    React.useEffect(() => {
+        return () => clearHover();
+    }, [clearHover]);
+
+    if (!keyboard_coordinates_enabled) {
+        return null;
+    }
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setCoordinateInput(value);
+
+        if (has_error) {
+            setHasError(false);
+        }
+
+        const input = value.trim().toUpperCase();
+        clearHover();
+
+        if (input) {
+            const coords = parseCoordinates(input);
+            if (coords) {
+                setHover(coords.x, coords.y);
+            }
+        }
+    };
+
+    const handleBlur = () => {
+        clearHover();
+    };
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+
+        const input = coordinate_input.trim();
+        if (!input) {
+            return;
+        }
+
+        const coords = parseCoordinates(input.toUpperCase());
+        if (!coords) {
+            setHasError(true);
+            sfx.play("tutorial-fail");
+            refocusInput();
+            return;
+        }
+
+        try {
+            goban.tapByPrettyCoordinates(input.toUpperCase());
+            setCoordinateInput("");
+            setHasError(false);
+            clearHover();
+            refocusInput();
+        } catch {
+            // Handle illegal moves (occupied spot, ko violation, etc.)
+            setHasError(true);
+            sfx.play("tutorial-fail");
+            refocusInput();
+        }
+    };
+
+    return (
+        <form onSubmit={handleSubmit} className="keyboard-coordinate-input">
+            <label htmlFor="coordinate-input" className="sr-only">
+                {_("Enter stone coordinates")}
+            </label>
+            <input
+                ref={input_ref}
+                id="coordinate-input"
+                type="text"
+                value={coordinate_input}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                className={has_error ? "reject" : ""}
+                placeholder={_("e.g., D4")}
+                disabled={!can_place}
+                maxLength={3}
+                autoComplete="off"
+                aria-label={_("Enter stone coordinates (e.g., D4, Q16)")}
+                aria-describedby="coordinate-input-help"
+                aria-invalid={has_error}
+            />
+            <span id="coordinate-input-help" className="sr-only">
+                {_("Enter coordinates in format like D4 or Q16, then press Enter to place a stone")}
+            </span>
+        </form>
+    );
+}
 
 interface PlayButtonsProps {
     // This option exists because Cancel Button is placed below
@@ -89,6 +250,22 @@ export function PlayButtons({ show_cancel = true }: PlayButtonsProps): React.Rea
             goban_controller.off("in_pushed_analysis", set_in_pushed_analysis);
         };
     }, [goban_controller, goban, set_in_pushed_analysis]);
+
+    React.useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === "Escape") {
+                if (goban.unstagePendingMove()) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+            }
+        };
+
+        window.addEventListener("keydown", handleKeyDown);
+        return () => {
+            window.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [goban]);
 
     const [show_accept_undo, setShowAcceptUndo] = React.useState<boolean>(false);
     const [show_cancel_undo, setShowCancelUndo] = React.useState<boolean>(false);
@@ -223,6 +400,7 @@ export function PlayButtons({ show_cancel = true }: PlayButtonsProps): React.Rea
                 )}
             </span>
             <span>
+                <KeyboardCoordinateInput />
                 {!show_submit &&
                     is_my_move &&
                     engine.handicapMovesLeft() === 0 &&

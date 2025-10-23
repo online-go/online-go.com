@@ -46,6 +46,9 @@ export function GamePreferences(): React.ReactElement {
     const [chat_mode, _setChatMode] = usePreference("chat-mode");
     const [autofocus_submit_button, setAutoFocusSubmitButton] =
         usePreference("autofocus-submit-button");
+    const [keyboard_coordinates, setKeyboardCoordinates] = usePreference(
+        "accessibility.keyboard-coordinate-input",
+    );
 
     const [auto_advance, setAutoAdvance] = usePreference("auto-advance-after-submit");
     const [always_disable_analysis, setAlwaysDisableAnalysis] =
@@ -178,6 +181,15 @@ export function GamePreferences(): React.ReactElement {
 
             <PreferenceLine title={_("Autofocus submit button")}>
                 <Toggle checked={autofocus_submit_button} onChange={setAutoFocusSubmitButton} />
+            </PreferenceLine>
+
+            <PreferenceLine
+                title={_("Enable keyboard coordinate input")}
+                description={_(
+                    "Show an input field to place stones by typing coordinates (e.g., D4, Q16)",
+                )}
+            >
+                <Toggle checked={keyboard_coordinates} onChange={setKeyboardCoordinates} />
             </PreferenceLine>
 
             <PreferenceLine title={_("Auto-advance to next game after making a move")}>
