@@ -29,7 +29,6 @@
 import { Browser, TestInfo } from "@playwright/test";
 
 import {
-    assertIncidentReportIndicatorActive,
     goToUsersFinishedGame,
     newTestUsername,
     prepareNewUser,
@@ -39,19 +38,19 @@ import {
 
 import { expectOGSClickableByName } from "@helpers/matchers";
 import { expect } from "@playwright/test";
-import { withIncidentIndicatorLock } from "@helpers/report-utils";
+import { withReportCountTracking } from "@helpers/report-utils";
 
 export const cmShowOnlyPostEscalationVotesTest = async (
     { browser }: { browser: Browser },
     testInfo: TestInfo,
 ) => {
-    await withIncidentIndicatorLock(testInfo, async () => {
-        const { userPage: reporterPage } = await prepareNewUser(
-            browser,
-            newTestUsername("CmSOPEVRep"), // cspell:disable-line
-            "test",
-        );
+    const { userPage: reporterPage } = await prepareNewUser(
+        browser,
+        newTestUsername("CmSOPEVRep"), // cspell:disable-line
+        "test",
+    );
 
+    await withReportCountTracking(reporterPage, testInfo, async (tracker) => {
         // Report someone for escaping
         await goToUsersFinishedGame(reporterPage, "E2E_CM_SOPEV_REPORTED", "E2E CM SOPEV Game");
 
@@ -62,6 +61,9 @@ export const cmShowOnlyPostEscalationVotesTest = async (
             "E2E test - SOPEV reporting score cheating!",
         );
 
+        // Verify reporter's count increased by 1
+        await tracker.assertCountIncreasedBy(reporterPage, 1);
+
         // Now put a pre-escalation vote on the report
 
         const { seededCMPage: initialVoterPage } = await setupSeededCM(
@@ -69,14 +71,14 @@ export const cmShowOnlyPostEscalationVotesTest = async (
             "E2E_CM_SOPEV_INITIAL_VOTER",
         );
 
-        let indicator = await assertIncidentReportIndicatorActive(initialVoterPage, 1);
-
-        await indicator.click();
-
+        // Navigate to reports center
+        await initialVoterPage.goto("/reports-center");
         await expect(
             initialVoterPage.getByRole("heading", { name: "Reports Center" }),
         ).toBeVisible();
 
+        // The newly created report will be first in the list (most recent)
+        // This is a safe assumption since reports are sorted by creation time descending
         await expect(
             initialVoterPage.getByText("E2E test - SOPEV reporting score cheating!"),
         ).toBeVisible();
@@ -93,10 +95,8 @@ export const cmShowOnlyPostEscalationVotesTest = async (
             "E2E_CM_SOPEV_ESCALATOR",
         );
 
-        indicator = await assertIncidentReportIndicatorActive(escalatorPage, 1);
-
-        await indicator.click();
-
+        // Navigate to reports center
+        await escalatorPage.goto("/reports-center");
         await expect(escalatorPage.getByRole("heading", { name: "Reports Center" })).toBeVisible();
 
         await expect(
@@ -138,5 +138,8 @@ export const cmShowOnlyPostEscalationVotesTest = async (
 
         const cancelButton = await expectOGSClickableByName(reporterPage, /Cancel$/);
         await cancelButton.click();
+
+        // After canceling the report, the count should return to initial
+        await tracker.assertCountReturnedToInitial(reporterPage);
     });
 };

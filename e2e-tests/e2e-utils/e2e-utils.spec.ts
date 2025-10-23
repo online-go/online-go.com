@@ -17,7 +17,9 @@
 
 import { ogsTest } from "@helpers";
 import { runGame } from "./run-game";
+import { closeAllPendingReportsTest } from "./close-all-pending-reports";
 
 ogsTest.describe("@E2EUtils Tests", () => {
     ogsTest("Run a game", runGame);
+    ogsTest("Close all pending reports from history page", closeAllPendingReportsTest);
 });

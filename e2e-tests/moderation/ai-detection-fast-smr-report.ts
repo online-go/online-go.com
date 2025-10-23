@@ -82,61 +82,18 @@ export const aiDetectionFastSMRReportTest = async ({ browser }: { browser: Brows
 
     console.log(`Found ${rowCount} games in table ✓`);
 
-    // 5. Find a FastSMR cell to test
-    console.log("Looking for FastSMR cell in first row...");
+    // 5. Click the first FastSMR cell (first column = black player)
+    // The first row will always have clickable FastSMR cells
+    console.log("Looking for first FastSMR cell in first row...");
     const firstRow = gameRows.first();
     await expect(firstRow).toBeVisible();
 
-    // Find all FastSMR cells in the first row
-    const fastSMRCells = firstRow.locator("span[title*='Fast Detection']");
-    const cellCount = await fastSMRCells.count();
-    console.log(`Found ${cellCount} FastSMR cells in first row`);
+    // The first FastSMR cell is always for the black player (first column)
+    const fastSMRCell = firstRow.locator("span[title*='Fast Detection']").first();
+    await expect(fastSMRCell).toBeVisible();
+    console.log("Found first FastSMR cell (black player) ✓");
 
-    if (cellCount === 0) {
-        console.log("⚠ No FastSMR cells found - skipping test");
-        await modPage.close();
-        await modContext.close();
-        console.log("=== Test Skipped (No FastSMR Data) ===");
-        return;
-    }
-
-    // 6. Find a reportable cell (one with cursor: pointer)
-    let fastSMRCell = fastSMRCells.first();
-    let cursorStyle = await fastSMRCell.evaluate((el) => window.getComputedStyle(el).cursor);
-    console.log(`First cell cursor style: "${cursorStyle}"`);
-
-    if (cursorStyle !== "pointer") {
-        console.log("First cell is not reportable, trying second cell...");
-        if (cellCount > 1) {
-            fastSMRCell = fastSMRCells.nth(1);
-            cursorStyle = await fastSMRCell.evaluate((el) => window.getComputedStyle(el).cursor);
-            console.log(`Second cell cursor style: "${cursorStyle}"`);
-
-            if (cursorStyle !== "pointer") {
-                console.log("⚠ No reportable FastSMR cells found - skipping test");
-                await modPage.close();
-                await modContext.close();
-                console.log("=== Test Skipped (No Reportable Cells) ===");
-                return;
-            }
-        } else {
-            console.log("⚠ Only one FastSMR cell and it's not reportable - skipping test");
-            await modPage.close();
-            await modContext.close();
-            console.log("=== Test Skipped (No Reportable Cells) ===");
-            return;
-        }
-    }
-
-    console.log("Found reportable FastSMR cell ✓");
-
-    // 7. Get the player name from the row to verify the report later
-    const playerLinks = firstRow.locator(".Player");
-    const firstPlayerLink = playerLinks.first();
-    const firstPlayerName = (await firstPlayerLink.textContent()) || "";
-    console.log(`Player name in row: ${firstPlayerName}`);
-
-    // 8. Click the FastSMR cell to create a report
+    // 6. Click the FastSMR cell to create a report
     console.log("Clicking FastSMR cell to create report...");
     await fastSMRCell.click();
     await modPage.waitForTimeout(1000); // Wait for the report to be submitted
@@ -152,43 +109,51 @@ export const aiDetectionFastSMRReportTest = async ({ browser }: { browser: Brows
     // 9. The toast notification confirms the report was created
     console.log("Report creation verified via toast notification ✓");
 
-    // 10. Navigate to Reports Center and close the report for cleanup
-    console.log("Navigating to Reports Center to close report...");
-    await modPage.goto("/reports-center/ai_use");
+    // 10. Navigate to Reports Center History page to verify the report note
+    console.log("Navigating to Reports Center History to verify report note...");
+    await modPage.goto("/reports-center/history");
     await modPage.waitForLoadState("networkidle");
 
-    // Wait for the report to appear - retry up to 5 times with 1 second delays
-    let reportFound = false;
-    for (let attempt = 0; attempt < 5; attempt++) {
+    // Wait for the history table to load
+    await modPage.waitForTimeout(1000);
+
+    // The newly created report should be in the first row (most recent)
+    const historyTable = modPage.locator(".ReportsCenterHistory table");
+    await expect(historyTable).toBeVisible({ timeout: 5000 });
+
+    const firstHistoryRow = historyTable.locator("tbody tr").first();
+    await expect(firstHistoryRow).toBeVisible();
+
+    // Get the Note cell text (last column)
+    const noteCell = firstHistoryRow.locator("td").last();
+    const noteText = await noteCell.textContent();
+    console.log(`Report note text: ${noteText}`);
+
+    // Verify the note contains the black stone icon (○) since we clicked the first FastSMR cell
+    const hasBlackStone = noteText?.includes("○");
+    expect(hasBlackStone).toBe(true);
+    console.log("Report note contains correct color icon (○ black stone) ✓");
+
+    // Verify the note mentions AI use (note: text is truncated in history table)
+    expect(noteText).toContain("from AI");
+    console.log("Report note contains AI use message ✓");
+
+    // 11. Click the report button to open it and close it for cleanup
+    console.log("Closing the report for cleanup...");
+    const reportButton = firstHistoryRow.locator("button").first();
+    await reportButton.click();
+    await modPage.waitForLoadState("networkidle");
+
+    // Try to close the report using the Ignore button
+    const ignoreButton = modPage.getByRole("button", { name: /Ignore/i });
+    const ignoreButtonExists = (await ignoreButton.count()) > 0;
+
+    if (ignoreButtonExists) {
+        await ignoreButton.click();
         await modPage.waitForTimeout(1000);
-
-        // Check if a report is displayed (not the "All done!" message)
-        const allDoneMessage = modPage.locator(".no-report-selected");
-        const allDoneVisible = await allDoneMessage.isVisible();
-
-        if (!allDoneVisible) {
-            // A report is displayed
-            reportFound = true;
-            console.log(`Report found on attempt ${attempt + 1} ✓`);
-            break;
-        }
-        console.log(`Attempt ${attempt + 1}: Waiting for report to appear...`);
-    }
-
-    if (reportFound) {
-        // Try to close the report using the Ignore button
-        const ignoreButton = modPage.getByRole("button", { name: /Ignore/i });
-        const ignoreButtonExists = (await ignoreButton.count()) > 0;
-
-        if (ignoreButtonExists) {
-            await ignoreButton.click();
-            await modPage.waitForTimeout(1000);
-            console.log("Report ignored ✓");
-        } else {
-            console.log("⚠ Could not find Ignore button - report may remain open");
-        }
+        console.log("Report ignored ✓");
     } else {
-        console.log("⚠ Report did not appear in Reports Center within 5 seconds");
+        console.log("⚠ Could not find Ignore button - report may remain open");
     }
 
     // Clean up

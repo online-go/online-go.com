@@ -15,8 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* eslint-disable @typescript-eslint/no-unused-vars */
-
 /*
 * Uses init_e2e data:
 
@@ -27,8 +25,6 @@ import { Browser, TestInfo } from "@playwright/test";
 import { expect } from "@playwright/test";
 
 import {
-    assertIncidentReportIndicatorActive,
-    assertIncidentReportIndicatorInactive,
     loginAsUser,
     newTestUsername,
     prepareNewUser,
@@ -42,8 +38,7 @@ import {
 } from "@helpers/challenge-utils";
 
 import { playMoves, resignActiveGame } from "@helpers/game-utils";
-// @ts-expect-error - unused import until we uncomment the test implementation
-import { withIncidentIndicatorLock, withIncidentReportIndicatorLock } from "@helpers/report-utils";
+import { withReportCountTracking } from "@helpers/report-utils";
 
 export const detectContainedSimulTest = async (
     { browser }: { browser: Browser },
@@ -140,38 +135,48 @@ export const detectContainedSimulTest = async (
 
     await resignActiveGame(acceptor1Page);
 
-    // Create a report so we can check the log for Simul detected
-    await reportUser(acceptor1Page, challengerUsername, "ai_use", "reporting to see simul flag");
-
-    // Check the log: should show stone acceptance and game end
-    await withIncidentIndicatorLock(testInfo, async () => {
+    // Use tracker to handle variable initial report count
+    await withReportCountTracking(acceptor1Page, testInfo, async (reporterTracker) => {
+        // Set up CM and capture their baseline BEFORE creating the report
         const cm = "E2E_GAMES_SIMUL_CM";
-
         const { seededCMPage: cmPage } = await setupSeededCM(browser, cm);
 
-        const indicator = await assertIncidentReportIndicatorActive(cmPage, 1);
+        // Capture CM's initial count
+        const cmInitialCount = await reporterTracker.checkCurrentCount(cmPage);
 
-        await indicator.click();
+        // Create a report so we can check the log for Simul detected
+        await reportUser(
+            acceptor1Page,
+            challengerUsername,
+            "ai_use",
+            "reporting to see simul flag",
+        );
+
+        // Verify report was created (reporter's count increased by 1)
+        const reportIndicator = await reporterTracker.assertCountIncreasedBy(acceptor1Page, 1);
+
+        // Verify CM's count also increased by 1
+        const cmCurrentCount = await reporterTracker.checkCurrentCount(cmPage);
+        expect(cmCurrentCount).toBe(cmInitialCount + 1);
+
+        // Click the CM's indicator to view the report
+        const cmIndicator = cmPage.locator(".IncidentReportIndicator");
+        await cmIndicator.click();
 
         await expect(cmPage.getByRole("heading", { name: "Reports Center" })).toBeVisible();
-
         await expect(cmPage.getByText("reporting to see simul flag")).toBeVisible();
-
         await expect(
             cmPage.locator(".simul-warning").getByText("Simul", { exact: true }),
         ).toBeVisible();
+
+        // Clean up the report
+        await reportIndicator.click();
+
+        const cancelButton = acceptor1Page.getByText("Cancel");
+        await expect(cancelButton).toBeVisible();
+        await cancelButton.click();
+
+        // Verify count returned to initial baseline
+        await reporterTracker.assertCountReturnedToInitial(acceptor1Page);
     });
-
-    // clean up the report
-
-    const indicator = await assertIncidentReportIndicatorActive(acceptor1Page, 1);
-
-    await indicator.click();
-
-    const cancelButton = acceptor1Page.getByText("Cancel");
-    await expect(cancelButton).toBeVisible();
-
-    await cancelButton.click();
-
-    await assertIncidentReportIndicatorInactive(acceptor1Page);
 };

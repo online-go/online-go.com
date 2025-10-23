@@ -336,6 +336,48 @@ export const reportUser = async (page: Page, username: string, type: string, not
     await expect(OK).toBeHidden();
 };
 
+/**
+ * Capture the report number from the reporter's "My Own Reports" page.
+ * Assumes the reporter has only one report (the most recently created one).
+ * Returns the report number (e.g., "R123").
+ */
+export const captureReportNumber = async (reporterPage: Page): Promise<string> => {
+    await reporterPage.goto("/reports-center");
+    await expect(reporterPage.getByText("My Own Reports")).toBeVisible();
+    await reporterPage.getByText("My Own Reports").click();
+    await reporterPage.waitForTimeout(1000);
+
+    // The report number is in a button at the top left of the display area
+    // Look for a pattern like "R123" in a button or link
+    const reportButton = reporterPage.locator("button, a").filter({ hasText: /^R\d+$/ }).first();
+    await expect(reportButton).toBeVisible();
+
+    const reportNumber = await reportButton.textContent();
+    if (!reportNumber || !reportNumber.match(/^R\d+$/)) {
+        throw new Error(`Failed to capture valid report number. Got: ${reportNumber}`);
+    }
+
+    console.log(`Captured report number: ${reportNumber}`);
+    return reportNumber;
+};
+
+/**
+ * Navigate directly to a specific report by its report number.
+ * This works for any user who has permission to view the report.
+ */
+export const navigateToReport = async (page: Page, reportNumber: string) => {
+    // Extract the numeric ID from the report number (e.g., "R123" -> "123")
+    const reportId = reportNumber.replace(/^R/, "");
+
+    // Use /reports-center/all/{id} format which works for all permission levels
+    await page.goto(`/reports-center/all/${reportId}`);
+    await page.waitForLoadState("networkidle");
+
+    // Verify we're looking at the correct report by checking for the report number
+    await expect(page.getByText(reportNumber, { exact: true })).toBeVisible();
+    console.log(`Navigated to report ${reportNumber}`);
+};
+
 export const reportPlayerByColor = async (
     page: Page,
     color: string,

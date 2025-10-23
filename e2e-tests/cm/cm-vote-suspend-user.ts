@@ -40,74 +40,74 @@ import {
 } from "@helpers/challenge-utils";
 import { playMoves } from "@helpers/game-utils";
 import { expectOGSClickableByName } from "@helpers/matchers";
-import { withIncidentIndicatorLock } from "@helpers/report-utils";
+import { withReportCountTracking } from "@helpers/report-utils";
 
 export const cmVoteSuspendUserTest = async (
     { browser }: { browser: Browser },
     testInfo: TestInfo,
 ) => {
-    await withIncidentIndicatorLock(testInfo, async () => {
-        console.log("=== CM Vote Suspend User Test ===");
+    console.log("=== CM Vote Suspend User Test ===");
 
-        // Create two users who will play a game
-        console.log("Creating two users to play a game...");
-        const accusedUsername = newTestUsername("Accused");
-        const opponentUsername = newTestUsername("Opponent");
+    // Create two users who will play a game
+    console.log("Creating two users to play a game...");
+    const accusedUsername = newTestUsername("Accused");
+    const opponentUsername = newTestUsername("Opponent");
 
-        const { userPage: accusedPage } = await prepareNewUser(browser, accusedUsername, "test");
-        const { userPage: opponentPage } = await prepareNewUser(browser, opponentUsername, "test");
+    const { userPage: accusedPage } = await prepareNewUser(browser, accusedUsername, "test");
+    const { userPage: opponentPage } = await prepareNewUser(browser, opponentUsername, "test");
 
-        // Have them play a quick 9x9 game
-        console.log("Creating and playing game...");
-        await createDirectChallenge(accusedPage, opponentUsername, {
-            ...defaultChallengeSettings,
-            gameName: "E2E CM Suspend Test Game",
-            boardSize: "9x9",
-            speed: "live",
-            timeControl: "byoyomi",
-            mainTime: "45",
-            timePerPeriod: "10",
-            periods: "1",
-        });
+    // Have them play a quick 9x9 game
+    console.log("Creating and playing game...");
+    await createDirectChallenge(accusedPage, opponentUsername, {
+        ...defaultChallengeSettings,
+        gameName: "E2E CM Suspend Test Game",
+        boardSize: "9x9",
+        speed: "live",
+        timeControl: "byoyomi",
+        mainTime: "45",
+        timePerPeriod: "10",
+        periods: "1",
+    });
 
-        await acceptDirectChallenge(opponentPage);
+    await acceptDirectChallenge(opponentPage);
 
-        // Wait for the Goban to be visible
-        const goban = accusedPage.locator(".Goban[data-pointers-bound]");
-        await goban.waitFor({ state: "visible" });
-        await accusedPage.waitForTimeout(1000);
+    // Wait for the Goban to be visible
+    const goban = accusedPage.locator(".Goban[data-pointers-bound]");
+    await goban.waitFor({ state: "visible" });
+    await accusedPage.waitForTimeout(1000);
 
-        // Play a few moves
-        const moves = ["D9", "E9", "D8", "E8", "D7", "E7"];
-        await playMoves(accusedPage, opponentPage, moves, "9x9");
+    // Play a few moves
+    const moves = ["D9", "E9", "D8", "E8", "D7", "E7"];
+    await playMoves(accusedPage, opponentPage, moves, "9x9");
 
-        // Both players pass to end the game
-        const accusedPass = accusedPage.getByText("Pass", { exact: true });
-        await expect(accusedPass).toBeVisible();
-        await accusedPass.click();
+    // Both players pass to end the game
+    const accusedPass = accusedPage.getByText("Pass", { exact: true });
+    await expect(accusedPass).toBeVisible();
+    await accusedPass.click();
 
-        const opponentPass = opponentPage.getByText("Pass", { exact: true });
-        await expect(opponentPass).toBeVisible();
-        await opponentPass.click();
+    const opponentPass = opponentPage.getByText("Pass", { exact: true });
+    await expect(opponentPass).toBeVisible();
+    await opponentPass.click();
 
-        // Accept scores
-        const opponentAccept = opponentPage.getByText("Accept");
-        await expect(opponentAccept).toBeVisible();
-        await opponentAccept.click();
+    // Accept scores
+    const opponentAccept = opponentPage.getByText("Accept");
+    await expect(opponentAccept).toBeVisible();
+    await opponentAccept.click();
 
-        const accusedAccept = accusedPage.getByText("Accept");
-        await expect(accusedAccept).toBeVisible();
-        await accusedAccept.click();
+    const accusedAccept = accusedPage.getByText("Accept");
+    await expect(accusedAccept).toBeVisible();
+    await accusedAccept.click();
 
-        // Wait for game to finish
-        await expect(accusedPage.getByText("wins by")).toBeVisible();
-        console.log("Game completed ✓");
+    // Wait for game to finish
+    await expect(accusedPage.getByText("wins by")).toBeVisible();
+    console.log("Game completed ✓");
 
-        // Create a reporter and report the accused user for escaping
-        console.log("Creating reporter and reporting user...");
-        const reporterUsername = newTestUsername("EscReporter");
-        const { userPage: reporterPage } = await prepareNewUser(browser, reporterUsername, "test");
+    // Create a reporter and report the accused user for escaping
+    console.log("Creating reporter and reporting user...");
+    const reporterUsername = newTestUsername("EscReporter");
+    const { userPage: reporterPage } = await prepareNewUser(browser, reporterUsername, "test");
 
+    await withReportCountTracking(reporterPage, testInfo, async (tracker) => {
         // Navigate to the finished game and report
         await reporterPage.goto(accusedPage.url());
         await reporterPage.waitForLoadState("networkidle");
@@ -118,8 +118,10 @@ export const cmVoteSuspendUserTest = async (
             "escaping",
             "This user stopped playing and abandoned the game",
         );
-        await reporterPage.close();
         console.log("Report submitted ✓");
+
+        // Verify reporter's count increased by 1
+        await tracker.assertCountIncreasedBy(reporterPage, 1);
 
         // Have one CM escalate the report
         console.log("E2E_CM_VSU_V1 escalating escaping report...");
@@ -209,11 +211,16 @@ export const cmVoteSuspendUserTest = async (
         expect(reasonText).not.toContain("escaping");
 
         console.log("Human-readable ban reason displayed to user ✓");
-        await accusedPage.close();
-        await opponentPage.close();
 
-        console.log("=== CM Vote Suspend User Test Complete ===");
-        console.log("✓ CMs can vote to suspend users");
-        console.log("✓ Ban reason displays human-readable report type");
+        // After suspension, the reporter's count should return to initial
+        // (Note: In this case, the accused gets suspended, which clears all reports about them)
+        await tracker.assertCountReturnedToInitial(reporterPage);
     });
+
+    await accusedPage.close();
+    await opponentPage.close();
+
+    console.log("=== CM Vote Suspend User Test Complete ===");
+    console.log("✓ CMs can vote to suspend users");
+    console.log("✓ Ban reason displays human-readable report type");
 };
