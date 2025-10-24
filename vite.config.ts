@@ -115,7 +115,7 @@ export default defineConfig({
                   output: {
                       assetFileNames: "[name].[ext]",
                       entryFileNames: "[name].js",
-                      chunkFileNames: (chunkInfo) => {
+                      chunkFileNames: (_chunkInfo) => {
                           // All chunks (including dynamically imported ones) go to modules/
                           // React.lazy() chunks may not be marked as isDynamicEntry consistently
                           return "modules/[name]-[hash].js";
@@ -218,25 +218,18 @@ export default defineConfig({
         {
             name: "welcome-message",
             configureServer(server) {
-                server.httpServer?.once("listening", () => {
-                    // Delay to print after Vite's ready message
-                    setTimeout(() => {
-                        console.log("\n⚫ ⚪ Online-Go.com development server running!");
-                        console.log(
-                            "\n Talking to ",
-                            OGS_BACKEND,
-                            " backend at ",
-                            backend_url,
-                            "\n",
-                        );
-                        console.log(
-                            "\n⚫ ⚪ Chat with us in Slack at:\n\n   https://join.slack.com/t/online-go/shared_invite/zt-2jww58l2v-iwhhBiVsXNxcD9xm74bIKA\n",
-                        );
-                        console.log(
-                            "🔍 TypeScript type checking and ESLint are running in the background...\n",
-                        );
-                    }, 100);
-                });
+                const originalPrintUrls = server.printUrls;
+                server.printUrls = function (...args) {
+                    originalPrintUrls.call(this, ...args);
+                    console.log("\n⚫ ⚪ Online-Go.com development server running!");
+                    console.log("\n Talking to ", OGS_BACKEND, " backend at ", backend_url, "\n");
+                    console.log(
+                        "\n⚫ ⚪ Chat with us in Slack at:\n\n   https://join.slack.com/t/online-go/shared_invite/zt-2jww58l2v-iwhhBiVsXNxcD9xm74bIKA\n",
+                    );
+                    console.log(
+                        "🔍 TypeScript type checking and ESLint are running in the background...\n",
+                    );
+                };
             },
         },
         process.env.NODE_ENV !== "production" ? nodePolyfills() : null,
