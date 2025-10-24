@@ -219,11 +219,23 @@ export default defineConfig({
             name: "welcome-message",
             configureServer(server) {
                 server.httpServer?.once("listening", () => {
-                    console.log("\n⚫ ⚪ Online-Go.com development server running!");
-                    console.log("\n Talking to ", OGS_BACKEND, " backend at ", backend_url, "\n");
-                    console.log(
-                        "\n⚫ ⚪ Chat with us in Slack at:\n\n   https://join.slack.com/t/online-go/shared_invite/zt-2jww58l2v-iwhhBiVsXNxcD9xm74bIKA\n",
-                    );
+                    // Delay to print after Vite's ready message
+                    setTimeout(() => {
+                        console.log("\n⚫ ⚪ Online-Go.com development server running!");
+                        console.log(
+                            "\n Talking to ",
+                            OGS_BACKEND,
+                            " backend at ",
+                            backend_url,
+                            "\n",
+                        );
+                        console.log(
+                            "\n⚫ ⚪ Chat with us in Slack at:\n\n   https://join.slack.com/t/online-go/shared_invite/zt-2jww58l2v-iwhhBiVsXNxcD9xm74bIKA\n",
+                        );
+                        console.log(
+                            "🔍 TypeScript type checking and ESLint are running in the background...\n",
+                        );
+                    }, 100);
                 });
             },
         },
