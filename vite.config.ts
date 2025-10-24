@@ -227,7 +227,7 @@ export default defineConfig({
                         "\n⚫ ⚪ Chat with us in Slack at:\n\n   https://join.slack.com/t/online-go/shared_invite/zt-2jww58l2v-iwhhBiVsXNxcD9xm74bIKA\n",
                     );
                     console.log(
-                        "🔍 TypeScript type checking and ESLint are running in the background...\n",
+                        "  ▶️  TypeScript type checking and ESLint are running in the background...\n",
                     );
                 };
             },
