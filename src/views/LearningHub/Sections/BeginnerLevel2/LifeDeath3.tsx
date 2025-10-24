@@ -66,7 +66,7 @@ class Page01 extends LearningPage {
 
     text() {
         return _(
-            "if your group has an eye-space of only 3 points, you should make two eyes right away. Otherwise your opponent plays at the centre of the 3-points eye-space and your group is dead. In this example White can force Black to create a 3-points eye space by playing at A. After Black has captured the 3 stones, White can capture the black group. White to play. Capture the black group by forcing a 3-points eye space.",
+            "If your group has an eye-space of only 3 points, you should make two eyes right away. Otherwise your opponent plays at the centre of the 3-points eye-space and your group is dead. In this example White can force Black to create a 3-points eye space by playing at A. After Black has captured the 3 stones, White can capture the black group. White to play. Capture the black group by forcing a 3-points eye space.",
         );
     }
     config(): GobanConfig {

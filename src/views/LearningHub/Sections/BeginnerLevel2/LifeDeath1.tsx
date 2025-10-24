@@ -63,7 +63,7 @@ class Page01 extends LearningPage {
 
     text() {
         return _(
-            "If a group does not have two eyes yet, you should ensure that you always can make two eyes. If you need one move for each eye, it can be important to play those two moves in the correct order. In this example White can make two eyes by playing at A and B.  White has to choose between A and B as the first move. If White chooses the wrong one, he gets no chance to make the second. Make two eyes in the correct order.",
+            "If a group does not have two eyes yet, you should ensure that you always can make two eyes. If you need one move for each eye, it can be important to play those two moves in the correct order. In this example White can make two eyes by playing at A and B. White has to choose between A and B as the first move. If White chooses the wrong one, he gets no chance to make the second. Make two eyes in the correct order.",
         );
     }
     config(): GobanConfig {

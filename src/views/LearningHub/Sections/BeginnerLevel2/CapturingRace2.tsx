@@ -65,7 +65,7 @@ class Page01 extends LearningPage {
 
     text() {
         return _(
-            "If your group has an eye and the group of your opponent has none, you have an advantage in a capturing race. In this example White has an eye and Black none. Black has play at 1 and his group has three liberties, while White has only two, but Black still will lose the fight. In a capturing race between a one-eye and no-eye group, the side without eyes must first fill in all common liberties. Only after that he can play inside the eye. So, the player who has an eye has an advantage. White to play. Win the capturing race.",
+            "If your group has an eye and the group of your opponent has none, you have an advantage in a capturing race. In this example White has an eye and Black none. Black has played 1 and Black's group has three liberties, while White has only two, but Black still will lose the fight. In a capturing race between a one-eye and no-eye group, the side without eyes must first fill in all common liberties. Only after that he can play inside the eye. So, the player who has an eye has an advantage. White to play. Win the capturing race.",
         );
     }
     config(): GobanConfig {

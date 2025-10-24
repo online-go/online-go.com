@@ -75,7 +75,7 @@ class Page01 extends LearningPage {
                 <div>
                     <p>
                         {_(
-                            "You can calculate the value of a move in the endgame by adding the number of points of a white move at a position to the number of points of a black move there. The difference is the value of the move. Playing at A in this diagram yields White a captured stone and a point of territory. So, that is 2 points for White. If Black plays at A, he gets 2 captured stones and 2 points of territory, so 4 points for Black. The difference is 6 points. What is the value of playing at A?",
+                            "You can calculate the value of a move in the endgame by comparing the number of points if White plays at a position with the number of points if Black plays there. The difference between Black playing there and White playing there is the value of the move. Playing at A in this diagram yields White a captured stone and a point of territory. So, that is 2 points for White. If Black plays at A, Black gets 2 captured stones and 2 points of territory, so 4 points for Black. The difference between Black and White playing at A is 6 points. What is the value of playing at A?",
                         )}
                     </p>
                     <label>
