@@ -277,7 +277,7 @@ export function AnnulQueueModal({
                         <div className="game">
                             {currentGame && (
                                 <MiniGoban
-                                    key={selectedGameIndex}
+                                    key={currentGame.id}
                                     game_id={currentGame.id}
                                     noLink={true}
                                     onGobanCreated={onGobanCreated}
@@ -301,6 +301,7 @@ export function AnnulQueueModal({
                                         </div>
 
                                         <AIReview
+                                            key={currentGame.id}
                                             onAIReviewSelected={(r) => setAiReviewUuid(r?.uuid)}
                                             game_id={currentGame.id}
                                             move={goban.engine.cur_move}
@@ -322,6 +323,7 @@ export function AnnulQueueModal({
 
                                     <div className="col">
                                         <GameTimings
+                                            key={currentGame.id}
                                             moves={goban.engine.config.moves || []}
                                             start_time={goban.engine.config.start_time || 0}
                                             end_time={goban.engine.config.end_time || 0}
@@ -336,6 +338,7 @@ export function AnnulQueueModal({
 
                                     <div className="col">
                                         <GameChat
+                                            key={currentGame.id}
                                             channel={`game-${currentGame.id}`}
                                             game_id={currentGame.id}
                                         />
