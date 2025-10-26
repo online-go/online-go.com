@@ -108,6 +108,9 @@ export default defineConfig({
               sourcemap: true,
               minify: "terser",
               chunkSizeWarningLimit: 1024 * 1024 * 1.5,
+              // Rolldown performance optimizations
+              target: "es2020",
+              cssTarget: "chrome107",
               rollupOptions: {
                   input: {
                       ogs: "src/main.tsx",
@@ -122,6 +125,11 @@ export default defineConfig({
                       },
                       // No manual chunking - React.lazy() handles dynamic imports naturally
                       manualChunks: undefined,
+                  },
+                  // Performance optimizations
+                  treeshake: {
+                      moduleSideEffects: "no-external",
+                      propertyReadSideEffects: false,
                   },
               },
           }
@@ -172,6 +180,7 @@ export default defineConfig({
         },
         preprocessorMaxWorkers: true,
         devSourcemap: true,
+        transformer: "lightningcss",
     },
     define: {
         "process.env.NODE_ENV": JSON.stringify(process.env.NODE_ENV),
@@ -270,7 +279,18 @@ export default defineConfig({
         ),
     },
     optimizeDeps: {
-        esbuildOptions: {
+        // Rolldown-specific optimizations
+        include: [
+            "react",
+            "react-dom",
+            "react-router-dom",
+            "@nivo/line",
+            "@nivo/pie",
+            "d3",
+            "moment",
+            "sweetalert2",
+        ],
+        rollupOptions: {
             plugins: [fixReactVirtualized as any],
         },
     },
