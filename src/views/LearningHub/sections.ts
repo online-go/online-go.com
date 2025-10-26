@@ -196,6 +196,24 @@ import { BL3FalseEye1 } from "./Sections/BeginnerLevel3/FalseEye1";
 import { BL3FalseEye2 } from "./Sections/BeginnerLevel3/FalseEye2";
 import { BL3FalseEye3 } from "./Sections/BeginnerLevel3/FalseEye3";
 import { BL3FalseEye4 } from "./Sections/BeginnerLevel3/FalseEye4";
+import { BL3LifeDeath1 } from "./Sections/BeginnerLevel3/LifeDeath1";
+import { BL3LifeDeath2 } from "./Sections/BeginnerLevel3/LifeDeath2";
+import { BL3LifeDeath3 } from "./Sections/BeginnerLevel3/LifeDeath3";
+import { BL3LifeDeath4 } from "./Sections/BeginnerLevel3/LifeDeath4";
+import { BL3LifeDeath5 } from "./Sections/BeginnerLevel3/LifeDeath5";
+import { BL3LifeDeath6 } from "./Sections/BeginnerLevel3/LifeDeath6";
+import { BL3LifeDeath7 } from "./Sections/BeginnerLevel3/LifeDeath7";
+import { BL3LifeDeath8 } from "./Sections/BeginnerLevel3/LifeDeath8";
+import { BL3LifeDeath9 } from "./Sections/BeginnerLevel3/LifeDeath9";
+import { BL3LifeDeath10 } from "./Sections/BeginnerLevel3/LifeDeath10";
+import { BL3LifeDeath11 } from "./Sections/BeginnerLevel3/LifeDeath11";
+import { BL3LifeDeath12 } from "./Sections/BeginnerLevel3/LifeDeath12";
+import { BL3LifeDeath13 } from "./Sections/BeginnerLevel3/LifeDeath13";
+import { BL3LifeDeath14 } from "./Sections/BeginnerLevel3/LifeDeath14";
+import { BL3LifeDeath15 } from "./Sections/BeginnerLevel3/LifeDeath15";
+import { BL3LifeDeath16 } from "./Sections/BeginnerLevel3/LifeDeath16";
+import { BL3LifeDeath17 } from "./Sections/BeginnerLevel3/LifeDeath17";
+import { BL3LifeDeath18 } from "./Sections/BeginnerLevel3/LifeDeath18";
 
 export const sections: [string, any[]][] = [
     [
@@ -395,6 +413,24 @@ export const sections: [string, any[]][] = [
             BL3FalseEye2,
             BL3FalseEye3,
             BL3FalseEye4,
+            BL3LifeDeath1,
+            BL3LifeDeath2,
+            BL3LifeDeath3,
+            BL3LifeDeath4,
+            BL3LifeDeath5,
+            BL3LifeDeath6,
+            BL3LifeDeath7,
+            BL3LifeDeath8,
+            BL3LifeDeath9,
+            BL3LifeDeath10,
+            BL3LifeDeath11,
+            BL3LifeDeath12,
+            BL3LifeDeath13,
+            BL3LifeDeath14,
+            BL3LifeDeath15,
+            BL3LifeDeath16,
+            BL3LifeDeath17,
+            BL3LifeDeath18,
         ],
     ],
 
