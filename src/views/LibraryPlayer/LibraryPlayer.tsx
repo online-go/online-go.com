@@ -739,7 +739,9 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                             this.dropzone = r;
                         }
                     }}
-                    accept=".sgf"
+                    accept={{
+                        "application/x-go-sgf": [".sgf"],
+                    }}
                     onDrop={this.uploadSGFs}
                     multiple={true}
                     noClick

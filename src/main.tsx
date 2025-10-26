@@ -52,16 +52,15 @@ if (
 try {
     Sentry.init({
         dsn: "https://f8e3b8de571e412b98ff8f98e12c7f58@o589780.ingest.sentry.io/5750726",
-        autoSessionTracking: false,
         release: ogs_version || "dev",
         allowUrls: ["online-go.com", "kidsgoserver.com", "beta.online-go.com", "baduk.com"],
         environment: sentry_env,
         integrations: [
-            new Sentry.Integrations.GlobalHandlers({
+            Sentry.globalHandlersIntegration({
                 onerror: true,
                 onunhandledrejection: false,
             }),
-            new Sentry.Integrations.Breadcrumbs({
+            Sentry.breadcrumbsIntegration({
                 console: false,
             }),
         ],

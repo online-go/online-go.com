@@ -19,7 +19,7 @@ import React, { useEffect, useState } from "react";
 
 import { get } from "@/lib/requests";
 import * as data from "@/lib/data";
-import { ResponsiveLine, Serie } from "@nivo/line"; // cspell: ignore Serie
+import { ResponsiveLine, LineSeries } from "@nivo/line"; // cspell: ignore Serie
 import { dropCurrentPeriod } from "@/lib/misc";
 
 interface VoteCountPerDay {
@@ -104,7 +104,7 @@ const VoteActivityGraph = ({ vote_data }: VoteActivityGraphProps) => {
     return (
         <div className="vote-activity-graph">
             <ResponsiveLine
-                data={chart_data as Serie[]}
+                data={chart_data as LineSeries[]}
                 animate
                 curve="monotoneX"
                 enablePoints={true}

@@ -245,7 +245,7 @@ export function getUserRating(
 
     let rating = starting_rating(
         // this mess due to the union type of `user`
-        "starting_rank_hint" in user ? user.starting_rank_hint ?? "not provided" : "not provided",
+        "starting_rank_hint" in user ? (user.starting_rank_hint ?? "not provided") : "not provided",
     );
     ret.unset = true;
     if (key in ratings) {
