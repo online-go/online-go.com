@@ -3,7 +3,7 @@
     "buildOnSave": false,
     "compilerOptions": {
         "outDir": "./dist/",
-        "target": "es2015",
+        "target": "es2020",
         "module": "esnext",
         "moduleResolution": "bundler",
         "isolatedModules": true,
@@ -11,7 +11,7 @@
         "removeComments": false,
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
-        "lib": ["es2022", "dom"],
+        "lib": ["es2020", "dom"],
         "baseUrl": ".",
         "paths": {
             "@/*": ["src/*"],
@@ -22,7 +22,7 @@
             "@helpers": ["e2e-tests/helpers"],
             "@stubs/*": ["src/stubs/*"],
             "@moderator-ui/*": [
-                "submodules/moderator-ui/*",                
+                "submodules/moderator-ui/*",
                 "src/stubs/moderator-ui/*"
             ]
         },

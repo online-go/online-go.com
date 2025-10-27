@@ -107,6 +107,8 @@ export default defineConfig({
               outDir: "../dist",
               sourcemap: true,
               minify: "terser",
+              // Maintain Vite 6 browser support
+              target: ["es2020", "edge88", "firefox78", "chrome87", "safari14"],
               chunkSizeWarningLimit: 1024 * 1024 * 1.5,
               rollupOptions: {
                   input: {
@@ -131,7 +133,7 @@ export default defineConfig({
               outDir: "../i18n/build/",
               sourcemap: true,
               minify: false,
-              target: "es2015",
+              target: "es2020",
               chunkSizeWarningLimit: 1024 * 1024 * 99,
               rollupOptions: {
                   input: {
