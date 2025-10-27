@@ -108,9 +108,6 @@ export default defineConfig({
               sourcemap: true,
               minify: "terser",
               chunkSizeWarningLimit: 1024 * 1024 * 1.5,
-              // Rolldown performance optimizations
-              target: "es2020",
-              cssTarget: "chrome107",
               rollupOptions: {
                   input: {
                       ogs: "src/main.tsx",
@@ -125,11 +122,6 @@ export default defineConfig({
                       },
                       // No manual chunking - React.lazy() handles dynamic imports naturally
                       manualChunks: undefined,
-                  },
-                  // Performance optimizations
-                  treeshake: {
-                      moduleSideEffects: "no-external",
-                      propertyReadSideEffects: false,
                   },
               },
           }
