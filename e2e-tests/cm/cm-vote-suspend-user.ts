@@ -32,7 +32,14 @@
  */
 
 import { Browser, TestInfo, expect } from "@playwright/test";
-import { reportUser, setupSeededCM, prepareNewUser, newTestUsername } from "@helpers/user-utils";
+import {
+    reportUser,
+    setupSeededCM,
+    prepareNewUser,
+    newTestUsername,
+    captureReportNumber,
+    navigateToReport,
+} from "@helpers/user-utils";
 import {
     createDirectChallenge,
     acceptDirectChallenge,
@@ -50,8 +57,8 @@ export const cmVoteSuspendUserTest = async (
 
     // Create two users who will play a game
     console.log("Creating two users to play a game...");
-    const accusedUsername = newTestUsername("Accused");
-    const opponentUsername = newTestUsername("Opponent");
+    const accusedUsername = newTestUsername("Accu"); // cspell:ignore Accu
+    const opponentUsername = newTestUsername("Opp"); // cspell:ignore Opp
 
     const { userPage: accusedPage } = await prepareNewUser(browser, accusedUsername, "test");
     const { userPage: opponentPage } = await prepareNewUser(browser, opponentUsername, "test");
@@ -123,12 +130,16 @@ export const cmVoteSuspendUserTest = async (
         // Verify reporter's count increased by 1
         await tracker.assertCountIncreasedBy(reporterPage, 1);
 
+        // Capture the report number from the reporter's "My Own Reports" page
+        const reportNumber = await captureReportNumber(reporterPage);
+        console.log(`Captured report number: ${reportNumber}`);
+
         // Have one CM escalate the report
         console.log("E2E_CM_VSU_V1 escalating escaping report...");
         const { seededCMPage: escalatorPage } = await setupSeededCM(browser, "E2E_CM_VSU_V1");
 
-        await escalatorPage.goto("/reports-center");
-        await escalatorPage.waitForLoadState("networkidle");
+        // Navigate directly to the report using the captured report number
+        await navigateToReport(escalatorPage, reportNumber);
 
         await escalatorPage.click('input[value="escalate"]');
         await escalatorPage.fill("#escalation-note", "Repeat offender - needs moderator attention");
@@ -153,13 +164,20 @@ export const cmVoteSuspendUserTest = async (
             console.log(`${voter} voting to suspend escaper...`);
             const { seededCMPage: voterPage } = await setupSeededCM(browser, voter);
 
-            await voterPage.goto("/reports-center");
-            await voterPage.waitForLoadState("networkidle");
+            // Navigate directly to the report using the captured report number
+            await navigateToReport(voterPage, reportNumber);
 
             await voterPage.click('input[value="suspend_user"]');
 
             const suspendVoteButton = await expectOGSClickableByName(voterPage, /Vote/);
             await suspendVoteButton.click();
+
+            // Wait for the "Vote submitted" toast to appear
+            const toast = voterPage.locator(".toast-container");
+            await expect(toast).toBeVisible({ timeout: 5000 });
+            const toastText = await toast.textContent();
+            console.log(`${voter} toast: ${toastText}`);
+
             await voterPage.waitForLoadState("networkidle");
 
             console.log(`${voter} voted to suspend`);
