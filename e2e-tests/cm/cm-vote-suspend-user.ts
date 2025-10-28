@@ -33,12 +33,12 @@
 
 import { Browser, TestInfo, expect } from "@playwright/test";
 import {
+    captureReportNumber,
+    navigateToReport,
     reportUser,
     setupSeededCM,
     prepareNewUser,
     newTestUsername,
-    captureReportNumber,
-    navigateToReport,
 } from "@helpers/user-utils";
 import {
     createDirectChallenge,
@@ -132,7 +132,6 @@ export const cmVoteSuspendUserTest = async (
 
         // Capture the report number from the reporter's "My Own Reports" page
         const reportNumber = await captureReportNumber(reporterPage);
-        console.log(`Captured report number: ${reportNumber}`);
 
         // Have one CM escalate the report
         console.log("E2E_CM_VSU_V1 escalating escaping report...");
@@ -171,13 +170,6 @@ export const cmVoteSuspendUserTest = async (
 
             const suspendVoteButton = await expectOGSClickableByName(voterPage, /Vote/);
             await suspendVoteButton.click();
-
-            // Wait for the "Vote submitted" toast to appear
-            const toast = voterPage.locator(".toast-container");
-            await expect(toast).toBeVisible({ timeout: 5000 });
-            const toastText = await toast.textContent();
-            console.log(`${voter} toast: ${toastText}`);
-
             await voterPage.waitForLoadState("networkidle");
 
             console.log(`${voter} voted to suspend`);

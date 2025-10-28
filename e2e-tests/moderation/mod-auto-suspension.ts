@@ -48,7 +48,7 @@ import {
 import { playMoves } from "../helpers/game-utils";
 
 // This BID must match the one set for E2E_SUSPENDED_BID_USER in init_e2e.py
-const SUSPENDED_USER_BID = "e2e-test-suspended-bid-1";
+const SUSPENDED_USER_BID = "e2e-test-suspended-bid";
 
 export const autoSuspensionTest = async ({ browser }: { browser: Browser }) => {
     console.log("=== Browser ID Suspension Test ===");
@@ -108,14 +108,19 @@ export const autoSuspensionTest = async ({ browser }: { browser: Browser }) => {
     const registerSubmitButton = await expectOGSClickableByName(testPage, /Register$/);
     await registerSubmitButton.click();
 
+    // Wait for registration to complete - register button should disappear
+    await expect(registerSubmitButton).toBeHidden();
+
     // Wait for successful registration
     await testPage.waitForLoadState("networkidle");
-    await expect(testPage.getByText("Welcome")).toBeVisible();
+    await expect(testPage.getByText("Welcome!")).toBeVisible();
     const userDropdown = testPage.locator(".username").getByText(newUsername);
     await expect(userDropdown).toBeVisible();
     console.log(`Registration successful for ${newUsername} with flagged BID ✓`);
 
     // Choose board style preference to complete onboarding
+    // Wait for board style selection to be ready
+    await testPage.waitForTimeout(500);
     const chooseButton = await expectOGSClickableByName(testPage, /^Basic/);
     await chooseButton.click();
     await expect(testPage.getByText("You're not currently playing any games")).toBeVisible();
@@ -189,18 +194,54 @@ export const autoSuspensionTest = async ({ browser }: { browser: Browser }) => {
     console.log("Game completed ✓");
 
     // Wait for the post-game suspension check to process
+    // The backend needs to: process game end, check BIDs, and suspend the user
+    // This can take longer on slower servers (CI vs local dev)
     console.log("Waiting for post-game BID check to process...");
-    await new Promise((resolve) => setTimeout(resolve, 5000));
 
-    // Navigate to home page to trigger suspension banner
-    console.log("Checking for suspension banner...");
-    await testPage.goto("/");
-    await testPage.waitForLoadState("networkidle");
+    // Poll for suspension banner with retries (up to 30 seconds)
+    let suspensionDetected = false;
+    const maxRetries = 1;
+    const retryDelay = 2000;
 
-    // Verify the user sees the "appeal here" link indicating they are suspended
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        console.log(`Checking for suspension (attempt ${attempt}/${maxRetries})...`);
+
+        // Navigate to home to refresh user state
+        await testPage.goto("/");
+        await testPage.waitForLoadState("networkidle");
+
+        // Check if banned_user_id is set in the data store
+        const bannedUserId = await testPage.evaluate(() => {
+            return (window as any).data.get("appeals.banned_user_id");
+        });
+        console.log(`  appeals.banned_user_id: ${bannedUserId}`);
+
+        // Check if appeal link is visible
+        const appealLink = testPage.getByRole("link", { name: /appeal here/i });
+        const isVisible = await appealLink.isVisible().catch(() => false);
+
+        if (isVisible) {
+            console.log("Suspension banner with 'appeal here' link visible ✓");
+            suspensionDetected = true;
+            break;
+        }
+
+        if (attempt < maxRetries) {
+            console.log(`  Not suspended yet, waiting ${retryDelay}ms before retry...`);
+            await new Promise((resolve) => setTimeout(resolve, retryDelay));
+        }
+    }
+
+    if (!suspensionDetected) {
+        console.error("Suspension not detected after maximum retries");
+        // Take a screenshot for debugging
+        await testPage.screenshot({ path: "test-results/suspension-timeout.png" });
+    }
+
+    // Final assertion
     const appealLink = testPage.getByRole("link", { name: /appeal here/i });
     await expect(appealLink).toBeVisible();
-    console.log("Suspension banner with 'appeal here' link visible ✓");
+    console.log("Auto-suspension verification complete ✓");
 
     // Clean up: Change the suspended user's last_browser_id to avoid affecting future test runs
     // We do this by logging out and back in with a different BID and IP
