@@ -27,7 +27,9 @@
 import { Browser, TestInfo } from "@playwright/test";
 
 import {
+    captureReportNumber,
     goToUsersFinishedGame,
+    navigateToReport,
     newTestUsername,
     prepareNewUser,
     reportUser,
@@ -58,6 +60,9 @@ export const cmAckAcknowledgementTest = async (
         // Verify reporter's count increased by 1
         await tracker.assertCountIncreasedBy(reporterPage, 1);
 
+        // Capture the report number from the reporter's "My Own Reports" page
+        const reportNumber = await captureReportNumber(reporterPage);
+
         // Vote to tell the reporter that there's no score cheating
 
         const cmAssessors = ["E2E_CM_AA_V1", "E2E_CM_AA_V2", "E2E_CM_AA_V3"];
@@ -71,16 +76,10 @@ export const cmAckAcknowledgementTest = async (
 
             cmAssessorContexts.push({ CMPage: cmPage, cmContext }); // keep them alive for the duration of the test
 
-            // Navigate to reports center
-            await cmPage.goto("/reports-center");
-            await expect(cmPage.getByRole("heading", { name: "Reports Center" })).toBeVisible();
+            // Navigate directly to the report using the captured report number
+            await navigateToReport(cmPage, reportNumber);
 
-            // Click on Score Cheating category to filter reports
-            const scoreCheatingCategory = cmPage.getByText("Score Cheating").first();
-            await scoreCheatingCategory.click();
-
-            // The newly created report will be first in the list (most recent)
-            // This is a safe assumption since reports are sorted by creation time descending
+            // Verify we can see the report with the message
             await expect(cmPage.getByText("he's a cheater!")).toBeVisible();
 
             // Select the no cheating...

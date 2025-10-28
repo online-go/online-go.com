@@ -32,7 +32,9 @@
 import { Browser, TestInfo } from "@playwright/test";
 
 import {
+    captureReportNumber,
     goToUsersFinishedGame,
+    navigateToReport,
     newTestUsername,
     prepareNewUser,
     reportUser,
@@ -65,33 +67,19 @@ export const cmAckWarningTest = async ({ browser }: { browser: Browser }, testIn
         // Verify reporter's count increased by 1
         await tracker.assertCountIncreasedBy(reporterPage, 1);
 
+        // Capture the report number from the reporter's "My Own Reports" page
+        const reportNumber = await captureReportNumber(reporterPage);
+
         // Vote to warn the reporter that it was not a good AI report
 
         const aiAssessor = "E2E_CM_VWNAI_AI_V1";
 
         const { seededCMPage: aiCMPage } = await setupSeededCM(browser, aiAssessor);
 
-        // Navigate to reports center history (newest reports at top)
-        await aiCMPage.goto("/reports-center/history");
-        await aiCMPage.waitForLoadState("networkidle");
+        // Navigate directly to the report using the captured report number
+        await navigateToReport(aiCMPage, reportNumber);
 
-        // Wait for the history table to load
-        await aiCMPage.waitForTimeout(1000);
-
-        // The newly created report should be in the first row (most recent)
-        const historyTable = aiCMPage.locator(".ReportsCenterHistory table");
-        await expect(historyTable).toBeVisible({ timeout: 5000 });
-
-        const firstHistoryRow = historyTable.locator("tbody tr").first();
-        await expect(firstHistoryRow).toBeVisible();
-
-        // Click the report link/button in the first row to open it
-        // The report ID is in the first column
-        const reportLink = firstHistoryRow.locator("td").first().locator("a, button");
-        await reportLink.click();
-        await aiCMPage.waitForLoadState("networkidle");
-
-        // Now we should see the full report with the message
+        // Verify we can see the report with the message
         await expect(
             aiCMPage.getByText("E2E test reporting AI use: I just have this feeling."),
         ).toBeVisible();
