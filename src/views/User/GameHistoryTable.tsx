@@ -547,7 +547,9 @@ function getResultClass(game: rest_api.Game, user_id: number): ResultClass {
 
 function getSpeed(game: rest_api.Game): Speed {
     if ("time_control_parameters" in game) {
-        const tcp = JSON.parse(game.time_control_parameters) as TimeControl;
+        const tcp = game.time_control_parameters
+            ? (JSON.parse(game.time_control_parameters) as TimeControl)
+            : undefined;
         if (tcp?.speed) {
             return tcp.speed;
         }

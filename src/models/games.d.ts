@@ -46,7 +46,7 @@ declare namespace rest_api {
         white_player_rating: string; // floating point number
 
         time_per_move: number;
-        time_control_parameters: string; // TimeControl
+        time_control_parameters: string | null; // TimeControl
         disable_analysis: boolean;
         tournament: number | null;
         tournament_round: number;
