@@ -1,0 +1,19 @@
+name: Trigger E2E Tests
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Trigger E2E tests in ogs repo
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.E2E_DISPATCH_TOKEN }}
+          repository: online-go/ogs
+          event-type: trigger-e2e-tests
+          client-payload: '{"triggered_by": "ogs-ui", "sha": "${{ github.sha }}"}'

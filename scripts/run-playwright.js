@@ -10,7 +10,7 @@ const node23workaround = "--no-experimental-strip-types";
 function runPlaywright(args = []) {
     const nodeArgs = isNode23 ? [node23workaround] : [];
     spawnSync("node", [...nodeArgs, baseCommand, "test", ...args], {
-        shell: true,
+        shell: false, // Must be false to prevent shell interpretation of grep patterns with pipes
         stdio: "inherit",
     });
 }
