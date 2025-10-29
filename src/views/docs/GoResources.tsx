@@ -390,11 +390,6 @@ export function GoResources(): React.ReactElement {
                             />,
                             <BasicResource
                                 countries={[en]}
-                                title="Sahwal.com"
-                                href="http://sahwal.com"
-                            />,
-                            <BasicResource
-                                countries={[en]}
                                 title="Black To Play"
                                 href="https://blacktoplay.com/"
                             />,
