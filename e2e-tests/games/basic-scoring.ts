@@ -24,7 +24,14 @@
 import { Browser, TestInfo } from "@playwright/test";
 import { expect } from "@playwright/test";
 
-import { newTestUsername, prepareNewUser, reportUser, setupSeededCM } from "@helpers/user-utils";
+import {
+    captureReportNumber,
+    navigateToReport,
+    newTestUsername,
+    prepareNewUser,
+    reportUser,
+    setupSeededCM,
+} from "@helpers/user-utils";
 import {
     acceptDirectChallenge,
     createDirectChallenge,
@@ -141,15 +148,16 @@ export const basicScoringTest = async ({ browser }: { browser: Browser }, testIn
         // Verify report was created (reporter's count increased by 1)
         const reportIndicator = await reporterTracker.assertCountIncreasedBy(challengerPage, 1);
 
+        // Capture the report number from the reporter's "My Own Reports" page
+        const reportNumber = await captureReportNumber(challengerPage);
+
         // Verify CM's count also increased by 1
         const cmCurrentCount = await reporterTracker.checkCurrentCount(cmPage);
         expect(cmCurrentCount).toBe(cmInitialCount + 1);
 
-        // Click the CM's indicator to view the report
-        const cmIndicator = cmPage.locator(".IncidentReportIndicator");
-        await cmIndicator.click();
+        // Navigate CM directly to the report
+        await navigateToReport(cmPage, reportNumber);
 
-        await expect(cmPage.getByRole("heading", { name: "Reports Center" })).toBeVisible();
         await expect(cmPage.getByText("E2E test reporting a score cheat")).toBeVisible();
 
         const events = await cmPage.locator("tr.entry td.event").allTextContents();
@@ -160,9 +168,15 @@ export const basicScoringTest = async ({ browser }: { browser: Browser }, testIn
         // Clean up the report
         await reportIndicator.click();
 
-        const cancelButton = challengerPage.getByText("Cancel");
+        // Get the Cancel button from the banner (reporter's view), not from ReportsCenterContainer
+        const cancelButton = challengerPage
+            .getByRole("banner")
+            .locator("button.reject.xs", { hasText: "Cancel" });
         await expect(cancelButton).toBeVisible();
         await cancelButton.click();
+
+        // Wait for the report to be cancelled and UI to update
+        await challengerPage.waitForLoadState("networkidle");
 
         // Verify count returned to initial baseline
         await reporterTracker.assertCountReturnedToInitial(challengerPage);

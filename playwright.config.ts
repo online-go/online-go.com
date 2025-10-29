@@ -148,14 +148,7 @@ export default defineConfig({
     ],
 
     /* Run a local dev server before starting the tests */
-    webServer: process.env.FRONTEND_URL
-        ? undefined
-        : {
-              command: `echo "Starting vite server: ${process.env.OGS_BACKEND}" && yarn vite`,
-              url: FRONTEND_URL,
-              reuseExistingServer: !process.env.CI,
-              timeout: 120 * 1000, // server startup.
-              stdout: "pipe",
-              stderr: "pipe",
-          },
+    // Disabled: Server startup is complex (requires backend setup), so we assume
+    // the server is already running. Start it manually before running tests.
+    webServer: undefined,
 });
