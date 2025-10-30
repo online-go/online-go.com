@@ -8,6 +8,8 @@ on:
 jobs:
   trigger:
     runs-on: ubuntu-latest
+    # Only run on the original repo, not forks
+    if: github.repository == 'online-go/online-go.com'
 
     steps:
       - name: Trigger E2E tests in ogs repo
