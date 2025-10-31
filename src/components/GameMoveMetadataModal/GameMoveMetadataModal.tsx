@@ -18,16 +18,17 @@
 import * as React from "react";
 
 import { _ } from "@/lib/translate";
-import { openModal, Modal } from "@/components/Modal";
+import { Modal } from "@/components/Modal";
 import { Player } from "@/components/Player";
 import { GameMoveMetadata } from "@moderator-ui/GameMoveMetadata";
+import type { GobanEngineConfig, GobanEnginePlayerEntry } from "goban";
 
 interface Events {}
 
 interface GameMoveMetadataModalProperties {
-    config: any;
-    black: any;
-    white: any;
+    config: GobanEngineConfig;
+    black: GobanEnginePlayerEntry;
+    white: GobanEnginePlayerEntry;
 }
 
 export class GameMoveMetadataModal extends Modal<Events, GameMoveMetadataModalProperties, {}> {
@@ -74,8 +75,4 @@ export class GameMoveMetadataModal extends Modal<Events, GameMoveMetadataModalPr
             </div>
         );
     }
-}
-
-export function openGameMoveMetadataModal(config: any, black: any, white: any): void {
-    openModal(<GameMoveMetadataModal config={config} black={black} white={white} fastDismiss />);
 }
