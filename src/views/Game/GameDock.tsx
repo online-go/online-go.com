@@ -298,6 +298,18 @@ export function GameDock({
         });
     };
 
+    const showMoveMetadataModal = () => {
+        if (!goban || !goban.config) {
+            console.error("Goban or goban.config is not available");
+            return;
+        }
+        showModal(ModalTypes.GameMoveMetadata, {
+            config: goban.config,
+            black: historical_black || engine.players.black,
+            white: historical_white || engine.players.white,
+        });
+    };
+
     const toggleAnonymousModerator = () => {
         const channel = `game-${game_id}`;
         data.set(
@@ -628,6 +640,13 @@ export function GameDock({
                 <Tooltip tooltipRequired={tooltipRequired} title={"Log"}>
                     <a onClick={showLogModal}>
                         <i className="fa fa-list-alt"></i> {"Log"}
+                    </a>
+                </Tooltip>
+            )}
+            {(user_can_intervene || user_can_annul) && (
+                <Tooltip tooltipRequired={tooltipRequired} title={"Move Metadata"}>
+                    <a onClick={showMoveMetadataModal}>
+                        <i className="fa fa-list"></i> {"Move Metadata"}
                     </a>
                 </Tooltip>
             )}

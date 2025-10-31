@@ -19,6 +19,7 @@ import { ModalTypes } from "@/components/ModalProvider/ModalTypes";
 import { ForkModal } from "@/components/ChallengeModal/ForkModal";
 import { LanguagePickerModal } from "@/components/LanguagePicker/LanguagePicker";
 import { GameLogModal } from "@/components/GameLogModal";
+import { GameMoveMetadataModal } from "@/components/GameMoveMetadataModal";
 
 interface ModalRegistry {
     [key: string]: React.ComponentType<any>;
@@ -28,6 +29,7 @@ export const modalRegistry: ModalRegistry = {
     [ModalTypes.Fork]: ForkModal,
     [ModalTypes.LanguagePicker]: LanguagePickerModal,
     [ModalTypes.GameLog]: GameLogModal,
+    [ModalTypes.GameMoveMetadata]: GameMoveMetadataModal,
 };
 
 export function registerModal(modalType: string, component: React.ComponentType<any>): void {
