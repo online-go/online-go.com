@@ -222,6 +222,10 @@ import { BL3CapturingRace5 } from "./Sections/BeginnerLevel3/CapturingRace5";
 import { BL3CapturingRace6 } from "./Sections/BeginnerLevel3/CapturingRace6";
 import { BL3CapturingRace7 } from "./Sections/BeginnerLevel3/CapturingRace7";
 import { BL3CapturingRace8 } from "./Sections/BeginnerLevel3/CapturingRace8";
+import { BL3PreparatoryAtari1 } from "./Sections/BeginnerLevel3/PreparatoryAtari1";
+import { BL3PreparatoryAtari2 } from "./Sections/BeginnerLevel3/PreparatoryAtari2";
+import { BL3PreparatoryAtari3 } from "./Sections/BeginnerLevel3/PreparatoryAtari3";
+import { BL3PreparatoryAtari4 } from "./Sections/BeginnerLevel3/PreparatoryAtari4";
 
 export const sections: [string, any[]][] = [
     [
@@ -447,6 +451,10 @@ export const sections: [string, any[]][] = [
             BL3CapturingRace6,
             BL3CapturingRace7,
             BL3CapturingRace8,
+            BL3PreparatoryAtari1,
+            BL3PreparatoryAtari2,
+            BL3PreparatoryAtari3,
+            BL3PreparatoryAtari4,
         ],
     ],
 
