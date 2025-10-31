@@ -88,7 +88,7 @@ class Page02 extends LearningPage {
 
     text() {
         return _(
-            "Black to play. Win the capturing race by increasing the number of liberties or by preventing to loose them.",
+            "Black to play. Win the capturing race by increasing the number of liberties or by preventing to lose them.",
         );
     }
     config(): GobanConfig {
@@ -116,7 +116,7 @@ class Page03 extends LearningPage {
 
     text() {
         return _(
-            "Black to play. Win the capturing race by increasing the number of liberties or by preventing to loose them.",
+            "Black to play. Win the capturing race by increasing the number of liberties or by preventing to lose them.",
         );
     }
     config(): GobanConfig {
@@ -144,7 +144,7 @@ class Page04 extends LearningPage {
 
     text() {
         return _(
-            "Black to play. Win the capturing race by increasing the number of liberties or by preventing to loose them.",
+            "Black to play. Win the capturing race by increasing the number of liberties or by preventing to lose them.",
         );
     }
     config(): GobanConfig {
@@ -172,7 +172,7 @@ class Page05 extends LearningPage {
 
     text() {
         return _(
-            "Black to play. Win the capturing race by increasing the number of liberties or by preventing to loose them.",
+            "Black to play. Win the capturing race by increasing the number of liberties or by preventing to lose them.",
         );
     }
     config(): GobanConfig {
@@ -200,7 +200,7 @@ class Page06 extends LearningPage {
 
     text() {
         return _(
-            "Black to play. Win the capturing race by increasing the number of liberties or by preventing to loose them.",
+            "Black to play. Win the capturing race by increasing the number of liberties or by preventing to lose them.",
         );
     }
     config(): GobanConfig {
@@ -228,7 +228,7 @@ class Page07 extends LearningPage {
 
     text() {
         return _(
-            "Black to play. Win the capturing race by increasing the number of liberties or by preventing to loose them.",
+            "Black to play. Win the capturing race by increasing the number of liberties or by preventing to lose them.",
         );
     }
     config(): GobanConfig {
@@ -256,7 +256,7 @@ class Page08 extends LearningPage {
 
     text() {
         return _(
-            "Black to play. Win the capturing race by increasing the number of liberties or by preventing to loose them.",
+            "Black to play. Win the capturing race by increasing the number of liberties or by preventing to lose them.",
         );
     }
     config(): GobanConfig {
@@ -284,7 +284,7 @@ class Page09 extends LearningPage {
 
     text() {
         return _(
-            "Black to play. Win the capturing race by increasing the number of liberties or by preventing to loose them.",
+            "Black to play. Win the capturing race by increasing the number of liberties or by preventing to lose them.",
         );
     }
     config(): GobanConfig {
@@ -312,7 +312,7 @@ class Page10 extends LearningPage {
 
     text() {
         return _(
-            "Black to play. Win the capturing race by increasing the number of liberties or by preventing to loose them.",
+            "Black to play. Win the capturing race by increasing the number of liberties or by preventing to lose them.",
         );
     }
     config(): GobanConfig {
@@ -340,7 +340,7 @@ class Page11 extends LearningPage {
 
     text() {
         return _(
-            "Black to play. Win the capturing race by increasing the number of liberties or by preventing to loose them.",
+            "Black to play. Win the capturing race by increasing the number of liberties or by preventing to lose them.",
         );
     }
     config(): GobanConfig {
@@ -368,7 +368,7 @@ class Page12 extends LearningPage {
 
     text() {
         return _(
-            "Black to play. Win the capturing race by increasing the number of liberties or by preventing to loose them.",
+            "Black to play. Win the capturing race by increasing the number of liberties or by preventing to lose them.",
         );
     }
     config(): GobanConfig {
@@ -401,7 +401,7 @@ class Page13 extends LearningPage {
 
     text() {
         return _(
-            "Black to play. Win the capturing race by increasing the number of liberties or by preventing to loose them.",
+            "Black to play. Win the capturing race by increasing the number of liberties or by preventing to lose them.",
         );
     }
     config(): GobanConfig {

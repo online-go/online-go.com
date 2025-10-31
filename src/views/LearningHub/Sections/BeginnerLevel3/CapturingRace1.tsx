@@ -59,7 +59,7 @@ class Page01 extends LearningPage {
 
     text() {
         return _(
-            "In a capturing race you can sometimes avoid a fight by making two eyes. Or you connect your group with an other group, increasing the number of liberties. If you are not yet completely surrounded, you could try to escape. In this example the four white stones are not yet completely surrounded. White can escape by playing at A. Win the capturing race by avoiding the fight.",
+            "In a capturing race you can sometimes avoid a fight by making two eyes. Or you connect your group with another group, increasing the number of liberties. If you are not yet completely surrounded, you could try to escape. In this example the four white stones are not yet completely surrounded. White can escape by playing at A. Win the capturing race by avoiding the fight.",
         );
     }
     config(): GobanConfig {
