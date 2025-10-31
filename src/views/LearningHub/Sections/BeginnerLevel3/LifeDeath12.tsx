@@ -14,14 +14,13 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-/* cSpell:disable */
 
 import { GobanConfig } from "goban";
 import { LearningPage, LearningPageProperties } from "../../LearningPage";
 import { _, pgettext } from "@/lib/translate";
 import { LearningHubSection } from "../../LearningHubSection";
 
-export class BL2LifeDeath1 extends LearningHubSection {
+export class BL3LifeDeath12 extends LearningHubSection {
     static pages(): Array<typeof LearningPage> {
         return [
             Page01,
@@ -36,22 +35,18 @@ export class BL2LifeDeath1 extends LearningHubSection {
             Page10,
             Page11,
             Page12,
-            Page13,
         ];
     }
     static section(): string {
-        return "bl2-life-death-1";
+        return "bl3-life-death-12";
     }
     static title(): string {
-        return pgettext(
-            "Tutorial section name on learning make eyes in correct order",
-            "Life&Death",
-        );
+        return pgettext("Tutorial section name on learning capture false eye", "Life&Death");
     }
     static subtext(): string {
         return pgettext(
-            "Tutorial section subtext on learning on make eyes in correct order",
-            "Make eyes in correct order",
+            "Tutorial section subtext on learning on capture false eye",
+            "Capture, false eye",
         );
     }
 }
@@ -62,23 +57,22 @@ class Page01 extends LearningPage {
     }
 
     text() {
-        return _(
-            "If a group does not have two eyes yet, you should ensure that you always can make two eyes. If you need one move for each eye, it can be important to play those two moves in the correct order. In this example White can make two eyes by playing at A and B. White has to choose between A and B as the first move. If White chooses the wrong one, he gets no chance to make the second. Make two eyes in the correct order.",
-        );
+        return _("Black to play. Capture the white group; use a false eye.");
     }
     config(): GobanConfig {
         return {
             width: 19,
             height: 19,
             mode: "puzzle",
-            initial_player: "white",
+            initial_player: "black",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            /* cSpell:disable */
             initial_state: {
-                black: "apbpcqdodqeqer",
-                white: "bqbrbsdrds",
+                black: "bpcpcqdqeqfrfpgr",
+                white: "aqbqbrbscrdr",
             },
-            marks: { A: "aq", B: "cr" },
-            move_tree: this.makePuzzleMoveTree(["craqar"], ["aqcr"], 19, 19),
+            move_tree: this.makePuzzleMoveTree(["dseser"], ["esds", "erds"], 19, 19),
+            /* cSpell:enable */
         };
     }
 }
@@ -89,20 +83,27 @@ class Page02 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Make two eyes in the correct order.");
+        return _("Black to play. Capture the white group; use a false eye.");
     }
     config(): GobanConfig {
         return {
             width: 19,
             height: 19,
             mode: "puzzle",
-            initial_player: "white",
+            initial_player: "black",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            /* cSpell:disable */
             initial_state: {
-                black: "bnbpcpdpfpeqerdses",
-                white: "bqcqdqbrdrbs",
+                black: "bncndnbmenfogofmfqfrerdrcrbrco",
+                white: "arbqboancpcqdqeqepeodo",
             },
-            move_tree: this.makePuzzleMoveTree(["csaqar"], ["aqcs", "arcs", "apcs"], 19, 19),
+            move_tree: this.makePuzzleMoveTree(
+                ["apaqaobpao", "apaoaqbpaq"],
+                ["aqap", "aoap", "asaq", "amaoapbp"],
+                19,
+                19,
+            ),
+            /* cSpell:enable */
         };
     }
 }
@@ -113,20 +114,22 @@ class Page03 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Make two eyes in the correct order.");
+        return _("Black to play. Capture the white group; use a false eye.");
     }
     config(): GobanConfig {
         return {
             width: 19,
             height: 19,
             mode: "puzzle",
-            initial_player: "white",
+            initial_player: "black",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            /* cSpell:disable */
             initial_state: {
-                black: "bmbocoeodpdqdrcs",
-                white: "apbpcparbrcr",
+                black: "cnfqeqdraoapaqbqbrcsbnemfmgngogpgreodmcl",
+                white: "fpenfncrcqdqdpbpbocododnerep",
             },
-            move_tree: this.makePuzzleMoveTree(["bscqbq"], ["cqbs", "bqbs"], 19, 19),
+            move_tree: this.makePuzzleMoveTree(["fo"], ["dsfo"], 19, 19),
+            /* cSpell:enable */
         };
     }
 }
@@ -137,20 +140,27 @@ class Page04 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Make two eyes in the correct order.");
+        return _("Black to play. Capture the white group; use a false eye.");
     }
     config(): GobanConfig {
         return {
             width: 19,
             height: 19,
             mode: "puzzle",
-            initial_player: "white",
+            initial_player: "black",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            /* cSpell:disable */
             initial_state: {
-                black: "bmbocoeocpdqdrds",
-                white: "bpbqcqarcras",
+                black: "araqbqdpeofogpgqgrgsfsbpcocn",
+                white: "brbscqdqdrdsesfrfqep",
             },
-            move_tree: this.makePuzzleMoveTree(["apcsbs"], ["csap", "bsap"], 19, 19),
+            move_tree: this.makePuzzleMoveTree(
+                ["eqerfp"],
+                ["fpeq", "crfp", "csfp", "ereq"],
+                19,
+                19,
+            ),
+            /* cSpell:enable */
         };
     }
 }
@@ -161,20 +171,22 @@ class Page05 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Make two eyes in the correct order.");
+        return _("Black to play. Capture the white group; use a false eye.");
     }
     config(): GobanConfig {
         return {
             width: 19,
             height: 19,
             mode: "puzzle",
-            initial_player: "white",
+            initial_player: "black",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            /* cSpell:disable */
             initial_state: {
-                black: "eoapbpcpdqeqeres",
-                white: "bqcqbrdrbs",
+                black: "bpbocodoeoepfqfrfsdsgp",
+                white: "aqbqbrbscrereqdqdpcp",
             },
-            move_tree: this.makePuzzleMoveTree(["dsaqar"], ["aqds", "csds"], 19, 19),
+            move_tree: this.makePuzzleMoveTree(["dr"], ["esdr"], 19, 19),
+            /* cSpell:enable */
         };
     }
 }
@@ -185,25 +197,22 @@ class Page06 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Make two eyes in the correct order.");
+        return _("Black to play. Capture the white group; use a false eye.");
     }
     config(): GobanConfig {
         return {
             width: 19,
             height: 19,
             mode: "puzzle",
-            initial_player: "white",
+            initial_player: "black",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            /* cSpell:disable */
             initial_state: {
-                black: "gpaqbqcqdqeqfqgrhr",
-                white: "brcrdrerfrcs",
+                black: "bqbpcpdpeqfqgrhrgpfses",
+                white: "asarbrcqdqdrerfrgs",
             },
-            move_tree: this.makePuzzleMoveTree(
-                ["arfses"],
-                ["asar", "fsar", "esar", "gsar"],
-                19,
-                19,
-            ),
+            move_tree: this.makePuzzleMoveTree(["cs"], ["hscs", "dscs"], 19, 19),
+            /* cSpell:enable */
         };
     }
 }
@@ -214,20 +223,22 @@ class Page07 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Make two eyes in the correct order.");
+        return _("Black to play. Capture the white group; use a false eye.");
     }
     config(): GobanConfig {
         return {
             width: 19,
             height: 19,
             mode: "puzzle",
-            initial_player: "white",
+            initial_player: "black",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            /* cSpell:disable */
             initial_state: {
-                black: "cneofohocpdpgpbqgqbrgrbsgs",
-                white: "epfpcqdqcrerfres",
+                black: "cmbncnasaraqapaoandmenfnfsfrfqeqdqgp",
+                white: "dodndpcsdrerbrbqbpcqboco",
             },
-            move_tree: this.makePuzzleMoveTree(["fqcsds"], ["csfq", "dsfq"], 19, 19),
+            move_tree: this.makePuzzleMoveTree(["es"], ["bses"], 19, 19),
+            /* cSpell:enable */
         };
     }
 }
@@ -238,20 +249,27 @@ class Page08 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Make two eyes in the correct order.");
+        return _("Black to play. Capture the white group; use a false eye.");
     }
     config(): GobanConfig {
         return {
             width: 19,
             height: 19,
             mode: "puzzle",
-            initial_player: "white",
+            initial_player: "black",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            /* cSpell:disable */
             initial_state: {
-                black: "bpdpepfpgphpcqhqbrhrbshs",
-                white: "eqgqcrergrcsesgs",
+                black: "asbpcpdpfrhrgpfqep",
+                white: "brcscqdqdser",
             },
-            move_tree: this.makePuzzleMoveTree(["dqfqfr"], ["drfqfrdq", "fqdr", "frdr"], 19, 19),
+            move_tree: this.makePuzzleMoveTree(
+                ["araqbqbsar"],
+                ["bqar", "aqar", "drareqes", "eqardres", "crar"],
+                19,
+                19,
+            ),
+            /* cSpell:enable */
         };
     }
 }
@@ -262,20 +280,22 @@ class Page09 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Make two eyes in the correct order.");
+        return _("Black to play. Capture the white group; use a false eye.");
     }
     config(): GobanConfig {
         return {
             width: 19,
             height: 19,
             mode: "puzzle",
-            initial_player: "white",
+            initial_player: "black",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            /* cSpell:disable */
             initial_state: {
-                black: "anbncndnfneoepaqeqcrdrerbs",
-                white: "bocodobpcqdqarbr",
+                black: "bmcmcodoenemckfofpepdqcqerfraoanam",
+                white: "aqbqdrcrdsbpcpdpbocnbndn",
             },
-            move_tree: this.makePuzzleMoveTree(["dpaoap"], ["aodp", "apdp", "bqdp"], 19, 19),
+            move_tree: this.makePuzzleMoveTree(["bs"], ["brbs", "eobs", "eqbs", "esbs"], 19, 19),
+            /* cSpell:enable */
         };
     }
 }
@@ -286,25 +306,27 @@ class Page10 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Make two eyes in the correct order.");
+        return _("Black to play. Capture the white group; use a false eye.");
     }
     config(): GobanConfig {
         return {
             width: 19,
             height: 19,
             mode: "puzzle",
-            initial_player: "white",
+            initial_player: "black",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            /* cSpell:disable */
             initial_state: {
-                black: "cndnenfnbogobpgpbqfqgqbrfr",
-                white: "codoeofocpcqdqeqcrcs",
+                black: "fmbncndneofogpfsesdscscraoapaqardqgrgq",
+                white: "dpcobpbqcqdrerfqdo",
             },
             move_tree: this.makePuzzleMoveTree(
-                ["eresdsfpep"],
-                ["fper", "dser", "eser", "eper"],
+                ["freqep", "frepeq", "ep"],
+                ["eqep", "boep"],
                 19,
                 19,
             ),
+            /* cSpell:enable */
         };
     }
 }
@@ -315,20 +337,22 @@ class Page11 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Make two eyes in the correct order.");
+        return _("Black to play. Capture the white group; use a false eye.");
     }
     config(): GobanConfig {
         return {
             width: 19,
             height: 19,
             mode: "puzzle",
-            initial_player: "white",
+            initial_player: "black",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            /* cSpell:disable */
             initial_state: {
-                black: "bodoeofogocpgpbqcqgqbrgrir",
-                white: "dpfpdqfqcrdrerfrcs",
+                black: "cqbsdsesfsfrfqepeodocobobm",
+                white: "arbrbqbpapcpdpdqdrer",
             },
-            move_tree: this.makePuzzleMoveTree(["epfses"], ["fsep", "esep", "gsep"], 19, 19),
+            move_tree: this.makePuzzleMoveTree(["crcscr"], ["cscr"], 19, 19),
+            /* cSpell:enable */
         };
     }
 }
@@ -339,44 +363,22 @@ class Page12 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Make two eyes in the correct order.");
+        return _("Black to play. Capture the white group; use a false eye.");
     }
     config(): GobanConfig {
         return {
             width: 19,
             height: 19,
             mode: "puzzle",
-            initial_player: "white",
+            initial_player: "black",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            /* cSpell:disable */
             initial_state: {
-                black: "bodoeofogoiocphpbqhqbrgrhrcsfsgs",
-                white: "dpepfpgpcqdqcrerfres",
+                black: "bqbpcpdpepeqdrfqgr",
+                white: "arbrcrcscqdqer",
             },
-            move_tree: this.makePuzzleMoveTree(["dsgqfq"], ["gqds", "fqds"], 19, 19),
-        };
-    }
-}
-
-class Page13 extends LearningPage {
-    constructor(props: LearningPageProperties) {
-        super(props);
-    }
-
-    text() {
-        return _("White to play. Make two eyes in the correct order.");
-    }
-    config(): GobanConfig {
-        return {
-            width: 19,
-            height: 19,
-            mode: "puzzle",
-            initial_player: "white",
-            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
-            initial_state: {
-                black: "codoeofogohobpbqgqhqbrcrhrcshs",
-                white: "cpepfpcqfqdrergres",
-            },
-            move_tree: this.makePuzzleMoveTree(["gsdpdq"], ["dpgs", "fsgs", "dqgs"], 19, 19),
+            move_tree: this.makePuzzleMoveTree(["es"], ["dses", "fses", "fres"], 19, 19),
+            /* cSpell:enable */
         };
     }
 }
