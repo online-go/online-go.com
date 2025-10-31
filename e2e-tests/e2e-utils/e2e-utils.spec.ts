@@ -18,8 +18,12 @@
 import { ogsTest } from "@helpers";
 import { runGame } from "./run-game";
 import { closeAllPendingReportsTest } from "./close-all-pending-reports";
+import { runSgfGame } from "./run-sgf-game";
+import { populateGames } from "./populate-games";
 
 ogsTest.describe("@E2EUtils Tests", () => {
     ogsTest("Run a game", runGame);
     ogsTest("Close all pending reports from history page", closeAllPendingReportsTest);
+    ogsTest("Run an SGF game", runSgfGame);
+    ogsTest("Run to populate games", populateGames);
 });

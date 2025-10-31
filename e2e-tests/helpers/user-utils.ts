@@ -144,6 +144,11 @@ export const prepareNewUser = async (browser: Browser, username: string, passwor
 
     await turnOffDynamicHelp(userPage); // the popups can get in the way.
 
+    // Prevent desktop notification prompts from appearing during tests
+    await userPage.evaluate(() => {
+        localStorage.setItem("ogs.preferences.asked-to-enable-desktop-notifications", "true");
+    });
+
     await load(userPage, "/");
 
     return {
