@@ -118,7 +118,7 @@ export const registerNewUser = async (browser: Browser, username: string, passwo
     await registerButton.click();
 
     // Verify successful registration
-    await expect(userPage.getByText("Welcome")).toBeVisible();
+    await expect(userPage.getByText("Welcome!")).toBeVisible();
 
     const userDropdown = userPage.locator(".username").getByText(username);
     await expect(userDropdown).toBeVisible();
@@ -349,7 +349,10 @@ export const captureReportNumber = async (reporterPage: Page): Promise<string> =
 
     // The report number is in a button at the top left of the display area
     // Look for a pattern like "R123" in a button or link
-    const reportButton = reporterPage.locator("button, a").filter({ hasText: /^R\d+$/ }).first();
+    const reportButton = reporterPage
+        .locator("button, a")
+        .filter({ hasText: /^R\d+$/ })
+        .first();
     await expect(reportButton).toBeVisible();
 
     const reportNumber = await reportButton.textContent();

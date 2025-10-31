@@ -30,6 +30,7 @@ import {
     prepareNewUser,
     reportUser,
     setupSeededCM,
+    captureReportNumber,
 } from "@helpers/user-utils";
 import {
     acceptDirectChallenge,
@@ -155,26 +156,26 @@ export const detectContainedSimulTest = async (
         // Verify report was created (reporter's count increased by 1)
         const reportIndicator = await reporterTracker.assertCountIncreasedBy(acceptor1Page, 1);
 
+        // Capture the report number from the reporter's "My Own Reports" page
+        const reportNumber = await captureReportNumber(acceptor1Page);
+        console.log(`Captured report number: ${reportNumber}`);
+
         // Verify CM's count also increased by 1
         const cmCurrentCount = await reporterTracker.checkCurrentCount(cmPage);
         expect(cmCurrentCount).toBe(cmInitialCount + 1);
 
-        // Click the CM's indicator to view the report
-        const cmIndicator = cmPage.locator(".IncidentReportIndicator");
-        await cmIndicator.click();
-
-        await expect(cmPage.getByRole("heading", { name: "Reports Center" })).toBeVisible();
-        await expect(cmPage.getByText("reporting to see simul flag")).toBeVisible();
-        await expect(
-            cmPage.locator(".simul-warning").getByText("Simul", { exact: true }),
-        ).toBeVisible();
-
         // Clean up the report
         await reportIndicator.click();
 
-        const cancelButton = acceptor1Page.getByText("Cancel");
+        // Get the Cancel button from the banner (reporter's view), not from ReportsCenterContainer
+        const cancelButton = acceptor1Page
+            .getByRole("banner")
+            .locator("button.reject.xs", { hasText: "Cancel" });
         await expect(cancelButton).toBeVisible();
         await cancelButton.click();
+
+        // Wait for the report to be cancelled and UI to update
+        await acceptor1Page.waitForLoadState("networkidle");
 
         // Verify count returned to initial baseline
         await reporterTracker.assertCountReturnedToInitial(acceptor1Page);

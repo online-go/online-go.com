@@ -29,7 +29,9 @@
 import { Browser, TestInfo } from "@playwright/test";
 
 import {
+    captureReportNumber,
     goToUsersFinishedGame,
+    navigateToReport,
     newTestUsername,
     prepareNewUser,
     reportUser,
@@ -64,6 +66,9 @@ export const cmShowOnlyPostEscalationVotesTest = async (
         // Verify reporter's count increased by 1
         await tracker.assertCountIncreasedBy(reporterPage, 1);
 
+        // Capture the report number from the reporter's "My Own Reports" page
+        const reportNumber = await captureReportNumber(reporterPage);
+
         // Now put a pre-escalation vote on the report
 
         const { seededCMPage: initialVoterPage } = await setupSeededCM(
@@ -71,14 +76,10 @@ export const cmShowOnlyPostEscalationVotesTest = async (
             "E2E_CM_SOPEV_INITIAL_VOTER",
         );
 
-        // Navigate to reports center
-        await initialVoterPage.goto("/reports-center");
-        await expect(
-            initialVoterPage.getByRole("heading", { name: "Reports Center" }),
-        ).toBeVisible();
+        // Navigate directly to the report using the captured report number
+        await navigateToReport(initialVoterPage, reportNumber);
 
-        // The newly created report will be first in the list (most recent)
-        // This is a safe assumption since reports are sorted by creation time descending
+        // Verify we can see the report with the message
         await expect(
             initialVoterPage.getByText("E2E test - SOPEV reporting score cheating!"),
         ).toBeVisible();
@@ -95,10 +96,10 @@ export const cmShowOnlyPostEscalationVotesTest = async (
             "E2E_CM_SOPEV_ESCALATOR",
         );
 
-        // Navigate to reports center
-        await escalatorPage.goto("/reports-center");
-        await expect(escalatorPage.getByRole("heading", { name: "Reports Center" })).toBeVisible();
+        // Navigate directly to the report using the captured report number
+        await navigateToReport(escalatorPage, reportNumber);
 
+        // Verify we can see the report with the message
         await expect(
             escalatorPage.getByText("E2E test - SOPEV reporting score cheating!"),
         ).toBeVisible();
@@ -110,6 +111,10 @@ export const cmShowOnlyPostEscalationVotesTest = async (
         voteButton = await expectOGSClickableByName(escalatorPage, /Vote$/);
 
         await voteButton.click();
+
+        // After voting, the system navigates to the next report
+        // Navigate back to our specific report to verify escalation
+        await navigateToReport(escalatorPage, reportNumber);
 
         await expect(
             escalatorPage.getByText("Escalated due to VotingOutcome.VOTED_ESCALATION"),

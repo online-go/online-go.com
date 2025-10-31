@@ -479,11 +479,13 @@ export function Game(): React.ReactElement | null {
                         }
                     }
 
-                    const live = isLiveGame(
-                        JSON.parse(game.time_control_parameters),
-                        game.width,
-                        game.height,
-                    );
+                    const live =
+                        game.time_control_parameters &&
+                        isLiveGame(
+                            JSON.parse(game.time_control_parameters),
+                            game.width,
+                            game.height,
+                        );
 
                     if (!live) {
                         goban_controller.current?.setZenMode(false);
