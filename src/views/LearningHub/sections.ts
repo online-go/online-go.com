@@ -214,6 +214,14 @@ import { BL3LifeDeath15 } from "./Sections/BeginnerLevel3/LifeDeath15";
 import { BL3LifeDeath16 } from "./Sections/BeginnerLevel3/LifeDeath16";
 import { BL3LifeDeath17 } from "./Sections/BeginnerLevel3/LifeDeath17";
 import { BL3LifeDeath18 } from "./Sections/BeginnerLevel3/LifeDeath18";
+import { BL3CapturingRace1 } from "./Sections/BeginnerLevel3/CapturingRace1";
+import { BL3CapturingRace2 } from "./Sections/BeginnerLevel3/CapturingRace2";
+import { BL3CapturingRace3 } from "./Sections/BeginnerLevel3/CapturingRace3";
+import { BL3CapturingRace4 } from "./Sections/BeginnerLevel3/CapturingRace4";
+import { BL3CapturingRace5 } from "./Sections/BeginnerLevel3/CapturingRace5";
+import { BL3CapturingRace6 } from "./Sections/BeginnerLevel3/CapturingRace6";
+import { BL3CapturingRace7 } from "./Sections/BeginnerLevel3/CapturingRace7";
+import { BL3CapturingRace8 } from "./Sections/BeginnerLevel3/CapturingRace8";
 
 export const sections: [string, any[]][] = [
     [
@@ -431,6 +439,14 @@ export const sections: [string, any[]][] = [
             BL3LifeDeath16,
             BL3LifeDeath17,
             BL3LifeDeath18,
+            BL3CapturingRace1,
+            BL3CapturingRace2,
+            BL3CapturingRace3,
+            BL3CapturingRace4,
+            BL3CapturingRace5,
+            BL3CapturingRace6,
+            BL3CapturingRace7,
+            BL3CapturingRace8,
         ],
     ],
 
