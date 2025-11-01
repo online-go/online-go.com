@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-/* cSpell:disable */
 
 import { GobanConfig } from "goban";
 import { LearningPage, LearningPageProperties } from "../../LearningPage";
@@ -22,7 +21,7 @@ import { _, pgettext } from "@/lib/translate";
 import { LearningHubSection } from "../../LearningHubSection";
 import React from "react";
 
-export class BL2Endgame2 extends LearningHubSection {
+export class BL3CapturingRace3 extends LearningHubSection {
     static pages(): Array<typeof LearningPage> {
         return [
             Page01,
@@ -37,353 +36,20 @@ export class BL2Endgame2 extends LearningHubSection {
             Page10,
             Page11,
             Page12,
-            Page13,
         ];
     }
     static section(): string {
-        return "bl2-endgame2";
+        return "bl3-capturing-race-3";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning count 1", "Endgame 2");
+        return pgettext("Tutorial section name on learning count moves", "Capturing race");
     }
     static subtext(): string {
-        return pgettext("Tutorial section subtext on learning on count 1", "Value of a move");
+        return pgettext("Tutorial section subtext on learning on count moves", "Count moves");
     }
 }
 
 class Page01 extends LearningPage {
-    constructor(props: LearningPageProperties) {
-        super(props);
-    }
-
-    text() {
-        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
-            const [value, setValue] = React.useState<string>("");
-
-            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-                const selectedValue = event.target.value;
-                setValue(selectedValue);
-
-                if (selectedValue === "6") {
-                    props.onCorrectAnswer();
-                } else if (selectedValue !== "") {
-                    props.onWrongAnswer();
-                }
-            };
-
-            return (
-                <div>
-                    <p>
-                        {_(
-                            "You can calculate the value of a move in the endgame by comparing the number of points if White plays at a position with the number of points if Black plays there. The difference between Black playing there and White playing there is the value of the move. Playing at A in this diagram yields White a captured stone and a point of territory. So, that is 2 points for White. If Black plays at A, Black gets 2 captured stones and 2 points of territory, so 4 points for Black. The difference between Black and White playing at A is 6 points. What is the value of playing at A?",
-                        )}
-                    </p>
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="2"
-                            checked={value === "2"}
-                            onChange={handleChange}
-                        />
-                        {_("2")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="4"
-                            checked={value === "4"}
-                            onChange={handleChange}
-                        />
-                        {_("4")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="6"
-                            checked={value === "6"}
-                            onChange={handleChange}
-                        />
-                        {_("6")}
-                    </label>
-                    <br />
-                </div>
-            );
-        }
-        return (
-            <MultipleChoice
-                onCorrectAnswer={this.onCorrectAnswer}
-                onWrongAnswer={this.onWrongAnswer}
-            />
-        );
-    }
-    config(): GobanConfig {
-        return {
-            width: 19,
-            height: 19,
-            mode: "puzzle",
-            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
-            initial_state: {
-                black: "bqbrbscncocpcqdr",
-                white: "crcsdndodpdqeqeres",
-            },
-            marks: { A: "ds" },
-            phase: "finished",
-        };
-    }
-}
-
-class Page02 extends LearningPage {
-    constructor(props: LearningPageProperties) {
-        super(props);
-    }
-
-    text() {
-        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
-            const [value, setValue] = React.useState<string>("");
-
-            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-                const selectedValue = event.target.value;
-                setValue(selectedValue);
-
-                if (selectedValue === "1") {
-                    props.onCorrectAnswer();
-                } else if (selectedValue !== "") {
-                    props.onWrongAnswer();
-                }
-            };
-
-            return (
-                <div>
-                    <p>{_("What is the value of playing at A?")}</p>
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="1"
-                            checked={value === "1"}
-                            onChange={handleChange}
-                        />
-                        {_("1")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="2"
-                            checked={value === "2"}
-                            onChange={handleChange}
-                        />
-                        {_("2")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="3"
-                            checked={value === "3"}
-                            onChange={handleChange}
-                        />
-                        {_("3")}
-                    </label>
-                    <br />
-                </div>
-            );
-        }
-        return (
-            <MultipleChoice
-                onCorrectAnswer={this.onCorrectAnswer}
-                onWrongAnswer={this.onWrongAnswer}
-            />
-        );
-    }
-    config(): GobanConfig {
-        return {
-            width: 19,
-            height: 19,
-            mode: "puzzle",
-            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
-            initial_state: {
-                black: "dmdncocpdqbrcrdrbs",
-                white: "endofodpeqgqeres",
-            },
-            marks: { A: "ds" },
-            phase: "finished",
-        };
-    }
-}
-
-class Page03 extends LearningPage {
-    constructor(props: LearningPageProperties) {
-        super(props);
-    }
-
-    text() {
-        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
-            const [value, setValue] = React.useState<string>("");
-
-            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-                const selectedValue = event.target.value;
-                setValue(selectedValue);
-
-                if (selectedValue === "2") {
-                    props.onCorrectAnswer();
-                } else if (selectedValue !== "") {
-                    props.onWrongAnswer();
-                }
-            };
-
-            return (
-                <div>
-                    <p>{_("What is the value of playing at A?")}</p>
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="1"
-                            checked={value === "1"}
-                            onChange={handleChange}
-                        />
-                        {_("1")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="2"
-                            checked={value === "2"}
-                            onChange={handleChange}
-                        />
-                        {_("2")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="3"
-                            checked={value === "3"}
-                            onChange={handleChange}
-                        />
-                        {_("3")}
-                    </label>
-                    <br />
-                </div>
-            );
-        }
-        return (
-            <MultipleChoice
-                onCorrectAnswer={this.onCorrectAnswer}
-                onWrongAnswer={this.onWrongAnswer}
-            />
-        );
-    }
-    config(): GobanConfig {
-        return {
-            width: 19,
-            height: 19,
-            mode: "puzzle",
-            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
-            initial_state: {
-                black: "dldmdndobpdpcqarbrcr",
-                white: "elemeneoepdqfqgqdrascsds",
-            },
-            marks: { A: "bs" },
-            phase: "finished",
-        };
-    }
-}
-
-class Page04 extends LearningPage {
-    constructor(props: LearningPageProperties) {
-        super(props);
-    }
-
-    text() {
-        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
-            const [value, setValue] = React.useState<string>("");
-
-            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-                const selectedValue = event.target.value;
-                setValue(selectedValue);
-
-                if (selectedValue === "1") {
-                    props.onCorrectAnswer();
-                } else if (selectedValue !== "") {
-                    props.onWrongAnswer();
-                }
-            };
-
-            return (
-                <div>
-                    <p>{_("What is the value of playing at A?")}</p>
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="1"
-                            checked={value === "1"}
-                            onChange={handleChange}
-                        />
-                        {_("1")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="2"
-                            checked={value === "2"}
-                            onChange={handleChange}
-                        />
-                        {_("2")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="3"
-                            checked={value === "3"}
-                            onChange={handleChange}
-                        />
-                        {_("3")}
-                    </label>
-                    <br />
-                </div>
-            );
-        }
-        return (
-            <MultipleChoice
-                onCorrectAnswer={this.onCorrectAnswer}
-                onWrongAnswer={this.onWrongAnswer}
-            />
-        );
-    }
-    config(): GobanConfig {
-        return {
-            width: 19,
-            height: 19,
-            mode: "puzzle",
-            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
-            initial_state: {
-                black: "dmdncodobpcqdqbrdrcs",
-                white: "eneogofpeqgqerdses",
-            },
-            marks: { A: "dp" },
-            phase: "finished",
-        };
-    }
-}
-
-class Page05 extends LearningPage {
     constructor(props: LearningPageProperties) {
         super(props);
     }
@@ -405,7 +71,7 @@ class Page05 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("What is the value of playing at A?")}</p>
+                    <p>{_("White to play. How many moves does White need to capture Black?")}</p>
                     <label>
                         <input
                             type="radio"
@@ -454,18 +120,19 @@ class Page05 extends LearningPage {
             width: 19,
             height: 19,
             mode: "puzzle",
+            initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            /* cSpell:disable */
             initial_state: {
-                black: "dldmdnbododpaqbqcqcr",
-                white: "elemeneoepfpdqdrfrcsds",
+                black: "arbrbsbqcpdpereq",
+                white: "bpbococqcrcs",
             },
-            marks: { A: "bs" },
             phase: "finished",
         };
     }
 }
 
-class Page06 extends LearningPage {
+class Page02 extends LearningPage {
     constructor(props: LearningPageProperties) {
         super(props);
     }
@@ -487,7 +154,7 @@ class Page06 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("What is the value of playing at A?")}</p>
+                    <p>{_("White to play. How many moves does White need to capture Black?")}</p>
                     <label>
                         <input
                             type="radio"
@@ -536,12 +203,345 @@ class Page06 extends LearningPage {
             width: 19,
             height: 19,
             mode: "puzzle",
+            initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            /* cSpell:disable */
             initial_state: {
-                black: "dmcnencoeobpdpcqdqbrbsds",
-                white: "fnfoepfpeqergrfs",
+                black: "asbqbparbrcsdqcoblcndoeocmckfmfocreqerds",
+                white: "aqbodpepesbnbmcpcqapfsfrfqfpgoaohp",
             },
-            marks: { A: "dr" },
+            phase: "finished",
+        };
+    }
+}
+
+class Page03 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
+            const [value, setValue] = React.useState<string>("");
+
+            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+                const selectedValue = event.target.value;
+                setValue(selectedValue);
+
+                if (selectedValue === "3") {
+                    props.onCorrectAnswer();
+                } else if (selectedValue !== "") {
+                    props.onWrongAnswer();
+                }
+            };
+
+            return (
+                <div>
+                    <p>{_("White to play. How many moves does White need to capture Black?")}</p>
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="2"
+                            checked={value === "2"}
+                            onChange={handleChange}
+                        />
+                        {_("2")}
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="3"
+                            checked={value === "3"}
+                            onChange={handleChange}
+                        />
+                        {_("3")}
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="4"
+                            checked={value === "4"}
+                            onChange={handleChange}
+                        />
+                        {_("4")}
+                    </label>
+                    <br />
+                </div>
+            );
+        }
+        return (
+            <MultipleChoice
+                onCorrectAnswer={this.onCorrectAnswer}
+                onWrongAnswer={this.onWrongAnswer}
+            />
+        );
+    }
+    config(): GobanConfig {
+        return {
+            width: 19,
+            height: 19,
+            mode: "puzzle",
+            initial_player: "white",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            /* cSpell:disable */
+            initial_state: {
+                black: "brcqcrcsdreqfqgqhphr",
+                white: "araqbqdqdpcpboerfrgr",
+            },
+            phase: "finished",
+        };
+    }
+}
+
+class Page04 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
+            const [value, setValue] = React.useState<string>("");
+
+            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+                const selectedValue = event.target.value;
+                setValue(selectedValue);
+
+                if (selectedValue === "3") {
+                    props.onCorrectAnswer();
+                } else if (selectedValue !== "") {
+                    props.onWrongAnswer();
+                }
+            };
+
+            return (
+                <div>
+                    <p>{_("White to play. How many moves does White need to capture Black?")}</p>
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="2"
+                            checked={value === "2"}
+                            onChange={handleChange}
+                        />
+                        {_("2")}
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="3"
+                            checked={value === "3"}
+                            onChange={handleChange}
+                        />
+                        {_("3")}
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="4"
+                            checked={value === "4"}
+                            onChange={handleChange}
+                        />
+                        {_("4")}
+                    </label>
+                    <br />
+                </div>
+            );
+        }
+        return (
+            <MultipleChoice
+                onCorrectAnswer={this.onCorrectAnswer}
+                onWrongAnswer={this.onWrongAnswer}
+            />
+        );
+    }
+    config(): GobanConfig {
+        return {
+            width: 19,
+            height: 19,
+            mode: "puzzle",
+            initial_player: "white",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            /* cSpell:disable */
+            initial_state: {
+                black: "aqarbrbsbpboaocrdqeqfqgqhreo",
+                white: "bncmcocpcqbqcsdsdrerfr",
+            },
+            phase: "finished",
+        };
+    }
+}
+
+class Page05 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
+            const [value, setValue] = React.useState<string>("");
+
+            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+                const selectedValue = event.target.value;
+                setValue(selectedValue);
+
+                if (selectedValue === "2") {
+                    props.onCorrectAnswer();
+                } else if (selectedValue !== "") {
+                    props.onWrongAnswer();
+                }
+            };
+
+            return (
+                <div>
+                    <p>{_("White to play. How many moves does White need to capture Black?")}</p>
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="1"
+                            checked={value === "1"}
+                            onChange={handleChange}
+                        />
+                        {_("1")}
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="2"
+                            checked={value === "2"}
+                            onChange={handleChange}
+                        />
+                        {_("2")}
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="3"
+                            checked={value === "3"}
+                            onChange={handleChange}
+                        />
+                        {_("3")}
+                    </label>
+                    <br />
+                </div>
+            );
+        }
+        return (
+            <MultipleChoice
+                onCorrectAnswer={this.onCorrectAnswer}
+                onWrongAnswer={this.onWrongAnswer}
+            />
+        );
+    }
+    config(): GobanConfig {
+        return {
+            width: 19,
+            height: 19,
+            mode: "puzzle",
+            initial_player: "white",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            /* cSpell:disable */
+            initial_state: {
+                black: "crcsdreraqbqcpbp",
+                white: "arbrbscqdqeqfqfr",
+            },
+            phase: "finished",
+        };
+    }
+}
+
+class Page06 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
+            const [value, setValue] = React.useState<string>("");
+
+            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+                const selectedValue = event.target.value;
+                setValue(selectedValue);
+
+                if (selectedValue === "3") {
+                    props.onCorrectAnswer();
+                } else if (selectedValue !== "") {
+                    props.onWrongAnswer();
+                }
+            };
+
+            return (
+                <div>
+                    <p>{_("White to play. How many moves does White need to capture Black?")}</p>
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="2"
+                            checked={value === "2"}
+                            onChange={handleChange}
+                        />
+                        {_("2")}
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="3"
+                            checked={value === "3"}
+                            onChange={handleChange}
+                        />
+                        {_("3")}
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="4"
+                            checked={value === "4"}
+                            onChange={handleChange}
+                        />
+                        {_("4")}
+                    </label>
+                    <br />
+                </div>
+            );
+        }
+        return (
+            <MultipleChoice
+                onCorrectAnswer={this.onCorrectAnswer}
+                onWrongAnswer={this.onWrongAnswer}
+            />
+        );
+    }
+    config(): GobanConfig {
+        return {
+            width: 19,
+            height: 19,
+            mode: "puzzle",
+            initial_player: "white",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            /* cSpell:disable */
+            initial_state: {
+                black: "bocoardsdrdqdpcqeqeoaqapao",
+                white: "cpbpbqbrcrdodndmfqfreresgoenfn",
+            },
             phase: "finished",
         };
     }
@@ -569,335 +569,7 @@ class Page07 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("What is the value of playing at A?")}</p>
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="1"
-                            checked={value === "1"}
-                            onChange={handleChange}
-                        />
-                        {_("1")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="2"
-                            checked={value === "2"}
-                            onChange={handleChange}
-                        />
-                        {_("2")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="3"
-                            checked={value === "3"}
-                            onChange={handleChange}
-                        />
-                        {_("3")}
-                    </label>
-                    <br />
-                </div>
-            );
-        }
-        return (
-            <MultipleChoice
-                onCorrectAnswer={this.onCorrectAnswer}
-                onWrongAnswer={this.onWrongAnswer}
-            />
-        );
-    }
-    config(): GobanConfig {
-        return {
-            width: 19,
-            height: 19,
-            mode: "puzzle",
-            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
-            initial_state: {
-                black: "dldmanbndnbodobpcpbq",
-                white: "elemeneoapdpepcqfqarbrcr",
-            },
-            marks: { A: "aq" },
-            phase: "finished",
-        };
-    }
-}
-
-class Page08 extends LearningPage {
-    constructor(props: LearningPageProperties) {
-        super(props);
-    }
-
-    text() {
-        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
-            const [value, setValue] = React.useState<string>("");
-
-            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-                const selectedValue = event.target.value;
-                setValue(selectedValue);
-
-                if (selectedValue === "2") {
-                    props.onCorrectAnswer();
-                } else if (selectedValue !== "") {
-                    props.onWrongAnswer();
-                }
-            };
-
-            return (
-                <div>
-                    <p>{_("What is the value of playing at A?")}</p>
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="1"
-                            checked={value === "1"}
-                            onChange={handleChange}
-                        />
-                        {_("1")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="2"
-                            checked={value === "2"}
-                            onChange={handleChange}
-                        />
-                        {_("2")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="3"
-                            checked={value === "3"}
-                            onChange={handleChange}
-                        />
-                        {_("3")}
-                    </label>
-                    <br />
-                </div>
-            );
-        }
-        return (
-            <MultipleChoice
-                onCorrectAnswer={this.onCorrectAnswer}
-                onWrongAnswer={this.onWrongAnswer}
-            />
-        );
-    }
-    config(): GobanConfig {
-        return {
-            width: 19,
-            height: 19,
-            mode: "puzzle",
-            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
-            initial_state: {
-                black: "dndodpbqdqeqcrerbs",
-                white: "fmeofoepfqfresfs",
-            },
-            marks: { A: "ds" },
-            phase: "finished",
-        };
-    }
-}
-
-class Page09 extends LearningPage {
-    constructor(props: LearningPageProperties) {
-        super(props);
-    }
-
-    text() {
-        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
-            const [value, setValue] = React.useState<string>("");
-
-            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-                const selectedValue = event.target.value;
-                setValue(selectedValue);
-
-                if (selectedValue === "2") {
-                    props.onCorrectAnswer();
-                } else if (selectedValue !== "") {
-                    props.onWrongAnswer();
-                }
-            };
-
-            return (
-                <div>
-                    <p>{_("What is the value of playing at A?")}</p>
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="1"
-                            checked={value === "1"}
-                            onChange={handleChange}
-                        />
-                        {_("1")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="2"
-                            checked={value === "2"}
-                            onChange={handleChange}
-                        />
-                        {_("2")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="3"
-                            checked={value === "3"}
-                            onChange={handleChange}
-                        />
-                        {_("3")}
-                    </label>
-                    <br />
-                </div>
-            );
-        }
-        return (
-            <MultipleChoice
-                onCorrectAnswer={this.onCorrectAnswer}
-                onWrongAnswer={this.onWrongAnswer}
-            />
-        );
-    }
-    config(): GobanConfig {
-        return {
-            width: 19,
-            height: 19,
-            mode: "puzzle",
-            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
-            initial_state: {
-                black: "elemeneodpepcqcrercs",
-                white: "dldmcndndobpcpaqbqbr",
-            },
-            marks: { A: "bs" },
-            phase: "finished",
-        };
-    }
-}
-
-class Page10 extends LearningPage {
-    constructor(props: LearningPageProperties) {
-        super(props);
-    }
-
-    text() {
-        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
-            const [value, setValue] = React.useState<string>("");
-
-            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-                const selectedValue = event.target.value;
-                setValue(selectedValue);
-
-                if (selectedValue === "2") {
-                    props.onCorrectAnswer();
-                } else if (selectedValue !== "") {
-                    props.onWrongAnswer();
-                }
-            };
-
-            return (
-                <div>
-                    <p>{_("What is the value of playing at A?")}</p>
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="1"
-                            checked={value === "1"}
-                            onChange={handleChange}
-                        />
-                        {_("1")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="2"
-                            checked={value === "2"}
-                            onChange={handleChange}
-                        />
-                        {_("2")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="3"
-                            checked={value === "3"}
-                            onChange={handleChange}
-                        />
-                        {_("3")}
-                    </label>
-                    <br />
-                </div>
-            );
-        }
-        return (
-            <MultipleChoice
-                onCorrectAnswer={this.onCorrectAnswer}
-                onWrongAnswer={this.onWrongAnswer}
-            />
-        );
-    }
-    config(): GobanConfig {
-        return {
-            width: 19,
-            height: 19,
-            mode: "puzzle",
-            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
-            initial_state: {
-                black: "cmemencodobpdpcqdqbrbsds",
-                white: "fneogoepeqcrdreres",
-            },
-            marks: { A: "cs" },
-            phase: "finished",
-        };
-    }
-}
-
-class Page11 extends LearningPage {
-    constructor(props: LearningPageProperties) {
-        super(props);
-    }
-
-    text() {
-        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
-            const [value, setValue] = React.useState<string>("");
-
-            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-                const selectedValue = event.target.value;
-                setValue(selectedValue);
-
-                if (selectedValue === "4") {
-                    props.onCorrectAnswer();
-                } else if (selectedValue !== "") {
-                    props.onWrongAnswer();
-                }
-            };
-
-            return (
-                <div>
-                    <p>{_("What is the value of playing at A?")}</p>
+                    <p>{_("White to play. How many moves does White need to capture Black?")}</p>
                     <label>
                         <input
                             type="radio"
@@ -946,100 +618,19 @@ class Page11 extends LearningPage {
             width: 19,
             height: 19,
             mode: "puzzle",
+            initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            /* cSpell:disable */
             initial_state: {
-                black: "dldmdnaobocodocpbqcq",
-                white: "elemeneoapbpepdqeqarbrcr",
+                black: "cscrdrercqbpbocn",
+                white: "aqbqbrbscpdpdqfqfrfohr",
             },
-            marks: { A: "aq" },
             phase: "finished",
         };
     }
 }
 
-class Page12 extends LearningPage {
-    constructor(props: LearningPageProperties) {
-        super(props);
-    }
-
-    text() {
-        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
-            const [value, setValue] = React.useState<string>("");
-
-            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-                const selectedValue = event.target.value;
-                setValue(selectedValue);
-
-                if (selectedValue === "2") {
-                    props.onCorrectAnswer();
-                } else if (selectedValue !== "") {
-                    props.onWrongAnswer();
-                }
-            };
-
-            return (
-                <div>
-                    <p>{_("What is the value of playing at A?")}</p>
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="1"
-                            checked={value === "1"}
-                            onChange={handleChange}
-                        />
-                        {_("1")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="2"
-                            checked={value === "2"}
-                            onChange={handleChange}
-                        />
-                        {_("2")}
-                    </label>
-                    <br />
-                    <label>
-                        <input
-                            type="radio"
-                            name="options"
-                            value="3"
-                            checked={value === "3"}
-                            onChange={handleChange}
-                        />
-                        {_("3")}
-                    </label>
-                    <br />
-                </div>
-            );
-        }
-        return (
-            <MultipleChoice
-                onCorrectAnswer={this.onCorrectAnswer}
-                onWrongAnswer={this.onWrongAnswer}
-            />
-        );
-    }
-    config(): GobanConfig {
-        return {
-            width: 19,
-            height: 19,
-            mode: "puzzle",
-            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
-            initial_state: {
-                black: "enfndocpdpbqeqfqarcr",
-                white: "blelcmemanbndnbocobpepaq",
-            },
-            marks: { A: "ap" },
-            phase: "finished",
-        };
-    }
-}
-
-class Page13 extends LearningPage {
+class Page08 extends LearningPage {
     constructor(props: LearningPageProperties) {
         super(props);
     }
@@ -1061,7 +652,7 @@ class Page13 extends LearningPage {
 
             return (
                 <div>
-                    <p>{_("What is the value of playing at A?")}</p>
+                    <p>{_("White to play. How many moves does White need to capture Black?")}</p>
                     <label>
                         <input
                             type="radio"
@@ -1110,12 +701,345 @@ class Page13 extends LearningPage {
             width: 19,
             height: 19,
             mode: "puzzle",
+            initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            /* cSpell:disable */
             initial_state: {
-                black: "dldmanbndncodocpbqcq",
-                white: "elemeneoapepdqeqarbrcr",
+                black: "fpirhpgpdqeqbqcqcrcseresiq",
+                white: "asbraqgrhrcpdpepfqfrfsbpbnfo",
             },
-            marks: { A: "aq" },
+            phase: "finished",
+        };
+    }
+}
+
+class Page09 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
+            const [value, setValue] = React.useState<string>("");
+
+            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+                const selectedValue = event.target.value;
+                setValue(selectedValue);
+
+                if (selectedValue === "4") {
+                    props.onCorrectAnswer();
+                } else if (selectedValue !== "") {
+                    props.onWrongAnswer();
+                }
+            };
+
+            return (
+                <div>
+                    <p>{_("White to play. How many moves does White need to capture Black?")}</p>
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="3"
+                            checked={value === "3"}
+                            onChange={handleChange}
+                        />
+                        {_("3")}
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="4"
+                            checked={value === "4"}
+                            onChange={handleChange}
+                        />
+                        {_("4")}
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="5"
+                            checked={value === "5"}
+                            onChange={handleChange}
+                        />
+                        {_("5")}
+                    </label>
+                    <br />
+                </div>
+            );
+        }
+        return (
+            <MultipleChoice
+                onCorrectAnswer={this.onCorrectAnswer}
+                onWrongAnswer={this.onWrongAnswer}
+            />
+        );
+    }
+    config(): GobanConfig {
+        return {
+            width: 19,
+            height: 19,
+            mode: "puzzle",
+            initial_player: "white",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            /* cSpell:disable */
+            initial_state: {
+                black: "crcsdmendrerfrgqapaobocodocndpcq",
+                white: "bsbrbqbpcpdlelfmfneoepeqdqbnbmcmclfo",
+            },
+            phase: "finished",
+        };
+    }
+}
+
+class Page10 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
+            const [value, setValue] = React.useState<string>("");
+
+            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+                const selectedValue = event.target.value;
+                setValue(selectedValue);
+
+                if (selectedValue === "5") {
+                    props.onCorrectAnswer();
+                } else if (selectedValue !== "") {
+                    props.onWrongAnswer();
+                }
+            };
+
+            return (
+                <div>
+                    <p>{_("White to play. How many moves does White need to capture Black?")}</p>
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="3"
+                            checked={value === "3"}
+                            onChange={handleChange}
+                        />
+                        {_("3")}
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="4"
+                            checked={value === "4"}
+                            onChange={handleChange}
+                        />
+                        {_("4")}
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="5"
+                            checked={value === "5"}
+                            onChange={handleChange}
+                        />
+                        {_("5")}
+                    </label>
+                    <br />
+                </div>
+            );
+        }
+        return (
+            <MultipleChoice
+                onCorrectAnswer={this.onCorrectAnswer}
+                onWrongAnswer={this.onWrongAnswer}
+            />
+        );
+    }
+    config(): GobanConfig {
+        return {
+            width: 19,
+            height: 19,
+            mode: "puzzle",
+            initial_player: "white",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            /* cSpell:disable */
+            initial_state: {
+                black: "arbrbsbqcrcpdpepeqgqgrgo",
+                white: "bpbocncqdqdrerfrdn",
+            },
+            phase: "finished",
+        };
+    }
+}
+
+class Page11 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
+            const [value, setValue] = React.useState<string>("");
+
+            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+                const selectedValue = event.target.value;
+                setValue(selectedValue);
+
+                if (selectedValue === "4") {
+                    props.onCorrectAnswer();
+                } else if (selectedValue !== "") {
+                    props.onWrongAnswer();
+                }
+            };
+
+            return (
+                <div>
+                    <p>{_("White to play. How many moves does White need to capture Black?")}</p>
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="3"
+                            checked={value === "3"}
+                            onChange={handleChange}
+                        />
+                        {_("3")}
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="4"
+                            checked={value === "4"}
+                            onChange={handleChange}
+                        />
+                        {_("4")}
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="5"
+                            checked={value === "5"}
+                            onChange={handleChange}
+                        />
+                        {_("5")}
+                    </label>
+                    <br />
+                </div>
+            );
+        }
+        return (
+            <MultipleChoice
+                onCorrectAnswer={this.onCorrectAnswer}
+                onWrongAnswer={this.onWrongAnswer}
+            />
+        );
+    }
+    config(): GobanConfig {
+        return {
+            width: 19,
+            height: 19,
+            mode: "puzzle",
+            initial_player: "white",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            /* cSpell:disable */
+            initial_state: {
+                black: "gpaqgrbrbsbqbpcocqdpeodneqfqhp",
+                white: "drcrcserepfpfofnemdmcnbnboaoapclardq",
+            },
+            phase: "finished",
+        };
+    }
+}
+
+class Page12 extends LearningPage {
+    constructor(props: LearningPageProperties) {
+        super(props);
+    }
+
+    text() {
+        function MultipleChoice(props: { onCorrectAnswer: () => void; onWrongAnswer: () => void }) {
+            const [value, setValue] = React.useState<string>("");
+
+            const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+                const selectedValue = event.target.value;
+                setValue(selectedValue);
+
+                if (selectedValue === "3") {
+                    props.onCorrectAnswer();
+                } else if (selectedValue !== "") {
+                    props.onWrongAnswer();
+                }
+            };
+
+            return (
+                <div>
+                    <p>{_("White to play. How many moves does White need to capture Black?")}</p>
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="2"
+                            checked={value === "2"}
+                            onChange={handleChange}
+                        />
+                        {_("2")}
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="3"
+                            checked={value === "3"}
+                            onChange={handleChange}
+                        />
+                        {_("3")}
+                    </label>
+                    <br />
+                    <label>
+                        <input
+                            type="radio"
+                            name="options"
+                            value="4"
+                            checked={value === "4"}
+                            onChange={handleChange}
+                        />
+                        {_("4")}
+                    </label>
+                    <br />
+                </div>
+            );
+        }
+        return (
+            <MultipleChoice
+                onCorrectAnswer={this.onCorrectAnswer}
+                onWrongAnswer={this.onWrongAnswer}
+            />
+        );
+    }
+    config(): GobanConfig {
+        return {
+            width: 19,
+            height: 19,
+            mode: "puzzle",
+            initial_player: "white",
+            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            /* cSpell:disable */
+            initial_state: {
+                black: "arbrbsbqbocpdpeqeren",
+                white: "bpapcocnbncqcrcscl",
+            },
             phase: "finished",
         };
     }

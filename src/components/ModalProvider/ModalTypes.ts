@@ -19,4 +19,5 @@ export enum ModalTypes {
     LanguagePicker = "languagePicker",
     Fork = "fork",
     GameLog = "gameLog",
+    GameMoveMetadata = "gameMoveMetadata",
 }
