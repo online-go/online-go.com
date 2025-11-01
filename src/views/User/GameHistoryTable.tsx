@@ -35,9 +35,29 @@ import { usePreference } from "@/lib/preferences";
 import { openAnnulQueueModal, AnnulQueueModal } from "@/components/AnnulQueueModal";
 import { useUser } from "@/lib/hooks";
 import { GameNameForList } from "@/components/GobanLineSummary";
+import { get } from "@/lib/requests";
+import { MODERATOR_POWERS } from "@/lib/moderation";
 
 interface GameHistoryProps {
     user_id: number;
+}
+
+interface AnnulmentGamesResponse {
+    games: number[];
+    stats: {
+        count: number;
+        player_id: number;
+        detected_game_id: number;
+        settings: {
+            months_threshold: number;
+            games_before: number;
+            games_after: number;
+            smr_threshold: number;
+            smr_delta: number;
+            blur_threshold: number;
+            game_count_threshold: number;
+        };
+    };
 }
 
 type ResultClass = `library-${"won" | "lost" | "tie"}-result${
@@ -83,8 +103,14 @@ export function GameHistoryTable(props: GameHistoryProps) {
     const [selectModeActive, setSelectModeActive] = React.useState<boolean>(false);
     const [annulQueue, setAnnulQueue] = React.useState<any[]>([]);
     const [isAnnulQueueModalOpen, setIsAnnulQueueModalOpen] = React.useState(false);
+    const [detectedGame, setDetectedGame] = React.useState<GroomedGame | null>(null);
+    const [loadingAnnulmentGames, setLoadingAnnulmentGames] = React.useState<boolean>(false);
 
     const user = useUser();
+
+    // Check if user has AI detection powers (either full moderator or community moderator with AI_DETECTOR power)
+    const hasAIDetectionPower =
+        user.is_moderator || (user.moderator_powers & MODERATOR_POWERS.AI_DETECTOR) !== 0;
 
     function getBoardSize(size_filter: string): number | undefined {
         switch (size_filter) {
@@ -96,6 +122,28 @@ export function GameHistoryTable(props: GameHistoryProps) {
                 return 19;
         }
         throw new Error(`Unknown size filter: ${size_filter}`);
+    }
+
+    async function fetchAnnulmentGames(detectedGameId: number, rows: GroomedGame[]) {
+        setLoadingAnnulmentGames(true);
+        try {
+            const response = (await get(`moderation/annulment_games`, {
+                player_id: props.user_id,
+                detected_game_id: detectedGameId,
+            })) as AnnulmentGamesResponse;
+
+            // Find the games in the current table that match the returned IDs
+            const matchingGames = rows.filter((game) => response.games.includes(game.id));
+
+            // Set these as the annul queue
+            setAnnulQueue(matchingGames);
+        } catch (error) {
+            console.error("Failed to fetch annulment games:", error);
+            // Show error to user - could use a toast notification here
+            alert("Failed to fetch games matching annulment criteria. Check console for details.");
+        } finally {
+            setLoadingAnnulmentGames(false);
+        }
     }
 
     function handleRowClick(
@@ -120,7 +168,15 @@ export function GameHistoryTable(props: GameHistoryProps) {
                     setAnnulQueue(rows.slice(minIndex, maxIndex + 1).filter((r) => !r.annulled));
                 }
             } else {
-                toggleQueued(row);
+                // If this is the first game clicked in select mode, treat it as the detected game
+                if (!detectedGame) {
+                    setDetectedGame(row);
+                    // Fetch games matching annulment criteria
+                    void fetchAnnulmentGames(row.id, rows);
+                } else {
+                    // Otherwise, toggle selection as normal
+                    toggleQueued(row);
+                }
             }
         } else {
             openUrlIfALinkWasNotClicked(ev, row.href);
@@ -250,9 +306,28 @@ export function GameHistoryTable(props: GameHistoryProps) {
                             />
                         </div>
                         <div>
-                            {user.is_moderator ? (
+                            {hasAIDetectionPower ? (
                                 <div className="btn-group">
-                                    {annulQueue.length > 0 ? (
+                                    {loadingAnnulmentGames && (
+                                        <span className="loading-indicator">
+                                            <i className="fa fa-spinner fa-spin" />{" "}
+                                            {_("Loading matching games...")}
+                                        </span>
+                                    )}
+                                    {selectModeActive &&
+                                        !detectedGame &&
+                                        !loadingAnnulmentGames && (
+                                            <span className="select-detected-prompt">
+                                                {_("(select detected game)")}
+                                            </span>
+                                        )}
+                                    {detectedGame && !loadingAnnulmentGames && (
+                                        <span className="detected-game-indicator">
+                                            {_("Detected game:")} #{detectedGame.id}
+                                        </span>
+                                    )}
+                                    {/* View Queue button is only visible to full moderators */}
+                                    {user.is_moderator && annulQueue.length > 0 ? (
                                         <button
                                             className="sm info"
                                             onClick={() =>
@@ -267,6 +342,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
                                         onClick={() => {
                                             setSelectModeActive(!selectModeActive);
                                             setAnnulQueue([]);
+                                            setDetectedGame(null);
                                         }}
                                     >
                                         {_("Select")}

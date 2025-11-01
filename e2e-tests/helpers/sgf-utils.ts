@@ -15,15 +15,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ogsTest } from "@helpers";
-import { runGame } from "./run-game";
-import { closeAllPendingReportsTest } from "./close-all-pending-reports";
-import { runSgfGame } from "./run-sgf-game";
-import { populateGames } from "./populate-games";
+/**
+ * Converts SGF coordinate to display coordinate (e.g., "pc" -> "Q17")
+ * SGF uses lowercase letters where 'a' = 1, 'b' = 2, etc.
+ * Display format uses uppercase letters for columns and numbers for rows (from bottom)
+ */
+export function sgfToDisplay(sgf: string): string {
+    const col = sgf.charCodeAt(0) - 97; // 'a' = 0, 'b' = 1, etc.
+    const row = sgf.charCodeAt(1) - 97; // 'a' = 0, 'b' = 1, etc.
 
-ogsTest.describe("@E2EUtils Tests", () => {
-    ogsTest("Run a game", runGame);
-    ogsTest("Close all pending reports from history page", closeAllPendingReportsTest);
-    ogsTest("Run an SGF game", runSgfGame);
-    ogsTest("Run to populate games", populateGames);
-});
+    // Convert to display format (A-T for 19x19, 1-19 from bottom)
+    const colLetter = String.fromCharCode(65 + col + (col >= 8 ? 1 : 0)); // Skip 'I'
+    const rowNumber = 19 - row;
+
+    return `${colLetter}${rowNumber}`;
+}
