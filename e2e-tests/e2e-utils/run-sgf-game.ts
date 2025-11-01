@@ -17,7 +17,7 @@
 
 // Test that plays the game from SGF: 80764919-161-serwer-Seoul Fuseki.sgf
 
-import { Browser } from "@playwright/test";
+import { Browser, expect } from "@playwright/test";
 
 import { newTestUsername, prepareNewUser } from "@helpers/user-utils";
 import {
@@ -26,22 +26,7 @@ import {
     defaultChallengeSettings,
 } from "@helpers/challenge-utils";
 import { playMoves } from "@helpers/game-utils";
-
-/**
- * Converts SGF coordinate to display coordinate (e.g., "pc" -> "Q17")
- * SGF uses lowercase letters where 'a' = 1, 'b' = 2, etc.
- * Display format uses uppercase letters for columns and numbers for rows (from bottom)
- */
-function sgfToDisplay(sgf: string): string {
-    const col = sgf.charCodeAt(0) - 97; // 'a' = 0, 'b' = 1, etc.
-    const row = sgf.charCodeAt(1) - 97; // 'a' = 0, 'b' = 1, etc.
-
-    // Convert to display format (A-T for 19x19, 1-19 from bottom)
-    const colLetter = String.fromCharCode(65 + col + (col >= 8 ? 1 : 0)); // Skip 'I'
-    const rowNumber = 19 - row;
-
-    return `${colLetter}${rowNumber}`;
-}
+import { sgfToDisplay } from "@helpers/sgf-utils";
 
 export const runSgfGame = async ({ browser }: { browser: Browser }) => {
     const { userPage: challengerPage } = await prepareNewUser(

@@ -26,31 +26,23 @@ import {
     defaultChallengeSettings,
 } from "@helpers/challenge-utils";
 import { playMoves } from "@helpers/game-utils";
-
-/**
- * Converts SGF coordinate to display coordinate (e.g., "pc" -> "Q17")
- * SGF uses lowercase letters where 'a' = 1, 'b' = 2, etc.
- * Display format uses uppercase letters for columns and numbers for rows (from bottom)
- */
-function sgfToDisplay(sgf: string): string {
-    const col = sgf.charCodeAt(0) - 97; // 'a' = 0, 'b' = 1, etc.
-    const row = sgf.charCodeAt(1) - 97; // 'a' = 0, 'b' = 1, etc.
-
-    // Convert to display format (A-T for 19x19, 1-19 from bottom)
-    const colLetter = String.fromCharCode(65 + col + (col >= 8 ? 1 : 0)); // Skip 'I'
-    const rowNumber = 19 - row;
-
-    return `${colLetter}${rowNumber}`;
-}
+import { sgfToDisplay } from "@helpers/sgf-utils";
 
 async function playOneGame(
-    challengerPage: Page,
-    acceptorPage: Page,
-    acceptorUsername: string,
+    player1Page: Page,
+    player2Page: Page,
+    player1Username: string,
+    player2Username: string,
     gameNumber: number,
 ) {
     const boardSize = "19x19";
     const handicap = 0;
+
+    // Alternate who challenges: odd games player1 challenges, even games player2 challenges
+    const isPlayer1Black = gameNumber % 2 === 1;
+    const challengerPage = isPlayer1Black ? player1Page : player2Page;
+    const acceptorPage = isPlayer1Black ? player2Page : player1Page;
+    const acceptorUsername = isPlayer1Black ? player2Username : player1Username;
 
     // Challenger challenges the acceptor
     await createDirectChallenge(challengerPage, acceptorUsername, {
@@ -195,18 +187,15 @@ async function playOneGame(
 }
 
 export const populateGames = async ({ browser }: { browser: Browser }) => {
-    const { userPage: challengerPage } = await prepareNewUser(
-        browser,
-        newTestUsername("e2ePopBlack"),
-        "test",
-    );
+    const player1Username = newTestUsername("e2ePopPlayer1");
+    const { userPage: player1Page } = await prepareNewUser(browser, player1Username, "test");
 
-    const acceptorUsername = newTestUsername("e2ePopWhite");
-    const { userPage: acceptorPage } = await prepareNewUser(browser, acceptorUsername, "test");
+    const player2Username = newTestUsername("e2ePopPlayer2");
+    const { userPage: player2Page } = await prepareNewUser(browser, player2Username, "test");
 
-    const numberOfGames = 3;
+    const numberOfGames = 5;
 
     for (let i = 1; i <= numberOfGames; i++) {
-        await playOneGame(challengerPage, acceptorPage, acceptorUsername, i);
+        await playOneGame(player1Page, player2Page, player1Username, player2Username, i);
     }
 };
