@@ -141,6 +141,23 @@ ComponentName/
 -   Do not use `any` type, ensure that all variables are correctly typed
 -   We use `yarn`, not `npm`
 
+### Styling Guidelines
+
+-   **Stylus files (.styl)**: Always use braces `{}` and semicolons `;` for consistency across the codebase
+-   Follow the pattern of existing .styl files in the project
+-   Example:
+
+    ```stylus
+    .MyComponent {
+        display: flex;
+        align-items: center;
+
+        .child-element {
+            margin: 1rem;
+        }
+    }
+    ```
+
 ### Animation Guidelines
 
 -   Avoid disorienting animations like continuous pulsing, throbbing, or looping effects

@@ -14,14 +14,13 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-/* cSpell:disable */
 
 import { GobanConfig } from "goban";
 import { LearningPage, LearningPageProperties } from "../../LearningPage";
 import { _, pgettext } from "@/lib/translate";
 import { LearningHubSection } from "../../LearningHubSection";
 
-export class BL2LifeDeath3 extends LearningHubSection {
+export class BL3LifeDeath7 extends LearningHubSection {
     static pages(): Array<typeof LearningPage> {
         return [
             Page01,
@@ -40,22 +39,16 @@ export class BL2LifeDeath3 extends LearningHubSection {
             Page14,
             Page15,
             Page16,
-            Page17,
-            Page18,
-            Page19,
         ];
     }
     static section(): string {
-        return "bl2-life-death-3";
+        return "bl3-life-death-7";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning make 3 points eye space", "Life&Death");
+        return pgettext("Tutorial section name on learning large eye", "Life&Death");
     }
     static subtext(): string {
-        return pgettext(
-            "Tutorial section subtext on learning on make 3 points eye space",
-            "3-points eye space",
-        );
+        return pgettext("Tutorial section subtext on learning on large eye", "Large eye");
     }
 }
 
@@ -66,7 +59,7 @@ class Page01 extends LearningPage {
 
     text() {
         return _(
-            "If your group has an eye-space of only 3 points, you should make two eyes right away. Otherwise your opponent plays at the centre of the 3-points eye-space and your group is dead. In this example White can force Black to create a 3-points eye space by playing at A. After Black has captured the 3 stones, White can capture the black group. White to play. Capture the black group by forcing a 3-points eye space.",
+            "This formation of a large eye is called flower in Japan and cherry blossom in Korea. By playing at A you can make the group alive or dead. White to play. Capture the black group.",
         );
     }
     config(): GobanConfig {
@@ -76,12 +69,14 @@ class Page01 extends LearningPage {
             mode: "puzzle",
             initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            /* cSpell:disable */
             initial_state: {
-                black: "apbpcpcqcrbrbs",
-                white: "arbobqcodndpdqdr",
+                black: "cncocpcqdmdndqemeqfmfnfpfqgngogp",
+                white: "bnbobpbqbrclcmcrdldrelerflfrgmgqgrhmhnhohphq",
             },
-            marks: { A: "aq" },
-            move_tree: this.makePuzzleMoveTree(["aqasaq"], [], 19, 19),
+            marks: { A: "eo" },
+            move_tree: this.makePuzzleMoveTree(["eo"], [], 19, 19),
+            /* cSpell:Aenable */
         };
     }
 }
@@ -92,7 +87,9 @@ class Page02 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Capture the black group by forcing a 3-points eye space.");
+        return _(
+            "In general a group with a rectangular 6-point eye space is alive. A rectangle in the corner is a special case. Here, White can capture the black group, since the group is completely surrounded. After White 1 and Black 2, White can play at A and use a shortage of liberties: Black can not play at B, because the black stones will then be in atari. White to play. Capture the black group.",
+        );
     }
     config(): GobanConfig {
         return {
@@ -101,11 +98,14 @@ class Page02 extends LearningPage {
             mode: "puzzle",
             initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            /* cSpell:disable */
             initial_state: {
-                black: "bqcqdqarbrdrds",
-                white: "bpcpdpfpeqcrercs",
+                black: "aqbqcqdqdrdsbs",
+                white: "apbpcpdpepeqeresbr",
             },
-            move_tree: this.makePuzzleMoveTree(["bsascs"], ["esbs"], 19, 19),
+            marks: { A: "ar", B: "cr", 1: "br", 2: "bs" },
+            move_tree: this.makePuzzleMoveTree(["arcrcs"], [], 19, 19),
+            /* cSpell:enable */
         };
     }
 }
@@ -116,7 +116,9 @@ class Page03 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Capture the black group by forcing a 3-points eye space.");
+        return _(
+            "If the black stones are not completely surrounded, but they have 1 outside liberty, White can not capture the group immediately. But after playing 1 and 3, White can make a ko by capturing black 4. White to play. Make a ko.",
+        );
     }
     config(): GobanConfig {
         return {
@@ -125,11 +127,14 @@ class Page03 extends LearningPage {
             mode: "puzzle",
             initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            /* cSpell:disable */
             initial_state: {
-                black: "arbrcrdrerfs",
-                white: "bqcqdqeqfqfrgrcsds",
+                black: "aqbqcqdqdrdsasbr",
+                white: "apbpcpdpepeqerbscs",
             },
-            move_tree: this.makePuzzleMoveTree(["bs"], ["esbs", "gsbsesfs"], 19, 19),
+            marks: { 1: "bs", 2: "br", 3: "cs", 4: "as" },
+            move_tree: this.makePuzzleMoveTree(["ar"], [], 19, 19),
+            /* cSpell:enable */
         };
     }
 }
@@ -140,20 +145,25 @@ class Page04 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Capture the black group by forcing a 3-points eye space.");
+        return _(
+            "If the black stones have two outside liberties, the black group is alive. Make the black group alive after White has played 1.",
+        );
     }
     config(): GobanConfig {
         return {
             width: 19,
             height: 19,
             mode: "puzzle",
-            initial_player: "white",
+            initial_player: "black",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            /* cSpell:disable */
             initial_state: {
-                black: "cpdpepcqfqcrdrfrdsfs",
-                white: "codoeogobpfpbqdqgqbrergr",
+                black: "aqbqcqdqdrds",
+                white: "bpcpdpepeqerbs",
             },
-            move_tree: this.makePuzzleMoveTree(["eqeseq"], ["gseq", "eseq"], 19, 19),
+            marks: { 1: "bs" },
+            move_tree: this.makePuzzleMoveTree(["brcsasarcr"], [], 19, 19),
+            /* cSpell:enable */
         };
     }
 }
@@ -164,7 +174,7 @@ class Page05 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Capture the black group by forcing a 3-points eye space.");
+        return _("White to play. Capture the black group.");
     }
     config(): GobanConfig {
         return {
@@ -173,11 +183,18 @@ class Page05 extends LearningPage {
             mode: "puzzle",
             initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            /* cSpell:disable */
             initial_state: {
-                black: "codobpdpbqdqbrdrbsds",
-                white: "embncndnboeoapcpepaqfqarcrfr",
+                black: "dqeqfqgqcrgrcsgs",
+                white: "hobpdpepfpgpcqhqbrhrhs",
             },
-            move_tree: this.makePuzzleMoveTree(["cqcscq"], ["cscq"], 19, 19),
+            move_tree: this.makePuzzleMoveTree(
+                ["eresdrdsfr"],
+                ["eresfrdr", "eresdsdr", "eresbsdr", "eser", "drer", "dses", "bses"],
+                19,
+                19,
+            ),
+            /* cSpell:enable */
         };
     }
 }
@@ -188,7 +205,7 @@ class Page06 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Capture the black group by forcing a 3-points eye space.");
+        return _("White to play. Capture the black group.");
     }
     config(): GobanConfig {
         return {
@@ -197,11 +214,18 @@ class Page06 extends LearningPage {
             mode: "puzzle",
             initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            /* cSpell:disable */
             initial_state: {
-                black: "cqdqeqfqbrcrgrbsesfsgs",
-                white: "bohocpdpepfpaqbqgqhqarhrdshs",
+                black: "dpgqfqfogogpfserdrcrbscqcpdo",
+                white: "brbqbpcocndnenfnhnhmhohphqgrfrir",
             },
-            move_tree: this.makePuzzleMoveTree(["erfrdrcsdr"], ["drer", "frer", "csdr"], 19, 19),
+            move_tree: this.makePuzzleMoveTree(
+                ["epeoeq"],
+                ["eoep", "esep", "csep", "eqep"],
+                19,
+                19,
+            ),
+            /* cSpell:enable */
         };
     }
 }
@@ -212,7 +236,7 @@ class Page07 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Capture the black group by forcing a 3-points eye space.");
+        return _("White to play. Capture the black group.");
     }
     config(): GobanConfig {
         return {
@@ -221,11 +245,13 @@ class Page07 extends LearningPage {
             mode: "puzzle",
             initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            /* cSpell:disable */
             initial_state: {
-                black: "bqcqdqarbrdr",
-                white: "apbpcpdpfpaqeqcreres",
+                black: "aqbqcqdqdrds",
+                white: "apbpcpdpepeqeres",
             },
-            move_tree: this.makePuzzleMoveTree(["csdsbsascs"], ["bscs", "dscs", "ascs"], 19, 19),
+            move_tree: this.makePuzzleMoveTree(["brbsar"], ["brbscrar", "bsbr"], 19, 19),
+            /* cSpell:enable */
         };
     }
 }
@@ -236,7 +262,7 @@ class Page08 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Capture the black group by forcing a 3-points eye space.");
+        return _("White to play. Capture the black group.");
     }
     config(): GobanConfig {
         return {
@@ -245,11 +271,13 @@ class Page08 extends LearningPage {
             mode: "puzzle",
             initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            /* cSpell:disable */
             initial_state: {
-                black: "cqeqfqgqcrgrcsesfs",
-                white: "bpcpdpepfpgpipbqhqbrfrhrbs",
+                black: "arbqcqdqdr",
+                white: "bpcpdpepeqer",
             },
-            move_tree: this.makePuzzleMoveTree(["drdqerdser"], ["erdr", "dqdr"], 19, 19),
+            move_tree: this.makePuzzleMoveTree(["bscsbr"], ["dsbs", "csbs"], 19, 19),
+            /* cSpell:enable */
         };
     }
 }
@@ -260,7 +288,7 @@ class Page09 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Capture the black group by forcing a 3-points eye space.");
+        return _("White to play. Capture the black group.");
     }
     config(): GobanConfig {
         return {
@@ -269,11 +297,18 @@ class Page09 extends LearningPage {
             mode: "puzzle",
             initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            /* cSpell:disable */
             initial_state: {
-                black: "doeocpfpcqdqfqdrfrdsfs",
-                white: "gmbndnencofogobpgpbqeqgqbrcrgr",
+                black: "cqdqeqfqcrgrbsesgs",
+                white: "cpdpepfphpbqgqbrhrhs",
             },
-            move_tree: this.makePuzzleMoveTree(["epdpereseq"], ["erep", "eser", "dpep"], 19, 19),
+            move_tree: this.makePuzzleMoveTree(
+                ["frfsdsercsdrcs", "frfscserdsdrcs", "frfserdrcs"],
+                ["frfsdserdrcs", "frfscserasds", "frfserdrdscs", "dsfr", "fsfr", "drer", "csfr"],
+                19,
+                19,
+            ),
+            /* cSpell:enable */
         };
     }
 }
@@ -284,7 +319,7 @@ class Page10 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Capture the black group by forcing a 3-points eye space.");
+        return _("White to play. Capture the black group.");
     }
     config(): GobanConfig {
         return {
@@ -293,11 +328,13 @@ class Page10 extends LearningPage {
             mode: "puzzle",
             initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            /* cSpell:disable */
             initial_state: {
-                black: "eofocpfpcqeqfqcrdrer",
-                white: "cndnenfnhnbogobpepgpbqdqgqbrgr",
+                black: "bscrcqdqeqfqfrgrgs",
+                white: "hrgqhpfpepdpcpbqbr",
             },
-            move_tree: this.makePuzzleMoveTree(["dpdodp"], ["dodp"], 19, 19),
+            move_tree: this.makePuzzleMoveTree(["esdser"], ["dses", "csds"], 19, 19),
+            /* cSpell:enable */
         };
     }
 }
@@ -308,7 +345,7 @@ class Page11 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Prevent a 3-points eye space and make the white group alive.");
+        return _("White to play. Capture the black group.");
     }
     config(): GobanConfig {
         return {
@@ -317,16 +354,18 @@ class Page11 extends LearningPage {
             mode: "puzzle",
             initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            /* cSpell:disable */
             initial_state: {
-                black: "aobocoapdpepaqeqcreres",
-                white: "bpbqdqarbrdr",
+                black: "aqbqcqdqdr",
+                white: "apbpcpdpfpeqer",
             },
             move_tree: this.makePuzzleMoveTree(
-                ["cscpcq"],
-                ["cqcsdsbs", "cpcs", "dscscqbs", "bscq"],
+                ["dscsbr", "bsbrcsdsas", "brbsarcrds"],
+                ["bsbrdscs", "bsbrascs", "brbscrar", "brbscsar"],
                 19,
                 19,
             ),
+            /* cSpell:enable */
         };
     }
 }
@@ -337,7 +376,7 @@ class Page12 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Prevent a 3-points eye space and make the white group alive.");
+        return _("White to play. Capture the black group.");
     }
     config(): GobanConfig {
         return {
@@ -346,11 +385,13 @@ class Page12 extends LearningPage {
             mode: "puzzle",
             initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            /* cSpell:disable */
             initial_state: {
-                black: "fpaqbqcqdqeqfrgrhrcsds",
-                white: "arbrcrdrerfs",
+                black: "arbrcqcpdreres",
+                white: "bqbpcodoeodqeqfqfr",
             },
-            move_tree: this.makePuzzleMoveTree(["bs"], ["esbs", "gsbs"], 19, 19),
+            move_tree: this.makePuzzleMoveTree(["csbscrdscr"], ["bscs", "dpcr"], 19, 19),
+            /* cSpell:enable */
         };
     }
 }
@@ -361,7 +402,7 @@ class Page13 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Prevent a 3-points eye space and make the white group alive.");
+        return _("White to play. Capture the black group.");
     }
     config(): GobanConfig {
         return {
@@ -370,11 +411,18 @@ class Page13 extends LearningPage {
             mode: "puzzle",
             initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            /* cSpell:disable */
             initial_state: {
-                black: "aobocoapcpfpaqcqdqerfr",
-                white: "bpbqarcrdrds",
+                black: "epfpdqgqcrdrgrcsfs",
+                white: "doeofogocphpcqhqbrhrbsgshs",
             },
-            move_tree: this.makePuzzleMoveTree(["bsbrbq"], ["brbs", "esbr"], 19, 19),
+            move_tree: this.makePuzzleMoveTree(
+                ["freser"],
+                ["fresfqgp", "esfr", "erfr", "eqer", "gpfr", "dper"],
+                19,
+                19,
+            ),
+            /* cSpell:enable */
         };
     }
 }
@@ -385,7 +433,7 @@ class Page14 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Prevent a 3-points eye space and make the white group alive.");
+        return _("White to play. Capture the black group.");
     }
     config(): GobanConfig {
         return {
@@ -394,11 +442,13 @@ class Page14 extends LearningPage {
             mode: "puzzle",
             initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            /* cSpell:disable */
             initial_state: {
-                black: "bneobpcpdpeqcrergrcs",
-                white: "bqcqdqarbrdr",
+                black: "dqepfpfqfrgrbscscrcq",
+                white: "gshrhqgqgpfoeodpdobpbqbr",
             },
-            move_tree: this.makePuzzleMoveTree(["bs"], ["dsbs", "esbs", "apbs"], 19, 19),
+            move_tree: this.makePuzzleMoveTree(["eresdr"], ["fser", "eser"], 19, 19),
+            /* cSpell:enable */
         };
     }
 }
@@ -409,7 +459,7 @@ class Page15 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Prevent a 3-points eye space and make the white group alive.");
+        return _("White to play. Capture the black group.");
     }
     config(): GobanConfig {
         return {
@@ -418,11 +468,18 @@ class Page15 extends LearningPage {
             mode: "puzzle",
             initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            /* cSpell:disable */
             initial_state: {
-                black: "aqbqcqdqeqfqgqgrirbsdsfs",
-                white: "arbrcrdrerfr",
+                black: "epfpdqfqgqcrgrcs",
+                white: "doeofohocpgpcqhqbrhr",
             },
-            move_tree: this.makePuzzleMoveTree(["cs"], ["escs"], 19, 19),
+            move_tree: this.makePuzzleMoveTree(
+                ["eresdrfrgs", "eresdrfrdpdsgs", "eresdrdsfr", "erdres"],
+                ["eresdrfrdpdseqdq", "gseresfsfrds", "gserfses", "fsergses", "drer"],
+                19,
+                19,
+            ),
+            /* cSpell:enable */
         };
     }
 }
@@ -433,7 +490,7 @@ class Page16 extends LearningPage {
     }
 
     text() {
-        return _("White to play. Prevent a 3-points eye space and make the white group alive.");
+        return _("White to play. Capture the black group.");
     }
     config(): GobanConfig {
         return {
@@ -442,83 +499,18 @@ class Page16 extends LearningPage {
             mode: "puzzle",
             initial_player: "white",
             bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            /* cSpell:disable */
             initial_state: {
-                black: "eohofpbqcqdqfqgqhqbrhr",
-                white: "crdrfrgrcsgs",
+                black: "aqbrcqdqdrer",
+                white: "bqbpcpdpeqfpfr",
             },
-            move_tree: this.makePuzzleMoveTree(["es"], ["eres", "eqes"], 19, 19),
-        };
-    }
-}
-
-class Page17 extends LearningPage {
-    constructor(props: LearningPageProperties) {
-        super(props);
-    }
-
-    text() {
-        return _("White to play. Prevent a 3-points eye space and make the white group alive.");
-    }
-    config(): GobanConfig {
-        return {
-            width: 19,
-            height: 19,
-            mode: "puzzle",
-            initial_player: "white",
-            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
-            initial_state: {
-                black: "fodpepbqcqfqgqiqbrhrcs",
-                white: "dqeqcrdrfrgrgs",
-            },
-            move_tree: this.makePuzzleMoveTree(["es"], ["dses"], 19, 19),
-        };
-    }
-}
-
-class Page18 extends LearningPage {
-    constructor(props: LearningPageProperties) {
-        super(props);
-    }
-
-    text() {
-        return _("White to play. Prevent a 3-points eye space and make the white group alive.");
-    }
-    config(): GobanConfig {
-        return {
-            width: 19,
-            height: 19,
-            mode: "puzzle",
-            initial_player: "white",
-            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
-            initial_state: {
-                black: "bncoapcpepbqdqeres",
-                white: "bpcqarcrdrds",
-            },
-            move_tree: this.makePuzzleMoveTree(["bs"], ["brbs", "aqbsaobr", "aqbsbrao"], 19, 19),
-        };
-    }
-}
-
-class Page19 extends LearningPage {
-    constructor(props: LearningPageProperties) {
-        super(props);
-    }
-
-    text() {
-        return _("White to play. Prevent a 3-points eye space and make the white group alive.");
-    }
-    config(): GobanConfig {
-        return {
-            width: 19,
-            height: 19,
-            mode: "puzzle",
-            initial_player: "white",
-            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
-            initial_state: {
-                black: "cndnengnfobpgpbqgqbrgr",
-                white: "doeofpcqeqfqdrer",
-            },
-            move_tree: this.makePuzzleMoveTree(["dp"], ["cpdp", "codp"], 19, 19),
+            move_tree: this.makePuzzleMoveTree(
+                ["csbses", "csbsar"],
+                ["csbsapar", "escs", "arcs"],
+                19,
+                19,
+            ),
+            /* cSpell:enable */
         };
     }
 }

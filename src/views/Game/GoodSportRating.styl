@@ -1,0 +1,45 @@
+/*
+ * Copyright (C)  Online-Go.com
+ */
+
+.good-sport-rating {
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    .rating-prompt {
+        margin-right: 0.5rem;
+    }
+
+    .thumbs-icon {
+        cursor: pointer;
+        font-size: 1.2rem;
+        opacity: 0.6;
+        transition: opacity 0.2s;
+
+        &:hover {
+            opacity: 1;
+        }
+
+        &.selected {
+            opacity: 1;
+        }
+
+        &.unselected {
+            opacity: 0.3;
+        }
+
+        i.fa-thumbs-up, i.fa-thumbs-down {
+            font-size: 1.4rem;
+        }
+    }
+
+    .rating-text {
+        margin-right: 0.5rem;
+    }
+
+    .rating-indicator {
+        font-size: 1.2rem;
+    }
+}
