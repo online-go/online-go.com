@@ -107,7 +107,7 @@
         "terser": "^5.44.0",
         "ts-jest": "^29.4.5",
         "typescript": "5.9.3",
-        "vite": "npm:rolldown-vite@7.1.19",
+        "vite": "^7.1.12",
         "vite-bundle-visualizer": "^1.2.1",
         "vite-plugin-checker": "^0.11.0",
         "vite-plugin-node-polyfills": "^0.24.0",
@@ -175,7 +175,7 @@
         "**/react-dom": "19.2.0",
         "**/@types/react": "19.2.2",
         "**/@types/react-dom": "19.2.2",
-        "**/vite": "npm:rolldown-vite@7.1.19"
+        "**/vite": "^7.1.12"
     },
     "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }

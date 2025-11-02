@@ -174,7 +174,6 @@ export default defineConfig({
         },
         preprocessorMaxWorkers: true,
         devSourcemap: true,
-        transformer: "lightningcss",
     },
     define: {
         "process.env.NODE_ENV": JSON.stringify(process.env.NODE_ENV),
@@ -273,7 +272,7 @@ export default defineConfig({
         ),
     },
     optimizeDeps: {
-        // Rolldown-specific optimizations
+        // Pre-bundle heavy dependencies for better dev server performance
         include: [
             "react",
             "react-dom",
@@ -284,7 +283,7 @@ export default defineConfig({
             "moment",
             "sweetalert2",
         ],
-        rollupOptions: {
+        esbuildOptions: {
             plugins: [fixReactVirtualized as any],
         },
     },

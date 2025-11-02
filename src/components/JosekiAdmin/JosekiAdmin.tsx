@@ -93,9 +93,19 @@ interface AuditTableProps {
     onPageSizeChange: (pageSize: number) => void;
     columns: ColumnDef<AuditRow>[];
     userCanAdminister: boolean;
+    onInitialLoad: () => void;
 }
 
 function AuditTable(props: AuditTableProps) {
+    const [hasLoadedInitially, setHasLoadedInitially] = React.useState(false);
+
+    React.useEffect(() => {
+        if (!hasLoadedInitially) {
+            props.onInitialLoad();
+            setHasLoadedInitially(true);
+        }
+    }, [hasLoadedInitially]);
+
     const table = useReactTable({
         data: props.data,
         columns: props.columns,
@@ -127,13 +137,13 @@ function AuditTable(props: AuditTableProps) {
     });
 
     return (
-        <div className="react-table-container">
-            <table className="react-table">
+        <div className="ReactTable">
+            <table>
                 <thead>
                     {table.getHeaderGroups().map((headerGroup) => (
                         <tr key={headerGroup.id}>
                             {headerGroup.headers.map((header) => (
-                                <th key={header.id} style={{ width: header.getSize() }}>
+                                <th key={header.id}>
                                     {header.isPlaceholder
                                         ? null
                                         : flexRender(
@@ -168,40 +178,49 @@ function AuditTable(props: AuditTableProps) {
                 </tbody>
             </table>
 
-            <div className="pagination">
-                <button
-                    onClick={() => table.setPageIndex(0)}
-                    disabled={!table.getCanPreviousPage()}
-                >
-                    {"<<"}
-                </button>
-                <button onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>
-                    {"<"}
-                </button>
-                <span>
-                    Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
-                </span>
-                <button onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
-                    {">"}
-                </button>
-                <button
-                    onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-                    disabled={!table.getCanNextPage()}
-                >
-                    {">>"}
-                </button>
-                <select
-                    value={table.getState().pagination.pageSize}
-                    onChange={(e) => {
-                        table.setPageSize(Number(e.target.value));
-                    }}
-                >
-                    {[5, 10, 15, 30, 50, 100].map((pageSize) => (
-                        <option key={pageSize} value={pageSize}>
-                            Show {pageSize}
-                        </option>
-                    ))}
-                </select>
+            <div className="pagination-bottom">
+                <div className="-pagination">
+                    <button
+                        className="-btn"
+                        onClick={() => table.previousPage()}
+                        disabled={!table.getCanPreviousPage()}
+                    >
+                        Previous
+                    </button>
+                    <span>
+                        Page{" "}
+                        <input
+                            type="number"
+                            value={table.getState().pagination.pageIndex + 1}
+                            onChange={(e) => {
+                                const page = e.target.value ? Number(e.target.value) - 1 : 0;
+                                table.setPageIndex(page);
+                            }}
+                            min="1"
+                            max={table.getPageCount()}
+                        />{" "}
+                        of {table.getPageCount()}
+                    </span>
+                    <select
+                        value={table.getState().pagination.pageSize}
+                        onChange={(e) => {
+                            table.setPageSize(Number(e.target.value));
+                        }}
+                    >
+                        {[5, 10, 15, 30, 50, 100].map((pageSize) => (
+                            <option key={pageSize} value={pageSize}>
+                                {pageSize} rows
+                            </option>
+                        ))}
+                    </select>
+                    <button
+                        className="-btn"
+                        onClick={() => table.nextPage()}
+                        disabled={!table.getCanNextPage()}
+                    >
+                        Next
+                    </button>
+                </div>
             </div>
         </div>
     );
@@ -420,14 +439,12 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
                               onChange={row.getToggleSelectedHandler()}
                           />
                       ),
-                      size: 30,
                   } as ColumnDef<AuditRow>,
               ]
             : []),
         {
             header: _("At"), // translators: This is the header field for move coordinates on the joseki admin audit table
             accessorKey: "placement",
-            size: 60,
             // Click the placement to see the position on the board
             cell: ({ row }: any) => (
                 <div
@@ -453,12 +470,10 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
         {
             header: _("Action"),
             accessorKey: "comment",
-            size: 200,
         },
         {
             header: _("Result"),
             accessorKey: "new_value",
-            size: 250,
         },
     ];
 
@@ -557,6 +572,9 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
                     }}
                     columns={this.getColumns()}
                     userCanAdminister={this.props.user_can_administer}
+                    onInitialLoad={() => {
+                        this.setState({ loading: true }, this.reloadData);
+                    }}
                 />
                 <div className="explorer-stats">
                     <span>
