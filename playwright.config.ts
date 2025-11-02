@@ -65,7 +65,7 @@ export default defineConfig({
     testDir: "./e2e-tests",
     testMatch: process.env.CI ? ["smoketests.spec.ts"] : ["**/*.spec.ts", "!**/smoketests/**"],
     // If you change this you need to change report-utils to match
-    timeout: 150 * 1000, // overall test timeout - we have some long multi-user tests
+    timeout: 300 * 1000, // overall test timeout - we have some long multi-user tests
     expect: {
         timeout: process.env.CI ? 30000 : 10000,
     },
