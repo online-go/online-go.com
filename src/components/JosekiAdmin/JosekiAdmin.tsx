@@ -19,7 +19,14 @@ import * as React from "react";
 import { _, interpolate, pgettext } from "@/lib/translate";
 import { get, post, put } from "@/lib/requests";
 
-import { useReactTable, getCoreRowModel, ColumnDef, flexRender } from "@tanstack/react-table";
+import {
+    useReactTable,
+    getCoreRowModel,
+    ColumnDef,
+    flexRender,
+    CellContext,
+    HeaderContext,
+} from "@tanstack/react-table";
 
 import { openModal } from "@/components/Modal";
 import { Player } from "@/components/Player";
@@ -53,10 +60,7 @@ interface JosekiAdminState {
     current_page: number;
     current_pageSize: number;
     loading: boolean;
-    all_selected: boolean;
-    any_selected: boolean;
     server_status: string;
-    selections: Map<string, boolean>;
     reversions: Map<string, string>;
     schema_version: string;
     filter_user_id: string;
@@ -104,7 +108,7 @@ function AuditTable(props: AuditTableProps) {
             props.onInitialLoad();
             setHasLoadedInitially(true);
         }
-    }, [hasLoadedInitially]);
+    }, [hasLoadedInitially, props.onInitialLoad]);
 
     const table = useReactTable({
         data: props.data,
@@ -235,10 +239,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
             current_page: 0,
             current_pageSize: 15,
             loading: false,
-            all_selected: false,
-            any_selected: false,
             server_status: "",
-            selections: new Map(),
             reversions: new Map(),
             schema_version: "",
             filter_user_id: "",
@@ -333,17 +334,9 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
 
         get(audits_url)
             .then((body) => {
-                // initialise selections, so we have the full list of them for select-all operations
-                const selections = new Map();
-                for (const a of body.results) {
-                    const key = `select-${a._id}`;
-                    selections.set(key, false);
-                }
                 this.setState({
-                    selections,
                     data: body.results,
                     pages: body.num_pages,
-                    all_selected: false,
                     loading: false,
                     rowSelection: {},
                 });
@@ -353,7 +346,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
             });
     };
 
-    fetchDataForTable = (table_state: any) => {
+    fetchDataForTable = (table_state: { page: number; pageSize: number }) => {
         // this shenanigans is so that we save the table state passed in the argument to this callback
         // into our component state, enabling us to reload the data again when we need to (after reverting an audit)
         this.setState(
@@ -364,6 +357,10 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
             },
             this.reloadData,
         );
+    };
+
+    handleInitialLoad = () => {
+        this.setState({ loading: true }, this.reloadData);
     };
 
     onUserIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -419,11 +416,11 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
             ? [
                   {
                       id: "select",
-                      header: ({ table }: any) => (
+                      header: ({ table }: HeaderContext<AuditRow, unknown>) => (
                           <input
                               type="checkbox"
                               checked={table.getIsAllRowsSelected()}
-                              ref={(el: any) => {
+                              ref={(el: HTMLInputElement | null) => {
                                   if (el) {
                                       el.indeterminate = table.getIsSomeRowsSelected();
                                   }
@@ -431,7 +428,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
                               onChange={table.getToggleAllRowsSelectedHandler()}
                           />
                       ),
-                      cell: ({ row }: any) => (
+                      cell: ({ row }: CellContext<AuditRow, unknown>) => (
                           <input
                               type="checkbox"
                               checked={row.getIsSelected()}
@@ -446,7 +443,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
             header: _("At"), // translators: This is the header field for move coordinates on the joseki admin audit table
             accessorKey: "placement",
             // Click the placement to see the position on the board
-            cell: ({ row }: any) => (
+            cell: ({ row }: CellContext<AuditRow, string>) => (
                 <div
                     className="position-link"
                     onClick={() => {
@@ -461,7 +458,9 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
         {
             header: _("User"),
             accessorKey: "user_id",
-            cell: ({ row }: any) => <Player user={row.original.user_id} />,
+            cell: ({ row }: CellContext<AuditRow, number>) => (
+                <Player user={row.original.user_id} />
+            ),
         },
         {
             header: _("Date"),
@@ -572,9 +571,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
                     }}
                     columns={this.getColumns()}
                     userCanAdminister={this.props.user_can_administer}
-                    onInitialLoad={() => {
-                        this.setState({ loading: true }, this.reloadData);
-                    }}
+                    onInitialLoad={this.handleInitialLoad}
                 />
                 <div className="explorer-stats">
                     <span>

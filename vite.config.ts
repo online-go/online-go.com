@@ -106,7 +106,7 @@ export default defineConfig({
               // This is our production build
               outDir: "../dist",
               sourcemap: true,
-              minify: "terser",
+              minify: "esbuild",
               // Maintain Vite 6 browser support
               target: ["es2020", "edge88", "firefox78", "chrome87", "safari14"],
               chunkSizeWarningLimit: 1024 * 1024 * 1.5,

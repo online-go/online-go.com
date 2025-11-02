@@ -63,6 +63,8 @@ try {
             Sentry.breadcrumbsIntegration({
                 console: false,
             }),
+            // Note: browserSessionIntegration is intentionally excluded
+            // (equivalent to old autoSessionTracking: false)
         ],
 
         /* Several users have weird addons and extensions that cause errors
