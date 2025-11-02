@@ -48,21 +48,20 @@ import { useUser } from "@/lib/hooks";
 const URL_REGEX =
     /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/g;
 
-function parseTextWithLinks(text: string): React.ReactNode[] {
+function parseTextWithLinks(text: string): React.ReactNode {
     const parts: React.ReactNode[] = [];
     let lastIndex = 0;
-    let match: RegExpExecArray | null;
 
-    while ((match = URL_REGEX.exec(text)) !== null) {
+    for (const match of text.matchAll(URL_REGEX)) {
         const url = match[0];
-        const index = match.index;
+        const index = match.index!;
 
         if (index > lastIndex) {
             parts.push(text.substring(lastIndex, index));
         }
 
         parts.push(
-            <a key={`link-${index}`} href={url} target="_blank" rel="noopener noreferrer">
+            <a key={index} href={url} target="_blank" rel="noopener noreferrer">
                 {url}
             </a>,
         );
@@ -74,7 +73,7 @@ function parseTextWithLinks(text: string): React.ReactNode[] {
         parts.push(text.substring(lastIndex));
     }
 
-    return parts.length > 0 ? parts : [text];
+    return parts.length > 0 ? parts : text;
 }
 
 interface ChatLogProperties {
