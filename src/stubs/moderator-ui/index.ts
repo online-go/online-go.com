@@ -5,3 +5,4 @@
 export * from "./ExampleMod";
 export * from "./Admin";
 export * from "./AIDetection";
+export * from "./GameMoveMetadata";

@@ -54,6 +54,13 @@ export function ModalProvider({ children }: React.PropsWithChildren): React.Reac
                     white: props.white,
                 });
                 break;
+            case ModalTypes.GameMoveMetadata:
+                setModalProps({
+                    config: props.config,
+                    black: props.black,
+                    white: props.white,
+                });
+                break;
             default:
                 // Some valid modal types do not have props
                 break;
