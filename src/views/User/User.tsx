@@ -360,7 +360,7 @@ export function User(props: { user_id?: number }): React.ReactElement {
                             editing={editing}
                             openModerateUser={openModerateUser}
                             onEdit={() => setEditing(true)}
-                            onSave={saveEditChanges.bind(this)}
+                            onSave={saveEditChanges}
                         />
 
                         {(!preferences.get("hide-ranks") || temporary_show_ratings) &&

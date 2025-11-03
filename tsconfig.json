@@ -38,7 +38,7 @@
         "strictPropertyInitialization": true,
         "noUnusedLocals": true,
 
-        "noImplicitThis": false,
+        "noImplicitThis": true,
 
         "sourceMap": true,
         "jsx": "react",
