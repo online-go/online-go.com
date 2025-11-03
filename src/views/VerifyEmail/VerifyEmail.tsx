@@ -16,7 +16,7 @@
  */
 
 import * as data from "@/lib/data";
-import { parse } from "query-string";
+import queryString from "query-string";
 import * as React from "react";
 import { useLocation } from "react-router-dom";
 import { post } from "@/lib/requests";
@@ -30,7 +30,7 @@ export function VerifyEmail() {
     const [isError, setIsError] = React.useState(false);
 
     React.useEffect(() => {
-        const q = parse(location.search);
+        const q = queryString.parse(location.search);
 
         post("me/validateEmail", {
             id: q["id"],

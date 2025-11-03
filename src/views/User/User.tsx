@@ -19,7 +19,7 @@ import * as React from "react";
 import { useLocation, useParams } from "react-router-dom";
 import { _, pgettext, moment } from "@/lib/translate";
 import { get, put } from "@/lib/requests";
-import { parse } from "query-string";
+import queryString from "query-string";
 import * as data from "@/lib/data";
 
 import * as preferences from "@/lib/preferences";
@@ -65,7 +65,7 @@ export function User(props: { user_id?: number }): React.ReactElement {
         props.user_id ||
         ("user_id" in params ? parseInt(params.user_id as string) : data.get("user").id);
     const location = useLocation();
-    const show_mod_log = parse(location.search)["show_mod_log"] === "1";
+    const show_mod_log = queryString.parse(location.search)["show_mod_log"] === "1";
 
     const [user, setUser] = React.useState<rest_api.FullPlayerDetail["user"]>();
     const [editing, setEditing] = React.useState(/edit/.test(location.hash));

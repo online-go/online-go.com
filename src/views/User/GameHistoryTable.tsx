@@ -160,7 +160,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
                 if (annulQueue.at(-1)) {
                     window.getSelection()?.removeAllRanges();
                     const indexes = [
-                        rows.findIndex((r) => r.id === annulQueue.at(-1).id),
+                        rows.findIndex((r) => r.id === annulQueue.at(-1)!.id),
                         rows.findIndex((r) => r.id === row.id),
                     ];
                     const minIndex = Math.min(...indexes);

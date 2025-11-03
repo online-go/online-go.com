@@ -17,7 +17,6 @@
 
 import * as React from "react";
 import * as data from "@/lib/data";
-import Linkify from "react-linkify";
 import Split from "react-split";
 import { Card } from "@/components/material";
 import { socket } from "@/lib/sockets";
@@ -45,6 +44,37 @@ import { profanity_filter } from "@/lib/profanity_filter";
 import { popover } from "@/lib/popover";
 import { alert } from "@/lib/swal_config";
 import { useUser } from "@/lib/hooks";
+
+const URL_REGEX =
+    /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/g;
+
+function parseTextWithLinks(text: string): React.ReactNode {
+    const parts: React.ReactNode[] = [];
+    let lastIndex = 0;
+
+    for (const match of text.matchAll(URL_REGEX)) {
+        const url = match[0];
+        const index = match.index!;
+
+        if (index > lastIndex) {
+            parts.push(text.substring(lastIndex, index));
+        }
+
+        parts.push(
+            <a key={index} href={url} target="_blank" rel="noopener noreferrer">
+                {url}
+            </a>,
+        );
+
+        lastIndex = index + url.length;
+    }
+
+    if (lastIndex < text.length) {
+        parts.push(text.substring(lastIndex));
+    }
+
+    return parts.length > 0 ? parts : text;
+}
 
 interface ChatLogProperties {
     channel: string;
@@ -338,10 +368,10 @@ function ChannelTopic({
                         <div className="channel-topic" title={title_hover}>
                             <div className="topic">
                                 <span className="content">
-                                    <Linkify>
-                                        {localize_time_strings(profanity_filter(topic.trim())) ||
-                                            name}
-                                    </Linkify>
+                                    {parseTextWithLinks(
+                                        localize_time_strings(profanity_filter(topic.trim())) ||
+                                            name,
+                                    )}
                                 </span>
                             </div>
                         </div>

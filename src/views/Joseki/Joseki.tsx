@@ -23,7 +23,7 @@ import * as React from "react";
 import * as ReactSelect from "react-select";
 import { Link } from "react-router-dom";
 import { RouteComponentProps, rr6ClassShim } from "@/lib/ogs-rr6-shims";
-import * as queryString from "query-string";
+import queryString from "query-string";
 
 import * as data from "@/lib/data";
 import * as preferences from "@/lib/preferences";
