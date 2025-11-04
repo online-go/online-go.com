@@ -1124,7 +1124,8 @@ export function Tournament(): React.ReactElement {
                         <div className="form-group" style={{ marginTop: "1rem" }}>
                             <label className="control-label" htmlFor="start-time">
                                 <span>
-                                    {_("Start time") /* translators: When the tournament starts */}:{" "}
+                                    {_("Start time") /* translators: When the tournament starts */}
+                                    :{" "}
                                 </span>
                             </label>
                             <div className="controls">

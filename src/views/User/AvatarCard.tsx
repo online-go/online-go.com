@@ -386,7 +386,8 @@ function AvatarSubtext({ user, global_user }: { user: AvatarCardUserType; global
             {user.ui_class_extra && user.ui_class_extra.indexOf("aga") >= 0 && (
                 <div>
                     <h4 style={inlineBlock}>
-                        <img src="https://cdn.online-go.com/assets/agaico1.png" /> {_("AGA Staff")}{" "}
+                        <img src="https://cdn.online-go.com/assets/agaico1.png" />{" "}
+                        {_("AGA Staff")}{" "}
                     </h4>
                 </div>
             )}

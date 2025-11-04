@@ -157,10 +157,10 @@ export function GameHistoryTable(props: GameHistoryProps) {
 
         if (selectModeActive) {
             if (ev.shiftKey) {
-                if (annulQueue.at(-1)) {
+                if (annulQueue.length > 0 && annulQueue[annulQueue.length - 1]) {
                     window.getSelection()?.removeAllRanges();
                     const indexes = [
-                        rows.findIndex((r) => r.id === annulQueue.at(-1).id),
+                        rows.findIndex((r) => r.id === annulQueue[annulQueue.length - 1].id),
                         rows.findIndex((r) => r.id === row.id),
                     ];
                     const minIndex = Math.min(...indexes);
