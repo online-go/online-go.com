@@ -41,6 +41,7 @@ export const ogsTest = base.extend({
             for (const page of pages) {
                 await checkNoErrorBoundaries(page);
             }
+            await context.close();
         }
     },
     context: async ({ context }, use) => {
