@@ -768,7 +768,11 @@ export function PriceBox({
         <div className="PriceBox">
             <h1>{price.title}</h1>
 
-            <ul>{price.description?.map((s, idx) => <li key={idx}>{s}</li>)}</ul>
+            <ul>
+                {price.description?.map((s, idx) => (
+                    <li key={idx}>{s}</li>
+                ))}
+            </ul>
 
             {
                 /* don't remove this. We want the translations to stick around

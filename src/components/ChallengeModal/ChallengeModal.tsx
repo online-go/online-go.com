@@ -475,7 +475,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
             player_id = conf.bot_id;
 
             if (!player_id) {
-                player_id = bot_count() === 0 ? 0 : one_bot()?.id ?? 0;
+                player_id = bot_count() === 0 ? 0 : (one_bot()?.id ?? 0);
             }
 
             console.log("Bot set to ", player_id);

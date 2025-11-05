@@ -35,11 +35,10 @@ export function UserHistory({
             if (!warningsOnly) {
                 return entries;
             }
-            return entries.filter(
-                (entry) =>
-                    entry.incident_report?.system_note
-                        ?.toLowerCase()
-                        .includes("actioned by community vote"),
+            return entries.filter((entry) =>
+                entry.incident_report?.system_note
+                    ?.toLowerCase()
+                    .includes("actioned by community vote"),
             );
         };
     }, [warningsOnly]);

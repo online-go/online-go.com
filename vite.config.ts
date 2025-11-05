@@ -106,7 +106,9 @@ export default defineConfig({
               // This is our production build
               outDir: "../dist",
               sourcemap: true,
-              minify: "terser",
+              minify: "esbuild",
+              // Maintain Vite 6 browser support
+              target: ["es2020", "edge88", "firefox78", "chrome87", "safari14"],
               chunkSizeWarningLimit: 1024 * 1024 * 1.5,
               rollupOptions: {
                   input: {
@@ -131,7 +133,7 @@ export default defineConfig({
               outDir: "../i18n/build/",
               sourcemap: true,
               minify: false,
-              target: "es2015",
+              target: "es2020",
               chunkSizeWarningLimit: 1024 * 1024 * 99,
               rollupOptions: {
                   input: {
@@ -275,6 +277,17 @@ export default defineConfig({
         ),
     },
     optimizeDeps: {
+        // Pre-bundle heavy dependencies for better dev server performance
+        include: [
+            "react",
+            "react-dom",
+            "react-router-dom",
+            "@nivo/line",
+            "@nivo/pie",
+            "d3",
+            "moment",
+            "sweetalert2",
+        ],
         esbuildOptions: {
             plugins: [fixReactVirtualized as any],
         },

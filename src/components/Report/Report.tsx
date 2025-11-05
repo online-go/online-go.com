@@ -471,7 +471,9 @@ export function Report(props: ReportProperties): React.ReactElement {
             </div>
             {(reported_conversation || null) && (
                 <div className="reported-conversation">
-                    {reported_conversation?.content.map((line, idx) => <div key={idx}>{line}</div>)}
+                    {reported_conversation?.content.map((line, idx) => (
+                        <div key={idx}>{line}</div>
+                    ))}
                 </div>
             )}
             {more_description_needed && category?.min_description_length && (
