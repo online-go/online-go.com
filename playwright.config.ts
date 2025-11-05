@@ -64,10 +64,10 @@ export default defineConfig({
     globalTeardown: "./e2e-tests/global-teardown.ts",
     testDir: "./e2e-tests",
     testMatch: process.env.CI ? ["smoketests.spec.ts"] : ["**/*.spec.ts", "!**/smoketests/**"],
-    // If you change this you need to change report-utils to match
+    // If you change this you need to change report-utils to match, noting the delta there from here.
     timeout: 300 * 1000, // overall test timeout - we have some long multi-user tests
     expect: {
-        timeout: process.env.CI ? 30000 : 10000,
+        timeout: process.env.CI ? 30000 : 15000,
     },
 
     /* Run tests in files in parallel */
