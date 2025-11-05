@@ -101,15 +101,11 @@ export const registerNewUser = async (browser: Browser, username: string, passwo
     });
     const userPage = await userContext.newPage();
     await userPage.goto("/");
-    // Go from "landing page" to the "sign in" page.
-    await userPage.getByRole("link", { name: /sign in/i }).click();
+    // Go from "landing page" to the "Register" page.
+    await userPage.getByRole("link", { name: /Register/i }).click();
+    await expect(userPage.getByText("Welcome new player!")).toBeVisible();
     await expect(userPage.getByLabel("Username")).toBeVisible();
     await expect(userPage.getByLabel("Password")).toBeVisible();
-    await expectOGSClickableByName(userPage, /Sign in$/);
-
-    // From there to "Register"
-    const registerPageButton = await expectOGSClickableByName(userPage, /Register here!/);
-    await registerPageButton.click();
 
     // Fill in registration form
     await userPage.getByLabel("Username").fill(username);
@@ -117,8 +113,12 @@ export const registerNewUser = async (browser: Browser, username: string, passwo
     const registerButton = await expectOGSClickableByName(userPage, /Register$/);
     await registerButton.click();
 
+    // Wait for registration to complete (backend can be slow)
+    // The button will stop spinning when the request completes
+    await userPage.waitForLoadState("networkidle");
+
     // Verify successful registration
-    await expect(userPage.getByText("Welcome!")).toBeVisible();
+    await expect(userPage.getByText("Welcome!")).toBeVisible({ timeout: 30000 });
 
     const userDropdown = userPage.locator(".username").getByText(username);
     await expect(userDropdown).toBeVisible();
@@ -203,8 +203,9 @@ export const loginAsUser = async (page: Page, username: string, password: string
     await page.getByLabel("Password").fill(password);
     await page.getByRole("button", { name: /Sign in$/ }).click();
 
+    // Wait for login to complete (backend can be slow)
     await page.waitForLoadState("networkidle");
-    await expect(page.locator(".username").getByText(username)).toBeVisible();
+    await expect(page.locator(".username").getByText(username)).toBeVisible({ timeout: 30000 });
 
     // Save the authenticated state for Playwright
     await page.context().storageState({ path: "playwright/.auth/user.json" });
