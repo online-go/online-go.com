@@ -28,10 +28,23 @@ import atImport from "postcss-import";
 import inline_svg from "postcss-inline-svg";
 import autoprefixer from "autoprefixer";
 import { nodePolyfills } from "vite-plugin-node-polyfills";
+import { execSync } from "child_process";
 
 const OGS_I18N_BUILD_MODE = (process.env.OGS_I18N_BUILD_MODE || "false").toLowerCase() === "true";
 let OGS_BACKEND = process.env.OGS_BACKEND;
 OGS_BACKEND = OGS_BACKEND ? OGS_BACKEND.toUpperCase() : "BETA";
+
+// Get version information for chunk naming
+function getVersionInfo(): string {
+    try {
+        // Try to get git version (format: 5.1-8740-g70dbb6a6)
+        const gitVersion = execSync("git describe --long", { encoding: "utf-8" }).trim();
+        return gitVersion;
+    } catch (error) {
+        console.warn("Could not get git version, using timestamp");
+        return Date.now().toString();
+    }
+}
 
 const SUPPORTED_BACKENDS = ["BETA", "PRODUCTION", "LOCAL"] as const;
 if (process.env.OGS_BACKEND && !SUPPORTED_BACKENDS.includes(OGS_BACKEND as any)) {
@@ -119,8 +132,9 @@ export default defineConfig({
                       entryFileNames: "[name].js",
                       chunkFileNames: (_chunkInfo) => {
                           // All chunks (including dynamically imported ones) go to modules/
-                          // React.lazy() chunks may not be marked as isDynamicEntry consistently
-                          return "modules/[name]-[hash].js";
+                          // Include version info to ensure cache busting
+                          const version = getVersionInfo();
+                          return `modules/[name]-${version}-[hash].js`;
                       },
                       // No manual chunking - React.lazy() handles dynamic imports naturally
                       manualChunks: undefined,
