@@ -62,8 +62,11 @@ export const declineFriendRequestNotificationTest = async ({ browser }: { browse
     // Assert that the checkbox is not checked (unchecked by default)
     await expect(decliner.locator('input[id="notify-on-decline"]')).not.toBeChecked();
 
-    // Decliner clicks the X to decline the friend request
-    await decliner.locator(".friend-invitation .fa-times").click();
+    // Decliner clicks the X to decline the friend request (target specific invitation by username)
+    await decliner
+        .locator(".friend-invitation", { has: decliner.getByText(requestorUsername) })
+        .locator(".fa-times")
+        .click();
 
     await assertNotificationIndicatorInactive(decliner);
 
@@ -87,7 +90,10 @@ export const declineFriendRequestNotificationTest = async ({ browser }: { browse
 
     await expect(notifyCheckbox).toBeChecked();
 
-    await decliner.locator(".friend-invitation .fa-times").click();
+    await decliner
+        .locator(".friend-invitation", { has: decliner.getByText(requestorUsername) })
+        .locator(".fa-times")
+        .click();
 
     await assertNotificationIndicatorInactive(decliner);
 

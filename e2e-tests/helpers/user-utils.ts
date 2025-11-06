@@ -281,7 +281,8 @@ export const openUserDropdownFromOmniSearch = async (page: Page, username: strin
     // Go to their profile where for sure there is their player link
     await goToUsersProfile(page, username);
 
-    const playerLink = page.locator(`a.Player:has-text("${username}")`);
+    // Use first() to avoid strict mode violations when multiple Player links exist on profile
+    const playerLink = page.locator(`a.Player:has-text("${username}")`).first();
     await expect(playerLink).toBeVisible();
     await playerLink.hover(); // Ensure the dropdown stays open
     await playerLink.click();
