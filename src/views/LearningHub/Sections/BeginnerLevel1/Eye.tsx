@@ -20,7 +20,7 @@ import { GobanConfig } from "goban";
 import { LearningPage, LearningPageProperties } from "../../LearningPage";
 import { _, pgettext } from "@/lib/translate";
 import { LearningHubSection } from "../../LearningHubSection";
-import React from "react";
+import * as React from "react";
 
 export class BL1Eye extends LearningHubSection {
     static pages(): Array<typeof LearningPage> {
