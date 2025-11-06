@@ -529,7 +529,8 @@ export const banUserAsModerator = async (
     await goToUsersProfile(modPage, targetUsername);
 
     // Click on the player link to open the dropdown menu
-    const playerLink = modPage.locator(`a.Player:has-text("${targetUsername}")`);
+    // Use first() to handle cases where multiple Player elements exist during page load
+    const playerLink = modPage.locator(`a.Player:has-text("${targetUsername}")`).first();
     await expect(playerLink).toBeVisible();
     await playerLink.hover();
     await playerLink.click();

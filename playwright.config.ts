@@ -63,9 +63,9 @@ if (!process.env.TEST_WORKER_INDEX && !process.env.PW_UI) {
 export default defineConfig({
     globalSetup: process.env.PW_UI ? undefined : "./e2e-tests/global-setup.ts",
     globalTeardown: process.env.PW_UI ? undefined : "./e2e-tests/global-teardown.ts",
-
     testDir: "./e2e-tests",
-    testMatch: process.env.CI ? ["smoketests.spec.ts"] : ["**/*.spec.ts", "!**/smoke/**"],
+    testMatch: process.env.CI ? ["smoketests.spec.ts"] : ["**/*.spec.ts"],
+    testIgnore: process.env.CI ? [] : ["**/smoke/**"],
     // If you change this you need to change report-utils to match, noting the delta there from here.
     timeout: 300 * 1000, // overall test timeout - we have some long multi-user tests
     expect: {
