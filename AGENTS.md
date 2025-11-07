@@ -12,6 +12,7 @@
     - NOT OK: Amend after pushing (creates diverged history)
     - If you need to fix a pushed commit, create a new commit instead
 - **Pull requests required** - All changes go through PR review before merging to main
+- **DEV_ONLY changes** - Never commit uncommented code lines with `// DEV_ONLY` comments (these are local-only development settings)
 
 ---
 
