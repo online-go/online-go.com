@@ -46,9 +46,9 @@ export const modRejectEscapeReportDuringGameTest = async ({ browser }: { browser
         boardSize: "9x9",
         speed: "live",
         timeControl: "byoyomi",
-        mainTime: "45",
-        timePerPeriod: "10",
-        periods: "1",
+        mainTime: "180",
+        timePerPeriod: "30",
+        periods: "3",
     });
 
     // Reported user accepts

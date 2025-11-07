@@ -113,17 +113,13 @@ export const registerNewUser = async (browser: Browser, username: string, passwo
     const registerButton = await expectOGSClickableByName(userPage, /Register$/);
     await registerButton.click();
 
-    // Wait for registration to complete (backend can be slow)
-    // The button will stop spinning when the request completes
-    await userPage.waitForLoadState("networkidle");
-
     // Verify successful registration
+    // Wait for "Welcome!" to appear after registration and page reload (30s timeout)
+    // No networkidle wait needed - explicit UI state checks are more reliable
     await expect(userPage.getByText("Welcome!")).toBeVisible({ timeout: 30000 });
 
     const userDropdown = userPage.locator(".username").getByText(username);
     await expect(userDropdown).toBeVisible();
-
-    await userPage.waitForLoadState("networkidle");
 
     return {
         userPage,
@@ -133,6 +129,12 @@ export const registerNewUser = async (browser: Browser, username: string, passwo
 
 export const prepareNewUser = async (browser: Browser, username: string, password: string) => {
     const { userPage, userContext } = await registerNewUser(browser, username, password);
+
+    // Wait for the rank chooser component to be fully rendered after page load
+    // This ensures React has finished initial rendering before we try to interact with buttons
+    await expect(userPage.getByText("What is your Go skill level?")).toBeVisible({
+        timeout: 10000,
+    });
 
     // We need to choose _something_ to get rid of this on the Profile page:
     // typically, we don't want to see that.
