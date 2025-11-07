@@ -239,6 +239,34 @@ export function GoResources(): React.ReactElement {
                             <dd key={idx}>{elt}</dd>
                         ))}
                     </dl>
+
+                    <dl>
+                        <dt>{_("Journals")}</dt>
+
+                        {scramble(
+                            <Book
+                                countries={[en]}
+                                title="European Go Journal"
+                                href="https://eurogojournal.com/"
+                                authors={["Artem Kachanovskyi (3p)"]}
+                                editions={[
+                                    {
+                                        title: "English",
+                                        country: en,
+                                        href: "https://eurogojournal.com/editions/",
+                                    },
+                                    {
+                                        title: "Español",
+                                        country: es,
+                                        href: "https://laesquinago.github.io/",
+                                    },
+                                ]}
+                            />,
+                        ).map((elt, idx) => (
+                            <dd key={idx}>{elt}</dd>
+                        ))}
+                    </dl>
+
                     <dl>
                         <dt>{_("Kifu Sheets")}</dt>
                         {scramble(
