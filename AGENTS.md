@@ -1,3 +1,20 @@
+## OGS-Wide Development Policy
+
+**Note:** This section contains policies that apply across all OGS repositories (ogs, ogs-ui, ogs-node). Other repos reference this document.
+
+### Git Workflow
+
+- **Always use feature branches** - Never commit directly to `main`
+- **Branch naming**: Use descriptive names, e.g., `e2etesting_feature_name`, `fix_issue_123`, `feature_new_dashboard`
+- **No force pushing** - Never rewrite history on shared branches (after pushing)
+- **Amending commits**:
+    - OK: Amend before pushing to clean up local commits
+    - NOT OK: Amend after pushing (creates diverged history)
+    - If you need to fix a pushed commit, create a new commit instead
+- **Pull requests required** - All changes go through PR review before merging to main
+
+---
+
 ## Development Commands
 
 ### Setup
@@ -73,49 +90,49 @@ This is a React/TypeScript application for the Online-Go.com web client, a platf
 
 ### Key Directories
 
--   `src/components/` - React UI components
--   `src/views/` - Main page components/views
--   `src/lib/` - Core utilities and business logic
--   `src/models/` - TypeScript type definitions
--   `submodules/goban/` - Go board engine (git submodule)
--   `submodules/react-dynamic-help/` - Help system
--   `submodules/moderator-ui/` - Moderation interface
+- `src/components/` - React UI components
+- `src/views/` - Main page components/views
+- `src/lib/` - Core utilities and business logic
+- `src/models/` - TypeScript type definitions
+- `submodules/goban/` - Go board engine (git submodule)
+- `submodules/react-dynamic-help/` - Help system
+- `submodules/moderator-ui/` - Moderation interface
 
 ### Core Libraries and Systems
 
--   **Game Engine**: Uses custom `goban` library (submodule) for Go game logic
--   **Real-time**: WebSocket connections via `sockets.ts` and `chat_manager.ts`
--   **State Management**: Mix of React state and custom managers
--   **Styling**: Stylus (.styl files) for CSS preprocessing
--   **Testing**: Jest for unit tests, Playwright for E2E tests
--   **Build**: Vite for development and production builds
+- **Game Engine**: Uses custom `goban` library (submodule) for Go game logic
+- **Real-time**: WebSocket connections via `sockets.ts` and `chat_manager.ts`
+- **State Management**: Mix of React state and custom managers
+- **Styling**: Stylus (.styl files) for CSS preprocessing
+- **Testing**: Jest for unit tests, Playwright for E2E tests
+- **Build**: Vite for development and production builds
 
 ### Important Core Files
 
--   `src/main.tsx` - Application entry point
--   `src/routes.tsx` - React Router configuration
--   `src/lib/data.ts` - Main data management and API integration
--   `src/lib/preferences.ts` - User preferences management
--   `src/lib/sockets.ts` - WebSocket communication
--   `src/lib/GobanController.ts` - Game board state management
--   `src/lib/chat_manager.ts` - Chat system
+- `src/main.tsx` - Application entry point
+- `src/routes.tsx` - React Router configuration
+- `src/lib/data.ts` - Main data management and API integration
+- `src/lib/preferences.ts` - User preferences management
+- `src/lib/sockets.ts` - WebSocket communication
+- `src/lib/GobanController.ts` - Game board state management
+- `src/lib/chat_manager.ts` - Chat system
 
 ### Path Aliases
 
 The project uses TypeScript path mapping:
 
--   `@/*` → `src/*`
--   `goban` → `submodules/goban/src`
--   `goscorer` → `submodules/goban/src/third_party/goscorer/goscorer`
--   `react-dynamic-help` → `submodules/react-dynamic-help/src`
+- `@/*` → `src/*`
+- `goban` → `submodules/goban/src`
+- `goscorer` → `submodules/goban/src/third_party/goscorer/goscorer`
+- `react-dynamic-help` → `submodules/react-dynamic-help/src`
 
 ### Backend Integration
 
 The client can connect to different backends via `OGS_BACKEND` environment variable:
 
--   `BETA` (default) - https://beta.online-go.com
--   `PRODUCTION` - https://online-go.com
--   `LOCAL` - http://127.0.0.1:1080
+- `BETA` (default) - https://beta.online-go.com
+- `PRODUCTION` - https://online-go.com
+- `LOCAL` - http://127.0.0.1:1080
 
 ### Component Structure
 
@@ -130,22 +147,22 @@ ComponentName/
 
 ### Development Notes
 
--   Git submodules are required - clone with `--recurse-submodules`
--   Husky pre-commit hooks enforce linting and formatting
--   Development server hot-reloads on file changes
--   TypeScript strict mode is enabled with comprehensive type checking
--   Components are heavily modularized with 100+ individual components
--   The use of emojis is discouraged, they are unprofessional and tacky
--   Use comments sparingly but should be used to explain complex code or non-obvious code
--   Always ensure the code builds and passes linting and formatting
--   Do not use `any` type, ensure that all variables are correctly typed
--   We use `yarn`, not `npm`
+- Git submodules are required - clone with `--recurse-submodules`
+- Husky pre-commit hooks enforce linting and formatting
+- Development server hot-reloads on file changes
+- TypeScript strict mode is enabled with comprehensive type checking
+- Components are heavily modularized with 100+ individual components
+- The use of emojis is discouraged, they are unprofessional and tacky
+- Use comments sparingly but should be used to explain complex code or non-obvious code
+- Always ensure the code builds and passes linting and formatting
+- Do not use `any` type, ensure that all variables are correctly typed
+- We use `yarn`, not `npm`
 
 ### Styling Guidelines
 
--   **Stylus files (.styl)**: Always use braces `{}` and semicolons `;` for consistency across the codebase
--   Follow the pattern of existing .styl files in the project
--   Example:
+- **Stylus files (.styl)**: Always use braces `{}` and semicolons `;` for consistency across the codebase
+- Follow the pattern of existing .styl files in the project
+- Example:
 
     ```stylus
     .MyComponent {
@@ -160,11 +177,11 @@ ComponentName/
 
 ### Animation Guidelines
 
--   Avoid disorienting animations like continuous pulsing, throbbing, or looping effects
--   Do not use translate effects on hover (no transform: translateY or translateX)
--   Keep animations subtle and purposeful - prefer opacity and shadow changes over position changes
+- Avoid disorienting animations like continuous pulsing, throbbing, or looping effects
+- Do not use translate effects on hover (no transform: translateY or translateX)
+- Keep animations subtle and purposeful - prefer opacity and shadow changes over position changes
 
 ### Interaction Guidelines
 
--   Background color changes on hover are only allowed for interactive elements (buttons, links, clickable items)
--   Non-interactive elements should not have background color changes on hover
+- Background color changes on hover are only allowed for interactive elements (buttons, links, clickable items)
+- Non-interactive elements should not have background color changes on hover
