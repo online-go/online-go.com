@@ -47,6 +47,7 @@ export const detectContainedSimulTest = async (
 ) => {
     // The user who plays simultaneous games
     const challengerUsername = newTestUsername("gamesSimulCh"); // cspell:disable-line
+    console.log(`Creating challenger user: ${challengerUsername}`);
     const { userPage: challengerContainingGamePage } = await prepareNewUser(
         browser,
         challengerUsername,
@@ -54,9 +55,11 @@ export const detectContainedSimulTest = async (
     );
 
     const acceptor1Username = newTestUsername("gamesSmlAc1"); // cspell:disable-line
+    console.log(`Creating first acceptor user: ${acceptor1Username}`);
     const { userPage: acceptor1Page } = await prepareNewUser(browser, acceptor1Username, "test");
 
     // Challenger challenges the first acceptor
+    console.log("Creating first challenge (containing game)");
     await createDirectChallenge(challengerContainingGamePage, acceptor1Username, {
         ...defaultChallengeSettings,
         gameName: "E2E Games Simul Containing Test Game",
@@ -81,6 +84,7 @@ export const detectContainedSimulTest = async (
     // Wait for the game state to indicate it's the challenger's move
     const challengersMove = challengerContainingGamePage.getByText("Your move", { exact: true });
     await expect(challengersMove).toBeVisible();
+    console.log("First game started successfully");
 
     // Now a new tab for the challenger!  (2 tabs for a person in PW!)
     // Log in as the challenger
@@ -91,9 +95,11 @@ export const detectContainedSimulTest = async (
     await loginAsUser(challengerContainedGamePage, challengerUsername, "test");
 
     const acceptor2Username = newTestUsername("gamesSmlAc2"); // cspell:disable-line
+    console.log(`Creating second acceptor user: ${acceptor2Username}`);
     const { userPage: acceptor2Page } = await prepareNewUser(browser, acceptor2Username, "test");
 
     // Challenger challenges the second acceptor
+    console.log("Creating second challenge (contained game)");
     await createDirectChallenge(challengerContainedGamePage, acceptor2Username, {
         ...defaultChallengeSettings,
         gameName: `E2E Games Simul Contained Test Game`,
@@ -120,25 +126,31 @@ export const detectContainedSimulTest = async (
         exact: true,
     });
     await expect(challengersOtherMove).toBeVisible();
+    console.log("Second game started successfully - both games now active!");
 
     // Whoa, we have two games going at once!
     // Play a few moves to give the games an actual duration
 
     let moves = ["D9", "E9", "D8", "E8", "D7", "E7", "D6", "E6"];
 
+    console.log("Playing moves in contained game");
     await playMoves(challengerContainedGamePage, acceptor2Page, moves, "9x9", 1000);
 
     await resignActiveGame(acceptor2Page);
+    console.log("Contained game completed");
 
     moves = ["D5", "E5", "D4", "E4", "D3", "E3"];
 
+    console.log("Playing moves in containing game");
     await playMoves(challengerContainingGamePage, acceptor1Page, moves, "9x9", 1000);
 
     await resignActiveGame(acceptor1Page);
+    console.log("Containing game completed");
 
     // Use tracker to handle variable initial report count
     await withReportCountTracking(acceptor1Page, testInfo, async (reporterTracker) => {
         // Set up CM and capture their baseline BEFORE creating the report
+        console.log("Setting up CM for report verification");
         const cm = "E2E_GAMES_SIMUL_CM";
         const { seededCMPage: cmPage } = await setupSeededCM(browser, cm);
 
@@ -146,6 +158,7 @@ export const detectContainedSimulTest = async (
         const cmInitialCount = await reporterTracker.checkCurrentCount(cmPage);
 
         // Create a report so we can check the log for Simul detected
+        console.log("Creating report to verify simul detection");
         await reportUser(
             acceptor1Page,
             challengerUsername,
@@ -179,5 +192,6 @@ export const detectContainedSimulTest = async (
 
         // Verify count returned to initial baseline
         await reporterTracker.assertCountReturnedToInitial(acceptor1Page);
+        console.log("Report cancelled successfully - test complete");
     });
 };

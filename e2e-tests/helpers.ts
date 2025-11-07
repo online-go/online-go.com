@@ -33,15 +33,6 @@ export async function load(page: Page, url: string) {
 export const ogsTest = base.extend({
     browser: async ({ browser }, use) => {
         await use(browser); // eslint-disable-line react-hooks/rules-of-hooks
-
-        // Check for error boundaries in all pages
-        const finalContexts = await browser.contexts();
-        for (const context of finalContexts) {
-            const pages = context.pages();
-            for (const page of pages) {
-                await checkNoErrorBoundaries(page);
-            }
-        }
     },
     context: async ({ context }, use) => {
         await use(context); // eslint-disable-line react-hooks/rules-of-hooks

@@ -33,7 +33,23 @@ export async function expectOGSClickableByName(page: Page, name: string | RegExp
         .or(page.getByRole("link", { name }))
         .or(page.getByRole("navigation", { name }));
 
-    await element.scrollIntoViewIfNeeded();
+    // Retry scrollIntoViewIfNeeded if element becomes detached during React re-renders
+    // This can happen when React hydrates or updates state after initial page load
+    for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+            await element.scrollIntoViewIfNeeded();
+            break;
+        } catch (e) {
+            const isDetachmentError = e instanceof Error && e.message?.includes("not attached");
+            if (isDetachmentError && attempt < 2) {
+                // Wait briefly for React to finish re-rendering, then retry
+                await page.waitForTimeout(100);
+            } else {
+                throw e;
+            }
+        }
+    }
+
     await expect(element).toBeVisible();
     await expect(element).toBeOGSClickable();
     return element;

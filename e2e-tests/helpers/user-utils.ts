@@ -101,15 +101,11 @@ export const registerNewUser = async (browser: Browser, username: string, passwo
     });
     const userPage = await userContext.newPage();
     await userPage.goto("/");
-    // Go from "landing page" to the "sign in" page.
-    await userPage.getByRole("link", { name: /sign in/i }).click();
+    // Go from "landing page" to the "Register" page.
+    await userPage.getByRole("link", { name: /Register/i }).click();
+    await expect(userPage.getByText("Welcome new player!")).toBeVisible();
     await expect(userPage.getByLabel("Username")).toBeVisible();
     await expect(userPage.getByLabel("Password")).toBeVisible();
-    await expectOGSClickableByName(userPage, /Sign in$/);
-
-    // From there to "Register"
-    const registerPageButton = await expectOGSClickableByName(userPage, /Register here!/);
-    await registerPageButton.click();
 
     // Fill in registration form
     await userPage.getByLabel("Username").fill(username);
@@ -118,12 +114,12 @@ export const registerNewUser = async (browser: Browser, username: string, passwo
     await registerButton.click();
 
     // Verify successful registration
-    await expect(userPage.getByText("Welcome!")).toBeVisible();
+    // Wait for "Welcome!" to appear after registration and page reload (30s timeout)
+    // No networkidle wait needed - explicit UI state checks are more reliable
+    await expect(userPage.getByText("Welcome!")).toBeVisible({ timeout: 30000 });
 
     const userDropdown = userPage.locator(".username").getByText(username);
     await expect(userDropdown).toBeVisible();
-
-    await userPage.waitForLoadState("networkidle");
 
     return {
         userPage,
@@ -133,6 +129,12 @@ export const registerNewUser = async (browser: Browser, username: string, passwo
 
 export const prepareNewUser = async (browser: Browser, username: string, password: string) => {
     const { userPage, userContext } = await registerNewUser(browser, username, password);
+
+    // Wait for the rank chooser component to be fully rendered after page load
+    // This ensures React has finished initial rendering before we try to interact with buttons
+    await expect(userPage.getByText("What is your Go skill level?")).toBeVisible({
+        timeout: 10000,
+    });
 
     // We need to choose _something_ to get rid of this on the Profile page:
     // typically, we don't want to see that.
@@ -203,8 +205,9 @@ export const loginAsUser = async (page: Page, username: string, password: string
     await page.getByLabel("Password").fill(password);
     await page.getByRole("button", { name: /Sign in$/ }).click();
 
+    // Wait for login to complete (backend can be slow)
     await page.waitForLoadState("networkidle");
-    await expect(page.locator(".username").getByText(username)).toBeVisible();
+    await expect(page.locator(".username").getByText(username)).toBeVisible({ timeout: 30000 });
 
     // Save the authenticated state for Playwright
     await page.context().storageState({ path: "playwright/.auth/user.json" });
@@ -280,7 +283,8 @@ export const openUserDropdownFromOmniSearch = async (page: Page, username: strin
     // Go to their profile where for sure there is their player link
     await goToUsersProfile(page, username);
 
-    const playerLink = page.locator(`a.Player:has-text("${username}")`);
+    // Use first() to avoid strict mode violations when multiple Player links exist on profile
+    const playerLink = page.locator(`a.Player:has-text("${username}")`).first();
     await expect(playerLink).toBeVisible();
     await playerLink.hover(); // Ensure the dropdown stays open
     await playerLink.click();
@@ -527,7 +531,8 @@ export const banUserAsModerator = async (
     await goToUsersProfile(modPage, targetUsername);
 
     // Click on the player link to open the dropdown menu
-    const playerLink = modPage.locator(`a.Player:has-text("${targetUsername}")`);
+    // Use first() to handle cases where multiple Player elements exist during page load
+    const playerLink = modPage.locator(`a.Player:has-text("${targetUsername}")`).first();
     await expect(playerLink).toBeVisible();
     await playerLink.hover();
     await playerLink.click();
