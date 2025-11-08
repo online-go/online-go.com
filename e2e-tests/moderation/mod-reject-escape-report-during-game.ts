@@ -28,6 +28,7 @@ import {
     defaultChallengeSettings,
 } from "@helpers/challenge-utils";
 import { playMoves } from "@helpers/game-utils";
+import { expectOGSClickableByName } from "@helpers/matchers";
 
 export const modRejectEscapeReportDuringGameTest = async ({ browser }: { browser: Browser }) => {
     const { userPage: reporterPage } = await prepareNewUser(
@@ -77,8 +78,8 @@ export const modRejectEscapeReportDuringGameTest = async ({ browser }: { browser
     await playerLink.hover(); // Ensure the dropdown stays open
     await playerLink.click();
 
-    await expect(reporterPage.getByRole("button", { name: /Report$/ })).toBeVisible();
-    await reporterPage.getByRole("button", { name: /Report$/ }).click();
+    const reportButtonInitial = await expectOGSClickableByName(reporterPage, /Report$/);
+    await reportButtonInitial.click();
 
     await expect(reporterPage.getByText("Request Moderator Assistance")).toBeVisible();
 
@@ -91,15 +92,15 @@ export const modRejectEscapeReportDuringGameTest = async ({ browser }: { browser
     await notesBoxDuringGame.fill("E2E test - attempting to report during active game");
 
     // Try to submit the report during the game - this should fail
-    const reportButtonDuringGame = reporterPage.getByRole("button", { name: /Report User$/ });
-    await expect(reportButtonDuringGame).toBeEnabled();
+    const reportButtonDuringGame = await expectOGSClickableByName(reporterPage, /Report User$/);
     await reportButtonDuringGame.click();
 
     // Should get an error message (backend blocks the report)
     await expect(reporterPage.getByText(/There was an error submitting your report/)).toBeVisible();
 
     // Close the error alert
-    await reporterPage.getByRole("button", { name: "OK" }).click();
+    const okButtonDuringGame = await expectOGSClickableByName(reporterPage, "OK");
+    await okButtonDuringGame.click();
 
     // Now finish the game by passing and scoring
     // Both players pass
@@ -130,8 +131,8 @@ export const modRejectEscapeReportDuringGameTest = async ({ browser }: { browser
     await playerLinkAfterGame.hover(); // Ensure the dropdown stays open
     await playerLinkAfterGame.click();
 
-    await expect(reporterPage.getByRole("button", { name: /Report$/ })).toBeVisible();
-    await reporterPage.getByRole("button", { name: /Report$/ }).click();
+    const reportButton = await expectOGSClickableByName(reporterPage, /Report$/);
+    await reportButton.click();
 
     await expect(reporterPage.getByText("Request Moderator Assistance")).toBeVisible();
 
@@ -144,13 +145,13 @@ export const modRejectEscapeReportDuringGameTest = async ({ browser }: { browser
     await notesBoxAfterGame.fill("E2E test - reporting after game ended");
 
     // Try to submit the report after the game - this should succeed
-    const reportButtonAfterGame = reporterPage.getByRole("button", { name: /Report User$/ });
-    await expect(reportButtonAfterGame).toBeEnabled();
+    const reportButtonAfterGame = await expectOGSClickableByName(reporterPage, /Report User$/);
     await reportButtonAfterGame.click();
 
     // Should get success message
     await expect(reporterPage.getByText("Thanks for the report!")).toBeVisible();
 
     // Close the success alert
-    await reporterPage.getByRole("button", { name: "OK" }).click();
+    const okButtonAfterGame = await expectOGSClickableByName(reporterPage, "OK");
+    await okButtonAfterGame.click();
 };
