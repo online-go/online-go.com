@@ -417,7 +417,8 @@ export function Game(): React.ReactElement | null {
             });
         }
 
-        if (game_id) {
+        // negative (temporary) games only exist in Cassandra and are loaded via WebSocket
+        if (game_id && game_id > 0) {
             get(`games/${game_id}`)
                 .then((game: rest_api.GameDetails) => {
                     if (game.players.white.id) {
@@ -523,6 +524,12 @@ export function Game(): React.ReactElement | null {
                         icon: "error",
                     });
                 });
+        }
+        if (game_id < 0) {
+            // Temporary game - data will load via WebSocket
+            console.log(
+                `[${game_id}] Temporary game detected - skipping Django API, loading via WebSocket only`,
+            );
         }
 
         if (review_id) {

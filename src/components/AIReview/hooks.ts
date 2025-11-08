@@ -136,9 +136,12 @@ export function useAIReviewList(gameId: number | null): UseAIReviewListReturn {
                 engine: "katago",
                 type: "auto",
             })
-                .then((res) => {
+                .then((res: JGOFAIReview) => {
                     if (res.id) {
                         setReviewing(true);
+                        // Add the review to the list and select it
+                        setAiReviews([res]);
+                        setSelectedAiReview(res);
                     }
                 })
                 .catch((err) => {
@@ -146,6 +149,16 @@ export function useAIReviewList(gameId: number | null): UseAIReviewListReturn {
                     setTimeout(start_review, 500);
                 });
         };
+
+        // Temporary games don't have stored review lists in PostgreSQL
+        const is_temporary_game = gameId < 0;
+        if (is_temporary_game) {
+            setLoading(false);
+            setAiReviews([]);
+            // But still auto-start a review for temporary games
+            start_review();
+            return;
+        }
 
         get(`games/${gameId}/ai_reviews`)
             .then((lst: Array<JGOFAIReview>) => {
