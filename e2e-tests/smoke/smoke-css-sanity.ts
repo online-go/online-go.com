@@ -17,15 +17,21 @@
 
 // (No seeded data in use - must not use seeded data for smoke tests!)
 
-import { Browser, expect } from "@playwright/test";
+import type { CreateContextOptions } from "@helpers";
+
+import { BrowserContext, expect } from "@playwright/test";
 import { goToProfile, newTestUsername, prepareNewUser } from "@helpers/user-utils";
 import { load } from "@helpers";
 import path from "path";
 
 const currentDir = new URL(".", import.meta.url).pathname;
 
-export const smokeCssSanityTest = async ({ browser }: { browser: Browser }) => {
-    const userContext = await browser.newContext();
+export const smokeCssSanityTest = async ({
+    createContext,
+}: {
+    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
+}) => {
+    const userContext = await createContext();
     const page = await userContext.newPage();
     await load(page, "/");
 
@@ -43,7 +49,7 @@ export const smokeCssSanityTest = async ({ browser }: { browser: Browser }) => {
 
     // Now look at some logged in views, masking as needed...
 
-    const { userPage } = await prepareNewUser(browser, newTestUsername("SmokeCss"), "test");
+    const { userPage } = await prepareNewUser(createContext, newTestUsername("SmokeCss"), "test");
 
     await expect(userPage).toHaveScreenshot("initial-page.png", {
         fullPage: true,
@@ -74,6 +80,4 @@ export const smokeCssSanityTest = async ({ browser }: { browser: Browser }) => {
         fullPage: true,
         stylePath: path.join(currentDir, "joseki_screenshot_mask.css"),
     });
-
-    await userPage.close();
 };

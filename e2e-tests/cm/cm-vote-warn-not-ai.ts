@@ -24,7 +24,9 @@
  * - E2E_CM_VWNAI_AI_V1: AI assessor who votes
  */
 
-import { Browser, TestInfo } from "@playwright/test";
+import type { CreateContextOptions } from "@helpers";
+
+import { BrowserContext, TestInfo } from "@playwright/test";
 
 import {
     captureReportNumber,
@@ -42,11 +44,13 @@ import { expect } from "@playwright/test";
 import { withReportCountTracking } from "@helpers/report-utils";
 
 export const cmVoteWarnNotAITest = async (
-    { browser }: { browser: Browser },
+    {
+        createContext,
+    }: { createContext: (options?: CreateContextOptions) => Promise<BrowserContext> },
     testInfo: TestInfo,
 ) => {
     const { userPage: reporterPage } = await prepareNewUser(
-        browser,
+        createContext,
         newTestUsername("CmVWNAIRep"), // cspell:disable-line
         "test",
     );
@@ -72,7 +76,7 @@ export const cmVoteWarnNotAITest = async (
 
         const aiAssessor = "E2E_CM_VWNAI_AI_V1";
 
-        const { seededCMPage: aiCMPage } = await setupSeededCM(browser, aiAssessor);
+        const { seededCMPage: aiCMPage } = await setupSeededCM(createContext, aiAssessor);
 
         // Navigate directly to the report using the captured report number
         await navigateToReport(aiCMPage, reportNumber);

@@ -19,7 +19,9 @@
 
 // incomplete test
 
-import { Browser } from "@playwright/test";
+import type { CreateContextOptions } from "@helpers";
+
+import { BrowserContext } from "@playwright/test";
 import { expect } from "@playwright/test";
 
 import { newTestUsername, prepareNewUser, reportUser } from "@helpers/user-utils";
@@ -30,15 +32,23 @@ import {
 } from "@helpers/challenge-utils";
 import { playMoves } from "@helpers/game-utils";
 
-export const runBotDetectionTest = async ({ browser }: { browser: Browser }) => {
+export const runBotDetectionTest = async ({
+    createContext,
+}: {
+    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
+}) => {
     const { userPage: challengerPage } = await prepareNewUser(
-        browser,
+        createContext,
         newTestUsername("RunBotDetCh"), // cspell:disable-line
         "test",
     );
 
     const acceptorUsername = newTestUsername("RunBotDetAc"); // cspell:disable-line
-    const { userPage: acceptorPage } = await prepareNewUser(browser, acceptorUsername, "test");
+    const { userPage: acceptorPage } = await prepareNewUser(
+        createContext,
+        acceptorUsername,
+        "test",
+    );
 
     // Challenger challenges the acceptor
     await createDirectChallenge(challengerPage, acceptorUsername, {

@@ -10,10 +10,10 @@
  */
 
 import { expect } from "@playwright/test";
-import { Page, Browser } from "@playwright/test";
+import { Page, BrowserContext } from "@playwright/test";
 
 import { expectOGSClickableByName } from "./matchers";
-import { load } from "@helpers";
+import { load, CreateContextOptions } from "@helpers";
 
 /**
  * User Management Utilities for E2E Tests
@@ -92,9 +92,13 @@ export const generateUniqueTestIPv6 = (): string => {
     return `fd00:e2e::${seg1}:${seg2}:${counter}`;
 };
 
-export const registerNewUser = async (browser: Browser, username: string, password: string) => {
+export const registerNewUser = async (
+    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>,
+    username: string,
+    password: string,
+) => {
     const uniqueIPv6 = generateUniqueTestIPv6();
-    const userContext = await browser.newContext({
+    const userContext = await createContext({
         extraHTTPHeaders: {
             "X-Forwarded-For": uniqueIPv6,
         },
@@ -127,8 +131,12 @@ export const registerNewUser = async (browser: Browser, username: string, passwo
     };
 };
 
-export const prepareNewUser = async (browser: Browser, username: string, password: string) => {
-    const { userPage, userContext } = await registerNewUser(browser, username, password);
+export const prepareNewUser = async (
+    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>,
+    username: string,
+    password: string,
+) => {
+    const { userPage, userContext } = await registerNewUser(createContext, username, password);
 
     // Wait for the rank chooser component to be fully rendered after page load
     // This ensures React has finished initial rendering before we try to interact with buttons
@@ -230,9 +238,12 @@ export const turnOffDynamicHelp = async (page: Page) => {
 // actually you could set up any user using this but its unusual to need to log in
 // a newly registered user.
 
-export const setupSeededUser = async (browser: Browser, username: string) => {
+export const setupSeededUser = async (
+    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>,
+    username: string,
+) => {
     const uniqueIPv6 = generateUniqueTestIPv6();
-    const userContext = await browser.newContext({
+    const userContext = await createContext({
         extraHTTPHeaders: {
             "X-Forwarded-For": uniqueIPv6,
         },
@@ -247,9 +258,12 @@ export const setupSeededUser = async (browser: Browser, username: string) => {
     };
 };
 
-export const setupSeededCM = async (browser: Browser, username: string) => {
+export const setupSeededCM = async (
+    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>,
+    username: string,
+) => {
     const uniqueIPv6 = generateUniqueTestIPv6();
-    const seededCMContext = await browser.newContext({
+    const seededCMContext = await createContext({
         extraHTTPHeaders: {
             "X-Forwarded-For": uniqueIPv6,
         },
@@ -506,7 +520,7 @@ export const selectNavMenuItem = async (
  * Requires E2E_MODERATOR_PASSWORD environment variable to be set
  */
 export const banUserAsModerator = async (
-    browser: Browser,
+    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>,
     targetUsername: string,
     banReason: string = "E2E test suspension",
 ) => {
@@ -518,7 +532,7 @@ export const banUserAsModerator = async (
     }
 
     const uniqueIPv6 = generateUniqueTestIPv6();
-    const modContext = await browser.newContext({
+    const modContext = await createContext({
         extraHTTPHeaders: {
             "X-Forwarded-For": uniqueIPv6,
         },

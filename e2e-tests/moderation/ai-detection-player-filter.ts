@@ -32,10 +32,16 @@
  * Requires E2E_MODERATOR_PASSWORD environment variable to be set.
  */
 
-import { Browser, expect } from "@playwright/test";
+import type { CreateContextOptions } from "@helpers";
+
+import { BrowserContext, expect } from "@playwright/test";
 import { generateUniqueTestIPv6, loginAsUser, turnOffDynamicHelp } from "../helpers/user-utils";
 
-export const aiDetectionPlayerFilterTest = async ({ browser }: { browser: Browser }) => {
+export const aiDetectionPlayerFilterTest = async ({
+    createContext,
+}: {
+    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
+}) => {
     console.log("=== AI Detection Player Filter Test ===");
 
     // 1. Set up seeded moderator
@@ -46,7 +52,7 @@ export const aiDetectionPlayerFilterTest = async ({ browser }: { browser: Browse
     }
 
     const uniqueIPv6 = generateUniqueTestIPv6();
-    const modContext = await browser.newContext({
+    const modContext = await createContext({
         extraHTTPHeaders: {
             "X-Forwarded-For": uniqueIPv6,
         },
@@ -78,8 +84,6 @@ export const aiDetectionPlayerFilterTest = async ({ browser }: { browser: Browse
 
     if (rowCount === 0) {
         console.log("⚠ No games found in AI Detection table - skipping test");
-        await modPage.close();
-        await modContext.close();
         console.log("=== Test Skipped (No Data) ===");
         return;
     }
@@ -198,8 +202,6 @@ export const aiDetectionPlayerFilterTest = async ({ browser }: { browser: Browse
             const profileUrl = profilePage.url();
             expect(profileUrl).toContain(`/player/${filteredPlayerId}`);
             console.log(`Profile opened in new tab: ${profileUrl} ✓`);
-
-            await profilePage.close();
         } else {
             console.log(
                 "⚠ Could not extract player ID from URL, skipping profile navigation test",
@@ -217,11 +219,6 @@ export const aiDetectionPlayerFilterTest = async ({ browser }: { browser: Browse
     expect(originalUrl).not.toContain("player=");
     expect(originalUrl).toContain("min_moves=1");
     console.log("Original tab still has filter intact ✓");
-
-    // Clean up
-    await newPage.close();
-    await modPage.close();
-    await modContext.close();
 
     console.log("=== AI Detection Player Filter Test Complete ===");
     console.log("✓ Navigated to AI Detection page");

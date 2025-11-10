@@ -17,7 +17,9 @@
 
 // (No seeded data in use)
 
-import { Browser } from "@playwright/test";
+import type { CreateContextOptions } from "@helpers";
+
+import { BrowserContext } from "@playwright/test";
 
 import { loginAsUser, newTestUsername, prepareNewUser } from "@helpers/user-utils";
 
@@ -30,17 +32,21 @@ import { clickInTheMiddle } from "@helpers/game-utils";
 
 import { ogsTest } from "@helpers";
 
-export const modWarnFirstTurnDisconnectorTest = async ({ browser }: { browser: Browser }) => {
+export const modWarnFirstTurnDisconnectorTest = async ({
+    createContext,
+}: {
+    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
+}) => {
     ogsTest.setTimeout(6 * 60 * 1000); // Set timeout to 6 minutes, to let disconnect happen
 
     const { userPage: challengerPage } = await prepareNewUser(
-        browser,
+        createContext,
         newTestUsername("CmFTDChall"), // cspell:disable-line
         "test",
     );
 
     const escaperUsername = newTestUsername("CmFTDis"); // cspell:disable-line
-    const { userPage: escaperPage } = await prepareNewUser(browser, escaperUsername, "test");
+    const { userPage: escaperPage } = await prepareNewUser(createContext, escaperUsername, "test");
 
     // Challenger challenges the escaper
     await createDirectChallenge(challengerPage, escaperUsername, {
@@ -68,7 +74,6 @@ export const modWarnFirstTurnDisconnectorTest = async ({ browser }: { browser: B
     console.log(
         "Note: cmWarnFirstTurnDisconnectorTest waiting for disconnect timer (approximately 5 minutes)...",
     );
-    await escaperPage.close(); // escaper disconnects
 
     // ... eventually challenger gets the ack that we are looking for
     await challengerPage
@@ -79,7 +84,7 @@ export const modWarnFirstTurnDisconnectorTest = async ({ browser }: { browser: B
     await challengerPage.locator(".AccountWarningAck button.primary").click();
 
     // And escaper should have warning when they log in again
-    const newEscaperContext = await browser.newContext();
+    const newEscaperContext = await createContext();
     const newEscaperPage = await newEscaperContext.newPage();
 
     await loginAsUser(newEscaperPage, escaperUsername, "test");

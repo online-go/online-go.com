@@ -1,39 +1,39 @@
 name: E2E Tests
 
 on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:  # Allows manual triggering from GitHub UI
-    inputs:
-      test_filter:
-        description: 'Test filter pattern (e.g., "Pass and score")'
-        required: false
-        default: ''
+    push:
+        branches:
+            - main
+    workflow_dispatch: # Allows manual triggering from GitHub UI
+        inputs:
+            test_filter:
+                description: 'Test filter pattern (e.g., "Pass and score")'
+                required: false
+                default: ""
 
 jobs:
-  e2e-tests:
-    runs-on: self-hosted
-    # Only run on the original repo, not forks
-    if: github.repository == 'online-go/online-go.com'
+    e2e-tests:
+        runs-on: self-hosted
+        # Only run on the original repo, not forks
+        if: github.repository == 'online-go/online-go.com'
 
-    steps:
-      - name: Update ogs repo to get latest script
-        run: cd /home/greenasjade/src/ogs/ogs && git pull origin main
+        steps:
+            - name: Update ogs repo to get latest script
+              run: cd /home/greenasjade/src/ogs/ogs && git pull origin main
+            #
+            - name: Determine trigger source
+              id: trigger
+              run: |
+                  if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+                    echo "source=github-trigger" >> $GITHUB_OUTPUT
+                  elif [ "${{ github.event_name }}" = "push" ]; then
+                    echo "source=ogs-ui" >> $GITHUB_OUTPUT
+                  else
+                    echo "source=unknown" >> $GITHUB_OUTPUT
+                  fi
 
-      - name: Determine trigger source
-        id: trigger
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "source=github-trigger" >> $GITHUB_OUTPUT
-          elif [ "${{ github.event_name }}" = "push" ]; then
-            echo "source=ogs-ui" >> $GITHUB_OUTPUT
-          else
-            echo "source=unknown" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Run E2E Test Suite
-        run: |
-          TEST_FILTER="${{ github.event.inputs.test_filter || '' }}"
-          TRIGGER_SOURCE="${{ steps.trigger.outputs.source }}"
-          /home/greenasjade/src/ogs/ogs/.e2e-ci/run-tests.sh "$TEST_FILTER" "$TRIGGER_SOURCE"
+            - name: Run E2E Test Suite
+              run: |
+                  TEST_FILTER="${{ github.event.inputs.test_filter || '' }}"
+                  TRIGGER_SOURCE="${{ steps.trigger.outputs.source }}"
+                  /home/greenasjade/src/ogs/ogs/.e2e-ci/run-tests.sh "$TEST_FILTER" "$TRIGGER_SOURCE"

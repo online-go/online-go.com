@@ -27,7 +27,9 @@
  * Requires E2E_MODERATOR_PASSWORD environment variable to be set.
  */
 
-import { Browser, expect } from "@playwright/test";
+import type { CreateContextOptions } from "@helpers";
+
+import { BrowserContext, expect } from "@playwright/test";
 import {
     prepareNewUser,
     newTestUsername,
@@ -35,13 +37,17 @@ import {
 } from "../helpers/user-utils";
 import { expectOGSClickableByName } from "../helpers/matchers";
 
-export const suspendedUserCannotUpdateProfileTest = async ({ browser }: { browser: Browser }) => {
+export const suspendedUserCannotUpdateProfileTest = async ({
+    createContext,
+}: {
+    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
+}) => {
     console.log("=== Suspended User Cannot Update Profile Test ===");
 
     // Create a new user
     console.log("Creating test user...");
     const username = newTestUsername("sUCPTTestUser"); // cspell:ignore sUCPT
-    const { userPage } = await prepareNewUser(browser, username, "test");
+    const { userPage } = await prepareNewUser(createContext, username, "test");
 
     // Navigate to account settings page to get initial username
     console.log("Getting initial username...");
@@ -57,7 +63,7 @@ export const suspendedUserCannotUpdateProfileTest = async ({ browser }: { browse
     // Suspend the user
     console.log(`Suspending user ${username}...`);
     await suspendUserAsModerator(
-        browser,
+        createContext,
         username,
         "E2E test: Testing suspended user profile restrictions",
     );
@@ -97,20 +103,22 @@ export const suspendedUserCannotUpdateProfileTest = async ({ browser }: { browse
     expect(actualUsername).toBe(initialUsername);
     console.log("Username unchanged in navbar (correctly ignored update) ✓");
 
-    await userPage.close();
-
     console.log("=== Suspended User Cannot Update Profile Test Complete ===");
     console.log("✓ Suspended users cannot update their username");
     console.log("✓ Updates are silently ignored without errors");
 };
 
-export const normalUserCanUpdateProfileTest = async ({ browser }: { browser: Browser }) => {
+export const normalUserCanUpdateProfileTest = async ({
+    createContext,
+}: {
+    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
+}) => {
     console.log("=== Normal User Can Update Profile Test ===");
 
     // Create a new user
     console.log("Creating test user...");
     const username = newTestUsername("NormalTest");
-    const { userPage } = await prepareNewUser(browser, username, "test");
+    const { userPage } = await prepareNewUser(createContext, username, "test");
 
     // Navigate to account settings page to get initial username
     console.log("Getting initial username...");
@@ -147,8 +155,6 @@ export const normalUserCanUpdateProfileTest = async ({ browser }: { browser: Bro
     console.log(`Username in navbar after save: ${actualUsername}, expected: ${newUsername}`);
     expect(actualUsername).toBe(newUsername);
     console.log("Username changed successfully in navbar ✓");
-
-    await userPage.close();
 
     console.log("=== Normal User Can Update Profile Test Complete ===");
     console.log("✓ Normal users can update their username");

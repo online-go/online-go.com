@@ -32,7 +32,9 @@
  * - Checking for suspension banner after the game completes
  */
 
-import { Browser, expect } from "@playwright/test";
+import type { CreateContextOptions } from "@helpers";
+
+import { BrowserContext, expect } from "@playwright/test";
 import {
     generateUniqueTestIPv6,
     newTestUsername,
@@ -50,13 +52,17 @@ import { playMoves } from "../helpers/game-utils";
 // This BID must match the one set for E2E_SUSPENDED_BID_USER in init_e2e.py
 const SUSPENDED_USER_BID = "e2e-test-suspended-bid";
 
-export const autoSuspensionTest = async ({ browser }: { browser: Browser }) => {
+export const autoSuspensionTest = async ({
+    createContext,
+}: {
+    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
+}) => {
     console.log("=== Browser ID Suspension Test ===");
     console.log(`Testing registration with BID matching suspended user: ${SUSPENDED_USER_BID}`);
 
     // Create a new browser context with a unique IP
     const newIPv6 = generateUniqueTestIPv6();
-    const testContext = await browser.newContext({
+    const testContext = await createContext({
         extraHTTPHeaders: {
             "X-Forwarded-For": newIPv6,
         },
@@ -143,7 +149,11 @@ export const autoSuspensionTest = async ({ browser }: { browser: Browser }) => {
     // Create an opponent to play against
     console.log("Creating opponent user...");
     const opponentUsername = newTestUsername("BISOpp");
-    const { userPage: opponentPage } = await prepareNewUser(browser, opponentUsername, "test");
+    const { userPage: opponentPage } = await prepareNewUser(
+        createContext,
+        opponentUsername,
+        "test",
+    );
 
     // Have the new user play a game
     console.log("New user creating a game challenge...");
@@ -252,13 +262,9 @@ export const autoSuspensionTest = async ({ browser }: { browser: Browser }) => {
     await logoutUser(testPage);
     console.log("Logged out ✓");
 
-    // Close the old context
-    await testPage.close();
-    await testContext.close();
-
     // Create a fresh context with a new IP
     const cleanupIPv6 = generateUniqueTestIPv6();
-    const cleanupContext = await browser.newContext({
+    const cleanupContext = await createContext({
         extraHTTPHeaders: {
             "X-Forwarded-For": cleanupIPv6,
         },
@@ -291,11 +297,6 @@ export const autoSuspensionTest = async ({ browser }: { browser: Browser }) => {
     // but at least we've cleared the last_browser_id for future test runs
     console.log("Logged back in with cleanup BID and new IP ✓");
     console.log(`Updated last_browser_id from ${SUSPENDED_USER_BID} to ${cleanupBID}`);
-
-    // Clean up
-    await cleanupPage.close();
-    await cleanupContext.close();
-    await opponentPage.close();
 
     console.log("=== Browser ID Suspension Test Complete ===");
     console.log("✓ User with flagged BID registered successfully");

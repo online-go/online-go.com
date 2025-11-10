@@ -15,7 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { expect, Page, Browser } from "@playwright/test";
+import type { CreateContextOptions } from "@helpers";
+
+import { expect, Page, BrowserContext } from "@playwright/test";
 import { newTestUsername, prepareNewUser } from "@helpers/user-utils";
 
 export interface DemoBoardModalFields {
@@ -123,12 +125,12 @@ export interface DemoBoardExpectedFields {
 
 // 2. Add the new high-level orchestrator function
 export const createAndVerifyDemoBoard = async (
-    browser: Browser,
+    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>,
     settings: DemoBoardModalFields,
     expected: DemoBoardExpectedFields,
 ) => {
     const { userPage: page } = await prepareNewUser(
-        browser,
+        createContext,
         newTestUsername("DemoE2E"), // cspell:disable-line
         "test",
     );

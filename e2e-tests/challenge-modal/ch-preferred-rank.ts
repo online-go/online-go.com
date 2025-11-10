@@ -17,7 +17,9 @@
 
 // (No seeded data in use)
 
-import { Browser } from "@playwright/test";
+import type { CreateContextOptions } from "@helpers";
+
+import { BrowserContext } from "@playwright/test";
 import { expect } from "@playwright/test";
 
 import { newTestUsername, prepareNewUser } from "@helpers/user-utils";
@@ -29,9 +31,13 @@ import {
 } from "@helpers/challenge-utils";
 import { expectOGSClickableByName } from "@helpers/matchers";
 
-export const chPreferredSettingsRankTest = async ({ browser }: { browser: Browser }) => {
+export const chPreferredSettingsRankTest = async ({
+    createContext,
+}: {
+    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
+}) => {
     const { userPage: challengerPage } = await prepareNewUser(
-        browser,
+        createContext,
         newTestUsername("ChRankFussy"), // cspell:disable-line
         "test",
     );

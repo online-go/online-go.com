@@ -17,7 +17,9 @@
 
 // (No seeded data in use)
 
-import { Browser } from "@playwright/test";
+import type { CreateContextOptions } from "@helpers";
+
+import { BrowserContext } from "@playwright/test";
 
 import { newTestUsername, prepareNewUser } from "@helpers/user-utils";
 
@@ -28,15 +30,19 @@ import {
 } from "@helpers/challenge-utils";
 import { clickInTheMiddle } from "@helpers/game-utils";
 
-export const modWarnFirstTurnEscapersTest = async ({ browser }: { browser: Browser }) => {
+export const modWarnFirstTurnEscapersTest = async ({
+    createContext,
+}: {
+    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
+}) => {
     const { userPage: challengerPage } = await prepareNewUser(
-        browser,
+        createContext,
         newTestUsername("CmFTEChall"), // cspell:disable-line
         "test",
     );
 
     const escaperUsername = newTestUsername("CmFTEEscaper"); // cspell:disable-line
-    const { userPage: escaperPage } = await prepareNewUser(browser, escaperUsername, "test");
+    const { userPage: escaperPage } = await prepareNewUser(createContext, escaperUsername, "test");
 
     // Challenger challenges the escaper
     await createDirectChallenge(challengerPage, escaperUsername, {

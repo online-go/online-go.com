@@ -31,7 +31,9 @@
  * Creates fresh users for each test run.
  */
 
-import { Browser, TestInfo, expect } from "@playwright/test";
+import type { CreateContextOptions } from "@helpers";
+
+import { BrowserContext, TestInfo, expect } from "@playwright/test";
 import {
     captureReportNumber,
     navigateToReport,
@@ -50,7 +52,9 @@ import { expectOGSClickableByName } from "@helpers/matchers";
 import { withReportCountTracking } from "@helpers/report-utils";
 
 export const cmVoteSuspendUserTest = async (
-    { browser }: { browser: Browser },
+    {
+        createContext,
+    }: { createContext: (options?: CreateContextOptions) => Promise<BrowserContext> },
     testInfo: TestInfo,
 ) => {
     console.log("=== CM Vote Suspend User Test ===");
@@ -60,8 +64,12 @@ export const cmVoteSuspendUserTest = async (
     const accusedUsername = newTestUsername("Accu"); // cspell:ignore Accu
     const opponentUsername = newTestUsername("Opp"); // cspell:ignore Opp
 
-    const { userPage: accusedPage } = await prepareNewUser(browser, accusedUsername, "test");
-    const { userPage: opponentPage } = await prepareNewUser(browser, opponentUsername, "test");
+    const { userPage: accusedPage } = await prepareNewUser(createContext, accusedUsername, "test");
+    const { userPage: opponentPage } = await prepareNewUser(
+        createContext,
+        opponentUsername,
+        "test",
+    );
 
     // Have them play a quick 9x9 game
     console.log("Creating and playing game...");
@@ -112,7 +120,11 @@ export const cmVoteSuspendUserTest = async (
     // Create a reporter and report the accused user for escaping
     console.log("Creating reporter and reporting user...");
     const reporterUsername = newTestUsername("EscReporter");
-    const { userPage: reporterPage } = await prepareNewUser(browser, reporterUsername, "test");
+    const { userPage: reporterPage } = await prepareNewUser(
+        createContext,
+        reporterUsername,
+        "test",
+    );
 
     await withReportCountTracking(reporterPage, testInfo, async (tracker) => {
         // Navigate to the finished game and report
@@ -135,7 +147,7 @@ export const cmVoteSuspendUserTest = async (
 
         // Have one CM escalate the report
         console.log("E2E_CM_VSU_V1 escalating escaping report...");
-        const { seededCMPage: escalatorPage } = await setupSeededCM(browser, "E2E_CM_VSU_V1");
+        const { seededCMPage: escalatorPage } = await setupSeededCM(createContext, "E2E_CM_VSU_V1");
 
         // Navigate directly to the report using the captured report number
         await navigateToReport(escalatorPage, reportNumber);
@@ -148,7 +160,6 @@ export const cmVoteSuspendUserTest = async (
         await escalatorPage.waitForLoadState("networkidle");
 
         console.log("E2E_CM_VSU_V1 escalated the report");
-        await escalatorPage.close();
 
         // Keep the accused user logged in and browsing while suspension happens
         console.log("Accused user staying logged in...");
@@ -161,7 +172,7 @@ export const cmVoteSuspendUserTest = async (
 
         for (const voter of suspensionVoters) {
             console.log(`${voter} voting to suspend escaper...`);
-            const { seededCMPage: voterPage } = await setupSeededCM(browser, voter);
+            const { seededCMPage: voterPage } = await setupSeededCM(createContext, voter);
 
             // Navigate directly to the report using the captured report number
             await navigateToReport(voterPage, reportNumber);
@@ -173,7 +184,6 @@ export const cmVoteSuspendUserTest = async (
             await voterPage.waitForLoadState("networkidle");
 
             console.log(`${voter} voted to suspend`);
-            await voterPage.close();
         }
 
         // Wait for suspension processing
@@ -226,9 +236,6 @@ export const cmVoteSuspendUserTest = async (
         // (Note: In this case, the accused gets suspended, which clears all reports about them)
         await tracker.assertCountReturnedToInitial(reporterPage);
     });
-
-    await accusedPage.close();
-    await opponentPage.close();
 
     console.log("=== CM Vote Suspend User Test Complete ===");
     console.log("✓ CMs can vote to suspend users");

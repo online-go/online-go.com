@@ -27,10 +27,16 @@
  * Requires E2E_MODERATOR_PASSWORD environment variable to be set.
  */
 
-import { Browser, expect } from "@playwright/test";
+import type { CreateContextOptions } from "@helpers";
+
+import { BrowserContext, expect } from "@playwright/test";
 import { generateUniqueTestIPv6, loginAsUser, turnOffDynamicHelp } from "../helpers/user-utils";
 
-export const aiDetectionFastSMRReportTest = async ({ browser }: { browser: Browser }) => {
+export const aiDetectionFastSMRReportTest = async ({
+    createContext,
+}: {
+    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
+}) => {
     console.log("=== AI Detection FastSMR Report Button Test ===");
 
     // 1. Set up seeded moderator
@@ -41,7 +47,7 @@ export const aiDetectionFastSMRReportTest = async ({ browser }: { browser: Brows
     }
 
     const uniqueIPv6 = generateUniqueTestIPv6();
-    const modContext = await browser.newContext({
+    const modContext = await createContext({
         extraHTTPHeaders: {
             "X-Forwarded-For": uniqueIPv6,
         },
@@ -74,8 +80,6 @@ export const aiDetectionFastSMRReportTest = async ({ browser }: { browser: Brows
 
     if (rowCount === 0) {
         console.log("⚠ No games found in AI Detection table - skipping test");
-        await modPage.close();
-        await modContext.close();
         console.log("=== Test Skipped (No Data) ===");
         return;
     }
@@ -155,10 +159,6 @@ export const aiDetectionFastSMRReportTest = async ({ browser }: { browser: Brows
     } else {
         console.log("⚠ Could not find Ignore button - report may remain open");
     }
-
-    // Clean up
-    await modPage.close();
-    await modContext.close();
 
     console.log("=== AI Detection FastSMR Report Button Test Complete ===");
     console.log("✓ Clicking FastSMR cell creates AI use report");

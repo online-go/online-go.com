@@ -54,8 +54,8 @@ ogsTest.describe("Demo Board Tests", () => {
     ];
 
     for (const tc of testCases) {
-        ogsTest(`should successfully create a ${tc.name}`, async ({ browser }) => {
-            await createAndVerifyDemoBoard(browser, tc.settings, tc.expected);
+        ogsTest(`should successfully create a ${tc.name}`, async ({ createContext }) => {
+            await createAndVerifyDemoBoard(createContext, tc.settings, tc.expected);
         });
     }
 });

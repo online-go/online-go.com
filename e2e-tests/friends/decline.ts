@@ -17,8 +17,8 @@
 
 // (No seeded data in use)
 
-import { expect } from "@playwright/test";
-import { Browser } from "@playwright/test";
+import type { CreateContextOptions } from "@helpers";
+import { expect, BrowserContext } from "@playwright/test";
 
 import {
     newTestUsername,
@@ -31,16 +31,20 @@ import {
 } from "@helpers/user-utils";
 import {} from "@helpers/challenge-utils";
 
-export const declineFriendRequestNotificationTest = async ({ browser }: { browser: Browser }) => {
+export const declineFriendRequestNotificationTest = async ({
+    createContext,
+}: {
+    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
+}) => {
     const requestorUsername = newTestUsername("frDFRNReq"); // cspell:disable-line
-    const { userPage: requestor } = await prepareNewUser(browser, requestorUsername, "test");
+    const { userPage: requestor } = await prepareNewUser(createContext, requestorUsername, "test");
 
     await goToProfile(requestor);
 
     await expect(requestor.getByText("Notify when declining")).not.toBeVisible();
 
     const declinerUsername = newTestUsername("frDFRNDec"); // cspell:disable-line
-    const { userPage: decliner } = await prepareNewUser(browser, declinerUsername, "test");
+    const { userPage: decliner } = await prepareNewUser(createContext, declinerUsername, "test");
 
     await requestor.waitForTimeout(1000);
     // Requestor sends friend request
