@@ -34,6 +34,8 @@
  * so screenshots are taken for manual visual inspection to verify marks appear correctly.
  */
 
+import type { CreateContextOptions } from "@helpers";
+
 import { BrowserContext, TestInfo, expect } from "@playwright/test";
 import {
     newTestUsername,
@@ -50,7 +52,9 @@ import {
 import { clickOnGobanIntersection, playMoves } from "@helpers/game-utils";
 
 export const gameLogThumbnailMarksTest = async (
-    { createContext }: { createContext: (options?: any) => Promise<BrowserContext> },
+    {
+        createContext,
+    }: { createContext: (options?: CreateContextOptions) => Promise<BrowserContext> },
     testInfo: TestInfo,
 ) => {
     console.log("=== GameLog Thumbnail Marks Test ===");

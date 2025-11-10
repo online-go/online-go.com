@@ -24,6 +24,8 @@
  * - E2E_CM_VWNAI_AI_V1: AI assessor who votes
  */
 
+import type { CreateContextOptions } from "@helpers";
+
 import { BrowserContext, TestInfo } from "@playwright/test";
 
 import {
@@ -42,7 +44,9 @@ import { expect } from "@playwright/test";
 import { withReportCountTracking } from "@helpers/report-utils";
 
 export const cmVoteWarnNotAITest = async (
-    { createContext }: { createContext: (options?: any) => Promise<BrowserContext> },
+    {
+        createContext,
+    }: { createContext: (options?: CreateContextOptions) => Promise<BrowserContext> },
     testInfo: TestInfo,
 ) => {
     const { userPage: reporterPage } = await prepareNewUser(

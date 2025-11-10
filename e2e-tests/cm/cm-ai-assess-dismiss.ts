@@ -29,6 +29,8 @@
  * - E2E_CM_DNEA_AI_ASSESSOR : CM AI Assessor who should not be notified
  */
 
+import type { CreateContextOptions } from "@helpers";
+
 import { BrowserContext, TestInfo } from "@playwright/test";
 
 import {
@@ -47,7 +49,9 @@ import { expect } from "@playwright/test";
 import { withReportCountTracking } from "@helpers/report-utils";
 
 export const cmAiAssessDismissTest = async (
-    { createContext }: { createContext: (options?: any) => Promise<BrowserContext> },
+    {
+        createContext,
+    }: { createContext: (options?: CreateContextOptions) => Promise<BrowserContext> },
     testInfo: TestInfo,
 ) => {
     const { userPage: reporterPage } = await prepareNewUser(

@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import type { CreateContextOptions } from "@helpers";
+
 import { BrowserContext } from "@playwright/test";
 import { expect } from "@playwright/test";
 
@@ -29,7 +31,7 @@ import { playMoves } from "@helpers/game-utils";
 export const basicScoringTest = async ({
     createContext,
 }: {
-    createContext: (options?: any) => Promise<BrowserContext>;
+    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
 }) => {
     const { userPage: challengerPage } = await prepareNewUser(
         createContext,

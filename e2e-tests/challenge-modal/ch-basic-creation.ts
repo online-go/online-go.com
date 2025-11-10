@@ -17,6 +17,8 @@
 
 // (No seeded data in use)
 
+import type { CreateContextOptions } from "@helpers";
+
 import { BrowserContext } from "@playwright/test";
 
 import { newTestUsername, prepareNewUser } from "@helpers/user-utils";
@@ -28,7 +30,7 @@ import { testChallengePOSTPayload } from "@helpers/challenge-utils";
 export const chBasicCreationTest = async ({
     createContext,
 }: {
-    createContext: (options?: any) => Promise<BrowserContext>;
+    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
 }) => {
     const { userPage: challengerPage } = await prepareNewUser(
         createContext,

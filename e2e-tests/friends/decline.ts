@@ -17,6 +17,7 @@
 
 // (No seeded data in use)
 
+import type { CreateContextOptions } from "@helpers";
 import { expect, BrowserContext } from "@playwright/test";
 
 import {
@@ -33,7 +34,7 @@ import {} from "@helpers/challenge-utils";
 export const declineFriendRequestNotificationTest = async ({
     createContext,
 }: {
-    createContext: (options?: any) => Promise<BrowserContext>;
+    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
 }) => {
     const requestorUsername = newTestUsername("frDFRNReq"); // cspell:disable-line
     const { userPage: requestor } = await prepareNewUser(createContext, requestorUsername, "test");

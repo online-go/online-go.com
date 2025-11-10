@@ -30,6 +30,8 @@
  * Requires E2E_MODERATOR_PASSWORD environment variable to be set.
  */
 
+import type { CreateContextOptions } from "@helpers";
+
 import { BrowserContext, expect } from "@playwright/test";
 import {
     newTestUsername,
@@ -44,7 +46,7 @@ import { expectOGSClickableByName } from "../helpers/matchers";
 export const systemPMButtonTest = async ({
     createContext,
 }: {
-    createContext: (options?: any) => Promise<BrowserContext>;
+    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
 }) => {
     console.log("=== System PM Button Test ===");
 

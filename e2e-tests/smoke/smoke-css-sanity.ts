@@ -17,6 +17,8 @@
 
 // (No seeded data in use - must not use seeded data for smoke tests!)
 
+import type { CreateContextOptions } from "@helpers";
+
 import { BrowserContext, expect } from "@playwright/test";
 import { goToProfile, newTestUsername, prepareNewUser } from "@helpers/user-utils";
 import { load } from "@helpers";
@@ -27,7 +29,7 @@ const currentDir = new URL(".", import.meta.url).pathname;
 export const smokeCssSanityTest = async ({
     createContext,
 }: {
-    createContext: (options?: any) => Promise<BrowserContext>;
+    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
 }) => {
     const userContext = await createContext();
     const page = await userContext.newPage();

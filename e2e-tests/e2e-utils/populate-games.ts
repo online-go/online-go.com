@@ -17,6 +17,8 @@
 
 // Utility to populate game history by playing the same game multiple times
 
+import type { CreateContextOptions } from "@helpers";
+
 import { BrowserContext, Page, expect } from "@playwright/test";
 
 import { newTestUsername, prepareNewUser } from "@helpers/user-utils";
@@ -189,7 +191,7 @@ async function playOneGame(
 export const populateGames = async ({
     createContext,
 }: {
-    createContext: (options?: any) => Promise<BrowserContext>;
+    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
 }) => {
     const player1Username = newTestUsername("e2ePopPlayer1");
     const { userPage: player1Page } = await prepareNewUser(createContext, player1Username, "test");

@@ -32,6 +32,8 @@
  * - Checking for suspension banner after the game completes
  */
 
+import type { CreateContextOptions } from "@helpers";
+
 import { BrowserContext, expect } from "@playwright/test";
 import {
     generateUniqueTestIPv6,
@@ -53,7 +55,7 @@ const SUSPENDED_USER_BID = "e2e-test-suspended-bid";
 export const autoSuspensionTest = async ({
     createContext,
 }: {
-    createContext: (options?: any) => Promise<BrowserContext>;
+    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
 }) => {
     console.log("=== Browser ID Suspension Test ===");
     console.log(`Testing registration with BID matching suspended user: ${SUSPENDED_USER_BID}`);

@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import type { CreateContextOptions } from "@helpers";
+
 import { expect, Page, BrowserContext } from "@playwright/test";
 import { newTestUsername, prepareNewUser } from "@helpers/user-utils";
 
@@ -123,7 +125,7 @@ export interface DemoBoardExpectedFields {
 
 // 2. Add the new high-level orchestrator function
 export const createAndVerifyDemoBoard = async (
-    createContext: (options?: any) => Promise<BrowserContext>,
+    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>,
     settings: DemoBoardModalFields,
     expected: DemoBoardExpectedFields,
 ) => {

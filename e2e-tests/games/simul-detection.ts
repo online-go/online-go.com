@@ -21,6 +21,8 @@
 * - E2E_GAMES_SIMUL_CM : user who will check the report
 */
 
+import type { CreateContextOptions } from "@helpers";
+
 import { BrowserContext, TestInfo } from "@playwright/test";
 import { expect } from "@playwright/test";
 
@@ -42,7 +44,9 @@ import { playMoves, resignActiveGame } from "@helpers/game-utils";
 import { withReportCountTracking } from "@helpers/report-utils";
 
 export const detectContainedSimulTest = async (
-    { createContext }: { createContext: (options?: any) => Promise<BrowserContext> },
+    {
+        createContext,
+    }: { createContext: (options?: CreateContextOptions) => Promise<BrowserContext> },
     testInfo: TestInfo,
 ) => {
     // The user who plays simultaneous games

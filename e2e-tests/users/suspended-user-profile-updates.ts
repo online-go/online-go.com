@@ -27,6 +27,8 @@
  * Requires E2E_MODERATOR_PASSWORD environment variable to be set.
  */
 
+import type { CreateContextOptions } from "@helpers";
+
 import { BrowserContext, expect } from "@playwright/test";
 import {
     prepareNewUser,
@@ -38,7 +40,7 @@ import { expectOGSClickableByName } from "../helpers/matchers";
 export const suspendedUserCannotUpdateProfileTest = async ({
     createContext,
 }: {
-    createContext: (options?: any) => Promise<BrowserContext>;
+    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
 }) => {
     console.log("=== Suspended User Cannot Update Profile Test ===");
 
@@ -109,7 +111,7 @@ export const suspendedUserCannotUpdateProfileTest = async ({
 export const normalUserCanUpdateProfileTest = async ({
     createContext,
 }: {
-    createContext: (options?: any) => Promise<BrowserContext>;
+    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
 }) => {
     console.log("=== Normal User Can Update Profile Test ===");
 

@@ -30,6 +30,8 @@
  * and the area wasn't showing as black's score in the GameLog.
  */
 
+import type { CreateContextOptions } from "@helpers";
+
 import { BrowserContext, TestInfo, expect } from "@playwright/test";
 import {
     newTestUsername,
@@ -46,7 +48,9 @@ import {
 import { clickOnGobanIntersection, playMoves } from "@helpers/game-utils";
 
 export const gameLogScoringAreasTest = async (
-    { createContext }: { createContext: (options?: any) => Promise<BrowserContext> },
+    {
+        createContext,
+    }: { createContext: (options?: CreateContextOptions) => Promise<BrowserContext> },
     testInfo: TestInfo,
 ) => {
     console.log("=== GameLog Scoring Areas Test ===");

@@ -27,13 +27,15 @@
  * Requires E2E_MODERATOR_PASSWORD environment variable to be set.
  */
 
+import type { CreateContextOptions } from "@helpers";
+
 import { BrowserContext, expect } from "@playwright/test";
 import { generateUniqueTestIPv6, loginAsUser, turnOffDynamicHelp } from "../helpers/user-utils";
 
 export const aiDetectionFastSMRReportTest = async ({
     createContext,
 }: {
-    createContext: (options?: any) => Promise<BrowserContext>;
+    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
 }) => {
     console.log("=== AI Detection FastSMR Report Button Test ===");
 

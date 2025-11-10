@@ -17,6 +17,8 @@
 
 // (No seeded data in use)
 
+import type { CreateContextOptions } from "@helpers";
+
 import { BrowserContext } from "@playwright/test";
 
 import { newTestUsername, prepareNewUser } from "@helpers/user-utils";
@@ -31,7 +33,7 @@ import { clickInTheMiddle } from "@helpers/game-utils";
 export const modWarnFirstTurnEscapersTest = async ({
     createContext,
 }: {
-    createContext: (options?: any) => Promise<BrowserContext>;
+    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
 }) => {
     const { userPage: challengerPage } = await prepareNewUser(
         createContext,

@@ -17,6 +17,8 @@
 
 // (No seeded data in use)
 
+import type { CreateContextOptions } from "@helpers";
+
 import { BrowserContext } from "@playwright/test";
 
 import { loginAsUser, newTestUsername, prepareNewUser } from "@helpers/user-utils";
@@ -33,7 +35,7 @@ import { ogsTest } from "@helpers";
 export const modWarnFirstTurnDisconnectorTest = async ({
     createContext,
 }: {
-    createContext: (options?: any) => Promise<BrowserContext>;
+    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
 }) => {
     ogsTest.setTimeout(6 * 60 * 1000); // Set timeout to 6 minutes, to let disconnect happen
 

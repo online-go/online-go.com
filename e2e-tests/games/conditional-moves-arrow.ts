@@ -17,6 +17,8 @@
 
 // (No seeded data in use)
 
+import type { CreateContextOptions } from "@helpers";
+
 import { BrowserContext } from "@playwright/test";
 import { expect } from "@playwright/test";
 
@@ -31,7 +33,7 @@ import { clickOnGobanIntersection, playMoves } from "@helpers/game-utils";
 export const conditionalMovesArrowBugTest = async ({
     createContext,
 }: {
-    createContext: (options?: any) => Promise<BrowserContext>;
+    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
 }) => {
     const { userPage: challengerPage } = await prepareNewUser(
         createContext,

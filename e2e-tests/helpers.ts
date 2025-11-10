@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { test as base, type Page, BrowserContext } from "@playwright/test";
+import { test as base, type Page, type Browser, BrowserContext } from "@playwright/test";
 
 export async function checkNoErrorBoundaries(page: Page) {
     const errorBoundaryCount = await page.locator(".ErrorBoundary").count();
@@ -29,9 +29,12 @@ export async function load(page: Page, url: string) {
     await page.waitForLoadState("networkidle");
 }
 
+// Type for browser context options - matches Browser.newContext() parameter
+export type CreateContextOptions = Parameters<Browser["newContext"]>[0];
+
 // Fixture type for multi-context tests
 type MultiContextFixtures = {
-    createContext: (options?: any) => Promise<BrowserContext>;
+    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
 };
 
 // Our customisation is to make sure that no ErrorBoundary is rendered in all tests (that use this fixture)
@@ -49,7 +52,7 @@ export const ogsTest = base.extend<MultiContextFixtures>({
     createContext: async ({ browser }, use) => {
         const contexts: BrowserContext[] = [];
 
-        const factory = async (options?: any) => {
+        const factory = async (options?: CreateContextOptions) => {
             const context = await browser.newContext(options);
             contexts.push(context);
             return context;

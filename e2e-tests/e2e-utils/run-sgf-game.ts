@@ -17,6 +17,8 @@
 
 // Test that plays the game from SGF: 80764919-161-serwer-Seoul Fuseki.sgf
 
+import type { CreateContextOptions } from "@helpers";
+
 import { BrowserContext, expect } from "@playwright/test";
 
 import { newTestUsername, prepareNewUser } from "@helpers/user-utils";
@@ -31,7 +33,7 @@ import { sgfToDisplay } from "@helpers/sgf-utils";
 export const runSgfGame = async ({
     createContext,
 }: {
-    createContext: (options?: any) => Promise<BrowserContext>;
+    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
 }) => {
     const { userPage: challengerPage } = await prepareNewUser(
         createContext,

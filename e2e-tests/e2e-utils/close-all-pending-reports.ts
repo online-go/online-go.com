@@ -29,12 +29,16 @@
  * Requires E2E_MODERATOR_PASSWORD environment variable to be set.
  */
 
+import type { CreateContextOptions } from "@helpers";
+
 import { BrowserContext, TestInfo, expect } from "@playwright/test";
 import { generateUniqueTestIPv6, loginAsUser, turnOffDynamicHelp } from "@helpers/user-utils";
 import { expectOGSClickableByName } from "@helpers/matchers";
 
 export const closeAllPendingReportsTest = async (
-    { createContext }: { createContext: (options?: any) => Promise<BrowserContext> },
+    {
+        createContext,
+    }: { createContext: (options?: CreateContextOptions) => Promise<BrowserContext> },
     testInfo: TestInfo,
 ) => {
     // Set a longer timeout since we might have many reports to close

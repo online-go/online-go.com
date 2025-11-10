@@ -26,6 +26,8 @@
  * - E2E_CM_SOPEV_ESCALATOR : CM who escalates the report
  */
 
+import type { CreateContextOptions } from "@helpers";
+
 import { BrowserContext, TestInfo } from "@playwright/test";
 
 import {
@@ -43,7 +45,9 @@ import { expect } from "@playwright/test";
 import { withReportCountTracking } from "@helpers/report-utils";
 
 export const cmShowOnlyPostEscalationVotesTest = async (
-    { createContext }: { createContext: (options?: any) => Promise<BrowserContext> },
+    {
+        createContext,
+    }: { createContext: (options?: CreateContextOptions) => Promise<BrowserContext> },
     testInfo: TestInfo,
 ) => {
     const { userPage: reporterPage } = await prepareNewUser(

@@ -25,6 +25,8 @@
  * - E2E_CM_OTHER_VOOR : The other person in that game (who's name must not match E2E_CM_VOOR_! See below!)
  */
 
+import type { CreateContextOptions } from "@helpers";
+
 import { BrowserContext, TestInfo, expect } from "@playwright/test";
 
 import { expectOGSClickableByName } from "@helpers/matchers";
@@ -33,7 +35,9 @@ import { goToUsersFinishedGame, reportUser, setupSeededUser } from "@helpers/use
 import { withReportCountTracking } from "@helpers/report-utils";
 
 export const cmVoteOnOwnReportTest = async (
-    { createContext }: { createContext: (options?: any) => Promise<BrowserContext> },
+    {
+        createContext,
+    }: { createContext: (options?: CreateContextOptions) => Promise<BrowserContext> },
     testInfo: TestInfo,
 ) => {
     const { userPage: reporterPage } = await setupSeededUser(createContext, "E2E_CM_VOOR_REPORTER");

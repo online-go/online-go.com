@@ -31,6 +31,8 @@
  * Creates fresh users for each test run.
  */
 
+import type { CreateContextOptions } from "@helpers";
+
 import { BrowserContext, TestInfo, expect } from "@playwright/test";
 import {
     captureReportNumber,
@@ -50,7 +52,9 @@ import { expectOGSClickableByName } from "@helpers/matchers";
 import { withReportCountTracking } from "@helpers/report-utils";
 
 export const cmVoteSuspendUserTest = async (
-    { createContext }: { createContext: (options?: any) => Promise<BrowserContext> },
+    {
+        createContext,
+    }: { createContext: (options?: CreateContextOptions) => Promise<BrowserContext> },
     testInfo: TestInfo,
 ) => {
     console.log("=== CM Vote Suspend User Test ===");

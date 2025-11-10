@@ -19,6 +19,8 @@
  * No seeded data in use
  */
 
+import type { CreateContextOptions } from "@helpers";
+
 import { BrowserContext, expect } from "@playwright/test";
 
 import { newTestUsername, prepareNewUser } from "@helpers/user-utils";
@@ -29,7 +31,7 @@ import { clickInTheMiddle } from "@helpers/game-utils";
 export const modBlockEarlyStallingReportTest = async ({
     createContext,
 }: {
-    createContext: (options?: any) => Promise<BrowserContext>;
+    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
 }) => {
     const { userPage: reporterPage } = await prepareNewUser(
         createContext,

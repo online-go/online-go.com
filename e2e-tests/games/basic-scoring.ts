@@ -21,6 +21,8 @@
 * - E2E_GAMES_BS_CM : user who will check the log
 */
 
+import type { CreateContextOptions } from "@helpers";
+
 import { BrowserContext, TestInfo } from "@playwright/test";
 import { expect } from "@playwright/test";
 
@@ -41,7 +43,9 @@ import { playMoves } from "@helpers/game-utils";
 import { withReportCountTracking } from "@helpers/report-utils";
 
 export const basicScoringTest = async (
-    { createContext }: { createContext: (options?: any) => Promise<BrowserContext> },
+    {
+        createContext,
+    }: { createContext: (options?: CreateContextOptions) => Promise<BrowserContext> },
     testInfo: TestInfo,
 ) => {
     const { userPage: challengerPage } = await prepareNewUser(

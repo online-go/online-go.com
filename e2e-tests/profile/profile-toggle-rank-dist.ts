@@ -17,6 +17,8 @@
 
 // (No seeded data in use)
 
+import type { CreateContextOptions } from "@helpers";
+
 import { BrowserContext } from "@playwright/test";
 import { expect } from "@playwright/test";
 
@@ -25,7 +27,7 @@ import { newTestUsername, prepareNewUser, goToProfile } from "@helpers/user-util
 export const profileRankDistributionGraphToggleTest = async ({
     createContext,
 }: {
-    createContext: (options?: any) => Promise<BrowserContext>;
+    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
 }) => {
     const { userPage } = await prepareNewUser(
         createContext,

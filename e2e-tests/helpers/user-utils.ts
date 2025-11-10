@@ -13,7 +13,7 @@ import { expect } from "@playwright/test";
 import { Page, BrowserContext } from "@playwright/test";
 
 import { expectOGSClickableByName } from "./matchers";
-import { load } from "@helpers";
+import { load, CreateContextOptions } from "@helpers";
 
 /**
  * User Management Utilities for E2E Tests
@@ -93,7 +93,7 @@ export const generateUniqueTestIPv6 = (): string => {
 };
 
 export const registerNewUser = async (
-    createContext: (options?: any) => Promise<BrowserContext>,
+    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>,
     username: string,
     password: string,
 ) => {
@@ -132,7 +132,7 @@ export const registerNewUser = async (
 };
 
 export const prepareNewUser = async (
-    createContext: (options?: any) => Promise<BrowserContext>,
+    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>,
     username: string,
     password: string,
 ) => {
@@ -239,7 +239,7 @@ export const turnOffDynamicHelp = async (page: Page) => {
 // a newly registered user.
 
 export const setupSeededUser = async (
-    createContext: (options?: any) => Promise<BrowserContext>,
+    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>,
     username: string,
 ) => {
     const uniqueIPv6 = generateUniqueTestIPv6();
@@ -259,7 +259,7 @@ export const setupSeededUser = async (
 };
 
 export const setupSeededCM = async (
-    createContext: (options?: any) => Promise<BrowserContext>,
+    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>,
     username: string,
 ) => {
     const uniqueIPv6 = generateUniqueTestIPv6();
@@ -520,7 +520,7 @@ export const selectNavMenuItem = async (
  * Requires E2E_MODERATOR_PASSWORD environment variable to be set
  */
 export const banUserAsModerator = async (
-    createContext: (options?: any) => Promise<BrowserContext>,
+    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>,
     targetUsername: string,
     banReason: string = "E2E test suspension",
 ) => {
