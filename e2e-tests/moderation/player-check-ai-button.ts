@@ -30,7 +30,7 @@
  * Requires E2E_MODERATOR_PASSWORD environment variable to be set.
  */
 
-import { Browser, expect } from "@playwright/test";
+import { BrowserContext, expect } from "@playwright/test";
 import {
     newTestUsername,
     prepareNewUser,
@@ -41,17 +41,17 @@ import {
 } from "../helpers/user-utils";
 import { expectOGSClickableByName } from "../helpers/matchers";
 
-export const playerCheckAIButtonTest = async ({ browser }: { browser: Browser }) => {
+export const playerCheckAIButtonTest = async ({
+    createContext,
+}: {
+    createContext: (options?: any) => Promise<BrowserContext>;
+}) => {
     console.log("=== Player Check AI Button Test ===");
 
     // 1. Create a regular user to test the dropdown on
     const targetUsername = newTestUsername("AITarget");
     console.log(`Creating target user: ${targetUsername}`);
-    const { userPage: targetPage, userContext: targetContext } = await prepareNewUser(
-        browser,
-        targetUsername,
-        "test",
-    );
+    const { userPage: targetPage } = await prepareNewUser(createContext, targetUsername, "test");
     console.log(`Target user created: ${targetUsername} ✓`);
 
     // Get the target user's ID from the profile page
@@ -65,11 +65,7 @@ export const playerCheckAIButtonTest = async ({ browser }: { browser: Browser })
     // 2. Create a regular user to verify the button does NOT appear
     const regularUsername = newTestUsername("RegUser");
     console.log(`Creating regular user: ${regularUsername}`);
-    const { userPage: regularPage, userContext: regularContext } = await prepareNewUser(
-        browser,
-        regularUsername,
-        "test",
-    );
+    const { userPage: regularPage } = await prepareNewUser(createContext, regularUsername, "test");
     console.log(`Regular user created: ${regularUsername} ✓`);
 
     // 3. Regular user navigates to target user's profile
@@ -101,7 +97,7 @@ export const playerCheckAIButtonTest = async ({ browser }: { browser: Browser })
     }
 
     const uniqueIPv6 = generateUniqueTestIPv6();
-    const modContext = await browser.newContext({
+    const modContext = await createContext({
         extraHTTPHeaders: {
             "X-Forwarded-For": uniqueIPv6,
         },
@@ -170,14 +166,6 @@ export const playerCheckAIButtonTest = async ({ browser }: { browser: Browser })
     // The autocomplete should contain the target username
     expect(autocompleteValue).toContain(targetUsername);
     console.log("Player filter correctly pre-populated ✓");
-
-    // Clean up
-    await targetPage.close();
-    await targetContext.close();
-    await regularPage.close();
-    await regularContext.close();
-    await modPage.close();
-    await modContext.close();
 
     console.log("=== Player Check AI Button Test Complete ===");
     console.log("✓ 'Check AI' button hidden from regular users");

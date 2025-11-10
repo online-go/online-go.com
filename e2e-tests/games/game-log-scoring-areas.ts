@@ -30,7 +30,7 @@
  * and the area wasn't showing as black's score in the GameLog.
  */
 
-import { Browser, TestInfo, expect } from "@playwright/test";
+import { BrowserContext, TestInfo, expect } from "@playwright/test";
 import {
     newTestUsername,
     prepareNewUser,
@@ -46,7 +46,7 @@ import {
 import { clickOnGobanIntersection, playMoves } from "@helpers/game-utils";
 
 export const gameLogScoringAreasTest = async (
-    { browser }: { browser: Browser },
+    { createContext }: { createContext: (options?: any) => Promise<BrowserContext> },
     testInfo: TestInfo,
 ) => {
     console.log("=== GameLog Scoring Areas Test ===");
@@ -54,16 +54,16 @@ export const gameLogScoringAreasTest = async (
     // 1. Create two users
     console.log("Creating test users...");
     const challengerUsername = newTestUsername("ScoreChall"); // cspell:disable-line
-    const { userPage: challengerPage, userContext: challengerContext } = await prepareNewUser(
-        browser,
+    const { userPage: challengerPage } = await prepareNewUser(
+        createContext,
         challengerUsername,
         "test",
     );
     console.log(`Challenger (Black) created: ${challengerUsername} ✓`);
 
     const acceptorUsername = newTestUsername("ScoreAccep"); // cspell:disable-line
-    const { userPage: acceptorPage, userContext: acceptorContext } = await prepareNewUser(
-        browser,
+    const { userPage: acceptorPage } = await prepareNewUser(
+        createContext,
         acceptorUsername,
         "test",
     );
@@ -188,7 +188,7 @@ export const gameLogScoringAreasTest = async (
     }
 
     const uniqueIPv6 = generateUniqueTestIPv6();
-    const modContext = await browser.newContext({
+    const modContext = await createContext({
         extraHTTPHeaders: { "X-Forwarded-For": uniqueIPv6 },
     });
     const modPage = await modContext.newPage();
@@ -209,8 +209,8 @@ export const gameLogScoringAreasTest = async (
     await modPage.waitForTimeout(500);
 
     await modPage.evaluate(() => {
-        const logLink = Array.from(document.querySelectorAll(".Dock a")).find(
-            (el) => el.textContent?.includes("Log"),
+        const logLink = Array.from(document.querySelectorAll(".Dock a")).find((el) =>
+            el.textContent?.includes("Log"),
         ) as HTMLElement;
         if (logLink) {
             logLink.click();
@@ -268,14 +268,6 @@ export const gameLogScoringAreasTest = async (
     console.log("   - The area around C5 should show as BLACK's territory (with C5 dead)");
     console.log("   - This verifies the fix: scored areas reflect actual clicks, not auto-scoring");
     console.log("=====================================\n");
-
-    // Clean up
-    await modPage.close();
-    await modContext.close();
-    await challengerPage.close();
-    await challengerContext.close();
-    await acceptorPage.close();
-    await acceptorContext.close();
 
     console.log("=== GameLog Scoring Areas Test Complete ===");
     console.log("✓ Created 9x9 game similar to bug report");

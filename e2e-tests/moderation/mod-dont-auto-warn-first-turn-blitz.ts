@@ -17,7 +17,7 @@
 
 // (No seeded data in use)
 
-import { Browser } from "@playwright/test";
+import { BrowserContext } from "@playwright/test";
 import { expect } from "@playwright/test";
 
 import { newTestUsername, prepareNewUser } from "@helpers/user-utils";
@@ -29,15 +29,19 @@ import {
 } from "@helpers/challenge-utils";
 import { clickInTheMiddle } from "@helpers/game-utils";
 
-export const modDontAutoWarnBlitzTest = async ({ browser }: { browser: Browser }) => {
+export const modDontAutoWarnBlitzTest = async ({
+    createContext,
+}: {
+    createContext: (options?: any) => Promise<BrowserContext>;
+}) => {
     const { userPage: challengerPage } = await prepareNewUser(
-        browser,
+        createContext,
         newTestUsername("CmDWBChall"), // cspell:disable-line
         "test",
     );
 
     const escaperUsername = newTestUsername("CmDWBEscaper"); // cspell:disable-line
-    const { userPage: escaperPage } = await prepareNewUser(browser, escaperUsername, "test");
+    const { userPage: escaperPage } = await prepareNewUser(createContext, escaperUsername, "test");
 
     // Challenger challenges the escaper
     await createDirectChallenge(challengerPage, escaperUsername, {

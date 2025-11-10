@@ -19,21 +19,29 @@
  * No seeded data in use
  */
 
-import { Browser, expect } from "@playwright/test";
+import { BrowserContext, expect } from "@playwright/test";
 
 import { prepareNewUser, newTestUsername } from "@helpers/user-utils";
 import { createDirectChallenge, acceptDirectChallenge } from "@helpers/challenge-utils";
 import { clickInTheMiddle } from "@helpers/game-utils";
 
-export const modBlockEarlyEscapeReportTest = async ({ browser }: { browser: Browser }) => {
+export const modBlockEarlyEscapeReportTest = async ({
+    createContext,
+}: {
+    createContext: (options?: any) => Promise<BrowserContext>;
+}) => {
     const { userPage: reporterPage } = await prepareNewUser(
-        browser,
+        createContext,
         newTestUsername("modBEERRep"),
         "test",
     );
 
     const reportedUsername = newTestUsername("modBEEREsc");
-    const { userPage: reportedPage } = await prepareNewUser(browser, reportedUsername, "test");
+    const { userPage: reportedPage } = await prepareNewUser(
+        createContext,
+        reportedUsername,
+        "test",
+    );
 
     await createDirectChallenge(reporterPage, reportedUsername);
 

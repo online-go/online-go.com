@@ -26,7 +26,7 @@
  * - E2E_CM_SOPEV_ESCALATOR : CM who escalates the report
  */
 
-import { Browser, TestInfo } from "@playwright/test";
+import { BrowserContext, TestInfo } from "@playwright/test";
 
 import {
     captureReportNumber,
@@ -43,11 +43,11 @@ import { expect } from "@playwright/test";
 import { withReportCountTracking } from "@helpers/report-utils";
 
 export const cmShowOnlyPostEscalationVotesTest = async (
-    { browser }: { browser: Browser },
+    { createContext }: { createContext: (options?: any) => Promise<BrowserContext> },
     testInfo: TestInfo,
 ) => {
     const { userPage: reporterPage } = await prepareNewUser(
-        browser,
+        createContext,
         newTestUsername("CmSOPEVRep"), // cspell:disable-line
         "test",
     );
@@ -72,7 +72,7 @@ export const cmShowOnlyPostEscalationVotesTest = async (
         // Now put a pre-escalation vote on the report
 
         const { seededCMPage: initialVoterPage } = await setupSeededCM(
-            browser,
+            createContext,
             "E2E_CM_SOPEV_INITIAL_VOTER",
         );
 
@@ -92,7 +92,7 @@ export const cmShowOnlyPostEscalationVotesTest = async (
 
         // Now escalate the report
         const { seededCMPage: escalatorPage } = await setupSeededCM(
-            browser,
+            createContext,
             "E2E_CM_SOPEV_ESCALATOR",
         );
 

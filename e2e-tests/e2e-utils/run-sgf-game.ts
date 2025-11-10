@@ -17,7 +17,7 @@
 
 // Test that plays the game from SGF: 80764919-161-serwer-Seoul Fuseki.sgf
 
-import { Browser, expect } from "@playwright/test";
+import { BrowserContext, expect } from "@playwright/test";
 
 import { newTestUsername, prepareNewUser } from "@helpers/user-utils";
 import {
@@ -28,15 +28,23 @@ import {
 import { playMoves } from "@helpers/game-utils";
 import { sgfToDisplay } from "@helpers/sgf-utils";
 
-export const runSgfGame = async ({ browser }: { browser: Browser }) => {
+export const runSgfGame = async ({
+    createContext,
+}: {
+    createContext: (options?: any) => Promise<BrowserContext>;
+}) => {
     const { userPage: challengerPage } = await prepareNewUser(
-        browser,
+        createContext,
         newTestUsername("e2eSGFBlack"),
         "test",
     );
 
     const acceptorUsername = newTestUsername("e2eSGFWhite");
-    const { userPage: acceptorPage } = await prepareNewUser(browser, acceptorUsername, "test");
+    const { userPage: acceptorPage } = await prepareNewUser(
+        createContext,
+        acceptorUsername,
+        "test",
+    );
 
     const boardSize = "19x19";
     const handicap = 0;

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { test as base, type Page } from "@playwright/test";
+import { test as base, type Page, BrowserContext } from "@playwright/test";
 
 export async function checkNoErrorBoundaries(page: Page) {
     const errorBoundaryCount = await page.locator(".ErrorBoundary").count();
@@ -29,8 +29,14 @@ export async function load(page: Page, url: string) {
     await page.waitForLoadState("networkidle");
 }
 
+// Fixture type for multi-context tests
+type MultiContextFixtures = {
+    createContext: (options?: any) => Promise<BrowserContext>;
+};
+
 // Our customisation is to make sure that no ErrorBoundary is rendered in all tests (that use this fixture)
-export const ogsTest = base.extend({
+// Also provides createContext fixture for automatic cleanup of multi-user test contexts
+export const ogsTest = base.extend<MultiContextFixtures>({
     browser: async ({ browser }, use) => {
         await use(browser); // eslint-disable-line react-hooks/rules-of-hooks
     },
@@ -39,5 +45,27 @@ export const ogsTest = base.extend({
     },
     page: async ({ page }, use) => {
         await use(page); // eslint-disable-line react-hooks/rules-of-hooks
+    },
+    createContext: async ({ browser }, use) => {
+        const contexts: BrowserContext[] = [];
+
+        const factory = async (options?: any) => {
+            const context = await browser.newContext(options);
+            contexts.push(context);
+            return context;
+        };
+
+        await use(factory); // eslint-disable-line react-hooks/rules-of-hooks
+
+        // Auto-cleanup after test
+        console.log(`🧹 Cleaning up ${contexts.length} context(s)`);
+        for (const context of contexts) {
+            try {
+                await context.close();
+                console.log(`  ✓ Closed context`);
+            } catch (error: any) {
+                console.log(`  ⚠ Error closing context: ${error.message}`);
+            }
+        }
     },
 });

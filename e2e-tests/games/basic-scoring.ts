@@ -21,7 +21,7 @@
 * - E2E_GAMES_BS_CM : user who will check the log
 */
 
-import { Browser, TestInfo } from "@playwright/test";
+import { BrowserContext, TestInfo } from "@playwright/test";
 import { expect } from "@playwright/test";
 
 import {
@@ -40,15 +40,22 @@ import {
 import { playMoves } from "@helpers/game-utils";
 import { withReportCountTracking } from "@helpers/report-utils";
 
-export const basicScoringTest = async ({ browser }: { browser: Browser }, testInfo: TestInfo) => {
+export const basicScoringTest = async (
+    { createContext }: { createContext: (options?: any) => Promise<BrowserContext> },
+    testInfo: TestInfo,
+) => {
     const { userPage: challengerPage } = await prepareNewUser(
-        browser,
+        createContext,
         newTestUsername("gamesBasicCh"), // cspell:disable-line
         "test",
     );
 
     const acceptorUsername = newTestUsername("gamesBasicAc"); // cspell:disable-line
-    const { userPage: acceptorPage } = await prepareNewUser(browser, acceptorUsername, "test");
+    const { userPage: acceptorPage } = await prepareNewUser(
+        createContext,
+        acceptorUsername,
+        "test",
+    );
 
     // Challenger challenges the acceptor
     await createDirectChallenge(challengerPage, acceptorUsername, {
@@ -132,7 +139,7 @@ export const basicScoringTest = async ({ browser }: { browser: Browser }, testIn
     await withReportCountTracking(challengerPage, testInfo, async (reporterTracker) => {
         // Set up CM and capture their baseline BEFORE creating the report
         const cm = "E2E_GAMES_BS_CM";
-        const { seededCMPage: cmPage } = await setupSeededCM(browser, cm);
+        const { seededCMPage: cmPage } = await setupSeededCM(createContext, cm);
 
         // Capture CM's initial count
         const cmInitialCount = await reporterTracker.checkCurrentCount(cmPage);

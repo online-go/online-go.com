@@ -30,7 +30,7 @@
  * Requires E2E_MODERATOR_PASSWORD environment variable to be set.
  */
 
-import { Browser, expect } from "@playwright/test";
+import { BrowserContext, expect } from "@playwright/test";
 import {
     newTestUsername,
     prepareNewUser,
@@ -41,13 +41,17 @@ import {
 } from "../helpers/user-utils";
 import { expectOGSClickableByName } from "../helpers/matchers";
 
-export const systemPMButtonTest = async ({ browser }: { browser: Browser }) => {
+export const systemPMButtonTest = async ({
+    createContext,
+}: {
+    createContext: (options?: any) => Promise<BrowserContext>;
+}) => {
     console.log("=== System PM Button Test ===");
 
     // 1. Create a new user to be suspended
     const username = newTestUsername("SPMUser"); // "System" is not allowed in usernames!
     console.log(`Creating test user: ${username}`);
-    const { userPage, userContext } = await prepareNewUser(browser, username, "test");
+    const { userPage } = await prepareNewUser(createContext, username, "test");
     console.log(`User created: ${username} ✓`);
 
     // 2. Set up seeded moderator
@@ -58,7 +62,7 @@ export const systemPMButtonTest = async ({ browser }: { browser: Browser }) => {
     }
 
     const uniqueIPv6 = generateUniqueTestIPv6();
-    const modContext = await browser.newContext({
+    const modContext = await createContext({
         extraHTTPHeaders: {
             "X-Forwarded-For": uniqueIPv6,
         },
@@ -243,12 +247,6 @@ export const systemPMButtonTest = async ({ browser }: { browser: Browser }) => {
         userPage.getByText(/This is a follow-up message sent via System PM/i),
     ).toBeVisible();
     console.log("System PM message visible in chat ✓");
-
-    // Clean up
-    await userPage.close();
-    await userContext.close();
-    await modPage.close();
-    await modContext.close();
 
     console.log("=== System PM Button Test Complete ===");
     console.log("✓ User suspended by moderator");

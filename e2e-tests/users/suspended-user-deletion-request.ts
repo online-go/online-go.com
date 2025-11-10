@@ -29,20 +29,24 @@
  * Requires E2E_MODERATOR_PASSWORD environment variable to be set.
  */
 
-import { Browser, expect } from "@playwright/test";
+import { BrowserContext, expect } from "@playwright/test";
 import {
     prepareNewUser,
     newTestUsername,
     banUserAsModerator as suspendUserAsModerator,
 } from "../helpers/user-utils";
 
-export const suspendedUserDeletionRequestTest = async ({ browser }: { browser: Browser }) => {
+export const suspendedUserDeletionRequestTest = async ({
+    createContext,
+}: {
+    createContext: (options?: any) => Promise<BrowserContext>;
+}) => {
     console.log("=== Suspended User Deletion Request Test ===");
 
     // 1. Create a new user and verify normal "Delete account" button
     console.log("Creating test user...");
     const username = newTestUsername("DelReqTest");
-    const { userPage, userContext } = await prepareNewUser(browser, username, "test");
+    const { userPage } = await prepareNewUser(createContext, username, "test");
     console.log(`User created: ${username} ✓`);
 
     // 2. Navigate to account settings and verify normal state
@@ -71,7 +75,7 @@ export const suspendedUserDeletionRequestTest = async ({ browser }: { browser: B
     // 6. Suspend the user
     console.log(`Suspending user ${username}...`);
     await suspendUserAsModerator(
-        browser,
+        createContext,
         username,
         "E2E test: Testing deletion request button for suspended users",
     );
@@ -137,10 +141,6 @@ export const suspendedUserDeletionRequestTest = async ({ browser }: { browser: B
     });
     await expect(appealHeading).toBeVisible();
     console.log("Appeal page content visible ✓");
-
-    // Clean up
-    await userPage.close();
-    await userContext.close();
 
     console.log("=== Suspended User Deletion Request Test Complete ===");
     console.log("✓ Normal users see 'Delete account' button");

@@ -29,12 +29,12 @@
  * Requires E2E_MODERATOR_PASSWORD environment variable to be set.
  */
 
-import { Browser, TestInfo, expect } from "@playwright/test";
+import { BrowserContext, TestInfo, expect } from "@playwright/test";
 import { generateUniqueTestIPv6, loginAsUser, turnOffDynamicHelp } from "@helpers/user-utils";
 import { expectOGSClickableByName } from "@helpers/matchers";
 
 export const closeAllPendingReportsTest = async (
-    { browser }: { browser: Browser },
+    { createContext }: { createContext: (options?: any) => Promise<BrowserContext> },
     testInfo: TestInfo,
 ) => {
     // Set a longer timeout since we might have many reports to close
@@ -49,7 +49,7 @@ export const closeAllPendingReportsTest = async (
     }
 
     const uniqueIPv6 = generateUniqueTestIPv6();
-    const modContext = await browser.newContext({
+    const modContext = await createContext({
         extraHTTPHeaders: { "X-Forwarded-For": uniqueIPv6 },
     });
     const modPage = await modContext.newPage();

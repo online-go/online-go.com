@@ -17,7 +17,7 @@
 
 // (No seeded data in use)
 
-import { Browser } from "@playwright/test";
+import { BrowserContext } from "@playwright/test";
 
 import { newTestUsername, prepareNewUser } from "@helpers/user-utils";
 
@@ -29,9 +29,13 @@ import {
     testChallengePOSTPayload,
 } from "@helpers/challenge-utils";
 
-export const chHandicapPrefsTest = async ({ browser }: { browser: Browser }) => {
+export const chHandicapPrefsTest = async ({
+    createContext,
+}: {
+    createContext: (options?: any) => Promise<BrowserContext>;
+}) => {
     const { userPage: challengerPage } = await prepareNewUser(
-        browser,
+        createContext,
         newTestUsername("ChHandicapPr"), // cspell:disable-line
         "test",
     );

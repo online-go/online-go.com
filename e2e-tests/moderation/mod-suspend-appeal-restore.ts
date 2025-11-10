@@ -33,7 +33,7 @@
  * Requires E2E_MODERATOR_PASSWORD environment variable to be set.
  */
 
-import { Browser, expect } from "@playwright/test";
+import { BrowserContext, expect } from "@playwright/test";
 import {
     newTestUsername,
     prepareNewUser,
@@ -44,13 +44,17 @@ import {
 } from "../helpers/user-utils";
 import { expectOGSClickableByName } from "../helpers/matchers";
 
-export const suspendAppealRestoreTest = async ({ browser }: { browser: Browser }) => {
+export const suspendAppealRestoreTest = async ({
+    createContext,
+}: {
+    createContext: (options?: any) => Promise<BrowserContext>;
+}) => {
     console.log("=== Suspend-Appeal-Restore Flow Test ===");
 
     // 1. Create a new user to be suspended
     const username = newTestUsername("AppealUser");
     console.log(`Creating test user: ${username}`);
-    const { userPage, userContext } = await prepareNewUser(browser, username, "test");
+    const { userPage } = await prepareNewUser(createContext, username, "test");
     console.log(`User created: ${username} ✓`);
 
     // 2. Set up seeded moderator
@@ -61,7 +65,7 @@ export const suspendAppealRestoreTest = async ({ browser }: { browser: Browser }
     }
 
     const uniqueIPv6 = generateUniqueTestIPv6();
-    const modContext = await browser.newContext({
+    const modContext = await createContext({
         extraHTTPHeaders: {
             "X-Forwarded-For": uniqueIPv6,
         },
@@ -277,12 +281,6 @@ export const suspendAppealRestoreTest = async ({ browser }: { browser: Browser }
     // The PM functionality is implemented and working, but e2e verification needs investigation
     // of the best way to check for system PMs in the UI.
     console.log("TODO: Verify user received system PM with final message");
-
-    // Clean up
-    await userPage.close();
-    await userContext.close();
-    await modPage.close();
-    await modContext.close();
 
     console.log("=== Suspend-Appeal-Restore Flow Test Complete ===");
     console.log("✓ User suspended by moderator");

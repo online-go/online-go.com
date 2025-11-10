@@ -34,7 +34,7 @@
  * so screenshots are taken for manual visual inspection to verify marks appear correctly.
  */
 
-import { Browser, TestInfo, expect } from "@playwright/test";
+import { BrowserContext, TestInfo, expect } from "@playwright/test";
 import {
     newTestUsername,
     prepareNewUser,
@@ -50,7 +50,7 @@ import {
 import { clickOnGobanIntersection, playMoves } from "@helpers/game-utils";
 
 export const gameLogThumbnailMarksTest = async (
-    { browser }: { browser: Browser },
+    { createContext }: { createContext: (options?: any) => Promise<BrowserContext> },
     testInfo: TestInfo,
 ) => {
     console.log("=== GameLog Thumbnail Marks Test ===");
@@ -58,16 +58,16 @@ export const gameLogThumbnailMarksTest = async (
     // 1. Create two users
     console.log("Creating test users...");
     const challengerUsername = newTestUsername("LogThumbCh");
-    const { userPage: challengerPage, userContext: challengerContext } = await prepareNewUser(
-        browser,
+    const { userPage: challengerPage } = await prepareNewUser(
+        createContext,
         challengerUsername,
         "test",
     );
     console.log(`Challenger created: ${challengerUsername} ✓`);
 
     const acceptorUsername = newTestUsername("LogThumbAc");
-    const { userPage: acceptorPage, userContext: acceptorContext } = await prepareNewUser(
-        browser,
+    const { userPage: acceptorPage } = await prepareNewUser(
+        createContext,
         acceptorUsername,
         "test",
     );
@@ -201,7 +201,7 @@ export const gameLogThumbnailMarksTest = async (
     }
 
     const uniqueIPv6 = generateUniqueTestIPv6();
-    const modContext = await browser.newContext({
+    const modContext = await createContext({
         extraHTTPHeaders: { "X-Forwarded-For": uniqueIPv6 },
     });
     const modPage = await modContext.newPage();
@@ -227,8 +227,8 @@ export const gameLogThumbnailMarksTest = async (
     // The dock has an <a> element with onClick handler that opens the modal
     // Use JavaScript to click the link directly since it may have visibility/opacity issues
     await modPage.evaluate(() => {
-        const logLink = Array.from(document.querySelectorAll(".Dock a")).find(
-            (el) => el.textContent?.includes("Log"),
+        const logLink = Array.from(document.querySelectorAll(".Dock a")).find((el) =>
+            el.textContent?.includes("Log"),
         ) as HTMLElement;
         if (logLink) {
             logLink.click();
@@ -293,14 +293,6 @@ export const gameLogThumbnailMarksTest = async (
     console.log("3. The thumbnails should show the board state AFTER the change");
     console.log("   (i.e., current removal state visible on the board)");
     console.log("=====================================\n");
-
-    // Clean up
-    await modPage.close();
-    await modContext.close();
-    await challengerPage.close();
-    await challengerContext.close();
-    await acceptorPage.close();
-    await acceptorContext.close();
 
     console.log("=== GameLog Thumbnail Marks Test Complete ===");
     console.log("✓ Created game with dead stones");

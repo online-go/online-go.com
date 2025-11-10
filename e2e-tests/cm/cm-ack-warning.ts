@@ -29,7 +29,7 @@
  * - E2E_CM_VWNAI_AI_V1, E2E_CM_VWNAI_AI_V2, E2E_CM_VWNAI_AI_V3 : AI assessors who vote
  */
 
-import { Browser, TestInfo } from "@playwright/test";
+import { BrowserContext, TestInfo } from "@playwright/test";
 
 import {
     captureReportNumber,
@@ -46,9 +46,12 @@ import { expect } from "@playwright/test";
 
 import { withReportCountTracking } from "@helpers/report-utils";
 
-export const cmAckWarningTest = async ({ browser }: { browser: Browser }, testInfo: TestInfo) => {
-    const { userPage: reporterPage} = await prepareNewUser(
-        browser,
+export const cmAckWarningTest = async (
+    { createContext }: { createContext: (options?: any) => Promise<BrowserContext> },
+    testInfo: TestInfo,
+) => {
+    const { userPage: reporterPage } = await prepareNewUser(
+        createContext,
         newTestUsername("CmVWNAIRep"), // cspell:disable-line
         "test",
     );
@@ -74,7 +77,7 @@ export const cmAckWarningTest = async ({ browser }: { browser: Browser }, testIn
 
         const aiAssessor = "E2E_CM_VWNAI_AI_V1";
 
-        const { seededCMPage: aiCMPage } = await setupSeededCM(browser, aiAssessor);
+        const { seededCMPage: aiCMPage } = await setupSeededCM(createContext, aiAssessor);
 
         // Navigate directly to the report using the captured report number
         await navigateToReport(aiCMPage, reportNumber);

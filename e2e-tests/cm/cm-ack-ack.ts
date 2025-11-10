@@ -24,7 +24,7 @@
  * - E2E_CM_AA_V1, E2E_CM_AA_V2, E2E_CM_AA_V3 : assessors who vote
  */
 
-import { Browser, TestInfo } from "@playwright/test";
+import { BrowserContext, TestInfo } from "@playwright/test";
 
 import {
     captureReportNumber,
@@ -42,11 +42,11 @@ import { expect } from "@playwright/test";
 import { withReportCountTracking } from "@helpers/report-utils";
 
 export const cmAckAcknowledgementTest = async (
-    { browser }: { browser: Browser },
+    { createContext }: { createContext: (options?: any) => Promise<BrowserContext> },
     testInfo: TestInfo,
 ) => {
     const { userPage: reporterPage } = await prepareNewUser(
-        browser,
+        createContext,
         newTestUsername("CmAAReporter"), // cspell:disable-line
         "test",
     );
@@ -70,7 +70,7 @@ export const cmAckAcknowledgementTest = async (
         const cmAssessorContexts = [];
         for (const cmUser of cmAssessors) {
             const { seededCMPage: cmPage, seededCMContext: cmContext } = await setupSeededCM(
-                browser,
+                createContext,
                 cmUser,
             );
 

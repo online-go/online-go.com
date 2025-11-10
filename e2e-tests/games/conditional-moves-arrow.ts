@@ -17,7 +17,7 @@
 
 // (No seeded data in use)
 
-import { Browser } from "@playwright/test";
+import { BrowserContext } from "@playwright/test";
 import { expect } from "@playwright/test";
 
 import { newTestUsername, prepareNewUser } from "@helpers/user-utils";
@@ -28,15 +28,23 @@ import {
 } from "@helpers/challenge-utils";
 import { clickOnGobanIntersection, playMoves } from "@helpers/game-utils";
 
-export const conditionalMovesArrowBugTest = async ({ browser }: { browser: Browser }) => {
+export const conditionalMovesArrowBugTest = async ({
+    createContext,
+}: {
+    createContext: (options?: any) => Promise<BrowserContext>;
+}) => {
     const { userPage: challengerPage } = await prepareNewUser(
-        browser,
+        createContext,
         newTestUsername("gamesCondCh"), // cspell:disable-line
         "test",
     );
 
     const acceptorUsername = newTestUsername("gamesCondAc"); // cspell:disable-line
-    const { userPage: acceptorPage } = await prepareNewUser(browser, acceptorUsername, "test");
+    const { userPage: acceptorPage } = await prepareNewUser(
+        createContext,
+        acceptorUsername,
+        "test",
+    );
 
     const boardSize = "9x9"; // needed in two places\
 

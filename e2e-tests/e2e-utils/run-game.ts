@@ -17,7 +17,7 @@
 
 // (No seeded data in use)
 
-import { Browser } from "@playwright/test";
+import { BrowserContext } from "@playwright/test";
 import { expect } from "@playwright/test";
 
 import { newTestUsername, prepareNewUser } from "@helpers/user-utils";
@@ -28,15 +28,23 @@ import {
 } from "@helpers/challenge-utils";
 import { playMoves } from "@helpers/game-utils";
 
-export const runGame = async ({ browser }: { browser: Browser }) => {
+export const runGame = async ({
+    createContext,
+}: {
+    createContext: (options?: any) => Promise<BrowserContext>;
+}) => {
     const { userPage: challengerPage } = await prepareNewUser(
-        browser,
+        createContext,
         newTestUsername("e2eUtilsRGCh"), // cspell:disable-line
         "test",
     );
 
     const acceptorUsername = newTestUsername("e2eUtilsRGAc"); // cspell:disable-line
-    const { userPage: acceptorPage } = await prepareNewUser(browser, acceptorUsername, "test");
+    const { userPage: acceptorPage } = await prepareNewUser(
+        createContext,
+        acceptorUsername,
+        "test",
+    );
 
     const boardSize = "19x19"; // needed in two places
     const handicap = 0; // also needed in two places

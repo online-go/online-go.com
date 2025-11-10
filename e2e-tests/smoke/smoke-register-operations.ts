@@ -17,16 +17,20 @@
 
 // (No seeded data in use - must not use seeded data for smoke tests!)
 
-import { Browser } from "@playwright/test";
+import { BrowserContext } from "@playwright/test";
 
 import { logoutUser, registerNewUser, loginAsUser, newTestUsername } from "@helpers/user-utils";
 
-export const smokeRegisterLogoutLogin = async ({ browser }: { browser: Browser }) => {
+export const smokeRegisterLogoutLogin = async ({
+    createContext,
+}: {
+    createContext: (options?: any) => Promise<BrowserContext>;
+}) => {
     const testInfo = {
         newUsername: newTestUsername("SmokeReg"),
     };
 
-    const { userPage } = await registerNewUser(browser, testInfo.newUsername, "test");
+    const { userPage } = await registerNewUser(createContext, testInfo.newUsername, "test");
 
     await logoutUser(userPage);
 

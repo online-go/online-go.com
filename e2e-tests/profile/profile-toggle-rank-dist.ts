@@ -17,14 +17,18 @@
 
 // (No seeded data in use)
 
-import { Browser } from "@playwright/test";
+import { BrowserContext } from "@playwright/test";
 import { expect } from "@playwright/test";
 
 import { newTestUsername, prepareNewUser, goToProfile } from "@helpers/user-utils";
 
-export const profileRankDistributionGraphToggleTest = async ({ browser }: { browser: Browser }) => {
+export const profileRankDistributionGraphToggleTest = async ({
+    createContext,
+}: {
+    createContext: (options?: any) => Promise<BrowserContext>;
+}) => {
     const { userPage } = await prepareNewUser(
-        browser,
+        createContext,
         newTestUsername("proRDGTuser"), // cspell:disable-line
         "test",
     );

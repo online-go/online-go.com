@@ -21,7 +21,7 @@
 * - E2E_GAMES_SIMUL_CM : user who will check the report
 */
 
-import { Browser, TestInfo } from "@playwright/test";
+import { BrowserContext, TestInfo } from "@playwright/test";
 import { expect } from "@playwright/test";
 
 import {
@@ -42,21 +42,25 @@ import { playMoves, resignActiveGame } from "@helpers/game-utils";
 import { withReportCountTracking } from "@helpers/report-utils";
 
 export const detectContainedSimulTest = async (
-    { browser }: { browser: Browser },
+    { createContext }: { createContext: (options?: any) => Promise<BrowserContext> },
     testInfo: TestInfo,
 ) => {
     // The user who plays simultaneous games
     const challengerUsername = newTestUsername("gamesSimulCh"); // cspell:disable-line
     console.log(`Creating challenger user: ${challengerUsername}`);
     const { userPage: challengerContainingGamePage } = await prepareNewUser(
-        browser,
+        createContext,
         challengerUsername,
         "test",
     );
 
     const acceptor1Username = newTestUsername("gamesSmlAc1"); // cspell:disable-line
     console.log(`Creating first acceptor user: ${acceptor1Username}`);
-    const { userPage: acceptor1Page } = await prepareNewUser(browser, acceptor1Username, "test");
+    const { userPage: acceptor1Page } = await prepareNewUser(
+        createContext,
+        acceptor1Username,
+        "test",
+    );
 
     // Challenger challenges the first acceptor
     console.log("Creating first challenge (containing game)");
@@ -89,14 +93,18 @@ export const detectContainedSimulTest = async (
     // Now a new tab for the challenger!  (2 tabs for a person in PW!)
     // Log in as the challenger
 
-    const userContext = await browser.newContext();
+    const userContext = await createContext();
     const challengerContainedGamePage = await userContext.newPage();
 
     await loginAsUser(challengerContainedGamePage, challengerUsername, "test");
 
     const acceptor2Username = newTestUsername("gamesSmlAc2"); // cspell:disable-line
     console.log(`Creating second acceptor user: ${acceptor2Username}`);
-    const { userPage: acceptor2Page } = await prepareNewUser(browser, acceptor2Username, "test");
+    const { userPage: acceptor2Page } = await prepareNewUser(
+        createContext,
+        acceptor2Username,
+        "test",
+    );
 
     // Challenger challenges the second acceptor
     console.log("Creating second challenge (contained game)");
@@ -152,7 +160,7 @@ export const detectContainedSimulTest = async (
         // Set up CM and capture their baseline BEFORE creating the report
         console.log("Setting up CM for report verification");
         const cm = "E2E_GAMES_SIMUL_CM";
-        const { seededCMPage: cmPage } = await setupSeededCM(browser, cm);
+        const { seededCMPage: cmPage } = await setupSeededCM(createContext, cm);
 
         // Capture CM's initial count
         const cmInitialCount = await reporterTracker.checkCurrentCount(cmPage);

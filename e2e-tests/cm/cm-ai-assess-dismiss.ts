@@ -29,7 +29,7 @@
  * - E2E_CM_DNEA_AI_ASSESSOR : CM AI Assessor who should not be notified
  */
 
-import { Browser, TestInfo } from "@playwright/test";
+import { BrowserContext, TestInfo } from "@playwright/test";
 
 import {
     captureReportNumber,
@@ -47,11 +47,11 @@ import { expect } from "@playwright/test";
 import { withReportCountTracking } from "@helpers/report-utils";
 
 export const cmAiAssessDismissTest = async (
-    { browser }: { browser: Browser },
+    { createContext }: { createContext: (options?: any) => Promise<BrowserContext> },
     testInfo: TestInfo,
 ) => {
     const { userPage: reporterPage } = await prepareNewUser(
-        browser,
+        createContext,
         newTestUsername("CmDontNotRep"), // cspell:disable-line
         "test",
     );
@@ -74,7 +74,10 @@ export const cmAiAssessDismissTest = async (
         const reportNumber = await captureReportNumber(reporterPage);
 
         const aiDetectorUser = "E2E_CM_DNEA_AI_D1";
-        const { seededCMPage: aiDetectorCMPage } = await setupSeededCM(browser, aiDetectorUser);
+        const { seededCMPage: aiDetectorCMPage } = await setupSeededCM(
+            createContext,
+            aiDetectorUser,
+        );
 
         // The Detector has to vote it for assessment
         // Navigate directly to the report using the captured report number
@@ -98,7 +101,7 @@ export const cmAiAssessDismissTest = async (
         const aiAssessorContexts = [];
         for (const aiUser of aiAssessors) {
             const { seededCMPage: aiCMPage, seededCMContext: aiContext } = await setupSeededCM(
-                browser,
+                createContext,
                 aiUser,
             );
 
