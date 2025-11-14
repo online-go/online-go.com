@@ -89,10 +89,15 @@ export function SignIn(): React.ReactElement {
     const [submitLoading, setSubmitLoading] = React.useState(false);
     const ref_username = React.useRef<HTMLInputElement>(null);
     const ref_password = React.useRef<HTMLInputElement>(null);
+    const [searchParams] = useSearchParams();
 
     if (!user.anonymous) {
         void navigate("/");
     }
+
+    // Get the next URL from query params (for OAuth flow) or hash (for regular flow)
+    const nextParam = searchParams.get("next");
+    const socialNextUrl = nextParam || "/wait-for-user#" + window.location.hash.substring(1);
 
     const onSubmit = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
         event.preventDefault();
@@ -132,10 +137,19 @@ export function SignIn(): React.ReactElement {
                     data.set(cached.config, config);
 
                     // Note: this causes a page reload, and the new user is set up from scratch in the process
-                    if (window.location.hash && window.location.hash[1] === "/") {
+                    // Check for ?next= query parameter first (used by OAuth authorization flow)
+                    const searchParams = new URLSearchParams(window.location.search);
+                    const nextParam = searchParams.get("next");
+
+                    if (nextParam) {
+                        // Redirect to the ?next= URL (for OAuth authorization flow)
+                        window.location.href = nextParam;
+                    } else if (window.location.hash && window.location.hash[1] === "/") {
+                        // Fallback to hash-based redirect
                         const next_page = window.location.hash.substring(1);
                         window.location.pathname = next_page;
                     } else {
+                        // Default redirect to home
                         window.location.pathname = "/";
                     }
                 })
@@ -253,15 +267,20 @@ export function SignIn(): React.ReactElement {
                         ) /* translators: username or password, or sign in with social authentication */
                     }
                 </span>
-                <SocialLoginButtons
-                    next_url={"/wait-for-user#" + window.location.hash.substring(1)}
-                />
+                <SocialLoginButtons next_url={socialNextUrl} />
             </Card>
 
             <div className="registration">
                 <h3>{_("New to Online-Go?")} </h3>
                 <div>
-                    <Link to="/register" className="btn primary">
+                    <Link
+                        to={
+                            nextParam
+                                ? `/register?next=${encodeURIComponent(nextParam)}`
+                                : "/register"
+                        }
+                        className="btn primary"
+                    >
                         <b>{_("Register here!") /* translators: register for an account */}</b>
                     </Link>
                 </div>

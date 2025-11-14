@@ -18,7 +18,7 @@
 import * as React from "react";
 import * as data from "@/lib/data";
 import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { _, pgettext } from "@/lib/translate";
 import { Card } from "@/components/material";
 import { errorAlerter } from "@/lib/misc";
@@ -33,11 +33,16 @@ import { LoadingButton } from "@/components/LoadingButton";
 export function Register(): React.ReactElement {
     const navigate = useNavigate();
     const user = useUser();
+    const [searchParams] = useSearchParams();
     const ref_username = React.useRef<HTMLInputElement>(null);
     const ref_email = React.useRef<HTMLInputElement | null>(null);
     const ref_password = React.useRef<HTMLInputElement | null>(null);
     const [error, setError] = React.useState<string>();
     const [submitLoading, setSubmitLoading] = React.useState(false);
+
+    // Get the next URL from query params (for OAuth flow)
+    const nextParam = searchParams.get("next");
+    const socialNextUrl = nextParam || "/wait-for-user#" + window.location.hash.substring(1);
 
     if (!user.anonymous) {
         void navigate("/");
@@ -59,7 +64,11 @@ export function Register(): React.ReactElement {
                     data.set(cached.config, config);
 
                     // Note: this causes a page reload, and the new user is set up from scratch in the process
-                    if (window.location.hash && window.location.hash[1] === "/") {
+                    // Check for ?next= query parameter first (used by OAuth authorization flow)
+                    if (nextParam) {
+                        // Redirect to the ?next= URL (for OAuth authorization flow)
+                        window.location.href = nextParam;
+                    } else if (window.location.hash && window.location.hash[1] === "/") {
                         window.location.pathname = window.location.hash.substring(1);
                     } else {
                         window.location.pathname = "/";
@@ -200,13 +209,20 @@ export function Register(): React.ReactElement {
                         }
                     </span>
 
-                    <SocialLoginButtons next_url={"/wait-for-user"} />
+                    <SocialLoginButtons next_url={socialNextUrl} />
                 </Card>
 
                 <div className="sign-in-option">
                     <h3>{_("Already have an account?")} </h3>
                     <div>
-                        <Link to="/sign-in" className="btn primary">
+                        <Link
+                            to={
+                                nextParam
+                                    ? `/sign-in?next=${encodeURIComponent(nextParam)}`
+                                    : "/sign-in"
+                            }
+                            className="btn primary"
+                        >
                             <b>{_("Sign-in here!")}</b>
                         </Link>
                     </div>
