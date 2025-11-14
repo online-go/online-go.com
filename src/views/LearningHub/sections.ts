@@ -233,6 +233,15 @@ import { BL3ConnectCut4 } from "./Sections/BeginnerLevel3/ConnectCut4";
 import { BL3ConnectCut5 } from "./Sections/BeginnerLevel3/ConnectCut5";
 import { BL3ConnectCut6 } from "./Sections/BeginnerLevel3/ConnectCut6";
 import { BL3ConnectCut7 } from "./Sections/BeginnerLevel3/ConnectCut7";
+import { BL4Opening1 } from "./Sections/BeginnerLevel4/Opening1";
+import { BL4Opening2 } from "./Sections/BeginnerLevel4/Opening2";
+import { BL4Opening3 } from "./Sections/BeginnerLevel4/Opening3";
+import { BL4Opening4 } from "./Sections/BeginnerLevel4/Opening4";
+import { BL4Opening5 } from "./Sections/BeginnerLevel4/Opening5";
+import { BL4Opening6 } from "./Sections/BeginnerLevel4/Opening6";
+import { BL4Opening7 } from "./Sections/BeginnerLevel4/Opening7";
+import { BL4Opening8 } from "./Sections/BeginnerLevel4/Opening8";
+import { BL4Opening9 } from "./Sections/BeginnerLevel4/Opening9";
 
 export const sections: [string, any[]][] = [
     [
@@ -469,6 +478,20 @@ export const sections: [string, any[]][] = [
             BL3ConnectCut5,
             BL3ConnectCut6,
             BL3ConnectCut7,
+        ],
+    ],
+    [
+        pgettext("Learning hub section title", "Beginner Level 4"),
+        [
+            BL4Opening1,
+            BL4Opening2,
+            BL4Opening3,
+            BL4Opening4,
+            BL4Opening5,
+            BL4Opening6,
+            BL4Opening7,
+            BL4Opening8,
+            BL4Opening9,
         ],
     ],
 
