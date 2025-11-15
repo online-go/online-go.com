@@ -16,7 +16,7 @@ is to have [Node.js](https://nodejs.org/) installed then clone the repository
 or your fork with the `--recurse-submodules` flag:
 
 ```
-git clone --recurse-submodules git@github.com:online-go/online-go.com.git
+git clone --recurse-submodules https://github.com/online-go/online-go.com.git
 ```
 
 And then perform the following actions:
