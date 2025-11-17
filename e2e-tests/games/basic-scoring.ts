@@ -34,6 +34,7 @@ import {
     reportUser,
     setupSeededCM,
 } from "@helpers/user-utils";
+import { expectOGSClickableByName } from "@helpers/matchers";
 import {
     acceptDirectChallenge,
     createDirectChallenge,
@@ -113,24 +114,16 @@ export const basicScoringTest = async (
 
     await playMoves(challengerPage, acceptorPage, moves, "9x9");
 
-    const challengerPass = challengerPage.getByText("Pass", { exact: true });
-    await expect(challengerPass).toBeVisible();
-
+    const challengerPass = await expectOGSClickableByName(challengerPage, "Pass");
     await challengerPass.click();
 
-    const acceptorPass = acceptorPage.getByText("Pass", { exact: true });
-    await expect(acceptorPass).toBeVisible();
-
+    const acceptorPass = await expectOGSClickableByName(acceptorPage, "Pass");
     await acceptorPass.click();
 
-    const acceptorAccept = acceptorPage.getByText("Accept");
-    await expect(acceptorAccept).toBeVisible();
-
+    const acceptorAccept = await expectOGSClickableByName(acceptorPage, "Accept");
     await acceptorAccept.click();
 
-    const challengerAccept = challengerPage.getByText("Accept");
-    await expect(challengerAccept).toBeVisible();
-
+    const challengerAccept = await expectOGSClickableByName(challengerPage, "Accept");
     await challengerAccept.click();
 
     const acceptorFinished = acceptorPage.getByText("wins by");
@@ -151,7 +144,7 @@ export const basicScoringTest = async (
         // Create a report so we can check the log
         await reportUser(
             challengerPage,
-            "e2egamesBasicA", // cspell:disable-line
+            "e2egamesBasicA", // cspell:disable-line - Truncated to match UI display (15 char limit)
             "score_cheating",
             "E2E test reporting a score cheat",
         );

@@ -42,22 +42,23 @@ import {
     goToUsersProfile,
 } from "../helpers/user-utils";
 import { expectOGSClickableByName } from "../helpers/matchers";
+import { log } from "@helpers/logger";
 
 export const systemPMButtonTest = async ({
     createContext,
 }: {
     createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
 }) => {
-    console.log("=== System PM Button Test ===");
+    log("=== System PM Button Test ===");
 
     // 1. Create a new user to be suspended
     const username = newTestUsername("SPMUser"); // "System" is not allowed in usernames!
-    console.log(`Creating test user: ${username}`);
+    log(`Creating test user: ${username}`);
     const { userPage } = await prepareNewUser(createContext, username, "test");
-    console.log(`User created: ${username} ✓`);
+    log(`User created: ${username} ✓`);
 
     // 2. Set up seeded moderator
-    console.log("Setting up moderator account...");
+    log("Setting up moderator account...");
     const moderatorPassword = process.env.E2E_MODERATOR_PASSWORD;
     if (!moderatorPassword) {
         throw new Error("E2E_MODERATOR_PASSWORD environment variable must be set to run this test");
@@ -73,56 +74,56 @@ export const systemPMButtonTest = async ({
 
     await loginAsUser(modPage, "E2E_MODERATOR", moderatorPassword);
     await turnOffDynamicHelp(modPage);
-    console.log("Moderator logged in ✓");
+    log("Moderator logged in ✓");
 
     // 3. Moderator suspends the user
-    console.log(`Moderator suspending user: ${username}`);
+    log(`Moderator suspending user: ${username}`);
 
     // Navigate to the user's profile using OmniSearch
     await goToUsersProfile(modPage, username);
-    console.log("Navigated to user profile ✓");
+    log("Navigated to user profile ✓");
 
     // Click on the player link to open the PlayerDetails popover
     const playerLink = modPage.locator(`a.Player:has-text("${username}")`).first();
     await expect(playerLink).toBeVisible();
     await playerLink.hover();
     await playerLink.click();
-    console.log("Opened player details popover ✓");
+    log("Opened player details popover ✓");
 
     // Click the Suspend button in the popover
     const suspendButton = await expectOGSClickableByName(modPage, /Suspend/);
     await suspendButton.click();
-    console.log("Clicked Suspend button ✓");
+    log("Clicked Suspend button ✓");
 
     // Wait for BanModal to appear
     await expect(modPage.locator(".BanModal")).toBeVisible();
-    console.log("Ban modal opened ✓");
+    log("Ban modal opened ✓");
 
     // Fill in the public reason (first textarea in modal)
     const publicReasonTextarea = modPage.locator(".BanModal textarea").first();
     await publicReasonTextarea.fill("Test suspension for System PM e2e testing");
     await expect(publicReasonTextarea).toHaveValue("Test suspension for System PM e2e testing");
-    console.log("Filled suspension reason ✓");
+    log("Filled suspension reason ✓");
 
     // Click the Suspend button in the modal
     const confirmSuspendButton = await expectOGSClickableByName(modPage, /^Suspend$/);
     await confirmSuspendButton.click();
-    console.log("Confirmed suspension ✓");
+    log("Confirmed suspension ✓");
 
     // Wait for the modal to close as confirmation
     await expect(modPage.locator(".BanModal")).toBeHidden();
-    console.log("User suspended successfully ✓");
+    log("User suspended successfully ✓");
 
     // Give the server a moment to process
     await modPage.waitForTimeout(500);
 
     // 4. User submits a simple appeal
-    console.log("User submitting appeal...");
+    log("User submitting appeal...");
     await userPage.goto("/");
     await userPage.waitForLoadState("networkidle");
 
     await expect(userPage.getByText("Your account has been suspended")).toBeVisible();
-    console.log("Suspension banner visible ✓");
+    log("Suspension banner visible ✓");
 
     // Click appeal link
     const appealLink = userPage.getByRole("link", { name: /appeal here/i });
@@ -138,63 +139,63 @@ export const systemPMButtonTest = async ({
 
     const userSubmitButton = await expectOGSClickableByName(userPage, /^Submit$/);
     await userSubmitButton.click();
-    console.log("Appeal submitted ✓");
+    log("Appeal submitted ✓");
 
     // Verify the message appears in the UI
     await expect(userPage.getByText(/I apologize and would like to return to OGS/i)).toBeVisible();
-    console.log("Appeal message visible in UI ✓");
+    log("Appeal message visible in UI ✓");
 
     // 5. Moderator navigates to the appeal and restores the account
-    console.log("Moderator navigating to Appeals Centre...");
+    log("Moderator navigating to Appeals Centre...");
     await modPage.goto("/appeals-center");
     await modPage.waitForLoadState("networkidle");
 
     await expect(modPage.getByRole("heading", { name: /Appeals Center/i })).toBeVisible();
-    console.log("Appeals Centre loaded ✓");
+    log("Appeals Centre loaded ✓");
 
     // Find and click on the user's appeal
-    console.log(`Looking for appeal from ${username}...`);
+    log(`Looking for appeal from ${username}...`);
     const appealRow = modPage.locator(".PaginatedTable tr", { hasText: username });
     await expect(appealRow).toBeVisible();
 
     const stateCell = appealRow.locator("td.state").last();
     await stateCell.click();
     await modPage.waitForLoadState("networkidle");
-    console.log("Appeal opened ✓");
+    log("Appeal opened ✓");
 
     // 6. Verify moderator sees the appeal message
     await expect(modPage.getByText(/I apologize and would like to return to OGS/i)).toBeVisible();
-    console.log("Appeal message visible to moderator ✓");
+    log("Appeal message visible to moderator ✓");
 
     // 7. Enter a message first to enable the buttons
-    console.log("Moderator entering message to restore account...");
+    log("Moderator entering message to restore account...");
     const restoreTextarea = modPage.locator(".input-card textarea");
     await restoreTextarea.fill("Account restored. Welcome back!");
     await expect(restoreTextarea).toHaveValue("Account restored. Welcome back!");
-    console.log("Message entered ✓");
+    log("Message entered ✓");
 
     // 8. Verify "Leave Suspended" and "Restore Account" buttons are visible and enabled
-    console.log("Verifying suspended state buttons are enabled...");
+    log("Verifying suspended state buttons are enabled...");
     const leaveSuspendedButton = await expectOGSClickableByName(modPage, /Leave Suspended/);
     await expect(leaveSuspendedButton).toBeVisible();
     await expect(leaveSuspendedButton).toBeEnabled();
-    console.log("'Leave Suspended' button visible and enabled ✓");
+    log("'Leave Suspended' button visible and enabled ✓");
 
     const restoreButton = await expectOGSClickableByName(modPage, /Restore Account/);
     await expect(restoreButton).toBeVisible();
     await expect(restoreButton).toBeEnabled();
-    console.log("'Restore Account' button visible and enabled ✓");
+    log("'Restore Account' button visible and enabled ✓");
 
     // 9. Restore the account
-    console.log("Moderator restoring account...");
+    log("Moderator restoring account...");
     await restoreButton.click();
-    console.log("Restore Account button clicked ✓");
+    log("Restore Account button clicked ✓");
 
     // Wait a moment for backend to process restoration
     await modPage.waitForTimeout(1000);
 
     // 10. Verify the "System PM" button now appears instead of the other two buttons
-    console.log("Verifying System PM button appears after restoration...");
+    log("Verifying System PM button appears after restoration...");
 
     // Reload to ensure we have the latest state
     await modPage.reload();
@@ -202,39 +203,39 @@ export const systemPMButtonTest = async ({
 
     // Verify "Ban has been lifted" message is visible
     await expect(modPage.getByText(/Ban has been lifted/i)).toBeVisible();
-    console.log("'Ban has been lifted' message visible ✓");
+    log("'Ban has been lifted' message visible ✓");
 
     // 11. Verify the "Leave Suspended" and "Restore Account" buttons are NOT visible
-    console.log("Verifying suspended state buttons are hidden...");
+    log("Verifying suspended state buttons are hidden...");
     await expect(modPage.getByRole("button", { name: /Leave Suspended/i })).not.toBeVisible();
-    console.log("'Leave Suspended' button hidden ✓");
+    log("'Leave Suspended' button hidden ✓");
 
     await expect(modPage.getByRole("button", { name: /Restore Account/i })).not.toBeVisible();
-    console.log("'Restore Account' button hidden ✓");
+    log("'Restore Account' button hidden ✓");
 
     // 12. Enter a message first, then verify the "System PM" button is visible and enabled
-    console.log("Moderator entering message for System PM...");
+    log("Moderator entering message for System PM...");
     const systemPMTextarea = modPage.locator(".input-card textarea");
     await systemPMTextarea.fill("This is a follow-up message sent via System PM.");
     await expect(systemPMTextarea).toHaveValue("This is a follow-up message sent via System PM.");
-    console.log("Message entered ✓");
+    log("Message entered ✓");
 
     // Now verify the "System PM" button is visible and enabled
     const systemPMButton = await expectOGSClickableByName(modPage, /^System PM$/);
     await expect(systemPMButton).toBeVisible();
     await expect(systemPMButton).toBeEnabled();
-    console.log("'System PM' button visible and enabled ✓");
+    log("'System PM' button visible and enabled ✓");
 
     // 13. Send a System PM using the new button
-    console.log("Moderator sending System PM...");
+    log("Moderator sending System PM...");
     await systemPMButton.click();
-    console.log("System PM button clicked ✓");
+    log("System PM button clicked ✓");
 
     // Wait for the message to be sent
     await modPage.waitForTimeout(1000);
 
     // 14. Verify the System PM chat was opened for the user
-    console.log("Verifying System PM chat opened for user...");
+    log("Verifying System PM chat opened for user...");
     await userPage.goto("/");
     await userPage.waitForLoadState("networkidle");
 
@@ -242,20 +243,20 @@ export const systemPMButtonTest = async ({
     // Check if the private-chat-window component is visible
     const privateChat = userPage.locator(".private-chat-window.open");
     await expect(privateChat).toBeVisible({ timeout: 5000 });
-    console.log("Private chat window opened ✓");
+    log("Private chat window opened ✓");
 
     // Verify the message content is visible in the chat
     await expect(
         userPage.getByText(/This is a follow-up message sent via System PM/i),
     ).toBeVisible();
-    console.log("System PM message visible in chat ✓");
+    log("System PM message visible in chat ✓");
 
-    console.log("=== System PM Button Test Complete ===");
-    console.log("✓ User suspended by moderator");
-    console.log("✓ User submitted appeal");
-    console.log("✓ Moderator restored account with 'Restore Account' button");
-    console.log("✓ 'System PM' button appears after restoration");
-    console.log("✓ 'Leave Suspended' and 'Restore Account' buttons hidden after restoration");
-    console.log("✓ Moderator sent System PM using new button");
-    console.log("✓ System PM functionality verified");
+    log("=== System PM Button Test Complete ===");
+    log("✓ User suspended by moderator");
+    log("✓ User submitted appeal");
+    log("✓ Moderator restored account with 'Restore Account' button");
+    log("✓ 'System PM' button appears after restoration");
+    log("✓ 'Leave Suspended' and 'Restore Account' buttons hidden after restoration");
+    log("✓ Moderator sent System PM using new button");
+    log("✓ System PM functionality verified");
 };

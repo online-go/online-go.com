@@ -30,6 +30,7 @@ import {
     defaultChallengeSettings,
 } from "@helpers/challenge-utils";
 import { clickInTheMiddle } from "@helpers/game-utils";
+import { log } from "@helpers/logger";
 
 export const modDontAutoWarnBlitzTest = async ({
     createContext,
@@ -71,7 +72,7 @@ export const modDontAutoWarnBlitzTest = async ({
     // Now challenger is waiting for escaper ... eventually escaper times out
     // and challenger gets the ack that we are looking for
 
-    console.log(
+    log(
         "cmDontAutoWarnBlitzTest waiting escaper timeout to not have warning (about a minute)",
     );
 

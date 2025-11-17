@@ -29,6 +29,7 @@ import {
     defaultChallengeSettings,
 } from "@helpers/challenge-utils";
 import { clickInTheMiddle } from "@helpers/game-utils";
+import { log } from "@helpers/logger";
 
 import { ogsTest } from "@helpers";
 
@@ -71,7 +72,7 @@ export const modWarnFirstTurnDisconnectorTest = async ({
 
     await clickInTheMiddle(challengerPage);
 
-    console.log(
+    log(
         "Note: cmWarnFirstTurnDisconnectorTest waiting for disconnect timer (approximately 5 minutes)...",
     );
 

@@ -34,6 +34,7 @@ import type { CreateContextOptions } from "@helpers";
 import { BrowserContext, TestInfo, expect } from "@playwright/test";
 import { generateUniqueTestIPv6, loginAsUser, turnOffDynamicHelp } from "@helpers/user-utils";
 import { expectOGSClickableByName } from "@helpers/matchers";
+import { log } from "@helpers/logger";
 
 export const closeAllPendingReportsTest = async (
     {
@@ -44,7 +45,7 @@ export const closeAllPendingReportsTest = async (
     // Set a longer timeout since we might have many reports to close
     testInfo.setTimeout(600000); // 10 minutes
 
-    console.log("=== Close All Pending Reports Test ===");
+    log("=== Close All Pending Reports Test ===");
 
     // Set up moderator
     const moderatorPassword = process.env.E2E_MODERATOR_PASSWORD;
@@ -58,19 +59,19 @@ export const closeAllPendingReportsTest = async (
     });
     const modPage = await modContext.newPage();
 
-    console.log("Logging in as E2E_MODERATOR...");
+    log("Logging in as E2E_MODERATOR...");
     await loginAsUser(modPage, "E2E_MODERATOR", moderatorPassword);
     await turnOffDynamicHelp(modPage);
-    console.log("Logged in as moderator ✓");
+    log("Logged in as moderator ✓");
 
     // Navigate to reports history page
-    console.log("Navigating to reports history page...");
+    log("Navigating to reports history page...");
     await modPage.goto("/reports-center/history");
     await modPage.waitForLoadState("networkidle");
-    console.log("Reports history page loaded ✓");
+    log("Reports history page loaded ✓");
 
     // Set page size to 50 to show more reports per page
-    console.log("Setting page size to 50...");
+    log("Setting page size to 50...");
     const pageSizeSelect = modPage.locator(".ReportsCenterHistory select");
     await expect(pageSizeSelect).toBeVisible({ timeout: 5000 });
     await pageSizeSelect.selectOption("50");
@@ -86,7 +87,7 @@ export const closeAllPendingReportsTest = async (
 
     // Also wait for network idle to be sure
     await modPage.waitForLoadState("networkidle");
-    console.log("Page size set to 50 ✓");
+    log("Page size set to 50 ✓");
 
     let processedCount = 0;
     let iterationCount = 0;
@@ -96,7 +97,7 @@ export const closeAllPendingReportsTest = async (
     // User can run the test multiple times if there are more than 50 pending reports
     while (iterationCount < maxIterations) {
         iterationCount++;
-        console.log(`\n--- Iteration ${iterationCount} ---`);
+        log(`\n--- Iteration ${iterationCount} ---`);
 
         // Wait for the table to be visible
         const historyTable = modPage.locator(".ReportsCenterHistory .history table");
@@ -106,10 +107,10 @@ export const closeAllPendingReportsTest = async (
         const pendingRows = modPage.locator("tr .state.pending");
         const pendingCount = await pendingRows.count();
 
-        console.log(`Found ${pendingCount} pending reports visible on first page`);
+        log(`Found ${pendingCount} pending reports visible on first page`);
 
         if (pendingCount === 0) {
-            console.log("No more pending reports found on first page ✓");
+            log("No more pending reports found on first page ✓");
             break;
         }
 
@@ -121,12 +122,12 @@ export const closeAllPendingReportsTest = async (
 
         // Get the report ID for logging
         const reportButtonText = await reportButton.textContent();
-        console.log(`Processing report: ${reportButtonText}`);
+        log(`Processing report: ${reportButtonText}`);
 
         // Click the report button to open the report
         await reportButton.click();
         await modPage.waitForLoadState("networkidle");
-        console.log("Report opened ✓");
+        log("Report opened ✓");
 
         // Wait for the report to load
         await modPage.waitForTimeout(1000);
@@ -134,10 +135,10 @@ export const closeAllPendingReportsTest = async (
         // Click the "Claim" button to claim the report
         const claimButton = await expectOGSClickableByName(modPage, /Claim/i);
         await expect(claimButton).toBeVisible({ timeout: 10000 });
-        console.log("Claim button found ✓");
+        log("Claim button found ✓");
 
         await claimButton.click();
-        console.log("Report claimed ✓");
+        log("Report claimed ✓");
 
         // Wait for claim to process
         await modPage.waitForTimeout(1000);
@@ -146,10 +147,10 @@ export const closeAllPendingReportsTest = async (
         // We'll use "Close as good report" to clear pending reports
         const closeButton = await expectOGSClickableByName(modPage, /Close as good report/i);
         await expect(closeButton).toBeVisible({ timeout: 10000 });
-        console.log("Close button found ✓");
+        log("Close button found ✓");
 
         await closeButton.click();
-        console.log(`Report ${reportButtonText} closed ✓`);
+        log(`Report ${reportButtonText} closed ✓`);
 
         processedCount++;
 
@@ -157,20 +158,20 @@ export const closeAllPendingReportsTest = async (
         await modPage.waitForTimeout(1000);
 
         // Navigate back to history page
-        console.log("Returning to history page...");
+        log("Returning to history page...");
         await modPage.goto("/reports-center/history");
         await modPage.waitForLoadState("networkidle");
         await modPage.waitForTimeout(500);
     }
 
     if (iterationCount >= maxIterations) {
-        console.log(
+        log(
             `\n⚠️  Warning: Reached maximum iteration limit (${maxIterations}). There may be more pending reports.`,
         );
     }
 
-    console.log(`\n=== Test Complete ===`);
-    console.log(`✓ Processed ${processedCount} pending reports`);
+    log(`\n=== Test Complete ===`);
+    log(`✓ Processed ${processedCount} pending reports`);
 
     // Cleanup
     await modPage.close();

@@ -50,6 +50,7 @@ import {
     defaultChallengeSettings,
 } from "@helpers/challenge-utils";
 import { clickOnGobanIntersection, playMoves } from "@helpers/game-utils";
+import { log } from "@helpers/logger";
 
 export const gameLogThumbnailMarksTest = async (
     {
@@ -57,17 +58,17 @@ export const gameLogThumbnailMarksTest = async (
     }: { createContext: (options?: CreateContextOptions) => Promise<BrowserContext> },
     testInfo: TestInfo,
 ) => {
-    console.log("=== GameLog Thumbnail Marks Test ===");
+    log("=== GameLog Thumbnail Marks Test ===");
 
     // 1. Create two users
-    console.log("Creating test users...");
+    log("Creating test users...");
     const challengerUsername = newTestUsername("LogThumbCh");
     const { userPage: challengerPage } = await prepareNewUser(
         createContext,
         challengerUsername,
         "test",
     );
-    console.log(`Challenger created: ${challengerUsername} ✓`);
+    log(`Challenger created: ${challengerUsername} ✓`);
 
     const acceptorUsername = newTestUsername("LogThumbAc");
     const { userPage: acceptorPage } = await prepareNewUser(
@@ -75,10 +76,10 @@ export const gameLogThumbnailMarksTest = async (
         acceptorUsername,
         "test",
     );
-    console.log(`Acceptor created: ${acceptorUsername} ✓`);
+    log(`Acceptor created: ${acceptorUsername} ✓`);
 
     // 2. Create and accept a challenge
-    console.log("Creating challenge...");
+    log("Creating challenge...");
     await createDirectChallenge(challengerPage, acceptorUsername, {
         ...defaultChallengeSettings,
         gameName: "E2E GameLog Thumbnail Test",
@@ -90,25 +91,25 @@ export const gameLogThumbnailMarksTest = async (
         periods: "1",
         rules: "japanese",
     });
-    console.log("Challenge created ✓");
+    log("Challenge created ✓");
 
-    console.log("Accepting challenge...");
+    log("Accepting challenge...");
     await acceptDirectChallenge(acceptorPage);
-    console.log("Challenge accepted ✓");
+    log("Challenge accepted ✓");
 
     // 3. Wait for game to be ready
-    console.log("Waiting for game to be ready...");
+    log("Waiting for game to be ready...");
     const goban = challengerPage.locator(".Goban[data-pointers-bound]");
     await goban.waitFor({ state: "visible" });
     await challengerPage.waitForTimeout(1000);
 
     const challengersMove = challengerPage.getByText("Your move", { exact: true });
     await expect(challengersMove).toBeVisible();
-    console.log("Game ready ✓");
+    log("Game ready ✓");
 
     // 4. Play a simple game to create multiple groups that can be marked dead
     // Create groups with coordinates that share characters to test coordinate parsing
-    console.log("Playing moves to create dead stones...");
+    log("Playing moves to create dead stones...");
     const moves = [
         // Black creates groups that will have overlapping coordinate characters
         // Group 1: B2, B3 (coordinates: ba, bb)
@@ -127,78 +128,78 @@ export const gameLogThumbnailMarksTest = async (
     ];
 
     await playMoves(challengerPage, acceptorPage, moves, "9x9", 500);
-    console.log("Moves played ✓");
+    log("Moves played ✓");
 
     // 5. Both players pass to enter stone removal
-    console.log("Passing to enter stone removal phase...");
+    log("Passing to enter stone removal phase...");
     const challengerPass = challengerPage.getByText("Pass", { exact: true });
     await expect(challengerPass).toBeVisible();
     await challengerPass.click();
-    console.log("Challenger passed ✓");
+    log("Challenger passed ✓");
 
     const acceptorPass = acceptorPage.getByText("Pass", { exact: true });
     await expect(acceptorPass).toBeVisible();
     await acceptorPass.click();
-    console.log("Acceptor passed ✓");
+    log("Acceptor passed ✓");
 
     // Wait for stone removal phase
     await challengerPage.waitForTimeout(1000);
-    console.log("Entered stone removal phase ✓");
+    log("Entered stone removal phase ✓");
 
     // 6. Mark first group (B2-B3) as dead - coordinates: ba, bb
-    console.log("Marking first group (B2-B3) as dead...");
+    log("Marking first group (B2-B3) as dead...");
     await clickOnGobanIntersection(challengerPage, "B2", "9x9");
     await challengerPage.waitForTimeout(500);
-    console.log("First group marked dead ✓");
+    log("First group marked dead ✓");
     await challengerPage.waitForTimeout(500);
 
     // 7. Mark second group (C2-D2) as dead - coordinates: ca, da
     // This tests the bug: if we split by character, 'a' from 'ca' and 'da' would
     // incorrectly remove 'a' from 'ba' and 'bb', corrupting the first group
-    console.log("Marking second group (C2-D2) as dead...");
+    log("Marking second group (C2-D2) as dead...");
     await clickOnGobanIntersection(challengerPage, "C2", "9x9");
     await challengerPage.waitForTimeout(500);
-    console.log("Second group marked dead ✓");
+    log("Second group marked dead ✓");
     await challengerPage.waitForTimeout(500);
 
     // 8. Toggle second group back to alive
-    console.log("Toggling second group back to alive...");
+    log("Toggling second group back to alive...");
     await clickOnGobanIntersection(challengerPage, "C2", "9x9");
     await challengerPage.waitForTimeout(500);
-    console.log("Second group marked alive ✓");
+    log("Second group marked alive ✓");
     await challengerPage.waitForTimeout(500);
 
     // 9. Mark second group dead again
-    console.log("Marking second group dead again...");
+    log("Marking second group dead again...");
     await clickOnGobanIntersection(challengerPage, "C2", "9x9");
     await challengerPage.waitForTimeout(500);
-    console.log("Second group marked dead again ✓");
+    log("Second group marked dead again ✓");
     await challengerPage.waitForTimeout(500); // Extra delay before accepting
 
     // 10. Accept stone removal
-    console.log("Accepting stone removal...");
+    log("Accepting stone removal...");
     const acceptorAccept = acceptorPage.getByText("Accept");
     await expect(acceptorAccept).toBeVisible();
     await acceptorAccept.click();
-    console.log("Acceptor accepted ✓");
+    log("Acceptor accepted ✓");
 
     const challengerAccept = challengerPage.getByText("Accept");
     await expect(challengerAccept).toBeVisible();
     await challengerAccept.click();
-    console.log("Challenger accepted ✓");
+    log("Challenger accepted ✓");
 
     // Wait for game to finish
     await challengerPage.waitForTimeout(1000);
     const gameFinished = challengerPage.getByText("wins by");
     await expect(gameFinished).toBeVisible();
-    console.log("Game finished ✓");
+    log("Game finished ✓");
 
     // Get the game URL from the challenger page
     const gameUrl = challengerPage.url();
-    console.log(`Game URL: ${gameUrl}`);
+    log(`Game URL: ${gameUrl}`);
 
     // 11. Login as moderator and navigate to the game
-    console.log("Logging in as moderator...");
+    log("Logging in as moderator...");
     const moderatorPassword = process.env.E2E_MODERATOR_PASSWORD;
     if (!moderatorPassword) {
         throw new Error("E2E_MODERATOR_PASSWORD environment variable must be set");
@@ -211,16 +212,16 @@ export const gameLogThumbnailMarksTest = async (
     const modPage = await modContext.newPage();
     await loginAsUser(modPage, "E2E_MODERATOR", moderatorPassword);
     await turnOffDynamicHelp(modPage);
-    console.log("Moderator logged in ✓");
+    log("Moderator logged in ✓");
 
     // Navigate to the game
-    console.log("Navigating to game as moderator...");
+    log("Navigating to game as moderator...");
     await modPage.goto(gameUrl);
     await modPage.waitForLoadState("networkidle");
-    console.log("Game page loaded ✓");
+    log("Game page loaded ✓");
 
     // 12. Open GameLog modal via the dock
-    console.log("Opening GameLog modal via dock...");
+    log("Opening GameLog modal via dock...");
 
     // Hover over the dock to make it visible
     const dock = modPage.locator(".Dock");
@@ -241,16 +242,16 @@ export const gameLogThumbnailMarksTest = async (
         }
     });
     await modPage.waitForTimeout(1000);
-    console.log("GameLog modal opened ✓");
+    log("GameLog modal opened ✓");
 
     // 13. Verify GameLog entries
-    console.log("Verifying GameLog entries...");
+    log("Verifying GameLog entries...");
 
     // Check if we need to click "Show all" to see all log entries
     const showAllButton = modPage.getByText(/Show all/);
     const showAllExists = (await showAllButton.count()) > 0;
     if (showAllExists) {
-        console.log("Found 'Show all' button, clicking to expand log...");
+        log("Found 'Show all' button, clicking to expand log...");
         await showAllButton.click();
         await modPage.waitForTimeout(500);
     }
@@ -258,50 +259,50 @@ export const gameLogThumbnailMarksTest = async (
     // Check for "stones marked dead" entries
     const markedDeadEntries = modPage.getByText("stones marked dead");
     await expect(markedDeadEntries.first()).toBeVisible();
-    console.log("Found 'stones marked dead' entry ✓");
+    log("Found 'stones marked dead' entry ✓");
 
     // Check for "stones marked alive" entry
     const markedAliveEntry = modPage.getByText("stones marked alive");
     await expect(markedAliveEntry.first()).toBeVisible();
-    console.log("Found 'stones marked alive' entry ✓");
+    log("Found 'stones marked alive' entry ✓");
 
     // 14. Verify thumbnails exist
-    console.log("Verifying thumbnails exist...");
+    log("Verifying thumbnails exist...");
     const thumbnails = modPage.locator(".goban-thumbnail");
     const thumbnailCount = await thumbnails.count();
-    console.log(`Found ${thumbnailCount} thumbnails`);
+    log(`Found ${thumbnailCount} thumbnails`);
 
     if (thumbnailCount === 0) {
-        console.error("ERROR: No thumbnails found!");
+        log("ERROR: No thumbnails found!");
     } else {
-        console.log("Thumbnails present ✓");
+        log("Thumbnails present ✓");
     }
 
     // 15. Take screenshot for visual inspection
-    console.log("Taking screenshot for visual inspection...");
+    log("Taking screenshot for visual inspection...");
     await modPage.screenshot({
         path: `test-results/game-log-thumbnails-${testInfo.testId}.png`,
         fullPage: true,
     });
-    console.log("Screenshot saved to test-results/ ✓");
+    log("Screenshot saved to test-results/ ✓");
 
     // 16. Print information for manual inspection
-    console.log("\n=== VISUAL INSPECTION REQUIRED ===");
-    console.log("Please check the screenshot at:");
-    console.log(`  test-results/game-log-thumbnails-${testInfo.testId}.png`);
-    console.log("\nWhat to look for:");
-    console.log("1. Entries with 'stones marked dead' should have thumbnails");
-    console.log("   showing crosses (X) on the marked stones");
-    console.log("2. Entries with 'stones marked alive' should have thumbnails");
-    console.log("   showing triangles (△) on the marked stones");
-    console.log("3. The thumbnails should show the board state AFTER the change");
-    console.log("   (i.e., current removal state visible on the board)");
-    console.log("=====================================\n");
+    log("\n=== VISUAL INSPECTION REQUIRED ===");
+    log("Please check the screenshot at:");
+    log(`  test-results/game-log-thumbnails-${testInfo.testId}.png`);
+    log("\nWhat to look for:");
+    log("1. Entries with 'stones marked dead' should have thumbnails");
+    log("   showing crosses (X) on the marked stones");
+    log("2. Entries with 'stones marked alive' should have thumbnails");
+    log("   showing triangles (△) on the marked stones");
+    log("3. The thumbnails should show the board state AFTER the change");
+    log("   (i.e., current removal state visible on the board)");
+    log("=====================================\n");
 
-    console.log("=== GameLog Thumbnail Marks Test Complete ===");
-    console.log("✓ Created game with dead stones");
-    console.log("✓ Marked stones dead/alive during stone removal");
-    console.log("✓ Verified GameLog entries exist");
-    console.log("✓ Verified thumbnails are present");
-    console.log("✓ Screenshot saved for visual inspection");
+    log("=== GameLog Thumbnail Marks Test Complete ===");
+    log("✓ Created game with dead stones");
+    log("✓ Marked stones dead/alive during stone removal");
+    log("✓ Verified GameLog entries exist");
+    log("✓ Verified thumbnails are present");
+    log("✓ Screenshot saved for visual inspection");
 };

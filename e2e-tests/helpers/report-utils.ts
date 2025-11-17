@@ -11,24 +11,37 @@
 
 import * as fs from "fs";
 import * as path from "path";
-import { expect, type Page, type Locator } from "@playwright/test";
+import { expect, type Page, type Locator, type TestInfo } from "@playwright/test";
+import { log, setWorkerIndex } from "./logger";
 
 class IncidentIndicatorLock {
     private static lockFile = path.join(process.cwd(), ".incident-indicator.lock");
     private static lockHandle: fs.promises.FileHandle | null = null;
-    private static readonly RETRY_TIMEOUT_MS = 5000; // 5 seconds - fail fast if lock is held
+    private static readonly RETRY_TIMEOUT_MS = 360000; // 360 seconds (6 minutes) - must be longer than max test duration (300s)
     private static readonly RETRY_INTERVAL_MS = 500; // 500ms between retries
 
     static async acquire(): Promise<void> {
         const startTime = Date.now();
+        let hasLoggedWaiting = false;
 
         while (true) {
             try {
                 this.lockHandle = await fs.promises.open(this.lockFile, "wx");
+                if (hasLoggedWaiting) {
+                    const waitTime = Date.now() - startTime;
+                    log(`[IncidentLock] Acquired lock after waiting ${waitTime}ms`);
+                }
                 return; // Successfully acquired lock
             } catch (err) {
                 if ((err as NodeJS.ErrnoException).code === "EEXIST") {
                     const elapsedTime = Date.now() - startTime;
+
+                    // Log once after first retry to help debug parallel test runs
+                    if (!hasLoggedWaiting && elapsedTime >= 1000) {
+                        log(`[IncidentLock] Waiting for lock... (${elapsedTime}ms elapsed)`);
+                        hasLoggedWaiting = true;
+                    }
+
                     if (elapsedTime >= this.RETRY_TIMEOUT_MS) {
                         throw new Error(
                             `Failed to acquire incident indicator lock after ${this.RETRY_TIMEOUT_MS}ms. ` +
@@ -55,9 +68,10 @@ class IncidentIndicatorLock {
 }
 
 export async function withIncidentIndicatorLock<T>(
-    testInfo: { setTimeout: (timeout: number) => void },
+    testInfo: TestInfo,
     fn: () => Promise<T>,
 ): Promise<T> {
+    setWorkerIndex(testInfo); // Initialize logger with worker index
     testInfo.setTimeout(0); // Disable timeout while waiting for lock
     await IncidentIndicatorLock.acquire();
     // Added a 42 here to make it clear if this is the one that gets activated!
@@ -83,7 +97,7 @@ export class IncidentReportCountTracker {
      */
     async captureInitialCount(page: Page): Promise<void> {
         this.initialCount = await this.getCurrentCount(page);
-        console.log(`[ReportCountTracker] Captured initial count: ${this.initialCount}`);
+        log(`[ReportCountTracker] Captured initial count: ${this.initialCount}`);
     }
 
     /**
@@ -124,7 +138,7 @@ export class IncidentReportCountTracker {
             `Expected count to increase by ${delta} from baseline ${this.initialCount} (=${expectedCount})`,
         ).toHaveText(`${expectedCount}`);
 
-        console.log(
+        log(
             `[ReportCountTracker] Verified count increased by ${delta}: ${this.initialCount} -> ${expectedCount}`,
         );
 
@@ -148,7 +162,7 @@ export class IncidentReportCountTracker {
             );
         }
 
-        console.log(
+        log(
             `[ReportCountTracker] Verified count decreased by ${delta}: ${this.initialCount} -> ${expectedCount}`,
         );
     }
@@ -177,7 +191,7 @@ export class IncidentReportCountTracker {
 
         // Get final count for logging
         const currentCount = await this.getCurrentCount(page);
-        console.log(
+        log(
             `[ReportCountTracker] Verified count returned to initial: ${currentCount} === ${this.initialCount}`,
         );
     }
@@ -220,7 +234,7 @@ export class IncidentReportCountTracker {
  */
 export async function withReportCountTracking<T>(
     page: Page,
-    testInfo: { setTimeout: (timeout: number) => void },
+    testInfo: TestInfo,
     fn: (tracker: IncidentReportCountTracker) => Promise<T>,
 ): Promise<T> {
     return withIncidentIndicatorLock(testInfo, async () => {
@@ -235,7 +249,7 @@ export async function withReportCountTracking<T>(
             const initialCount = tracker.getInitialCount();
             const finalCount = await tracker.checkCurrentCount(page);
             if (initialCount !== null && finalCount !== initialCount) {
-                console.warn(
+                log(
                     `[ReportCountTracker] Warning: Count did not return to initial baseline. Initial: ${initialCount}, Final: ${finalCount}`,
                 );
             }

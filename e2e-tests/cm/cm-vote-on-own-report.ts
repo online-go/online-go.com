@@ -30,7 +30,13 @@ import type { CreateContextOptions } from "@helpers";
 import { BrowserContext, TestInfo, expect } from "@playwright/test";
 
 import { expectOGSClickableByName } from "@helpers/matchers";
-import { goToUsersFinishedGame, reportUser, setupSeededUser } from "@helpers/user-utils";
+import {
+    captureReportNumber,
+    goToUsersFinishedGame,
+    navigateToReport,
+    reportUser,
+    setupSeededUser,
+} from "@helpers/user-utils";
 
 import { withReportCountTracking } from "@helpers/report-utils";
 
@@ -57,16 +63,11 @@ export const cmVoteOnOwnReportTest = async (
         // Verify reporter's count increased by 1
         await tracker.assertCountIncreasedBy(reporterPage, 1);
 
-        // Go to the report page
-        await reporterPage.goto("/reports-center");
-        const myReports = reporterPage.getByText("My Own Reports");
-        await expect(myReports).toBeVisible();
-        await myReports.click();
+        // Capture the report number to navigate to the specific report
+        const reportNumber = await captureReportNumber(reporterPage);
 
-        // The newly created report will be first in the list (most recent)
-        // This is a safe assumption since reports are sorted by creation time descending
-        const reportButton = reporterPage.locator(".report-id > button");
-        await reportButton.click();
+        // Navigate to the specific report
+        await navigateToReport(reporterPage, reportNumber);
 
         // Select an option...
         await reporterPage.locator('.action-selector input[type="radio"]').first().click();
@@ -76,12 +77,24 @@ export const cmVoteOnOwnReportTest = async (
         await expectOGSClickableByName(reporterPage, /Vote$/);
 
         // .. but instead, let's cancel this report, to tidy up.
-
+        // Navigate to My Own Reports
+        await reporterPage.goto("/reports-center");
+        const myReports = reporterPage.getByText("My Own Reports");
+        await expect(myReports).toBeVisible();
         await myReports.click();
-        const cancelButton = await expectOGSClickableByName(reporterPage, /Cancel$/);
+
+        // Find the specific report's container and click its Cancel button
+        // Each report is in a div.incident container
+        const reportContainer = reporterPage.locator(`div.incident:has-text("${reportNumber}")`);
+        await expect(reportContainer).toBeVisible();
+
+        // Find the Cancel button within this specific report's container
+        const cancelButton = reportContainer.locator("button.reject.xs", { hasText: "Cancel" });
+        await expect(cancelButton).toBeVisible();
         await cancelButton.click();
 
-        await expect(reportButton).toBeHidden();
+        // Wait for cancellation to process
+        await reporterPage.waitForLoadState("networkidle");
 
         // After canceling the report, the count should return to initial
         await tracker.assertCountReturnedToInitial(reporterPage);
