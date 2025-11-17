@@ -48,6 +48,7 @@ import {
     defaultChallengeSettings,
 } from "../helpers/challenge-utils";
 import { playMoves } from "../helpers/game-utils";
+import { log } from "@helpers/logger";
 
 // This BID must match the one set for E2E_SUSPENDED_BID_USER in init_e2e.py
 const SUSPENDED_USER_BID = "e2e-test-suspended-bid";
@@ -57,8 +58,8 @@ export const autoSuspensionTest = async ({
 }: {
     createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
 }) => {
-    console.log("=== Browser ID Suspension Test ===");
-    console.log(`Testing registration with BID matching suspended user: ${SUSPENDED_USER_BID}`);
+    log("=== Browser ID Suspension Test ===");
+    log(`Testing registration with BID matching suspended user: ${SUSPENDED_USER_BID}`);
 
     // Create a new browser context with a unique IP
     const newIPv6 = generateUniqueTestIPv6();
@@ -68,10 +69,10 @@ export const autoSuspensionTest = async ({
         },
     });
     const testPage = await testContext.newPage();
-    console.log(`Created new context with IP ${newIPv6} ✓`);
+    log(`Created new context with IP ${newIPv6} ✓`);
 
     // Set device.uuid using the data module API
-    console.log(`Setting device.uuid to suspended BID: ${SUSPENDED_USER_BID}`);
+    log(`Setting device.uuid to suspended BID: ${SUSPENDED_USER_BID}`);
     await testPage.goto("/");
     await testPage.waitForLoadState("networkidle");
 
@@ -81,7 +82,7 @@ export const autoSuspensionTest = async ({
         console.log("Set device.uuid via data.set() to:", bid);
         console.log("Verify via data.get():", (window as any).data.get("device.uuid"));
     }, SUSPENDED_USER_BID);
-    console.log("device.uuid set via data module ✓");
+    log("device.uuid set via data module ✓");
 
     // Navigate to registration page
     await testPage.goto("/");
@@ -97,7 +98,7 @@ export const autoSuspensionTest = async ({
     await expect(testPage.getByText("Welcome new player!")).toBeVisible();
 
     // Fill in registration form
-    console.log("Attempting to register new user with flagged BID...");
+    log("Attempting to register new user with flagged BID...");
     const newUsername = newTestUsername("BISNew");
     const usernameInput = testPage.getByLabel("Username");
     await usernameInput.fill(newUsername);
@@ -122,7 +123,7 @@ export const autoSuspensionTest = async ({
     await expect(testPage.getByText("Welcome!")).toBeVisible();
     const userDropdown = testPage.locator(".username").getByText(newUsername);
     await expect(userDropdown).toBeVisible();
-    console.log(`Registration successful for ${newUsername} with flagged BID ✓`);
+    log(`Registration successful for ${newUsername} with flagged BID ✓`);
 
     // Choose board style preference to complete onboarding
     // Wait for board style selection to be ready
@@ -147,7 +148,7 @@ export const autoSuspensionTest = async ({
     await testPage.goto("/");
 
     // Create an opponent to play against
-    console.log("Creating opponent user...");
+    log("Creating opponent user...");
     const opponentUsername = newTestUsername("BISOpp");
     const { userPage: opponentPage } = await prepareNewUser(
         createContext,
@@ -156,7 +157,7 @@ export const autoSuspensionTest = async ({
     );
 
     // Have the new user play a game
-    console.log("New user creating a game challenge...");
+    log("New user creating a game challenge...");
     await createDirectChallenge(testPage, opponentUsername, {
         ...defaultChallengeSettings,
         gameName: "E2E Browser ID Suspension Test Game",
@@ -168,7 +169,7 @@ export const autoSuspensionTest = async ({
         periods: "1",
     });
 
-    console.log("Opponent accepting challenge...");
+    log("Opponent accepting challenge...");
     await acceptDirectChallenge(opponentPage);
 
     // Wait for the Goban to be visible
@@ -181,7 +182,7 @@ export const autoSuspensionTest = async ({
     await expect(newUserMove).toBeVisible();
 
     // Play a few moves
-    console.log("Playing game...");
+    log("Playing game...");
     const moves = ["D9", "E9", "D8", "E8", "D7", "E7"];
     await playMoves(testPage, opponentPage, moves, "9x9");
 
@@ -201,20 +202,20 @@ export const autoSuspensionTest = async ({
 
     // Wait for game to finish
     await expect(testPage.getByText("wins by")).toBeVisible();
-    console.log("Game completed ✓");
+    log("Game completed ✓");
 
     // Wait for the post-game suspension check to process
     // The backend needs to: process game end, check BIDs, and suspend the user
     // This can take longer on slower servers (CI vs local dev)
-    console.log("Waiting for post-game BID check to process...");
+    log("Waiting for post-game BID check to process...");
 
     // Poll for suspension banner with retries (up to 30 seconds)
     let suspensionDetected = false;
-    const maxRetries = 1;
+    const maxRetries = 15;
     const retryDelay = 2000;
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
-        console.log(`Checking for suspension (attempt ${attempt}/${maxRetries})...`);
+        log(`Checking for suspension (attempt ${attempt}/${maxRetries})...`);
 
         // Navigate to home to refresh user state
         await testPage.goto("/");
@@ -224,26 +225,26 @@ export const autoSuspensionTest = async ({
         const bannedUserId = await testPage.evaluate(() => {
             return (window as any).data.get("appeals.banned_user_id");
         });
-        console.log(`  appeals.banned_user_id: ${bannedUserId}`);
+        log(`  appeals.banned_user_id: ${bannedUserId}`);
 
         // Check if appeal link is visible
         const appealLink = testPage.getByRole("link", { name: /appeal here/i });
         const isVisible = await appealLink.isVisible().catch(() => false);
 
         if (isVisible) {
-            console.log("Suspension banner with 'appeal here' link visible ✓");
+            log("Suspension banner with 'appeal here' link visible ✓");
             suspensionDetected = true;
             break;
         }
 
         if (attempt < maxRetries) {
-            console.log(`  Not suspended yet, waiting ${retryDelay}ms before retry...`);
+            log(`  Not suspended yet, waiting ${retryDelay}ms before retry...`);
             await new Promise((resolve) => setTimeout(resolve, retryDelay));
         }
     }
 
     if (!suspensionDetected) {
-        console.error("Suspension not detected after maximum retries");
+        log("Suspension not detected after maximum retries");
         // Take a screenshot for debugging
         await testPage.screenshot({ path: "test-results/suspension-timeout.png" });
     }
@@ -251,16 +252,16 @@ export const autoSuspensionTest = async ({
     // Final assertion
     const appealLink = testPage.getByRole("link", { name: /appeal here/i });
     await expect(appealLink).toBeVisible();
-    console.log("Auto-suspension verification complete ✓");
+    log("Auto-suspension verification complete ✓");
 
     // Clean up: Change the suspended user's last_browser_id to avoid affecting future test runs
     // We do this by logging out and back in with a different BID and IP
     // (last_browser_id only updates at registration and login time)
-    console.log("Cleaning up: Changing suspended user's last_browser_id...");
+    log("Cleaning up: Changing suspended user's last_browser_id...");
 
     // Log out first
     await logoutUser(testPage);
-    console.log("Logged out ✓");
+    log("Logged out ✓");
 
     // Create a fresh context with a new IP
     const cleanupIPv6 = generateUniqueTestIPv6();
@@ -270,7 +271,7 @@ export const autoSuspensionTest = async ({
         },
     });
     const cleanupPage = await cleanupContext.newPage();
-    console.log(`Created fresh context with new IP ${cleanupIPv6} ✓`);
+    log(`Created fresh context with new IP ${cleanupIPv6} ✓`);
 
     // Set a new BID different from the test BID
     const cleanupBID = `cleanup-bid-${Date.now()}`;
@@ -295,12 +296,12 @@ export const autoSuspensionTest = async ({
     // (which is a bug, they need to log in to appeal!)
 
     // but at least we've cleared the last_browser_id for future test runs
-    console.log("Logged back in with cleanup BID and new IP ✓");
-    console.log(`Updated last_browser_id from ${SUSPENDED_USER_BID} to ${cleanupBID}`);
+    log("Logged back in with cleanup BID and new IP ✓");
+    log(`Updated last_browser_id from ${SUSPENDED_USER_BID} to ${cleanupBID}`);
 
-    console.log("=== Browser ID Suspension Test Complete ===");
-    console.log("✓ User with flagged BID registered successfully");
-    console.log("✓ User was auto-suspended after first game");
-    console.log("✓ Suspension banner displayed correctly");
-    console.log("✓ Cleaned up last_browser_id for future test runs");
+    log("=== Browser ID Suspension Test Complete ===");
+    log("✓ User with flagged BID registered successfully");
+    log("✓ User was auto-suspended after first game");
+    log("✓ Suspension banner displayed correctly");
+    log("✓ Cleaned up last_browser_id for future test runs");
 };

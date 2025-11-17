@@ -13,6 +13,7 @@ import { expect } from "@playwright/test";
 import { Page } from "@playwright/test";
 import { expectOGSClickableByName } from "@helpers/matchers";
 import { openUserDropdownFromOmniSearch } from "./user-utils";
+import { log } from "./logger";
 
 type checkboxTest = boolean | "none"; // None means "not present at all"
 
@@ -522,7 +523,7 @@ export const testChallengePOSTPayload = async (
         const requestBody = JSON.parse(request.postData() || "{}");
 
         if (options.logRequestBody) {
-            console.log("Challenge POST payload:", JSON.stringify(requestBody, null, 2));
+            log("Challenge POST payload:", JSON.stringify(requestBody, null, 2));
         }
 
         checkForUnexpectedFields(requestBody, "ChallengePOSTPayload");
@@ -642,7 +643,7 @@ export const testDemoBoardPOSTPayload = async (
         const requestBody = JSON.parse(request.postData() || "{}");
 
         if (options.logRequestBody) {
-            console.log("Demo POST payload:", JSON.stringify(requestBody, null, 2));
+            log("Demo POST payload:", JSON.stringify(requestBody, null, 2));
         }
 
         checkForUnexpectedFields(requestBody, "DemoBoardPOSTPayload");

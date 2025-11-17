@@ -36,21 +36,22 @@ import {
     banUserAsModerator as suspendUserAsModerator,
 } from "../helpers/user-utils";
 import { expectOGSClickableByName } from "../helpers/matchers";
+import { log } from "@helpers/logger";
 
 export const suspendedUserCannotUpdateProfileTest = async ({
     createContext,
 }: {
     createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
 }) => {
-    console.log("=== Suspended User Cannot Update Profile Test ===");
+    log("=== Suspended User Cannot Update Profile Test ===");
 
     // Create a new user
-    console.log("Creating test user...");
+    log("Creating test user...");
     const username = newTestUsername("sUCPTTestUser"); // cspell:ignore sUCPT
     const { userPage } = await prepareNewUser(createContext, username, "test");
 
     // Navigate to account settings page to get initial username
-    console.log("Getting initial username...");
+    log("Getting initial username...");
     await userPage.goto("/settings/account");
     await userPage.waitForLoadState("networkidle");
 
@@ -58,24 +59,24 @@ export const suspendedUserCannotUpdateProfileTest = async ({
     const usernameInput = userPage.locator('dt:has-text("Username") + dd input');
     const initialUsername = await usernameInput.inputValue();
 
-    console.log(`Initial username: ${initialUsername}`);
+    log(`Initial username: ${initialUsername}`);
 
     // Suspend the user
-    console.log(`Suspending user ${username}...`);
+    log(`Suspending user ${username}...`);
     await suspendUserAsModerator(
         createContext,
         username,
         "E2E test: Testing suspended user profile restrictions",
     );
-    console.log("User suspended ✓");
+    log("User suspended ✓");
 
     // Wait for the suspension to take effect - suspension causes a reload of the user's page
     await userPage.waitForTimeout(1000);
     await userPage.waitForLoadState("networkidle");
-    console.log("User page reloaded after suspension");
+    log("User page reloaded after suspension");
 
     // Try to update username while suspended
-    console.log("Attempting to update username while suspended...");
+    log("Attempting to update username while suspended...");
     await userPage.goto("/settings/account");
     await userPage.waitForLoadState("networkidle");
 
@@ -89,7 +90,7 @@ export const suspendedUserCannotUpdateProfileTest = async ({
     await userPage.waitForLoadState("load");
     await userPage.waitForLoadState("networkidle");
 
-    console.log("Page reloaded after save");
+    log("Page reloaded after save");
 
     // Verify the username was NOT updated by checking the navbar username
     // For suspended users, the username should remain unchanged
@@ -99,13 +100,13 @@ export const suspendedUserCannotUpdateProfileTest = async ({
     const navbarUsername = userPage.locator("span.username");
     const actualUsername = await navbarUsername.textContent();
 
-    console.log(`Username in navbar after save: ${actualUsername}, expected: ${initialUsername}`);
+    log(`Username in navbar after save: ${actualUsername}, expected: ${initialUsername}`);
     expect(actualUsername).toBe(initialUsername);
-    console.log("Username unchanged in navbar (correctly ignored update) ✓");
+    log("Username unchanged in navbar (correctly ignored update) ✓");
 
-    console.log("=== Suspended User Cannot Update Profile Test Complete ===");
-    console.log("✓ Suspended users cannot update their username");
-    console.log("✓ Updates are silently ignored without errors");
+    log("=== Suspended User Cannot Update Profile Test Complete ===");
+    log("✓ Suspended users cannot update their username");
+    log("✓ Updates are silently ignored without errors");
 };
 
 export const normalUserCanUpdateProfileTest = async ({
@@ -113,15 +114,15 @@ export const normalUserCanUpdateProfileTest = async ({
 }: {
     createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
 }) => {
-    console.log("=== Normal User Can Update Profile Test ===");
+    log("=== Normal User Can Update Profile Test ===");
 
     // Create a new user
-    console.log("Creating test user...");
+    log("Creating test user...");
     const username = newTestUsername("NormalTest");
     const { userPage } = await prepareNewUser(createContext, username, "test");
 
     // Navigate to account settings page to get initial username
-    console.log("Getting initial username...");
+    log("Getting initial username...");
     await userPage.goto("/settings/account");
     await userPage.waitForLoadState("networkidle");
 
@@ -129,10 +130,10 @@ export const normalUserCanUpdateProfileTest = async ({
     const usernameInput = userPage.locator('dt:has-text("Username") + dd input');
     const initialUsername = await usernameInput.inputValue();
 
-    console.log(`Initial username: ${initialUsername}`);
+    log(`Initial username: ${initialUsername}`);
 
     // Try to update username (should succeed for normal user)
-    console.log("Attempting to update username...");
+    log("Attempting to update username...");
     const newUsername = "ChangedUsername" + Date.now();
     await usernameInput.fill(newUsername);
 
@@ -143,19 +144,19 @@ export const normalUserCanUpdateProfileTest = async ({
     await userPage.waitForLoadState("load");
     await userPage.waitForLoadState("networkidle");
 
-    console.log("Page reloaded after save");
+    log("Page reloaded after save");
 
     // Wait for the navbar username to change from the initial username to the new one
     const navbarUsername = userPage.locator("span.username");
     await expect(navbarUsername).not.toHaveText(initialUsername);
-    console.log("Username changed from initial value");
+    log("Username changed from initial value");
 
     // Verify the username WAS updated to the new value
     const actualUsername = await navbarUsername.textContent();
-    console.log(`Username in navbar after save: ${actualUsername}, expected: ${newUsername}`);
+    log(`Username in navbar after save: ${actualUsername}, expected: ${newUsername}`);
     expect(actualUsername).toBe(newUsername);
-    console.log("Username changed successfully in navbar ✓");
+    log("Username changed successfully in navbar ✓");
 
-    console.log("=== Normal User Can Update Profile Test Complete ===");
-    console.log("✓ Normal users can update their username");
+    log("=== Normal User Can Update Profile Test Complete ===");
+    log("✓ Normal users can update their username");
 };

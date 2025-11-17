@@ -14,6 +14,7 @@ import { Page, BrowserContext } from "@playwright/test";
 
 import { expectOGSClickableByName } from "./matchers";
 import { load, CreateContextOptions } from "@helpers";
+import { log } from "./logger";
 
 /**
  * User Management Utilities for E2E Tests
@@ -69,27 +70,32 @@ export const newTestUsername = (user_role: string) => {
     // Using 5 chars provides uniqueness roughly every 1.3 seconds
     // This allows re-running tests with <10 second intervals
     const midChars = timestamp.slice(-7, -2);
-    return `e2e${user_role}_${midChars}`;
+    // Include worker index to prevent username collisions in parallel execution
+    const workerIndex = process.env.TEST_WORKER_INDEX || "0";
+    return `e2e${user_role}_${midChars}${workerIndex}`;
 };
 
 // Counter for same-millisecond IPv6 generation
 let ipv6Counter = 0;
 
-// Generate unique IPv6 addresses for test users using timestamp + counter
+// Generate unique IPv6 addresses for test users using timestamp + counter + worker index
 // Similar approach to newTestUsername - timestamp ensures uniqueness across test runs
-// without needing shared state files
+// Worker index ensures uniqueness across parallel workers
 export const generateUniqueTestIPv6 = (): string => {
     const timestamp = Date.now().toString(16); // Use hex (base-16) for valid IPv6
     const counter = (ipv6Counter++).toString(16).padStart(4, "0");
+    const workerIndex = parseInt(process.env.TEST_WORKER_INDEX || "0", 10)
+        .toString(16)
+        .padStart(1, "0");
 
     // Use fd00::/8 private IPv6 range for testing
     // IPv6 segments must be 4 hex chars max, so split 8-char timestamp into two segments
-    // Format: fd00:e2e::abcd:1234:0001 where abcd:1234 is the timestamp
-    // Example: fd00:e2e::12ab:34cd:0001
+    // Format: fd00:e2e:W::abcd:1234:0001 where W is worker, abcd:1234 is timestamp
+    // Example: fd00:e2e:1::12ab:34cd:0001
     const timestampHex = timestamp.slice(-8).padStart(8, "0");
     const seg1 = timestampHex.slice(0, 4);
     const seg2 = timestampHex.slice(4, 8);
-    return `fd00:e2e::${seg1}:${seg2}:${counter}`;
+    return `fd00:e2e:${workerIndex}::${seg1}:${seg2}:${counter}`;
 };
 
 export const registerNewUser = async (
@@ -383,7 +389,7 @@ export const captureReportNumber = async (reporterPage: Page): Promise<string> =
         throw new Error(`Failed to capture valid report number. Got: ${reportNumber}`);
     }
 
-    console.log(`Captured report number: ${reportNumber}`);
+    log(`Captured report number: ${reportNumber}`);
     return reportNumber;
 };
 
@@ -401,7 +407,7 @@ export const navigateToReport = async (page: Page, reportNumber: string) => {
 
     // Verify we're looking at the correct report by checking for the report number
     await expect(page.getByText(reportNumber, { exact: true })).toBeVisible();
-    console.log(`Navigated to report ${reportNumber}`);
+    log(`Navigated to report ${reportNumber}`);
 };
 
 export const reportPlayerByColor = async (
@@ -568,7 +574,7 @@ export const banUserAsModerator = async (
 
     // Wait for the modal to close as confirmation the suspension was successful
     await expect(modPage.locator(".BanModal")).toBeHidden();
-    console.log("Suspend modal closed - suspension request completed");
+    log("Suspend modal closed - suspension request completed");
 
     // Give the server a moment to process the suspension
     await modPage.waitForTimeout(500);

@@ -42,19 +42,20 @@ import {
     goToUsersProfile,
 } from "../helpers/user-utils";
 import { expectOGSClickableByName } from "../helpers/matchers";
+import { log } from "@helpers/logger";
 
 export const playerCheckAIButtonTest = async ({
     createContext,
 }: {
     createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
 }) => {
-    console.log("=== Player Check AI Button Test ===");
+    log("=== Player Check AI Button Test ===");
 
     // 1. Create a regular user to test the dropdown on
     const targetUsername = newTestUsername("AITarget");
-    console.log(`Creating target user: ${targetUsername}`);
+    log(`Creating target user: ${targetUsername}`);
     const { userPage: targetPage } = await prepareNewUser(createContext, targetUsername, "test");
-    console.log(`Target user created: ${targetUsername} ✓`);
+    log(`Target user created: ${targetUsername} ✓`);
 
     // Get the target user's ID from the profile page
     await targetPage.goto("/user/view");
@@ -62,37 +63,37 @@ export const playerCheckAIButtonTest = async ({
     const profileUrl = targetPage.url();
     const targetUserIdMatch = profileUrl.match(/\/player\/(\d+)/);
     const targetUserId = targetUserIdMatch ? targetUserIdMatch[1] : null;
-    console.log(`Target user ID: ${targetUserId} ✓`);
+    log(`Target user ID: ${targetUserId} ✓`);
 
     // 2. Create a regular user to verify the button does NOT appear
     const regularUsername = newTestUsername("RegUser");
-    console.log(`Creating regular user: ${regularUsername}`);
+    log(`Creating regular user: ${regularUsername}`);
     const { userPage: regularPage } = await prepareNewUser(createContext, regularUsername, "test");
-    console.log(`Regular user created: ${regularUsername} ✓`);
+    log(`Regular user created: ${regularUsername} ✓`);
 
     // 3. Regular user navigates to target user's profile
-    console.log("Regular user navigating to target user's profile...");
+    log("Regular user navigating to target user's profile...");
     await goToUsersProfile(regularPage, targetUsername);
-    console.log("Navigated to target profile ✓");
+    log("Navigated to target profile ✓");
 
     // 4. Regular user clicks on player link to open dropdown
-    console.log("Opening player dropdown as regular user...");
+    log("Opening player dropdown as regular user...");
     const playerLinkRegular = regularPage.locator(`a.Player:has-text("${targetUsername}")`).first();
     await expect(playerLinkRegular).toBeVisible();
     await playerLinkRegular.hover();
     await playerLinkRegular.click();
-    console.log("Player dropdown opened ✓");
+    log("Player dropdown opened ✓");
 
     // 5. Verify "Check AI" button does NOT appear for regular user
-    console.log("Verifying 'Check AI' button NOT visible to regular user...");
+    log("Verifying 'Check AI' button NOT visible to regular user...");
     await expect(regularPage.getByRole("button", { name: /Check AI/i })).not.toBeVisible();
-    console.log("'Check AI' button correctly hidden from regular user ✓");
+    log("'Check AI' button correctly hidden from regular user ✓");
 
     // Close the dropdown
     await regularPage.keyboard.press("Escape");
 
     // 6. Set up seeded moderator
-    console.log("Setting up moderator account...");
+    log("Setting up moderator account...");
     const moderatorPassword = process.env.E2E_MODERATOR_PASSWORD;
     if (!moderatorPassword) {
         throw new Error("E2E_MODERATOR_PASSWORD environment variable must be set to run this test");
@@ -108,72 +109,72 @@ export const playerCheckAIButtonTest = async ({
 
     await loginAsUser(modPage, "E2E_MODERATOR", moderatorPassword);
     await turnOffDynamicHelp(modPage);
-    console.log("Moderator logged in ✓");
+    log("Moderator logged in ✓");
 
     // 7. Moderator navigates to target user's profile
-    console.log("Moderator navigating to target user's profile...");
+    log("Moderator navigating to target user's profile...");
     await goToUsersProfile(modPage, targetUsername);
-    console.log("Navigated to target profile ✓");
+    log("Navigated to target profile ✓");
 
     // 8. Moderator clicks on player link to open dropdown
-    console.log("Opening player dropdown as moderator...");
+    log("Opening player dropdown as moderator...");
     const playerLinkMod = modPage.locator(`a.Player:has-text("${targetUsername}")`).first();
     await expect(playerLinkMod).toBeVisible();
     await playerLinkMod.hover();
     await playerLinkMod.click();
-    console.log("Player dropdown opened ✓");
+    log("Player dropdown opened ✓");
 
     // Wait for PlayerDetails to load
     await expect(modPage.locator(".PlayerDetails")).toBeVisible();
-    console.log("PlayerDetails visible ✓");
+    log("PlayerDetails visible ✓");
 
     // 9. Verify "Check AI" button appears for moderator
-    console.log("Verifying 'Check AI' button visible to moderator...");
+    log("Verifying 'Check AI' button visible to moderator...");
     const checkAIButton = await expectOGSClickableByName(modPage, /Check AI/);
     await expect(checkAIButton).toBeVisible();
-    console.log("'Check AI' button visible to moderator ✓");
+    log("'Check AI' button visible to moderator ✓");
 
     // 10. Click the "Check AI" button
-    console.log("Clicking 'Check AI' button...");
+    log("Clicking 'Check AI' button...");
     await checkAIButton.click();
     await modPage.waitForLoadState("networkidle");
-    console.log("'Check AI' button clicked ✓");
+    log("'Check AI' button clicked ✓");
 
     // 11. Verify navigation to AI Detection page
-    console.log("Verifying navigation to AI Detection page...");
+    log("Verifying navigation to AI Detection page...");
     await expect(modPage.getByRole("heading", { name: /AI Detection/i })).toBeVisible();
-    console.log("AI Detection page loaded ✓");
+    log("AI Detection page loaded ✓");
 
     // 12. Verify the URL contains the player parameter
-    console.log("Verifying URL contains player parameter...");
+    log("Verifying URL contains player parameter...");
     const currentUrl = modPage.url();
     expect(currentUrl).toContain("/moderator/ai-detection");
     if (targetUserId) {
         expect(currentUrl).toContain(`player=${targetUserId}`);
-        console.log(`URL contains player parameter: player=${targetUserId} ✓`);
+        log(`URL contains player parameter: player=${targetUserId} ✓`);
     } else {
-        console.log("⚠ Could not verify player ID in URL (ID not found)");
+        log("⚠ Could not verify player ID in URL (ID not found)");
     }
 
     // 13. Verify the player autocomplete shows the filtered player
-    console.log("Verifying player autocomplete shows filtered player...");
+    log("Verifying player autocomplete shows filtered player...");
     const playerAutocomplete = modPage.locator(".search input[type='text']");
     await expect(playerAutocomplete).toBeVisible();
 
     // Wait a moment for the autocomplete to populate
     await modPage.waitForTimeout(1000);
     const autocompleteValue = await playerAutocomplete.inputValue();
-    console.log(`Autocomplete value: "${autocompleteValue}"`);
+    log(`Autocomplete value: "${autocompleteValue}"`);
 
     // The autocomplete should contain the target username
     expect(autocompleteValue).toContain(targetUsername);
-    console.log("Player filter correctly pre-populated ✓");
+    log("Player filter correctly pre-populated ✓");
 
-    console.log("=== Player Check AI Button Test Complete ===");
-    console.log("✓ 'Check AI' button hidden from regular users");
-    console.log("✓ 'Check AI' button visible to moderators");
-    console.log("✓ Clicking button navigates to AI Detection page");
-    console.log("✓ URL contains player parameter");
-    console.log("✓ Player filter correctly pre-populated");
-    console.log("✓ Player Check AI button functionality fully verified");
+    log("=== Player Check AI Button Test Complete ===");
+    log("✓ 'Check AI' button hidden from regular users");
+    log("✓ 'Check AI' button visible to moderators");
+    log("✓ Clicking button navigates to AI Detection page");
+    log("✓ URL contains player parameter");
+    log("✓ Player filter correctly pre-populated");
+    log("✓ Player Check AI button functionality fully verified");
 };

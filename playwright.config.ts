@@ -42,9 +42,11 @@ if (!process.env.TEST_WORKER_INDEX && !process.env.PW_UI) {
     });
 
     if (process.env.CI) {
-        console.log("Running in CI mode: SMOKE TESTS ONLY");
+        console.log("Running in CI mode: SMOKE TESTS ONLY (1 worker, no retries, sequential)");
+    } else if (process.env.E2E) {
+        console.log("Running in E2E mode: FULL TEST SUITE (2 workers, 1 retry)");
     } else {
-        console.log("Running in local mode: FULL TEST SUITE (except smoketests)");
+        console.log("Running in Dev mode: FULL TEST SUITE (2 workers, no retries)");
     }
 
     // This chicanery is all due to OGS having a 30 char limit on usernames
@@ -80,13 +82,17 @@ export default defineConfig({
     /* Fail the build on CI if you accidentally left test.only in the source code. */
     forbidOnly: !!process.env.CI,
 
-    retries: 1,
+    /* Retry configuration by environment */
+    // CI: 0 retries (smoke tests should be stable)
+    // E2E: 1 retry (handle flakiness in full test suite)
+    // Dev: 0 retries (fail fast for development)
+    retries: process.env.CI ? 0 : process.env.E2E ? 1 : 0,
 
-    /* Opt out of parallel tests on CI. */
-    // TBD UNCOMMENT
-    //workers: process.env.CI ? 1 : undefined,
-
-    workers: 1, // for test development consider 1, easier to debug
+    /* Workers configuration for parallel execution */
+    // CI: 1 worker (sequential for reliability, smoke tests only)
+    // E2E: 2 workers (parallel execution with isolation via worker IDs)
+    // Dev: 2 workers (parallel execution for faster feedback)
+    workers: process.env.CI ? 1 : 2,
 
     /* Reporter to use. See https://playwright.dev/docs/test-reporters */
     reporter: [
