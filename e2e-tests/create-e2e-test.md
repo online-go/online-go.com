@@ -180,7 +180,7 @@ Follow these critical rules:
 
 ```typescript
 // For new test users:
-const username = newTestUsername("RoleDesc"); // Max 21 chars!
+const username = newTestUsername("RoleDesc"); // Max 20 chars!
 const { userPage, userContext } = await prepareNewUser(browser, username, "test");
 
 // For seeded full moderators (E2E_MODERATOR):
@@ -276,10 +276,10 @@ These are mandatory requirements:
 
     - `expectOGSClickableByName()` for ALL buttons/links
     - `prepareNewUser()` for creating test users
-    - `newTestUsername()` for unique usernames (max 21 characters!)
+    - `newTestUsername()` for unique usernames (max 20 characters!)
     - `generateUniqueTestIPv6()` for unique IP addresses
 
-4. **Username Constraints** - The argument to `newTestUsername()` MUST be less than 21 characters (8 chars are used for uniquification)
+4. **Username Constraints** - The argument to `newTestUsername()` MUST be 20 characters or less (10 chars are used for uniquification: e2e prefix, underscore, timestamp, worker ID)
 
 5. **Avoid Direct API Calls** - Drive the system as a user does through the UI
 

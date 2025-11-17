@@ -29,6 +29,7 @@ import {
     defaultChallengeSettings,
 } from "@helpers/challenge-utils";
 import { clickInTheMiddle } from "@helpers/game-utils";
+import { log } from "@helpers/logger";
 
 export const modWarnFirstTurnEscapersTest = async ({
     createContext,
@@ -70,7 +71,7 @@ export const modWarnFirstTurnEscapersTest = async ({
     // Now challenger is waiting for escaper ... eventually escaper times out
     // and challenger gets the ack that we are looking for
 
-    console.log("cmWarnFirstTurnEscaper waiting escaper timeout (about a minute)...");
+    log("cmWarnFirstTurnEscaper waiting escaper timeout (about a minute)...");
     await challengerPage
         .locator(
             '.AccountWarningAck .canned-message:has-text("We\'ve noticed that the other player left game")',

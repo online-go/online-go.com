@@ -1049,8 +1049,18 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
             sfx.playStonePlacementSound(stone.x, stone.y, stone.width, stone.height, stone.color),
         );
         goban.on("audio-pass", () => sfx.play("pass"));
-        goban.on("audio-undo-requested", () => sfx.play("undo_requested"));
-        goban.on("audio-undo-granted", () => sfx.play("undo_granted"));
+        goban.on("audio-undo-requested", () => {
+            // Don't play undo sounds for bot games
+            if (!goban.engine.config.bot_parameters) {
+                sfx.play("undo_requested");
+            }
+        });
+        goban.on("audio-undo-granted", () => {
+            // Don't play undo sounds for bot games
+            if (!goban.engine.config.bot_parameters) {
+                sfx.play("undo_granted");
+            }
+        });
 
         goban.on("audio-capture-stones", (obj: { count: number; already_captured: number }) => {
             let sound: ValidSound = "error";

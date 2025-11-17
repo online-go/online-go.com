@@ -50,6 +50,7 @@ import {
 import { playMoves } from "@helpers/game-utils";
 import { expectOGSClickableByName } from "@helpers/matchers";
 import { withReportCountTracking } from "@helpers/report-utils";
+import { log } from "@helpers/logger";
 
 export const cmVoteSuspendUserTest = async (
     {
@@ -57,10 +58,10 @@ export const cmVoteSuspendUserTest = async (
     }: { createContext: (options?: CreateContextOptions) => Promise<BrowserContext> },
     testInfo: TestInfo,
 ) => {
-    console.log("=== CM Vote Suspend User Test ===");
+    log("=== CM Vote Suspend User Test ===");
 
     // Create two users who will play a game
-    console.log("Creating two users to play a game...");
+    log("Creating two users to play a game...");
     const accusedUsername = newTestUsername("Accu"); // cspell:ignore Accu
     const opponentUsername = newTestUsername("Opp"); // cspell:ignore Opp
 
@@ -72,7 +73,7 @@ export const cmVoteSuspendUserTest = async (
     );
 
     // Have them play a quick 9x9 game
-    console.log("Creating and playing game...");
+    log("Creating and playing game...");
     await createDirectChallenge(accusedPage, opponentUsername, {
         ...defaultChallengeSettings,
         gameName: "E2E CM Suspend Test Game",
@@ -115,10 +116,10 @@ export const cmVoteSuspendUserTest = async (
 
     // Wait for game to finish
     await expect(accusedPage.getByText("wins by")).toBeVisible();
-    console.log("Game completed ✓");
+    log("Game completed ✓");
 
     // Create a reporter and report the accused user for escaping
-    console.log("Creating reporter and reporting user...");
+    log("Creating reporter and reporting user...");
     const reporterUsername = newTestUsername("EscReporter");
     const { userPage: reporterPage } = await prepareNewUser(
         createContext,
@@ -137,7 +138,7 @@ export const cmVoteSuspendUserTest = async (
             "escaping",
             "This user stopped playing and abandoned the game",
         );
-        console.log("Report submitted ✓");
+        log("Report submitted ✓");
 
         // Verify reporter's count increased by 1
         await tracker.assertCountIncreasedBy(reporterPage, 1);
@@ -146,7 +147,7 @@ export const cmVoteSuspendUserTest = async (
         const reportNumber = await captureReportNumber(reporterPage);
 
         // Have one CM escalate the report
-        console.log("E2E_CM_VSU_V1 escalating escaping report...");
+        log("E2E_CM_VSU_V1 escalating escaping report...");
         const { seededCMPage: escalatorPage } = await setupSeededCM(createContext, "E2E_CM_VSU_V1");
 
         // Navigate directly to the report using the captured report number
@@ -159,19 +160,19 @@ export const cmVoteSuspendUserTest = async (
         await escalateVoteButton.click();
         await escalatorPage.waitForLoadState("networkidle");
 
-        console.log("E2E_CM_VSU_V1 escalated the report");
+        log("E2E_CM_VSU_V1 escalated the report");
 
         // Keep the accused user logged in and browsing while suspension happens
-        console.log("Accused user staying logged in...");
+        log("Accused user staying logged in...");
         await accusedPage.goto("/");
         await accusedPage.waitForLoadState("networkidle");
-        console.log("Accused user is browsing ✓");
+        log("Accused user is browsing ✓");
 
         // Have three CMs vote to suspend the escalated report
         const suspensionVoters = ["E2E_CM_VSU_V1", "E2E_CM_VSU_V2", "E2E_CM_VSU_V3"];
 
         for (const voter of suspensionVoters) {
-            console.log(`${voter} voting to suspend escaper...`);
+            log(`${voter} voting to suspend escaper...`);
             const { seededCMPage: voterPage } = await setupSeededCM(createContext, voter);
 
             // Navigate directly to the report using the captured report number
@@ -183,15 +184,15 @@ export const cmVoteSuspendUserTest = async (
             await suspendVoteButton.click();
             await voterPage.waitForLoadState("networkidle");
 
-            console.log(`${voter} voted to suspend`);
+            log(`${voter} voted to suspend`);
         }
 
         // Wait for suspension processing
-        console.log("Waiting for suspension processing...");
+        log("Waiting for suspension processing...");
         await new Promise((resolve) => setTimeout(resolve, 3000));
 
         // Verify suspended user sees human-readable ban reason
-        console.log("=== Verifying suspended user sees human-readable ban reason ===");
+        log("=== Verifying suspended user sees human-readable ban reason ===");
 
         // Navigate to home page - should see a banner with appeal link
         await accusedPage.goto("/");
@@ -200,7 +201,7 @@ export const cmVoteSuspendUserTest = async (
         // Should see a banner with "appeal here" link
         const appealLink = accusedPage.getByRole("link", { name: /appeal here/i });
         await expect(appealLink).toBeVisible();
-        console.log("Appeal banner visible with 'appeal here' link ✓");
+        log("Appeal banner visible with 'appeal here' link ✓");
 
         // Click the appeal link to navigate to appeal page
         await appealLink.click();
@@ -208,11 +209,11 @@ export const cmVoteSuspendUserTest = async (
 
         // Should now be on the appeal page
         await expect(accusedPage).toHaveURL(/\/appeal/);
-        console.log("Navigated to appeal page via banner link ✓");
+        log("Navigated to appeal page via banner link ✓");
 
         // Verify suspension message is visible
         await expect(accusedPage.getByText(/suspended/i)).toBeVisible();
-        console.log("Suspension message visible ✓");
+        log("Suspension message visible ✓");
 
         // Verify human-readable ban reason is shown in the "Reason for suspension:" heading
         // The Appeal page shows: "Reason for suspension: {{reason}}"
@@ -230,14 +231,14 @@ export const cmVoteSuspendUserTest = async (
         const reasonText = await reasonHeading.textContent();
         expect(reasonText).not.toContain("escaping");
 
-        console.log("Human-readable ban reason displayed to user ✓");
+        log("Human-readable ban reason displayed to user ✓");
 
         // After suspension, the reporter's count should return to initial
         // (Note: In this case, the accused gets suspended, which clears all reports about them)
         await tracker.assertCountReturnedToInitial(reporterPage);
     });
 
-    console.log("=== CM Vote Suspend User Test Complete ===");
-    console.log("✓ CMs can vote to suspend users");
-    console.log("✓ Ban reason displays human-readable report type");
+    log("=== CM Vote Suspend User Test Complete ===");
+    log("✓ CMs can vote to suspend users");
+    log("✓ Ban reason displays human-readable report type");
 };

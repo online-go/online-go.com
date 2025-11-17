@@ -18,6 +18,7 @@
 import type { CreateContextOptions } from "@helpers";
 
 import { expect, Page, BrowserContext } from "@playwright/test";
+import { log } from "./logger";
 import { newTestUsername, prepareNewUser } from "@helpers/user-utils";
 
 export interface DemoBoardModalFields {
@@ -78,7 +79,7 @@ export const fillOutDemoBoardCreationForm = async (
     if (final_settings.boardSize !== undefined) {
         await page.locator("#demo-board-modal-board-size").click();
         await page.waitForSelector("#demo-board-modal-board-size", { state: "visible" });
-        console.log("Board Size:", final_settings.boardSize);
+        log("Board Size:", final_settings.boardSize);
         await page
             .locator("select#demo-board-modal-board-size")
             .selectOption({ label: final_settings.boardSize });
