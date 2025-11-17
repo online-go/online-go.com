@@ -63,8 +63,8 @@ import { log } from "./logger";
 // a decent number of readable user-role characters, within the OGS username 30 character limit
 // on registration.
 export const newTestUsername = (user_role: string) => {
-    if (user_role.length > 21) {
-        throw new Error("user_role must be less than 22 characters");
+    if (user_role.length > 20) {
+        throw new Error("user_role must be 20 characters or less");
     }
     const timestamp = Date.now().toString(36);
     // Using 5 chars provides uniqueness roughly every 1.3 seconds
