@@ -373,7 +373,7 @@ export function AccountSettings(props: SettingGroupPageProps): React.ReactElemen
                                 onChange={(ev) => setEmail(ev.target.value)}
                             />
                             <div style={{ marginTop: "0.5rem" }}>
-                                <i>We will never sell your email address.</i>
+                                <i>{_("We will never sell your email address.")}</i>
                             </div>
 
                             {email && !email_changed && !email_validated && (

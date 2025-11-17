@@ -585,7 +585,7 @@ export function ThemePreferences(): React.ReactElement | null {
                 </div>
             </PreferenceLine>
 
-            <PreferenceLine title={"Use old canvas goban renderer"}>
+            <PreferenceLine title={_("Use old canvas goban renderer")}>
                 <Toggle
                     checked={canvas_enabled === "enabled"}
                     onChange={(tf) => {

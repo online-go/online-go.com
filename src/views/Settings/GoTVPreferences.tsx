@@ -114,7 +114,9 @@ export function GoTVPreferences(): React.ReactElement {
 
                 <PreferenceLine
                     title={_("Connect your Twitch account")}
-                    description="Link your Twitch account to get notifications when your favorite streamers are actively streaming Go"
+                    description={_(
+                        "Link your Twitch account to get notifications when your favorite streamers are actively streaming Go",
+                    )}
                 >
                     {isAuthenticated ? (
                         <button disabled>{_("Connected")}</button>
