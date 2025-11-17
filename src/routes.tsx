@@ -80,6 +80,7 @@ import { useData } from "./lib/hooks";
 import { MainSection } from "@/components/MainSection";
 import { AccessibilityMenu } from "@/components/AccessibilityMenu";
 import { AIDetection } from "@moderator-ui/AIDetection";
+import { RecentlyBlocked } from "@moderator-ui/RecentlyBlocked";
 
 const LearningHub = React.lazy(() =>
     import(/* webpackChunkName: "learning-hub" */ "@/views/LearningHub").then((m) => ({
@@ -359,6 +360,7 @@ export const routes = (
                 />
                 <Route path="/developer" element={<Developer />} />
                 <Route path="/moderator/ai-detection" element={<AIDetection />} />
+                <Route path="/moderator/recently-blocked" element={<RecentlyBlocked />} />
                 <Route path="/admin/merchant_log" element={<MerchantLog />} />
                 <Route path="/admin/firewall" element={<Firewall />} />
                 <Route path="/admin/flagged_games" element={<FlaggedGames />} />

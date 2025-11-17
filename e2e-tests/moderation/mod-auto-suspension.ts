@@ -24,12 +24,15 @@
  * 3. The new user plays their first game
  * 4. After the game, the backend detects the BID matches a suspended account's historical BID
  * 5. The new user is auto-suspended
+ * 6. The suspended user appears in the "Recently Blocked" moderator page with correct matched account info
  *
  * The test works by:
  * - Setting device.uuid in localStorage to a BID that was previously used by E2E_SUSPENDED_BID_USER
  * - Registering a new account (succeeds because suspended user's current last_browser_id is different)
  * - Playing a complete game
  * - Checking for suspension banner after the game completes
+ * - Logging in as E2E_MODERATOR and verifying the user appears in the Recently Blocked page
+ * - Verifying the matched accounts dropdown shows E2E_SUSPENDED_BID_USER
  */
 
 import type { CreateContextOptions } from "@helpers";
@@ -40,6 +43,7 @@ import {
     newTestUsername,
     prepareNewUser,
     logoutUser,
+    loginAsUser,
 } from "../helpers/user-utils";
 import { expectOGSClickableByName } from "../helpers/matchers";
 import {
@@ -254,6 +258,57 @@ export const autoSuspensionTest = async ({
     await expect(appealLink).toBeVisible();
     log("Auto-suspension verification complete ✓");
 
+    // Verify the user appears in the Recently Blocked page
+    log("Verifying user appears in Recently Blocked page...");
+    const moderatorPassword = process.env.E2E_MODERATOR_PASSWORD;
+    if (!moderatorPassword) {
+        throw new Error("E2E_MODERATOR_PASSWORD environment variable must be set");
+    }
+
+    const modContext = await createContext();
+    const modPage = await modContext.newPage();
+    await loginAsUser(modPage, "E2E_MODERATOR", moderatorPassword);
+    log("Logged in as moderator ✓");
+
+    // Navigate to Recently Blocked page
+    await modPage.goto("/moderator/recently-blocked");
+    await modPage.waitForLoadState("networkidle");
+    log("Navigated to Recently Blocked page ✓");
+
+    // Verify the suspended user appears in the table
+    const userInTable = modPage.locator(".recently-blocked").getByText(newUsername);
+    await expect(userInTable).toBeVisible({ timeout: 10000 });
+    log(`Found ${newUsername} in Recently Blocked table ✓`);
+
+    // Verify the matched accounts dropdown is present
+    const matchedAccountsCell = modPage
+        .locator(".recently-blocked tr")
+        .filter({ hasText: newUsername })
+        .locator(".matched-accounts");
+    await expect(matchedAccountsCell).toBeVisible();
+
+    // Verify it shows account count
+    await expect(matchedAccountsCell).toContainText(/\d+ accounts?/);
+    log("Verified matched accounts count is displayed ✓");
+
+    // Click to expand the matched accounts dropdown
+    const caret = matchedAccountsCell.locator("i.fa-caret-right");
+    await expect(caret).toBeVisible();
+    await matchedAccountsCell.click();
+    log("Expanded matched accounts dropdown ✓");
+
+    // Verify it now shows the down caret (expanded state)
+    const caretDown = matchedAccountsCell.locator("i.fa-caret-down");
+    await expect(caretDown).toBeVisible();
+
+    // Verify the matched account (E2E_SUSPENDED_BID_USER) appears in the dropdown
+    await expect(matchedAccountsCell.getByText("E2E_SUSPENDED_BID_USER")).toBeVisible();
+    log("Verified E2E_SUSPENDED_BID_USER appears in matched accounts ✓");
+
+    log("Recently Blocked page verification complete ✓");
+
+    await modContext.close();
+
     // Clean up: Change the suspended user's last_browser_id to avoid affecting future test runs
     // We do this by logging out and back in with a different BID and IP
     // (last_browser_id only updates at registration and login time)
@@ -303,5 +358,7 @@ export const autoSuspensionTest = async ({
     log("✓ User with flagged BID registered successfully");
     log("✓ User was auto-suspended after first game");
     log("✓ Suspension banner displayed correctly");
+    log("✓ User appears in Recently Blocked page with correct matched account");
+    log("✓ Matched accounts dropdown works correctly");
     log("✓ Cleaned up last_browser_id for future test runs");
 };

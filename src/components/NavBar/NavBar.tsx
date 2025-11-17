@@ -359,6 +359,14 @@ export function NavBar(): React.ReactElement {
                                     icon={<i className="fa fa-search" />}
                                 />
                             )}
+                            {(user.is_moderator ||
+                                (user.moderator_powers & MODERATOR_POWERS.AI_DETECTOR) !== 0) && (
+                                <MenuLink
+                                    title={_("Recently Blocked")}
+                                    to="/moderator/recently-blocked"
+                                    icon={<i className="fa fa-ban" />}
+                                />
+                            )}
                             {user.is_moderator && (
                                 <MenuLink
                                     title="Firewall"
