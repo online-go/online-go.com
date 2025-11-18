@@ -365,6 +365,9 @@ export const autoSuspensionTest = async ({
             log("Logged back in with cleanup BID and new IP ✓");
             log(`Updated last_browser_id from ${SUSPENDED_USER_BID} to ${cleanupBID}`);
 
+            // Close the cleanup context to free resources
+            await cleanupContext.close();
+
             log("=== Browser ID Suspension Test Complete ===");
             log("✓ User with flagged BID registered successfully");
             log("✓ User was auto-suspended after first game");
