@@ -75,290 +75,305 @@ export const autoSuspensionTest = async ({
     const testPage = await testContext.newPage();
     log(`Created new context with IP ${newIPv6} ✓`);
 
-    // Set device.uuid using the data module API
-    log(`Setting device.uuid to suspended BID: ${SUSPENDED_USER_BID}`);
-    await testPage.goto("/");
-    await testPage.waitForLoadState("networkidle");
+    let newUsername: string | undefined;
 
-    // Use the data.set() API to set device.uuid
-    await testPage.evaluate((bid) => {
-        (window as any).data.set("device.uuid", bid);
-        console.log("Set device.uuid via data.set() to:", bid);
-        console.log("Verify via data.get():", (window as any).data.get("device.uuid"));
-    }, SUSPENDED_USER_BID);
-    log("device.uuid set via data module ✓");
-
-    // Navigate to registration page
-    await testPage.goto("/");
-    await testPage.getByRole("link", { name: /sign in/i }).click();
-    await expect(testPage.getByLabel("Username")).toBeVisible();
-    await expect(testPage.getByLabel("Password")).toBeVisible();
-
-    // Go to register page
-    const registerButton = await expectOGSClickableByName(testPage, /Register here!/);
-    await registerButton.click();
-
-    // Wait for "Welcome new player!" to confirm we're on the registration page
-    await expect(testPage.getByText("Welcome new player!")).toBeVisible();
-
-    // Fill in registration form
-    log("Attempting to register new user with flagged BID...");
-    const newUsername = newTestUsername("BISNew");
-    const usernameInput = testPage.getByLabel("Username");
-    await usernameInput.fill(newUsername);
-    await expect(usernameInput).toHaveValue(newUsername);
-
-    const passwordInput = testPage.getByLabel("Password");
-    await passwordInput.fill("test");
-    await expect(passwordInput).toHaveValue("test");
-
-    const emailInput = testPage.getByLabel("Email");
-    await emailInput.fill(`${newUsername}@test.com`);
-    await expect(emailInput).toHaveValue(`${newUsername}@test.com`);
-
-    const registerSubmitButton = await expectOGSClickableByName(testPage, /Register$/);
-    await registerSubmitButton.click();
-
-    // Wait for registration to complete - register button should disappear
-    await expect(registerSubmitButton).toBeHidden();
-
-    // Wait for successful registration
-    await testPage.waitForLoadState("networkidle");
-    await expect(testPage.getByText("Welcome!")).toBeVisible();
-    const userDropdown = testPage.locator(".username").getByText(newUsername);
-    await expect(userDropdown).toBeVisible();
-    log(`Registration successful for ${newUsername} with flagged BID ✓`);
-
-    // Choose board style preference to complete onboarding
-    // Wait for board style selection to be ready
-    await testPage.waitForTimeout(500);
-    const chooseButton = await expectOGSClickableByName(testPage, /^Basic/);
-    await chooseButton.click();
-    await expect(testPage.getByText("You're not currently playing any games")).toBeVisible();
-
-    // Turn off dynamic help
-    await testPage.goto("/settings/help");
-    await testPage.waitForLoadState("networkidle");
-    const switchElement = testPage.locator(
-        'div.PreferenceLine:has-text("Show dynamic help") input[role="switch"]',
-    );
-    const parentElement = testPage.locator('div.PreferenceLine:has-text("Show dynamic help")');
-    await expect(parentElement).toBeVisible();
-    const isSwitchOn = await switchElement.evaluate((el) => (el as HTMLInputElement).checked);
-    if (isSwitchOn) {
-        await parentElement.click();
-    }
-
-    await testPage.goto("/");
-
-    // Create an opponent to play against
-    log("Creating opponent user...");
-    const opponentUsername = newTestUsername("BISOpp");
-    const { userPage: opponentPage } = await prepareNewUser(
-        createContext,
-        opponentUsername,
-        "test",
-    );
-
-    // Have the new user play a game
-    log("New user creating a game challenge...");
-    await createDirectChallenge(testPage, opponentUsername, {
-        ...defaultChallengeSettings,
-        gameName: "E2E Browser ID Suspension Test Game",
-        boardSize: "9x9",
-        speed: "live",
-        timeControl: "byoyomi",
-        mainTime: "45",
-        timePerPeriod: "10",
-        periods: "1",
-    });
-
-    log("Opponent accepting challenge...");
-    await acceptDirectChallenge(opponentPage);
-
-    // Wait for the Goban to be visible
-    const goban = testPage.locator(".Goban[data-pointers-bound]");
-    await goban.waitFor({ state: "visible" });
-    await testPage.waitForTimeout(1000);
-
-    // Verify it's the new user's turn
-    const newUserMove = testPage.getByText("Your move", { exact: true });
-    await expect(newUserMove).toBeVisible();
-
-    // Play a few moves
-    log("Playing game...");
-    const moves = ["D9", "E9", "D8", "E8", "D7", "E7"];
-    await playMoves(testPage, opponentPage, moves, "9x9");
-
-    // Both players pass to end the game
-    const newUserPass = await expectOGSClickableByName(testPage, "Pass");
-    await newUserPass.click();
-
-    const opponentPass = await expectOGSClickableByName(opponentPage, "Pass");
-    await opponentPass.click();
-
-    // Accept scores
-    const opponentAccept = await expectOGSClickableByName(opponentPage, "Accept");
-    await opponentAccept.click();
-
-    const newUserAccept = await expectOGSClickableByName(testPage, "Accept");
-    await newUserAccept.click();
-
-    // Wait for game to finish
-    await expect(testPage.getByText("wins by")).toBeVisible();
-    log("Game completed ✓");
-
-    // Wait for the post-game suspension check to process
-    // The backend needs to: process game end, check BIDs, and suspend the user
-    // This can take longer on slower servers (CI vs local dev)
-    log("Waiting for post-game BID check to process...");
-
-    // Poll for suspension banner with retries (up to 30 seconds)
-    let suspensionDetected = false;
-    const maxRetries = 15;
-    const retryDelay = 2000;
-
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-        log(`Checking for suspension (attempt ${attempt}/${maxRetries})...`);
-
-        // Navigate to home to refresh user state
+    try {
+        // Set device.uuid using the data module API
+        log(`Setting device.uuid to suspended BID: ${SUSPENDED_USER_BID}`);
         await testPage.goto("/");
-        await testPage.waitForLoadState("networkidle");
+        // Wait for the data module to be available instead of networkidle
+        await testPage.waitForFunction(() => (window as any).data !== undefined);
 
-        // Check if banned_user_id is set in the data store
-        const bannedUserId = await testPage.evaluate(() => {
-            return (window as any).data.get("appeals.banned_user_id");
+        // Use the data.set() API to set device.uuid
+        await testPage.evaluate((bid) => {
+            (window as any).data.set("device.uuid", bid);
+            console.log("Set device.uuid via data.set() to:", bid);
+            console.log("Verify via data.get():", (window as any).data.get("device.uuid"));
+        }, SUSPENDED_USER_BID);
+        log("device.uuid set via data module ✓");
+
+        // Navigate to registration page
+        await testPage.goto("/");
+        await testPage.getByRole("link", { name: /sign in/i }).click();
+        await expect(testPage.getByLabel("Username")).toBeVisible();
+        await expect(testPage.getByLabel("Password")).toBeVisible();
+
+        // Go to register page
+        const registerButton = await expectOGSClickableByName(testPage, /Register here!/);
+        await registerButton.click();
+
+        // Wait for "Welcome new player!" to confirm we're on the registration page
+        await expect(testPage.getByText("Welcome new player!")).toBeVisible();
+
+        // Fill in registration form
+        log("Attempting to register new user with flagged BID...");
+        newUsername = newTestUsername("BISNew");
+        const usernameInput = testPage.getByLabel("Username");
+        await usernameInput.fill(newUsername);
+        await expect(usernameInput).toHaveValue(newUsername);
+
+        const passwordInput = testPage.getByLabel("Password");
+        await passwordInput.fill("test");
+        await expect(passwordInput).toHaveValue("test");
+
+        const emailInput = testPage.getByLabel("Email");
+        await emailInput.fill(`${newUsername}@test.com`);
+        await expect(emailInput).toHaveValue(`${newUsername}@test.com`);
+
+        const registerSubmitButton = await expectOGSClickableByName(testPage, /Register$/);
+        await registerSubmitButton.click();
+
+        // Wait for registration to complete - register button should disappear
+        await expect(registerSubmitButton).toBeHidden();
+
+        // Wait for successful registration by checking for Welcome message
+        await expect(testPage.getByText("Welcome!")).toBeVisible();
+        const userDropdown = testPage.locator(".username").getByText(newUsername);
+        await expect(userDropdown).toBeVisible();
+        log(`Registration successful for ${newUsername} with flagged BID ✓`);
+
+        // Choose board style preference to complete onboarding
+        // Wait for board style selection to be ready
+        await testPage.waitForTimeout(500);
+        const chooseButton = await expectOGSClickableByName(testPage, /^Basic/);
+        await chooseButton.click();
+        await expect(testPage.getByText("You're not currently playing any games")).toBeVisible();
+
+        // Turn off dynamic help
+        await testPage.goto("/settings/help");
+        const switchElement = testPage.locator(
+            'div.PreferenceLine:has-text("Show dynamic help") input[role="switch"]',
+        );
+        const parentElement = testPage.locator('div.PreferenceLine:has-text("Show dynamic help")');
+        // Wait for settings page to load by checking for the element
+        await expect(parentElement).toBeVisible();
+        const isSwitchOn = await switchElement.evaluate((el) => (el as HTMLInputElement).checked);
+        if (isSwitchOn) {
+            await parentElement.click();
+        }
+
+        await testPage.goto("/");
+
+        // Create an opponent to play against
+        log("Creating opponent user...");
+        const opponentUsername = newTestUsername("BISOpp");
+        const { userPage: opponentPage } = await prepareNewUser(
+            createContext,
+            opponentUsername,
+            "test",
+        );
+
+        // Have the new user play a game
+        log("New user creating a game challenge...");
+        await createDirectChallenge(testPage, opponentUsername, {
+            ...defaultChallengeSettings,
+            gameName: "E2E Browser ID Suspension Test Game",
+            boardSize: "9x9",
+            speed: "live",
+            timeControl: "byoyomi",
+            mainTime: "45",
+            timePerPeriod: "10",
+            periods: "1",
         });
-        log(`  appeals.banned_user_id: ${bannedUserId}`);
 
-        // Check if appeal link is visible
+        log("Opponent accepting challenge...");
+        await acceptDirectChallenge(opponentPage);
+
+        // Wait for the Goban to be visible
+        const goban = testPage.locator(".Goban[data-pointers-bound]");
+        await goban.waitFor({ state: "visible" });
+        await testPage.waitForTimeout(1000);
+
+        // Verify it's the new user's turn
+        const newUserMove = testPage.getByText("Your move", { exact: true });
+        await expect(newUserMove).toBeVisible();
+
+        // Play a few moves
+        log("Playing game...");
+        const moves = ["D9", "E9", "D8", "E8", "D7", "E7"];
+        await playMoves(testPage, opponentPage, moves, "9x9");
+
+        // Both players pass to end the game
+        const newUserPass = await expectOGSClickableByName(testPage, "Pass");
+        await newUserPass.click();
+
+        const opponentPass = await expectOGSClickableByName(opponentPage, "Pass");
+        await opponentPass.click();
+
+        // Accept scores
+        const opponentAccept = await expectOGSClickableByName(opponentPage, "Accept");
+        await opponentAccept.click();
+
+        const newUserAccept = await expectOGSClickableByName(testPage, "Accept");
+        await newUserAccept.click();
+
+        // Wait for game to finish
+        await expect(testPage.getByText("wins by")).toBeVisible();
+        log("Game completed ✓");
+
+        // Wait for the post-game suspension check to process
+        // The backend needs to: process game end, check BIDs, and suspend the user
+        // This can take longer on slower servers (CI vs local dev)
+        log("Waiting for post-game BID check to process...");
+
+        // Poll for suspension banner with retries (up to 30 seconds)
+        let suspensionDetected = false;
+        const maxRetries = 15;
+        const retryDelay = 2000;
+
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            log(`Checking for suspension (attempt ${attempt}/${maxRetries})...`);
+
+            // Navigate to home to refresh user state
+            await testPage.goto("/");
+            // Wait for user dropdown to be visible (page loaded)
+            await expect(userDropdown).toBeVisible();
+
+            // Check if banned_user_id is set in the data store
+            const bannedUserId = await testPage.evaluate(() => {
+                return (window as any).data.get("appeals.banned_user_id");
+            });
+            log(`  appeals.banned_user_id: ${bannedUserId}`);
+
+            // Check if appeal link is visible
+            const appealLink = testPage.getByRole("link", { name: /appeal here/i });
+            const isVisible = await appealLink.isVisible().catch(() => false);
+
+            if (isVisible) {
+                log("Suspension banner with 'appeal here' link visible ✓");
+                suspensionDetected = true;
+                break;
+            }
+
+            if (attempt < maxRetries) {
+                log(`  Not suspended yet, waiting ${retryDelay}ms before retry...`);
+                await new Promise((resolve) => setTimeout(resolve, retryDelay));
+            }
+        }
+
+        if (!suspensionDetected) {
+            log("Suspension not detected after maximum retries");
+            // Take a screenshot for debugging
+            await testPage.screenshot({ path: "test-results/suspension-timeout.png" });
+        }
+
+        // Final assertion
         const appealLink = testPage.getByRole("link", { name: /appeal here/i });
-        const isVisible = await appealLink.isVisible().catch(() => false);
+        await expect(appealLink).toBeVisible();
+        log("Auto-suspension verification complete ✓");
 
-        if (isVisible) {
-            log("Suspension banner with 'appeal here' link visible ✓");
-            suspensionDetected = true;
-            break;
+        // Verify the user appears in the Recently Blocked page
+        log("Verifying user appears in Recently Blocked page...");
+        const moderatorPassword = process.env.E2E_MODERATOR_PASSWORD;
+        if (!moderatorPassword) {
+            throw new Error("E2E_MODERATOR_PASSWORD environment variable must be set");
         }
 
-        if (attempt < maxRetries) {
-            log(`  Not suspended yet, waiting ${retryDelay}ms before retry...`);
-            await new Promise((resolve) => setTimeout(resolve, retryDelay));
+        const modContext = await createContext();
+        const modPage = await modContext.newPage();
+        await loginAsUser(modPage, "E2E_MODERATOR", moderatorPassword);
+        log("Logged in as moderator ✓");
+
+        // Navigate to Recently Blocked page
+        await modPage.goto("/moderator/recently-blocked");
+        // Wait for the table to be visible (use table selector to avoid strict mode violation)
+        await expect(modPage.locator("table.recently-blocked")).toBeVisible();
+        log("Navigated to Recently Blocked page ✓");
+
+        // Verify the suspended user appears in the table
+        const userInTable = modPage.locator("table.recently-blocked").getByText(newUsername);
+        await expect(userInTable).toBeVisible({ timeout: 10000 });
+        log(`Found ${newUsername} in Recently Blocked table ✓`);
+
+        // Verify the matched accounts dropdown is present
+        const matchedAccountsCell = modPage
+            .locator("table.recently-blocked tr")
+            .filter({ hasText: newUsername })
+            .locator(".matched-accounts");
+        await expect(matchedAccountsCell).toBeVisible();
+
+        // Verify it shows account count
+        await expect(matchedAccountsCell).toContainText(/\d+ accounts?/);
+        log("Verified matched accounts count is displayed ✓");
+
+        // Click to expand the matched accounts dropdown
+        const caret = matchedAccountsCell.locator("i.fa-caret-right");
+        await expect(caret).toBeVisible();
+        await matchedAccountsCell.click();
+        log("Expanded matched accounts dropdown ✓");
+
+        // Verify it now shows the down caret (expanded state)
+        const caretDown = matchedAccountsCell.locator("i.fa-caret-down");
+        await expect(caretDown).toBeVisible();
+
+        // Verify the matched account (E2E_SUSPENDED_BID_USER) appears in the dropdown
+        await expect(matchedAccountsCell.getByText("E2E_SUSPENDED_BID_USER")).toBeVisible();
+        log("Verified E2E_SUSPENDED_BID_USER appears in matched accounts ✓");
+
+        log("Recently Blocked page verification complete ✓");
+
+        await modContext.close();
+    } finally {
+        // Clean up: Change the suspended user's last_browser_id to avoid affecting future test runs
+        // We do this by logging out and back in with a different BID and IP
+        // (last_browser_id only updates at registration and login time)
+        // This MUST run even if the test fails to prevent poisoning future test runs
+        if (newUsername) {
+            log("Cleaning up: Changing suspended user's last_browser_id...");
+
+            // Log out first
+            await logoutUser(testPage);
+            log("Logged out ✓");
+
+            // Create a fresh context with a new IP
+            const cleanupIPv6 = generateUniqueTestIPv6();
+            const cleanupContext = await createContext({
+                extraHTTPHeaders: {
+                    "X-Forwarded-For": cleanupIPv6,
+                },
+            });
+            const cleanupPage = await cleanupContext.newPage();
+            log(`Created fresh context with new IP ${cleanupIPv6} ✓`);
+
+            // Set a new BID different from the test BID
+            const cleanupBID = `cleanup-bid-${Date.now()}`;
+            await cleanupPage.goto("/");
+            // Wait for data module to be available
+            await cleanupPage.waitForFunction(() => (window as any).data !== undefined);
+            await cleanupPage.evaluate((bid) => {
+                (window as any).data.set("device.uuid", bid);
+                console.log("Set cleanup BID:", bid);
+            }, cleanupBID);
+
+            // Hit the login API with the new BID and IP (this updates last_browser_id)
+            await cleanupPage.goto("/sign-in");
+            // Wait for login form to be visible
+            await expect(cleanupPage.getByLabel("Username")).toBeVisible();
+
+            await cleanupPage.getByLabel("Username").fill(newUsername);
+            await cleanupPage.getByLabel("Password").fill("test");
+            await cleanupPage.getByRole("button", { name: /Sign in$/ }).click();
+
+            // Wait for response (either success or suspension error)
+            // The login will update the BID even though it fails due to suspension
+            await cleanupPage.waitForTimeout(1000);
+
+            // This will error because the user is suspended
+            // (which is a bug, they need to log in to appeal!)
+
+            // but at least we've cleared the last_browser_id for future test runs
+            log("Logged back in with cleanup BID and new IP ✓");
+            log(`Updated last_browser_id from ${SUSPENDED_USER_BID} to ${cleanupBID}`);
+
+            log("=== Browser ID Suspension Test Complete ===");
+            log("✓ User with flagged BID registered successfully");
+            log("✓ User was auto-suspended after first game");
+            log("✓ Suspension banner displayed correctly");
+            log("✓ User appears in Recently Blocked page with correct matched account");
+            log("✓ Matched accounts dropdown works correctly");
+            log("✓ Cleaned up last_browser_id for future test runs");
+        } else {
+            log("Skipping cleanup - no user was created");
         }
     }
-
-    if (!suspensionDetected) {
-        log("Suspension not detected after maximum retries");
-        // Take a screenshot for debugging
-        await testPage.screenshot({ path: "test-results/suspension-timeout.png" });
-    }
-
-    // Final assertion
-    const appealLink = testPage.getByRole("link", { name: /appeal here/i });
-    await expect(appealLink).toBeVisible();
-    log("Auto-suspension verification complete ✓");
-
-    // Verify the user appears in the Recently Blocked page
-    log("Verifying user appears in Recently Blocked page...");
-    const moderatorPassword = process.env.E2E_MODERATOR_PASSWORD;
-    if (!moderatorPassword) {
-        throw new Error("E2E_MODERATOR_PASSWORD environment variable must be set");
-    }
-
-    const modContext = await createContext();
-    const modPage = await modContext.newPage();
-    await loginAsUser(modPage, "E2E_MODERATOR", moderatorPassword);
-    log("Logged in as moderator ✓");
-
-    // Navigate to Recently Blocked page
-    await modPage.goto("/moderator/recently-blocked");
-    await modPage.waitForLoadState("networkidle");
-    log("Navigated to Recently Blocked page ✓");
-
-    // Verify the suspended user appears in the table
-    const userInTable = modPage.locator(".recently-blocked").getByText(newUsername);
-    await expect(userInTable).toBeVisible({ timeout: 10000 });
-    log(`Found ${newUsername} in Recently Blocked table ✓`);
-
-    // Verify the matched accounts dropdown is present
-    const matchedAccountsCell = modPage
-        .locator(".recently-blocked tr")
-        .filter({ hasText: newUsername })
-        .locator(".matched-accounts");
-    await expect(matchedAccountsCell).toBeVisible();
-
-    // Verify it shows account count
-    await expect(matchedAccountsCell).toContainText(/\d+ accounts?/);
-    log("Verified matched accounts count is displayed ✓");
-
-    // Click to expand the matched accounts dropdown
-    const caret = matchedAccountsCell.locator("i.fa-caret-right");
-    await expect(caret).toBeVisible();
-    await matchedAccountsCell.click();
-    log("Expanded matched accounts dropdown ✓");
-
-    // Verify it now shows the down caret (expanded state)
-    const caretDown = matchedAccountsCell.locator("i.fa-caret-down");
-    await expect(caretDown).toBeVisible();
-
-    // Verify the matched account (E2E_SUSPENDED_BID_USER) appears in the dropdown
-    await expect(matchedAccountsCell.getByText("E2E_SUSPENDED_BID_USER")).toBeVisible();
-    log("Verified E2E_SUSPENDED_BID_USER appears in matched accounts ✓");
-
-    log("Recently Blocked page verification complete ✓");
-
-    await modContext.close();
-
-    // Clean up: Change the suspended user's last_browser_id to avoid affecting future test runs
-    // We do this by logging out and back in with a different BID and IP
-    // (last_browser_id only updates at registration and login time)
-    log("Cleaning up: Changing suspended user's last_browser_id...");
-
-    // Log out first
-    await logoutUser(testPage);
-    log("Logged out ✓");
-
-    // Create a fresh context with a new IP
-    const cleanupIPv6 = generateUniqueTestIPv6();
-    const cleanupContext = await createContext({
-        extraHTTPHeaders: {
-            "X-Forwarded-For": cleanupIPv6,
-        },
-    });
-    const cleanupPage = await cleanupContext.newPage();
-    log(`Created fresh context with new IP ${cleanupIPv6} ✓`);
-
-    // Set a new BID different from the test BID
-    const cleanupBID = `cleanup-bid-${Date.now()}`;
-    await cleanupPage.goto("/");
-    await cleanupPage.waitForLoadState("networkidle");
-    await cleanupPage.evaluate((bid) => {
-        (window as any).data.set("device.uuid", bid);
-        console.log("Set cleanup BID:", bid);
-    }, cleanupBID);
-
-    // Hit the login API with the new BID and IP (this updates last_browser_id)
-    await cleanupPage.goto("/sign-in");
-
-    await cleanupPage.waitForLoadState("networkidle");
-
-    await cleanupPage.getByLabel("Username").fill(newUsername);
-    await cleanupPage.getByLabel("Password").fill("test");
-    await cleanupPage.getByRole("button", { name: /Sign in$/ }).click();
-    await cleanupPage.waitForLoadState("networkidle");
-
-    // This will error because the user is suspended
-    // (which is a bug, they need to log in to appeal!)
-
-    // but at least we've cleared the last_browser_id for future test runs
-    log("Logged back in with cleanup BID and new IP ✓");
-    log(`Updated last_browser_id from ${SUSPENDED_USER_BID} to ${cleanupBID}`);
-
-    log("=== Browser ID Suspension Test Complete ===");
-    log("✓ User with flagged BID registered successfully");
-    log("✓ User was auto-suspended after first game");
-    log("✓ Suspension banner displayed correctly");
-    log("✓ User appears in Recently Blocked page with correct matched account");
-    log("✓ Matched accounts dropdown works correctly");
-    log("✓ Cleaned up last_browser_id for future test runs");
 };
