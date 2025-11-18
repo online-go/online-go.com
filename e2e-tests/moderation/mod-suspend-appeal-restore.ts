@@ -124,8 +124,7 @@ export const suspendAppealRestoreTest = async ({
     // 4. User sees suspension banner
     log("Checking for suspension banner on user page...");
     await userPage.goto("/");
-    await userPage.waitForLoadState("networkidle");
-
+    // Wait for suspension banner instead of networkidle
     await expect(userPage.getByText("Your account has been suspended")).toBeVisible();
     log("Suspension banner visible ✓");
 
@@ -134,9 +133,8 @@ export const suspendAppealRestoreTest = async ({
     const appealLink = userPage.getByRole("link", { name: /appeal here/i });
     await expect(appealLink).toBeVisible();
     await appealLink.click();
-    await userPage.waitForLoadState("networkidle");
 
-    // Verify we're on the appeal page
+    // Verify we're on the appeal page (wait for content to load)
     await expect(userPage.getByText(/Your account has been suspended/i)).toBeVisible();
     await expect(
         userPage.getByText(/Reason for suspension: Test suspension for e2e testing/i),
@@ -154,18 +152,20 @@ export const suspendAppealRestoreTest = async ({
 
     const userSubmitButton = await expectOGSClickableByName(userPage, /^Submit$/);
     await userSubmitButton.click();
+
+    // Wait for submission to process - the Submit button becomes disabled
+    await expect(userSubmitButton).toBeDisabled();
     log("Appeal submitted ✓");
 
-    // Verify the message appears in the UI
+    // Verify the message appears in the UI (may take a moment to render)
     await expect(
         userPage.getByText(/I apologize for my behavior. I understand the rules now./i),
-    ).toBeVisible();
+    ).toBeVisible({ timeout: 10000 });
     log("Appeal message visible in UI ✓");
 
     // 7. Moderator goes to Appeals Centre
     log("Moderator navigating to Appeals Centre...");
     await modPage.goto("/appeals-center");
-    await modPage.waitForLoadState("networkidle");
 
     // Verify we're on the Appeals Center page by checking for the h1 heading
     await expect(modPage.getByRole("heading", { name: /Appeals Center/i })).toBeVisible();
@@ -181,13 +181,11 @@ export const suspendAppealRestoreTest = async ({
     // Click on the "State" column cell (not the Player cell)
     const stateCell = appealRow.locator("td.state").last();
     await stateCell.click();
-    await modPage.waitForLoadState("networkidle");
-    log("Appeal opened ✓");
 
-    // 9. Verify moderator sees the appeal message
+    // 9. Verify moderator sees the appeal message (wait for appeal details to load)
     log("Verifying appeal message is visible...");
     await expect(modPage.getByText(/I apologize for my behavior/i)).toBeVisible();
-    log("Appeal message visible to moderator ✓");
+    log("Appeal opened and message visible to moderator ✓");
 
     // 10. Moderator responds but leaves user suspended
     log("Moderator responding (leaving suspended)...");
@@ -212,8 +210,8 @@ export const suspendAppealRestoreTest = async ({
     // 11. User sees moderator's response
     log("User checking for moderator response...");
     await userPage.reload();
-    await userPage.waitForLoadState("networkidle");
 
+    // Wait for moderator's response to appear
     await expect(
         userPage.getByText(/Please review the Terms of Service and do not repeat this behavior/i),
     ).toBeVisible();
@@ -242,8 +240,8 @@ export const suspendAppealRestoreTest = async ({
     // 13. Moderator sees reply and restores account
     log("Moderator checking for user reply...");
     await modPage.reload();
-    await modPage.waitForLoadState("networkidle");
 
+    // Wait for user's reply to appear
     await expect(
         modPage.getByText(/Thank you for the second chance. I have read the Terms/i),
     ).toBeVisible();
@@ -270,8 +268,8 @@ export const suspendAppealRestoreTest = async ({
     // 15. Verify user no longer sees suspension banner
     log("Verifying suspension banner is removed...");
     await userPage.goto("/");
-    await userPage.waitForLoadState("networkidle");
 
+    // Wait for page to load and verify suspension banner is gone
     await expect(userPage.getByText("Your account has been suspended")).not.toBeVisible();
     log("Suspension banner removed ✓");
 

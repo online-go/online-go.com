@@ -37,11 +37,11 @@ ogsTest.describe("@Mod Moderation Tests", () => {
     ogsTest("Block early escape reports", modBlockEarlyEscapeReportTest);
     ogsTest("Block early stalling reports", modBlockEarlyStallingReportTest);
     ogsTest("Reject escape reports during active game", modRejectEscapeReportDuringGameTest);
-    ogsTest("Auto-suspend users with previously suspended accounts", autoSuspensionTest);
     ogsTest(
         "Complete suspend-appeal-restore flow with two-button functionality",
         suspendAppealRestoreTest,
     );
+    ogsTest("Auto-suspend users with previously suspended accounts", autoSuspensionTest);
     ogsTest("System PM button appears for non-suspended users", systemPMButtonTest);
     ogsTest("AI Detection player filter button works correctly", aiDetectionPlayerFilterTest);
     ogsTest("AI Detection FastSMR report button works correctly", aiDetectionFastSMRReportTest);
