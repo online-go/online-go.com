@@ -85,7 +85,10 @@ export const cmVoteOnOwnReportTest = async (
 
         // Find the specific report's container and click its Cancel button
         // Each report is in a div.incident container
-        const reportContainer = reporterPage.locator(`div.incident:has-text("${reportNumber}")`);
+        // Use regex with word boundaries to match exact report number (e.g., R1 but not R14)
+        const reportContainer = reporterPage
+            .locator("div.incident")
+            .filter({ hasText: new RegExp(`\\b${reportNumber}\\b`) });
         await expect(reportContainer).toBeVisible();
 
         // Find the Cancel button within this specific report's container
