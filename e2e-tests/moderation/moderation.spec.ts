@@ -29,6 +29,8 @@ import { systemPMButtonTest } from "./mod-system-pm-button";
 import { aiDetectionPlayerFilterTest } from "./ai-detection-player-filter";
 import { aiDetectionFastSMRReportTest } from "./ai-detection-fast-smr-report";
 import { playerCheckAIButtonTest } from "./player-check-ai-button";
+import { aiDetectorVoteSuspendAndAnnulTest } from "./ai-detector-vote-suspend-annul";
+import { aiDetectorVoteWarnAndAnnulTest } from "./ai-detector-vote-warn-annul";
 
 ogsTest.describe("@Mod Moderation Tests", () => {
     ogsTest("@Slow Auto-warn first turn disconnectors", modWarnFirstTurnDisconnectorTest);
@@ -46,4 +48,6 @@ ogsTest.describe("@Mod Moderation Tests", () => {
     ogsTest("AI Detection player filter button works correctly", aiDetectionPlayerFilterTest);
     ogsTest("AI Detection FastSMR report button works correctly", aiDetectionFastSMRReportTest);
     ogsTest("Player dropdown Check AI button navigates to AI Detection", playerCheckAIButtonTest);
+    ogsTest("AI Detector can vote to suspend and annul AI user", aiDetectorVoteSuspendAndAnnulTest);
+    ogsTest("AI Detector can vote to warn and annul AI user", aiDetectorVoteWarnAndAnnulTest);
 });
