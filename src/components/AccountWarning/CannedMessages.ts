@@ -380,6 +380,55 @@ Thank you for helping keep OGS enjoyable for everyone. We appreciate it.`,
             ),
             { game_id },
         ),
+    ack_suspended_ai_user: (reported) =>
+        interpolate(
+            llm_pgettext(
+                "Acknowledgement message to a user",
+                `
+Thank you for your report about '{{reported}}'.
+
+That account has been suspended, and cheated games annulled.`,
+            ),
+            { reported },
+        ),
+
+    ack_warn_ai_user: (reported) =>
+        interpolate(
+            llm_pgettext(
+                "Acknowledgement message to a user",
+                `
+We have given them a final warning about AI use, and their account will be suspended if that happens again.
+
+Cheated games have been annulled.`,
+            ),
+            { reported },
+        ),
+    warn_ai_user: (game_id) =>
+        interpolate(
+            llm_pgettext(
+                "Warning message to a user",
+                `
+We've detected that you may be using AI assistance in your games.
+
+Using AI assistance is considered cheating and is prohibited.
+
+We ask that you resign from any ongoing games in which AI was used and refrain from seeking AI assistance in future games.
+
+Any further detection of AI use will result in suspension of your account.`,
+            ),
+            { game_id },
+        ),
+    ai_report_cancelled: (game_id) =>
+        interpolate(
+            llm_pgettext(
+                "Acknowledgement message to a user",
+                `
+Thank you for your report about '{{game_id}}'.
+
+We had to cancel this report - this can happen if problem was already handled, or isn't valid now for some reason.`,
+            ),
+            { game_id },
+        ),
     annul_no_warning: (game_id) =>
         interpolate(
             llm_pgettext(

@@ -314,6 +314,36 @@ Be completely unambiguous with regards to the meaning of the word annul: \
 this means to declare the game invalid, and this is not the same as cancelling a game.",
         "Suspend user and annul game.",
     ),
+    suspend_ai_user: llm_pgettext(
+        "This phrase to be translated is the label of an option for a moderator of an \
+online Go game server to select: an action to apply to a report about a game of Go. \
+In the phrase you are asked to translate, 'no cheating' is a conclusion meaning the \
+moderator concluded cheating did not occur, rather than an instruction meaning the \
+reader should not cheat. \
+Be completely unambiguous with regards to the meaning of the word annul: \
+this means to declare the game invalid, and this is not the same as cancelling a game.",
+        "Suspend AI user, annul cheated games.",
+    ),
+    warn_ai_user: llm_pgettext(
+        "This phrase to be translated is the label of an option for a moderator of an \
+online Go game server to select: an action to apply to a report about a game of Go. \
+In the phrase you are asked to translate, 'no cheating' is a conclusion meaning the \
+moderator concluded cheating did not occur, rather than an instruction meaning the \
+reader should not cheat. \
+Be completely unambiguous with regards to the meaning of the word annul: \
+this means to declare the game invalid, and this is not the same as cancelling a game.",
+        "Warn AI user, annul cheated games.",
+    ),
+    cancel_ai_ticket: llm_pgettext(
+        "This phrase to be translated is the label of an option for a moderator of an \
+online Go game server to select: an action to apply to a report about a game of Go. \
+In the phrase you are asked to translate, 'no cheating' is a conclusion meaning the \
+moderator concluded cheating did not occur, rather than an instruction meaning the \
+reader should not cheat. \
+Be completely unambiguous with regards to the meaning of the word annul: \
+this means to declare the game invalid, and this is not the same as cancelling a game.",
+        "Cancel ticket (send generic message to reporter).",
+    ),
     escalate: llm_pgettext(
         "This phrase to be translated is the label of an option for a moderator of an \
 online Go game server to select: an action to apply to a report about a game of Go. \
