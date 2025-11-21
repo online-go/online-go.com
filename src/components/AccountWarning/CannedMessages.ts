@@ -423,9 +423,15 @@ Any further detection of AI use will result in suspension of your account.`,
             llm_pgettext(
                 "Acknowledgement message to a user",
                 `
-Thank you for your report about '{{game_id}}'.
+Thanks for the report about AI use in game ‘{{reported}}’.
 
-We had to cancel this report - this can happen if problem was already handled, or isn't valid now for some reason.`,
+We looked at it but had to cancel your report.
+
+Possible reasons:
+-The game you reported has been reported before by another user, and handled.
+-The game you reported is too old and there was no recent misconduct by that user
+-Other policy related or technical reasons.
+`,
             ),
             { game_id },
         ),

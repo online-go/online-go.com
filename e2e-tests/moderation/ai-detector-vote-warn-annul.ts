@@ -115,7 +115,6 @@ export const aiDetectorVoteWarnAndAnnulTest = async (
         // Wait for the Goban to be visible & ready
         const goban = reporterPage.locator(".Goban[data-pointers-bound]");
         await goban.waitFor({ state: "visible" });
-        await reporterPage.waitForTimeout(1000);
 
         // Play some moves
         log("Playing game moves...");
@@ -186,9 +185,6 @@ export const aiDetectorVoteWarnAndAnnulTest = async (
         // Submit the report
         const submitReportButton = await expectOGSClickableByName(reporterPage, /Report User$/);
         await submitReportButton.click();
-
-        // Wait for confirmation
-        await reporterPage.waitForTimeout(1000);
         log("AI use report submitted ✓");
 
         // Capture the report number from the reporter's page
@@ -225,32 +221,34 @@ export const aiDetectorVoteWarnAndAnnulTest = async (
         log("AI Detector voting to warn and annul...");
 
         // Select the "Warn AI user, annul cheated games" radio button by clicking the input
-        await aiDetectorPage.click('input[value="warn_ai_user"]');
-        log("Selected 'Warn AI user, annul cheated games' action ✓");
+        const warnRadio = aiDetectorPage.locator('input[value="warn_ai_user"]');
+        await warnRadio.click();
 
-        // Wait a moment for UI to update
-        await aiDetectorPage.waitForTimeout(500);
+        // Wait for the radio button to be checked
+        await expect(warnRadio).toBeChecked();
+        log("Selected 'Warn AI user, annul cheated games' action ✓");
 
         // Click the Vote button to submit the vote
         const voteButton = await expectOGSClickableByName(aiDetectorPage, /^Vote$/);
         await expect(voteButton).toBeVisible();
+        await expect(voteButton).toBeEnabled();
         await voteButton.click();
         log("Vote submitted ✓");
 
-        // Wait for the vote to be processed and check for errors
-        await aiDetectorPage.waitForTimeout(2000);
+        // Wait for vote to be processed - check that Vote button is disabled or hidden
+        await expect(voteButton)
+            .toBeDisabled({ timeout: 5000 })
+            .catch(() => {
+                // Button might be hidden instead of disabled
+            });
 
         // Check that no error modal appeared
         const errorModal = aiDetectorPage.getByText(/Error during vote submission/);
         await expect(errorModal)
-            .not.toBeVisible({ timeout: 2000 })
+            .not.toBeVisible({ timeout: 1000 })
             .catch(() => {
-                // If there's an error modal, the vote failed
                 throw new Error("Vote submission failed - error modal appeared");
             });
-
-        // Wait a bit longer for the warning to be created in the system
-        await aiDetectorPage.waitForTimeout(3000);
 
         // 7. Log in as the warned user and verify they see the warning modal
         log(`Logging in as warned user ${reportedUsername}...`);

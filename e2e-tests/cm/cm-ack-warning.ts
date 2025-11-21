@@ -91,8 +91,8 @@ export const cmAckWarningTest = async (
             aiCMPage.getByText("E2E test reporting AI use: I just have this feeling."),
         ).toBeVisible();
 
-        // Select the not-AI option...
-        await aiCMPage.locator('.action-selector input[type="radio"]').nth(4).click();
+        // Select the "no AI use, educate reporter" option...
+        await aiCMPage.locator('input[value="no_ai_use_bad_report"]').click();
 
         const voteButton = await expectOGSClickableByName(aiCMPage, /Vote$/);
         await voteButton.click();

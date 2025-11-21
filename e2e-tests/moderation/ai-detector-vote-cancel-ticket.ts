@@ -16,20 +16,19 @@
  */
 
 /*
- * Test AI Detector Vote to Suspend and Annul
+ * Test AI Detector Vote to Cancel Ticket
  *
  * This test verifies that:
  * 1. A player can report another player for AI use after a game
  * 2. The E2E_AI_DETECTOR can see and vote on the AI use report
- * 3. The AI detector can vote to suspend and annul
- * 4. The E2E_MODERATOR can verify the user is suspended
+ * 3. The AI detector can vote to cancel the ticket
+ * 4. The reporter sees an acknowledgement modal when they log in
  *
  * Uses seeded users:
  * - E2E_AI_DETECTOR: AI Detector with AI_DETECTOR moderator powers
- * - E2E_MODERATOR: Full moderator to verify suspension
  *
  * Requires environment variables:
- * - E2E_MODERATOR_PASSWORD: Password for both E2E_MODERATOR and E2E_AI_DETECTOR
+ * - E2E_MODERATOR_PASSWORD: Password for E2E_AI_DETECTOR
  */
 
 import type { CreateContextOptions } from "@helpers";
@@ -38,7 +37,6 @@ import { BrowserContext, expect } from "@playwright/test";
 import {
     captureReportNumber,
     generateUniqueTestIPv6,
-    goToUsersProfile,
     loginAsUser,
     navigateToReport,
     newTestUsername,
@@ -52,10 +50,10 @@ import {
 } from "@helpers/challenge-utils";
 import { playMoves } from "@helpers/game-utils";
 import { expectOGSClickableByName } from "@helpers/matchers";
-import { withIncidentIndicatorLock } from "@helpers/report-utils";
+import { IncidentReportCountTracker, withIncidentIndicatorLock } from "@helpers/report-utils";
 import { log } from "@helpers/logger";
 
-export const aiDetectorVoteSuspendAndAnnulTest = async (
+export const aiDetectorVoteCancelTicketTest = async (
     {
         createContext,
     }: {
@@ -64,7 +62,10 @@ export const aiDetectorVoteSuspendAndAnnulTest = async (
     testInfo: any,
 ) => {
     return withIncidentIndicatorLock(testInfo, async () => {
-        log("=== AI Detector Vote to Suspend and Annul Test ===");
+        log("=== AI Detector Vote to Cancel Ticket Test ===");
+
+        // Initialize report count tracker
+        const reportTracker = new IncidentReportCountTracker();
 
         // Check for required password
         const password = process.env.E2E_MODERATOR_PASSWORD;
@@ -76,16 +77,21 @@ export const aiDetectorVoteSuspendAndAnnulTest = async (
 
         // 1. Create two users who will play a game
         log("Creating reporter user...");
-        const reporterUsername = newTestUsername("aiDetVSAReporter");
+        const reporterUsername = newTestUsername("aiDetCTReporter");
+        const reporterPassword = "test";
         const { userPage: reporterPage } = await prepareNewUser(
             createContext,
             reporterUsername,
-            "test",
+            reporterPassword,
         );
         log(`Reporter user created: ${reporterUsername} ✓`);
 
+        // Capture initial report count before creating any reports
+        await reportTracker.captureInitialCount(reporterPage);
+        log("Initial report count captured ✓");
+
         log("Creating reported user (alleged AI user)...");
-        const reportedUsername = newTestUsername("aiDetVSAReported");
+        const reportedUsername = newTestUsername("aiDetCTReported");
         const { userPage: reportedPage } = await prepareNewUser(
             createContext,
             reportedUsername,
@@ -100,7 +106,7 @@ export const aiDetectorVoteSuspendAndAnnulTest = async (
 
         await createDirectChallenge(reporterPage, reportedUsername, {
             ...defaultChallengeSettings,
-            gameName: "E2E AI Detector Test Game",
+            gameName: "E2E AI Detector Cancel Ticket Test Game",
             boardSize: boardSize,
             speed: "live",
             timeControl: "byoyomi",
@@ -218,16 +224,16 @@ export const aiDetectorVoteSuspendAndAnnulTest = async (
         await expect(aiDetectorPage.getByText(reportedUsername).first()).toBeVisible();
         log(`Confirmed report is about ${reportedUsername} ✓`);
 
-        // 6. AI Detector votes to suspend and annul
-        log("AI Detector voting to suspend and annul...");
+        // 6. AI Detector votes to cancel the ticket
+        log("AI Detector voting to cancel ticket...");
 
-        // Select the "Suspend AI user, annul cheated games" radio button by clicking the input
-        const suspendRadio = aiDetectorPage.locator('input[value="suspend_ai_user"]');
-        await suspendRadio.click();
+        // Select the "Cancel ticket (send generic message to reporter)" radio button
+        const cancelRadio = aiDetectorPage.locator('input[value="cancel_ai_ticket"]');
+        await cancelRadio.click();
 
         // Wait for the radio button to be checked
-        await expect(suspendRadio).toBeChecked();
-        log("Selected 'Suspend AI user, annul cheated games' action ✓");
+        await expect(cancelRadio).toBeChecked();
+        log("Selected 'Cancel ticket' action ✓");
 
         // Click the Vote button to submit the vote
         const voteButton = await expectOGSClickableByName(aiDetectorPage, /^Vote$/);
@@ -243,45 +249,60 @@ export const aiDetectorVoteSuspendAndAnnulTest = async (
                 // Button might be hidden instead of disabled
             });
 
-        // 7. Set up moderator to verify suspension
-        log("Setting up E2E_MODERATOR to verify suspension...");
-        const modUniqueIPv6 = generateUniqueTestIPv6();
-        const modContext = await createContext({
+        // Check that no error modal appeared
+        const errorModal = aiDetectorPage.getByText(/Error during vote submission/);
+        await expect(errorModal)
+            .not.toBeVisible({ timeout: 1000 })
+            .catch(() => {
+                throw new Error("Vote submission failed - error modal appeared");
+            });
+
+        // 7. Log in as the reporter and verify they see the acknowledgement modal
+        log(`Logging in as reporter ${reporterUsername}...`);
+
+        // Close the reporter's existing page
+        await reporterPage.close();
+
+        // Create a new context and page for the reporter
+        const reporterIPv6 = generateUniqueTestIPv6();
+        const reporterContext = await createContext({
             extraHTTPHeaders: {
-                "X-Forwarded-For": modUniqueIPv6,
+                "X-Forwarded-For": reporterIPv6,
             },
         });
-        const modPage = await modContext.newPage();
-        await loginAsUser(modPage, "E2E_MODERATOR", password);
-        await turnOffDynamicHelp(modPage);
-        log("E2E_MODERATOR logged in ✓");
+        const reporterNewPage = await reporterContext.newPage();
+        await loginAsUser(reporterNewPage, reporterUsername, reporterPassword);
+        log("Reporter logged in ✓");
 
-        // 8. Moderator checks the reported user's profile to verify suspension
-        log(`Moderator navigating to ${reportedUsername}'s profile...`);
-        await goToUsersProfile(modPage, reportedUsername);
-        log("User profile loaded ✓");
+        // 8. Check for the acknowledgement modal
+        log("Checking for acknowledgement modal...");
 
-        // Moderators can see a table with a "Suspended" column on the profile page
-        // (rendered by ModTools.tsx in moderator-ui submodule)
-        // The suspended column shows "Yes" (capitalized) for suspended users
-        log("Checking for suspension status in 'Users with the same IP or Browser ID' table...");
+        // Wait for the acknowledgement backdrop to appear
+        const ackBackdrop = reporterNewPage.locator(".AccountWarning-backdrop");
+        await expect(ackBackdrop).toBeVisible({ timeout: 10000 });
+        log("Acknowledgement backdrop visible ✓");
 
-        // Find the table with "Suspended" column header
-        const tableWithSuspendedColumn = modPage.locator("table").filter({ hasText: "Suspended" });
-        await expect(tableWithSuspendedColumn).toBeVisible({ timeout: 10000 });
-        log("Found table with 'Suspended' column ✓");
+        // Check for the acknowledgement modal container
+        const ackModal = reporterNewPage.locator(".AccountWarningAck");
+        await expect(ackModal).toBeVisible({ timeout: 5000 });
+        log("Acknowledgement modal visible ✓");
 
-        // Check for "Yes" (capitalized) in the suspended column
-        const suspendedYes = tableWithSuspendedColumn.getByText("Yes", { exact: true });
-        await expect(suspendedYes).toBeVisible({ timeout: 5000 });
-        log("User is confirmed suspended (found 'Yes' in Suspended column) ✓");
+        // Check for the OK button
+        const okButton = reporterNewPage.locator(".AccountWarningAck button.primary");
+        await expect(okButton).toBeVisible();
+        log("OK button visible ✓");
+
+        // 9. Verify that the report was closed and count returned to initial value
+        log("Verifying report was closed...");
+        await reportTracker.assertCountReturnedToInitial(reporterNewPage);
+        log("Report count returned to initial value - report was closed ✓");
 
         log("=== Test Complete ===");
         log("✓ Game played between two users");
         log("✓ Reporter submitted AI use report");
         log("✓ Report captured and navigated to by AI Detector");
-        log("✓ AI Detector successfully voted to suspend and annul");
-        log("✓ User is confirmed suspended after AI detector vote");
-        log("Note: Annulment cannot be easily verified in E2E tests");
+        log("✓ AI Detector successfully voted to cancel ticket");
+        log("✓ Reporter sees acknowledgement modal with OK button");
+        log("✓ Report was closed - count returned to initial value");
     });
 };
