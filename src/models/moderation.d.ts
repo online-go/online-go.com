@@ -84,6 +84,7 @@ declare namespace rest_api {
             | "suspend_user_and_annul"
             | "suspend_ai_user"
             | "warn_ai_user"
+            | "first_warn_ai_user"
             | "cancel_ai_ticket"
             | "escalate"
             | "definitely_ai"
