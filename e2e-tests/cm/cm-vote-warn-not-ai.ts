@@ -86,13 +86,22 @@ export const cmVoteWarnNotAITest = async (
             aiCMPage.getByText("E2E test reporting AI use: I just have this feeling."),
         ).toBeVisible();
 
-        // Select the not-AI option...
-        await aiCMPage.locator('.action-selector input[type="radio"]').nth(3).click();
+        // Select the "no AI use evident - inform the reporter" option
+        // This sends an acknowledgement to the reporter and closes the report
+        await aiCMPage.locator('input[value="no_ai_use_evident"]').click();
 
         const voteButton = await expectOGSClickableByName(aiCMPage, /Vote$/);
+        await expect(voteButton).toBeEnabled();
         await voteButton.click();
 
-        // After voting, the count should return to initial (warning delivered to reporter)
+        // Wait for vote to be processed - check that Vote button is disabled or hidden
+        await expect(voteButton)
+            .toBeDisabled({ timeout: 5000 })
+            .catch(() => {
+                // Button might be hidden instead of disabled
+            });
+
+        // After voting, the count should return to initial (acknowledgement sent to reporter, report closed)
         await tracker.assertCountReturnedToInitial(reporterPage);
 
         // checking the warning is delivered is in cm-ack-warning.ts

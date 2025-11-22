@@ -86,8 +86,8 @@ export const cmAckAcknowledgementTest = async (
             // Verify we can see the report with the message
             await expect(cmPage.getByText("he's a cheater!")).toBeVisible();
 
-            // Select the no cheating...
-            await cmPage.locator('.action-selector input[type="radio"]').nth(2).click();
+            // Select the "no score cheating evident" option
+            await cmPage.locator('input[value="no_score_cheat"]').click();
 
             const voteButton = await expectOGSClickableByName(cmPage, /Vote$/);
             await voteButton.click();

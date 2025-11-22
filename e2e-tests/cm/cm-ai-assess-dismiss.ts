@@ -92,8 +92,8 @@ export const cmAiAssessDismissTest = async (
             aiDetectorCMPage.getByText("E2E test reporting AI use: I'm sure he cheated!"),
         ).toBeVisible();
 
-        // Select the "assess" option...
-        await aiDetectorCMPage.locator('.action-selector input[type="radio"]').nth(2).click();
+        // Select the "assess" option (send to Dan CMs for assessment)
+        await aiDetectorCMPage.locator('input[value="assess_ai_play"]').click();
 
         // ... then we should be allowed to vote.
         const voteButton = await expectOGSClickableByName(aiDetectorCMPage, /Vote$/);
@@ -119,8 +119,8 @@ export const cmAiAssessDismissTest = async (
                 aiCMPage.getByText("E2E test reporting AI use: I'm sure he cheated!"),
             ).toBeVisible();
 
-            // Select the not AI option...
-            await aiCMPage.locator('.action-selector input[type="radio"]').nth(1).click();
+            // Select the human-like option (not AI)
+            await aiCMPage.locator('input[value="human_like"]').click();
 
             // ... then we should be allowed to vote.
 
@@ -141,9 +141,8 @@ export const cmAiAssessDismissTest = async (
             aiDetectorCMPage.getByText("E2E test reporting AI use: I'm sure he cheated!"),
         ).toBeVisible();
 
-        // Select the "dismiss" option...
-        // Note: Index may vary based on what options are available
-        await aiDetectorCMPage.locator('.action-selector input[type="radio"]').nth(3).click();
+        // Select the "no AI use evident" option to dismiss and inform the reporter
+        await aiDetectorCMPage.locator('input[value="no_ai_use_evident"]').click();
 
         // Click the vote button (find it fresh on this page)
         const dismissVoteButton = await expectOGSClickableByName(aiDetectorCMPage, /Vote$/);
