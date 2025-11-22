@@ -397,7 +397,7 @@ That account has been suspended, and cheated games annulled.`,
             llm_pgettext(
                 "Acknowledgement message to a user",
                 `
-We have given them a final warning about AI use, and their account will be suspended if that happens again.
+Thank you for your report about '{{reported}}'. We have given them a final warning about AI use, and their account will be suspended if that happens again.
 
 Cheated games have been annulled.`,
             ),
@@ -423,7 +423,7 @@ Any further detection of AI use will result in suspension of your account.`,
             llm_pgettext(
                 "Acknowledgement message to a user",
                 `
-Thanks for the report about AI use in game ‘{{reported}}’.
+Thanks for the report about AI use in game #{{game_id}}.
 
 We looked at it but had to cancel your report.
 
