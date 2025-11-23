@@ -242,6 +242,10 @@ import { BL4Opening6 } from "./Sections/BeginnerLevel4/Opening6";
 import { BL4Opening7 } from "./Sections/BeginnerLevel4/Opening7";
 import { BL4Opening8 } from "./Sections/BeginnerLevel4/Opening8";
 import { BL4Opening9 } from "./Sections/BeginnerLevel4/Opening9";
+import { BL4Skills1 } from "./Sections/BeginnerLevel4/Skills1";
+import { BL4Skills2 } from "./Sections/BeginnerLevel4/Skills2";
+import { BL4Skills3 } from "./Sections/BeginnerLevel4/Skills3";
+import { BL4Skills4 } from "./Sections/BeginnerLevel4/Skills4";
 
 export const sections: [string, any[]][] = [
     [
@@ -492,6 +496,10 @@ export const sections: [string, any[]][] = [
             BL4Opening7,
             BL4Opening8,
             BL4Opening9,
+            BL4Skills1,
+            BL4Skills2,
+            BL4Skills3,
+            BL4Skills4,
         ],
     ],
 
