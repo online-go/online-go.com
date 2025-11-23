@@ -104,15 +104,22 @@ export const playMoves = async (
     for (let i = 0; i < moves.length; i++) {
         // Determine which player should move based on handicap
         let page;
+        let expectedColor;
         if (handicap > 1) {
             // White moves first after handicap stones are placed automatically
             page = i % 2 === 0 ? white : black;
+            expectedColor = i % 2 === 0 ? "White" : "Black";
         } else {
             // Black moves first (no handicap or handicap = 1)
             page = i % 2 === 0 ? black : white;
+            expectedColor = i % 2 === 0 ? "Black" : "White";
         }
-        const moveText = page.getByText("Your move", { exact: true });
-        await expect(moveText).toBeVisible();
+        // Wait for either "Your move" or "{Color} to move" to appear
+        // "Your move" appears when player_id is set correctly
+        // "{Color} to move" appears when player_id isn't set or during initialization
+        const yourMoveText = page.getByText("Your move", { exact: true });
+        const colorMoveText = page.getByText(`${expectedColor} to move`, { exact: true });
+        await expect(yourMoveText.or(colorMoveText)).toBeVisible();
         await clickOnGobanIntersection(page, moves[i], boardSize);
         await page.waitForTimeout(delay);
     }

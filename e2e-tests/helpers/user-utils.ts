@@ -374,7 +374,12 @@ export const captureReportNumber = async (reporterPage: Page): Promise<string> =
     await reporterPage.goto("/reports-center");
     await expect(reporterPage.getByText("My Own Reports")).toBeVisible();
     await reporterPage.getByText("My Own Reports").click();
-    await reporterPage.waitForTimeout(1000);
+
+    // Wait for the reports to load - look for the incident container or report list
+    // This ensures the click was processed and content loaded before looking for specific report
+    await expect(
+        reporterPage.locator(".incident, .report-item, .PaginatedTable").first(),
+    ).toBeVisible({ timeout: 10000 });
 
     // The report number is in a button at the top left of the display area
     // Look for a pattern like "R123" in a button or link
@@ -382,7 +387,7 @@ export const captureReportNumber = async (reporterPage: Page): Promise<string> =
         .locator("button, a")
         .filter({ hasText: /^R\d+$/ })
         .first();
-    await expect(reportButton).toBeVisible();
+    await expect(reportButton).toBeVisible({ timeout: 30000 });
 
     const reportNumber = await reportButton.textContent();
     if (!reportNumber || !reportNumber.match(/^R\d+$/)) {

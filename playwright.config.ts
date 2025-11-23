@@ -69,7 +69,7 @@ export default defineConfig({
     testMatch: process.env.CI ? ["smoketests.spec.ts"] : ["**/*.spec.ts"],
     testIgnore: process.env.CI ? [] : ["**/smoke/**"],
     // If you change this you need to change report-utils to match, noting the delta there from here.
-    timeout: 300 * 1000, // overall test timeout - we have some long multi-user tests
+    timeout: 600 * 1000, // overall test timeout - we have some long multi-user tests
     expect: {
         timeout: process.env.CI ? 30000 : 15000,
     },

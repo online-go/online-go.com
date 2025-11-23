@@ -380,6 +380,61 @@ Thank you for helping keep OGS enjoyable for everyone. We appreciate it.`,
             ),
             { game_id },
         ),
+    ack_suspended_ai_user: (reported) =>
+        interpolate(
+            llm_pgettext(
+                "Acknowledgement message to a user",
+                `
+Thank you for your report about '{{reported}}'.
+
+That account has been suspended, and cheated games annulled.`,
+            ),
+            { reported },
+        ),
+
+    ack_warn_ai_user: (reported) =>
+        interpolate(
+            llm_pgettext(
+                "Acknowledgement message to a user",
+                `
+Thank you for your report about '{{reported}}'. We have given them a final warning about AI use, and their account will be suspended if that happens again.
+
+Cheated games have been annulled.`,
+            ),
+            { reported },
+        ),
+    warn_ai_user: (game_id) =>
+        interpolate(
+            llm_pgettext(
+                "Warning message to a user",
+                `
+We've detected that you may be using AI assistance in your games.
+
+Using AI assistance is considered cheating and is prohibited.
+
+We ask that you resign from any ongoing games in which AI was used and refrain from seeking AI assistance in future games.
+
+Any further detection of AI use will result in suspension of your account.`,
+            ),
+            { game_id },
+        ),
+    ai_report_cancelled: (game_id) =>
+        interpolate(
+            llm_pgettext(
+                "Acknowledgement message to a user",
+                `
+Thanks for the report about AI use in game #{{game_id}}.
+
+We looked at it but had to cancel your report.
+
+Possible reasons:
+-The game you reported has been reported before by another user, and handled.
+-The game you reported is too old and there was no recent misconduct by that user
+-Other policy related or technical reasons.
+`,
+            ),
+            { game_id },
+        ),
     annul_no_warning: (game_id) =>
         interpolate(
             llm_pgettext(
