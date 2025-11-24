@@ -34,6 +34,7 @@ interface AnnulQueueModalProps {
     onClose: () => void;
     forDetectedAI: boolean;
     player?: any;
+    criteriaString?: string;
 }
 
 // Define the AnnulQueueModal component
@@ -44,6 +45,7 @@ export function AnnulQueueModal({
     onClose,
     forDetectedAI,
     player,
+    criteriaString,
 }: AnnulQueueModalProps) {
     // Declare state variables
     const [selectedGameIndex, setSelectedGameIndex] = React.useState(0);
@@ -187,7 +189,15 @@ export function AnnulQueueModal({
             }
             moderationNote = moderationNote.trim();
         } while (moderationNote === "");
-        return `player ${currentPlayer.id} mass annul: ${moderationNote}`;
+
+        let fullNote = `player ${currentPlayer.id} mass annul: ${moderationNote}`;
+
+        // Append criteria string if this is for detected AI and we have criteria
+        if (forDetectedAI && criteriaString) {
+            fullNote += ` [criteria: ${criteriaString}]`;
+        }
+
+        return fullNote;
     };
 
     // Annul the specified games

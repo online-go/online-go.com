@@ -57,6 +57,7 @@ interface AnnulmentGamesResponse {
             blur_threshold: number;
             game_count_threshold: number;
         };
+        criteria_string: string;
     };
 }
 
@@ -105,6 +106,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
     const [isAnnulQueueModalOpen, setIsAnnulQueueModalOpen] = React.useState(false);
     const [detectedGame, setDetectedGame] = React.useState<GroomedGame | null>(null);
     const [loadingAnnulmentGames, setLoadingAnnulmentGames] = React.useState<boolean>(false);
+    const [criteriaString, setCriteriaString] = React.useState<string>("");
 
     const user = useUser();
 
@@ -135,8 +137,9 @@ export function GameHistoryTable(props: GameHistoryProps) {
             // Find the games in the current table that match the returned IDs
             const matchingGames = rows.filter((game) => response.games.includes(game.id));
 
-            // Set these as the annul queue
+            // Set these as the annul queue and store the criteria string
             setAnnulQueue(matchingGames);
+            setCriteriaString(response.stats.criteria_string);
         } catch (error) {
             console.error("Failed to fetch annulment games:", error);
             // Show error to user - could use a toast notification here
@@ -292,6 +295,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
                             setAnnulQueue={setAnnulQueue}
                             onClose={handleCloseAnnulQueueModal}
                             forDetectedAI={false}
+                            criteriaString={criteriaString}
                         />
                     )}
                     {/* loading-container="game_history.settings().$loading" */}
