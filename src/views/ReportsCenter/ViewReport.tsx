@@ -70,7 +70,6 @@ export function ViewReport({
     );
     const [currentGoban, setCurrentGoban] = React.useState<GobanRenderer | null>(null);
     const [moderators, setModerators] = React.useState<PlayerCacheEntry[]>([]);
-    const criteriaStringRef = React.useRef<string>("");
 
     // Although moderator_id is a field on the report, we control the value we're using
     // to display separately so we can update it without having to wait for the report to update
@@ -195,30 +194,6 @@ export function ViewReport({
         setIsAnnulQueueModalOpen(false);
     };
 
-    const handleOpenAnnulQueueModal = async () => {
-        try {
-            // Fetch current annulment criteria settings
-            const criteriaData = (await get("admin/annulmentCriteria")) as {
-                months_threshold: number;
-                games_before: number;
-                games_after: number;
-                smr_threshold: number;
-                smr_delta: number;
-                blur_threshold: number;
-                game_count_threshold: number;
-            };
-
-            // Generate condensed criteria string and update ref synchronously
-            // (using ref instead of state avoids race condition with modal opening)
-            criteriaStringRef.current = `M${criteriaData.months_threshold}B${criteriaData.games_before}A${criteriaData.games_after}S${criteriaData.smr_threshold}D${criteriaData.smr_delta}R${criteriaData.blur_threshold}G${criteriaData.game_count_threshold}`;
-        } catch (error) {
-            console.error("Failed to fetch annulment criteria:", error);
-            // Continue to open modal even if criteria fetch fails
-        }
-
-        openAnnulQueueModal(setIsAnnulQueueModalOpen);
-    };
-
     const changeReportType = (new_type: ReportType) => {
         alert
             .fire({
@@ -294,7 +269,6 @@ export function ViewReport({
                             onClose={handleCloseAnnulQueueModal}
                             forDetectedAI={true}
                             player={report.reported_user}
-                            criteriaString={criteriaStringRef.current}
                         />
                     )}
                     <div className="users-header">
@@ -605,7 +579,11 @@ export function ViewReport({
                             <div className="actions-right">
                                 {report.state !== "resolved" &&
                                 report.detected_ai_games?.length > 0 ? (
-                                    <button onClick={() => void handleOpenAnnulQueueModal()}>
+                                    <button
+                                        onClick={() =>
+                                            openAnnulQueueModal(setIsAnnulQueueModalOpen)
+                                        }
+                                    >
                                         Inspect & Annul Games
                                     </button>
                                 ) : null}
