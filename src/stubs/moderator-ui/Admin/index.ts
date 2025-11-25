@@ -6,3 +6,4 @@ export * from "./Admin";
 export * from "./MerchantLog";
 export * from "./FlaggedGames";
 export * from "./OnlineLeaguesAdmin";
+export * from "./AnnulmentCriteriaSettings";
