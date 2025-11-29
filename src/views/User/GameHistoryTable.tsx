@@ -102,6 +102,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
     );
     const [hide_flags] = usePreference("moderator.hide-flags");
     const [selectModeActive, setSelectModeActive] = React.useState<boolean>(false);
+    const [aiSelectMode, setAiSelectMode] = React.useState<boolean>(false);
     const [annulQueue, setAnnulQueue] = React.useState<any[]>([]);
     const [isAnnulQueueModalOpen, setIsAnnulQueueModalOpen] = React.useState(false);
     const [detectedGame, setDetectedGame] = React.useState<GroomedGame | null>(null);
@@ -170,16 +171,19 @@ export function GameHistoryTable(props: GameHistoryProps) {
                     const maxIndex = Math.max(...indexes);
                     setAnnulQueue(rows.slice(minIndex, maxIndex + 1).filter((r) => !r.annulled));
                 }
-            } else {
-                // If this is the first game clicked in select mode, treat it as the detected game
+            } else if (aiSelectMode) {
+                // AI select mode: first click sets detected game and fetches candidates
                 if (!detectedGame) {
                     setDetectedGame(row);
                     // Fetch games matching annulment criteria
                     void fetchAnnulmentGames(row.id, rows);
                 } else {
-                    // Otherwise, toggle selection as normal
+                    // After detected game is set, toggle selection as normal
                     toggleQueued(row);
                 }
+            } else {
+                // Regular select mode: just toggle selection
+                toggleQueued(row);
             }
         } else {
             openUrlIfALinkWasNotClicked(ev, row.href);
@@ -319,6 +323,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
                                         </span>
                                     )}
                                     {selectModeActive &&
+                                        aiSelectMode &&
                                         !detectedGame &&
                                         !loadingAnnulmentGames && (
                                             <span className="select-detected-prompt">
@@ -341,15 +346,52 @@ export function GameHistoryTable(props: GameHistoryProps) {
                                             {_("View Queue")} {`(${annulQueue.length})`}
                                         </button>
                                     ) : null}
+                                    {/* Regular Select button - only for full moderators */}
+                                    {user.is_moderator && (
+                                        <button
+                                            className={
+                                                selectModeActive && !aiSelectMode
+                                                    ? "sm danger"
+                                                    : "sm"
+                                            }
+                                            onClick={() => {
+                                                if (selectModeActive && !aiSelectMode) {
+                                                    // Turn off select mode
+                                                    setSelectModeActive(false);
+                                                } else {
+                                                    // Turn on regular select mode
+                                                    setSelectModeActive(true);
+                                                    setAiSelectMode(false);
+                                                }
+                                                setAnnulQueue([]);
+                                                setDetectedGame(null);
+                                                setCriteriaString("");
+                                            }}
+                                        >
+                                            {_("Select")}
+                                        </button>
+                                    )}
+                                    {/* Select AI button - for AI detection workflow */}
                                     <button
-                                        className={selectModeActive ? "sm danger" : "sm"}
+                                        className={
+                                            selectModeActive && aiSelectMode ? "sm danger" : "sm"
+                                        }
                                         onClick={() => {
-                                            setSelectModeActive(!selectModeActive);
+                                            if (selectModeActive && aiSelectMode) {
+                                                // Turn off select mode
+                                                setSelectModeActive(false);
+                                                setAiSelectMode(false);
+                                            } else {
+                                                // Turn on AI select mode
+                                                setSelectModeActive(true);
+                                                setAiSelectMode(true);
+                                            }
                                             setAnnulQueue([]);
                                             setDetectedGame(null);
+                                            setCriteriaString("");
                                         }}
                                     >
-                                        {_("Select")}
+                                        {_("Select AI")}
                                     </button>
                                 </div>
                             ) : null}
