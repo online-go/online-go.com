@@ -31,7 +31,13 @@ import { SignIn } from "@/views/SignIn";
 import { Register } from "@/views/Register";
 import { ChallengeLinkLanding } from "@/views/ChallengeLinkLanding";
 import { Overview } from "@/views/Overview";
-import { Admin, MerchantLog, FlaggedGames, OnlineLeaguesAdmin } from "@/views/Admin";
+import {
+    Admin,
+    MerchantLog,
+    FlaggedGames,
+    OnlineLeaguesAdmin,
+    AnnulmentCriteriaSettings,
+} from "@/views/Admin";
 import { ChatView } from "@/views/ChatView";
 import { Developer } from "@/views/Developer";
 import { Game } from "@/views/Game";
@@ -365,6 +371,7 @@ export const routes = (
                 <Route path="/admin/firewall" element={<Firewall />} />
                 <Route path="/admin/flagged_games" element={<FlaggedGames />} />
                 <Route path="/admin/online_leagues" element={<OnlineLeaguesAdmin />} />
+                <Route path="/admin/annulment_criteria" element={<AnnulmentCriteriaSettings />} />
                 <Route path="/admin" element={<Admin />} />
                 <Route path="/announcement-center" element={<AnnouncementCenter />} />
                 <Route path="/redeem" element={<PrizeRedemption />} />

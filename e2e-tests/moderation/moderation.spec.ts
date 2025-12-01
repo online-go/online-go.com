@@ -33,6 +33,7 @@ import { aiDetectorVoteSuspendAndAnnulTest } from "./ai-detector-vote-suspend-an
 import { aiDetectorVoteWarnAndAnnulTest } from "./ai-detector-vote-warn-annul";
 import { aiDetectorVoteFirstWarnAndAnnulTest } from "./ai-detector-vote-first-warn-annul";
 import { aiDetectorVoteCancelTicketTest } from "./ai-detector-vote-cancel-ticket";
+import { aiDetectorVoteCriteriaStringTest } from "./ai-detector-vote-criteria-string";
 
 ogsTest.describe("@Mod Moderation Tests", () => {
     ogsTest("@Slow Auto-warn first turn disconnectors", modWarnFirstTurnDisconnectorTest);
@@ -57,4 +58,8 @@ ogsTest.describe("@Mod Moderation Tests", () => {
         aiDetectorVoteFirstWarnAndAnnulTest,
     );
     ogsTest("AI Detector can cancel ticket and notify reporter", aiDetectorVoteCancelTicketTest);
+    ogsTest(
+        "AI Detector bulk annulment vote adds criteria string to report moderator note",
+        aiDetectorVoteCriteriaStringTest,
+    );
 });
