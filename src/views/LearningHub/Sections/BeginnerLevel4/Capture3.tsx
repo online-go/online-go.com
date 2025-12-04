@@ -49,10 +49,10 @@ export class BL4Capture3 extends LearningHubSection {
         return "bl4-capture-3";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning capture", "Capture");
+        return pgettext("Tutorial section name on learning capture", "Tesuji");
     }
     static subtext(): string {
-        return pgettext("Tutorial section subtext on learning on capture", "Capture stones");
+        return pgettext("Tutorial section subtext on learning on capture", "Capture");
     }
 }
 

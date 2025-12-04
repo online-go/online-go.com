@@ -20,7 +20,7 @@ import { LearningPage, LearningPageProperties } from "../../LearningPage";
 import { _, pgettext } from "@/lib/translate";
 import { LearningHubSection } from "../../LearningHubSection";
 
-export class BL4Capture4 extends LearningHubSection {
+export class BL4Connect2 extends LearningHubSection {
     static pages(): Array<typeof LearningPage> {
         return [
             Page01,
@@ -37,18 +37,16 @@ export class BL4Capture4 extends LearningHubSection {
             Page12,
             Page13,
             Page14,
-            Page15,
-            Page16,
         ];
     }
     static section(): string {
-        return "bl4-capture-4";
+        return "bl4-connect-2";
     }
     static title(): string {
-        return pgettext("Tutorial section name on learning capture", "Tesuji");
+        return pgettext("Tutorial section name on learning connect", "Tesuji");
     }
     static subtext(): string {
-        return pgettext("Tutorial section subtext on learning on capture", "Capture");
+        return pgettext("Tutorial section subtext on learning on connect", "Connect");
     }
 }
 
@@ -58,7 +56,7 @@ class Page01 extends LearningPage {
     }
 
     text() {
-        return _("Black to play. Capture as many white stones as possible.");
+        return _("Black to play. Play the best connection.");
     }
     config(): GobanConfig {
         return {
@@ -66,18 +64,13 @@ class Page01 extends LearningPage {
             height: 19,
             mode: "puzzle",
             initial_player: "black",
-            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            bounds: { top: 10, left: 0, bottom: 18, right: 9 },
             /* cSpell:disable */
             initial_state: {
-                black: "brcqcodoepeqer",
-                white: "crbqcpdpeoenfpfqfrgn",
+                black: "crcsfrfqfpapbpcodobnfn",
+                white: "bsbrarbqcqcpdpeq",
             },
-            move_tree: this.makePuzzleMoveTree(
-                ["bpdqdrcqaq", "bpdqdrcqcs"],
-                ["drbo", "dqbp", "bodr"],
-                19,
-                19,
-            ),
+            move_tree: this.makePuzzleMoveTree(["es"], ["erdr", "dses", "drer"], 19, 19),
             /* cSpell:enable */
         };
     }
@@ -89,7 +82,7 @@ class Page02 extends LearningPage {
     }
 
     text() {
-        return _("Black to play. Capture as many white stones as possible.");
+        return _("Black to play. Play the best connection.");
     }
     config(): GobanConfig {
         return {
@@ -97,13 +90,13 @@ class Page02 extends LearningPage {
             height: 19,
             mode: "puzzle",
             initial_player: "black",
-            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            bounds: { top: 10, left: 0, bottom: 18, right: 9 },
             /* cSpell:disable */
             initial_state: {
-                black: "cscrerdqbqbpcncodnengn",
-                white: "brardrcqcpdpdobobncmfpclhp",
+                black: "bsbrbqcqereqgrgqip",
+                white: "crdrdqepfpcpbpcmgn",
             },
-            move_tree: this.makePuzzleMoveTree(["epeqeodqfq"], ["dsfo", "eoep"], 19, 19),
+            move_tree: this.makePuzzleMoveTree(["ds"], ["csds", "esds"], 19, 19),
             /* cSpell:enable */
         };
     }
@@ -115,7 +108,7 @@ class Page03 extends LearningPage {
     }
 
     text() {
-        return _("Black to play. Capture as many white stones as possible.");
+        return _("Black to play. Play the best connection.");
     }
     config(): GobanConfig {
         return {
@@ -123,15 +116,15 @@ class Page03 extends LearningPage {
             height: 19,
             mode: "puzzle",
             initial_player: "black",
-            bounds: { top: 10, left: 0, bottom: 18, right: 10 },
+            bounds: { top: 10, left: 0, bottom: 18, right: 9 },
             /* cSpell:disable */
             initial_state: {
-                black: "grgqipiognfpdpepdqcpbpdmim",
-                white: "bqcqdreqfqfrgphpiqjqjp",
+                black: "bqcqcrckcmemfk",
+                white: "drdqcpdoeogpiq",
             },
             move_tree: this.makePuzzleMoveTree(
-                ["gserhq"],
-                ["fser", "eres", "hqgs", "crbr"],
+                ["bobpap"],
+                ["anapbpboaobn", "anapbpbobnao", "bpbo", "bnbp"],
                 19,
                 19,
             ),
@@ -146,7 +139,7 @@ class Page04 extends LearningPage {
     }
 
     text() {
-        return _("Black to play. Capture as many white stones as possible.");
+        return _("Black to play. Play the best connection.");
     }
     config(): GobanConfig {
         return {
@@ -154,13 +147,13 @@ class Page04 extends LearningPage {
             height: 19,
             mode: "puzzle",
             initial_player: "black",
-            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            bounds: { top: 10, left: 0, bottom: 18, right: 9 },
             /* cSpell:disable */
             initial_state: {
-                black: "fsgsgrgqgpfoeodocpdqhn",
-                white: "bqbpbocqdresfrfqfpepcm",
+                black: "cqcpeqepeocl",
+                white: "crdqdpdnergqhqen",
             },
-            move_tree: this.makePuzzleMoveTree(["ereqdpercr"], ["eqer", "dper"], 19, 19),
+            move_tree: this.makePuzzleMoveTree(["dodrcn"], ["dodrcocn"], 19, 19),
             /* cSpell:enable */
         };
     }
@@ -172,7 +165,7 @@ class Page05 extends LearningPage {
     }
 
     text() {
-        return _("Black to play. Capture as many white stones as possible.");
+        return _("Black to play. Play the best connection.");
     }
     config(): GobanConfig {
         return {
@@ -180,13 +173,18 @@ class Page05 extends LearningPage {
             height: 19,
             mode: "puzzle",
             initial_player: "black",
-            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            bounds: { top: 10, left: 0, bottom: 18, right: 9 },
             /* cSpell:disable */
             initial_state: {
-                black: "csdresfsfrfqepfododndl",
-                white: "bscrereqdqdpcocncmck",
+                black: "brbqbpgqgrgscncl",
+                white: "cqdqeqfqgphpiqireofm",
             },
-            move_tree: this.makePuzzleMoveTree(["cqdscpdrbr"], ["cpcq", "dsbq", "brds"], 19, 19),
+            move_tree: this.makePuzzleMoveTree(
+                ["esdsdrercs"],
+                ["esdsdrerfscr", "esdscsdr", "cses", "dscscres", "crdr", "erdr", "drfrfsesercr"],
+                19,
+                19,
+            ),
             /* cSpell:enable */
         };
     }
@@ -198,7 +196,7 @@ class Page06 extends LearningPage {
     }
 
     text() {
-        return _("Black to play. Capture as many white stones as possible.");
+        return _("Black to play. Play the best connection.");
     }
     config(): GobanConfig {
         return {
@@ -206,13 +204,13 @@ class Page06 extends LearningPage {
             height: 19,
             mode: "puzzle",
             initial_player: "black",
-            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            bounds: { top: 10, left: 0, bottom: 18, right: 9 },
             /* cSpell:disable */
             initial_state: {
-                black: "fqfpepcsbsbrbqbpcpfrfsgognhp",
-                white: "dpcqcrcoboeofodsereqclem",
+                black: "bqcqdqcnanbmblclek",
+                white: "bpcpdpeqdrgpeodndmcmbngm",
             },
-            move_tree: this.makePuzzleMoveTree(["dqdres"], ["esdq", "drdq"], 19, 19),
+            move_tree: this.makePuzzleMoveTree(["ap"], ["boap"], 19, 19),
             /* cSpell:enable */
         };
     }
@@ -224,7 +222,7 @@ class Page07 extends LearningPage {
     }
 
     text() {
-        return _("Black to play. Capture as many white stones as possible.");
+        return _("Black to play. Play the best connection.");
     }
     config(): GobanConfig {
         return {
@@ -232,13 +230,27 @@ class Page07 extends LearningPage {
             height: 19,
             mode: "puzzle",
             initial_player: "black",
-            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            bounds: { top: 10, left: 0, bottom: 18, right: 9 },
             /* cSpell:disable */
             initial_state: {
-                black: "bqcpdoeodqbpcnfpdl",
-                white: "cqcrfogphofneqepdpiqfl",
+                black: "dpcpdmdlfk",
+                white: "dodnfnfofqdr",
             },
-            move_tree: this.makePuzzleMoveTree(["erdrfq"], ["drer", "fqer", "brdr"], 19, 19),
+            move_tree: this.makePuzzleMoveTree(
+                ["bnbococnbm", "bnbobpcnbm"],
+                [
+                    "bnbococncmbm",
+                    "bnbocnco",
+                    "bnbobpcncmbm",
+                    "bnbobpcncobm",
+                    "bnbobpcnaobm",
+                    "cocn",
+                    "cncobobn",
+                    "bobncncocmbp",
+                ],
+                19,
+                19,
+            ),
             /* cSpell:enable */
         };
     }
@@ -250,7 +262,7 @@ class Page08 extends LearningPage {
     }
 
     text() {
-        return _("Black to play. Capture as many white stones as possible.");
+        return _("Black to play. Play the best connection.");
     }
     config(): GobanConfig {
         return {
@@ -258,18 +270,13 @@ class Page08 extends LearningPage {
             height: 19,
             mode: "puzzle",
             initial_player: "black",
-            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            bounds: { top: 10, left: 0, bottom: 18, right: 9 },
             /* cSpell:disable */
             initial_state: {
-                black: "brcsdrdqcqepfpgqen",
-                white: "bpcpdpgphqhrhsgoipcmdleqer",
+                black: "dsdrdqcpcobqhshrhqcmcl",
+                white: "frgqeqepdphpgpgndndmiqirio",
             },
-            move_tree: this.makePuzzleMoveTree(
-                ["frfsesdsfq"],
-                ["frfsfqes", "esfr", "fqfr", "grgs"],
-                19,
-                19,
-            ),
+            move_tree: this.makePuzzleMoveTree(["fs"], [], 19, 19),
             /* cSpell:enable */
         };
     }
@@ -281,7 +288,7 @@ class Page09 extends LearningPage {
     }
 
     text() {
-        return _("Black to play. Capture as many white stones as possible.");
+        return _("Black to play. Play the best connection.");
     }
     config(): GobanConfig {
         return {
@@ -289,15 +296,23 @@ class Page09 extends LearningPage {
             height: 19,
             mode: "puzzle",
             initial_player: "black",
-            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            bounds: { top: 10, left: 0, bottom: 18, right: 9 },
             /* cSpell:disable */
             initial_state: {
-                black: "cqdreqbpbobncmdmgqbr",
-                white: "dqcpcocneogofm",
+                black: "bqcqdreqepgqclcmip",
+                white: "dpcpeodndlckekglgo",
             },
             move_tree: this.makePuzzleMoveTree(
-                ["dodpepdnen"],
-                ["dodpdnep", "dpdo", "dndp"],
+                ["bobpap"],
+                [
+                    "anbobpao",
+                    "anboaobmbncnblap",
+                    "anboaobmbncnbpbl",
+                    "anbobnao",
+                    "bpbo",
+                    "bnbp",
+                    "aobpapbncnbo",
+                ],
                 19,
                 19,
             ),
@@ -312,7 +327,7 @@ class Page10 extends LearningPage {
     }
 
     text() {
-        return _("Black to play. Capture as many white stones as possible.");
+        return _("Black to play. Play the best connection.");
     }
     config(): GobanConfig {
         return {
@@ -320,18 +335,13 @@ class Page10 extends LearningPage {
             height: 19,
             mode: "puzzle",
             initial_player: "black",
-            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            bounds: { top: 10, left: 0, bottom: 18, right: 9 },
             /* cSpell:disable */
             initial_state: {
-                black: "crdrbqapaobodpdncn",
-                white: "bpcpcododqbnbmcmdkhq",
+                black: "erfqepdpcpbpdm",
+                white: "bqcqdqdreqfriqio",
             },
-            move_tree: this.makePuzzleMoveTree(
-                ["eoepcqdpfp"],
-                ["eoepcqdpeqfp", "eoepfpen", "epen", "cqeo", "eneo", "eqen"],
-                19,
-                19,
-            ),
+            move_tree: this.makePuzzleMoveTree(["gresgp"], ["gpgr", "fpgr", "fogr"], 19, 19),
             /* cSpell:enable */
         };
     }
@@ -343,7 +353,7 @@ class Page11 extends LearningPage {
     }
 
     text() {
-        return _("Black to play. Capture as many white stones as possible.");
+        return _("Black to play. Play the best connection.");
     }
     config(): GobanConfig {
         return {
@@ -351,13 +361,18 @@ class Page11 extends LearningPage {
             height: 19,
             mode: "puzzle",
             initial_player: "black",
-            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            bounds: { top: 10, left: 0, bottom: 18, right: 9 },
             /* cSpell:disable */
             initial_state: {
-                black: "bsbrbqbpcododp",
-                white: "bocnbmcpcqdqcrgqhpdlao",
+                black: "cqcrcsfrgqfpeodocnbnhoiqhq",
+                white: "bsbrbqbpcpdpeqfq",
             },
-            move_tree: this.makePuzzleMoveTree(["eqerdrdscsdrfr"], ["eqercsdr"], 19, 19),
+            move_tree: this.makePuzzleMoveTree(
+                ["eserds"],
+                ["erdrdsesdqdr", "erdrdsesfsdqesgr", "dreresgrfsgs"],
+                19,
+                19,
+            ),
             /* cSpell:enable */
         };
     }
@@ -369,7 +384,7 @@ class Page12 extends LearningPage {
     }
 
     text() {
-        return _("Black to play. Capture as many white stones as possible.");
+        return _("Black to play. Play the best connection.");
     }
     config(): GobanConfig {
         return {
@@ -377,15 +392,15 @@ class Page12 extends LearningPage {
             height: 19,
             mode: "puzzle",
             initial_player: "black",
-            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            bounds: { top: 10, left: 0, bottom: 18, right: 9 },
             /* cSpell:disable */
             initial_state: {
-                black: "arbsdpbqcrdrerfqfpfofnen",
-                white: "frgrhqeqdqcqcpdmbnemfmgmhoineodn",
+                black: "cqbqdncmbmemgndk",
+                white: "cpcocndqdrdpgphq",
             },
             move_tree: this.makePuzzleMoveTree(
-                ["codoep", "cobobp", "cobpboepdo", "cobpbodoep"],
-                ["bpco", "doco", "boco", "epco"],
+                ["anaobo", "anapbp", "apanbn"],
+                ["aoapbpan", "bpbo", "bnbo", "bobpapbnanao"],
                 19,
                 19,
             ),
@@ -400,7 +415,7 @@ class Page13 extends LearningPage {
     }
 
     text() {
-        return _("Black to play. Capture as many white stones as possible.");
+        return _("Black to play. Play the best connection.");
     }
     config(): GobanConfig {
         return {
@@ -408,15 +423,15 @@ class Page13 extends LearningPage {
             height: 19,
             mode: "puzzle",
             initial_player: "black",
-            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            bounds: { top: 10, left: 0, bottom: 18, right: 9 },
             /* cSpell:disable */
             initial_state: {
-                black: "enfrfqbsbrbqbpdoeoepco",
-                white: "bocndndpcpcqcrerfsgrgqgpdlelhnbmgs",
+                black: "drdqcqdpcmcl",
+                white: "cpdoeoepdkdldmfrck",
             },
             move_tree: this.makePuzzleMoveTree(
-                ["drdscsdqeq"],
-                ["drdsdqeq", "drdseqcs", "dqeq", "eqcs", "cseq"],
+                ["bobncncobp"],
+                ["bpcnbnbmblboamao", "cocn", "bnbo"],
                 19,
                 19,
             ),
@@ -431,7 +446,7 @@ class Page14 extends LearningPage {
     }
 
     text() {
-        return _("Black to play. Capture as many white stones as possible.");
+        return _("Black to play. Play the best connection.");
     }
     config(): GobanConfig {
         return {
@@ -439,75 +454,13 @@ class Page14 extends LearningPage {
             height: 19,
             mode: "puzzle",
             initial_player: "black",
-            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
+            bounds: { top: 10, left: 0, bottom: 18, right: 9 },
             /* cSpell:disable */
             initial_state: {
-                black: "arbqbpcpdoeocnfpdl",
-                white: "brcrcqdpepfogogqfmhq",
+                black: "brcqcpdpeperfqhpgqfn",
+                white: "crdrdqbqbpbocncl",
             },
-            move_tree: this.makePuzzleMoveTree(["dqeqerdrfq"], ["eqdq", "fqer", "erdq"], 19, 19),
-            /* cSpell:enable */
-        };
-    }
-}
-
-class Page15 extends LearningPage {
-    constructor(props: LearningPageProperties) {
-        super(props);
-    }
-
-    text() {
-        return _("Black to play. Capture as many white stones as possible.");
-    }
-    config(): GobanConfig {
-        return {
-            width: 19,
-            height: 19,
-            mode: "puzzle",
-            initial_player: "black",
-            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
-            /* cSpell:disable */
-            initial_state: {
-                black: "drcrcqcpcodnenepfnfl",
-                white: "bpbocndodpdqeqgognbmhqbqhl",
-            },
-            move_tree: this.makePuzzleMoveTree(
-                ["fqerfreofofpes"],
-                ["eofq", "erfq", "fpfq", "frfq"],
-                19,
-                19,
-            ),
-            /* cSpell:enable */
-        };
-    }
-}
-
-class Page16 extends LearningPage {
-    constructor(props: LearningPageProperties) {
-        super(props);
-    }
-
-    text() {
-        return _("Black to play. Capture as many white stones as possible.");
-    }
-    config(): GobanConfig {
-        return {
-            width: 19,
-            height: 19,
-            mode: "puzzle",
-            initial_player: "black",
-            bounds: { top: 10, left: 0, bottom: 18, right: 8 },
-            /* cSpell:disable */
-            initial_state: {
-                black: "bsbrbqbpdocoeqenfnfl",
-                white: "bocnbncpcqcrerdmgpgqgrhndl",
-            },
-            move_tree: this.makePuzzleMoveTree(
-                ["drdqdpdscs", "drdqcsdsdp"],
-                ["csdr", "dqdr", "dpdr"],
-                19,
-                19,
-            ),
+            move_tree: this.makePuzzleMoveTree(["bsards"], ["dsbs", "csds"], 19, 19),
             /* cSpell:enable */
         };
     }
