@@ -254,6 +254,7 @@ export interface DataSchema
     "fair-play.selected-phase": string;
     "fair-play.selected-tags": number[];
     "fair-play.vim-mode": boolean;
+    "fair-play.skip-archiving": boolean;
     "fair-play-search.filters": {
         selectedPlayerId?: number;
         selectedPlayerUsername?: string;
