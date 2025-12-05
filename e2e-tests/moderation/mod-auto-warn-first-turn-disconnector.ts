@@ -38,7 +38,7 @@ export const modWarnFirstTurnDisconnectorTest = async ({
 }: {
     createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
 }) => {
-    ogsTest.setTimeout(6 * 60 * 1000); // Set timeout to 6 minutes, to let disconnect happen
+    ogsTest.setTimeout(10 * 60 * 1000); // Set timeout to 10 minutes, to let disconnect happen (5 min) plus setup/teardown
 
     const { userPage: challengerPage } = await prepareNewUser(
         createContext,
@@ -71,6 +71,12 @@ export const modWarnFirstTurnDisconnectorTest = async ({
     await challengerPage.waitForTimeout(3000);
 
     await clickInTheMiddle(challengerPage);
+
+    // Close escaper's context to simulate a disconnect
+    // This triggers the 5-minute auto-resign timer on the server
+    const escaperContext = escaperPage.context();
+    await escaperContext.close();
+    log("Closed escaper context to simulate disconnect");
 
     log(
         "Note: cmWarnFirstTurnDisconnectorTest waiting for disconnect timer (approximately 5 minutes)...",
