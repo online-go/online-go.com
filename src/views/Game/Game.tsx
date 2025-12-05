@@ -20,7 +20,7 @@ import { useParams, useLocation, useSearchParams } from "react-router-dom";
 
 import * as data from "@/lib/data";
 import * as preferences from "@/lib/preferences";
-import { _, interpolate } from "@/lib/translate";
+import { _, interpolate, pgettext } from "@/lib/translate";
 import { popover } from "@/lib/popover";
 import { get, abort_requests_in_flight } from "@/lib/requests";
 import { UIPush } from "@/components/UIPush";
@@ -109,6 +109,8 @@ export function Game(): React.ReactElement | null {
     const [, set_undo_requested] = React.useState<number | undefined>();
     const [bot_detection_results, set_bot_detection_results] = React.useState<any>(null);
     const [show_bot_detection_results, set_show_bot_detection_results] = React.useState(false);
+    const [simul_black, set_simul_black] = React.useState<boolean | null>(null);
+    const [simul_white, set_simul_white] = React.useState<boolean | null>(null);
     const view_mode = useViewMode(goban_controller.current);
     const mode = useMode(goban);
     const zen_mode = useZenMode(goban_controller.current);
@@ -461,6 +463,8 @@ export function Game(): React.ReactElement | null {
                     set_historical_black(game.historical_ratings.black);
                     set_historical_white(game.historical_ratings.white);
                     set_bot_detection_results(game.bot_detection_results);
+                    set_simul_black(game.simul_black ?? null);
+                    set_simul_white(game.simul_white ?? null);
 
                     goban_div.current?.setAttribute("data-game-id", game_id.toString());
 
@@ -703,7 +707,9 @@ export function Game(): React.ReactElement | null {
 
                         {view_mode === "square" && !squashed && CHAT}
 
-                        {view_mode === "portrait" && !zen_mode && <FragAIReview />}
+                        {view_mode === "portrait" && !zen_mode && (
+                            <FragAIReview simul_black={simul_black} simul_white={simul_white} />
+                        )}
 
                         {view_mode === "portrait" && CONTROLS}
 
@@ -742,20 +748,40 @@ export function Game(): React.ReactElement | null {
                             )}
 
                             {(view_mode === "square" || view_mode === "wide") && !zen_mode && (
-                                <FragAIReview />
+                                <FragAIReview simul_black={simul_black} simul_white={simul_white} />
                             )}
 
                             {(view_mode === "square" || view_mode === "wide") &&
-                                show_game_timing && <FragTimings />}
+                                show_game_timing && (
+                                    <FragTimings
+                                        simul_black={simul_black}
+                                        simul_white={simul_white}
+                                    />
+                                )}
 
                             {(view_mode === "square" || view_mode === "wide") &&
                                 show_bot_detection_results &&
                                 bot_detection_results?.ai_suspected.length > 0 && (
-                                    <BotDetectionResults
-                                        bot_detection_results={bot_detection_results}
-                                        game_id={game_id}
-                                        updateBotDetectionResults={set_bot_detection_results}
-                                    />
+                                    <>
+                                        {(simul_black || simul_white) && (
+                                            <div className="simul-warning">
+                                                {pgettext(
+                                                    "A label that means the game is played at the same time as another game",
+                                                    "Simul",
+                                                )}
+                                                {simul_black && simul_white
+                                                    ? " (both players)"
+                                                    : simul_black
+                                                      ? " (black)"
+                                                      : " (white)"}
+                                            </div>
+                                        )}
+                                        <BotDetectionResults
+                                            bot_detection_results={bot_detection_results}
+                                            game_id={game_id}
+                                            updateBotDetectionResults={set_bot_detection_results}
+                                        />
+                                    </>
                                 )}
 
                             {CONTROLS}

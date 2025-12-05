@@ -266,6 +266,9 @@ declare namespace rest_api {
         flags: null | {
             [player_id: string]: GamePlayerFlags;
         };
+        // Only populated for moderators and AI detectors
+        simul_black?: boolean | null;
+        simul_white?: boolean | null;
     }
 
     namespace players.full {

@@ -25,6 +25,7 @@ import { AdHocPackedMove, GobanMovesArray } from "goban";
 import { useUser } from "@/lib/hooks";
 import { showSecondsResolution } from "@/lib/misc";
 import { MODERATOR_POWERS } from "@/lib/moderation";
+import { pgettext } from "@/lib/translate";
 
 interface GameTimingProperties {
     moves: GobanMovesArray;
@@ -35,6 +36,8 @@ interface GameTimingProperties {
     black_id: number;
     white_id: number;
     onFinalActionCalculated?: (final_action_timing: moment.Duration) => void;
+    simul_black?: boolean | null;
+    simul_white?: boolean | null;
 }
 
 export function GameTimings(props: GameTimingProperties): React.ReactElement {
@@ -106,9 +109,25 @@ export function GameTimings(props: GameTimingProperties): React.ReactElement {
     const have_blurs =
         user.is_moderator || (user.moderator_powers & MODERATOR_POWERS.AI_DETECTOR) !== 0;
 
+    const show_simul =
+        user.is_moderator || (user.moderator_powers & MODERATOR_POWERS.AI_DETECTOR) !== 0;
+
     return (
         <div className="GameTimings">
             <div className="timings-header">Game Timings</div>
+            {show_simul && (props.simul_black || props.simul_white) && (
+                <div className="simul-warning span-4">
+                    {pgettext(
+                        "A label that means the game is played at the same time as another game",
+                        "Simul",
+                    )}
+                    {props.simul_black && props.simul_white
+                        ? " (both players)"
+                        : props.simul_black
+                          ? " (black)"
+                          : " (white)"}
+                </div>
+            )}
             <div>Move</div>
             <div>Black {have_blurs && "(blur)"}</div>
             <div>White {have_blurs && "(blur)"}</div>
