@@ -191,7 +191,12 @@ export function GameKeyboardShortcuts(): React.ReactElement | null {
         </div>
     );
 }
-export function FragAIReview(): React.ReactElement | null {
+interface FragAIReviewProps {
+    simul_black?: boolean | null;
+    simul_white?: boolean | null;
+}
+
+export function FragAIReview(props: FragAIReviewProps): React.ReactElement | null {
     const goban_controller = useGobanController();
     const goban = goban_controller.goban;
     const cur_move = useCurrentMove(goban);
@@ -218,6 +223,8 @@ export function FragAIReview(): React.ReactElement | null {
                 game_id={game_id}
                 move={cur_move}
                 hidden={!ai_review_enabled}
+                simul_black={props.simul_black}
+                simul_white={props.simul_white}
             />
         );
     }
@@ -312,7 +319,12 @@ export function FragBelowBoardControls(): React.ReactElement | null {
     );
 }
 
-export function FragTimings(): React.ReactElement | null {
+interface FragTimingsProps {
+    simul_black?: boolean | null;
+    simul_white?: boolean | null;
+}
+
+export function FragTimings(props: FragTimingsProps): React.ReactElement | null {
     const goban_controller = useGobanController();
     const goban = goban_controller.goban;
 
@@ -326,6 +338,8 @@ export function FragTimings(): React.ReactElement | null {
                 handicap={goban.engine.config.handicap ?? 0}
                 black_id={goban.engine.config.black_player_id ?? 0}
                 white_id={goban.engine.config.white_player_id ?? 0}
+                simul_black={props.simul_black}
+                simul_white={props.simul_white}
             />
         );
     }
