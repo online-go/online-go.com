@@ -41,7 +41,7 @@ import { alert } from "@/lib/swal_config";
 import { PlayerCacheEntry } from "@/lib/player_cache";
 import { openReport } from "@/components/Report";
 import { MODERATOR_POWERS } from "@/lib/moderation";
-import { PlayerTagInput } from "@/components/PlayerTagInput";
+import { PlayerTagInput } from "@moderator-ui/PlayerTagInput";
 
 interface PlayerDetailsProperties {
     playerId: number;
