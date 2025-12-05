@@ -367,6 +367,30 @@ export function NavBar(): React.ReactElement {
                                     icon={<i className="fa fa-ban" />}
                                 />
                             )}
+                            {(user.is_moderator ||
+                                (user.moderator_powers & MODERATOR_POWERS.AI_DETECTOR) !== 0) && (
+                                <MenuLink
+                                    title={_("Fair Play System")}
+                                    to="/moderator/fair-play"
+                                    icon={<i className="fa fa-code" />}
+                                />
+                            )}
+                            {(user.is_moderator ||
+                                (user.moderator_powers & MODERATOR_POWERS.AI_DETECTOR) !== 0) && (
+                                <MenuLink
+                                    title={_("Fair Play Search")}
+                                    to="/moderator/fair-play-search"
+                                    icon={<i className="fa fa-search" />}
+                                />
+                            )}
+                            {(user.is_moderator ||
+                                (user.moderator_powers & MODERATOR_POWERS.AI_DETECTOR) !== 0) && (
+                                <MenuLink
+                                    title={_("Fair Play Actions")}
+                                    to="/moderator/fair-play-actions"
+                                    icon={<i className="fa fa-gavel" />}
+                                />
+                            )}
                             {user.is_moderator && (
                                 <MenuLink
                                     title="Firewall"

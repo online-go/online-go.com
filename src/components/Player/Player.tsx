@@ -74,6 +74,7 @@ export interface PlayerProperties {
     forceShowRank?: boolean;
     showAsBanned?: boolean; // client can request us to render as banned (we can't find out here)
     tabIndex?: number; // control tab order for accessibility
+    gameId?: number; // When provided, enables tagging for moderators
 }
 
 export function Player(props: PlayerProperties): React.ReactElement {
@@ -240,6 +241,7 @@ export function Player(props: PlayerProperties): React.ReactElement {
                 elt: (
                     <PlayerDetails
                         playerId={player_id}
+                        gameId={props.gameId}
                         noextracontrols={props.noextracontrols}
                         nochallenge={props.nochallenge}
                         chatId={chat_id || undefined}

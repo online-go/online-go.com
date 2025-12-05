@@ -15,74 +15,60 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// (No seeded data in use)
+// Tests that black timing out on move 0 (before any move is played) triggers auto-warning.
+// This complements mod-auto-warn-first-turn-escaper.ts which tests white timing out on move 1.
 
 import type { CreateContextOptions } from "@helpers";
 
 import { BrowserContext } from "@playwright/test";
 
-import { loginAsUser, newTestUsername, prepareNewUser } from "@helpers/user-utils";
+import { newTestUsername, prepareNewUser } from "@helpers/user-utils";
 
 import {
     createDirectChallenge,
     acceptDirectChallenge,
     defaultChallengeSettings,
 } from "@helpers/challenge-utils";
-import { clickInTheMiddle } from "@helpers/game-utils";
 import { log } from "@helpers/logger";
 
-import { ogsTest } from "@helpers";
-
-export const modWarnFirstTurnDisconnectorTest = async ({
+export const modWarnFirstTurnEscaperBlackTest = async ({
     createContext,
 }: {
     createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
 }) => {
-    ogsTest.setTimeout(10 * 60 * 1000); // Set timeout to 10 minutes, to let disconnect happen (5 min) plus setup/teardown
-
     const { userPage: challengerPage } = await prepareNewUser(
         createContext,
-        newTestUsername("CmFTDChall"), // cspell:disable-line
+        newTestUsername("CmFTEBChall"), // cspell:disable-line
         "test",
     );
 
-    const escaperUsername = newTestUsername("CmFTDis"); // cspell:disable-line
+    const escaperUsername = newTestUsername("CmFTEBEscaper"); // cspell:disable-line
     const { userPage: escaperPage } = await prepareNewUser(createContext, escaperUsername, "test");
 
-    // Challenger challenges the escaper
+    // Challenger challenges the escaper, but challenger chooses WHITE
+    // This means escaper will be BLACK and must play the first move
     await createDirectChallenge(challengerPage, escaperUsername, {
         ...defaultChallengeSettings,
-        gameName: "E2E First Turn Disconnector Game",
+        gameName: "E2E First Turn Escape Black Game",
         speed: "live",
         timeControl: "byoyomi",
-        mainTime: "360", // longer than the disconnect timer (which is 5 mins)
-        timePerPeriod: "360",
+        mainTime: "45",
+        timePerPeriod: "10",
         periods: "1",
+        color: "white", // Challenger is white, so escaper is black
     });
 
-    // escaper accepts
+    // Escaper accepts - they are now black and must play first
     await acceptDirectChallenge(escaperPage);
 
-    // Challenger is black, plays a turn (to get past slow first-move-timer)
-    // Wait for the Goban to be visible & definitely ready
+    // Wait for the game to be visible on challenger's page
     const goban = challengerPage.locator(".Goban[data-pointers-bound]");
     await goban.waitFor({ state: "visible" });
 
-    await challengerPage.waitForTimeout(3000);
+    // Escaper (black) does nothing - eventually times out on move 0
+    // Challenger (white) waits and gets the warning ack
 
-    await clickInTheMiddle(challengerPage);
-
-    // Close escaper's context to simulate a disconnect
-    // This triggers the 5-minute auto-resign timer on the server
-    const escaperContext = escaperPage.context();
-    await escaperContext.close();
-    log("Closed escaper context to simulate disconnect");
-
-    log(
-        "Note: cmWarnFirstTurnDisconnectorTest waiting for disconnect timer (approximately 5 minutes)...",
-    );
-
-    // ... eventually challenger gets the ack that we are looking for
+    log("modWarnFirstTurnEscaperBlackTest waiting for escaper (black) timeout (about a minute)...");
     await challengerPage
         .locator(
             '.AccountWarningAck .canned-message:has-text("We\'ve noticed that the other player left game")',
@@ -90,18 +76,13 @@ export const modWarnFirstTurnDisconnectorTest = async ({
         .waitFor();
     await challengerPage.locator(".AccountWarningAck button.primary").click();
 
-    // And escaper should have warning when they log in again
-    const newEscaperContext = await createContext();
-    const newEscaperPage = await newEscaperContext.newPage();
-
-    await loginAsUser(newEscaperPage, escaperUsername, "test");
-
-    await newEscaperPage
+    // And escaper should have warning...
+    await escaperPage
         .locator(
             '.AccountWarningInfo .canned-message:has-text("We\'ve noticed that you joined game")',
         )
         .waitFor();
 
-    await newEscaperPage.locator(".AccountWarningInfo button.primary:not([disabled])").waitFor();
-    await newEscaperPage.locator(".AccountWarningInfo button.primary").click();
+    await escaperPage.locator(".AccountWarningInfo button.primary:not([disabled])").waitFor();
+    await escaperPage.locator(".AccountWarningInfo button.primary").click();
 };

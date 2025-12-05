@@ -79,6 +79,7 @@ for (const base_path of [
     "/OGSScoreEstimator",
     "/oje",
     "/firewall",
+    "/fair_play",
     "/__debug__",
 ]) {
     proxy[base_path] = {

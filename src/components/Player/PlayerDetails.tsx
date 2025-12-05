@@ -41,9 +41,11 @@ import { alert } from "@/lib/swal_config";
 import { PlayerCacheEntry } from "@/lib/player_cache";
 import { openReport } from "@/components/Report";
 import { MODERATOR_POWERS } from "@/lib/moderation";
+import { PlayerTagInput } from "@moderator-ui/PlayerTagInput";
 
 interface PlayerDetailsProperties {
     playerId: number;
+    gameId?: number; // When provided, shows tag input for moderators
     chatId?: string;
     gameChatId?: string;
     reviewChatId?: string;
@@ -470,6 +472,12 @@ export class PlayerDetails extends React.PureComponent<
                         </button>
                     </div>
                 )}
+                {(user.is_moderator ||
+                    (user.moderator_powers & MODERATOR_POWERS.AI_DETECTOR) !== 0) &&
+                    this.props.gameId &&
+                    this.props.playerId > 0 && (
+                        <PlayerTagInput playerId={this.props.playerId} gameId={this.props.gameId} />
+                    )}
             </div>
         );
     }
