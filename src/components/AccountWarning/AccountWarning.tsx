@@ -135,7 +135,7 @@ function MessageTextRender(props: MessageTextRenderProps): React.ReactElement {
     if (props.warning.message_id) {
         return (
             <div className={`canned-message ${props.warning.message_id}`}>
-                {CANNED_MESSAGES[props.warning.message_id](props.warning.interpolation_data)}
+                {CANNED_MESSAGES?.[props.warning.message_id]?.(props.warning.interpolation_data)}
             </div>
         );
     } else {
