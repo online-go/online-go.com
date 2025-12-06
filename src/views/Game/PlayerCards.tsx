@@ -303,7 +303,11 @@ export function PlayerCard({
 
             {player && player.rank !== -1 && (
                 <div className={`${color} player-name-container`}>
-                    <Player user={player.id} historical={(!engine.rengo && historical) || player} />
+                    <Player
+                        user={player.id}
+                        historical={(!engine.rengo && historical) || player}
+                        gameId={goban.game_id}
+                    />
                 </div>
             )}
 

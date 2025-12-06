@@ -247,6 +247,40 @@ export interface DataSchema
     "table-color-default-on": boolean;
     "oje-url": string;
     "oje-variation-filter": JosekiFilter;
+    "fair-play.last-game-id": string;
+    "fair-play.last-player-id": string;
+    "fair-play.past-n-games": string;
+    "fair-play.game-logic-mode": string;
+    "fair-play.selected-phase": string;
+    "fair-play.selected-tags": number[];
+    "fair-play.vim-mode": boolean;
+    "fair-play.skip-archiving": boolean;
+    "fair-play-search.filters": {
+        selectedPlayerId?: number;
+        selectedPlayerUsername?: string;
+        gameId: string;
+        fromDate: string;
+        toDate: string;
+        reviewType: "" | "fast" | "full";
+        filters: Array<{
+            field: string;
+            fieldType: "aggregate" | "flag";
+            operator: "" | "__gt" | "__gte" | "__lt" | "__lte";
+            value: string;
+        }>;
+        selectedTags?: number[];
+    };
+    "fair-play-actions.filters": {
+        selectedPlayerId?: number;
+        selectedPlayerUsername?: string;
+        fromDate: string;
+        toDate: string;
+        stateFilter: "pending" | "executed" | "denied" | "error" | "";
+        pendingOnly: boolean;
+        excludedActionTypes: Array<
+            "request_full_review" | "warn" | "suspend" | "escalate" | "annul"
+        >;
+    };
     "ad-override": boolean;
     "email-banner-dismissed": boolean;
     "payment-problem-banner-dismissed-timestamp": number;

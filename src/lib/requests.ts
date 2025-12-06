@@ -137,13 +137,15 @@ function request(method: Method): RequestFunction {
                 .then((res) => {
                     delete requests_in_flight[request_id];
 
+                    // Handle 204 No Content responses before trying to parse JSON
+                    if (res.status === 204) {
+                        resolve({});
+                        return;
+                    }
+
                     const onJson = (data: any) => {
                         if (res.status >= 200 && res.status < 300) {
-                            if (res.status === 204) {
-                                resolve({});
-                            } else {
-                                resolve(data);
-                            }
+                            resolve(data);
                         } else {
                             console.error(res.status, url, data);
                             console.error(traceback.stack);

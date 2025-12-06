@@ -667,7 +667,7 @@ export function ViewReport({
                             <ReportedGame
                                 game_id={report.reported_game}
                                 reported_at={report.reported_game_move}
-                                reported_by={report.reporting_user.id}
+                                reported_by={report.reporting_user?.id}
                                 onGobanCreated={setCurrentGoban}
                                 simul={report.simul}
                             />
