@@ -254,6 +254,8 @@ import { BL4Connect1 } from "./Sections/BeginnerLevel4/Connect1";
 import { BL4Connect2 } from "./Sections/BeginnerLevel4/Connect2";
 import { BL4Connect3 } from "./Sections/BeginnerLevel4/Connect3";
 import { BL4Connect4 } from "./Sections/BeginnerLevel4/Connect4";
+import { BL4Cut1 } from "./Sections/BeginnerLevel4/Cut1";
+import { BL4Cut2 } from "./Sections/BeginnerLevel4/Cut2";
 
 export const sections: [string, any[]][] = [
     [
@@ -516,6 +518,8 @@ export const sections: [string, any[]][] = [
             BL4Connect2,
             BL4Connect3,
             BL4Connect4,
+            BL4Cut1,
+            BL4Cut2,
         ],
     ],
 
