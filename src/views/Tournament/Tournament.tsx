@@ -124,6 +124,7 @@ interface TournamentInterface {
     analysis_enabled: boolean;
     exclude_provisional: boolean;
     auto_start_on_max: boolean;
+    ranked: boolean;
     exclusivity: string;
     first_pairing_method: string;
     subsequent_pairing_method: string;
@@ -181,6 +182,7 @@ export function Tournament(): React.ReactElement {
         analysis_enabled: true,
         exclude_provisional: true,
         auto_start_on_max: false,
+        ranked: true,
         //scheduled_rounds: true,
         exclusivity: "group",
         first_pairing_method: "slide",
@@ -716,6 +718,9 @@ export function Tournament(): React.ReactElement {
     const setExcludeProvisionalPlayers = (ev: React.ChangeEvent<HTMLInputElement>) => {
         setTournament({ ...tournament, exclude_provisional: !ev.target.checked });
     };
+    const setRanked = (ev: React.ChangeEvent<HTMLInputElement>) => {
+        setTournament({ ...tournament, ranked: ev.target.checked });
+    };
     const setDescription = (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
         setTournament({ ...tournament, description: ev.target.value });
     };
@@ -923,6 +928,7 @@ export function Tournament(): React.ReactElement {
         ? _("Not allowed")
         : _("Allowed");
     const analysis_mode_text = tournament.analysis_enabled ? _("Allowed") : _("Not allowed");
+    const ranked_text = tournament.ranked ? _("Ranked") : _("Unranked");
     const cdn_release = data.get("config.cdn_release");
     //let scheduled_rounds_text = tournament.scheduled_rounds ? pgettext("In a tournament, rounds will be scheduled to start at specific times", "Rounds are scheduled") : pgettext("In a tournament, the next round will start when the last finishes", "Rounds will automatically start when the last round finishes");
 
@@ -1540,6 +1546,23 @@ export function Tournament(): React.ReactElement {
                                             id="analysis"
                                             checked={tournament.analysis_enabled}
                                             onChange={setAnalysisEnabled}
+                                        />
+                                    )}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>
+                                    <label htmlFor="ranked">{_("Ranked")}</label>
+                                </th>
+                                <td>
+                                    {!editing ? (
+                                        ranked_text
+                                    ) : (
+                                        <input
+                                            type="checkbox"
+                                            id="ranked"
+                                            checked={tournament.ranked}
+                                            onChange={setRanked}
                                         />
                                     )}
                                 </td>
