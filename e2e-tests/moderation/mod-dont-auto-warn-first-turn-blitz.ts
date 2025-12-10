@@ -31,12 +31,14 @@ import {
 } from "@helpers/challenge-utils";
 import { clickInTheMiddle } from "@helpers/game-utils";
 import { log } from "@helpers/logger";
+import { ogsTest } from "@helpers";
 
 export const modDontAutoWarnBlitzTest = async ({
     createContext,
 }: {
     createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
 }) => {
+    ogsTest.setTimeout(120 * 1000); // 2 minutes - waits 60s for timeout verification
     const { userPage: challengerPage } = await prepareNewUser(
         createContext,
         newTestUsername("CmDWBChall"), // cspell:disable-line

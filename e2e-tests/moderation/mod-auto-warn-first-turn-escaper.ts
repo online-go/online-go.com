@@ -30,12 +30,14 @@ import {
 } from "@helpers/challenge-utils";
 import { clickInTheMiddle } from "@helpers/game-utils";
 import { log } from "@helpers/logger";
+import { ogsTest } from "@helpers";
 
 export const modWarnFirstTurnEscapersTest = async ({
     createContext,
 }: {
     createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
 }) => {
+    ogsTest.setTimeout(120 * 1000); // 2 minutes - waits ~60s for player timeout (45s + 10s)
     const { userPage: challengerPage } = await prepareNewUser(
         createContext,
         newTestUsername("CmFTEChall"), // cspell:disable-line
