@@ -19,7 +19,7 @@
 
 import type { CreateContextOptions } from "@helpers";
 
-import { BrowserContext } from "@playwright/test";
+import { BrowserContext, TestInfo } from "@playwright/test";
 
 import { loginAsUser, newTestUsername, prepareNewUser } from "@helpers/user-utils";
 
@@ -31,14 +31,15 @@ import {
 import { clickInTheMiddle } from "@helpers/game-utils";
 import { log } from "@helpers/logger";
 
-import { ogsTest } from "@helpers";
-
-export const modWarnFirstTurnDisconnectorTest = async ({
-    createContext,
-}: {
-    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
-}) => {
-    ogsTest.setTimeout(10 * 60 * 1000); // Set timeout to 10 minutes, to let disconnect happen (5 min) plus setup/teardown
+export const modWarnFirstTurnDisconnectorTest = async (
+    {
+        createContext,
+    }: {
+        createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
+    },
+    testInfo: TestInfo,
+) => {
+    testInfo.setTimeout(10 * 60 * 1000); // Set timeout to 10 minutes, to let disconnect happen (5 min) plus setup/teardown
 
     const { userPage: challengerPage } = await prepareNewUser(
         createContext,
