@@ -19,6 +19,7 @@ import { ogsTest } from "@helpers";
 import { basicScoringTest } from "./basic-scoring";
 import { conditionalMovesArrowBugTest } from "./conditional-moves-arrow";
 import { detectContainedSimulTest } from "./simul-detection";
+import { simulPauseDetectionTest } from "./simul-pause-detection";
 import { gameLogThumbnailMarksTest } from "./game-log-thumbnail-marks";
 import { gameLogScoringAreasTest } from "./game-log-scoring-areas";
 
@@ -26,6 +27,7 @@ ogsTest.describe("@Games Tests", () => {
     ogsTest("Pass and score a game", basicScoringTest);
     ogsTest("Use arrow in conditional moves", conditionalMovesArrowBugTest);
     ogsTest("Detect contained simultaneous game", detectContainedSimulTest);
+    ogsTest("Paused games excluded from simul detection", simulPauseDetectionTest);
     ogsTest(
         "@Visual GameLog thumbnails display marks correctly VISUAL INSPECTION REQUIRED",
         gameLogThumbnailMarksTest,
