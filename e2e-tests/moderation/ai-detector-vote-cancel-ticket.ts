@@ -77,7 +77,7 @@ export const aiDetectorVoteCancelTicketTest = async (
 
         // 1. Create two users who will play a game
         log("Creating reporter user...");
-        const reporterUsername = newTestUsername("aiDetCTReporter");
+        const reporterUsername = newTestUsername("aiDetCTRep");
         const reporterPassword = "test";
         const { userPage: reporterPage } = await prepareNewUser(
             createContext,
@@ -173,6 +173,7 @@ export const aiDetectorVoteCancelTicketTest = async (
         // Click on the reported player's name
         const playerLink = reporterPage.locator(`.white.player-name-container a.Player`);
         await expect(playerLink).toBeVisible();
+        await playerLink.hover(); // Stabilize popover before clicking
         await playerLink.click();
 
         // Click the Report button

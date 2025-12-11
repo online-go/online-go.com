@@ -85,6 +85,7 @@ export const modRejectEscapeReportDuringGameTest = async ({
     // Try to report escaping during the game - this should be blocked
     const playerLink = reporterPage.locator(`.white.player-name-container a.Player`);
     await expect(playerLink).toBeVisible();
+    await playerLink.hover(); // Stabilize popover before clicking
     await playerLink.click();
 
     const reportButtonInitial = await expectOGSClickableByName(reporterPage, /Report$/);
@@ -137,6 +138,7 @@ export const modRejectEscapeReportDuringGameTest = async ({
     // Now try to report escaping after the game - this should be allowed
     const playerLinkAfterGame = reporterPage.locator(`.white.player-name-container a.Player`);
     await expect(playerLinkAfterGame).toBeVisible();
+    await playerLinkAfterGame.hover(); // Stabilize popover before clicking
     await playerLinkAfterGame.click();
 
     const reportButton = await expectOGSClickableByName(reporterPage, /Report$/);
