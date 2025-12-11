@@ -16,10 +16,23 @@
  */
 
 /*
-* Uses init_e2e data:
-
-* - E2E_GAMES_SIMUL_CM : user who will check the report
-*/
+ * Test that simultaneous live games are detected.
+ *
+ * Simul detection happens at game end: when a game ends, the system checks if
+ * the player has other ongoing live games. If they do, both games are marked
+ * as simul.
+ *
+ * This test verifies that:
+ * 1. A user starts two simultaneous live games
+ * 2. The second game ends while the first is still running
+ * 3. The AI Detector views the finished game and SEES the simul indicator
+ *
+ * Uses seeded user:
+ * - E2E_AI_DETECTOR: AI Detector with AI_DETECTOR moderator powers
+ *
+ * Requires environment variables:
+ * - E2E_MODERATOR_PASSWORD: Password for E2E_AI_DETECTOR
+ */
 
 import type { CreateContextOptions } from "@helpers";
 
@@ -27,12 +40,11 @@ import { BrowserContext, TestInfo } from "@playwright/test";
 import { expect } from "@playwright/test";
 
 import {
+    generateUniqueTestIPv6,
     loginAsUser,
     newTestUsername,
     prepareNewUser,
-    reportUser,
-    setupSeededCM,
-    captureReportNumber,
+    turnOffDynamicHelp,
 } from "@helpers/user-utils";
 import {
     acceptDirectChallenge,
@@ -41,170 +53,142 @@ import {
 } from "@helpers/challenge-utils";
 
 import { playMoves, resignActiveGame } from "@helpers/game-utils";
-import { withReportCountTracking } from "@helpers/report-utils";
 import { log } from "@helpers/logger";
 
-export const detectContainedSimulTest = async (
+export const simulDetectionTest = async (
     {
         createContext,
     }: { createContext: (options?: CreateContextOptions) => Promise<BrowserContext> },
-    testInfo: TestInfo,
+    _testInfo: TestInfo,
 ) => {
+    // Check for required password
+    const password = process.env.E2E_MODERATOR_PASSWORD;
+    if (!password) {
+        throw new Error("E2E_MODERATOR_PASSWORD environment variable must be set to run this test");
+    }
+
+    log("=== Simul Detection Test ===");
+
     // The user who plays simultaneous games
-    const challengerUsername = newTestUsername("gamesSimulCh"); // cspell:disable-line
+    const challengerUsername = newTestUsername("SimulDetCh"); // cspell:disable-line
     log(`Creating challenger user: ${challengerUsername}`);
-    const { userPage: challengerContainingGamePage } = await prepareNewUser(
+    const { userPage: challengerGame1Page } = await prepareNewUser(
         createContext,
         challengerUsername,
         "test",
     );
 
-    const acceptor1Username = newTestUsername("gamesSmlAc1"); // cspell:disable-line
-    log(`Creating first acceptor user: ${acceptor1Username}`);
-    const { userPage: acceptor1Page } = await prepareNewUser(
+    // Create opponent for game 1
+    const opponent1Username = newTestUsername("SimDetOp1"); // cspell:disable-line
+    log(`Creating first opponent user: ${opponent1Username}`);
+    const { userPage: opponent1Page } = await prepareNewUser(
         createContext,
-        acceptor1Username,
+        opponent1Username,
         "test",
     );
 
-    // Challenger challenges the first acceptor
-    log("Creating first challenge (containing game)");
-    await createDirectChallenge(challengerContainingGamePage, acceptor1Username, {
+    // Create opponent for game 2
+    const opponent2Username = newTestUsername("SimDetOp2"); // cspell:disable-line
+    log(`Creating second opponent user: ${opponent2Username}`);
+    const { userPage: opponent2Page } = await prepareNewUser(
+        createContext,
+        opponent2Username,
+        "test",
+    );
+
+    // === Start Game 1 ===
+    log("Creating first game...");
+    await createDirectChallenge(challengerGame1Page, opponent1Username, {
         ...defaultChallengeSettings,
-        gameName: "E2E Games Simul Containing Test Game",
+        gameName: "E2E Simul Detection Test Game 1",
         boardSize: "9x9",
         speed: "live",
         timeControl: "byoyomi",
-        mainTime: "45", // heaps of time to get organised with the other one :)
+        mainTime: "300", // 5 minutes - plenty of time
+        timePerPeriod: "30",
+        periods: "5",
+    });
+
+    await acceptDirectChallenge(opponent1Page);
+
+    // Wait for game 1 to be ready
+    const goban1 = challengerGame1Page.locator(".Goban[data-pointers-bound]");
+    await goban1.waitFor({ state: "visible" });
+    await challengerGame1Page.waitForTimeout(1000);
+
+    const challengerMove1 = challengerGame1Page.getByText("Your move", { exact: true });
+    await expect(challengerMove1).toBeVisible();
+    log("Game 1 started successfully");
+
+    // === Start Game 2 in a new tab for challenger ===
+    log("Creating second game...");
+    const challengerContext = await createContext();
+    const challengerGame2Page = await challengerContext.newPage();
+    await loginAsUser(challengerGame2Page, challengerUsername, "test");
+
+    await createDirectChallenge(challengerGame2Page, opponent2Username, {
+        ...defaultChallengeSettings,
+        gameName: "E2E Simul Detection Test Game 2",
+        boardSize: "9x9",
+        speed: "live",
+        timeControl: "byoyomi",
+        mainTime: "45",
         timePerPeriod: "10",
         periods: "1",
     });
 
-    // escaper accepts
-    await acceptDirectChallenge(acceptor1Page);
+    await acceptDirectChallenge(opponent2Page);
 
-    // Challenger is black
-    // Wait for the Goban to be visible & definitely ready
-    const goban = challengerContainingGamePage.locator(".Goban[data-pointers-bound]");
-    await goban.waitFor({ state: "visible" });
-
-    await challengerContainingGamePage.waitForTimeout(1000);
-
-    // Wait for the game state to indicate it's the challenger's move
-    const challengersMove = challengerContainingGamePage.getByText("Your move", { exact: true });
-    await expect(challengersMove).toBeVisible();
-    log("First game started successfully");
-
-    // Now a new tab for the challenger!  (2 tabs for a person in PW!)
-    // Log in as the challenger
-
-    const userContext = await createContext();
-    const challengerContainedGamePage = await userContext.newPage();
-
-    await loginAsUser(challengerContainedGamePage, challengerUsername, "test");
-
-    const acceptor2Username = newTestUsername("gamesSmlAc2"); // cspell:disable-line
-    log(`Creating second acceptor user: ${acceptor2Username}`);
-    const { userPage: acceptor2Page } = await prepareNewUser(
-        createContext,
-        acceptor2Username,
-        "test",
-    );
-
-    // Challenger challenges the second acceptor
-    log("Creating second challenge (contained game)");
-    await createDirectChallenge(challengerContainedGamePage, acceptor2Username, {
-        ...defaultChallengeSettings,
-        gameName: `E2E Games Simul Contained Test Game`,
-        boardSize: "9x9",
-        speed: "live",
-        timeControl: "byoyomi",
-        mainTime: "45", // heaps of time to get organised with the other one :)
-        timePerPeriod: "10",
-        periods: "1",
-    });
-
-    // escaper accepts
-    await acceptDirectChallenge(acceptor2Page);
-
-    // Challenger is black
-    // Wait for the Goban to be visible & definitely ready
-    const goban2 = challengerContainedGamePage.locator(".Goban[data-pointers-bound]");
+    // Wait for game 2 to be ready
+    const goban2 = challengerGame2Page.locator(".Goban[data-pointers-bound]");
     await goban2.waitFor({ state: "visible" });
+    await challengerGame2Page.waitForTimeout(1000);
 
-    await challengerContainedGamePage.waitForTimeout(1000);
+    const challengerMove2 = challengerGame2Page.getByText("Your move", { exact: true });
+    await expect(challengerMove2).toBeVisible();
+    log("Game 2 started - both games now active!");
 
-    // Wait for the game state to indicate it's the challenger's move
-    const challengersOtherMove = challengerContainedGamePage.getByText("Your move", {
-        exact: true,
+    // Play some moves in game 2 to give it duration
+    const moves = ["D9", "E9", "D8", "E8", "D7", "E7", "D6", "E6"];
+    log("Playing moves in game 2...");
+    await playMoves(challengerGame2Page, opponent2Page, moves, "9x9", 500);
+
+    // End game 2 by resignation (while game 1 is still running)
+    await resignActiveGame(opponent2Page);
+    log("Game 2 completed via resignation (game 1 still running)");
+
+    // Capture the game 2 URL for the AI Detector to view
+    const game2Url = challengerGame2Page.url();
+    log(`Game 2 URL: ${game2Url}`);
+
+    // === AI Detector views game 2 - should see simul indicator ===
+    log("Setting up E2E_AI_DETECTOR...");
+    const aiDetectorIPv6 = generateUniqueTestIPv6();
+    const aiDetectorContext = await createContext({
+        extraHTTPHeaders: {
+            "X-Forwarded-For": aiDetectorIPv6,
+        },
     });
-    await expect(challengersOtherMove).toBeVisible();
-    log("Second game started successfully - both games now active!");
+    const aiDetectorPage = await aiDetectorContext.newPage();
+    await loginAsUser(aiDetectorPage, "E2E_AI_DETECTOR", password);
+    await turnOffDynamicHelp(aiDetectorPage);
+    log("E2E_AI_DETECTOR logged in");
 
-    // Whoa, we have two games going at once!
-    // Play a few moves to give the games an actual duration
+    // Navigate to game 2
+    log("AI Detector navigating to game 2...");
+    await aiDetectorPage.goto(game2Url);
+    await aiDetectorPage.waitForLoadState("networkidle");
 
-    let moves = ["D9", "E9", "D8", "E8", "D7", "E7", "D6", "E6"];
+    // Give the page time to fully load and render
+    await aiDetectorPage.waitForTimeout(2000);
 
-    log("Playing moves in contained game");
-    await playMoves(challengerContainedGamePage, acceptor2Page, moves, "9x9", 1000);
+    // Check that simul indicator IS visible (because game 1 was running when game 2 ended)
+    log("Checking that simul indicator IS visible...");
+    const simulWarning = aiDetectorPage.locator(".simul-warning");
+    await expect(simulWarning).toBeVisible({ timeout: 10000 });
+    await expect(simulWarning).toContainText("Simul");
+    log("Simul indicator is visible as expected!");
 
-    await resignActiveGame(acceptor2Page);
-    log("Contained game completed");
-
-    moves = ["D5", "E5", "D4", "E4", "D3", "E3"];
-
-    log("Playing moves in containing game");
-    await playMoves(challengerContainingGamePage, acceptor1Page, moves, "9x9", 1000);
-
-    await resignActiveGame(acceptor1Page);
-    log("Containing game completed");
-
-    // Use tracker to handle variable initial report count
-    await withReportCountTracking(acceptor1Page, testInfo, async (reporterTracker) => {
-        // Set up CM and capture their baseline BEFORE creating the report
-        log("Setting up CM for report verification");
-        const cm = "E2E_GAMES_SIMUL_CM";
-        const { seededCMPage: cmPage } = await setupSeededCM(createContext, cm);
-
-        // Capture CM's initial count
-        const cmInitialCount = await reporterTracker.checkCurrentCount(cmPage);
-
-        // Create a report so we can check the log for Simul detected
-        log("Creating report to verify simul detection");
-        await reportUser(
-            acceptor1Page,
-            challengerUsername,
-            "ai_use",
-            "reporting to see simul flag",
-        );
-
-        // Verify report was created (reporter's count increased by 1)
-        const reportIndicator = await reporterTracker.assertCountIncreasedBy(acceptor1Page, 1);
-
-        // Capture the report number from the reporter's "My Own Reports" page
-        const reportNumber = await captureReportNumber(acceptor1Page);
-        log(`Captured report number: ${reportNumber}`);
-
-        // Verify CM's count also increased by 1
-        const cmCurrentCount = await reporterTracker.checkCurrentCount(cmPage);
-        expect(cmCurrentCount).toBe(cmInitialCount + 1);
-
-        // Clean up the report
-        await reportIndicator.click();
-
-        // Get the Cancel button from the banner (reporter's view), not from ReportsCenterContainer
-        const cancelButton = acceptor1Page
-            .getByRole("banner")
-            .locator("button.reject.xs", { hasText: "Cancel" });
-        await expect(cancelButton).toBeVisible();
-        await cancelButton.click();
-
-        // Wait for the report to be cancelled and UI to update
-        await acceptor1Page.waitForLoadState("networkidle");
-
-        // Verify count returned to initial baseline
-        await reporterTracker.assertCountReturnedToInitial(acceptor1Page);
-        log("Report cancelled successfully - test complete");
-    });
+    log("=== Simul Detection Test Complete ===");
+    log("Verified that simultaneous games are detected at game end");
 };

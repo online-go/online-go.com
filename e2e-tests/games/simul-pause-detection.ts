@@ -16,14 +16,18 @@
  */
 
 /*
- * Test that paused games do not count toward simul detection on the Game page.
+ * Test that paused games do not count toward simul detection.
+ *
+ * Simul detection happens at game end: when a game ends, the system checks if
+ * the player has other ongoing live games that are NOT paused. If they do,
+ * both games are marked as simul. If the other game is paused, it doesn't count.
  *
  * This test verifies that:
  * 1. A user starts two simultaneous live games
- * 2. The second game ends while the first is still running
- * 3. An AI Detector viewing the finished game sees the simul indicator
- * 4. The user pauses the first (ongoing) game
- * 5. The AI Detector refreshes and the simul indicator is no longer shown
+ * 2. The user pauses the first game
+ * 3. The second game ends while the first is paused
+ * 4. The AI Detector views the finished game and does NOT see the simul indicator
+ *    (because the overlapping game was paused when this game ended)
  *
  * Uses seeded user:
  * - E2E_AI_DETECTOR: AI Detector with AI_DETECTOR moderator powers
@@ -94,7 +98,7 @@ export const simulPauseDetectionTest = async (
         "test",
     );
 
-    // === Start Game 1 (will be paused later) ===
+    // === Start Game 1 (will be paused before game 2 ends) ===
     log("Creating first game (will be paused)...");
     await createDirectChallenge(challengerGame1Page, opponent1Username, {
         ...defaultChallengeSettings,
@@ -146,20 +150,35 @@ export const simulPauseDetectionTest = async (
     await expect(challengerMove2).toBeVisible();
     log("Game 2 started - both games now active!");
 
+    // === Challenger pauses game 1 BEFORE game 2 ends ===
+    log("Challenger pausing game 1 BEFORE game 2 ends...");
+    // Click on "Pause game" link in the game dock (not the tooltip title)
+    const pauseLink = challengerGame1Page.locator("a").filter({ hasText: "Pause game" });
+    await expect(pauseLink).toBeVisible();
+    await pauseLink.click();
+    log("Pause game clicked");
+
+    // Verify the pause took effect by checking for "Game Paused" indicator and "Resume" button
+    const gamePausedText = challengerGame1Page.getByText("Game Paused");
+    await expect(gamePausedText).toBeVisible({ timeout: 10000 });
+    const resumeButton = challengerGame1Page.getByRole("button", { name: "Resume" });
+    await expect(resumeButton).toBeVisible();
+    log("Game 1 is now paused (verified by Game Paused indicator)");
+
     // Play some moves in game 2 to give it duration
     const moves = ["D9", "E9", "D8", "E8", "D7", "E7", "D6", "E6"];
     log("Playing moves in game 2...");
     await playMoves(challengerGame2Page, opponent2Page, moves, "9x9", 500);
 
-    // End game 2 by resignation
+    // End game 2 by resignation (while game 1 is paused)
     await resignActiveGame(opponent2Page);
-    log("Game 2 completed via resignation");
+    log("Game 2 completed via resignation (game 1 was paused at this time)");
 
     // Capture the game 2 URL for the AI Detector to view
     const game2Url = challengerGame2Page.url();
     log(`Game 2 URL: ${game2Url}`);
 
-    // === AI Detector views game 2 and should see simul indicator ===
+    // === AI Detector views game 2 - should NOT see simul indicator ===
     log("Setting up E2E_AI_DETECTOR...");
     const aiDetectorIPv6 = generateUniqueTestIPv6();
     const aiDetectorContext = await createContext({
@@ -177,37 +196,15 @@ export const simulPauseDetectionTest = async (
     await aiDetectorPage.goto(game2Url);
     await aiDetectorPage.waitForLoadState("networkidle");
 
-    // Check for simul indicator - should be visible because game 1 is still running
-    log("Checking for simul indicator (should be visible)...");
-    const simulWarning = aiDetectorPage.locator(".simul-warning");
-    await expect(simulWarning).toBeVisible({ timeout: 10000 });
-    await expect(simulWarning).toContainText("Simul");
-    log("Simul indicator is visible as expected");
-
-    // === Challenger pauses game 1 ===
-    log("Challenger pausing game 1...");
-    // Click on "Pause game" link in the game dock (not the tooltip title)
-    const pauseLink = challengerGame1Page.locator("a").filter({ hasText: "Pause game" });
-    await expect(pauseLink).toBeVisible();
-    await pauseLink.click();
-    log("Pause game clicked");
-
-    // Wait for pause to take effect
-    await challengerGame1Page.waitForTimeout(2000);
-
-    // === AI Detector refreshes and should NOT see simul indicator ===
-    log("AI Detector refreshing game 2 page...");
-    await aiDetectorPage.reload();
-    await aiDetectorPage.waitForLoadState("networkidle");
-
     // Give the page time to fully load and render
     await aiDetectorPage.waitForTimeout(2000);
 
-    // Check that simul indicator is no longer visible
-    log("Checking that simul indicator is no longer visible...");
+    // Check that simul indicator is NOT visible (because game 1 was paused when game 2 ended)
+    log("Checking that simul indicator is NOT visible...");
+    const simulWarning = aiDetectorPage.locator(".simul-warning");
     await expect(simulWarning).toBeHidden({ timeout: 10000 });
     log("Simul indicator is hidden as expected - paused games do not count as simul!");
 
     log("=== Simul Pause Detection Test Complete ===");
-    log("Verified that paused games are excluded from simul detection");
+    log("Verified that paused games are excluded from simul detection at game end");
 };
