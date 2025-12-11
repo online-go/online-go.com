@@ -269,11 +269,23 @@ export const aiDetectorSeesSuspensionModlogTest = async (
         await targetGame.click();
         await expect(opponentPage.locator(".Game")).toBeVisible();
 
+        // Wait for game components to fully load (Goban must be ready for interactions)
+        const gobanReady = opponentPage.locator(".Goban[data-pointers-bound]");
+        await gobanReady.waitFor({ state: "visible" });
+        // Wait for network to settle after game page navigation to ensure all player data is loaded
+        await opponentPage.waitForLoadState("networkidle");
+        log("Game page fully loaded");
+
         // Report the user for AI use
+        // Use same pattern as reportPlayerByColor helper: hover before click to stabilize popover
         const reportPlayerLink = opponentPage.locator(`.black.player-name-container a.Player`);
         await expect(reportPlayerLink).toBeVisible();
+        // Wait for the element to be stable (attached to DOM and not moving)
+        await reportPlayerLink.waitFor({ state: "attached" });
+        await reportPlayerLink.hover();
         await reportPlayerLink.click();
 
+        // Wait for popover to appear, then find and click the Report button
         const reportButton = await expectOGSClickableByName(opponentPage, /Report$/);
         await reportButton.click();
 

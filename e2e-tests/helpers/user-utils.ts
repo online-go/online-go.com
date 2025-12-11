@@ -336,7 +336,9 @@ export const goToUsersFinishedGame = async (page: Page, username: string, gameNa
     // Go to that page ...
     await target_game.click();
     await expect(page.locator(".Game")).toBeVisible();
-    await page.waitForTimeout(500); // wait for the game components to finish loading
+    // Wait for Goban to be fully ready for interactions (replaces flaky waitForTimeout)
+    const gobanReady = page.locator(".Goban[data-pointers-bound]");
+    await gobanReady.waitFor({ state: "visible" });
 };
 
 export const reportUser = async (page: Page, username: string, type: string, notes: string) => {

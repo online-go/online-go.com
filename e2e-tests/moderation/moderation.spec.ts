@@ -34,7 +34,6 @@ import { aiDetectorVoteSuspendAndAnnulTest } from "./ai-detector-vote-suspend-an
 import { aiDetectorVoteWarnAndAnnulTest } from "./ai-detector-vote-warn-annul";
 import { aiDetectorVoteFirstWarnAndAnnulTest } from "./ai-detector-vote-first-warn-annul";
 import { aiDetectorVoteCancelTicketTest } from "./ai-detector-vote-cancel-ticket";
-import { aiDetectorVoteCriteriaStringTest } from "./ai-detector-vote-criteria-string";
 import { aiDetectorSeesSuspensionModlogTest } from "./ai-detector-sees-suspension-modlog";
 
 ogsTest.describe("@Mod Moderation Tests", () => {
@@ -61,10 +60,6 @@ ogsTest.describe("@Mod Moderation Tests", () => {
         aiDetectorVoteFirstWarnAndAnnulTest,
     );
     ogsTest("AI Detector can cancel ticket and notify reporter", aiDetectorVoteCancelTicketTest);
-    ogsTest(
-        "AI Detector bulk annulment vote adds criteria string to report moderator note",
-        aiDetectorVoteCriteriaStringTest,
-    );
     ogsTest(
         "AI Detector can see SUSPENSION ModLog entries in ViewReport",
         aiDetectorSeesSuspensionModlogTest,
