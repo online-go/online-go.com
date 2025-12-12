@@ -20,7 +20,7 @@
 
 import type { CreateContextOptions } from "@helpers";
 
-import { BrowserContext } from "@playwright/test";
+import { BrowserContext, TestInfo } from "@playwright/test";
 
 import { newTestUsername, prepareNewUser } from "@helpers/user-utils";
 
@@ -31,11 +31,15 @@ import {
 } from "@helpers/challenge-utils";
 import { log } from "@helpers/logger";
 
-export const modWarnFirstTurnEscaperBlackTest = async ({
-    createContext,
-}: {
-    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
-}) => {
+export const modWarnFirstTurnEscaperBlackTest = async (
+    {
+        createContext,
+    }: {
+        createContext: (options?: CreateContextOptions) => Promise<BrowserContext>;
+    },
+    testInfo: TestInfo,
+) => {
+    testInfo.setTimeout(360 * 1000); // 6 minutes - waits 5mins for player timeout
     const { userPage: challengerPage } = await prepareNewUser(
         createContext,
         newTestUsername("CmFTEBChall"), // cspell:disable-line
@@ -68,7 +72,9 @@ export const modWarnFirstTurnEscaperBlackTest = async ({
     // Escaper (black) does nothing - eventually times out on move 0
     // Challenger (white) waits and gets the warning ack
 
-    log("modWarnFirstTurnEscaperBlackTest waiting for escaper (black) timeout (about a minute)...");
+    log(
+        "modWarnFirstTurnEscaperBlackTest waiting for escaper (black) timeout (about 5 minutes)...",
+    );
     await challengerPage
         .locator(
             '.AccountWarningAck .canned-message:has-text("We\'ve noticed that the other player left game")',

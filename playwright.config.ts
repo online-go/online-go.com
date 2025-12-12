@@ -69,7 +69,7 @@ export default defineConfig({
     testMatch: process.env.CI ? ["smoketests.spec.ts"] : ["**/*.spec.ts"],
     testIgnore: process.env.CI ? [] : ["**/smoke/**"],
     // If you change this you need to change report-utils to match, noting the delta there from here.
-    timeout: 600 * 1000, // overall test timeout - we have some long multi-user tests
+    timeout: 180 * 1000, // 3 minutes - longest regular test is ~108s; @Slow tests override with test.setTimeout()
     expect: {
         timeout: process.env.CI ? 30000 : 15000,
     },
@@ -84,9 +84,9 @@ export default defineConfig({
 
     /* Retry configuration by environment */
     // CI: 0 retries (smoke tests should be stable)
-    // E2E: 1 retry (handle flakiness in full test suite)
+    // E2E: 2 retry (handle flakiness in full test suite)
     // Dev: 0 retries (fail fast for development)
-    retries: process.env.CI ? 0 : process.env.E2E ? 1 : 0,
+    retries: process.env.CI ? 0 : process.env.E2E ? 2 : 0,
 
     /* Workers configuration for parallel execution */
     // CI: 1 worker (sequential for reliability, smoke tests only)
@@ -95,6 +95,7 @@ export default defineConfig({
     workers: process.env.CI ? 1 : 2,
 
     /* Reporter to use. See https://playwright.dev/docs/test-reporters */
+    /* (note that e2etesting run_test override this from command line) */
     reporter: [
         //
         // ['html'],

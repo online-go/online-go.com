@@ -248,6 +248,7 @@ export interface DataSchema
     "oje-url": string;
     "oje-variation-filter": JosekiFilter;
     "fair-play.last-game-id": string;
+    "fair-play.last-action-game-id": string;
     "fair-play.last-player-id": string;
     "fair-play.past-n-games": string;
     "fair-play.game-logic-mode": string;

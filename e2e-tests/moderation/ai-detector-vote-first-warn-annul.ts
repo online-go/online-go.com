@@ -166,6 +166,7 @@ export const aiDetectorVoteFirstWarnAndAnnulTest = async (
         // Click on the reported player's name
         const playerLink = reporterPage.locator(`.white.player-name-container a.Player`);
         await expect(playerLink).toBeVisible();
+        await playerLink.hover(); // Stabilize popover before clicking
         await playerLink.click();
 
         // Click the Report button

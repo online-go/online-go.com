@@ -24,7 +24,7 @@ import { openBecomeASiteSupporterModal } from "@/views/Supporter";
 import { errorAlerter, errorLogger } from "@/lib/misc";
 import { toast } from "@/lib/toast";
 import { post } from "@/lib/requests";
-import { _ } from "@/lib/translate";
+import { _, pgettext } from "@/lib/translate";
 import { ReviewChart } from "./ReviewChart";
 import { SummaryTable } from "./SummaryTable";
 import {
@@ -72,6 +72,8 @@ interface AIReviewProperties {
     game_id: number;
     hidden: boolean;
     onAIReviewSelected: (ai_review: JGOFAIReview) => void;
+    simul_black?: boolean | null;
+    simul_white?: boolean | null;
 }
 
 /**
@@ -80,7 +82,14 @@ interface AIReviewProperties {
  * handles real-time updates via WebSocket, and provides interactive visualization
  * of AI-suggested variations.
  */
-export function AIReview({ move, game_id, hidden, onAIReviewSelected }: AIReviewProperties) {
+export function AIReview({
+    move,
+    game_id,
+    hidden,
+    onAIReviewSelected,
+    simul_black,
+    simul_white,
+}: AIReviewProperties) {
     const gobanController = useGobanControllerOrNull();
 
     // State management
@@ -582,6 +591,19 @@ export function AIReview({ move, game_id, hidden, onAIReviewSelected }: AIReview
 
                             {canViewTable && reviewData?.engine.includes("katago") && (
                                 <div>
+                                    {(simul_black || simul_white) && (
+                                        <div className="simul-warning">
+                                            {pgettext(
+                                                "A label that means the game is played at the same time as another game",
+                                                "Simul",
+                                            )}
+                                            {simul_black && simul_white
+                                                ? " (both players)"
+                                                : simul_black
+                                                  ? " (black)"
+                                                  : " (white)"}
+                                        </div>
+                                    )}
                                     <SummaryTable
                                         categorization={reviewData?.categorize(
                                             gobanController.goban.engine,

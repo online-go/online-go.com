@@ -336,7 +336,9 @@ export const goToUsersFinishedGame = async (page: Page, username: string, gameNa
     // Go to that page ...
     await target_game.click();
     await expect(page.locator(".Game")).toBeVisible();
-    await page.waitForTimeout(500); // wait for the game components to finish loading
+    // Wait for Goban to be fully ready for interactions (replaces flaky waitForTimeout)
+    const gobanReady = page.locator(".Goban[data-pointers-bound]");
+    await gobanReady.waitFor({ state: "visible" });
 };
 
 export const reportUser = async (page: Page, username: string, type: string, notes: string) => {
@@ -367,7 +369,9 @@ export const reportUser = async (page: Page, username: string, type: string, not
 
 /**
  * Capture the report number from the reporter's "My Own Reports" page.
- * Assumes the reporter has only one report (the most recently created one).
+ * Reports are displayed oldest first in the UI, so we take the last one to get the most recent.
+ * Note: The displayed report number (e.g., "R092") may be truncated/wrapped from the actual ID (e.g., 1092),
+ * so we cannot reliably sort by the displayed number. We rely on the UI's display order instead.
  * Returns the report number (e.g., "R123").
  */
 export const captureReportNumber = async (reporterPage: Page): Promise<string> => {
@@ -382,19 +386,23 @@ export const captureReportNumber = async (reporterPage: Page): Promise<string> =
     ).toBeVisible({ timeout: 10000 });
 
     // The report number is in a button at the top left of the display area
-    // Look for a pattern like "R123" in a button or link
-    const reportButton = reporterPage
-        .locator("button, a")
-        .filter({ hasText: /^R\d+$/ })
-        .first();
-    await expect(reportButton).toBeVisible({ timeout: 30000 });
+    // Look for ALL patterns like "R123" in buttons or links
+    const reportButtons = reporterPage.locator("button, a").filter({ hasText: /^R\d+$/ });
+    await expect(reportButtons.first()).toBeVisible({ timeout: 30000 });
 
-    const reportNumber = await reportButton.textContent();
+    // Get the count to verify we have reports
+    const count = await reportButtons.count();
+    if (count === 0) {
+        throw new Error("No report numbers found in My Own Reports");
+    }
+
+    // Get the LAST report button (most recently created - reports are displayed oldest first)
+    const reportNumber = await reportButtons.last().textContent();
     if (!reportNumber || !reportNumber.match(/^R\d+$/)) {
         throw new Error(`Failed to capture valid report number. Got: ${reportNumber}`);
     }
 
-    log(`Captured report number: ${reportNumber}`);
+    log(`Captured report number: ${reportNumber} (from ${count} total reports)`);
     return reportNumber;
 };
 
