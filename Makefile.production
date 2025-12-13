@@ -86,6 +86,7 @@ prepare-cdn-files: purge-cdn-files dist/ogs.js dist/ogs.min.css
 	cp -p dist/ogs.js.map deployment-staging-area/$(RELEASE)/ogs.$(OGS_VERSION_HASH).js.map
 	cat dist/ogs.min.css | sed 's/ogs.min.css.map/ogs.min.$(VERSION).css.map/' > deployment-staging-area/$(RELEASE)/ogs.$(VERSION).css
 	cp -p dist/ogs.min.css.map deployment-staging-area/$(RELEASE)/ogs.min.$(VERSION).css.map
+	cp -p dist/monaco-vim.css deployment-staging-area/$(RELEASE)/monaco-vim.css
 	cp -Rp dist/modules deployment-staging-area/$(RELEASE)/
 	# Fix all references to ogs.js and ogs.css to use versioned filenames
 	# This covers both ES module imports (from"../ogs.js") and preload arrays ("../ogs.js")
