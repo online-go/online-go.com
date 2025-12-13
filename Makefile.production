@@ -87,9 +87,11 @@ prepare-cdn-files: purge-cdn-files dist/ogs.js dist/ogs.min.css
 	cat dist/ogs.min.css | sed 's/ogs.min.css.map/ogs.min.$(VERSION).css.map/' > deployment-staging-area/$(RELEASE)/ogs.$(VERSION).css
 	cp -p dist/ogs.min.css.map deployment-staging-area/$(RELEASE)/ogs.min.$(VERSION).css.map
 	cp -Rp dist/modules deployment-staging-area/$(RELEASE)/
-	# Fix module imports to reference versioned ogs.js
-	find deployment-staging-area/$(RELEASE)/modules -name "*.js" -type f -exec sed -i 's@from"../ogs\.js"@from"../ogs.$(OGS_VERSION_HASH).js"@g' {} \;
-	find deployment-staging-area/$(RELEASE)/modules -name "*.js" -type f -exec sed -i "s@from'../ogs\.js'@from'../ogs.$(OGS_VERSION_HASH).js'@g" {} \;
+	# Fix all references to ogs.js and ogs.css to use versioned filenames
+	# This covers both ES module imports (from"../ogs.js") and preload arrays ("../ogs.js")
+	find deployment-staging-area/$(RELEASE)/modules -name "*.js" -type f -exec sed -i 's@"../ogs\.js"@"../ogs.$(OGS_VERSION_HASH).js"@g' {} \;
+	find deployment-staging-area/$(RELEASE)/modules -name "*.js" -type f -exec sed -i "s@'../ogs\.js'@'../ogs.$(OGS_VERSION_HASH).js'@g" {} \;
+	find deployment-staging-area/$(RELEASE)/modules -name "*.js" -type f -exec sed -i 's@"../ogs\.css"@"../ogs.$(VERSION).css"@g' {} \;
 	cp -Rp assets/img deployment-staging-area/$(RELEASE)/
 	cp -Rp assets/sound deployment-staging-area/$(RELEASE)/
 	ls i18n/locale/*.js | sed 's@i18n/locale/\([^\.]\+\).js@\1@' | xargs -n1 -I {} cp i18n/locale/{}.js deployment-staging-area/$(RELEASE)/locale/{}.$(LANGUAGE_VERSION).js

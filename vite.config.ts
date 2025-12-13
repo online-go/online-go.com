@@ -114,6 +114,10 @@ proxy["^/$"] = {
 
 export default defineConfig({
     root: "src",
+    // Use relative paths so assets resolve correctly when loaded from CDN
+    // Without this, Vite generates absolute paths (/) that resolve to document origin
+    // instead of the CDN where the scripts are actually loaded from
+    base: "./",
 
     build: !OGS_I18N_BUILD_MODE
         ? {
