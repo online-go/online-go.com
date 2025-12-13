@@ -3,5 +3,6 @@
  */
 
 export * from "./FairPlay";
-export * from "./FairPlaySearch";
 export * from "./FairPlayActions";
+export * from "./FairPlayGameSummary";
+export * from "./FairPlaySearch";

@@ -27,6 +27,7 @@ import { post } from "@/lib/requests";
 import { _, pgettext } from "@/lib/translate";
 import { ReviewChart } from "./ReviewChart";
 import { SummaryTable } from "./SummaryTable";
+import { FairPlayGameSummary } from "@moderator-ui/FairPlay";
 import {
     MoveTree,
     JGOFAIReview,
@@ -621,6 +622,21 @@ export function AIReview({
                                             setCurrentPopupMoves(moves);
                                         }}
                                     />
+                                    {gobanController.goban.engine.config.black_player_id &&
+                                        gobanController.goban.engine.config.white_player_id && (
+                                            <FairPlayGameSummary
+                                                game_id={game_id}
+                                                black_player_id={
+                                                    gobanController.goban.engine.config
+                                                        .black_player_id
+                                                }
+                                                white_player_id={
+                                                    gobanController.goban.engine.config
+                                                        .white_player_id
+                                                }
+                                                currentMoveNumber={move.move_number - 1}
+                                            />
+                                        )}
                                 </div>
                             )}
                         </React.Fragment>

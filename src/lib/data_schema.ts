@@ -271,6 +271,7 @@ export interface DataSchema
         }>;
         selectedTags?: number[];
     };
+    "fair-play-search.hidden-fields": string[];
     "fair-play-actions.filters": {
         selectedPlayerId?: number;
         selectedPlayerUsername?: string;
