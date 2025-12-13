@@ -256,6 +256,15 @@ import { BL4Connect3 } from "./Sections/BeginnerLevel4/Connect3";
 import { BL4Connect4 } from "./Sections/BeginnerLevel4/Connect4";
 import { BL4Cut1 } from "./Sections/BeginnerLevel4/Cut1";
 import { BL4Cut2 } from "./Sections/BeginnerLevel4/Cut2";
+import { BL4CapturingRace1 } from "./Sections/BeginnerLevel4/CapturingRace1";
+import { BL4CapturingRace2 } from "./Sections/BeginnerLevel4/CapturingRace2";
+import { BL4CapturingRace3 } from "./Sections/BeginnerLevel4/CapturingRace3";
+import { BL4CapturingRace4 } from "./Sections/BeginnerLevel4/CapturingRace4";
+import { BL4CapturingRace5 } from "./Sections/BeginnerLevel4/CapturingRace5";
+import { BL4CapturingRace6 } from "./Sections/BeginnerLevel4/CapturingRace6";
+import { BL4CapturingRace7 } from "./Sections/BeginnerLevel4/CapturingRace7";
+import { BL4CapturingRace8 } from "./Sections/BeginnerLevel4/CapturingRace8";
+import { BL4CapturingRace9 } from "./Sections/BeginnerLevel4/CapturingRace9";
 
 export const sections: [string, any[]][] = [
     [
@@ -520,6 +529,15 @@ export const sections: [string, any[]][] = [
             BL4Connect4,
             BL4Cut1,
             BL4Cut2,
+            BL4CapturingRace1,
+            BL4CapturingRace2,
+            BL4CapturingRace3,
+            BL4CapturingRace4,
+            BL4CapturingRace5,
+            BL4CapturingRace6,
+            BL4CapturingRace7,
+            BL4CapturingRace8,
+            BL4CapturingRace9,
         ],
     ],
 
