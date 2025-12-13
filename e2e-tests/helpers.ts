@@ -30,7 +30,7 @@ export async function checkNoErrorBoundaries(page: Page) {
 
 export async function load(page: Page, url: string) {
     await page.goto(url);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 }
 
 // Type for browser context options - matches Browser.newContext() parameter

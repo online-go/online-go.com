@@ -67,20 +67,20 @@ export const aiDetectionPlayerFilterTest = async ({
     // 2. Navigate to the AI Detection page
     log("Navigating to AI Detection page...");
     await modPage.goto("/moderator/ai-detection");
-    await modPage.waitForLoadState("networkidle");
     await expect(modPage.getByRole("heading", { name: /AI Detection/i })).toBeVisible();
     log("AI Detection page loaded ✓");
 
-    // 3. Wait for the table to finish loading
+    // 3. Wait for the table data to load by waiting for actual game rows
     log("Waiting for game data to load...");
-    const loadingOverlay = modPage.locator(".ai-detection .loading-overlay");
-
-    // Wait for the loading overlay to be hidden (meaning data has loaded)
-    await loadingOverlay.waitFor({ state: "hidden", timeout: 10000 });
-    log("Loading overlay hidden - data loaded ✓");
-
-    // Check if there are any games in the table
     const gameRows = modPage.locator(".ai-detection tr").filter({ hasText: /#\d+/ });
+
+    // Wait for first row to appear (or timeout if no data)
+    try {
+        await gameRows.first().waitFor({ state: "visible", timeout: 15000 });
+    } catch {
+        // No rows appeared - table may be empty
+    }
+
     const rowCount = await gameRows.count();
 
     if (rowCount === 0) {
@@ -129,9 +129,9 @@ export const aiDetectionPlayerFilterTest = async ({
     const newPagePromise = modContext.waitForEvent("page");
     await secondColumnPlayerLink.click();
 
-    // Wait for the new page to open
+    // Wait for the new page to open and AI Detection heading to be visible
     const newPage = await newPagePromise;
-    await newPage.waitForLoadState("networkidle");
+    await expect(newPage.getByRole("heading", { name: /AI Detection/i })).toBeVisible();
     log("New tab opened ✓");
 
     // 7. Verify no popup appeared in the original page
@@ -173,9 +173,13 @@ export const aiDetectionPlayerFilterTest = async ({
     // 11. Test that clicking the filtered player in the first column navigates to profile in new tab
     log("Testing that clicking filtered player opens profile in new tab...");
 
-    // Wait for table to finish loading in new tab
-    const newTabLoadingOverlay = newPage.locator(".ai-detection .loading-overlay");
-    await newTabLoadingOverlay.waitFor({ state: "hidden", timeout: 10000 });
+    // Wait for table data to load in new tab by waiting for game rows
+    const newTabGameRows = newPage.locator(".ai-detection tr").filter({ hasText: /#\d+/ });
+    try {
+        await newTabGameRows.first().waitFor({ state: "visible", timeout: 15000 });
+    } catch {
+        // No rows appeared - table may be empty
+    }
 
     // The first column should contain the filtered player
     const filteredPlayerLink = newPage.locator(".ai-detection .player-cell-first .Player").first();
@@ -197,7 +201,12 @@ export const aiDetectionPlayerFilterTest = async ({
             await filteredPlayerLink.click();
 
             const profilePage = await profilePagePromise;
-            await profilePage.waitForLoadState("networkidle");
+
+            // Wait for profile page content to be visible
+            await profilePage.locator(".Profile, .Player").first().waitFor({
+                state: "visible",
+                timeout: 10000,
+            });
 
             // Verify we navigated to the player's profile page
             const profileUrl = profilePage.url();

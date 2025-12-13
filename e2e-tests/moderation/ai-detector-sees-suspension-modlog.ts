@@ -272,8 +272,6 @@ export const aiDetectorSeesSuspensionModlogTest = async (
         // Wait for game components to fully load (Goban must be ready for interactions)
         const gobanReady = opponentPage.locator(".Goban[data-pointers-bound]");
         await gobanReady.waitFor({ state: "visible" });
-        // Wait for network to settle after game page navigation to ensure all player data is loaded
-        await opponentPage.waitForLoadState("networkidle");
         log("Game page fully loaded");
 
         // Report the user for AI use

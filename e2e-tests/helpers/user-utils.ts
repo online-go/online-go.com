@@ -186,7 +186,6 @@ export const goToProfile = async (userPage: Page) => {
     await profileLink.click();
 
     await expect(userPage.getByText("Ratings")).toBeVisible();
-    await userPage.waitForLoadState("networkidle");
     await userPage.mouse.move(0, 0); // Move mouse away to ensure menu closes
 };
 
@@ -206,7 +205,9 @@ export const logoutUser = async (page: Page) => {
 export const loginAsUser = async (page: Page, username: string, password: string) => {
     await page.goto("/sign-in");
 
-    await page.waitForLoadState("networkidle");
+    // Wait for sign-in form to be visible
+    await expect(page.getByLabel("Username")).toBeVisible({ timeout: 10000 });
+
     const isUserLoggedIn = await page
         .locator('.username:has-text("${username}")')
         .isVisible({ timeout: 0 });
@@ -219,8 +220,7 @@ export const loginAsUser = async (page: Page, username: string, password: string
     await page.getByLabel("Password").fill(password);
     await page.getByRole("button", { name: /Sign in$/ }).click();
 
-    // Wait for login to complete (backend can be slow)
-    await page.waitForLoadState("networkidle");
+    // Wait for login to complete by checking for username in header (backend can be slow)
     await expect(page.locator(".username").getByText(username)).toBeVisible({ timeout: 30000 });
 
     // Save the authenticated state for Playwright
@@ -229,12 +229,14 @@ export const loginAsUser = async (page: Page, username: string, password: string
 
 export const turnOffDynamicHelp = async (page: Page) => {
     await page.goto("/settings/help");
-    await page.waitForLoadState("networkidle");
+
+    // Wait for the preference line to be visible
+    const parentElement = page.locator('div.PreferenceLine:has-text("Show dynamic help")');
+    await expect(parentElement).toBeVisible({ timeout: 10000 });
+
     const switchElement = page.locator(
         'div.PreferenceLine:has-text("Show dynamic help") input[role="switch"]',
     );
-    const parentElement = page.locator('div.PreferenceLine:has-text("Show dynamic help")');
-    await expect(parentElement).toBeVisible();
     const isSwitchOn = await switchElement.evaluate((el) => (el as HTMLInputElement).checked);
     if (isSwitchOn) {
         await parentElement.click();
@@ -416,10 +418,9 @@ export const navigateToReport = async (page: Page, reportNumber: string) => {
 
     // Use /reports-center/all/{id} format which works for all permission levels
     await page.goto(`/reports-center/all/${reportId}`);
-    await page.waitForLoadState("networkidle");
 
     // Verify we're looking at the correct report by checking for the report number
-    await expect(page.getByText(reportNumber, { exact: true })).toBeVisible();
+    await expect(page.getByText(reportNumber, { exact: true })).toBeVisible({ timeout: 15000 });
     log(`Navigated to report ${reportNumber}`);
 };
 

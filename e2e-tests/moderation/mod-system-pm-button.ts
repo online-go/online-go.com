@@ -120,20 +120,18 @@ export const systemPMButtonTest = async ({
     // 4. User submits a simple appeal
     log("User submitting appeal...");
     await userPage.goto("/");
-    await userPage.waitForLoadState("networkidle");
 
-    await expect(userPage.getByText("Your account has been suspended")).toBeVisible();
+    await expect(userPage.getByText("Your account has been suspended")).toBeVisible({ timeout: 10000 });
     log("Suspension banner visible ✓");
 
     // Click appeal link
     const appealLink = userPage.getByRole("link", { name: /appeal here/i });
     await expect(appealLink).toBeVisible();
     await appealLink.click();
-    await userPage.waitForLoadState("networkidle");
 
-    // Submit appeal message
+    // Wait for appeal form to load
     const appealTextarea = userPage.locator(".input-card textarea");
-    await expect(appealTextarea).toBeVisible();
+    await expect(appealTextarea).toBeVisible({ timeout: 10000 });
     await appealTextarea.fill("I apologize and would like to return to OGS.");
     await expect(appealTextarea).toHaveValue("I apologize and would like to return to OGS.");
 
@@ -148,9 +146,8 @@ export const systemPMButtonTest = async ({
     // 5. Moderator navigates to the appeal and restores the account
     log("Moderator navigating to Appeals Centre...");
     await modPage.goto("/appeals-center");
-    await modPage.waitForLoadState("networkidle");
 
-    await expect(modPage.getByRole("heading", { name: /Appeals Center/i })).toBeVisible();
+    await expect(modPage.getByRole("heading", { name: /Appeals Center/i })).toBeVisible({ timeout: 10000 });
     log("Appeals Centre loaded ✓");
 
     // Find and click on the user's appeal
@@ -160,11 +157,10 @@ export const systemPMButtonTest = async ({
 
     const stateCell = appealRow.locator("td.state").last();
     await stateCell.click();
-    await modPage.waitForLoadState("networkidle");
     log("Appeal opened ✓");
 
     // 6. Verify moderator sees the appeal message
-    await expect(modPage.getByText(/I apologize and would like to return to OGS/i)).toBeVisible();
+    await expect(modPage.getByText(/I apologize and would like to return to OGS/i)).toBeVisible({ timeout: 10000 });
     log("Appeal message visible to moderator ✓");
 
     // 7. Enter a message first to enable the buttons
@@ -199,10 +195,9 @@ export const systemPMButtonTest = async ({
 
     // Reload to ensure we have the latest state
     await modPage.reload();
-    await modPage.waitForLoadState("networkidle");
 
     // Verify "Ban has been lifted" message is visible
-    await expect(modPage.getByText(/Ban has been lifted/i)).toBeVisible();
+    await expect(modPage.getByText(/Ban has been lifted/i)).toBeVisible({ timeout: 10000 });
     log("'Ban has been lifted' message visible ✓");
 
     // 11. Verify the "Leave Suspended" and "Restore Account" buttons are NOT visible
@@ -237,12 +232,11 @@ export const systemPMButtonTest = async ({
     // 14. Verify the System PM chat was opened for the user
     log("Verifying System PM chat opened for user...");
     await userPage.goto("/");
-    await userPage.waitForLoadState("networkidle");
 
     // The System PM should automatically open a private chat window for the user
     // Check if the private-chat-window component is visible
     const privateChat = userPage.locator(".private-chat-window.open");
-    await expect(privateChat).toBeVisible({ timeout: 5000 });
+    await expect(privateChat).toBeVisible({ timeout: 10000 });
     log("Private chat window opened ✓");
 
     // Verify the message content is visible in the chat

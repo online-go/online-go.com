@@ -217,7 +217,7 @@ export const gameLogThumbnailMarksTest = async (
     // Navigate to the game
     log("Navigating to game as moderator...");
     await modPage.goto(gameUrl);
-    await modPage.waitForLoadState("networkidle");
+    await expect(modPage.locator(".Game")).toBeVisible({ timeout: 15000 });
     log("Game page loaded ✓");
 
     // 12. Open GameLog modal via the dock

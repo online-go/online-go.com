@@ -295,7 +295,7 @@ These are mandatory requirements:
 
 8. **English Testing** - We test in English only; no need to worry about `pgettext`
 
-9. **Wait for State** - Use `waitForLoadState("networkidle")` and appropriate timeouts
+9. **Wait for Specific Elements** - Wait for specific UI elements to be visible, not `waitForLoadState("networkidle")` which is unreliable. Example: `await expect(page.locator(".Game")).toBeVisible({ timeout: 15000 })`
 
 ### Step 6: Register the Test
 
@@ -394,7 +394,7 @@ yarn test:e2e:debug e2e-tests/moderation/mod-system-pm-button.ts
 -   Ensure dev server is running (`yarn dev`)
 -   Check network connectivity
 -   Increase timeout values if needed
--   Verify page navigation is working (`waitForLoadState("networkidle")`)
+-   Verify page navigation by waiting for specific elements to be visible
 
 ---
 
@@ -530,10 +530,9 @@ await page.waitForTimeout(1000);
 
 // Reload to get fresh state
 await page.reload();
-await page.waitForLoadState("networkidle");
 
-// Verify new state
-await expect(page.getByText(/Expected Result/)).toBeVisible();
+// Verify new state - wait for specific element instead of networkidle
+await expect(page.getByText(/Expected Result/)).toBeVisible({ timeout: 15000 });
 ```
 
 ## Troubleshooting
@@ -546,7 +545,7 @@ await expect(page.getByText(/Expected Result/)).toBeVisible();
 
 1. Check if message/input is required first (buttons often disabled without input)
 2. Verify you're using the exact button text (check the component code)
-3. Ensure page has finished loading (`waitForLoadState("networkidle")`)
+3. Wait for the specific element you need to be visible (avoid `networkidle` - it's unreliable)
 4. Check if button is hidden by CSS classes based on state
 
 ### Wrong Selector

@@ -67,7 +67,6 @@ export const closeAllPendingReportsTest = async (
     // Navigate to reports history page
     log("Navigating to reports history page...");
     await modPage.goto("/reports-center/history");
-    await modPage.waitForLoadState("networkidle");
     log("Reports history page loaded ✓");
 
     // Set page size to 50 to show more reports per page
@@ -76,17 +75,9 @@ export const closeAllPendingReportsTest = async (
     await expect(pageSizeSelect).toBeVisible({ timeout: 5000 });
     await pageSizeSelect.selectOption("50");
 
-    // Wait for the loading overlay to appear and then disappear
-    const loadingOverlay = modPage.locator(".PaginatedTable.loading .loading-overlay");
-    await loadingOverlay.waitFor({ state: "visible", timeout: 2000 }).catch(() => {
-        // Loading might be too fast to catch
-    });
-    await loadingOverlay.waitFor({ state: "hidden", timeout: 10000 }).catch(() => {
-        // If we didn't catch it appearing, it's already hidden
-    });
-
-    // Also wait for network idle to be sure
-    await modPage.waitForLoadState("networkidle");
+    // Wait for the table to be ready after page size change
+    const historyTableSetup = modPage.locator(".ReportsCenterHistory .history table");
+    await expect(historyTableSetup).toBeVisible({ timeout: 10000 });
     log("Page size set to 50 ✓");
 
     let processedCount = 0;
@@ -126,15 +117,11 @@ export const closeAllPendingReportsTest = async (
 
         // Click the report button to open the report
         await reportButton.click();
-        await modPage.waitForLoadState("networkidle");
         log("Report opened ✓");
-
-        // Wait for the report to load
-        await modPage.waitForTimeout(1000);
 
         // Click the "Claim" button to claim the report
         const claimButton = await expectOGSClickableByName(modPage, /Claim/i);
-        await expect(claimButton).toBeVisible({ timeout: 10000 });
+        await expect(claimButton).toBeVisible({ timeout: 15000 });
         log("Claim button found ✓");
 
         await claimButton.click();
@@ -160,8 +147,8 @@ export const closeAllPendingReportsTest = async (
         // Navigate back to history page
         log("Returning to history page...");
         await modPage.goto("/reports-center/history");
-        await modPage.waitForLoadState("networkidle");
-        await modPage.waitForTimeout(500);
+        // Wait for page size select to be visible again
+        await expect(modPage.locator(".ReportsCenterHistory select")).toBeVisible({ timeout: 10000 });
     }
 
     if (iterationCount >= maxIterations) {

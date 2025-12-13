@@ -130,7 +130,7 @@ export const cmVoteSuspendUserTest = async (
     await withReportCountTracking(reporterPage, testInfo, async (tracker) => {
         // Navigate to the finished game and report
         await reporterPage.goto(accusedPage.url());
-        await reporterPage.waitForLoadState("networkidle");
+        await expect(reporterPage.locator(".Game")).toBeVisible({ timeout: 15000 });
 
         await reportUser(
             reporterPage,
@@ -158,14 +158,14 @@ export const cmVoteSuspendUserTest = async (
 
         const escalateVoteButton = await expectOGSClickableByName(escalatorPage, /Vote/);
         await escalateVoteButton.click();
-        await escalatorPage.waitForLoadState("networkidle");
+        await expect(escalateVoteButton).toBeDisabled({ timeout: 10000 });
 
         log("E2E_CM_VSU_V1 escalated the report");
 
         // Keep the accused user logged in and browsing while suspension happens
         log("Accused user staying logged in...");
         await accusedPage.goto("/");
-        await accusedPage.waitForLoadState("networkidle");
+        await accusedPage.waitForLoadState("domcontentloaded");
         log("Accused user is browsing ✓");
 
         // Have three CMs vote to suspend the escalated report
@@ -182,7 +182,7 @@ export const cmVoteSuspendUserTest = async (
 
             const suspendVoteButton = await expectOGSClickableByName(voterPage, /Vote/);
             await suspendVoteButton.click();
-            await voterPage.waitForLoadState("networkidle");
+            await expect(suspendVoteButton).toBeDisabled({ timeout: 10000 });
 
             log(`${voter} voted to suspend`);
         }
@@ -196,19 +196,17 @@ export const cmVoteSuspendUserTest = async (
 
         // Navigate to home page - should see a banner with appeal link
         await accusedPage.goto("/");
-        await accusedPage.waitForLoadState("networkidle");
 
         // Should see a banner with "appeal here" link
         const appealLink = accusedPage.getByRole("link", { name: /appeal here/i });
-        await expect(appealLink).toBeVisible();
+        await expect(appealLink).toBeVisible({ timeout: 15000 });
         log("Appeal banner visible with 'appeal here' link ✓");
 
         // Click the appeal link to navigate to appeal page
         await appealLink.click();
-        await accusedPage.waitForLoadState("networkidle");
 
         // Should now be on the appeal page
-        await expect(accusedPage).toHaveURL(/\/appeal/);
+        await expect(accusedPage).toHaveURL(/\/appeal/, { timeout: 15000 });
         log("Navigated to appeal page via banner link ✓");
 
         // Verify suspension message is visible
