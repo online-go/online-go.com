@@ -204,7 +204,7 @@ export const gameLogScoringAreasTest = async (
     // Navigate to the game
     log("Navigating to game as moderator...");
     await modPage.goto(gameUrl);
-    await modPage.waitForLoadState("networkidle");
+    await expect(modPage.locator(".Game")).toBeVisible({ timeout: 15000 });
     log("Game page loaded ✓");
 
     // 10. Open GameLog modal via the dock

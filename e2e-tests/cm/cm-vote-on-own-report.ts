@@ -97,9 +97,6 @@ export const cmVoteOnOwnReportTest = async (
         await expect(cancelButton).toBeVisible();
         await cancelButton.click();
 
-        // Wait for cancellation to process
-        await reporterPage.waitForLoadState("networkidle");
-
         // After canceling the report, the count should return to initial
         await tracker.assertCountReturnedToInitial(reporterPage);
     });

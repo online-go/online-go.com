@@ -55,7 +55,7 @@ export const suspendedUserDeletionRequestTest = async ({
     // 2. Navigate to account settings and verify normal state
     log("Navigating to account settings...");
     await userPage.goto("/settings/account");
-    await userPage.waitForLoadState("networkidle");
+    await expect(userPage.locator(".Settings")).toBeVisible({ timeout: 15000 });
     log("Account settings loaded ✓");
 
     // 3. Verify "Delete account" section title for normal user
@@ -86,13 +86,12 @@ export const suspendedUserDeletionRequestTest = async ({
 
     // 7. Wait for suspension to take effect
     await userPage.waitForTimeout(1000);
-    await userPage.waitForLoadState("networkidle");
-    log("User page reloaded after suspension");
+    log("Waited for suspension to take effect");
 
     // 8. Navigate back to account settings
     log("Navigating to account settings as suspended user...");
     await userPage.goto("/settings/account");
-    await userPage.waitForLoadState("networkidle");
+    await expect(userPage.locator(".Settings")).toBeVisible({ timeout: 15000 });
     log("Account settings loaded for suspended user ✓");
 
     // 9. Verify "Deletion request" section title for suspended user
@@ -132,10 +131,9 @@ export const suspendedUserDeletionRequestTest = async ({
     // 16. Click the link and verify navigation to appeal page
     log("Clicking 'Deletion request' link...");
     await deletionRequestLink.click();
-    await userPage.waitForLoadState("networkidle");
 
     // 17. Verify we're on the appeal page
-    await expect(userPage).toHaveURL(/\/appeal/);
+    await expect(userPage).toHaveURL(/\/appeal/, { timeout: 15000 });
     log("Navigated to appeal page ✓");
 
     // 18. Verify appeal page content is visible (suspended user sees different heading)

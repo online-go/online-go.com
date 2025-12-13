@@ -194,10 +194,9 @@ export const simulPauseDetectionTest = async (
     // Navigate to game 2
     log("AI Detector navigating to game 2...");
     await aiDetectorPage.goto(game2Url);
-    await aiDetectorPage.waitForLoadState("networkidle");
 
-    // Give the page time to fully load and render
-    await aiDetectorPage.waitForTimeout(2000);
+    // Wait for game page to load by checking for the Game container
+    await expect(aiDetectorPage.locator(".Game")).toBeVisible({ timeout: 15000 });
 
     // Check that simul indicator is NOT visible (because game 1 was paused when game 2 ended)
     log("Checking that simul indicator is NOT visible...");

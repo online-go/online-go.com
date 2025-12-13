@@ -177,15 +177,11 @@ export const simulDetectionTest = async (
     // Navigate to game 2
     log("AI Detector navigating to game 2...");
     await aiDetectorPage.goto(game2Url);
-    await aiDetectorPage.waitForLoadState("networkidle");
-
-    // Give the page time to fully load and render
-    await aiDetectorPage.waitForTimeout(2000);
 
     // Check that simul indicator IS visible (because game 1 was running when game 2 ended)
     log("Checking that simul indicator IS visible...");
     const simulWarning = aiDetectorPage.locator(".simul-warning");
-    await expect(simulWarning).toBeVisible({ timeout: 10000 });
+    await expect(simulWarning).toBeVisible({ timeout: 15000 });
     await expect(simulWarning).toContainText("Simul");
     log("Simul indicator is visible as expected!");
 

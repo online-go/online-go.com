@@ -169,8 +169,12 @@ export const aiDetectorVoteFirstWarnAndAnnulTest = async (
         await playerLink.hover(); // Stabilize popover before clicking
         await playerLink.click();
 
-        // Click the Report button
-        const reportButton = await expectOGSClickableByName(reporterPage, /Report$/);
+        // Wait for PlayerDetails popover to appear
+        await expect(reporterPage.locator(".PlayerDetails")).toBeVisible({ timeout: 15000 });
+
+        // Click the Report button (using simple click, not expectOGSClickableByName which scrolls and can close popover)
+        const reportButton = reporterPage.getByRole("button", { name: /Report$/ });
+        await expect(reportButton).toBeVisible();
         await reportButton.click();
 
         await expect(reporterPage.getByText("Request Moderator Assistance")).toBeVisible();

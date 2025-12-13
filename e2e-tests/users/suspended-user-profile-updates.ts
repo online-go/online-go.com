@@ -53,10 +53,10 @@ export const suspendedUserCannotUpdateProfileTest = async ({
     // Navigate to account settings page to get initial username
     log("Getting initial username...");
     await userPage.goto("/settings/account");
-    await userPage.waitForLoadState("networkidle");
 
     // The username input is the first input in the settings page (after the Username label)
     const usernameInput = userPage.locator('dt:has-text("Username") + dd input');
+    await expect(usernameInput).toBeVisible({ timeout: 15000 });
     const initialUsername = await usernameInput.inputValue();
 
     log(`Initial username: ${initialUsername}`);
@@ -72,13 +72,12 @@ export const suspendedUserCannotUpdateProfileTest = async ({
 
     // Wait for the suspension to take effect - suspension causes a reload of the user's page
     await userPage.waitForTimeout(1000);
-    await userPage.waitForLoadState("networkidle");
-    log("User page reloaded after suspension");
+    log("Waited for suspension to take effect");
 
     // Try to update username while suspended
     log("Attempting to update username while suspended...");
     await userPage.goto("/settings/account");
-    await userPage.waitForLoadState("networkidle");
+    await expect(usernameInput).toBeVisible({ timeout: 15000 });
 
     const newUsername = "HackedUsername" + Date.now();
     await usernameInput.fill(newUsername);
@@ -88,7 +87,7 @@ export const suspendedUserCannotUpdateProfileTest = async ({
 
     // Wait for page reload (AccountSettings reloads after save - line 260 in AccountSettings.tsx)
     await userPage.waitForLoadState("load");
-    await userPage.waitForLoadState("networkidle");
+    await expect(usernameInput).toBeVisible({ timeout: 15000 });
 
     log("Page reloaded after save");
 
@@ -124,10 +123,10 @@ export const normalUserCanUpdateProfileTest = async ({
     // Navigate to account settings page to get initial username
     log("Getting initial username...");
     await userPage.goto("/settings/account");
-    await userPage.waitForLoadState("networkidle");
 
     // The username input is the first input in the settings page (after the Username label)
     const usernameInput = userPage.locator('dt:has-text("Username") + dd input');
+    await expect(usernameInput).toBeVisible({ timeout: 15000 });
     const initialUsername = await usernameInput.inputValue();
 
     log(`Initial username: ${initialUsername}`);
@@ -142,7 +141,7 @@ export const normalUserCanUpdateProfileTest = async ({
 
     // Wait for page reload (AccountSettings reloads after save - line 260 in AccountSettings.tsx)
     await userPage.waitForLoadState("load");
-    await userPage.waitForLoadState("networkidle");
+    await expect(usernameInput).toBeVisible({ timeout: 15000 });
 
     log("Page reloaded after save");
 

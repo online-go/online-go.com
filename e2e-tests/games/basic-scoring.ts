@@ -179,9 +179,6 @@ export const basicScoringTest = async (
         await expect(cancelButton).toBeVisible();
         await cancelButton.click();
 
-        // Wait for the report to be cancelled and UI to update
-        await challengerPage.waitForLoadState("networkidle");
-
         // Verify count returned to initial baseline
         await reporterTracker.assertCountReturnedToInitial(challengerPage);
     });

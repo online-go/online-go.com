@@ -57,11 +57,10 @@ export const playerCheckAIButtonTest = async ({
     const { userPage: targetPage } = await prepareNewUser(createContext, targetUsername, "test");
     log(`Target user created: ${targetUsername} ✓`);
 
-    // Get the target user's ID from the profile page
-    await targetPage.goto("/user/view");
-    await targetPage.waitForLoadState("networkidle");
-    const profileUrl = targetPage.url();
-    const targetUserIdMatch = profileUrl.match(/\/player\/(\d+)/);
+    // Get the target user's ID by clicking the profile link in the header
+    const profileLink = targetPage.locator('nav[aria-label="Profile"] a').first();
+    const profileHref = await profileLink.getAttribute("href");
+    const targetUserIdMatch = profileHref?.match(/\/user\/view\/(\d+)/);
     const targetUserId = targetUserIdMatch ? targetUserIdMatch[1] : null;
     log(`Target user ID: ${targetUserId} ✓`);
 
@@ -137,12 +136,11 @@ export const playerCheckAIButtonTest = async ({
     // 10. Click the "Check AI" button
     log("Clicking 'Check AI' button...");
     await checkAIButton.click();
-    await modPage.waitForLoadState("networkidle");
     log("'Check AI' button clicked ✓");
 
     // 11. Verify navigation to AI Detection page
     log("Verifying navigation to AI Detection page...");
-    await expect(modPage.getByRole("heading", { name: /AI Detection/i })).toBeVisible();
+    await expect(modPage.getByRole("heading", { name: /AI Detection/i })).toBeVisible({ timeout: 15000 });
     log("AI Detection page loaded ✓");
 
     // 12. Verify the URL contains the player parameter

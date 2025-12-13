@@ -65,18 +65,20 @@ export const aiDetectionFastSMRReportTest = async ({
     // 3. Navigate to the AI Detection page
     log("Navigating to AI Detection page...");
     await modPage.goto("/moderator/ai-detection");
-    await modPage.waitForLoadState("networkidle");
     await expect(modPage.getByRole("heading", { name: /AI Detection/i })).toBeVisible();
     log("AI Detection page loaded ✓");
 
-    // 4. Wait for the table to finish loading
+    // 4. Wait for the table data to load by waiting for actual game rows
     log("Waiting for game data to load...");
-    const loadingOverlay = modPage.locator(".ai-detection .loading-overlay");
-    await loadingOverlay.waitFor({ state: "hidden", timeout: 10000 });
-    log("Loading overlay hidden - data loaded ✓");
-
-    // 5. Check if there are any games in the table
     const gameRows = modPage.locator(".ai-detection tr").filter({ hasText: /#\d+/ });
+
+    // Wait for first row to appear (or timeout if no data)
+    try {
+        await gameRows.first().waitFor({ state: "visible", timeout: 15000 });
+    } catch {
+        // No rows appeared - table may be empty
+    }
+
     const rowCount = await gameRows.count();
 
     if (rowCount === 0) {
@@ -117,14 +119,10 @@ export const aiDetectionFastSMRReportTest = async ({
     // 10. Navigate to Reports Center History page to verify the report note
     log("Navigating to Reports Center History to verify report note...");
     await modPage.goto("/reports-center/history");
-    await modPage.waitForLoadState("networkidle");
 
-    // Wait for the history table to load
-    await modPage.waitForTimeout(1000);
-
-    // The newly created report should be in the first row (most recent)
+    // Wait for the history table to load by waiting for the table element
     const historyTable = modPage.locator(".ReportsCenterHistory table");
-    await expect(historyTable).toBeVisible({ timeout: 5000 });
+    await expect(historyTable).toBeVisible({ timeout: 10000 });
 
     const firstHistoryRow = historyTable.locator("tbody tr").first();
     await expect(firstHistoryRow).toBeVisible();
@@ -148,17 +146,15 @@ export const aiDetectionFastSMRReportTest = async ({
     log("Closing the report for cleanup...");
     const reportButton = firstHistoryRow.locator("button").first();
     await reportButton.click();
-    await modPage.waitForLoadState("networkidle");
 
-    // Try to close the report using the Ignore button
+    // Wait for the report detail view to load by waiting for the Ignore button
     const ignoreButton = modPage.getByRole("button", { name: /Ignore/i });
-    const ignoreButtonExists = (await ignoreButton.count()) > 0;
-
-    if (ignoreButtonExists) {
+    try {
+        await expect(ignoreButton).toBeVisible({ timeout: 10000 });
         await ignoreButton.click();
         await modPage.waitForTimeout(1000);
         log("Report ignored ✓");
-    } else {
+    } catch {
         log("⚠ Could not find Ignore button - report may remain open");
     }
 
