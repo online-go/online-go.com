@@ -43,6 +43,7 @@ import {
     navigateToReport,
     newTestUsername,
     prepareNewUser,
+    reportPlayerByColor,
     turnOffDynamicHelp,
 } from "@helpers/user-utils";
 import {
@@ -164,33 +165,12 @@ export const aiDetectorVoteSuspendAndAnnulTest = async (
         // 3. Reporter reports the other player for AI use
         log(`Reporting ${reportedUsername} for AI use...`);
 
-        // Click on the reported player's name
-        const playerLink = reporterPage.locator(`.white.player-name-container a.Player`);
-        await expect(playerLink).toBeVisible();
-        await playerLink.hover(); // Stabilize popover before clicking
-        await playerLink.click();
-
-        // Wait for PlayerDetails popover to appear
-        await expect(reporterPage.locator(".PlayerDetails")).toBeVisible({ timeout: 15000 });
-
-        // Click the Report button (using simple click, not expectOGSClickableByName which scrolls and can close popover)
-        const reportButton = reporterPage.getByRole("button", { name: /Report$/ });
-        await expect(reportButton).toBeVisible();
-        await reportButton.click();
-
-        await expect(reporterPage.getByText("Request Moderator Assistance")).toBeVisible();
-
-        // Select AI use report type
-        await reporterPage.selectOption(".type-picker select", { value: "ai_use" });
-
-        // Fill in the notes
-        const notesBox = reporterPage.locator(".notes");
-        await expect(notesBox).toBeVisible();
-        await notesBox.fill("E2E test - This player is using AI assistance");
-
-        // Submit the report
-        const submitReportButton = await expectOGSClickableByName(reporterPage, /Report User$/);
-        await submitReportButton.click();
+        await reportPlayerByColor(
+            reporterPage,
+            ".white",
+            "ai_use",
+            "E2E test - This player is using AI assistance",
+        );
         log("AI use report submitted ✓");
 
         // Capture the report number from the reporter's page

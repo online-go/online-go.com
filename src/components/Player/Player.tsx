@@ -283,6 +283,7 @@ export function Player(props: PlayerProperties): React.ReactElement {
     const main_attrs: any = {
         className: "Player",
         "data-player-id": player_id,
+        "data-ready": !!player, // true when player data has loaded
     };
 
     if (props.icon) {

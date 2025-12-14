@@ -23,7 +23,7 @@ import type { CreateContextOptions } from "@helpers";
 
 import { BrowserContext, expect } from "@playwright/test";
 
-import { prepareNewUser, newTestUsername } from "@helpers/user-utils";
+import { prepareNewUser, newTestUsername, openPlayerDetailsPopover } from "@helpers/user-utils";
 import { createDirectChallenge, acceptDirectChallenge } from "@helpers/challenge-utils";
 import { clickInTheMiddle } from "@helpers/game-utils";
 
@@ -51,10 +51,11 @@ export const modBlockEarlyEscapeReportTest = async ({
 
     await clickInTheMiddle(reporterPage);
 
-    const playerLink = reporterPage.locator(`.white.player-name-container a.Player`);
-    await expect(playerLink).toBeVisible();
-    await playerLink.hover(); // Ensure the dropdown stays open
-    await playerLink.click();
+    // Open player details popover with retry logic
+    const playerLink = reporterPage.locator(
+        `.white.player-name-container a.Player[data-ready="true"]`,
+    );
+    await openPlayerDetailsPopover(reporterPage, playerLink);
 
     await expect(reporterPage.getByRole("button", { name: /Report$/ })).toBeVisible();
     await reporterPage.getByRole("button", { name: /Report$/ }).click();

@@ -10,7 +10,7 @@
  */
 
 import { expect } from "@playwright/test";
-import { Page, BrowserContext } from "@playwright/test";
+import { Page, BrowserContext, Locator } from "@playwright/test";
 
 import { expectOGSClickableByName } from "./matchers";
 import { load, CreateContextOptions } from "@helpers";
@@ -343,14 +343,60 @@ export const goToUsersFinishedGame = async (page: Page, username: string, gameNa
     await gobanReady.waitFor({ state: "visible" });
 };
 
-export const reportUser = async (page: Page, username: string, type: string, notes: string) => {
-    const playerLink = page.locator(`a.Player:has-text("${username}")`);
-    await expect(playerLink).toBeVisible();
-    await playerLink.hover(); // Ensure the dropdown stays open
-    await playerLink.click();
+/**
+ * Click a Player link and open the PlayerDetails popover.
+ * Handles retry logic for race conditions where the popover doesn't appear.
+ * Exported for tests that need to open PlayerDetails without submitting a report.
+ */
+export const openPlayerDetailsPopover = async (page: Page, playerLinkLocator: Locator) => {
+    // Close any existing popovers first - their backdrop would block our click
+    await page.keyboard.press("Escape");
 
-    // Wait for PlayerDetails popover to appear before looking for Report button
-    await expect(page.locator(".PlayerDetails")).toBeVisible({ timeout: 15000 });
+    // Wait for the Player link to be visible and ready
+    await expect(playerLinkLocator).toBeVisible({ timeout: 15000 });
+
+    // Retry clicking the player link - in rare cases the popover still doesn't appear
+    // due to timing issues with popover backdrop or other race conditions
+    let attempts = 0;
+    const maxAttempts = 3;
+    while (attempts < maxAttempts) {
+        attempts++;
+        await playerLinkLocator.click();
+
+        try {
+            // Wait for PlayerDetails popover to appear AND be fully loaded
+            await expect(page.locator('.PlayerDetails[data-ready="true"]')).toBeVisible({
+                timeout: 5000,
+            });
+            break; // Success
+        } catch {
+            if (attempts >= maxAttempts) {
+                throw new Error(
+                    `PlayerDetails popover did not appear after ${maxAttempts} click attempts`,
+                );
+            }
+            // Close any partial state and retry
+            await page.keyboard.press("Escape");
+            // Wait for popover to fully close before retrying
+            await expect(page.locator(".PlayerDetails"))
+                .not.toBeVisible({ timeout: 1000 })
+                .catch(() => {
+                    // Popover may already be gone, that's fine
+                });
+        }
+    }
+};
+
+/**
+ * Internal helper to fill and submit the report form after PlayerDetails is open.
+ * Verifies the PlayerDetails popover is still visible before attempting to click Report.
+ */
+const submitReportForm = async (page: Page, type: string, notes: string) => {
+    // Verify popover is still open - it may have closed due to race conditions
+    await expect(
+        page.locator('.PlayerDetails[data-ready="true"]'),
+        "PlayerDetails popover should still be visible before clicking Report",
+    ).toBeVisible({ timeout: 2000 });
 
     await expect(page.getByRole("button", { name: /Report$/ })).toBeVisible();
     await page.getByRole("button", { name: /Report$/ }).click();
@@ -370,6 +416,35 @@ export const reportUser = async (page: Page, username: string, type: string, not
     // tidy up
     await OK.click();
     await expect(OK).toBeHidden();
+};
+
+export const reportUser = async (page: Page, username: string, type: string, notes: string) => {
+    const playerLink = page.locator(`a.Player[data-ready="true"]:has-text("${username}")`);
+
+    // Retry the entire open-popover-and-submit flow if the popover closes between steps
+    let attempts = 0;
+    const maxAttempts = 3;
+    while (attempts < maxAttempts) {
+        attempts++;
+        await openPlayerDetailsPopover(page, playerLink);
+
+        // Check if popover is still open before proceeding
+        const isPopoverOpen = await page
+            .locator('.PlayerDetails[data-ready="true"]')
+            .isVisible()
+            .catch(() => false);
+
+        if (isPopoverOpen) {
+            await submitReportForm(page, type, notes);
+            return; // Success
+        }
+
+        if (attempts >= maxAttempts) {
+            throw new Error(
+                `PlayerDetails popover closed before Report button could be clicked after ${maxAttempts} attempts`,
+            );
+        }
+    }
 };
 
 /**
@@ -433,29 +508,32 @@ export const reportPlayerByColor = async (
     type: string,
     notes: string,
 ) => {
-    const playerLink = page.locator(`${color}.player-name-container a.Player`);
-    await expect(playerLink).toBeVisible();
-    await playerLink.hover(); // Ensure the dropdown stays open
-    await playerLink.click();
+    const playerLink = page.locator(`${color}.player-name-container a.Player[data-ready="true"]`);
 
-    await expect(page.getByRole("button", { name: /Report$/ })).toBeVisible();
-    await page.getByRole("button", { name: /Report$/ }).click();
+    // Retry the entire open-popover-and-submit flow if the popover closes between steps
+    let attempts = 0;
+    const maxAttempts = 3;
+    while (attempts < maxAttempts) {
+        attempts++;
+        await openPlayerDetailsPopover(page, playerLink);
 
-    await expect(page.getByText("Request Moderator Assistance")).toBeVisible();
+        // Check if popover is still open before proceeding
+        const isPopoverOpen = await page
+            .locator('.PlayerDetails[data-ready="true"]')
+            .isVisible()
+            .catch(() => false);
 
-    await page.selectOption(".type-picker select", { value: type }); // cspell:disable-line
+        if (isPopoverOpen) {
+            await submitReportForm(page, type, notes);
+            return; // Success
+        }
 
-    const notesBox = page.locator(".notes");
-    await notesBox.fill(notes);
-
-    const submitButton = await expectOGSClickableByName(page, /Report User$/);
-    await submitButton.click();
-
-    await expect(page.getByText("Thanks for the report!")).toBeVisible();
-    const OK = await expectOGSClickableByName(page, "OK");
-    // tidy up
-    await OK.click();
-    await expect(OK).toBeHidden();
+        if (attempts >= maxAttempts) {
+            throw new Error(
+                `PlayerDetails popover closed before Report button could be clicked after ${maxAttempts} attempts`,
+            );
+        }
+    }
 };
 
 export const assertIncidentReportIndicatorActive = async (page: Page, count: number) => {
