@@ -10,7 +10,7 @@
  */
 
 import { expect } from "@playwright/test";
-import { Page, BrowserContext } from "@playwright/test";
+import { Page, BrowserContext, Locator } from "@playwright/test";
 
 import { expectOGSClickableByName } from "./matchers";
 import { load, CreateContextOptions } from "@helpers";
@@ -343,15 +343,16 @@ export const goToUsersFinishedGame = async (page: Page, username: string, gameNa
     await gobanReady.waitFor({ state: "visible" });
 };
 
-export const reportUser = async (page: Page, username: string, type: string, notes: string) => {
+/**
+ * Internal helper to click a Player link and open the PlayerDetails popover.
+ * Handles retry logic for race conditions where the popover doesn't appear.
+ */
+const openPlayerDetailsPopover = async (page: Page, playerLinkLocator: Locator) => {
     // Close any existing popovers first - their backdrop would block our click
     await page.keyboard.press("Escape");
 
-    // Wait for the Player link to be both visible AND ready (data loaded)
-    // The data-ready attribute indicates the player data has been fetched,
-    // which is required for the click handler to work
-    const playerLink = page.locator(`a.Player[data-ready="true"]:has-text("${username}")`);
-    await expect(playerLink).toBeVisible({ timeout: 15000 });
+    // Wait for the Player link to be visible and ready
+    await expect(playerLinkLocator).toBeVisible({ timeout: 15000 });
 
     // Retry clicking the player link - in rare cases the popover still doesn't appear
     // due to timing issues with popover backdrop or other race conditions
@@ -359,7 +360,7 @@ export const reportUser = async (page: Page, username: string, type: string, not
     const maxAttempts = 3;
     while (attempts < maxAttempts) {
         attempts++;
-        await playerLink.click();
+        await playerLinkLocator.click();
 
         try {
             // Wait for PlayerDetails popover to appear AND be fully loaded
@@ -378,7 +379,12 @@ export const reportUser = async (page: Page, username: string, type: string, not
             await page.waitForTimeout(200);
         }
     }
+};
 
+/**
+ * Internal helper to fill and submit the report form after PlayerDetails is open.
+ */
+const submitReportForm = async (page: Page, type: string, notes: string) => {
     await expect(page.getByRole("button", { name: /Report$/ })).toBeVisible();
     await page.getByRole("button", { name: /Report$/ }).click();
 
@@ -397,6 +403,12 @@ export const reportUser = async (page: Page, username: string, type: string, not
     // tidy up
     await OK.click();
     await expect(OK).toBeHidden();
+};
+
+export const reportUser = async (page: Page, username: string, type: string, notes: string) => {
+    const playerLink = page.locator(`a.Player[data-ready="true"]:has-text("${username}")`);
+    await openPlayerDetailsPopover(page, playerLink);
+    await submitReportForm(page, type, notes);
 };
 
 /**
@@ -460,37 +472,9 @@ export const reportPlayerByColor = async (
     type: string,
     notes: string,
 ) => {
-    // Close any existing popovers first - their backdrop would block our click
-    await page.keyboard.press("Escape");
-
-    // Wait for the Player link to be both visible AND ready (data loaded)
     const playerLink = page.locator(`${color}.player-name-container a.Player[data-ready="true"]`);
-    await expect(playerLink).toBeVisible({ timeout: 15000 });
-    await playerLink.click();
-
-    // Wait for PlayerDetails popover to appear AND be fully loaded
-    await expect(page.locator('.PlayerDetails[data-ready="true"]')).toBeVisible({
-        timeout: 15000,
-    });
-
-    await expect(page.getByRole("button", { name: /Report$/ })).toBeVisible();
-    await page.getByRole("button", { name: /Report$/ }).click();
-
-    await expect(page.getByText("Request Moderator Assistance")).toBeVisible();
-
-    await page.selectOption(".type-picker select", { value: type }); // cspell:disable-line
-
-    const notesBox = page.locator(".notes");
-    await notesBox.fill(notes);
-
-    const submitButton = await expectOGSClickableByName(page, /Report User$/);
-    await submitButton.click();
-
-    await expect(page.getByText("Thanks for the report!")).toBeVisible();
-    const OK = await expectOGSClickableByName(page, "OK");
-    // tidy up
-    await OK.click();
-    await expect(OK).toBeHidden();
+    await openPlayerDetailsPopover(page, playerLink);
+    await submitReportForm(page, type, notes);
 };
 
 export const assertIncidentReportIndicatorActive = async (page: Page, count: number) => {
