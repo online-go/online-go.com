@@ -344,13 +344,40 @@ export const goToUsersFinishedGame = async (page: Page, username: string, gameNa
 };
 
 export const reportUser = async (page: Page, username: string, type: string, notes: string) => {
-    const playerLink = page.locator(`a.Player:has-text("${username}")`);
-    await expect(playerLink).toBeVisible();
-    await playerLink.hover(); // Ensure the dropdown stays open
-    await playerLink.click();
+    // Close any existing popovers first - their backdrop would block our click
+    await page.keyboard.press("Escape");
 
-    // Wait for PlayerDetails popover to appear before looking for Report button
-    await expect(page.locator(".PlayerDetails")).toBeVisible({ timeout: 15000 });
+    // Wait for the Player link to be both visible AND ready (data loaded)
+    // The data-ready attribute indicates the player data has been fetched,
+    // which is required for the click handler to work
+    const playerLink = page.locator(`a.Player[data-ready="true"]:has-text("${username}")`);
+    await expect(playerLink).toBeVisible({ timeout: 15000 });
+
+    // Retry clicking the player link - in rare cases the popover still doesn't appear
+    // due to timing issues with popover backdrop or other race conditions
+    let attempts = 0;
+    const maxAttempts = 3;
+    while (attempts < maxAttempts) {
+        attempts++;
+        await playerLink.click();
+
+        try {
+            // Wait for PlayerDetails popover to appear AND be fully loaded
+            await expect(page.locator('.PlayerDetails[data-ready="true"]')).toBeVisible({
+                timeout: 5000,
+            });
+            break; // Success
+        } catch {
+            if (attempts >= maxAttempts) {
+                throw new Error(
+                    `PlayerDetails popover did not appear after ${maxAttempts} click attempts`,
+                );
+            }
+            // Close any partial state and retry
+            await page.keyboard.press("Escape");
+            await page.waitForTimeout(200);
+        }
+    }
 
     await expect(page.getByRole("button", { name: /Report$/ })).toBeVisible();
     await page.getByRole("button", { name: /Report$/ }).click();
@@ -433,10 +460,18 @@ export const reportPlayerByColor = async (
     type: string,
     notes: string,
 ) => {
-    const playerLink = page.locator(`${color}.player-name-container a.Player`);
-    await expect(playerLink).toBeVisible();
-    await playerLink.hover(); // Ensure the dropdown stays open
+    // Close any existing popovers first - their backdrop would block our click
+    await page.keyboard.press("Escape");
+
+    // Wait for the Player link to be both visible AND ready (data loaded)
+    const playerLink = page.locator(`${color}.player-name-container a.Player[data-ready="true"]`);
+    await expect(playerLink).toBeVisible({ timeout: 15000 });
     await playerLink.click();
+
+    // Wait for PlayerDetails popover to appear AND be fully loaded
+    await expect(page.locator('.PlayerDetails[data-ready="true"]')).toBeVisible({
+        timeout: 15000,
+    });
 
     await expect(page.getByRole("button", { name: /Report$/ })).toBeVisible();
     await page.getByRole("button", { name: /Report$/ }).click();

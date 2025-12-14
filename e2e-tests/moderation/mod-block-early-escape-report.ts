@@ -51,10 +51,20 @@ export const modBlockEarlyEscapeReportTest = async ({
 
     await clickInTheMiddle(reporterPage);
 
-    const playerLink = reporterPage.locator(`.white.player-name-container a.Player`);
-    await expect(playerLink).toBeVisible();
-    await playerLink.hover(); // Ensure the dropdown stays open
+    // Close any existing popovers first - their backdrop would block our click
+    await reporterPage.keyboard.press("Escape");
+
+    // Wait for the Player link to be ready (data loaded) before clicking
+    const playerLink = reporterPage.locator(
+        `.white.player-name-container a.Player[data-ready="true"]`,
+    );
+    await expect(playerLink).toBeVisible({ timeout: 15000 });
     await playerLink.click();
+
+    // Wait for PlayerDetails popover to appear AND be fully loaded
+    await expect(reporterPage.locator('.PlayerDetails[data-ready="true"]')).toBeVisible({
+        timeout: 15000,
+    });
 
     await expect(reporterPage.getByRole("button", { name: /Report$/ })).toBeVisible();
     await reporterPage.getByRole("button", { name: /Report$/ }).click();

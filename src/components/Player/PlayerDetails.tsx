@@ -301,7 +301,7 @@ export class PlayerDetails extends React.PureComponent<
             : _("Add notes");
 
         return (
-            <div className="PlayerDetails">
+            <div className="PlayerDetails" data-ready={this.state.resolved}>
                 <div className="details">
                     <div
                         className="icon"
