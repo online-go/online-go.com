@@ -389,8 +389,15 @@ export const openPlayerDetailsPopover = async (page: Page, playerLinkLocator: Lo
 
 /**
  * Internal helper to fill and submit the report form after PlayerDetails is open.
+ * Verifies the PlayerDetails popover is still visible before attempting to click Report.
  */
 const submitReportForm = async (page: Page, type: string, notes: string) => {
+    // Verify popover is still open - it may have closed due to race conditions
+    await expect(
+        page.locator('.PlayerDetails[data-ready="true"]'),
+        "PlayerDetails popover should still be visible before clicking Report",
+    ).toBeVisible({ timeout: 2000 });
+
     await expect(page.getByRole("button", { name: /Report$/ })).toBeVisible();
     await page.getByRole("button", { name: /Report$/ }).click();
 
@@ -413,8 +420,31 @@ const submitReportForm = async (page: Page, type: string, notes: string) => {
 
 export const reportUser = async (page: Page, username: string, type: string, notes: string) => {
     const playerLink = page.locator(`a.Player[data-ready="true"]:has-text("${username}")`);
-    await openPlayerDetailsPopover(page, playerLink);
-    await submitReportForm(page, type, notes);
+
+    // Retry the entire open-popover-and-submit flow if the popover closes between steps
+    let attempts = 0;
+    const maxAttempts = 3;
+    while (attempts < maxAttempts) {
+        attempts++;
+        await openPlayerDetailsPopover(page, playerLink);
+
+        // Check if popover is still open before proceeding
+        const isPopoverOpen = await page
+            .locator('.PlayerDetails[data-ready="true"]')
+            .isVisible()
+            .catch(() => false);
+
+        if (isPopoverOpen) {
+            await submitReportForm(page, type, notes);
+            return; // Success
+        }
+
+        if (attempts >= maxAttempts) {
+            throw new Error(
+                `PlayerDetails popover closed before Report button could be clicked after ${maxAttempts} attempts`,
+            );
+        }
+    }
 };
 
 /**
@@ -479,8 +509,31 @@ export const reportPlayerByColor = async (
     notes: string,
 ) => {
     const playerLink = page.locator(`${color}.player-name-container a.Player[data-ready="true"]`);
-    await openPlayerDetailsPopover(page, playerLink);
-    await submitReportForm(page, type, notes);
+
+    // Retry the entire open-popover-and-submit flow if the popover closes between steps
+    let attempts = 0;
+    const maxAttempts = 3;
+    while (attempts < maxAttempts) {
+        attempts++;
+        await openPlayerDetailsPopover(page, playerLink);
+
+        // Check if popover is still open before proceeding
+        const isPopoverOpen = await page
+            .locator('.PlayerDetails[data-ready="true"]')
+            .isVisible()
+            .catch(() => false);
+
+        if (isPopoverOpen) {
+            await submitReportForm(page, type, notes);
+            return; // Success
+        }
+
+        if (attempts >= maxAttempts) {
+            throw new Error(
+                `PlayerDetails popover closed before Report button could be clicked after ${maxAttempts} attempts`,
+            );
+        }
+    }
 };
 
 export const assertIncidentReportIndicatorActive = async (page: Page, count: number) => {
