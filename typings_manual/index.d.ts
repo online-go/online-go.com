@@ -16,7 +16,7 @@ interface Window {
     ogs_locales: Record<string, Record<string, Array<string>>>;
     ogs_countries: Record<string, Record<string, string>>;
 
-    // Set by gulp
+    // Set by vite dev server
     websocket_host: string;
 
     // set in main.tsx

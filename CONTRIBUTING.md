@@ -40,8 +40,7 @@ If you're on Windows and need specific help getting tools installed and the repo
 (And ... those detailed steps may even be a useful pointer about how to get started under Linux/macOS: they're broadly applicable, even if details differ slightly.)
 
 Once running, you can then navigate to [http://dev.beta.online-go.com:8080/](http://dev.beta.online-go.com:8080/)
-which loads the interface from your local server that you just started with gulp, and
-connects to the beta server for testing.
+which loads the interface from your local development server and connects to the beta server for testing.
 
 # Getting Started
 
