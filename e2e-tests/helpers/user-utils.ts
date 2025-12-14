@@ -349,6 +349,9 @@ export const reportUser = async (page: Page, username: string, type: string, not
     await playerLink.hover(); // Ensure the dropdown stays open
     await playerLink.click();
 
+    // Wait for PlayerDetails popover to appear before looking for Report button
+    await expect(page.locator(".PlayerDetails")).toBeVisible({ timeout: 15000 });
+
     await expect(page.getByRole("button", { name: /Report$/ })).toBeVisible();
     await page.getByRole("button", { name: /Report$/ }).click();
 

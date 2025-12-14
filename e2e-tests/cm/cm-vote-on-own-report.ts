@@ -70,7 +70,9 @@ export const cmVoteOnOwnReportTest = async (
         await navigateToReport(reporterPage, reportNumber);
 
         // Select an option...
-        await reporterPage.locator('.action-selector input[type="radio"]').first().click();
+        const radioButton = reporterPage.locator('.action-selector input[type="radio"]').first();
+        await radioButton.click();
+        await expect(radioButton).toBeChecked();
 
         // ... then we should be allowed to vote.
 
