@@ -97,10 +97,6 @@ export const cmAckWarningTest = async (
         const voteButton = await expectOGSClickableByName(aiCMPage, /Vote$/);
         await voteButton.click();
 
-        // After the AI assessor votes, the reporter should receive a warning
-        // Wait a moment for the warning to be generated
-        await reporterPage.waitForTimeout(3000);
-
         // The reporter should be warned about their crummy report
         await reporterPage.goto("/");
 
@@ -138,11 +134,8 @@ export const cmAckWarningTest = async (
         await expect(okButton).toBeVisible();
         await expect(okButton).toBeDisabled();
 
-        // wait 10 seconds before proceeding
-        await new Promise((resolve) => setTimeout(resolve, 10000));
-
-        // Now they can accept the warning
-        await expect(okButton).toBeEnabled();
+        // Wait for the warning timer to expire and OK button to become enabled
+        await expect(okButton).toBeEnabled({ timeout: 15000 });
 
         await okButton.click();
 
