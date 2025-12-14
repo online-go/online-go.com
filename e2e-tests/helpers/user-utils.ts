@@ -344,10 +344,11 @@ export const goToUsersFinishedGame = async (page: Page, username: string, gameNa
 };
 
 /**
- * Internal helper to click a Player link and open the PlayerDetails popover.
+ * Click a Player link and open the PlayerDetails popover.
  * Handles retry logic for race conditions where the popover doesn't appear.
+ * Exported for tests that need to open PlayerDetails without submitting a report.
  */
-const openPlayerDetailsPopover = async (page: Page, playerLinkLocator: Locator) => {
+export const openPlayerDetailsPopover = async (page: Page, playerLinkLocator: Locator) => {
     // Close any existing popovers first - their backdrop would block our click
     await page.keyboard.press("Escape");
 
@@ -376,7 +377,12 @@ const openPlayerDetailsPopover = async (page: Page, playerLinkLocator: Locator) 
             }
             // Close any partial state and retry
             await page.keyboard.press("Escape");
-            await page.waitForTimeout(200);
+            // Wait for popover to fully close before retrying
+            await expect(page.locator(".PlayerDetails"))
+                .not.toBeVisible({ timeout: 1000 })
+                .catch(() => {
+                    // Popover may already be gone, that's fine
+                });
         }
     }
 };
