@@ -223,6 +223,9 @@ declare namespace rest_api {
 
         /** For invalid handicaps that got into the system, don't rate */
         handicap_out_of_range?: boolean;
+
+        /** Game was annulled as part of AI cheating remediation */
+        ai_cheating_remediation?: boolean;
     }
 
     interface AIReviewParams {
