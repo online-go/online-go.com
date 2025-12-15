@@ -1486,6 +1486,13 @@ function AnnulmentReason({
                     </div>,
                 );
                 break;
+            case "ai_cheating_remediation":
+                arr.push(
+                    <div key={key}>
+                        {_("This game has been annulled as part of AI cheating remediation.")}
+                    </div>,
+                );
+                break;
             default:
                 arr.push(<div key={key}>{key}</div>);
                 break;
