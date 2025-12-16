@@ -378,11 +378,11 @@ export const openPlayerDetailsPopover = async (page: Page, playerLinkLocator: Lo
             // Close any partial state and retry
             await page.keyboard.press("Escape");
             // Wait for popover to fully close before retrying
-            await expect(page.locator(".PlayerDetails"))
-                .not.toBeVisible({ timeout: 1000 })
-                .catch(() => {
-                    // Popover may already be gone, that's fine
-                });
+            try {
+                await expect(page.locator(".PlayerDetails")).not.toBeVisible({ timeout: 1000 });
+            } catch {
+                // Popover may already be gone, that's fine
+            }
         }
     }
 };

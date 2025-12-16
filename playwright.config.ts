@@ -86,13 +86,21 @@ export default defineConfig({
     // CI: 0 retries (smoke tests should be stable)
     // E2E: 2 retry (handle flakiness in full test suite)
     // Dev: 0 retries (fail fast for development)
-    retries: process.env.CI ? 0 : process.env.E2E ? 2 : 0,
+
+    // retries: process.env.CI ? 0 : process.env.E2E ? 2 : 0,
+
+    retries: 0, // we're currently expecting stability ( no parallel tests, so fail fast )
 
     /* Workers configuration for parallel execution */
+    // Ideally...
     // CI: 1 worker (sequential for reliability, smoke tests only)
     // E2E: 2 workers (parallel execution with isolation via worker IDs)
     // Dev: 2 workers (parallel execution for faster feedback)
-    workers: process.env.CI ? 1 : 2,
+
+    // But ... it just doesn't work.
+    // workers: process.env.CI ? 1 : 1,
+
+    workers: 1, // parallel execution is disabled for stability
 
     /* Reporter to use. See https://playwright.dev/docs/test-reporters */
     /* (note that e2etesting run_test override this from command line) */
