@@ -272,6 +272,8 @@ export interface DataSchema
         selectedTags?: number[];
     };
     "fair-play-search.hidden-fields": string[];
+    "fair-play-search.hidden-stats": Array<"mean" | "median" | "p95" | "stdDev" | "min" | "max">;
+    "fair-play-search.show-statistics": boolean;
     "fair-play-actions.filters": {
         selectedPlayerId?: number;
         selectedPlayerUsername?: string;
