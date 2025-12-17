@@ -71,7 +71,7 @@
         "@typescript-eslint/parser": "^8.46.2",
         "@vitejs/plugin-basic-ssl": "^2.1.0",
         "@vitejs/plugin-react": "^5.1.0",
-        "autoprefixer": "^10.4.21",
+        "autoprefixer": "^10.4.23",
         "body-parser": "2.2.0",
         "cspell": "^9.2.2",
         "cssnano": "^7.1.1",
