@@ -77,7 +77,7 @@ export class InstructionalGoban extends React.Component<InstructionalGobanProps>
                     this.props.displayWidth ||
                     Math.min(
                         document.body.offsetWidth - 50,
-                        (document.getElementById("em10")?.offsetWidth ?? 0) * 2,
+                        (document.getElementById("em10")?.offsetWidth ?? 0) * 3,
                     ),
                 square_size: "auto",
 
