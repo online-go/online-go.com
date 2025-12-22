@@ -29,12 +29,7 @@ interface ModerationActionSelectorProps {
     users_vote: CommunityModerationAction | null;
     enable: boolean;
     report: Report;
-    submit: (
-        action: CommunityModerationAction,
-        note: string,
-        dissenter_note: string,
-        voter_note: string,
-    ) => void;
+    submit: (action: CommunityModerationAction, note: string, voter_note: string) => void;
 }
 
 // Translatable versions of the prompts for Community Moderators.
@@ -451,7 +446,6 @@ export function ModerationActionSelector({
     );
     const [escalation_note, setEscalationNote] = React.useState("");
     const [voter_note, setVoterNote] = React.useState("");
-    const [dissenter_note, setDissenterNote] = React.useState("");
 
     const updateSelectedAction = (
         e: React.ChangeEvent<HTMLInputElement & { value: CommunityModerationAction }>,
@@ -467,18 +461,6 @@ export function ModerationActionSelector({
     const action_choices: CommunityModerationAction[] = available_actions
         ? available_actions
         : ["escalate"];
-
-    // If we're in dissent, we'll ask for a "dissent" note
-    // "dissent" is "the number of votes in our option is less than some other option"
-    // Votes on "AI Use" are never in dissent because they do not require consensus
-
-    const inDissent =
-        selectedOption &&
-        report.report_type !== "ai_use" &&
-        !!Object.keys(vote_counts).find(
-            (k: string) =>
-                k !== selectedOption && (vote_counts[selectedOption] ?? 0) < vote_counts[k],
-        );
 
     return (
         <div className="ModerationActionSelector" ref={voting_pane}>
@@ -549,33 +531,16 @@ export function ModerationActionSelector({
                     onChange={(ev) => setEscalationNote(ev.target.value)}
                 />
             )}
-            {report.report_type === "assess_ai_play" && (
-                <textarea
-                    id="assess-ai-play-note"
-                    placeholder={llm_pgettext(
-                        "A placeholder prompting community moderators for their assessment of the gameplay",
-                        "Gameplay assessment",
-                    )}
-                    rows={5}
-                    value={voter_note}
-                    onChange={(ev) => setVoterNote(ev.target.value)}
-                />
-            )}
-
-            {inDissent &&
-                report.report_type !== "assess_ai_play" &&
-                selectedOption !== "escalate" && (
-                    <textarea
-                        id="dissenter-note"
-                        placeholder={llm_pgettext(
-                            "A placeholder prompting community moderators for the reason why they are disagreeing with a vote",
-                            "(Optional) What is it that the other votes do not seem to take into account?",
-                        )}
-                        rows={5}
-                        value={dissenter_note}
-                        onChange={(ev) => setDissenterNote(ev.target.value)}
-                    />
+            <textarea
+                id="voter-note"
+                placeholder={llm_pgettext(
+                    "Placeholder for optional note when voting on a report",
+                    "(Optional) Add a note for other moderators",
                 )}
+                rows={3}
+                value={voter_note}
+                onChange={(ev) => setVoterNote(ev.target.value)}
+            />
             <span className="action-buttons">
                 {((action_choices && enable) || null) && (
                     <button
@@ -588,7 +553,7 @@ export function ModerationActionSelector({
                         onClick={() => {
                             if (selectedOption) {
                                 setVoted(true);
-                                submit(selectedOption, escalation_note, dissenter_note, voter_note);
+                                submit(selectedOption, escalation_note, voter_note);
                             }
                         }}
                     >
