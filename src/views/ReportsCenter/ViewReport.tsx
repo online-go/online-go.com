@@ -463,15 +463,9 @@ export function ViewReport({
                                     available_actions={report.available_actions ?? []}
                                     vote_counts={report.vote_counts ?? []}
                                     users_vote={usersVote}
-                                    submit={(action, note, dissenter_note, voter_note) => {
+                                    submit={(action, note, voter_note) => {
                                         void report_manager
-                                            .vote(
-                                                report.id,
-                                                action,
-                                                note,
-                                                dissenter_note,
-                                                voter_note,
-                                            )
+                                            .vote(report.id, action, note, voter_note)
                                             .then(() => advanceToNextReport());
                                     }}
                                     enable={
@@ -516,10 +510,8 @@ export function ViewReport({
                                 <div className="notes">
                                     <h4>
                                         {llm_pgettext(
-                                            "Heading for the section containing notes from Dan CMs",
-                                            // Note that technically anything could be in voter notes,
-                                            // but at the moment we're only using it for Dan CM notes
-                                            "Dan CM assessment",
+                                            "Heading for the section containing notes from community moderators",
+                                            "Voter Notes",
                                         )}
                                     </h4>
                                     <div className="Card">
