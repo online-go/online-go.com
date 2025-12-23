@@ -531,16 +531,22 @@ export function ModerationActionSelector({
                     onChange={(ev) => setEscalationNote(ev.target.value)}
                 />
             )}
-            <textarea
-                id="voter-note"
-                placeholder={llm_pgettext(
-                    "Placeholder for optional note when voting on a report",
-                    "(Optional) Add a note for other moderators",
+            <div className="voter-note-container">
+                <textarea
+                    id="voter-note"
+                    placeholder={llm_pgettext(
+                        "Placeholder for optional note when voting on a report",
+                        "(Optional - observations)",
+                    )}
+                    rows={3}
+                    maxLength={report.report_type === "assess_ai_play" ? undefined : 150}
+                    value={voter_note}
+                    onChange={(ev) => setVoterNote(ev.target.value)}
+                />
+                {report.report_type !== "assess_ai_play" && voter_note.length > 0 && (
+                    <span className="character-count">{150 - voter_note.length}</span>
                 )}
-                rows={3}
-                value={voter_note}
-                onChange={(ev) => setVoterNote(ev.target.value)}
-            />
+            </div>
             <span className="action-buttons">
                 {((action_choices && enable) || null) && (
                     <button
