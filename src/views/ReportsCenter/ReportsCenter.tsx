@@ -133,7 +133,6 @@ export function ReportsCenter(): React.ReactElement | null {
                 .then((data: CategoryStats) => setCategoryStats(data))
                 .catch(console.error);
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user.is_moderator]);
 
     React.useEffect(() => {
