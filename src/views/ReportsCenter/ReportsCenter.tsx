@@ -278,7 +278,7 @@ export function ReportsCenter(): React.ReactElement | null {
                                                 )}
                                             </span>
                                         )}
-                                        {(categoryStats[report_type.type]?.culled_last_week ?? 0) >
+                                        {(categoryStats[report_type.type]?.culled_last_week ?? 1) >
                                             0 && (
                                             <span
                                                 className="cull-count"
