@@ -246,7 +246,6 @@ export function ViewReport({
               ].includes(voter.action),
           );
 
-    console.log("voters_to_show", voters_to_show, report.voters);
     return (
         <div>
             <KBShortcut shortcut="left" action={nav_prev} />

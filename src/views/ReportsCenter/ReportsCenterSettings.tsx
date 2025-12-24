@@ -107,7 +107,8 @@ export function ReportsCenterSettings(): React.ReactElement {
                 </tbody>
             </table>
             <footer>
-                * Priority is used to sort the reports, lower numbers are higher priority.
+                * Priority is used to sort reports by category - categories with lower numbers
+                appear first.
             </footer>
 
             <h3>Report Ordering</h3>

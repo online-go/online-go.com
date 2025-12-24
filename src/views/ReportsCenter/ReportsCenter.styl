@@ -146,6 +146,29 @@ reports_center_content_width = 56rem;
             display: inline-block;
             width: 1rem;
         }
+
+        .category-stats {
+            display: flex;
+            gap: 0.5rem; 
+            font-size: 0.75rem;
+            opacity: 0.7;
+        }
+
+        .oldest-age {
+            &::before {
+                font-family: FontAwesome;
+                content: "\f252";
+                margin-right: 0.1rem;
+            }
+        }
+
+        .cull-count {
+            &::before {
+                font-family: FontAwesome;
+                content: "\f014";
+                margin-right: 0.1rem;
+            }
+        }
     }
 }
 
