@@ -128,11 +128,12 @@ export function ReportsCenter(): React.ReactElement | null {
     // Fetch category statistics (oldest report age, cull counts) - only for full moderators
     const [categoryStats, setCategoryStats] = React.useState<CategoryStats>({});
     React.useEffect(() => {
-        if (user.is_moderator) {
+        if (user.is_moderator && Object.keys(categoryStats).length === 0) {
             get("moderation/system_performance")
                 .then((data: CategoryStats) => setCategoryStats(data))
                 .catch(console.error);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user.is_moderator]);
 
     React.useEffect(() => {
