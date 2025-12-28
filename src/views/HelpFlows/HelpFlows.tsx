@@ -30,6 +30,7 @@ import { CommunityModeratorIntro } from "./CommunityModeratorIntro";
 import { OJEIntro } from "./OJEIntro";
 import { GameLogHelp } from "./GameLogHelp";
 import { AIDetectionAppealHelp } from "./AIDetectionAppealHelp";
+import { EscapingAppealHelp } from "./EscapingAppealHelp";
 
 /**
  * This component is a handy wrapper for all the Help Flows, and reset on login/logout
@@ -91,6 +92,7 @@ export function HelpFlows(): React.ReactElement {
             <CommunityModeratorIntro />
             <GameLogHelp />
             <AIDetectionAppealHelp />
+            <EscapingAppealHelp />
 
             <OJEIntro />
         </>
