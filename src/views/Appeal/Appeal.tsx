@@ -29,9 +29,11 @@ import { UIPush } from "@/components/UIPush";
 import { getPrivateChat } from "@/components/PrivateChat";
 import * as player_cache from "@/lib/player_cache";
 
-// This is a string used to identify the reason for suspension when AI use is detected
-// It needs to match the reason for suspension on the back end from moderator vote to suspend.
+// These are strings used to identify the reason for suspension.
+// They need to match the reason for suspension on the back end from moderator vote to suspend.
 export const AI_USE_DETECTED_REASON = "AI Use detected";
+export const ESCAPING_SUSPENSION_REASON =
+    "Community moderation vote for suspension based on Stopped Playing reports";
 
 interface AppealMessage {
     id: number;
@@ -68,14 +70,21 @@ export function Appeal(props: { player_id?: number }): React.ReactElement | null
 
     const { registerTargetItem, triggerFlow } = React.useContext(DynamicHelp.Api);
     const { ref: aiDetectionSuspensionRef } = registerTargetItem("ai-detection-suspension-reason");
+    const { ref: escapingSuspensionRef } = registerTargetItem("escaping-suspension-reason");
 
     React.useEffect(refresh, [props.player_id]);
 
     React.useEffect(() => {
+        // Only show help flows for the banned user, not for moderators viewing the appeal
+        if (user.is_moderator) {
+            return;
+        }
         if (ban_reason === AI_USE_DETECTED_REASON) {
             triggerFlow("ai-detection-appeal-help");
+        } else if (ban_reason === ESCAPING_SUSPENSION_REASON) {
+            triggerFlow("escaping-appeal-help");
         }
-    }, [ban_reason, triggerFlow]);
+    }, [ban_reason, triggerFlow, user.is_moderator]);
 
     if (!user.is_moderator && !jwt_key) {
         window.location.pathname = "/sign-in";
@@ -83,6 +92,13 @@ export function Appeal(props: { player_id?: number }): React.ReactElement | null
     }
 
     const mod = user && user.is_moderator;
+    const suspensionReasonRef = mod
+        ? undefined
+        : ban_reason === AI_USE_DETECTED_REASON
+          ? aiDetectionSuspensionRef
+          : ban_reason === ESCAPING_SUSPENSION_REASON
+            ? escapingSuspensionRef
+            : undefined;
     const placeholder = mod
         ? "You can respond to the user's appeal here. Click 'hidden' for the response to only be visible to other moderators."
         : pgettext(
@@ -107,11 +123,7 @@ export function Appeal(props: { player_id?: number }): React.ReactElement | null
                 <h1>{_("Your account has been re-activated, welcome back.")}</h1>
             )}
             {ban_reason && still_banned && (
-                <h2
-                    ref={
-                        ban_reason === AI_USE_DETECTED_REASON ? aiDetectionSuspensionRef : undefined
-                    }
-                >
+                <h2 ref={suspensionReasonRef}>
                     {interpolate(
                         pgettext(
                             "Reason the player's account was suspended",
