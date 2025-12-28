@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import * as DynamicHelp from "react-dynamic-help";
 import * as data from "@/lib/data";
 import { Card } from "@/components/material";
 import { post, get, patch, put } from "@/lib/requests";
@@ -27,6 +28,10 @@ import { AutoTranslate } from "@/components/AutoTranslate";
 import { UIPush } from "@/components/UIPush";
 import { getPrivateChat } from "@/components/PrivateChat";
 import * as player_cache from "@/lib/player_cache";
+
+// This is a string used to identify the reason for suspension when AI use is detected
+// It needs to match the reason for suspension on the back end from moderator vote to suspend.
+export const AI_USE_DETECTED_REASON = "AI Use detected";
 
 interface AppealMessage {
     id: number;
@@ -60,7 +65,17 @@ export function Appeal(props: { player_id?: number }): React.ReactElement | null
     const [allow_further_appeals, setAllowFurtherAppeals] = React.useState(true);
 
     const ban_reason: string = reason_for_ban || data.get("appeals.ban-reason", "");
+
+    const { registerTargetItem, triggerFlow } = React.useContext(DynamicHelp.Api);
+    const { ref: aiDetectionSuspensionRef } = registerTargetItem("ai-detection-suspension-reason");
+
     React.useEffect(refresh, [props.player_id]);
+
+    React.useEffect(() => {
+        if (ban_reason === AI_USE_DETECTED_REASON) {
+            triggerFlow("ai-detection-appeal-help");
+        }
+    }, [ban_reason, triggerFlow]);
 
     if (!user.is_moderator && !jwt_key) {
         window.location.pathname = "/sign-in";
@@ -92,7 +107,11 @@ export function Appeal(props: { player_id?: number }): React.ReactElement | null
                 <h1>{_("Your account has been re-activated, welcome back.")}</h1>
             )}
             {ban_reason && still_banned && (
-                <h2>
+                <h2
+                    ref={
+                        ban_reason === AI_USE_DETECTED_REASON ? aiDetectionSuspensionRef : undefined
+                    }
+                >
                     {interpolate(
                         pgettext(
                             "Reason the player's account was suspended",
