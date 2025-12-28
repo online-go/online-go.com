@@ -24,6 +24,29 @@ import Select from "react-select";
 import { _ } from "@/lib/translate";
 import { usePreference } from "@/lib/preferences";
 import { community_mod_has_power } from "@/lib/report_util";
+import { get } from "@/lib/requests";
+
+interface CategoryStats {
+    [key: string]: {
+        created?: string;
+        report_id?: number;
+        culled_last_week?: number;
+    };
+}
+
+function formatAge(created: string): string {
+    const ageMs = Date.now() - new Date(created).getTime();
+    const hours = Math.floor(ageMs / (1000 * 60 * 60));
+    if (hours < 24) {
+        return `${hours}h`;
+    }
+    const days = Math.floor(hours / 24);
+    if (days < 7) {
+        return `${days}d`;
+    }
+    const weeks = Math.floor(days / 7);
+    return `${weeks}w`;
+}
 
 import { ReportsCenterSettings } from "./ReportsCenterSettings";
 import { ReportsCenterHistory } from "./ReportsCenterHistory";
@@ -101,6 +124,16 @@ export function ReportsCenter(): React.ReactElement | null {
         counts[report.report_type] = (counts[report.report_type] || 0) + 1;
         counts["all"] = (counts["all"] || 0) + 1;
     }
+
+    // Fetch category statistics (oldest report age, cull counts) - only for full moderators
+    const [categoryStats, setCategoryStats] = React.useState<CategoryStats>({});
+    React.useEffect(() => {
+        if (user.is_moderator && Object.keys(categoryStats).length === 0) {
+            get("moderation/system_performance")
+                .then((data: CategoryStats) => setCategoryStats(data))
+                .catch(console.error);
+        }
+    }, [user.is_moderator]);
 
     React.useEffect(() => {
         // update our counts as they stream in
@@ -234,11 +267,28 @@ export function ReportsCenter(): React.ReactElement | null {
                                     onClick={() => setCategory(report_type.type)}
                                 >
                                     <span className="title">{report_type.title}</span>
-                                    {/*
-                                    <span className={"count " + (ct > 0 ? "active" : "")}>
-                                        {ct > 0 ? `(${ct})` : ""}
+                                    <span className="category-stats">
+                                        {categoryStats[report_type.type]?.created && (
+                                            <span
+                                                className="oldest-age"
+                                                title="Age of oldest report"
+                                            >
+                                                {formatAge(
+                                                    categoryStats[report_type.type].created!,
+                                                )}
+                                            </span>
+                                        )}
+                                        {(categoryStats[report_type.type]?.culled_last_week ?? 0) >
+                                            0 && (
+                                            <span
+                                                className="cull-count"
+                                                title="Reports culled in last 7 days"
+                                            >
+                                                {categoryStats[report_type.type]
+                                                    ?.culled_last_week ?? 0}
+                                            </span>
+                                        )}
                                     </span>
-                                    */}
                                 </div>
                             );
                         }
