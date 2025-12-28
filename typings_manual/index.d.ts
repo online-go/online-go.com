@@ -53,7 +53,6 @@ interface Window {
     GobanEngine: unknown; // configure-goban.ts
     skew_clock: Function; // misc.ts
     notification_manager?: unknown; // NotificationManager.tsx
-    test_sentry: Function; // ErrorBoundary.tsx
     proxy?: unknown; // ChatUserList.tsx
 
     safari?: unknown;

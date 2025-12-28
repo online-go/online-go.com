@@ -24,7 +24,14 @@ interface ErrorBoundaryProps {
     children: React.ReactNode;
 }
 
-export class ErrorBoundary extends React.Component<ErrorBoundaryProps, any> {
+interface ErrorBoundaryState {
+    hasError: boolean;
+    error: Error | null;
+    info: React.ErrorInfo | null;
+    eventId: string | null;
+}
+
+export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
     constructor(props: ErrorBoundaryProps) {
         super(props);
         this.state = {
@@ -53,7 +60,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, any> {
             Sentry.withScope((scope) => {
                 try {
                     scope.setUser({
-                        id: data.get("user").id as any,
+                        id: data.get("user").id as unknown as string,
                         username: data.get("user").username,
                     });
                 } catch (e) {
@@ -65,22 +72,31 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, any> {
                     }
                 }
 
-                scope.setExtras(info as any);
+                scope.setExtras(info as Record<string, unknown>);
                 const eventId = Sentry.captureException(error);
-                this.setState({ eventId });
+                this.setState({ eventId: eventId ?? null });
             });
         } catch (e) {
             console.error(e);
         }
     }
 
+    showFeedbackDialog = () => {
+        const eventId = this.state.eventId ?? Sentry.lastEventId();
+        if (eventId) {
+            Sentry.showReportDialog({ eventId });
+        } else {
+            console.error(
+                "[ErrorBoundary] No eventId available for Sentry report dialog. " +
+                    "The error may have been filtered by Sentry configuration.",
+            );
+        }
+    };
+
     render() {
         if (this.state.hasError) {
             return (
-                <div
-                    className="ErrorBoundary"
-                    onClick={() => Sentry.showReportDialog({ eventId: this.state.eventId })}
-                >
+                <div className="ErrorBoundary" onClick={this.showFeedbackDialog}>
                     <h3>{_("Congratulations, you found a bug!")}</h3>
                     <div>
                         {_(
@@ -88,19 +104,11 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, any> {
                         )}
                     </div>
                     <hr />
-                    <h5>{this.state.error.message}</h5>
-                    <pre>{this.state.info.componentStack}</pre>
+                    <h5>{this.state.error?.message}</h5>
+                    <pre>{this.state.info?.componentStack}</pre>
                 </div>
             );
         }
         return this.props.children;
     }
 }
-
-window.test_sentry = () => {
-    try {
-        throw new Error("SENTRY TEST");
-    } catch (e) {
-        console.log(Sentry.captureException(e));
-    }
-};
