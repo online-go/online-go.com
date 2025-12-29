@@ -69,6 +69,7 @@ const proxy: Record<string, ProxyOptions> = {};
 // REST api proxies
 for (const base_path of [
     "/api",
+    "/api-docs",
     "/termination-api",
     "/merchant",
     "/billing",
