@@ -550,22 +550,23 @@ export function AIReview({
                                 />
                             )}
 
-                            {reviewData?.engine.includes("katago") && gobanController && (
-                                <SummaryTable
-                                    categorization={reviewData?.categorize(
-                                        gobanController.goban.engine,
-                                    )}
-                                    table_hidden={tableHidden}
-                                    onPopupMovesChange={(moves) => {
-                                        setCurrentPopupMoves(moves);
-                                    }}
-                                    isFastReview={
-                                        reviewData.type === "fast" && showFullReviewButton
-                                    }
-                                    onStartFullReview={() => startNewAIReview("full", "katago")}
-                                    showBecomeSupporterText={show_become_supporter_text}
-                                />
-                            )}
+                            {reviewData?.engine.includes("katago") &&
+                                gobanController?.goban?.engine && (
+                                    <SummaryTable
+                                        categorization={reviewData?.categorize(
+                                            gobanController.goban.engine,
+                                        )}
+                                        table_hidden={tableHidden}
+                                        onPopupMovesChange={(moves) => {
+                                            setCurrentPopupMoves(moves);
+                                        }}
+                                        isFastReview={
+                                            reviewData.type === "fast" && showFullReviewButton
+                                        }
+                                        onStartFullReview={() => startNewAIReview("full", "katago")}
+                                        showBecomeSupporterText={show_become_supporter_text}
+                                    />
+                                )}
 
                             {(simul_black || simul_white) && (
                                 <div className="simul-warning">
@@ -582,8 +583,8 @@ export function AIReview({
                             )}
 
                             {(user.is_moderator || powerToSeeTable(user.moderator_powers)) &&
-                                gobanController.goban.engine.config.black_player_id &&
-                                gobanController.goban.engine.config.white_player_id && (
+                                gobanController?.goban?.engine?.config?.black_player_id &&
+                                gobanController?.goban?.engine?.config?.white_player_id && (
                                     <FairPlayGameSummary
                                         game_id={game_id}
                                         black_player_id={
