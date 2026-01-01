@@ -23,7 +23,6 @@ import * as preferences from "@/lib/preferences";
 interface ScoreWinRateToggleProps {
     useScore: boolean;
     onUseScoreChange: (useScore: boolean) => void;
-    canViewTable: boolean;
     tableHidden: boolean;
     onTableHiddenChange: (hidden: boolean) => void;
     showTableToggle: boolean; // Only show when engine includes "katago"
@@ -36,7 +35,6 @@ interface ScoreWinRateToggleProps {
 export function ScoreWinRateToggle({
     useScore,
     onUseScoreChange,
-    canViewTable,
     tableHidden,
     onTableHiddenChange,
     showTableToggle,
@@ -78,7 +76,7 @@ export function ScoreWinRateToggle({
                 </span>
             </div>
             <div className="right-section">
-                {canViewTable && showTableToggle && (
+                {showTableToggle && (
                     <div className="ai-summary-toggler">
                         <span>
                             <i className="fa fa-table"></i>

@@ -28,15 +28,7 @@ import { _, pgettext } from "@/lib/translate";
 import { ReviewChart } from "./ReviewChart";
 import { SummaryTable } from "./SummaryTable";
 import { FairPlayGameSummary } from "@moderator-ui/FairPlay";
-import {
-    MoveTree,
-    JGOFAIReview,
-    JGOFAIReviewMove,
-    DEFAULT_SCORE_DIFF_THRESHOLDS,
-    ScoreDiffThresholds,
-    ColoredCircle,
-    GobanMovesArray,
-} from "goban";
+import { MoveTree, JGOFAIReview, JGOFAIReviewMove, ColoredCircle, GobanMovesArray } from "goban";
 import { alert } from "@/lib/swal_config";
 import { useGobanControllerOrNull } from "@/views/Game/goban_context";
 import { MODERATOR_POWERS } from "@/lib/moderation";
@@ -110,13 +102,7 @@ export function AIReview({
 
     // State management
     const [useScore, setUseScore] = useState(preferences.get("ai-review-use-score"));
-    const [showTable, setShowTable] = useState(false);
     const [tableHidden, setTableHidden] = useState(!preferences.get("ai-summary-table-show"));
-    const [scoreDiffThresholds, setScoreDiffThresholds] = useState<ScoreDiffThresholds>(() => {
-        const current = preferences.get("ai-review-score-diff-thresholds") || {};
-        return { ...DEFAULT_SCORE_DIFF_THRESHOLDS, ...current };
-    });
-    const [includeNegativeScoreLoss, setIncludeNegativeScoreLoss] = useState(false);
     const [currentPopupMoves, setCurrentPopupMoves] = useState<number[]>([]);
 
     const {
@@ -150,10 +136,6 @@ export function AIReview({
 
     // Get user and permissions
     const user = data.get("user");
-    const canViewTable = useMemo(
-        () => user.is_moderator || powerToSeeTable(user.moderator_powers),
-        [user.is_moderator, user.moderator_powers],
-    );
 
     const showFullReviewButton = useMemo(
         () =>
@@ -163,20 +145,14 @@ export function AIReview({
         [user, gobanController, gobanController?.creator_id, gobanController?.goban],
     );
 
-    // Initialize table visibility
-    useEffect(() => {
-        setShowTable(canViewTable);
-    }, [canViewTable]);
-
     // Handle AI review selection
     const handleAIReviewSelect = useCallback(
         (ai_review: JGOFAIReview) => {
             setSelectedAiReviewInList(ai_review);
             setSelectedAIReviewData(ai_review);
             onAIReviewSelected(ai_review);
-            setShowTable(canViewTable);
         },
-        [setSelectedAiReviewInList, setSelectedAIReviewData, onAIReviewSelected, canViewTable],
+        [setSelectedAiReviewInList, setSelectedAIReviewData, onAIReviewSelected],
     );
 
     // Sync AI review data when reviewData or selectedAiReview changes
@@ -253,12 +229,8 @@ export function AIReview({
             return;
         }
 
-        reviewData.categorize(
-            gobanController.goban.engine,
-            scoreDiffThresholds,
-            includeNegativeScoreLoss,
-        );
-    }, [gobanController, reviewData, scoreDiffThresholds, includeNegativeScoreLoss]);
+        reviewData.categorize(gobanController.goban.engine);
+    }, [gobanController, reviewData]);
 
     // State for win rate and score from highlights update
     const [winRateScore, setWinRateScore] = useState<[number, number]>([0, 0]);
@@ -437,30 +409,6 @@ export function AIReview({
         [gobanController, reviewData, selectedAiReview, user, game_id],
     );
 
-    // Handle threshold changes
-    const handleThresholdChange = useCallback(
-        (category: string, value: number) => {
-            setScoreDiffThresholds((prev) => {
-                const updated = { ...prev, [category]: value };
-                preferences.set("ai-review-score-diff-thresholds", updated);
-                return updated;
-            });
-            calculateAndUpdateTableData();
-        },
-        [calculateAndUpdateTableData],
-    );
-
-    const handleResetThresholds = useCallback(() => {
-        preferences.set("ai-review-score-diff-thresholds", DEFAULT_SCORE_DIFF_THRESHOLDS);
-        setScoreDiffThresholds({ ...DEFAULT_SCORE_DIFF_THRESHOLDS });
-        calculateAndUpdateTableData();
-    }, [calculateAndUpdateTableData]);
-
-    const handleToggleNegativeScores = useCallback(() => {
-        setIncludeNegativeScoreLoss((prev) => !prev);
-        calculateAndUpdateTableData();
-    }, [calculateAndUpdateTableData]);
-
     // Calculate worst moves using the custom hook
     // Include updateCount to recalculate when review data updates
     // Use gobanController as a dependency to recalculate when it becomes available
@@ -484,10 +432,8 @@ export function AIReview({
 
     // Update table data when dependencies change
     useEffect(() => {
-        if (showTable) {
-            calculateAndUpdateTableData();
-        }
-    }, [showTable, calculateAndUpdateTableData]);
+        calculateAndUpdateTableData();
+    }, [calculateAndUpdateTableData]);
 
     // Prepare data for rendering
     const [win_rate, score] = winRateScore;
@@ -598,103 +544,68 @@ export function AIReview({
                                 <ScoreWinRateToggle
                                     useScore={useScore}
                                     onUseScoreChange={setUseScore}
-                                    canViewTable={canViewTable}
                                     tableHidden={tableHidden}
                                     onTableHiddenChange={setTableHidden}
                                     showTableToggle={reviewData?.engine.includes("katago")}
                                 />
                             )}
 
-                            {canViewTable && reviewData?.engine.includes("katago") && (
-                                <div>
-                                    {(simul_black || simul_white) && (
-                                        <div className="simul-warning">
-                                            {pgettext(
-                                                "A label that means the game is played at the same time as another game",
-                                                "Simul",
-                                            )}
-                                            {simul_black && simul_white
-                                                ? " (both players)"
-                                                : simul_black
-                                                  ? " (black)"
-                                                  : " (white)"}
-                                        </div>
+                            {reviewData?.engine.includes("katago") && (
+                                <SummaryTable
+                                    categorization={reviewData?.categorize(
+                                        gobanController.goban.engine,
                                     )}
-                                    <SummaryTable
-                                        categorization={reviewData?.categorize(
-                                            gobanController.goban.engine,
-                                            scoreDiffThresholds,
-                                            includeNegativeScoreLoss,
-                                        )}
-                                        reviewType={reviewData.type === "fast" ? "fast" : "full"}
-                                        table_hidden={tableHidden}
-                                        scoreDiffThresholds={scoreDiffThresholds}
-                                        onThresholdChange={handleThresholdChange}
-                                        onResetThresholds={handleResetThresholds}
-                                        includeNegativeScores={includeNegativeScoreLoss}
-                                        onToggleNegativeScores={handleToggleNegativeScores}
-                                        onPopupMovesChange={(moves) => {
-                                            setCurrentPopupMoves(moves);
-                                        }}
-                                    />
-                                    {gobanController.goban.engine.config.black_player_id &&
-                                        gobanController.goban.engine.config.white_player_id && (
-                                            <FairPlayGameSummary
-                                                game_id={game_id}
-                                                black_player_id={
-                                                    gobanController.goban.engine.config
-                                                        .black_player_id
-                                                }
-                                                white_player_id={
-                                                    gobanController.goban.engine.config
-                                                        .white_player_id
-                                                }
-                                                currentMoveNumber={move.move_number - 1}
-                                                moves={showGameTimings ? moves : undefined}
-                                                start_time={
-                                                    showGameTimings ? start_time : undefined
-                                                }
-                                                end_time={showGameTimings ? end_time : undefined}
-                                                free_handicap_placement={
-                                                    showGameTimings
-                                                        ? free_handicap_placement
-                                                        : undefined
-                                                }
-                                                handicap={showGameTimings ? handicap : undefined}
-                                                simul_black={
-                                                    showGameTimings ? simul_black : undefined
-                                                }
-                                                simul_white={
-                                                    showGameTimings ? simul_white : undefined
-                                                }
-                                            />
-                                        )}
+                                    table_hidden={tableHidden}
+                                    onPopupMovesChange={(moves) => {
+                                        setCurrentPopupMoves(moves);
+                                    }}
+                                    isFastReview={
+                                        reviewData.type === "fast" && showFullReviewButton
+                                    }
+                                    onStartFullReview={() => startNewAIReview("full", "katago")}
+                                    showBecomeSupporterText={show_become_supporter_text}
+                                />
+                            )}
+
+                            {(simul_black || simul_white) && (
+                                <div className="simul-warning">
+                                    {pgettext(
+                                        "A label that means the game is played at the same time as another game",
+                                        "Simul",
+                                    )}
+                                    {simul_black && simul_white
+                                        ? " (both players)"
+                                        : simul_black
+                                          ? " (black)"
+                                          : " (white)"}
                                 </div>
                             )}
-                        </React.Fragment>
-                    )}
 
-                    {reviewData?.type === "fast" && showFullReviewButton && (
-                        <div className="key-moves">
-                            <div>
-                                <button
-                                    className="primary"
-                                    onClick={() => startNewAIReview("full", "katago")}
-                                >
-                                    {_("Full AI Review")}
-                                </button>
-                                {show_become_supporter_text && (
-                                    <div
-                                        className="fakelink become-a-site-supporter-line"
-                                        onClick={() => startNewAIReview("full", "katago")}
-                                    >
-                                        {_(
-                                            "Become a site supporter today for in-depth interactive AI reviews",
-                                        )}
-                                    </div>
+                            {(user.is_moderator || powerToSeeTable(user.moderator_powers)) &&
+                                gobanController.goban.engine.config.black_player_id &&
+                                gobanController.goban.engine.config.white_player_id && (
+                                    <FairPlayGameSummary
+                                        game_id={game_id}
+                                        black_player_id={
+                                            gobanController.goban.engine.config.black_player_id
+                                        }
+                                        white_player_id={
+                                            gobanController.goban.engine.config.white_player_id
+                                        }
+                                        currentMoveNumber={move.move_number - 1}
+                                        moves={showGameTimings ? moves : undefined}
+                                        start_time={showGameTimings ? start_time : undefined}
+                                        end_time={showGameTimings ? end_time : undefined}
+                                        free_handicap_placement={
+                                            showGameTimings ? free_handicap_placement : undefined
+                                        }
+                                        handicap={showGameTimings ? handicap : undefined}
+                                        simul_black={showGameTimings ? simul_black : undefined}
+                                        simul_white={showGameTimings ? simul_white : undefined}
+                                        ai_review_uuid={selectedAiReview?.uuid}
+                                    />
                                 )}
-                            </div>
-                        </div>
+                        </React.Fragment>
                     )}
                 </React.Fragment>
             )}

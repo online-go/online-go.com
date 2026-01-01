@@ -41,7 +41,7 @@ export const defaults = {
         Inaccuracy: 2.0,
         Mistake: 5.0,
     },
-    "ai-summary-table-show": false,
+    "ai-summary-table-show": true,
     "always-disable-analysis": false,
     "asked-to-enable-desktop-notifications": false,
     "auto-advance-after-submit": true,
