@@ -536,7 +536,7 @@ export function AIReview({
                                 />
                             )}
 
-                            {reviewData?.engine.includes("katago") && (
+                            {reviewData?.engine.includes("katago") && gobanController && (
                                 <SummaryTable
                                     categorization={reviewData?.categorize(
                                         gobanController.goban.engine,
