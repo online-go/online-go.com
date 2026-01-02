@@ -101,7 +101,7 @@ export function SummaryTable({
         if (!categorization) {
             return {
                 heading_list: ["Type", "Black", "%", "", "White", "%"],
-                body_list: [["", "", "", "", ""]],
+                body_list: [],
                 categorized_moves: emptyCategorizedMoves,
             };
         }
