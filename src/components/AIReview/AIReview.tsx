@@ -588,10 +588,10 @@ export function AIReview({
                                     <FairPlayGameSummary
                                         game_id={game_id}
                                         black_player_id={
-                                            gobanController.goban.engine.config.black_player_id
+                                            gobanController.goban!.engine.config.black_player_id
                                         }
                                         white_player_id={
-                                            gobanController.goban.engine.config.white_player_id
+                                            gobanController.goban!.engine.config.white_player_id
                                         }
                                         currentMoveNumber={move.move_number - 1}
                                         moves={showGameTimings ? moves : undefined}
