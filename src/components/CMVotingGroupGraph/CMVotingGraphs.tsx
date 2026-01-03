@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { format, subDays, startOfWeek as startOfWeekDateFns } from "date-fns";
+import { subDays, startOfWeek as startOfWeekDateFns } from "date-fns";
 
 import { dropCurrentPeriod } from "@/lib/misc";
 import * as data from "@/lib/data";
@@ -47,8 +47,8 @@ export interface ReportAlignmentCount {
 // TBD: it might be nice if this "max" number was dynamically provided by the server, but
 // we are already possibly hitting it hard for these rollups
 
-const EXPECTED_MAX_WEEKLY_CM_REPORTS = 200;
-const Y_STEP_SIZE = 40; // must divide nicely into EXPECTED_MAX_WEEKLY_CM_REPORTS
+const EXPECTED_MAX_WEEKLY_CM_REPORTS = 300;
+const Y_STEP_SIZE = 50; // must divide nicely into EXPECTED_MAX_WEEKLY_CM_REPORTS
 
 interface CMVoteCountGraphProps {
     vote_data: ReportCount[];
@@ -91,12 +91,18 @@ export const CMVoteCountGraph = ({
         }));
     }, [vote_data]);
 
+    // Filter data to only include points within the period range
+    const periodStartDate = React.useMemo(() => startOfWeek(subDays(new Date(), period)), [period]);
+    const filteredDataByWeek = React.useMemo(() => {
+        return aggregateDataByWeek.filter((week) => new Date(week.date) >= periodStartDate);
+    }, [aggregateDataByWeek, periodStartDate]);
+
     const totals_data = React.useMemo(() => {
         return [
             {
                 id: "consensus",
                 data: dropCurrentPeriod(
-                    aggregateDataByWeek.map((week) => ({
+                    filteredDataByWeek.map((week) => ({
                         x: week.date,
                         y: week.consensus,
                     })),
@@ -105,7 +111,7 @@ export const CMVoteCountGraph = ({
             {
                 id: "escalated",
                 data: dropCurrentPeriod(
-                    aggregateDataByWeek.map((week) => ({
+                    filteredDataByWeek.map((week) => ({
                         x: week.date,
                         y: week.escalated,
                     })),
@@ -114,40 +120,40 @@ export const CMVoteCountGraph = ({
             {
                 id: "non-consensus",
                 data: dropCurrentPeriod(
-                    aggregateDataByWeek.map((week) => ({
+                    filteredDataByWeek.map((week) => ({
                         x: week.date,
                         y: week.non_consensus,
                     })),
                 ),
             },
         ];
-    }, [aggregateDataByWeek]);
+    }, [filteredDataByWeek]);
 
     const percent_data = React.useMemo(
         () => [
             {
                 id: "consensus",
-                data: aggregateDataByWeek.map((week) => ({
+                data: filteredDataByWeek.map((week) => ({
                     x: week.date,
-                    y: week.consensus / week.total,
+                    y: week.total > 0 ? week.consensus / week.total : 0,
                 })),
             },
             {
                 id: "escalated",
-                data: aggregateDataByWeek.map((week) => ({
+                data: filteredDataByWeek.map((week) => ({
                     x: week.date,
-                    y: week.escalated / week.total,
+                    y: week.total > 0 ? week.escalated / week.total : 0,
                 })),
             },
             {
                 id: "non-consensus",
-                data: aggregateDataByWeek.map((week) => ({
+                data: filteredDataByWeek.map((week) => ({
                     x: week.date,
-                    y: week.non_consensus / week.total,
+                    y: week.total > 0 ? week.non_consensus / week.total : 0,
                 })),
             },
         ],
-        [aggregateDataByWeek],
+        [filteredDataByWeek],
     );
 
     const chart_theme =
@@ -167,11 +173,8 @@ export const CMVoteCountGraph = ({
         "non-consensus": "rgba(255, 0, 0, 1)", // red
     };
 
-    const percent_line_colours = {
-        consensus: "rgba(0, 128, 0, 0.4)",
-        escalated: "rgba(255, 165, 0, 0.4)",
-        "non-consensus": "rgba(255, 0, 0, 0.4)",
-    };
+    // Use the first data point's date as the x-axis minimum, with fallback to period start
+    const xScaleMin = filteredDataByWeek[0]?.date ?? periodStartDate.toISOString().slice(0, 10);
 
     if (!totals_data[0].data.length) {
         return <div className="aggregate-vote-activity-graph">No activity yet</div>;
@@ -194,10 +197,7 @@ export const CMVoteCountGraph = ({
                     xFormat="time:%Y-%m-%d"
                     xScale={{
                         type: "time",
-                        min: format(
-                            startOfWeekDateFns(subDays(new Date(), period), { weekStartsOn: 1 }),
-                            "yyyy-MM-dd",
-                        ),
+                        min: xScaleMin,
                         format: "%Y-%m-%d",
                         useUTC: false,
                         precision: "day",
@@ -225,12 +225,8 @@ export const CMVoteCountGraph = ({
             </div>
             <div className="percent-graph">
                 <ResponsiveLine
-                    areaOpacity={1}
-                    enableArea
                     data={percent_data}
-                    colors={({ id }) =>
-                        percent_line_colours[id as keyof typeof percent_line_colours]
-                    }
+                    colors={({ id }) => line_colors[id as keyof typeof line_colors]}
                     animate
                     curve="monotoneX"
                     enablePoints={false}
@@ -242,10 +238,7 @@ export const CMVoteCountGraph = ({
                     xFormat="time:%Y-%m-%d"
                     xScale={{
                         type: "time",
-                        min: format(
-                            startOfWeekDateFns(subDays(new Date(), period), { weekStartsOn: 1 }),
-                            "yyyy-MM-dd",
-                        ),
+                        min: xScaleMin,
                         format: "%Y-%m-%d",
                         useUTC: false,
                         precision: "day",
@@ -256,8 +249,10 @@ export const CMVoteCountGraph = ({
                     }}
                     yFormat=" >-.0p"
                     yScale={{
-                        stacked: true,
+                        stacked: false,
                         type: "linear",
+                        min: 0,
+                        max: 1,
                     }}
                     margin={{
                         bottom: 40,
@@ -313,12 +308,18 @@ export const CMVotingGroupGraph = ({
         }));
     }, [vote_data]);
 
+    // Filter data to only include points within the period range
+    const periodStartDate = React.useMemo(() => startOfWeek(subDays(new Date(), period)), [period]);
+    const filteredDataByWeek = React.useMemo(() => {
+        return aggregateDataByWeek.filter((week) => new Date(week.date) >= periodStartDate);
+    }, [aggregateDataByWeek, periodStartDate]);
+
     const totals_data = React.useMemo(() => {
         return [
             {
                 id: "unanimous",
                 data: dropCurrentPeriod(
-                    aggregateDataByWeek.map((week) => ({
+                    filteredDataByWeek.map((week) => ({
                         x: week.date,
                         y: week.unanimous,
                     })),
@@ -327,7 +328,7 @@ export const CMVotingGroupGraph = ({
             {
                 id: "escalated",
                 data: dropCurrentPeriod(
-                    aggregateDataByWeek.map((week) => ({
+                    filteredDataByWeek.map((week) => ({
                         x: week.date,
                         y: week.escalated,
                     })),
@@ -336,40 +337,40 @@ export const CMVotingGroupGraph = ({
             {
                 id: "non-unanimous",
                 data: dropCurrentPeriod(
-                    aggregateDataByWeek.map((week) => ({
+                    filteredDataByWeek.map((week) => ({
                         x: week.date,
                         y: week.non_unanimous,
                     })),
                 ),
             },
         ];
-    }, [aggregateDataByWeek]);
+    }, [filteredDataByWeek]);
 
     const percent_data = React.useMemo(
         () => [
             {
                 id: "unanimous",
-                data: aggregateDataByWeek.map((week) => ({
+                data: filteredDataByWeek.map((week) => ({
                     x: week.date,
-                    y: week.unanimous / week.total,
+                    y: week.total > 0 ? week.unanimous / week.total : 0,
                 })),
             },
             {
                 id: "escalated",
-                data: aggregateDataByWeek.map((week) => ({
+                data: filteredDataByWeek.map((week) => ({
                     x: week.date,
-                    y: week.escalated / week.total,
+                    y: week.total > 0 ? week.escalated / week.total : 0,
                 })),
             },
             {
                 id: "non-unanimous",
-                data: aggregateDataByWeek.map((week) => ({
+                data: filteredDataByWeek.map((week) => ({
                     x: week.date,
-                    y: week.non_unanimous / week.total,
+                    y: week.total > 0 ? week.non_unanimous / week.total : 0,
                 })),
             },
         ],
-        [aggregateDataByWeek],
+        [filteredDataByWeek],
     );
 
     const chart_theme =
@@ -388,6 +389,9 @@ export const CMVotingGroupGraph = ({
         escalated: "rgba(255, 165, 0, 1)", // orange
         "non-unanimous": "rgba(255, 0, 0, 1)", // red
     };
+
+    // Use the first data point's date as the x-axis minimum, with fallback to period start
+    const xScaleMin = filteredDataByWeek[0]?.date ?? periodStartDate.toISOString().slice(0, 10);
 
     if (!totals_data[0].data.length) {
         return <div className="aggregate-vote-activity-graph">No activity yet</div>;
@@ -410,10 +414,7 @@ export const CMVotingGroupGraph = ({
                     xFormat="time:%Y-%m-%d"
                     xScale={{
                         type: "time",
-                        min: format(
-                            startOfWeekDateFns(subDays(new Date(), period), { weekStartsOn: 1 }),
-                            "yyyy-MM-dd",
-                        ),
+                        min: xScaleMin,
                         format: "%Y-%m-%d",
                         useUTC: false,
                         precision: "day",
@@ -454,10 +455,7 @@ export const CMVotingGroupGraph = ({
                     xFormat="time:%Y-%m-%d"
                     xScale={{
                         type: "time",
-                        min: format(
-                            startOfWeekDateFns(subDays(new Date(), period), { weekStartsOn: 1 }),
-                            "yyyy-MM-dd",
-                        ),
+                        min: xScaleMin,
                         format: "%Y-%m-%d",
                         useUTC: false,
                         precision: "day",
@@ -470,6 +468,7 @@ export const CMVotingGroupGraph = ({
                     yScale={{
                         stacked: false,
                         type: "linear",
+                        min: 0,
                         max: 1,
                     }}
                     margin={{

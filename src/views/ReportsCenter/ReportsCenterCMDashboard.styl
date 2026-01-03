@@ -15,6 +15,18 @@
     .individual-overview {
         .aggregate-vote-activity-graph {
             height: 200px;
+            width: 100%;
+
+            .totals-graph, .percent-graph {
+                height: 100px;
+                width: 100%;
+
+                // Force Nivo's wrapper div to have dimensions
+                > div {
+                    height: 100% !important;
+                    width: 100% !important;
+                }
+            }
         }
 
         th {
@@ -24,6 +36,11 @@
         .cm-name a {
             max-width: 10rem;
             overflow: hidden;
+        }
+
+        .votes {
+            width: 80%;
+            height: 200px;
         }
     }
 
