@@ -215,6 +215,7 @@ export function ReportsCenterCMDashboard(): React.ReactElement {
                     className="individual-overview"
                     name="individual-overview"
                     source={"moderation/cm_individual_outcomes"}
+                    groom={(data) => data.map((row) => ({ ...row, id: row.user_id }))}
                     columns={[
                         {
                             header: "CM",
