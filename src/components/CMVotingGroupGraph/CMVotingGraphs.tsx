@@ -92,7 +92,7 @@ export const CMVoteCountGraph = ({
     }, [vote_data]);
 
     // Filter data to only include points within the period range
-    const periodStartDate = startOfWeek(subDays(new Date(), period));
+    const periodStartDate = React.useMemo(() => startOfWeek(subDays(new Date(), period)), [period]);
     const filteredDataByWeek = React.useMemo(() => {
         return aggregateDataByWeek.filter((week) => new Date(week.date) >= periodStartDate);
     }, [aggregateDataByWeek, periodStartDate]);
@@ -135,21 +135,21 @@ export const CMVoteCountGraph = ({
                 id: "consensus",
                 data: filteredDataByWeek.map((week) => ({
                     x: week.date,
-                    y: week.consensus / week.total,
+                    y: week.total > 0 ? week.consensus / week.total : 0,
                 })),
             },
             {
                 id: "escalated",
                 data: filteredDataByWeek.map((week) => ({
                     x: week.date,
-                    y: week.escalated / week.total,
+                    y: week.total > 0 ? week.escalated / week.total : 0,
                 })),
             },
             {
                 id: "non-consensus",
                 data: filteredDataByWeek.map((week) => ({
                     x: week.date,
-                    y: week.non_consensus / week.total,
+                    y: week.total > 0 ? week.non_consensus / week.total : 0,
                 })),
             },
         ],
@@ -173,8 +173,8 @@ export const CMVoteCountGraph = ({
         "non-consensus": "rgba(255, 0, 0, 1)", // red
     };
 
-    // Use the first data point's date as the x-axis minimum
-    const xScaleMin = filteredDataByWeek[0]?.date;
+    // Use the first data point's date as the x-axis minimum, with fallback to period start
+    const xScaleMin = filteredDataByWeek[0]?.date ?? periodStartDate.toISOString().slice(0, 10);
 
     if (!totals_data[0].data.length) {
         return <div className="aggregate-vote-activity-graph">No activity yet</div>;
@@ -309,7 +309,7 @@ export const CMVotingGroupGraph = ({
     }, [vote_data]);
 
     // Filter data to only include points within the period range
-    const periodStartDate = startOfWeek(subDays(new Date(), period));
+    const periodStartDate = React.useMemo(() => startOfWeek(subDays(new Date(), period)), [period]);
     const filteredDataByWeek = React.useMemo(() => {
         return aggregateDataByWeek.filter((week) => new Date(week.date) >= periodStartDate);
     }, [aggregateDataByWeek, periodStartDate]);
@@ -352,21 +352,21 @@ export const CMVotingGroupGraph = ({
                 id: "unanimous",
                 data: filteredDataByWeek.map((week) => ({
                     x: week.date,
-                    y: week.unanimous / week.total,
+                    y: week.total > 0 ? week.unanimous / week.total : 0,
                 })),
             },
             {
                 id: "escalated",
                 data: filteredDataByWeek.map((week) => ({
                     x: week.date,
-                    y: week.escalated / week.total,
+                    y: week.total > 0 ? week.escalated / week.total : 0,
                 })),
             },
             {
                 id: "non-unanimous",
                 data: filteredDataByWeek.map((week) => ({
                     x: week.date,
-                    y: week.non_unanimous / week.total,
+                    y: week.total > 0 ? week.non_unanimous / week.total : 0,
                 })),
             },
         ],
@@ -390,8 +390,8 @@ export const CMVotingGroupGraph = ({
         "non-unanimous": "rgba(255, 0, 0, 1)", // red
     };
 
-    // Use the first data point's date as the x-axis minimum
-    const xScaleMin = filteredDataByWeek[0]?.date;
+    // Use the first data point's date as the x-axis minimum, with fallback to period start
+    const xScaleMin = filteredDataByWeek[0]?.date ?? periodStartDate.toISOString().slice(0, 10);
 
     if (!totals_data[0].data.length) {
         return <div className="aggregate-vote-activity-graph">No activity yet</div>;
