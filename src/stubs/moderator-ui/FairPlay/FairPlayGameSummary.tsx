@@ -9,6 +9,7 @@ export interface FairPlayGameSummaryProps {
     black_player_id: number;
     white_player_id: number;
     currentMoveNumber?: number;
+    ai_review_uuid?: string;
 }
 
 export function FairPlayGameSummary(_props: FairPlayGameSummaryProps): React.ReactElement | null {
