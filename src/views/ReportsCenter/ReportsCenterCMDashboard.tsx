@@ -118,8 +118,8 @@ export function ReportsCenterCMDashboard(): React.ReactElement {
                         return [
                             reportType,
                             {
+                                ...data,
                                 created: age.toString(),
-                                ...(data.report_id && { report_id: data.report_id }),
                             },
                         ];
                     }),
