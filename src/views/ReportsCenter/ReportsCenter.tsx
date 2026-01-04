@@ -31,6 +31,7 @@ interface CategoryStats {
         created?: string;
         report_id?: number;
         culled_last_week?: number;
+        open_count?: number;
     };
 }
 
@@ -268,6 +269,11 @@ export function ReportsCenter(): React.ReactElement | null {
                                 >
                                     <span className="title">{report_type.title}</span>
                                     <span className="category-stats">
+                                        {(categoryStats[report_type.type]?.open_count ?? 0) > 0 && (
+                                            <span className="open-count" title="Open reports">
+                                                {categoryStats[report_type.type]?.open_count ?? 0}
+                                            </span>
+                                        )}
                                         {categoryStats[report_type.type]?.created && (
                                             <span
                                                 className="oldest-age"

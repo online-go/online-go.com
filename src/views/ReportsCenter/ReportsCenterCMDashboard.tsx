@@ -38,7 +38,9 @@ import { useNavigate } from "react-router-dom";
 interface SystemPerformanceData {
     [reportType: string]: {
         created: string;
-        report_id?: number; // Optional since regular users won't have this
+        report_id?: number;
+        culled_last_week?: number;
+        open_count?: number;
     };
 }
 
@@ -274,7 +276,11 @@ export function ReportsCenterCMDashboard(): React.ReactElement {
                             }
                             return (
                                 <li key={reportType}>
-                                    {reportType}: {displayAge}
+                                    {reportType}:{" "}
+                                    {data.open_count !== undefined && `${data.open_count} open, `}
+                                    {displayAge} old
+                                    {data.culled_last_week !== undefined &&
+                                        `, ${data.culled_last_week} culled`}
                                     {data.report_id && (
                                         <button
                                             onClick={() =>
