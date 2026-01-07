@@ -430,6 +430,40 @@ Be completely unambiguous with regards to the meaning of the word annul: \
 this means to declare the game invalid, and this is not the same as cancelling a game.",
         "No AI use, educate reporter about reporting AI use.",
     ),
+    annul_sandbagged: llm_pgettext(
+        "This phrase to be translated is the label of an option for a moderator of an \
+online Go game server to select: an action to apply to a report about a game of Go. \
+Sandbagging means deliberately losing games to lower one's rank. \
+Be completely unambiguous with regards to the meaning of the word annul: \
+this means to declare the game invalid, and this is not the same as cancelling a game.",
+        "Annul the sandbagged game and warn the sandbagger.",
+    ),
+    annul_sandbagged_games: llm_pgettext(
+        "This phrase to be translated is the label of an option for a moderator of an \
+online Go game server to select: an action to apply to a report about a game of Go. \
+Sandbagging means deliberately losing games to lower one's rank. \
+Be completely unambiguous with regards to the meaning of the word annul: \
+this means to declare the game invalid, and this is not the same as cancelling a game.",
+        "Annul all sandbagged games and warn the sandbagger.",
+    ),
+    warn_sandbagger: llm_pgettext(
+        "This phrase to be translated is the label of an option for a moderator of an \
+online Go game server to select: an action to apply to a report about a game of Go. \
+Sandbagging means deliberately losing games to lower one's rank.",
+        "The accused sandbagged - warn them.",
+    ),
+    no_sandbagging: llm_pgettext(
+        "This phrase to be translated is the label of an option for a moderator of an \
+online Go game server to select: an action to apply to a report about a game of Go. \
+Sandbagging means deliberately losing games to lower one's rank.",
+        "No sandbagging evident - inform the reporter.",
+    ),
+    escalate_sandbagging: llm_pgettext(
+        "This phrase to be translated is the label of an option for a moderator of an \
+online Go game server to select: an action to apply to a report about a game of Go. \
+Sandbagging means deliberately losing games to lower one's rank.",
+        "Escalate: send to moderators for sandbagging assessment.",
+    ),
 };
 
 export function ModerationActionSelector({

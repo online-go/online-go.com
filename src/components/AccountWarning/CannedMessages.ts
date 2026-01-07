@@ -732,4 +732,86 @@ We've notified the owner of that bot.
             ),
             { bot },
         ),
+    warn_beginner_sandbagger: (game_id) =>
+        interpolate(
+            llm_pgettext(
+                "Warning message to a new user about sandbagging",
+                `
+Hi, Welcome to OGS!
+
+It appears that you may have deliberately lost game #{{game_id}} to lower your rank. This is called "sandbagging" and is not allowed.
+
+Since you are a new player, no action will be taken against your account. We simply ask that you play to the best of your ability in all your games.
+
+If you want to play weaker opponents, you can adjust your game settings rather than manipulating your rank.
+        `,
+            ),
+            { game_id },
+        ),
+    warn_sandbagger: (game_id) =>
+        interpolate(
+            llm_pgettext(
+                "Warning message to a user about sandbagging",
+                `
+It has come to our attention that you may have deliberately lost game #{{game_id}}.
+
+Deliberately losing games is called "sandbagging" and is not allowed on OGS, because it messes up the ranking system.
+
+Please play to the best of your ability in all your games. If you want to play weaker opponents, you can adjust your game settings rather than manipulating your rank.
+
+Continued sandbagging will result in suspension of your account.`,
+            ),
+            { game_id },
+        ),
+    ack_educated_beginner_sandbagger: (reported) =>
+        interpolate(
+            llm_pgettext(
+                "Acknowledgement message to a user who reported a beginner sandbagger",
+                `
+Thanks for the report about '{{reported}}', we've asked your newcomer opponent not to deliberately lose games.`,
+            ),
+            { reported },
+        ),
+    ack_educated_beginner_sandbagger_and_annul: (reported) =>
+        interpolate(
+            llm_pgettext(
+                "Acknowledgement message to a user who reported a beginner sandbagger",
+                `
+Thanks for the report about '{{reported}}', we've asked your newcomer opponent not to deliberately lose games.
+
+That sandbagged game has been annulled.`,
+            ),
+            { reported },
+        ),
+    ack_warned_sandbagger: (reported) =>
+        interpolate(
+            llm_pgettext(
+                "Acknowledgement message to a user who reported a sandbagger",
+                `
+Thank you for your report, '{{reported}}' has been given a formal warning about sandbagging.`,
+            ),
+            { reported },
+        ),
+    ack_warned_sandbagger_and_annul: (reported) =>
+        interpolate(
+            llm_pgettext(
+                "Acknowledgement message to a user who reported a sandbagger",
+                `
+Thank you for your report, '{{reported}}' has been given a formal warning about sandbagging, and that sandbagged game annulled.`,
+            ),
+            { reported },
+        ),
+    no_sandbagging_evident: (reported) =>
+        interpolate(
+            llm_pgettext(
+                "Acknowledgement message to a user who reported sandbagging",
+                `
+Thank you for bringing the possible instance of sandbagging by '{{reported}}' to our attention. We looked into the report and did not see evidence of deliberate rank manipulation.
+
+It may be that you need to report a different type of problem, or provide more explanation - you are welcome to raise a new report if that is the case.
+
+Thank you for helping keep OGS enjoyable for everyone. We appreciate it.`,
+            ),
+            { reported },
+        ),
 };

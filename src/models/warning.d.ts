@@ -72,7 +72,14 @@ declare namespace rest_api {
             | "ack_suspended_and_annul"
             | "warn_duplicate_report"
             | "report_type_changed"
-            | "bot_owner_notified";
+            | "bot_owner_notified"
+            | "warn_beginner_sandbagger"
+            | "warn_sandbagger"
+            | "ack_educated_beginner_sandbagger"
+            | "ack_educated_beginner_sandbagger_and_annul"
+            | "ack_warned_sandbagger"
+            | "ack_warned_sandbagger_and_annul"
+            | "no_sandbagging_evident";
 
         type Severity = "warning" | "acknowledgement" | "info";
 
