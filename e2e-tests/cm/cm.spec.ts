@@ -24,6 +24,8 @@ import { cmAckWarningTest } from "./cm-ack-warning";
 import { cmAckAcknowledgementTest } from "./cm-ack-ack";
 import { cmAiAssessDismissTest } from "./cm-ai-assess-dismiss";
 import { cmVoteSuspendUserTest } from "./cm-vote-suspend-user";
+import { cmVoteNoSandbaggingTest } from "./cm-vote-no-sandbagging";
+import { cmVoteWarnAnnulSandbaggingTest } from "./cm-vote-warn-annul-sandbagging";
 
 ogsTest.describe("@CM Community Moderation Tests", () => {
     ogsTest("CM Vote on own report", cmVoteOnOwnReportTest);
@@ -33,4 +35,6 @@ ogsTest.describe("@CM Community Moderation Tests", () => {
     ogsTest("Acknowledge acknowledgements", cmAckAcknowledgementTest);
     ogsTest("Dismiss AI reports as AI Assessor", cmAiAssessDismissTest);
     ogsTest("Vote to suspend users with human-readable ban reasons", cmVoteSuspendUserTest);
+    ogsTest("Vote no sandbagging evident", cmVoteNoSandbaggingTest);
+    ogsTest("Vote warn and annul sandbagged game", cmVoteWarnAnnulSandbaggingTest);
 });

@@ -171,7 +171,10 @@ export class PlayerDetails extends React.PureComponent<
         this.close_all_modals_and_popovers();
     };
     report = () => {
-        openReport({ reported_user_id: this.props.playerId });
+        openReport({
+            reported_user_id: this.props.playerId,
+            reported_game_id: this.props.gameId,
+        });
         this.close_all_modals_and_popovers();
     };
     block = (ev: React.MouseEvent<HTMLButtonElement>) => {
