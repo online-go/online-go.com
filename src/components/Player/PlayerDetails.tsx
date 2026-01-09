@@ -173,7 +173,7 @@ export class PlayerDetails extends React.PureComponent<
     report = () => {
         openReport({
             reported_user_id: this.props.playerId,
-            reported_game_id: this.props.gameId,
+            ...(this.props.gameId !== undefined && { reported_game_id: this.props.gameId }),
         });
         this.close_all_modals_and_popovers();
     };
