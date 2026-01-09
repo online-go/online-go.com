@@ -106,7 +106,7 @@ prepare-cdn-files: purge-cdn-files dist/ogs.js dist/ogs.min.css
 
 upload-sentry-source-maps:
 	sentry-cli releases --org online-gocom --project online-gocom new $(VERSION)
-	sentry-cli releases --org online-gocom --project online-gocom files $(VERSION) upload-sourcemaps --ignore locale deployment-staging-area/$(RELEASE)/
+	sentry-cli sourcemaps upload --org online-gocom --project online-gocom --release=$(VERSION) --ignore locale deployment-staging-area/$(RELEASE)/
 	sentry-cli releases --org online-gocom --project online-gocom finalize $(VERSION)
 
 purge-cdn-files:
