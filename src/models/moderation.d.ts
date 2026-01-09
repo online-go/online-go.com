@@ -93,7 +93,12 @@ declare namespace rest_api {
             | "human_like"
             | "assess_ai_play"
             | "no_ai_use_evident"
-            | "no_ai_use_bad_report";
+            | "no_ai_use_bad_report"
+            | "annul_sandbagged"
+            | "annul_sandbagged_games"
+            | "warn_sandbagger"
+            | "no_sandbagging"
+            | "escalate_sandbagging";
 
         // Regrettably, there's another definition of Vote in goban ServerToClient.ts
         // I wonder how we unify the rest_api and goban interfaces...

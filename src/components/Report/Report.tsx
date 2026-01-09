@@ -40,6 +40,7 @@ export type ReportType =
     | "ai_use"
     | "assess_ai_play"
     | "sandbagging"
+    | "sandbagging_assessment" // escalated sandbagging reports, for moderators only
     | "escaping"
     | "appeal"
     | "other"
@@ -197,6 +198,17 @@ export const report_categories: ReportDescription[] = [
         description: pgettext("Assess AI play", "Assess AI play"),
         game_id_required: true,
         not_reportable: true, // Reports of this type result from the AI detector process, not from a player
+    },
+    {
+        type: "sandbagging_assessment",
+        title: pgettext("Sandbagging assessment by moderators", "Sandbagging Assessment"),
+        description: pgettext(
+            "Sandbagging assessment by moderators",
+            "Escalated sandbagging reports for moderator review.",
+        ),
+        game_id_required: true,
+        moderator_only: true,
+        not_reportable: true, // Reports of this type result from CM escalation, not from a player
     },
     {
         type: "other",

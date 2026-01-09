@@ -1,0 +1,130 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+// cspell:words NOSB
+
+/*
+ * Uses init_e2e data:
+ * - E2E_CM_NOSB_ACCUSED : user supposedly sandbagged
+ * - "E2E CM NOSB Game" : game in which the sandbagging supposedly occurred
+ * - E2E_CM_NOSB_V1, E2E_CM_NOSB_V2, E2E_CM_NOSB_V3 : CMs with sandbagging power who vote
+ */
+
+import type { CreateContextOptions } from "@helpers";
+
+import { BrowserContext, TestInfo } from "@playwright/test";
+
+import {
+    captureReportNumber,
+    goToUsersFinishedGame,
+    navigateToReport,
+    newTestUsername,
+    prepareNewUser,
+    reportUser,
+    setupSeededCM,
+} from "@helpers/user-utils";
+
+import { expectOGSClickableByName } from "@helpers/matchers";
+import { expect } from "@playwright/test";
+
+import { withReportCountTracking } from "@helpers/report-utils";
+
+export const cmVoteNoSandbaggingTest = async (
+    {
+        createContext,
+    }: { createContext: (options?: CreateContextOptions) => Promise<BrowserContext> },
+    testInfo: TestInfo,
+) => {
+    const { userPage: reporterPage } = await prepareNewUser(
+        createContext,
+        newTestUsername("CmNOSBRep"), // cspell:disable-line
+        "test",
+    );
+
+    await withReportCountTracking(reporterPage, testInfo, async (tracker) => {
+        // Report someone for sandbagging
+        await goToUsersFinishedGame(reporterPage, "E2E_CM_NOSB_ACCUSED", "E2E CM NOSB Game");
+
+        await reportUser(
+            reporterPage,
+            "E2E_CM_NOSB_ACCUSED",
+            "sandbagging",
+            "E2E test reporting sandbagging: they lost on purpose.", // min chars
+        );
+
+        // Verify reporter's count increased by 1
+        await tracker.assertCountIncreasedBy(reporterPage, 1);
+
+        // Capture the report number from the reporter's "My Own Reports" page
+        const reportNumber = await captureReportNumber(reporterPage);
+
+        // All 3 CMs vote that there's no sandbagging evident
+        const cmVoters = ["E2E_CM_NOSB_V1", "E2E_CM_NOSB_V2", "E2E_CM_NOSB_V3"];
+
+        const cmContexts = [];
+        for (const cmUser of cmVoters) {
+            const { seededCMPage: cmPage, seededCMContext: cmContext } = await setupSeededCM(
+                createContext,
+                cmUser,
+            );
+
+            cmContexts.push({ cmPage, cmContext }); // keep them alive for the duration of the test
+
+            // Navigate directly to the report using the captured report number
+            await navigateToReport(cmPage, reportNumber);
+
+            // Verify we can see the report with the message
+            await expect(
+                cmPage.getByText("E2E test reporting sandbagging: they lost on purpose."),
+            ).toBeVisible();
+
+            // Select the "no sandbagging evident - inform the reporter" option
+            await cmPage.locator('input[value="no_sandbagging"]').click();
+
+            const voteButton = await expectOGSClickableByName(cmPage, /Vote$/);
+            await voteButton.click();
+        }
+
+        // After all 3 CMs vote, the reporter should receive an acknowledgement
+        // Wait a moment for the acknowledgement to be generated
+        await reporterPage.waitForTimeout(3000);
+
+        // The reporter should see the "no sandbagging evident" acknowledgement
+        await reporterPage.goto("/");
+
+        await expect(reporterPage.locator("div.AccountWarningAck")).toBeVisible({
+            timeout: 15000,
+        });
+
+        await expect(
+            reporterPage
+                .locator("div.AccountWarningAck")
+                .locator("div.canned-message.no_sandbagging_evident"),
+        ).toBeVisible();
+
+        const okButton = reporterPage.locator("div.AccountWarningAck").locator("button.primary");
+        await expect(okButton).toBeVisible();
+        await expect(okButton).toBeEnabled(); // acks are enabled immediately
+
+        await okButton.click();
+
+        await expect(reporterPage.locator("div.AccountWarningAck")).not.toBeVisible();
+
+        // After clicking OK on the acknowledgement, the count should return to initial
+        await tracker.assertCountReturnedToInitial(reporterPage);
+    });
+};
