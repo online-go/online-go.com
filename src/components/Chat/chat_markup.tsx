@@ -414,6 +414,7 @@ export function chat_markup(
 
     return fragments.map((fragment, i) => {
         for (const r of replacements) {
+            r.pattern.lastIndex = 0; // ensures regex scans from start of fragment
             const m = r.pattern.exec(fragment);
             if (m) {
                 return r.replacement(m, i);
