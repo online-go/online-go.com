@@ -46,7 +46,6 @@ import { GobanController } from "@/lib/GobanController";
 import {
     FragAIReview,
     FragBelowBoardControls,
-    FragTimings,
     GameInformation,
     GameKeyboardShortcuts,
     RengoHeader,
@@ -748,16 +747,12 @@ export function Game(): React.ReactElement | null {
                             )}
 
                             {(view_mode === "square" || view_mode === "wide") && !zen_mode && (
-                                <FragAIReview simul_black={simul_black} simul_white={simul_white} />
+                                <FragAIReview
+                                    simul_black={simul_black}
+                                    simul_white={simul_white}
+                                    showGameTimings={show_game_timing}
+                                />
                             )}
-
-                            {(view_mode === "square" || view_mode === "wide") &&
-                                show_game_timing && (
-                                    <FragTimings
-                                        simul_black={simul_black}
-                                        simul_white={simul_white}
-                                    />
-                                )}
 
                             {(view_mode === "square" || view_mode === "wide") &&
                                 show_bot_detection_results &&

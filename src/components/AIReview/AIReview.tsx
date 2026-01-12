@@ -35,6 +35,7 @@ import {
     DEFAULT_SCORE_DIFF_THRESHOLDS,
     ScoreDiffThresholds,
     ColoredCircle,
+    GobanMovesArray,
 } from "goban";
 import { alert } from "@/lib/swal_config";
 import { useGobanControllerOrNull } from "@/views/Game/goban_context";
@@ -75,6 +76,14 @@ interface AIReviewProperties {
     onAIReviewSelected: (ai_review: JGOFAIReview) => void;
     simul_black?: boolean | null;
     simul_white?: boolean | null;
+    /** When true, shows GameTimings within FairPlayGameSummary */
+    showGameTimings?: boolean;
+    /** GameTimings props - required when showGameTimings is true */
+    moves?: GobanMovesArray;
+    start_time?: number;
+    end_time?: number;
+    free_handicap_placement?: boolean;
+    handicap?: number;
 }
 
 /**
@@ -90,6 +99,12 @@ export function AIReview({
     onAIReviewSelected,
     simul_black,
     simul_white,
+    showGameTimings,
+    moves,
+    start_time,
+    end_time,
+    free_handicap_placement,
+    handicap,
 }: AIReviewProperties) {
     const gobanController = useGobanControllerOrNull();
 
@@ -635,6 +650,23 @@ export function AIReview({
                                                         .white_player_id
                                                 }
                                                 currentMoveNumber={move.move_number - 1}
+                                                moves={showGameTimings ? moves : undefined}
+                                                start_time={
+                                                    showGameTimings ? start_time : undefined
+                                                }
+                                                end_time={showGameTimings ? end_time : undefined}
+                                                free_handicap_placement={
+                                                    showGameTimings
+                                                        ? free_handicap_placement
+                                                        : undefined
+                                                }
+                                                handicap={showGameTimings ? handicap : undefined}
+                                                simul_black={
+                                                    showGameTimings ? simul_black : undefined
+                                                }
+                                                simul_white={
+                                                    showGameTimings ? simul_white : undefined
+                                                }
                                             />
                                         )}
                                 </div>

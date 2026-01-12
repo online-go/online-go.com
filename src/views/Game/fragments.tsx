@@ -29,7 +29,6 @@ import { rulesText } from "@/lib/misc";
 import { KBShortcut } from "@/components/KBShortcut";
 import { AIDemoReview } from "@/components/AIReview/AIDemoReview";
 import { AIReview } from "@/components/AIReview/AIReview";
-import { GameTimings } from "./GameTimings";
 
 export function RengoHeader(): React.ReactElement | null {
     const goban_controller = useGobanController();
@@ -194,6 +193,7 @@ export function GameKeyboardShortcuts(): React.ReactElement | null {
 interface FragAIReviewProps {
     simul_black?: boolean | null;
     simul_white?: boolean | null;
+    showGameTimings?: boolean;
 }
 
 export function FragAIReview(props: FragAIReviewProps): React.ReactElement | null {
@@ -211,6 +211,7 @@ export function FragAIReview(props: FragAIReviewProps): React.ReactElement | nul
     if (
         cur_move &&
         goban.engine &&
+        goban.engine.config &&
         goban.engine.phase === "finished" &&
         goban.engine.game_id === game_id &&
         ((goban.engine.width === 19 && goban.engine.height === 19) ||
@@ -225,6 +226,12 @@ export function FragAIReview(props: FragAIReviewProps): React.ReactElement | nul
                 hidden={!ai_review_enabled}
                 simul_black={props.simul_black}
                 simul_white={props.simul_white}
+                showGameTimings={props.showGameTimings}
+                moves={goban.engine.config.moves}
+                start_time={goban.engine.config.start_time}
+                end_time={goban.engine.config.end_time}
+                free_handicap_placement={goban.engine.config.free_handicap_placement}
+                handicap={goban.engine.config.handicap}
             />
         );
     }
@@ -317,32 +324,4 @@ export function FragBelowBoardControls(): React.ReactElement | null {
             )}
         </div>
     );
-}
-
-interface FragTimingsProps {
-    simul_black?: boolean | null;
-    simul_white?: boolean | null;
-}
-
-export function FragTimings(props: FragTimingsProps): React.ReactElement | null {
-    const goban_controller = useGobanController();
-    const goban = goban_controller.goban;
-
-    if (goban?.engine?.config) {
-        return (
-            <GameTimings
-                moves={goban.engine.config.moves ?? []}
-                start_time={goban.engine.config.start_time ?? 0}
-                end_time={goban.engine.config.end_time}
-                free_handicap_placement={goban.engine.config.free_handicap_placement ?? false}
-                handicap={goban.engine.config.handicap ?? 0}
-                black_id={goban.engine.config.black_player_id ?? 0}
-                white_id={goban.engine.config.white_player_id ?? 0}
-                simul_black={props.simul_black}
-                simul_white={props.simul_white}
-            />
-        );
-    }
-
-    return null;
 }
