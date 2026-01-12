@@ -288,6 +288,30 @@ export const setupSeededCM = async (
     };
 };
 
+export const setupSeededModerator = async (
+    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>,
+) => {
+    const uniqueIPv6 = generateUniqueTestIPv6();
+    const seededModeratorContext = await createContext({
+        extraHTTPHeaders: {
+            "X-Forwarded-For": uniqueIPv6,
+        },
+    });
+    const seededModeratorPage = await seededModeratorContext.newPage();
+    // The moderator password is set from environment variable E2E_MODERATOR_PASSWORD
+    const moderatorPassword = process.env.E2E_MODERATOR_PASSWORD;
+    if (!moderatorPassword) {
+        throw new Error("E2E_MODERATOR_PASSWORD environment variable is not set");
+    }
+    await loginAsUser(seededModeratorPage, "E2E_MODERATOR", moderatorPassword);
+    await turnOffDynamicHelp(seededModeratorPage);
+
+    return {
+        seededModeratorPage,
+        seededModeratorContext,
+    };
+};
+
 export const turnOffModerationQuota = async (page: Page) => {
     await page.goto("/settings/moderator");
 
