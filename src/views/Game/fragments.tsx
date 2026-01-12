@@ -211,6 +211,7 @@ export function FragAIReview(props: FragAIReviewProps): React.ReactElement | nul
     if (
         cur_move &&
         goban.engine &&
+        goban.engine.config &&
         goban.engine.phase === "finished" &&
         goban.engine.game_id === game_id &&
         ((goban.engine.width === 19 && goban.engine.height === 19) ||
