@@ -27,13 +27,13 @@ import { errorAlerter, showSecondsResolution } from "@/lib/misc";
 import { doAnnul, MODERATOR_POWERS } from "@/lib/moderation";
 
 import {
-    GameTimings,
     GameChat,
     GobanControllerContext,
     useCurrentMove,
     GameLog,
     useGobanController,
 } from "@/views/Game";
+import { GameTimings } from "@moderator-ui/GameTimings";
 import { AIReview } from "@/components/AIReview";
 import { GobanRenderer } from "goban";
 import { Resizable } from "@/components/Resizable";

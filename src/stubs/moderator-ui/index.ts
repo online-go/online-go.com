@@ -8,3 +8,4 @@ export * from "./AIDetection";
 export * from "./GameMoveMetadata";
 export * from "./FairPlay";
 export * from "./PlayerTagInput";
+export * from "./GameTimings";
