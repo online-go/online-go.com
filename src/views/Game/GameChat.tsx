@@ -607,12 +607,12 @@ function MarkupChatLine({ line }: { line: ChatLine }): React.ReactElement {
             <React.Fragment>
                 {chat_markup(body, [
                     {
-                        split: /((?:^|\s)[a-zA-Z][0-9]{1,2}\b(?=\s|$))/gm,
-                        pattern: /^(\s)?([a-zA-Z][0-9]{1,2})\b$/gm,
+                        split: /((?:^|\s)[a-zA-Z][0-9]{1,2}(?=\s|$))/gm,
+                        pattern: /\s?([a-zA-Z][0-9]{1,2})/gm,
                         replacement: (m, idx) => {
-                            const pos = m[2];
+                            const pos = m[1];
                             if (parsePosition(pos, goban).i < 0) {
-                                return <span key={idx}>{m[2]}</span>;
+                                return <span key={idx}>{m[0]}</span>;
                             }
                             return (
                                 <span
@@ -621,7 +621,7 @@ function MarkupChatLine({ line }: { line: ChatLine }): React.ReactElement {
                                     onMouseEnter={highlight_position}
                                     onMouseLeave={unhighlight_position}
                                 >
-                                    {m[2]}
+                                    {m[1]}
                                 </span>
                             );
                         },
