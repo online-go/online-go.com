@@ -582,7 +582,8 @@ export function AIReview({
                                 </div>
                             )}
 
-                            {(user.is_moderator || powerToSeeTable(user.moderator_powers)) &&
+                            {(!tableHidden || showGameTimings) &&
+                                (user.is_moderator || powerToSeeTable(user.moderator_powers)) &&
                                 gobanController?.goban?.engine?.config?.black_player_id &&
                                 gobanController?.goban?.engine?.config?.white_player_id && (
                                     <FairPlayGameSummary
