@@ -108,33 +108,23 @@ export function SummaryTable({
 
         const { ai_table_rows, summary_moves_list, num_rows } = setupTableData();
 
+        const blackCounters = categorization.move_counters?.black ?? {};
+        const whiteCounters = categorization.move_counters?.white ?? {};
         const totalMoves = {
-            black: Object.values(categorization.move_counters.black).reduce(
-                (sum, count) => sum + count,
-                0,
-            ),
-            white: Object.values(categorization.move_counters.white).reduce(
-                (sum, count) => sum + count,
-                0,
-            ),
+            black: Object.values(blackCounters).reduce((sum, count) => sum + count, 0),
+            white: Object.values(whiteCounters).reduce((sum, count) => sum + count, 0),
         };
 
         for (let j = 0; j < num_rows; j++) {
             const cat = CATEGORIES[j] as MoveCategory;
-            summary_moves_list[j].blackCount = categorization.move_counters.black[cat].toString();
+            const blackCount = blackCounters[cat] ?? 0;
+            const whiteCount = whiteCounters[cat] ?? 0;
+            summary_moves_list[j].blackCount = blackCount.toString();
             summary_moves_list[j].blackPercent =
-                totalMoves.black > 0
-                    ? ((100 * categorization.move_counters.black[cat]) / totalMoves.black).toFixed(
-                          1,
-                      )
-                    : "";
-            summary_moves_list[j].whiteCount = categorization.move_counters.white[cat].toString();
+                totalMoves.black > 0 ? ((100 * blackCount) / totalMoves.black).toFixed(1) : "";
+            summary_moves_list[j].whiteCount = whiteCount.toString();
             summary_moves_list[j].whitePercent =
-                totalMoves.white > 0
-                    ? ((100 * categorization.move_counters.white[cat]) / totalMoves.white).toFixed(
-                          1,
-                      )
-                    : "";
+                totalMoves.white > 0 ? ((100 * whiteCount) / totalMoves.white).toFixed(1) : "";
         }
 
         for (let j = 0; j < ai_table_rows.length; j++) {
@@ -207,9 +197,9 @@ export function SummaryTable({
                                     if (actualIndex === 1 || actualIndex === 4) {
                                         const color = actualIndex === 1 ? "black" : "white";
                                         const moves =
-                                            formatted.categorized_moves[color][
+                                            formatted.categorized_moves[color]?.[
                                                 catKey as MoveCategory
-                                            ];
+                                            ] ?? [];
                                         return (
                                             <td key={e_index}>
                                                 <div className="move-count-container">
