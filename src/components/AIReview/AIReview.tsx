@@ -468,6 +468,14 @@ export function AIReview({
 
     // Handle hidden or no review data states
     if (!reviewData || hidden) {
+        // Still render GameTimings via FairPlayGameSummary if showGameTimings is true
+        const canShowTimings =
+            !hidden &&
+            showGameTimings &&
+            (user.is_moderator || powerToSeeTable(user.moderator_powers)) &&
+            gobanController?.goban?.engine?.config?.black_player_id &&
+            gobanController?.goban?.engine?.config?.white_player_id;
+
         return (
             <div className="AIReview">
                 <UIPush
@@ -480,6 +488,21 @@ export function AIReview({
                         <span>{_("Queuing AI review")}</span>
                         <i className="fa fa-desktop slowstrobe"></i>
                     </div>
+                )}
+                {canShowTimings && (
+                    <FairPlayGameSummary
+                        game_id={game_id}
+                        black_player_id={gobanController.goban!.engine.config.black_player_id!}
+                        white_player_id={gobanController.goban!.engine.config.white_player_id!}
+                        currentMoveNumber={move.move_number - 1}
+                        moves={moves}
+                        start_time={start_time}
+                        end_time={end_time}
+                        free_handicap_placement={free_handicap_placement}
+                        handicap={handicap}
+                        simul_black={simul_black}
+                        simul_white={simul_white}
+                    />
                 )}
             </div>
         );

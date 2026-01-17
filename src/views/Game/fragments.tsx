@@ -29,6 +29,7 @@ import { rulesText } from "@/lib/misc";
 import { KBShortcut } from "@/components/KBShortcut";
 import { AIDemoReview } from "@/components/AIReview/AIDemoReview";
 import { AIReview } from "@/components/AIReview/AIReview";
+import { FairPlayGameSummary } from "@moderator-ui/FairPlay";
 
 export function RengoHeader(): React.ReactElement | null {
     const goban_controller = useGobanController();
@@ -207,16 +208,20 @@ export function FragAIReview(props: FragAIReviewProps): React.ReactElement | nul
     if (!goban) {
         return null;
     }
-    // Games
+
+    const isSupportedBoardSize =
+        (goban.engine?.width === 19 && goban.engine?.height === 19) ||
+        (goban.engine?.width === 13 && goban.engine?.height === 13) ||
+        (goban.engine?.width === 9 && goban.engine?.height === 9);
+
+    // Games - finished games with AI review
     if (
         cur_move &&
         goban.engine &&
         goban.engine.config &&
         goban.engine.phase === "finished" &&
         goban.engine.game_id === game_id &&
-        ((goban.engine.width === 19 && goban.engine.height === 19) ||
-            (goban.engine.width === 13 && goban.engine.height === 13) ||
-            (goban.engine.width === 9 && goban.engine.height === 9))
+        isSupportedBoardSize
     ) {
         return (
             <AIReview
@@ -236,13 +241,41 @@ export function FragAIReview(props: FragAIReviewProps): React.ReactElement | nul
         );
     }
 
+    // Ongoing games - show timings only when requested (for moderators)
+    // Render FairPlayGameSummary directly to avoid AIReview's API call for ai_reviews
+    if (
+        props.showGameTimings &&
+        cur_move &&
+        goban.engine &&
+        goban.engine.config &&
+        goban.engine.phase !== "finished" &&
+        goban.engine.game_id === game_id &&
+        isSupportedBoardSize &&
+        goban.engine.config.black_player_id &&
+        goban.engine.config.white_player_id
+    ) {
+        return (
+            <FairPlayGameSummary
+                game_id={game_id}
+                black_player_id={goban.engine.config.black_player_id}
+                white_player_id={goban.engine.config.white_player_id}
+                currentMoveNumber={cur_move.move_number - 1}
+                moves={goban.engine.config.moves}
+                start_time={goban.engine.config.start_time}
+                end_time={goban.engine.config.end_time}
+                free_handicap_placement={goban.engine.config.free_handicap_placement}
+                handicap={goban.engine.config.handicap}
+                simul_black={props.simul_black}
+                simul_white={props.simul_white}
+            />
+        );
+    }
+
     if (
         goban.review_controller_id &&
         goban.engine &&
         goban.review_id === review_id &&
-        ((goban.engine.width === 19 && goban.engine.height === 19) ||
-            (goban.engine.width === 13 && goban.engine.height === 13) ||
-            (goban.engine.width === 9 && goban.engine.height === 9))
+        isSupportedBoardSize
     ) {
         return <AIDemoReview goban={goban} controller={goban.review_controller_id} />;
     }
