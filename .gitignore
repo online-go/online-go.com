@@ -39,6 +39,7 @@ coverage
 /playwright/
 /e2e-tests/playwright/
 .incident-indicator.lock
+.init_e2e_hash
 submodules/moderator-ui
 
 old-*

@@ -87,9 +87,7 @@ export default defineConfig({
     // E2E: 2 retry (handle flakiness in full test suite)
     // Dev: 0 retries (fail fast for development)
 
-    // retries: process.env.CI ? 0 : process.env.E2E ? 2 : 0,
-
-    retries: 0, // we're currently expecting stability ( no parallel tests, so fail fast )
+    retries: process.env.CI ? 0 : process.env.E2E ? 2 : 0,
 
     /* Workers configuration for parallel execution */
     // Ideally...

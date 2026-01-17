@@ -43,6 +43,7 @@ import {
     loginAsUser,
     navigateToReport,
     newTestUsername,
+    openPlayerDetailsPopover,
     prepareNewUser,
     turnOffDynamicHelp,
 } from "@helpers/user-utils";
@@ -253,8 +254,6 @@ export const aiDetectorSeesSuspensionModlogTest = async (
 
         // 7. Create an AI use report about the suspended user's game
         log("Creating AI use report...");
-        // Go to opponent's finished game
-        await opponentPage.goto("/");
 
         // Navigate to the game via profile
         await goToUsersProfile(opponentPage, suspendedUsername);
@@ -274,16 +273,13 @@ export const aiDetectorSeesSuspensionModlogTest = async (
         await gobanReady.waitFor({ state: "visible" });
         log("Game page fully loaded");
 
-        // Report the user for AI use
-        // Use same pattern as reportPlayerByColor helper: hover before click to stabilize popover
-        const reportPlayerLink = opponentPage.locator(`.black.player-name-container a.Player`);
-        await expect(reportPlayerLink).toBeVisible();
-        // Wait for the element to be stable (attached to DOM and not moving)
-        await reportPlayerLink.waitFor({ state: "attached" });
-        await reportPlayerLink.hover();
-        await reportPlayerLink.click();
+        // Report the user for AI use - use the shared helper with retry logic
+        const reportPlayerLink = opponentPage.locator(
+            `.black.player-name-container a.Player[data-ready="true"]`,
+        );
+        await openPlayerDetailsPopover(opponentPage, reportPlayerLink);
 
-        // Wait for popover to appear, then find and click the Report button
+        // Click the Report button in the popover
         const reportButton = await expectOGSClickableByName(opponentPage, /Report$/);
         await reportButton.click();
 
