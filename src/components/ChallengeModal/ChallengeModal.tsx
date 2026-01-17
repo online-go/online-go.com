@@ -1476,7 +1476,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                 <hr />
                 <div className="preferred-settings-container">
                     <div style={{ display: "flex", gap: "1em", alignItems: "center" }}>
-                        <div style={{ flex: 1 }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
                             <Select
                                 classNamePrefix="ogs-react-select"
                                 value={selected}
