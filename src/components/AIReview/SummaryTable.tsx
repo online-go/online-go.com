@@ -30,15 +30,7 @@ interface SummaryTableProperties {
     showBecomeSupporterText?: boolean;
 }
 
-const CATEGORIES = [
-    "Excellent",
-    "Great",
-    "Good",
-    "Joseki",
-    "Inaccuracy",
-    "Mistake",
-    "Blunder",
-] as const;
+const CATEGORIES = ["Excellent", "Great", "Good", "Inaccuracy", "Mistake", "Blunder"] as const;
 
 export function SummaryTable({
     categorization,
@@ -82,7 +74,6 @@ export function SummaryTable({
                 Excellent: [] as number[],
                 Great: [] as number[],
                 Good: [] as number[],
-                Joseki: [] as number[],
                 Inaccuracy: [] as number[],
                 Mistake: [] as number[],
                 Blunder: [] as number[],
@@ -91,11 +82,14 @@ export function SummaryTable({
                 Excellent: [] as number[],
                 Great: [] as number[],
                 Good: [] as number[],
-                Joseki: [] as number[],
                 Inaccuracy: [] as number[],
                 Mistake: [] as number[],
                 Blunder: [] as number[],
             },
+        };
+        const emptyOpeningMoves = {
+            black: new Set<number>(),
+            white: new Set<number>(),
         };
 
         if (!categorization) {
@@ -103,6 +97,7 @@ export function SummaryTable({
                 heading_list: ["Type", "Black", "%", "", "White", "%"],
                 body_list: [],
                 categorized_moves: emptyCategorizedMoves,
+                opening_moves: emptyOpeningMoves,
             };
         }
 
@@ -141,6 +136,7 @@ export function SummaryTable({
             heading_list: ["Type", "Black", "%", "", "White", "%"],
             body_list: ai_table_rows,
             categorized_moves: categorization.categorized_moves,
+            opening_moves: categorization.opening_moves ?? emptyOpeningMoves,
         };
     }, [categorization]);
 
@@ -253,6 +249,9 @@ export function SummaryTable({
                                                                 moves={moves}
                                                                 category={catKey}
                                                                 color={color}
+                                                                openingMoves={
+                                                                    formatted.opening_moves[color]
+                                                                }
                                                                 onClose={() => {
                                                                     setShowMoveList(false);
                                                                     onPopupMovesChange?.([]);
