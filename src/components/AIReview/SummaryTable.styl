@@ -23,8 +23,6 @@ move-quality-great = #3DA35D;
 move-quality-great-light = #EDF7F0;
 move-quality-good = #6AB04C;
 move-quality-good-light = #F2F8EE;
-move-quality-joseki = #A67C52;
-move-quality-joseki-light = #F5F0EB;
 move-quality-inaccuracy = #E8A838;
 move-quality-inaccuracy-light = #FDF6E8;
 move-quality-mistake = #E87D3E;
@@ -39,8 +37,6 @@ move-quality-great-dark = #4FC978;
 move-quality-great-dark-bg = rgba(79, 201, 120, 0.10);
 move-quality-good-dark = #7ED957;
 move-quality-good-dark-bg = rgba(126, 217, 87, 0.08);
-move-quality-joseki-dark = #C49A6C;
-move-quality-joseki-dark-bg = rgba(196, 154, 108, 0.12);
 move-quality-inaccuracy-dark = #F5B942;
 move-quality-inaccuracy-dark-bg = rgba(245, 185, 66, 0.12);
 move-quality-mistake-dark = #F5924B;
@@ -136,10 +132,6 @@ move-quality-blunder-dark-bg = rgba(239, 85, 85, 0.15);
                     border-left: 3px solid move-quality-good;
                     padding-left: calc(0.75rem - 3px);
                 }
-                &.category-joseki td:first-child {
-                    border-left: 3px solid move-quality-joseki;
-                    padding-left: calc(0.75rem - 3px);
-                }
                 &.category-inaccuracy td:first-child {
                     border-left: 3px solid move-quality-inaccuracy;
                     padding-left: calc(0.75rem - 3px);
@@ -211,9 +203,6 @@ move-quality-blunder-dark-bg = rgba(239, 85, 85, 0.15);
             &.good .category-indicator {
                 background-color: move-quality-good;
             }
-            &.joseki .category-indicator {
-                background-color: move-quality-joseki;
-            }
             &.inaccuracy .category-indicator {
                 background-color: move-quality-inaccuracy;
             }
@@ -237,9 +226,6 @@ move-quality-blunder-dark-bg = rgba(239, 85, 85, 0.15);
                 &.good .category-indicator {
                     background-color: move-quality-good-dark;
                 }
-                &.joseki .category-indicator {
-                    background-color: move-quality-joseki-dark;
-                }
                 &.inaccuracy .category-indicator {
                     background-color: move-quality-inaccuracy-dark;
                 }
@@ -259,9 +245,6 @@ move-quality-blunder-dark-bg = rgba(239, 85, 85, 0.15);
             }
             tr.category-good td:first-child {
                 border-left-color: move-quality-good-dark;
-            }
-            tr.category-joseki td:first-child {
-                border-left-color: move-quality-joseki-dark;
             }
             tr.category-inaccuracy td:first-child {
                 border-left-color: move-quality-inaccuracy-dark;
@@ -431,6 +414,17 @@ move-quality-blunder-dark-bg = rgba(239, 85, 85, 0.15);
                     themed: background-color shade4;
                     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
                 }
+
+                &.opening {
+                    themed: color shade2;
+                    themed: background-color shade5;
+                    opacity: 0.7;
+
+                    &:hover {
+                        opacity: 1;
+                        themed: background-color shade4;
+                    }
+                }
             }
         }
 
@@ -467,9 +461,6 @@ move-quality-blunder-dark-bg = rgba(239, 85, 85, 0.15);
     &.popover-good .category-move-header {
         border-left: 3px solid move-quality-good;
     }
-    &.popover-joseki .category-move-header {
-        border-left: 3px solid move-quality-joseki;
-    }
     &.popover-inaccuracy .category-move-header {
         border-left: 3px solid move-quality-inaccuracy;
     }
@@ -490,9 +481,6 @@ move-quality-blunder-dark-bg = rgba(239, 85, 85, 0.15);
         &.popover-good .category-move-header {
             border-left-color: move-quality-good-dark;
         }
-        &.popover-joseki .category-move-header {
-            border-left-color: move-quality-joseki-dark;
-        }
         &.popover-inaccuracy .category-move-header {
             border-left-color: move-quality-inaccuracy-dark;
         }
@@ -502,6 +490,7 @@ move-quality-blunder-dark-bg = rgba(239, 85, 85, 0.15);
         &.popover-blunder .category-move-header {
             border-left-color: move-quality-blunder-dark;
         }
+
     }
 }
 

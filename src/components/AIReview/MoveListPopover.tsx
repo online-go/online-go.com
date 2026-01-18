@@ -23,6 +23,7 @@ interface MoveListPopoverProps {
     moves: number[];
     category: string;
     color: "black" | "white";
+    openingMoves: Set<number>;
     onClose: () => void;
     showFullReviewPrompt?: boolean;
     onStartFullReview?: () => void;
@@ -33,6 +34,7 @@ export function MoveListPopover({
     moves,
     category,
     color,
+    openingMoves,
     onClose,
     showFullReviewPrompt,
     onStartFullReview,
@@ -62,17 +64,21 @@ export function MoveListPopover({
         if (moves.length > 0) {
             return (
                 <div className="move-numbers">
-                    {moves.map((move) => (
-                        <span
-                            key={move}
-                            className="move-number"
-                            onClick={() => {
-                                goban_controller.gotoMove(move - 1);
-                            }}
-                        >
-                            {move}
-                        </span>
-                    ))}
+                    {moves.map((move) => {
+                        const isOpening = openingMoves.has(move);
+                        return (
+                            <span
+                                key={move}
+                                className={`move-number${isOpening ? " opening" : ""}`}
+                                title={isOpening ? _("Opening") : undefined}
+                                onClick={() => {
+                                    goban_controller.gotoMove(move - 1);
+                                }}
+                            >
+                                {move}
+                            </span>
+                        );
+                    })}
                 </div>
             );
         }
