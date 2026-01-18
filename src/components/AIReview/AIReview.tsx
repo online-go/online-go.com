@@ -458,6 +458,10 @@ export function AIReview({
     const show_become_supporter_text =
         !user.anonymous && !user.supporter && !user.is_moderator && !user.professional;
 
+    const userIsPlayer =
+        user.id === gobanController?.goban?.engine?.config?.black_player_id ||
+        user.id === gobanController?.goban?.engine?.config?.white_player_id;
+
     // Early returns for critical missing data
     if (!gobanController?.goban?.engine || !move) {
         return null;
@@ -584,11 +588,10 @@ export function AIReview({
                                         onPopupMovesChange={(moves) => {
                                             setCurrentPopupMoves(moves);
                                         }}
-                                        isFastReview={
-                                            reviewData.type === "fast" && showFullReviewButton
-                                        }
+                                        isFastReview={reviewData.type === "fast"}
                                         onStartFullReview={() => startNewAIReview("full", "katago")}
                                         showBecomeSupporterText={show_become_supporter_text}
+                                        userIsPlayer={userIsPlayer}
                                     />
                                 )}
 

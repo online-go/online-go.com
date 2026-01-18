@@ -139,16 +139,21 @@ export function canStartFullReview(
     goban: GobanRenderer,
 ): boolean {
     try {
+        // Moderators can start reviews for any game
         if (
-            user.id === goban_controller.creator_id ||
-            user.id === goban.engine?.players?.black?.id ||
-            user.id === goban.engine?.players?.white?.id
-        ) {
-            return true;
-        } else if (
             user.is_moderator ||
             ((user.moderator_powers ?? 0) & MODERATOR_POWERS.AI_DETECTOR) !== 0
         ) {
+            return true;
+        }
+
+        // Creators and players can start reviews if they are supporters
+        const isCreatorOrPlayer =
+            user.id === goban_controller.creator_id ||
+            user.id === goban.engine?.players?.black?.id ||
+            user.id === goban.engine?.players?.white?.id;
+
+        if (isCreatorOrPlayer && user.supporter) {
             return true;
         }
     } catch {

@@ -28,6 +28,7 @@ interface SummaryTableProperties {
     isFastReview?: boolean;
     onStartFullReview?: () => void;
     showBecomeSupporterText?: boolean;
+    userIsPlayer?: boolean;
 }
 
 const CATEGORIES = ["Excellent", "Great", "Good", "Inaccuracy", "Mistake", "Blunder"] as const;
@@ -39,6 +40,7 @@ export function SummaryTable({
     isFastReview,
     onStartFullReview,
     showBecomeSupporterText,
+    userIsPlayer,
 }: SummaryTableProperties): React.ReactElement {
     const [showMoveList, setShowMoveList] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState("");
@@ -202,7 +204,10 @@ export function SummaryTable({
                                                     <span>{element}</span>
                                                     <button
                                                         className={`move-list-button ${
-                                                            moves.length === 0 ? "invisible" : ""
+                                                            moves.length === 0 ||
+                                                            (isFastReview && !userIsPlayer)
+                                                                ? "invisible"
+                                                                : ""
                                                         }`}
                                                         onClick={() => {
                                                             if (moves.length > 0) {
