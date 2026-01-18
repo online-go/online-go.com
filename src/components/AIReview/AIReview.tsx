@@ -37,6 +37,7 @@ import { MODERATOR_POWERS } from "@/lib/moderation";
 import { ReviewSelector } from "./ReviewSelector";
 import { WorstMovesList } from "./WorstMovesList";
 import { ScoreWinRateToggle } from "./ScoreWinRateToggle";
+import { FullReviewButton } from "./FullReviewButton";
 import {
     powerToSeeTable,
     canStartFullReview,
@@ -603,6 +604,13 @@ export function AIReview({
                                           ? " (black)"
                                           : " (white)"}
                                 </div>
+                            )}
+
+                            {reviewData?.type === "fast" && showFullReviewButton && (
+                                <FullReviewButton
+                                    onStartFullReview={() => startNewAIReview("full", "katago")}
+                                    showBecomeSupporterText={show_become_supporter_text}
+                                />
                             )}
 
                             {(!tableHidden || showGameTimings) &&

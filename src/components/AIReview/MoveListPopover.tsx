@@ -18,6 +18,7 @@
 import * as React from "react";
 import { useGobanController } from "@/views/Game/goban_context";
 import { _, interpolate } from "@/lib/translate";
+import { FullReviewButton } from "./FullReviewButton";
 
 interface MoveListPopoverProps {
     moves: number[];
@@ -45,19 +46,10 @@ export function MoveListPopover({
     const renderContent = () => {
         if (showFullReviewPrompt && onStartFullReview) {
             return (
-                <div className="full-review-prompt">
-                    <button className="primary" onClick={onStartFullReview}>
-                        {_("Full AI Review")}
-                    </button>
-                    {showBecomeSupporterText && (
-                        <div
-                            className="fakelink become-a-site-supporter-line"
-                            onClick={onStartFullReview}
-                        >
-                            {_("Become a site supporter today for in-depth interactive AI reviews")}
-                        </div>
-                    )}
-                </div>
+                <FullReviewButton
+                    onStartFullReview={onStartFullReview}
+                    showBecomeSupporterText={showBecomeSupporterText}
+                />
             );
         }
 
