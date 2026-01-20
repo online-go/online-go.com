@@ -9,3 +9,6 @@ export * from "./GameMoveMetadata";
 export * from "./FairPlay";
 export * from "./PlayerTagInput";
 export * from "./GameTimings";
+export * from "./Moderator";
+export * from "./ReportsCenter";
+export * from "./AppealsCenter";
