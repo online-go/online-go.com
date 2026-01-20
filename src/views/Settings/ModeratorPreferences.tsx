@@ -21,7 +21,7 @@ import { _ } from "@/lib/translate";
 import { usePreference } from "@/lib/preferences";
 import { Toggle } from "@/components/Toggle";
 import { SettingGroupPageProps, PreferenceLine } from "@/lib/SettingsCommon";
-import { ReportsCenterSettings } from "@/views/ReportsCenter";
+import { ReportsCenterSettings } from "@moderator-ui/ReportsCenter";
 import * as preferences from "@/lib/preferences";
 
 export function ModeratorPreferences(_props: SettingGroupPageProps): React.ReactElement | null {

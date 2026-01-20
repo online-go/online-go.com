@@ -28,7 +28,7 @@ import { socket } from "@/lib/sockets";
 import * as data from "@/lib/data";
 import { close_all_popovers } from "@/lib/popover";
 import { Flag } from "@/components/Flag";
-import { ban, shadowban, remove_shadowban, remove_ban } from "@/views/Moderator/ban_functions";
+import { ban, shadowban, remove_shadowban, remove_ban } from "@moderator-ui/Moderator";
 import { challenge } from "@/components/ChallengeModal";
 import { getPrivateChat } from "@/components/PrivateChat";
 import { openBlockPlayerControls } from "@/components/BlockPlayer";
