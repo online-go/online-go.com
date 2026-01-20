@@ -39,7 +39,6 @@ import { WorstMovesList } from "./WorstMovesList";
 import { ScoreWinRateToggle } from "./ScoreWinRateToggle";
 import { FullReviewButton } from "./FullReviewButton";
 import {
-    powerToSeeTable,
     canStartFullReview,
     canRequestVariationAnalysis,
     trimMaxMoves,
@@ -477,10 +476,11 @@ export function AIReview({
     // Handle hidden or no review data states
     if (!reviewData || hidden) {
         // Still render GameTimings via FairPlayGameSummary if showGameTimings is true
+        // All CMs (anyone with moderator_powers) can see GameTimings
         const canShowTimings =
             !hidden &&
             showGameTimings &&
-            (user.is_moderator || powerToSeeTable(user.moderator_powers)) &&
+            (user.is_moderator || (user.moderator_powers ?? 0) !== 0) &&
             gobanController?.goban?.engine?.config?.black_player_id &&
             gobanController?.goban?.engine?.config?.white_player_id;
 
@@ -620,8 +620,9 @@ export function AIReview({
                                 />
                             )}
 
+                            {/* All CMs (anyone with moderator_powers) can see GameTimings via FairPlayGameSummary */}
                             {(!tableHidden || showGameTimings) &&
-                                (user.is_moderator || powerToSeeTable(user.moderator_powers)) &&
+                                (user.is_moderator || (user.moderator_powers ?? 0) !== 0) &&
                                 gobanController?.goban?.engine?.config?.black_player_id &&
                                 gobanController?.goban?.engine?.config?.white_player_id && (
                                     <FairPlayGameSummary
