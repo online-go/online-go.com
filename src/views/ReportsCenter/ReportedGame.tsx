@@ -24,7 +24,7 @@ import { MiniGoban } from "@/components/MiniGoban";
 import { alert } from "@/lib/swal_config";
 import { post, get } from "@/lib/requests";
 import { errorAlerter, showSecondsResolution } from "@/lib/misc";
-import { doAnnul, MODERATOR_POWERS } from "@/lib/moderation";
+import { doAnnul } from "@/lib/moderation";
 
 import {
     GameChat,
@@ -33,7 +33,7 @@ import {
     GameLog,
     useGobanController,
 } from "@/views/Game";
-import { GameTimings } from "@moderator-ui/GameTimings";
+import { FairPlayGameSummary } from "@moderator-ui/FairPlay";
 import { AIReview } from "@/components/AIReview";
 import { GobanRenderer } from "goban";
 import { Resizable } from "@/components/Resizable";
@@ -54,7 +54,6 @@ export function ReportedGame({
     onGobanCreated?: (goban: GobanRenderer) => void;
     simul?: boolean;
 }): React.ReactElement | null {
-    const user = useUser();
     const [goban, setGoban] = React.useState<GobanRenderer | null>(null);
     const [goban_controller, setGameController] = React.useState<GobanController | null>(null);
     const refresh = useRefresh();
@@ -146,88 +145,109 @@ export function ReportedGame({
                         </GobanControllerContext.Provider>
                     )}
                 </div>
-                {goban && goban.engine && (
-                    <GobanControllerContext.Provider value={goban_controller}>
-                        <div className="reported-game-element reported-game-info">
-                            <h3>
-                                Game: <Link to={`/game/${game_id}`}>#{game_id}</Link>
-                                <span className="created-note">
-                                    (created by:
-                                    {game && <Player user={game.creator} />})
-                                </span>
-                            </h3>
-                            <div className="reported-turn">
-                                {_("Reported on turn:") + ` ${reported_at ?? _("not available")}`}
-                            </div>
-                            <div>Black: {game && <Player user={game.black} />}</div>
-                            <div>White: {game && <Player user={game.white} />}</div>
-                            <div>Game Phase: {goban.engine.phase}</div>
-                            {(goban.engine.phase === "finished" || null) && (
-                                <GameOutcomeSummary
-                                    winner={winner}
-                                    finalActionTime={finalActionTime}
-                                    timedOutPlayer={timedOutPlayer}
-                                    reported_by={reported_by}
-                                    annulled={annulled}
-                                    scoringAbandoned={scoringAbandoned}
-                                />
-                            )}
+                {goban &&
+                    goban.engine &&
+                    (() => {
+                        const isSupportedBoardSize =
+                            (goban.engine.width === 19 && goban.engine.height === 19) ||
+                            (goban.engine.width === 13 && goban.engine.height === 13) ||
+                            (goban.engine.width === 9 && goban.engine.height === 9);
+                        const showAIReview =
+                            cur_move &&
+                            goban.engine.phase === "finished" &&
+                            goban.engine.game_id === game_id &&
+                            isSupportedBoardSize;
 
-                            {cur_move &&
-                                ((goban.engine.phase === "finished" &&
-                                    goban.engine.game_id === game_id &&
-                                    ((goban.engine.width === 19 && goban.engine.height === 19) ||
-                                        (goban.engine.width === 13 && goban.engine.height === 13) ||
-                                        (goban.engine.width === 9 && goban.engine.height === 9))) ||
-                                    null) && (
-                                    <>
+                        return (
+                            <GobanControllerContext.Provider value={goban_controller}>
+                                <div className="reported-game-element reported-game-info">
+                                    <h3>
+                                        Game: <Link to={`/game/${game_id}`}>#{game_id}</Link>
+                                        <span className="created-note">
+                                            (created by:
+                                            {game && <Player user={game.creator} />})
+                                        </span>
+                                    </h3>
+                                    <div className="reported-turn">
+                                        {_("Reported on turn:") +
+                                            ` ${reported_at ?? _("not available")}`}
+                                    </div>
+                                    <div>Black: {game && <Player user={game.black} />}</div>
+                                    <div>White: {game && <Player user={game.white} />}</div>
+                                    <div>Game Phase: {goban.engine.phase}</div>
+                                    {(goban.engine.phase === "finished" || null) && (
+                                        <GameOutcomeSummary
+                                            winner={winner}
+                                            finalActionTime={finalActionTime}
+                                            timedOutPlayer={timedOutPlayer}
+                                            reported_by={reported_by}
+                                            annulled={annulled}
+                                            scoringAbandoned={scoringAbandoned}
+                                        />
+                                    )}
+
+                                    {showAIReview && (
                                         <AIReview
                                             onAIReviewSelected={(r) => setAiReviewUuid(r?.uuid)}
                                             game_id={game_id}
                                             move={cur_move}
                                             hidden={false}
+                                            showGameTimings={true}
+                                            simul_black={simul}
+                                            simul_white={simul}
+                                            moves={goban.engine.config.moves}
+                                            start_time={goban.engine.config.start_time}
+                                            end_time={goban.engine.config.end_time}
+                                            free_handicap_placement={
+                                                goban.engine.config.free_handicap_placement
+                                            }
+                                            handicap={goban.engine.config.handicap}
+                                            onFinalActionCalculated={setFinalActionTime}
                                         />
-                                    </>
-                                )}
-                        </div>
+                                    )}
+                                </div>
 
-                        <div className="reported-game-element">
-                            {simul &&
-                                (user.is_moderator ||
-                                    (user.moderator_powers & MODERATOR_POWERS.AI_DETECTOR) !==
-                                        0) && (
-                                    <div className="simul-warning">
-                                        {pgettext(
-                                            "A label that means the game is played at the same time as another game",
-                                            "Simul",
-                                        )}
-                                    </div>
-                                )}
-                            <GameTimings
-                                moves={goban.engine.config.moves as any}
-                                start_time={goban.engine.config.start_time as any}
-                                end_time={goban.engine.config.end_time as any}
-                                free_handicap_placement={
-                                    goban.engine.config.free_handicap_placement as any
-                                }
-                                handicap={goban.engine.config.handicap as any}
-                                black_id={goban.engine.config.black_player_id as any}
-                                white_id={goban.engine.config.white_player_id as any}
-                                onFinalActionCalculated={setFinalActionTime}
-                            />
+                                <div className="reported-game-element">
+                                    {/* Show FairPlayGameSummary only when AIReview is NOT shown
+                                (i.e., for non-finished games or unsupported board sizes) */}
+                                    {!showAIReview && (
+                                        <FairPlayGameSummary
+                                            game_id={game_id}
+                                            black_player_id={
+                                                goban.engine.config.black_player_id as number
+                                            }
+                                            white_player_id={
+                                                goban.engine.config.white_player_id as number
+                                            }
+                                            currentMoveNumber={
+                                                cur_move ? cur_move.move_number - 1 : undefined
+                                            }
+                                            moves={goban.engine.config.moves}
+                                            start_time={goban.engine.config.start_time}
+                                            end_time={goban.engine.config.end_time}
+                                            free_handicap_placement={
+                                                goban.engine.config.free_handicap_placement
+                                            }
+                                            handicap={goban.engine.config.handicap}
+                                            simul_black={simul}
+                                            simul_white={simul}
+                                            onFinalActionCalculated={setFinalActionTime}
+                                        />
+                                    )}
 
-                            <GameLog
-                                goban_config={goban.config}
-                                onContainsTimeout={setTimedOutPlayer}
-                                onContainsAbandonment={setScoringAbandoned}
-                            />
-                        </div>
+                                    <GameLog
+                                        goban_config={goban.config}
+                                        onContainsTimeout={setTimedOutPlayer}
+                                        onContainsAbandonment={setScoringAbandoned}
+                                    />
+                                </div>
 
-                        <div className="reported-game-element reported-game-chat">
-                            <GameChat channel={`game-${game_id}`} game_id={game_id} />
-                        </div>
-                    </GobanControllerContext.Provider>
-                )}
+                                <div className="reported-game-element reported-game-chat">
+                                    <GameChat channel={`game-${game_id}`} game_id={game_id} />
+                                </div>
+                            </GobanControllerContext.Provider>
+                        );
+                    })()}
             </div>
         </div>
     );

@@ -3,6 +3,7 @@
  */
 
 import * as React from "react";
+import { moment } from "@/lib/translate";
 import { GobanMovesArray } from "goban";
 
 export interface FairPlayGameSummaryProps {
@@ -20,6 +21,8 @@ export interface FairPlayGameSummaryProps {
     handicap?: number;
     simul_black?: boolean | null;
     simul_white?: boolean | null;
+    /** Callback for when GameTimings calculates the final action time */
+    onFinalActionCalculated?: (final_action_timing: moment.Duration) => void;
 }
 
 export function FairPlayGameSummary(_props: FairPlayGameSummaryProps): React.ReactElement | null {

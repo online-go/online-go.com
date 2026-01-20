@@ -24,7 +24,7 @@ import { openBecomeASiteSupporterModal } from "@/views/Supporter";
 import { errorAlerter, errorLogger } from "@/lib/misc";
 import { toast } from "@/lib/toast";
 import { post } from "@/lib/requests";
-import { _, pgettext } from "@/lib/translate";
+import { _, pgettext, moment } from "@/lib/translate";
 import { ReviewChart } from "./ReviewChart";
 import { SummaryTable } from "./SummaryTable";
 import { FairPlayGameSummary } from "@moderator-ui/FairPlay";
@@ -77,6 +77,8 @@ interface AIReviewProperties {
     end_time?: number;
     free_handicap_placement?: boolean;
     handicap?: number;
+    /** Callback for when GameTimings calculates the final action time */
+    onFinalActionCalculated?: (final_action_timing: moment.Duration) => void;
 }
 
 /**
@@ -98,6 +100,7 @@ export function AIReview({
     end_time,
     free_handicap_placement,
     handicap,
+    onFinalActionCalculated,
 }: AIReviewProperties) {
     const gobanController = useGobanControllerOrNull();
 
@@ -507,6 +510,7 @@ export function AIReview({
                         handicap={handicap}
                         simul_black={simul_black}
                         simul_white={simul_white}
+                        onFinalActionCalculated={onFinalActionCalculated}
                     />
                 )}
             </div>
@@ -639,6 +643,9 @@ export function AIReview({
                                         simul_black={showGameTimings ? simul_black : undefined}
                                         simul_white={showGameTimings ? simul_white : undefined}
                                         ai_review_uuid={selectedAiReview?.uuid}
+                                        onFinalActionCalculated={
+                                            showGameTimings ? onFinalActionCalculated : undefined
+                                        }
                                     />
                                 )}
                         </React.Fragment>
