@@ -281,9 +281,7 @@ export interface DataSchema
         toDate: string;
         stateFilter: "pending" | "executed" | "denied" | "error" | "";
         pendingOnly: boolean;
-        excludedActionTypes: Array<
-            "request_full_review" | "warn" | "suspend" | "escalate" | "annul"
-        >;
+        excludedActionTypes: Array<"request_full_review" | "warn" | "suspend" | "report" | "annul">;
     };
     "ad-override": boolean;
     "email-banner-dismissed": boolean;
