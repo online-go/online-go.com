@@ -297,8 +297,15 @@ const RatingsChartDistribution: React.FC<RatingsChartDistributionProps> = ({
             }}
             axisBottom={{
                 tickValues: 8,
-                format: (value) =>
-                    showRatings ? value.toString() : boundedRankString(rating_to_rank(value), true),
+                format: (value) => {
+                    if (showRatings) {
+                        return value.toString();
+                    }
+                    if (value <= chartData.effectiveMinRating) {
+                        return "";
+                    }
+                    return boundedRankString(rating_to_rank(value), true);
+                },
             }}
             theme={getColoredAxis(line1Color)}
             xScale={{
