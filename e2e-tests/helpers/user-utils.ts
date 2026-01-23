@@ -474,9 +474,9 @@ export const reportUser = async (page: Page, username: string, type: string, not
 /**
  * Capture the report number from the reporter's "My Own Reports" page.
  * Reports are displayed oldest first in the UI, so we take the last one to get the most recent.
- * Note: The displayed report number (e.g., "R092") may be truncated/wrapped from the actual ID (e.g., 1092),
- * so we cannot reliably sort by the displayed number. We rely on the UI's display order instead.
- * Returns the report number (e.g., "R123").
+ * Note: The displayed report number (e.g., "R092") is truncated to 3 digits for moderator convenience,
+ * but the full ID is stored in a data-report-id attribute.
+ * Returns the full report number (e.g., "R1123").
  */
 export const captureReportNumber = async (reporterPage: Page): Promise<string> => {
     await reporterPage.goto("/reports-center");
@@ -489,9 +489,8 @@ export const captureReportNumber = async (reporterPage: Page): Promise<string> =
         reporterPage.locator(".incident, .report-item, .PaginatedTable").first(),
     ).toBeVisible({ timeout: 10000 });
 
-    // The report number is in a button at the top left of the display area
-    // Look for ALL patterns like "R123" in buttons or links
-    const reportButtons = reporterPage.locator("button, a").filter({ hasText: /^R\d+$/ });
+    // The report number is in a button with data-report-id attribute containing the full ID
+    const reportButtons = reporterPage.locator("button[data-report-id]");
     await expect(reportButtons.first()).toBeVisible({ timeout: 30000 });
 
     // Get the count to verify we have reports
@@ -501,11 +500,15 @@ export const captureReportNumber = async (reporterPage: Page): Promise<string> =
     }
 
     // Get the LAST report button (most recently created - reports are displayed oldest first)
-    const reportNumber = await reportButtons.last().textContent();
-    if (!reportNumber || !reportNumber.match(/^R\d+$/)) {
-        throw new Error(`Failed to capture valid report number. Got: ${reportNumber}`);
+    // Read the full ID from data-report-id attribute
+    const fullReportId = await reportButtons.last().getAttribute("data-report-id");
+    if (!fullReportId || !fullReportId.match(/^\d+$/)) {
+        throw new Error(
+            `Failed to capture valid report ID from data attribute. Got: ${fullReportId}`,
+        );
     }
 
+    const reportNumber = `R${fullReportId}`;
     log(`Captured report number: ${reportNumber} (from ${count} total reports)`);
     return reportNumber;
 };
@@ -521,8 +524,10 @@ export const navigateToReport = async (page: Page, reportNumber: string) => {
     // Use /reports-center/all/{id} format which works for all permission levels
     await page.goto(`/reports-center/all/${reportId}`);
 
-    // Verify we're looking at the correct report by checking for the report number
-    await expect(page.getByText(reportNumber, { exact: true })).toBeVisible({ timeout: 15000 });
+    // Verify we're on the correct page by checking URL and waiting for ViewReport content to load
+    await expect(page).toHaveURL(new RegExp(`/reports-center/all/${reportId}`), { timeout: 15000 });
+    // Wait for the ViewReport component to render (it has id="ViewReport")
+    await expect(page.locator("#ViewReport")).toBeVisible({ timeout: 15000 });
     log(`Navigated to report ${reportNumber}`);
 };
 
