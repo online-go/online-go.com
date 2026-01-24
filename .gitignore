@@ -39,7 +39,6 @@ coverage
 /playwright/
 /e2e-tests/playwright/
 .incident-indicator.lock
-submodules/moderator-ui
 
 old-*
 i18n/*.tar.gz

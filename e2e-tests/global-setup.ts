@@ -18,7 +18,6 @@
 import { execSync } from "child_process";
 
 async function globalSetup() {
-
     console.log("=== Global Setup: Cleaning up leftover browser processes ===");
 
     try {
