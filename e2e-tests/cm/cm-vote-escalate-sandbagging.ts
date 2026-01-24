@@ -174,8 +174,11 @@ export const cmVoteEscalateSandbaggingTest = async (
         await navigateToReport(modPage, reportNumber);
 
         // Verify the escalated report content is visible
+        // Use .first() because the report text may appear in multiple places (Card and content div)
         await expect(
-            modPage.getByText("E2E test reporting sandbagging for escalation: deliberate loss."),
+            modPage
+                .getByText("E2E test reporting sandbagging for escalation: deliberate loss.")
+                .first(),
         ).toBeVisible({ timeout: 15000 });
 
         // Verify the report type has been changed to sandbagging_assessment
@@ -187,7 +190,9 @@ export const cmVoteEscalateSandbaggingTest = async (
         // Verify the report shows the system notes about being escalated
         // Both the specific note from the action function and the generic "Actioned by" note should be present
         await expect(
-            modPage.getByText("Sent to moderators due to CM vote for sandbagging assessment").first(),
+            modPage
+                .getByText("Sent to moderators due to CM vote for sandbagging assessment")
+                .first(),
         ).toBeVisible();
         await expect(
             modPage.getByText("Actioned by community vote: escalate_sandbagging").first(),
