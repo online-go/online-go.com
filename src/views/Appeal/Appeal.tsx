@@ -125,7 +125,7 @@ export function Appeal(props: { player_id?: number }): React.ReactElement | null
             {/* ban_reason comes from the backend and can't be translated on the frontend */}
             {ban_reason && still_banned && (
                 <h2 ref={suspensionReasonRef}>
-                    {_("Reason for suspension:")} {ban_reason}
+                    {interpolate(_("Reason for suspension: {{reason}}"), { reason: ban_reason })}
                 </h2>
             )}
             {ban_expiration && still_banned && (
