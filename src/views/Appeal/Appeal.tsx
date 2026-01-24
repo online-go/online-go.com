@@ -122,17 +122,10 @@ export function Appeal(props: { player_id?: number }): React.ReactElement | null
             ) : (
                 <h1>{_("Your account has been re-activated, welcome back.")}</h1>
             )}
+            {/* ban_reason comes from the backend and can't be translated on the frontend */}
             {ban_reason && still_banned && (
                 <h2 ref={suspensionReasonRef}>
-                    {interpolate(
-                        pgettext(
-                            "Reason the player's account was suspended",
-                            "Reason for suspension: {{reason}}",
-                        ),
-                        {
-                            reason: ban_reason,
-                        },
-                    )}
+                    {_("Reason for suspension:")} {ban_reason}
                 </h2>
             )}
             {ban_expiration && still_banned && (
