@@ -96,13 +96,16 @@ export function IncidentReportCard({ report }: IncidentReportCardProps): React.R
                     void navigateTo(`/reports-center/all/${report.id}`);
                 }}
                 className="small"
+                data-report-id={report.id}
             >
                 {"R" + report.id.toString().slice(-3)}
             </button>
         );
     } else {
         report_id_button = (
-            <button className="small inactive">{"R" + report.id.toString().slice(-3)}</button>
+            <button className="small inactive" data-report-id={report.id}>
+                {"R" + report.id.toString().slice(-3)}
+            </button>
         );
     }
     return (

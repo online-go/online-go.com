@@ -79,6 +79,8 @@ npm run test:e2e:debug       # E2E tests in debug mode
 npm run test:ci              # Full CI test suite
 ```
 
+**E2E Test Runner**: When running e2e tests, prefer using `.e2e-ci/run-tests.sh` (located in the `ogs` parent directory) instead of running yarn/npm commands directly. This script performs health checks, logging, and other important validations that help diagnose issues. Use the `-q` (quiet) flag to avoid sending notifications to Slack.
+
 ### Analysis
 
 ```bash
