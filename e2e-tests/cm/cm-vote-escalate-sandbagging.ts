@@ -151,8 +151,8 @@ export const cmVoteEscalateSandbaggingTest = async (
                 cmPage.getByText("E2E test reporting sandbagging for escalation: deliberate loss."),
             ).toBeVisible();
 
-            // Select the "escalate to moderators for sandbagging assessment" option
-            await cmPage.locator('input[value="escalate_sandbagging"]').click();
+            // Select the "send to moderators for sandbagging investigation" option
+            await cmPage.locator('input[value="mod_investigate_sandbagging"]').click();
 
             const voteButton = await expectOGSClickableByName(cmPage, /Vote$/);
             await voteButton.click();
@@ -195,7 +195,7 @@ export const cmVoteEscalateSandbaggingTest = async (
                 .first(),
         ).toBeVisible();
         await expect(
-            modPage.getByText("Actioned by community vote: escalate_sandbagging").first(),
+            modPage.getByText("Actioned by community vote: mod_investigate_sandbagging").first(),
         ).toBeVisible();
 
         // Clean up: close the moderator context
