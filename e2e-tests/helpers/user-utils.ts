@@ -422,8 +422,8 @@ const submitReportForm = async (page: Page, type: string, notes: string) => {
         "PlayerDetails popover should still be visible before clicking Report",
     ).toBeVisible({ timeout: 2000 });
 
-    await expect(page.getByRole("button", { name: /Report$/ })).toBeVisible();
-    await page.getByRole("button", { name: /Report$/ }).click();
+    const reportButton = await expectOGSClickableByName(page, /Report$/);
+    await reportButton.click();
 
     await expect(page.getByText("Request Moderator Assistance")).toBeVisible();
 
@@ -448,6 +448,8 @@ export const reportUser = async (page: Page, username: string, type: string, not
     // Retry the entire open-popover-and-submit flow if the popover closes between steps
     let attempts = 0;
     const maxAttempts = 3;
+    let lastError: Error | null = null;
+
     while (attempts < maxAttempts) {
         attempts++;
         await openPlayerDetailsPopover(page, playerLink);
@@ -459,13 +461,32 @@ export const reportUser = async (page: Page, username: string, type: string, not
             .catch(() => false);
 
         if (isPopoverOpen) {
-            await submitReportForm(page, type, notes);
-            return; // Success
+            try {
+                await submitReportForm(page, type, notes);
+                return; // Success
+            } catch (e) {
+                // If the popover closed during submitReportForm, retry
+                const isPopoverError =
+                    e instanceof Error &&
+                    (e.message.includes("PlayerDetails") ||
+                        e.message.includes("not attached") ||
+                        e.message.includes("not visible"));
+                if (isPopoverError && attempts < maxAttempts) {
+                    lastError = e;
+                    // Close any partial state before retrying
+                    await page.keyboard.press("Escape");
+                    continue;
+                }
+                throw e;
+            }
         }
 
         if (attempts >= maxAttempts) {
-            throw new Error(
-                `PlayerDetails popover closed before Report button could be clicked after ${maxAttempts} attempts`,
+            throw (
+                lastError ||
+                new Error(
+                    `PlayerDetails popover closed before Report button could be clicked after ${maxAttempts} attempts`,
+                )
             );
         }
     }
