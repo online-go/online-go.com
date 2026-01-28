@@ -308,7 +308,7 @@ class ReportManager extends EventEmitter<Events> {
     }
 
     public ignore(report_id: number) {
-        const ignored = data.get("ignored-reports") || {};
+        const ignored = { ...(data.get("ignored-reports") || {}) };
         ignored[report_id] = Date.now() + 1000 * 60 * 60 * 24 * 7; // for 7 days
         for (const key in ignored) {
             if (ignored[key] < Date.now()) {
