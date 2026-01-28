@@ -641,9 +641,10 @@ socket.on("remote_storage/update", (row) => {
     (remote_store as any)[row.key] = row;
     safeLocalStorageSet(`ogs-remote-storage-store.${user.id}.${row.key}`, JSON.stringify(row));
 
-    if (last_modified < row.modified) {
-        safeLocalStorageSet(`ogs-remote-storage-last-modified.${user.id}`, row.modified);
-        last_modified = row.modified;
+    const modified_str = String(row.modified);
+    if (last_modified < modified_str) {
+        safeLocalStorageSet(`ogs-remote-storage-last-modified.${user.id}`, modified_str);
+        last_modified = modified_str;
     }
 
     if (get(row.key as keyof DataSchema) !== current_data_value) {
