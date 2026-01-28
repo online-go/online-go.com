@@ -98,7 +98,7 @@ export function getFirstUncompletedPage(section_name: string): number {
 }
 
 export function setSectionPageCompleted(section_name: string, page_number: number): void {
-    const completion = data.get(`learning-hub.${section_name}`, {});
+    const completion = { ...data.get(`learning-hub.${section_name}`, {}) };
     completion[page_number] = true;
     data.set(`learning-hub.${section_name}`, completion, data.Replication.REMOTE_OVERWRITES_LOCAL);
 }
