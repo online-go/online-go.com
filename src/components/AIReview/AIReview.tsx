@@ -38,12 +38,7 @@ import { ReviewSelector } from "./ReviewSelector";
 import { WorstMovesList } from "./WorstMovesList";
 import { ScoreWinRateToggle } from "./ScoreWinRateToggle";
 import { FullReviewButton } from "./FullReviewButton";
-import {
-    canStartFullReview,
-    canRequestVariationAnalysis,
-    trimMaxMoves,
-    fillAIMarksBacktracking,
-} from "./utils";
+import { canStartFullReview, trimMaxMoves, fillAIMarksBacktracking } from "./utils";
 import { useAIReviewData, useAIReviewList, useWorstMoves } from "./hooks";
 
 // Constants
@@ -395,7 +390,7 @@ export function AIReview({
                 return false;
             }
 
-            if (!canRequestVariationAnalysis(user, gobanController.goban, gobanController)) {
+            if (!user.supporter_level) {
                 return false;
             }
 
