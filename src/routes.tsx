@@ -37,6 +37,7 @@ import {
     FlaggedGames,
     OnlineLeaguesAdmin,
     AnnulmentCriteriaSettings,
+    AIReviewStatus,
 } from "@/views/Admin";
 import { ChatView } from "@/views/ChatView";
 import { Developer } from "@/views/Developer";
@@ -377,6 +378,7 @@ export const routes = (
                 <Route path="/admin/flagged_games" element={<FlaggedGames />} />
                 <Route path="/admin/online_leagues" element={<OnlineLeaguesAdmin />} />
                 <Route path="/admin/annulment_criteria" element={<AnnulmentCriteriaSettings />} />
+                <Route path="/admin/ai_review_status" element={<AIReviewStatus />} />
                 <Route path="/admin" element={<Admin />} />
                 <Route path="/announcement-center" element={<AnnouncementCenter />} />
                 <Route path="/redeem" element={<PrizeRedemption />} />
