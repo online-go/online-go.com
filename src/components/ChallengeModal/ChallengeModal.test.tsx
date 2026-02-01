@@ -21,10 +21,14 @@ import { ChallengeModalBody } from "./ChallengeModal";
 import { post } from "@/lib/requests";
 import { ChallengeModalProperties } from "@/components/ChallengeModal/ChallengeModal.types";
 import { sanitizeChallengeDetails } from "./ChallengeModal.utils";
+import { bots_list, Bot } from "@/lib/bots";
 
 // Mock data module
 jest.mock("@/lib/data", () => ({
     get: (key: string, default_value: unknown) => {
+        if (key === "user") {
+            return { id: 123, ranking: 10 };
+        }
         if (key === "challenge.speed") {
             return "live";
         }
@@ -75,6 +79,42 @@ jest.mock("@/lib/requests", () => ({
     post: jest.fn(),
     del: jest.fn(),
     get: jest.fn(),
+}));
+
+jest.mock("@/lib/bots", () => ({
+    bots_list: jest.fn(() => []),
+    bot_count: jest.fn(() => 0),
+    getAcceptableTimeSetting: jest.fn(),
+}));
+
+jest.mock("@/lib/translate", () => ({
+    _: (s: string) => s,
+    pgettext: (c: string, s: string) => s,
+    npgettext: (c: string, s: string, p: string, n: number) => (n === 1 ? s : p),
+    llm_pgettext: (c: string, s: string) => s,
+    interpolate: (s: string, params: any[]) => {
+        let res = s;
+        if (Array.isArray(params)) {
+            for (const p of params) {
+                res = res.replace("%s", p);
+            }
+        }
+        return res;
+    },
+    moment: {
+        duration: () => ({
+            humanize: () => "humanized duration",
+        }),
+    },
+}));
+
+jest.mock("@/lib/rank_utils", () => ({
+    rankString: (r: number) => `Rank ${r}`,
+    amateurRanks: () => [],
+}));
+
+jest.mock("@/components/PlayerIcon", () => ({
+    PlayerIcon: () => <div data-testid="player-icon" />,
 }));
 
 const defaultProps: ChallengeModalProperties = {
@@ -330,5 +370,94 @@ describe("ChallengeModalBody", () => {
 
         challengeDetails.game.komi = "4.5";
         expect(sanitizeChallengeDetails(challengeDetails).game.komi).toBe(4.5);
+    });
+});
+
+describe("ChallengeModalBotFiltering", () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+
+    const computerProps = {
+        ...defaultProps,
+        mode: "computer" as const,
+    };
+
+    function renderAndCheckBot(
+        bot: Partial<Bot>,
+        expectedCategory: string,
+        unexpectedCategories: string[],
+    ) {
+        const { bot_count, getAcceptableTimeSetting } = jest.requireMock("@/lib/bots");
+        (bots_list as jest.Mock).mockReturnValue([bot]);
+        bot_count.mockReturnValue(1);
+        getAcceptableTimeSetting.mockReturnValue([{}, ""]);
+
+        render(<ChallengeModalBody {...computerProps} modal={mockModal} />);
+
+        // Verify it is in the expected category
+        const categoryElements = screen.getAllByRole("heading", { level: 1 });
+        const expectedHeader = categoryElements.find((el) => el.textContent === expectedCategory);
+        expect(expectedHeader).toBeInTheDocument();
+
+        // The bot should be in the parent container of this header
+        const categoryContainer = expectedHeader!.closest(".bot-category");
+        expect(categoryContainer).toHaveTextContent(bot.username as string);
+
+        // Verify it is NOT in unexpected categories
+        for (const unexpectedCategory of unexpectedCategories) {
+            const unexpectedHeader = categoryElements.find(
+                (el) => el.textContent === unexpectedCategory,
+            );
+            if (unexpectedHeader) {
+                const unexpectedContainer = unexpectedHeader.closest(".bot-category");
+                expect(unexpectedContainer).not.toHaveTextContent(bot.username as string);
+            }
+        }
+    }
+
+    it("should show TopBeginnerBot10 in Beginner category", () => {
+        // Rank 10.0 = 20.0k
+        renderAndCheckBot(
+            { id: 1, username: "TopBeginnerBot10", ranking: 10, config: {} as any },
+            "Beginner",
+            ["Intermediate", "Advanced"],
+        );
+    });
+
+    it("should show BottomIntermediateBot10_1 in Intermediate category", () => {
+        // Rank 10.1 = 19.9k
+        renderAndCheckBot(
+            { id: 2, username: "BottomIntermediateBot10_1", ranking: 10.1, config: {} as any },
+            "Intermediate",
+            ["Beginner", "Advanced"],
+        );
+    });
+
+    it("should show TopIntermediateBot25 in Intermediate category", () => {
+        // Rank 25.0 = 5.0k
+        renderAndCheckBot(
+            { id: 3, username: "TopIntermediateBot25", ranking: 25, config: {} as any },
+            "Intermediate",
+            ["Beginner", "Advanced"],
+        );
+    });
+
+    it("should show BottomAdvancedBot25_1 in Advanced category", () => {
+        // Rank 25.1 = 4.9k
+        renderAndCheckBot(
+            { id: 4, username: "BottomAdvancedBot25_1", ranking: 25.1, config: {} as any },
+            "Advanced",
+            ["Beginner", "Intermediate"],
+        );
+    });
+
+    it("should show TopAdvancedBot99 in Advanced category", () => {
+        // Rank 99.0 = Stronger than 9d
+        renderAndCheckBot(
+            { id: 5, username: "TopAdvancedBot99", ranking: 99, config: {} as any },
+            "Advanced",
+            ["Beginner", "Intermediate"],
+        );
     });
 });
