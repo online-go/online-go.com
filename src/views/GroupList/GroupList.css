@@ -1,0 +1,85 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+.GroupList {
+    /* here */
+    display: flex;
+    flex-direction: column;
+    /* justify-content: center; */
+    align-items: center;
+    padding: 0 1rem;
+
+    .group-list-container {
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+
+        .PaginatedTable {
+            flex: 40rem;
+            min-width: 20rem;
+        }
+
+        .MyGroups {
+            flex: 20rem;
+            width: 20rem;
+            padding-left: 1rem;
+        }
+    }
+
+    .name {
+        text-align: left;
+    }
+
+    .member-count {
+        width: 5rem;
+        text-align: center;
+    }
+
+    .group-name {
+        /* display: flex; */
+        align-items: center;
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+    }
+
+    .group-icon {
+        /* flex: 0; */
+        /* flex-basis: 64px; */
+        height: 64px;
+        width: 64px;
+        max-height: 64px;
+        max-width: 64px;
+        margin-right: 1rem;
+    }
+
+    .group-icon-header {
+        width: 64px;
+    }
+
+    .MyGroups {
+        h3 {
+            margin-top: 0;
+        }
+
+        .group-icon {
+            width: 16px;
+            height: 16px;
+            max-height: 64px;
+            max-width: 64px;
+            margin-right: 1rem;
+        }
+    }
+}

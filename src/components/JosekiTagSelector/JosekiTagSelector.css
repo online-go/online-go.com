@@ -1,0 +1,64 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+.joseki-tag-selector {
+    .Select-control {
+        border-color: var(--shade1);
+        border: none;
+        background: var(--bg);
+        border-radius: 5px;
+        border-bottom: 1px solid;
+
+        div[class^='Select'] {
+            background: var(--bg);
+            color: var(--fg);
+            border-color: var(--shade1);
+        }
+    }
+
+    .tag-option {
+        width: max-content;
+    }
+
+    .Select-menu-outer * {
+        margin: 0 0 0.2rem;
+        padding: 0 0 0 3px;
+    }
+
+    .Select-menu-outer {
+        .Select-menu {
+            background: var(--bg);
+        }
+
+        .Select-option:not(:hover) {
+            background: var(--bg);
+            color: var(--fg);
+        }
+
+        .Select-option:hover {
+            background: var(--shade1);
+        }
+    }
+}
+
+/* react-select is very opinionated about this state of the Select, we have to work hard */
+/* to override it... */
+.joseki-tag-selector.Select.Select--multi.is-focused {
+    .Select-control {
+        background: var(--bg);
+        border-color: var(--shade1);
+    }
+}

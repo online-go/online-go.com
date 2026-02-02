@@ -1,0 +1,434 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+.AIReview {
+    margin-top: 0.7rem;
+
+    .reviewing, .pending {
+        text-align: center;
+        width: 100%;
+
+        .fa-desktop {
+            margin-right: 0.5rem;
+            color: var(--info);
+        }
+    }
+
+    .key-moves {
+        text-align: center;
+        font-size: var(--font-size-mid);
+        margin: 0.5rem;
+        user-select: none;
+
+        .btn {
+            float: right;
+        }
+    }
+
+    .full-review-button-container {
+        text-align: center;
+        margin: 1rem 0.5rem;
+        user-select: none;
+
+        button.primary {
+            margin-bottom: 0.5rem;
+        }
+    }
+
+    .full-ai-review {
+        margin-left: 1rem;
+    }
+
+    .key-move {
+        margin-left: 0.5rem;
+    }
+
+    .increased-win-rate, .decreased-win-rate {
+        margin-left: 0.1rem;
+        display: inline-block;
+        width: 2rem;
+        text-align: right;
+    }
+
+    .increased-win-rate {
+        color: green;
+    }
+
+    .decreased-win-rate {
+        color: red;
+    }
+
+    .ai-review-option-container {
+        display: flex;
+        /* width: calc(100% - 3rem); */
+        /* width: 100%; */
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+
+        /* padding-left: 0.5rem; */
+        .ai-review-strength-icon {
+            flex: 0;
+            width: 1.1rem;
+            flex-basis: 1.1rem;
+            margin-left: 0.2rem;
+            margin-right: 0.5rem;
+        }
+
+        .ai-review-information {
+            flex: 1;
+        }
+
+        .date {
+            font-style: italic;
+        }
+    }
+
+    .ai-review-win-rate-container {
+        display: inline-flex;
+        width: calc(100% - 3rem);
+        padding-left: 0.5rem;
+    }
+
+    .prediction {
+        display: flex;
+    }
+
+    .prediction, .ai-review-win-rate-container {
+        text-align: center;
+        align-items: center;
+
+        .ai-review-list-container {
+            flex-grow: 0;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .progress {
+            display: inline-flex;
+            flex-grow: 1;
+            flex-shrink: 1;
+            overflow: hidden;
+        }
+
+        .ai-review-more-info-container {
+            flex-grow: 0;
+            flex-shrink: 0;
+            position: relative;
+            margin-right: 0.2rem;
+        }
+
+        .ai-review-network-size-container {
+            flex-grow: 0;
+            flex-shrink: 0;
+            font-size: var(--font-size-smaller);
+            padding-right: 0.2rem;
+            padding-left: 0.2rem;
+            padding-top: 0.2rem;
+        }
+    }
+
+    .next-move-delta-container {
+        text-align: center;
+    }
+
+    .next-move-coordinates {
+        /* border: 1px solid #000; */
+        border: 1px solid #000;
+
+        &.positive {
+            border-color: #00bd0c;
+        }
+
+        &.negative {
+            border-color: #ff7697;
+        }
+
+        &.neutral {
+            border-color: #bda100;
+        }
+
+        background-color: #00b0dd;
+        border-radius: 0.3rem;
+        margin: 0.5rem;
+        color: #000;
+        display: inline-block;
+        width: 4rem;
+        text-align: center;
+        /* padding-right: 0.5rem; */
+    }
+
+    .next-move-delta {
+        display: inline-block;
+        width: 5rem;
+        text-align: left;
+
+        &.negative {
+            /* themed color reject */
+        }
+
+        &.positive {
+            /* themed color success */
+        }
+    }
+
+    .ai-review-new-review {
+        display: flex;
+        justify-content: space-around;
+        cursor: default;
+
+        button {
+            display: inline-flex;
+            align-items: center;
+
+            i {
+                margin-right: 0.5rem;
+            }
+        }
+    }
+
+    .worst-move-list-container {
+        user-select: none;
+        display: inline-flex;
+        width: 100%;
+        text-align: center;
+
+        .move-list {
+            flex: 1;
+        }
+
+        .move {
+            margin-left: 0.2rem;
+            margin-right: 0.2rem;
+            border-radius: 0.2rem;
+            border: 1px solid #888;
+            width: 2.5rem;
+            display: inline-block;
+            cursor: pointer;
+        }
+
+        .filter {
+            flex: 0;
+        }
+    }
+
+    .ai-review-togglers {
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+        display: flex;
+        justify-content: space-between;
+
+        .left-section {
+            flex: 0.8;
+        }
+
+        .middle-section {
+            flex: 1.4;
+            display: flex;
+            justify-content: center;
+        }
+
+        .right-section {
+            flex: 0.8;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        span {
+            padding-left: 0.25rem;
+            padding-right: 0.25rem;
+        }
+
+        .ai-summary-toggler {
+            display: flex;
+        }
+
+        .win-toggle {
+            text-align: right;
+            text-wrap: nowrap;
+        }
+
+        .score-toggle {
+            text-align: left;
+        }
+
+        .score-toggle, .win-toggle {
+            cursor: pointer;
+            flex: 1;
+        }
+    }
+
+    .categorization-toggler {
+        display: inline-flex;
+        width: 100%;
+        padding-top: 0.5rem;
+        padding-bottom: 0;
+        align-items: center;
+        justify-content: center;
+
+        .toggle-label {
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+            cursor: default;
+        }
+    }
+
+    .worst-moves-container {
+        display: inline-flex;
+        width: 100%;
+    }
+
+    .become-a-site-supporter-line {
+        display: block;
+        width: 15rem;
+        margin: auto;
+        max-width: 100vw;
+        font-size: var(--font-size-small);
+        word-break: nobreak;
+    }
+}
+
+.ai-review-list, .ai-review-more-info {
+    padding: 0.5rem;
+    overflow-y: auto;
+    box-shadow: 0px 2px 3px rgba(0, 0, 0, 0.2);
+    border: 1px solid transparent;
+    box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.16), 0px 2px 5px 0px rgba(0, 0, 0, 0.15);
+    background-color: var(--shade4);
+    border-color: var(--shade3);
+    color: var(--fg);
+    z-index: var(--z-popover);
+    background-color: var(--shade5);
+
+    .ai-review-item {
+        &.selected, &:hover {
+            cursor: pointer;
+            background-color: var(--shade3);
+        }
+    }
+
+    th {
+        text-align: right;
+        padding-right: 0.5rem;
+    }
+}
+
+.ai-review-fast, .ai-review-strength-0, .ai-review-strength-1, .ai-review-strength-2, .ai-review-strength-3, .ai-review-strength-4, .ai-cheat-detection-review {
+    display: inline-flex;
+    width: 1.1rem;
+    height: 1rem;
+    margin-right: 0.3rem;
+    margin-left: 0.2rem;
+    border: 2px solid #000;
+    border-radius: 50%;
+    font-family: 'Times New Roman', Times, serif;
+    align-content: center;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.8rem;
+}
+
+.ai-review-strength-0, .ai-review-strength-1, .ai-review-strength-2, .ai-review-strength-3, .ai-review-strength-4 {
+    color: var(--supporter);
+    border-color: var(--supporter);
+}
+
+.ai-review-strength-4 {
+    border-color: var(--professional);
+}
+
+.ai-cheat-detection-review {
+    color: var(--primary);
+    border-color: var(--primary);
+}
+
+.ai-review-fast {
+    color: #888;
+    border-color: #888;
+}
+
+.ai-cheat-detection-review-plus {
+    border-color: var(--professional);
+}
+
+.ai-review-list-container {
+    border: 1px solid red;
+}
+
+.move-list-popover {
+    position: absolute;
+    box-shadow: 0px 2px 3px rgba(0, 0, 0, 0.2);
+    border: 1px solid transparent;
+    box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.16), 0px 2px 5px 0px rgba(0, 0, 0, 0.15);
+    background-color: var(--shade4);
+    border-color: var(--shade3);
+    color: var(--fg);
+    z-index: var(--z-popover);
+    min-width: 200px;
+    max-width: 300px;
+
+    .move-list-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 12px;
+        border-bottom: 1px solid transparent;
+        border-bottom-color: var(--shade3);
+        font-weight: bold;
+
+        .close-button {
+            background: none;
+            border: none;
+            font-size: 1.2em;
+            cursor: pointer;
+            padding: 0 4px;
+            color: var(--shade1);
+
+            &:hover {
+                color: var(--fg);
+            }
+        }
+    }
+
+    .move-list-content {
+        padding: 12px;
+        max-height: 300px;
+        overflow-y: auto;
+
+        .move-numbers {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+
+            .move-number {
+                background-color: var(--shade3);
+                padding: 4px 8px;
+                border-radius: 3px;
+                font-size: 0.9em;
+                cursor: pointer;
+
+                &:hover {
+                    background-color: var(--shade2);
+                }
+            }
+        }
+
+        .no-moves {
+            color: var(--shade1);
+            font-style: italic;
+            text-align: center;
+        }
+    }
+}

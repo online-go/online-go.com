@@ -1,0 +1,47 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+.rdh-help-item.rdh-help-item-custom {
+    z-index: var(--z-dynamic-help);
+    background-color: var(--help-popup-bg);
+    border-color: var(--help-popup-bg);
+    color: var(--colored-background-fg);
+    padding: 0.2rem;
+    font-size: 1rem;
+    box-shadow: 0 0.2rem 0.5rem 0.2rem rgba(0, 0, 0, 0.2);
+
+    /* On the phone, make sure the items will be visible even if it means */
+    /* that they appear over their target (they will be dismissed anyhow). */
+    @media only screen and (max-width: 800px) {
+        left: 0 !important;
+        right: auto !important;
+    }
+}
+
+.rdh-help-item>.rdh-popup-dismissers {
+    color: var(--colored-background-fg); /* TODO: themed-darken colored-background-fg 10% */
+    cursor: pointer;
+    margin-top: 0.7rem;
+    font-size: 0.9rem;
+}
+
+.rdh-target-highlight {
+    box-shadow: 0 0 2px 2px var(--primary) !important;
+}
+
+#help-for-profile-edit-page {
+    max-width: 15rem;
+}

@@ -1,0 +1,474 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+#gotv-container {
+    display: flex;
+    flex-direction: column;
+    height: calc(100dvh - var(--navbar-height) - 4px);
+    width: 100vw;
+    overflow: hidden;
+
+    div {
+        box-sizing: border-box;
+    }
+
+    .gotv-layout {
+        display: flex;
+        height: 100%;
+        width: 100%;
+        position: relative;
+        overflow: hidden;
+
+        .list-pane {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            width: 340px;
+            height: 100%;
+            border-right: 1px solid transparent;
+            border-right-color: var(--shade4);
+            overflow-y: auto;
+            background-color: var(--bg);
+            transition: transform 0.3s ease-in-out;
+            padding: 0 10px 0 10px;
+            z-index: 2;
+        }
+
+        .list-pane.collapsed {
+            transform: translateX(-340px);
+        }
+
+        .list-pane.expanded {
+            transform: translateX(0);
+        }
+
+        .streams-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            background-color: var(--bg);
+
+            .preference-toggle {
+                position: absolute;
+                right: 15px;
+                top: 15px;
+            }
+        }
+
+        .language-select {
+            flex: 1;
+            margin-left: 10px;
+        }
+
+        .stream-pane {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--bg);
+            overflow: hidden;
+            position: relative;
+            transition: margin-left 0.3s ease-in-out;
+
+            #twitch-embed {
+                height: 100%;
+                width: 100%;
+            }
+        }
+
+        .stream-pane.expanded {
+            margin-left: 0;
+        }
+
+        .stream-pane.shrunk {
+            margin-left: 340px;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .list-pane-control {
+            position: absolute;
+            top: 50%;
+            left: 340px;
+            transform: translateY(-50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            background: linear-gradient(135deg, #2480FF, #005580);
+            color: #FFFFFF;
+            border: none;
+            height: 100px;
+            width: 20px;
+            cursor: pointer;
+            transition: background 0.3s ease-in-out, left 0.3s ease-in-out, transform 0.3s ease-in-out;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            font-size: 1rem;
+            font-weight: normal;
+            border-radius: 0 10px 10px 0;
+
+            &::after {
+                font-family: 'FontAwesome';
+                content: '\f053'; /* FontAwesome left arrow */
+                display: inline-block;
+                transition: content 0.3s ease-in-out;
+            }
+        }
+
+        .list-pane-control.collapsed {
+            left: 0;
+
+            &::after {
+                content: '\f0c9'; /* FontAwesome list icon */
+            }
+
+            &:hover {
+                &::after {
+                    content: '\f054'; /* FontAwesome right arrow on hover */
+                }
+            }
+        }
+
+        .chat-pane-control {
+            position: absolute;
+            top: 50%;
+            right: 320px;
+            transform: translateY(-50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            background: linear-gradient(135deg, #2480FF, #005580);
+            color: #FFFFFF;
+            border: none;
+            height: 100px;
+            width: 20px;
+            cursor: pointer;
+            transition: background 0.3s ease-in-out, right 0.3s ease-in-out, transform 0.3s ease-in-out;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            font-size: 1rem;
+            font-weight: normal;
+            border-radius: 10px 0 0 10px;
+
+            &::after {
+                font-family: 'FontAwesome';
+                content: '\f054'; /* FontAwesome right arrow */
+                display: inline-block;
+                transition: content 0.3s ease-in-out;
+            }
+        }
+
+        .chat-pane-control.collapsed {
+            right: 0;
+
+            &::after {
+                content: '\f086'; /* FontAwesome chat icon */
+            }
+
+            &:hover {
+                &::after {
+                    content: '\f053'; /* FontAwesome left arrow on hover */
+                }
+            }
+        }
+
+        .chat-pane {
+            flex: 0 0 320px;
+            height: 100%;
+            padding: 0;
+            border-left: 1px solid transparent;
+            border-left-color: var(--shade4);
+            overflow: hidden;
+            background-color: var(--bg);
+            position: relative;
+            transition: flex 0.3s ease-in-out, transform 0.3s ease-in-out;
+        }
+
+        .chat-pane.collapsed {
+            flex: 0 0 0%;
+            transform: translateX(320px);
+        }
+
+        .chat-pane.expanded {
+            flex: 0 0 320px;
+            transform: translateX(0);
+        }
+
+        .EmbeddedChatCard {
+            min-width: 100%;
+            margin: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .chat-tabs {
+            display: flex;
+            justify-content: center;
+            height: 45px;
+            background-color: var(--bg);
+            border-bottom: 1px solid transparent;
+            border-bottom-color: var(--shade4);
+        }
+
+        .chat-tab {
+            flex: 1;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: background-color 0.3s ease-in-out, border-bottom 0.3s ease-in-out;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            .ogs-chat-tab-logo {
+                background-image: svg-load('ogslogo.svg');
+                background-size: contain;
+                background-repeat: no-repeat;
+                height: 30px;
+                width: 30px;
+                filter: drop-shadow(0 0 25px rgba(255, 255, 255, 0.3));
+            }
+
+            .twitch-chat-tab-logo {
+                background-image: svg-load('glitch_flat_purple.svg');
+                background-size: contain;
+                background-repeat: no-repeat;
+                width: 30px;
+                height: 30px;
+                filter: drop-shadow(0 0 25px rgba(255, 255, 255, 0.3));
+            }
+        }
+
+        .chat-tab.active {
+            border-bottom: 2px solid transparent;
+            border-bottom-color: var(--primary);
+            background-color: var(--card-background-color);
+        }
+
+        .chat-tab:not(.active):hover {
+            background-color: var(--card-background-color);
+            border-bottom: 2px solid transparent;
+            border-bottom-color: var(--primary);
+        }
+
+        .chat-content {
+            position: relative;
+            height: 100%;
+        }
+
+        .chat-section {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+        }
+
+        .chat-section.active {
+            display: block;
+        }
+
+        .chat-section.hidden {
+            display: none;
+        }
+
+        .no-streams-message {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 1.2rem;
+            color: var(--fg);
+        }
+
+        .no-streams-available-message {
+            width: 50%;
+            margin: 20px auto;
+            font-size: 1.2rem;
+            color: var(--fg);
+            padding: 20px;
+            border: 1px solid transparent;
+            border-color: var(--shade4);
+            border-radius: 10px;
+            background-color: var(--card-background-color);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: left;
+
+            h2 {
+                text-align: center;
+                margin-bottom: 10px;
+                font-size: 1.5rem;
+            }
+
+            p {
+                margin: 10px 0;
+            }
+        }
+    }
+}
+
+@media only screen and (max-width: 900px) {
+    #gotv-container .gotv-layout {
+        flex-direction: column;
+
+        div {
+            box-sizing: border-box;
+        }
+    }
+
+    #gotv-container .gotv-layout .list-pane {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-content: flex-start;
+        width: 100vw;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 100;
+        transform: translateY(0);
+        transition: transform 0.3s ease-in-out;
+        padding: 10px;
+    }
+
+    #gotv-container .gotv-layout .list-pane.collapsed {
+        transform: translateY(-100%);
+    }
+
+    #gotv-container .gotv-layout .list-pane.expanded {
+        transform: translateY(0);
+        width: 100vw;
+        height: 100%;
+    }
+
+    #gotv-container .gotv-layout .list-pane .streams-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        padding: 10px;
+        background: #f0f0f0;
+    }
+
+    #gotv-container .gotv-layout .list-pane .back-button {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        box-shadow: none;
+    }
+
+    #gotv-container .gotv-layout .list-pane-control {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #FFFFFF;
+        cursor: pointer;
+        z-index: 110;
+        background: transparent;
+        border-radius: 0;
+        transform: translateY(0);
+        background-color: var(--card-background-color);
+        border: 1px solid transparent;
+        border-color: var(--shade4);
+        color: var(--fg);
+        font-size: 1.5rem;
+        font-weight: bold;
+
+        &::after {
+            font-family: 'FontAwesome';
+            content: '\f0c9'; /* FontAwesome list icon */
+            display: inline-block;
+            margin-left: 10px;
+        }
+
+        &.collapsed:hover::after {
+            content: '\f0c9'; /* FontAwesome list icon */
+        }
+    }
+
+    #gotv-container .gotv-layout .chat-pane-control {
+        display: none;
+    }
+
+    #gotv-container .gotv-layout .list-pane.expanded ~ .list-pane-control {
+        z-index: 0;
+        opacity: 0;
+    }
+
+    #gotv-container .gotv-layout .stream-pane {
+        width: 100vw;
+        margin-top: 50px;
+        flex: none;
+        height: calc((100vw * 9 / 16));
+        border-bottom: 1px solid transparent;
+        border-bottom-color: var(--shade4);
+
+        &.shrunk {
+            margin-left: 0;
+        }
+    }
+
+    #gotv-container .gotv-layout .chat-pane {
+        width: 100vw;
+        flex: 1 1 auto;
+        overflow: hidden;
+        background-color: var(--bg);
+        transition: transform 0.3s ease-in-out;
+        transform: translateY(0);
+        border: none;
+
+        &.collapsed {
+            flex: 1 1 auto;
+            transform: translateX(0);
+        }
+
+        &.expanded {
+            flex: 1 1 auto;
+            transform: translateX(0);
+        }
+    }
+
+    #gotv-container .gotv-layout .no-streams-available-message {
+        width: 100%;
+        max-width: 600px;
+        background-color: var(--bg);
+        border: none;
+        margin: 0 auto;
+        padding: 10px;
+        box-shadow: none;
+
+        h2 {
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
+        p {
+            font-size: 0.8rem;
+            margin: 5px;
+        }
+    }
+}

@@ -191,7 +191,7 @@ import { get_device_id } from "@/views/SignIn";
 
 import { ConfigSchema } from "@/lib/data_schema";
 import "debug";
-import "@/ogs.styl";
+import "@/ogs.css";
 
 /**
  * getPreferredLanguage() is defined in index.html. It gets the user's chosen

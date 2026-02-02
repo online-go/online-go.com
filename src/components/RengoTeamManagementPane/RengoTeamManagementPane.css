@@ -1,0 +1,100 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+.RengoTeamManagementPane {
+    display: flex;
+    flex-direction: row;
+
+    .Player {
+        margin-right: 1em;
+    }
+
+    .rengo-admin-container {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .rengo-admin-container.pending {
+        cursor: wait !important;
+        opacity: 50%;
+    }
+
+    .rengo-challenge-chat {
+        /* force EmebddedChatCard to size */
+        display: flex;
+        align-items: stretch;
+        /* and allow for it's border-box */
+        padding-top: 8px;
+        padding-bottom: 8px;
+
+        /* stop this from stretching the seek graph, and scroll at that point */
+        .EmbeddedChatCard {
+            .ChatLog {
+                max-height: 15rem;
+            }
+        }
+    }
+
+    .no-rengo-players-to-admin {
+        font-style: italic;
+        font-size: smaller;
+        color: var(--shade2);
+        padding-left: 1rem;
+    }
+
+    .rengo-admin-header {
+        padding-top: 1rem;
+    }
+
+    .rengo-assignment-row {
+        margin-left: 1rem;
+
+        .fa {
+            margin: 0 0.8rem 0 0;
+            cursor: pointer;
+        }
+
+        .fa.black {
+            color: black;
+            background-color: red;
+            border-radius: 0.2rem;
+            border: 2px solid red;
+        }
+
+        .fa.white {
+            color: white;
+            background-color: red;
+            border-radius: 0.2rem;
+            border: 2px solid red;
+        }
+
+        .fa.unassign {
+            color: var(--shade2);
+            border-radius: 0.5rem;
+        }
+
+        .fa.kick {
+            color: var(--reject); /* deliberate choice of red rather than danger, which is orange */
+        }
+    }
+
+    .rengo-balancer-buttons {
+        margin-top: 0.5rem;
+        display: flex;
+    }
+}

@@ -1,0 +1,113 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+.GobanThemePicker {
+    display: inline-flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    max-width: 100%;
+    justify-content: center;
+
+    .custom-theme-set {
+        justify-content: flex-start !important;
+        padding-left: 2rem;
+        padding-bottom: 1rem;
+    }
+
+    .theme-set, .custom-theme-set {
+        display: inline-flex;
+        flex-direction: row;
+        width: 320px;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        text-align: left;
+        font-size: 10px;
+
+        .selector {
+            margin: 1px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            opacity: 0.5;
+            color: white;
+            word-wrap: break-word;
+            overflow: hidden;
+            text-transform: uppercase;
+        }
+
+        .selector:hover, .selector.active {
+            border-color: var(--primary);
+            border-width: 2px;
+            opacity: 1;
+        }
+
+        input[type=color] {
+            width: 1.5rem;
+            height: 1.5rem;
+            margin-left: 1rem;
+            border: 0;
+        }
+
+        .board-color-selectors {
+            display: flex;
+            flex-direction: row;
+        }
+
+        .color-reset {
+            vertical-align: top;
+            margin-top: 0.4rem;
+            margin-left: 0;
+            margin-right: 0;
+            padding-right: 0;
+            padding-left: 0;
+
+            .fa-undo {
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+                padding-right: 0;
+                padding-left: 0;
+            }
+        }
+
+        .custom-url-selection {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding-bottom: 1rem;
+
+            .customUrlSelector {
+                width: 16rem;
+                border: 1px solid;
+                margin-top: 3px;
+            }
+        }
+    }
+
+    .show-customize-selector {
+        flex-grow: 1;
+        display: flex;
+        justify-content: center;
+        margin: 0.5rem;
+
+        .show-customize-toggle {
+            margin-left: 0.3rem;
+        }
+    }
+}
+
+.LineText.customize {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+}

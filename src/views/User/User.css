@@ -1,0 +1,660 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+.User {
+    padding-top: 3rem;
+
+    dt, dd {
+        margin-bottom: 0.5em;
+    }
+
+    h3, h4 {
+        margin: 0;
+    }
+
+    h4 {
+        margin-top: 0.3rem;
+
+        img {
+            margin-right: 0.5rem;
+            margin-left: 0.5rem;
+        }
+
+        .fa {
+            margin-right: 0.4rem;
+            margin-left: 0.4rem;
+        }
+    }
+
+    div {
+        .f32 {
+            display: inline-flex !important;
+            align-items: flex-end;
+            margin-right: 0.5rem;
+        }
+
+        textarea {
+            width: 100%;
+        }
+    }
+
+    .mod-graph-header {
+        margin: 0.5rem 0 0.5rem 0.5rem !important;
+    }
+
+    .vote-activity-graph {
+        height: 300px;
+    }
+
+    .name-input {
+        width: 6rem;
+    }
+
+    .dropzone-container {
+        display: flex;
+        justify-content: center;
+    }
+
+    .user-details {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .username-input {
+        font-size: var(--font-size-big);
+    }
+
+    .username {
+        font-size: var(--font-size-big);
+        max-width: stretch;
+    }
+
+    .ratings-title {
+        font-size: var(--font-size-big);
+        display: inline-flex;
+        justify-content: space-between;
+        align-items: center;
+
+        .Toggle {
+        }
+    }
+
+    .country-line {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .trophies {
+        /* height: 24px; */
+        a {
+            height: 24px;
+        }
+    }
+
+    .clear-icon-container {
+        text-align: center;
+    }
+
+    #rating-history {
+        width: 100%;
+        height: 10em;
+    }
+
+    table.aliases {
+        font-size: 0.8rem;
+
+        td {
+            vertical-align: bottom;
+        }
+    }
+
+    .warning-system-messages-header {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+    }
+
+    .warning-system-messages-toggle {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+        justify-content: flex-end;
+    }
+
+    .toggle-container {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        cursor: pointer;
+        justify-content: flex-end;
+        color: var(--shade1);
+        font-size: 10pt;
+
+        .toggle-indicator {
+            display: flex;
+            align-items: center;
+            font-size: 0.7rem;
+            margin-top: 0.1rem; /* just looks better with this */
+        }
+
+        i {
+            font-size: 0.9rem;
+            margin-left: 0.2rem;
+            margin-right: 0.2rem;
+        }
+
+        .toggle-label {
+            display: flex;
+        }
+    }
+
+    .activity-card > div {
+        margin-bottom: 1em;
+    }
+
+    .profile-card {
+        position: relative;
+
+        .row {
+            flex-wrap: nowrap;
+        }
+    }
+
+    .edit-button {
+        .fa-save, .fa-pencil {
+            padding-right: 0.3rem;
+        }
+    }
+
+    td.date {
+        width: 7em;
+        text-align: left;
+        padding-right: 0.5em;
+    }
+
+    td.banned, th.banned {
+        width: 7em;
+        text-align: center;
+    }
+
+    td.browser_id {
+        font-family: var(--monospace-font-family);
+        width: 7em;
+        text-align: left;
+        padding-right: 1em;
+        font-size: 0.7rem;
+        /* display: inline-block; */
+    }
+
+    table {
+        width: 100%;
+
+        th {
+            text-align: left;
+        }
+    }
+
+    .won {
+        color: #5CB85C;
+    }
+
+    .loss {
+        color: #D9534F;
+    }
+
+    .rating_details {
+        height: 1rem;
+        margin-right: 1em;
+        color: var(--shade2);
+        font-size: 0.9em;
+        display: flex;
+        align-items: center;
+    }
+
+    .text-color {
+        color: var(--fg);
+    }
+
+    i.ogs-turtle {
+        position: relative;
+        width: 1.5rem;
+    }
+
+    i.ogs-turtle:before {
+        bottom: -0.15em;
+        position: relative;
+    }
+
+    textarea.moderator-notes {
+        width: 100%;
+        margin-top: 1rem;
+        margin-left: -0.2rem;
+        min-height: 10em;
+    }
+
+    .progress-bar.left {
+        position: relative;
+        text-align: left;
+    }
+
+    .progress-bar.right {
+        position: relative;
+        text-align: right;
+    }
+
+    .progress-bar.left span {
+        position: relative;
+        left: 100%;
+        padding-left: 0.5rem;
+        color: var(--shade2);
+    }
+
+    .progress-bar.right span {
+        position: relative;
+        padding-right: 0.5rem;
+        color: var(--colored-background-fg);
+    }
+
+    .games-won {
+        background-color: var(--win);
+        color: var(--colored-background-fg);
+    }
+
+    .games-lost {
+        background-color: var(--loss);
+        color: var(--colored-background-fg);
+    }
+
+    .fa-circle-o, .fa-bolt, .fa-clock-o, .ogs-turtle:before {
+        width: 1.5em;
+        text-align: center;
+    }
+
+    .ogs-turtle:before {
+        bottom: -0.12em;
+        position: relative;
+    }
+
+    .library-won-result {
+        color: var(--win);
+    }
+
+    .library-lost-result {
+        color: var(--loss);
+    }
+
+    .Dropzone {
+        width: 128px;
+        height: 128px;
+        cursor: pointer;
+        border: 2px dashed #888;
+    }
+
+    .fa-file-text-o {
+        float: right;
+    }
+
+    .activity-dl {
+        dd {
+            display: block !important;
+        }
+
+        .icon {
+            max-width: 15px;
+            max-height: 15px;
+        }
+    }
+
+    .search {
+        display: flex;
+        align-items: flex-end;
+
+        i { /* the search icon */
+            /* This would give us the themed underline */
+            /* .. but it is bugged in Chrome. */
+            /* @extend input; */
+            font-size: smaller;
+            margin-left: 1rem;
+            padding-right: 0.25rem;
+            padding-bottom: 0.4em;
+        }
+    }
+
+    .avatar-and-ratings-row {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-around;
+        align-items: stretch;
+    }
+
+    .avatar-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        align-content: center;
+        min-width: 20rem;
+        flex: 0;
+        padding-right: 0.5rem;
+        justify-content: center;
+    }
+
+    .ratings-container {
+        display: flex;
+        flex-direction: column;
+        overflow-x: auto;
+    }
+
+    .avatar-subtext {
+        text-align: center;
+    }
+
+    .avatar-button {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .about-container {
+        display: flex;
+        justify-content: stretch;
+        align-items: stretch;
+        align-content: stretch;
+        max-height: 90rem;
+    }
+
+    .about-markdown {
+        flex: 1;
+        overflow-y: auto;
+
+        > div :first-child {
+            margin-top: 0;
+            padding-top: 0;
+        }
+    }
+
+    .ratings-grid {
+        display: table;
+        margin-right: 1rem;
+
+        .speed {
+            display: table-row;
+
+            .cell {
+                display: table-cell;
+                padding: 0.3rem;
+                text-align: center;
+                vertical-align: middle;
+            }
+        }
+
+        .title-row {
+            display: table-row;
+        }
+
+        .title {
+            display: table-cell;
+            font-weight: bold;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .speed-icon {
+            width: 1.5rem !important;
+            text-align: center;
+        }
+
+        .rating-entry {
+            white-space: nowrap;
+            cursor: pointer;
+            border: 1px solid transparent;
+            border-radius: 0.3rem;
+
+            &.unset {
+                color: var(--shade3);
+            }
+
+            &.active {
+                background-color: var(--chart-area);
+                border-color: var(--chart-line);
+            }
+
+            &:hover {
+                background-color: var(--chart-area);
+            }
+
+            .rating {
+            }
+
+            .ranking {
+                font-size: var(--font-size-small);
+            }
+
+            .left, .right {
+                display: inline-block;
+                margin: 0;
+                padding: 0;
+            }
+
+            .left {
+                width: 3rem;
+                padding-right: 0.3rem;
+            }
+
+            .right {
+                width: 3rem;
+                padding-left: 0.3rem;
+            }
+        }
+    }
+
+    .ratings-row {
+        margin-top: 1.5rem;
+        margin-bottom: 1rem;
+        display: flex;
+        flex-direction: column;
+        flex-wrap: nowrap;
+        position: relative; /* so we can position the graph-type-toggle relative this */
+
+        .ratings-chart {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .graph-type-toggle {
+            position: absolute;
+            top: -5px; /* manually align with first label row in chart */
+        }
+    }
+
+    .website-url {
+        /* width: 100%; */
+        max-width: 100%;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+
+        input {
+            width: 100%;
+        }
+    }
+
+    .game-options {
+        display: flex;
+        justify-content: space-between;
+        align-items: self-start;
+        width: 100%;
+
+        .rengo-selector > * {
+            vertical-align: middle;
+        }
+    }
+
+    .game-history-table, .review-history-table {
+        .game_name, .date, .player, .library-lost-result, .library-won-result, .library-tie-result, .library-lost-result-vs-weaker, .library-lost-result-vs-stronger, .library-won-result-vs-stronger, .library-won-result-vs-weaker, .library-won-result-unranked, .library-lost-result-unranked, .library-hidden-result {
+            white-space: nowrap;
+        }
+
+        .library-lost-result, .library-won-result, .library-tie-result, .library-lost-result-vs-weaker, .library-lost-result-vs-stronger, .library-won-result-vs-stronger, .library-won-result-vs-weaker, .library-won-result-unranked, .library-lost-result-unranked, .library-hidden-result {
+            overflow: hidden;
+        }
+
+        .library-lost-result-vs-weaker {
+            background-color: var(--weak-loss);
+            color: var(--weak-l-text);
+        }
+
+        .library-lost-result-vs-stronger {
+            background-color: var(--strong-loss);
+            color: var(--strong-l-text);
+        }
+
+        .library-won-result-vs-stronger {
+            background-color: var(--strong-win);
+            color: var(--strong-w-text);
+        }
+
+        .library-won-result-vs-weaker {
+            background-color: var(--weak-win);
+            color: var(--weak-w-text);
+        }
+
+        .library-won-result-unranked {
+            color: var(--strong-win);
+        }
+
+        .library-lost-result-unranked {
+            color: var(--strong-loss);
+        }
+
+        .board_size {
+            padding-right: 0.5em;
+        }
+
+        .handicap {
+            text-align: center;
+        }
+
+        .game_name {
+            a {
+                color: unset;
+            }
+
+            max-width: 15rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .player {
+            max-width: 12rem;
+            overflow: hidden;
+        }
+
+        span {
+            padding-right: 0.3em;
+            vertical-align: middle;
+        }
+
+        .user_info {
+            white-space: nowrap;
+        }
+
+        .winner_marker {
+            color: var(--winner-trophy);
+            padding-left: 4px;
+            vertical-align: middle;
+            padding-right: 4px;
+        }
+
+        .annulled {
+            opacity: var(--annul-opacity);
+        }
+
+        th {
+            padding-right: 0.5em;
+        }
+    }
+
+    button.toggle-ratings {
+        display: block;
+        margin: 10px auto;
+    }
+
+    .SpicyDragon-trophy {
+        img {
+            width: 340px;
+            height: 400px;
+        }
+
+        text-align: center;
+        max-width: 100%;
+    }
+
+    .Dolphin-trophy {
+        img {
+            width: 300px;
+            height: 300px;
+        }
+
+        text-align: center;
+        max-width: 100%;
+    }
+
+    .SelfReportedAccountLinkages {
+        .association-link, .server-link {
+            display: flex;
+            align-items: middle;
+            justify-content: center;
+
+            .name {
+                display: inline-block;
+                margin-left: 0.5rem;
+                width: 10rem;
+                overflow: hidden;
+            }
+
+            .id {
+                display: inline-block;
+                margin-left: 0.5rem;
+                width: 5rem;
+                overflow: hidden;
+            }
+
+            .rank {
+                margin-left: 0.5rem;
+                display: inline-block;
+                width: 2rem;
+            }
+        }
+
+        .server-link {
+            .name {
+                margin-left: 1.5rem;
+                width: 7rem;
+            }
+
+            .id {
+                width: 8rem;
+            }
+        }
+    }
+
+    .fa-flag {
+        color: #ff8B00;
+    }
+}

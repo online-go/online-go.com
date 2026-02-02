@@ -1,0 +1,139 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+.Puzzle {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    position: absolute;
+    top: var(--below-navbar);
+    bottom: 0;
+    left: 0;
+    right: 0;
+
+    &.portrait {
+        flex-direction: column;
+    }
+
+    .left-col {
+    }
+
+    .center-col {
+        flex-grow: 1;
+        flex-shrink: 1;
+        flex-basis: 50%;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        overflow: hidden;
+        z-index: 1;
+    }
+
+    &.portrait .center-col {
+        height: 100vw;
+        min-height: 100vw; /* firefox needs this */
+        max-height: 100vw; /* firefox needs this */
+        flex-basis: 99%;
+    }
+
+    .left-col, .right-col {
+        max-width: 400px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        min-height: auto;
+        padding: 0.5rem;
+        z-index: 2;
+    }
+
+    &.portrait .right-col {
+        overflow-y: visible;
+        overflow-x: visible;
+        align-self: center;
+        min-height: 100vh;
+        max-width: calc(100vw - 1rem);
+    }
+
+    .btn-container {
+        text-align: center;
+    }
+
+    .goban-container {
+        flex-grow: 1;
+        /* flex-shrink: 1; */
+        flex-basis: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+
+        .Goban {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+    }
+
+    .horizontal {
+        overflow-x: hidden;
+
+        dt, dd {
+            width: 45%;
+        }
+    }
+
+    input, textarea {
+        width: 100%;
+    }
+
+    .padded {
+        padding: 0.5rem;
+    }
+
+    .puzzle-node-content {
+        border: 1px solid transparent;
+        border-color: var(--shade4);
+        margin-top: 1rem;
+
+        .actions {
+            padding-top: 1rem;
+            text-align: right;
+        }
+
+        .content {
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+        }
+
+        .incorrect, .success {
+            font-size: var(--font-size-big);
+            text-align: center;
+            padding: 1rem;
+            font-weight: bold;
+        }
+
+        .success {
+            background-color: var(--success);
+            color: var(--colored-background-fg);
+            display: block;
+            text-decoration: none;
+        }
+
+        .incorrect {
+            background-color: var(--reject);
+            color: var(--colored-background-fg);
+        }
+    }
+}

@@ -1,0 +1,170 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+.ChatList {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - var(--navbar-height) - 8.4rem);
+    overflow-y: auto;
+    width: 20%;
+    max-width: 25rem;
+    min-width: 12rem;
+
+    .channel-container {
+        flex-basis: 20%;
+        flex-shrink: 1;
+        flex-grow: 1;
+        width: 20%;
+        max-width: 25rem;
+        min-width: 12rem;
+        border-right: 1px solid transparent;
+        border-right-color: var(--shade3);
+        display: flex;
+        flex-direction: column;
+        user-select: none;
+    }
+
+    .channels {
+        flex-grow: 0;
+        flex-shrink: 0;
+        overflow-x: hidden;
+
+        .channel-header {
+            margin-top: 1rem;
+            text-transform: uppercase;
+            font-weight: bold;
+            font-size: var(--font-size-smaller);
+            margin-bottom: 0.3rem;
+            display: flex;
+            justify-content: space-between;
+            align-content: center;
+
+            .channel-expand-toggle {
+                padding: 0.2rem;
+                padding-right: 0.5rem;
+                cursor: pointer;
+            }
+        }
+
+        .channel-header:first-child {
+            margin-top: 0;
+        }
+
+        .channel {
+            padding-left: 0.2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            &.active {
+                background-color: var(--primary);
+                color: var(--colored-background-fg);
+            }
+
+            &.unjoined {
+                color: var(--shade2);
+            }
+
+            &.unread {
+                color: var(--primary);
+            }
+
+            &.mentioned {
+                color: var(--chat-mentions);
+            }
+        }
+
+        &.hide-unjoined {
+            .unjoined {
+                display: none;
+            }
+        }
+
+        &.hide-read {
+            .read {
+                display: none;
+            }
+        }
+
+        .channel-name {
+            flex-shrink: 1;
+            flex-grow: 1;
+            cursor: pointer;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .unread-count {
+            flex-shrink: 0;
+            /* @extends .monospace - apply manually */
+            font-size: 0.8rem;
+            font-style: normal !important;
+            float: right;
+            padding-left: 0.5rem;
+            padding-top: 0.1rem;
+
+            &:before {
+                content: attr(data-count);
+            }
+        }
+
+        .channel:hover .unread-count:before {
+            cursor: pointer;
+            content: attr(data-menu);
+            border: 1px solid transparent;
+            border-radius: 0.2rem;
+            background-color: var(--shade4);
+            border-color: var(--shade3);
+            padding-left: 0.3rem;
+            padding-right: 0.3rem;
+            color: var(--fg);
+        }
+
+        .channel:hover .unread-count:hover:before {
+            background-color: var(--shade5);
+            border-color: var(--shade4);
+            color: var(--fg);
+        }
+    }
+
+    &.hide-unjoined {
+        .unjoined {
+            display: none;
+        }
+    }
+
+    &.hide-read {
+        .read {
+            display: none;
+        }
+    }
+
+    &.hide-unscubscribed {
+        .chat-unsubscribed {
+            display: none;
+        }
+    }
+
+    .channel-buttons {
+        display: flex;
+        /* justify-content: space-between; */
+    }
+
+    .icon {
+        width: 15px;
+        height: 15px;
+    }
+}

@@ -1,0 +1,538 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/* Font sizes */
+:root {
+    --font-size-big: 16pt;
+    --font-size-mid: 14pt;
+    --font-size-normal: 12pt;
+    --font-size-small: 10pt;
+    --font-size-smaller: 8pt;
+    --font-size-extra-small: 8pt;
+
+    /* Layout */
+    --dock-collapsed-width: 2rem;
+    --dock-width: 15rem;
+    --private-chat-width: 20rem;
+    --navbar-height: 3rem;
+    --below-navbar: 3.3rem;
+
+    /* Z-indices */
+    --z-goban-shadow-layer: 10;
+    --z-goban-stone-layer: 20;
+    --z-goban-pen-layer: 30;
+    --z-goban-message: 40;
+    --z-goban-tab-icon: 160;
+    --z-goban-exit-zenmode: 45;
+    --z-goban-score-details: 50;
+    --z-play-buttons: 140;
+    --z-seek-graph-challenge-list: 150;
+    --z-dock: 150;
+    --z-banned-banner: 151;
+    --z-private-chat: 153;
+    --z-incident-list: 155;
+    --z-omnisearch: 160;
+    --z-announcements: 180;
+    --z-toast: 200;
+    --z-friend-list-backdrop: 300;
+    --z-friend-list-menu: 310;
+    --z-nav-menu-backdrop: 1000;
+    --z-nav-menu-menu: 1010;
+    --z-nav-menu-omnisearch: 1100;
+    --z-modal-backdrop: 2000;
+    --z-modal-container: 2010;
+    --z-popover: 5000;
+    --z-infoball: 5010;
+    --z-report: 6000;
+    --z-swal: 10000;
+    --z-challenge-link: 10010;
+    --z-dynamic-help: 20000;
+    --z-account-warning: 50003;
+    --z-network-warning: 50004;
+    --z-superchat-modal: 50005;
+    --z-superchat: 50010;
+
+    /* Special colors */
+    --supporter-gold: #dfba00;
+}
+
+@media (max-height: 500px) {
+    :root {
+        --navbar-height: 2.0rem;
+        --below-navbar: 2.3rem;
+    }
+}
+
+/* Light theme mixin */
+@define-mixin light {
+    --clear: transparent;
+
+    /* Core colors */
+    --bg: #fff;
+    --fg: #202020;
+    --fg-increased-contrast: #000000;
+    --mix-base: #999;
+    --background-color: #fff;
+    --card-background-color: #f7f7f7;
+    --text-color: #202020;
+    --text-color-active: #000000;
+    --text-dimmed: #868686;
+    --spectator-text-color: #0A06A8;
+    --default-button-color: #202020;
+    --toast-bg: #202020;
+    --toast-fg: #fff;
+    --link-color: #0068F7;
+    --link-color-active: #0053c6;
+
+    /* Buttons and accents */
+    --default-button: #E6E6E0;
+    --primary: #2480FF;
+    --danger: #FFA600;
+    --success: #32C738;
+    --info: #C376FE;
+    --reject: #FF410F;
+    --colored-background-fg: #fff;
+
+    /* Chat/special backgrounds */
+    --malkovich-bg: #CCE3D5;
+    --personal-bg: lightblue;
+    --hidden-bg: #D6B1F4;
+    --variation: #0088cc;
+    --variation-hover: #005580;
+    --email-banner: #CEDBCF;
+    --chart-area: #E6F6FE;
+    --chart-line: #184A6B;
+    --error-boundary-bg: #ffd4c7;
+    --error-boundary-fg: #7f2007;
+    --warning-bg: #FFAE2C;
+    --warning-fg: #202020;
+    --supporter-error-bg: hsl(23, 100%, 90%);
+    --supporter-error-border: hsl(23, 100%, 80%);
+
+    --help-popup-bg: #2480FF;
+
+    /* Online indicators */
+    --indicate-online: #6f6;
+    --indicate-online-shadow: -1px -1px 0 #afa, 1px -1px 0 #8c8, -1px 1px 0 #8c8, 1px 1px 0 #6a6;
+    --chat-offline: #ccc;
+    --chat-offline-shadow: -1px -1px 0 #ccc, 1px -1px 0 #ccc, -1px 1px 0 #ccc, 1px 1px 0 #ccc;
+
+    /* User type colors */
+    --user: #3070A7;
+    --supporter: #A48200;
+    --aga-official: #B95200;
+    --professional: green;
+    --bot: #888;
+    --moderator: #9733EE;
+    --admin: #9733EE;
+    --ambassador: #6FCDEA;
+    --teacher: #27AD49;
+    --chat-mentions: #DB397A;
+    --chat-self-message: #0449C4;
+    --chat-system: #1CA760;
+    --private-chat-user: #111111;
+
+    /* Win/loss colors */
+    --win: #73D355;
+    --tie: #F3F3D5;
+    --loss: #BC4B9A;
+    --weak-win: #c4edb6;
+    --weak-loss: #dec0d5;
+    --strong-win: #469e2f;
+    --strong-loss: #8d386f;
+    --strong-w-text: #fff;
+    --strong-l-text: #fff;
+    --weak-w-text: #202020;
+    --weak-l-text: #202020;
+    --winner-trophy: #e6c525;
+    --annul-opacity: 0.5;
+
+    /* Shades */
+    --shade0: #535353;
+    --shade1: #868686;
+    --shade2: #b9b9b9;
+    --shade3: #d9d9d9;
+    --shade4: #ececec;
+    --shade5: #f5f5f5;
+
+    --search-highlight: #FFEA00;
+    --other-player-background: rgba(150, 150, 150, 0.3);
+
+    /* Joseki colors */
+    --joseki-ideal: #008300;
+    --joseki-good: #436600;
+    --joseki-trick: #ffff00;
+    --joseki-question: #00ccff;
+    --joseki-mistake: #b3001e;
+
+    /* React Select */
+    --react-select-bg: #fff;
+    --react-select-border: #d9d9d9;
+    --react-select-selected-bg: #2684FF;
+    --react-select-selected-fg: #FFFFFF;
+    --react-select-focused-bg: #DEEBFF;
+    --react-select-focused-fg: #202020;
+
+    /* Navbar */
+    --navbar-highlight-background-color: #fff;
+    --navbar-background-color: #fff;
+    --logo-svg: url("../../assets/ogs_light.svg");
+
+    /* Input */
+    --input-bg: #f7f7f7;
+    --input-border: #909090;
+    --input-fg: #202020;
+
+    /* MiniBoards */
+    --goban-shadow: 0 4px 8px rgba(128, 128, 128, 0.71);
+    --goban-shadow-borderless: 0 0px 0px rgba(128, 128, 128, 0.71);
+    --miniboard-to-move: #E6FFD8;
+    --miniboard-to-move-border: #5c994e;
+    --miniboard-viewed-to-move: #F3F3F3;
+    --miniboard-viewed-to-move-border: #dadada;
+    --miniboard-hover: #C7E7E9;
+    --miniboard-hover-border: #829fa1;
+    --miniboard-stone-removal: #FBfbD8;
+    --miniboard-stone-removal-border: #9f9f71;
+    --miniboard-stone-removal-hover: #ffffff;
+    --miniboard-stone-removal-hover-border: #a5a58c;
+
+    /* Player cards */
+    --player-black-background: linear-gradient(to bottom, #7d7e7d 0%, #0e0e0e 100%);
+    --player-white-background: linear-gradient(to bottom, #cccccc 0%, #eeeeee 30%, #ffffff 100%);
+    --inactive-support-gradient: linear-gradient(to bottom, #ffffff 0%, #e5e5e5 100%);
+    --active-support-gradient: linear-gradient(to bottom, #ffffff 0%, #f5e79c 100%);
+    --player-black-fg: #eeeeee;
+    --player-white-fg: #202020;
+    --player-black-clock: #ffffff;
+    --player-white-clock: #202020;
+    --player-black-paused-clock: #ABA8AD;
+    --player-white-paused-clock: #928A99;
+    --quickmatch-player-waiting: #25b32e;
+    --account-warning-bg: #cab4d6;
+    --account-warning-fg: #202020;
+
+    /* Selection header (for dropdowns etc) */
+    --select-header-bg: #f5f5f5;
+    --select-header-fg: #202020;
+}
+
+/* Dark theme mixin */
+@define-mixin dark {
+    --clear: transparent;
+
+    /* Core colors */
+    --bg: #1a1a1a;
+    --fg: #bbbbbb;
+    --fg-increased-contrast: #ffffff;
+    --mix-base: #777;
+    --background-color: #1a1a1a;
+    --card-background-color: #2a2a2a;
+    --text-color: #bbbbbb;
+    --text-color-active: #ffffff;
+    --text-dimmed: #8c8c8c;
+    --spectator-text-color: #8987FC;
+    --default-button-color: #bbbbbb;
+    --toast-bg: #bbbbbb;
+    --toast-fg: #1a1a1a;
+    --link-color: #539bff;
+    --link-color-active: #427ccc;
+
+    /* Buttons and accents */
+    --default-button: #474747;
+    --primary: #1d66cc;
+    --danger: #cc8500;
+    --success: #289f2d;
+    --info: #9c5fcc;
+    --reject: #a62705;
+    --colored-background-fg: #eeeeee;
+
+    /* Chat/special backgrounds */
+    --malkovich-bg: #597053;
+    --personal-bg: #0f2e3b;
+    --hidden-bg: #300352;
+    --variation: #00aaff;
+    --variation-hover: #1A93D0;
+    --email-banner: #2A492B;
+    --chart-area: #092D3E;
+    --chart-line: #329BE0;
+    --error-boundary-bg: #7f2007;
+    --error-boundary-fg: #ffd4c7;
+    --warning-bg: #925A00;
+    --warning-fg: #bbbbbb;
+    --supporter-error-bg: hsl(23, 100%, 10%);
+    --supporter-error-border: hsl(23, 100%, 30%);
+
+    --help-popup-bg: #1d66cc;
+
+    /* Online indicators */
+    --indicate-online: #6f6;
+    --indicate-online-shadow: -1px -1px 0 #afa, 1px -1px 0 #8c8, -1px 1px 0 #8c8, 1px 1px 0 #6a6;
+    --chat-offline: #ccc;
+    --chat-offline-shadow: -1px -1px 0 #ccc, 1px -1px 0 #ccc, -1px 1px 0 #ccc, 1px 1px 0 #ccc;
+
+    /* User type colors */
+    --user: #9dc6ff;
+    --supporter: #dfba00;
+    --aga-official: #B95200;
+    --professional: green;
+    --bot: #888;
+    --moderator: #b566f2;
+    --admin: #b566f2;
+    --ambassador: #6FCDEA;
+    --teacher: #27AD49;
+    --chat-mentions: #E36497;
+    --chat-self-message: #8AB1E6;
+    --chat-system: #50d98c;
+    --private-chat-user: #eeeeee;
+
+    /* Win/loss colors */
+    --win: #3d7030;
+    --tie: #2e2e1e;
+    --loss: #6b3057;
+    --weak-win: #223718;
+    --weak-loss: #391829;
+    --strong-win: #65a353;
+    --strong-loss: #9d5a83;
+    --strong-w-text: #1a1a1a;
+    --strong-l-text: #1a1a1a;
+    --weak-w-text: #bbbbbb;
+    --weak-l-text: #bbbbbb;
+    --winner-trophy: #e6b500;
+    --annul-opacity: 0.3;
+
+    /* Shades */
+    --shade0: #c4c4c4;
+    --shade1: #9a9a9a;
+    --shade2: #6d6d6d;
+    --shade3: #545454;
+    --shade4: #474747;
+    --shade5: #3a3a3a;
+
+    --search-highlight: #554E00;
+    --other-player-background: rgba(140, 140, 140, 0.2);
+
+    /* Joseki colors */
+    --joseki-ideal: #DBAF00;
+    --joseki-good: #436600;
+    --joseki-trick: #ffff00;
+    --joseki-question: #00ccff;
+    --joseki-mistake: #b3001e;
+
+    /* React Select */
+    --react-select-bg: #474747;
+    --react-select-border: #3a3a3a;
+    --react-select-selected-bg: #2684FF;
+    --react-select-selected-fg: #FFFFFF;
+    --react-select-focused-bg: #435B80;
+    --react-select-focused-fg: #ffffff;
+
+    /* Navbar */
+    --navbar-highlight-background-color: #333;
+    --navbar-background-color: #262626;
+    --logo-svg: url("../../assets/ogs_dark.svg");
+
+    /* Input */
+    --input-bg: #5e5e5e;
+    --input-border: #5e5e5e;
+    --input-fg: #bbbbbb;
+
+    /* MiniBoards */
+    --goban-shadow: none;
+    --goban-shadow-borderless: none;
+    --miniboard-to-move: #2B4029;
+    --miniboard-to-move-border: #0f170e;
+    --miniboard-viewed-to-move: #282828;
+    --miniboard-viewed-to-move-border: #3c3c3c;
+    --miniboard-hover: #578588;
+    --miniboard-hover-border: #335052;
+    --miniboard-stone-removal: #5B4810;
+    --miniboard-stone-removal-border: #251d06;
+    --miniboard-stone-removal-hover: #251d06;
+    --miniboard-stone-removal-hover-border: #0c0902;
+
+    /* Player cards */
+    --player-black-background: linear-gradient(to bottom, #7d7d7d 0%, #333333 50%, #0c0c0c 100%);
+    --player-white-background: linear-gradient(to bottom, #888888 0%, #efefef 50%, #efefef 100%);
+    --inactive-support-gradient: linear-gradient(to bottom, #7d7d7d 0%, #333333 100%);
+    --active-support-gradient: linear-gradient(to bottom, #9c8200 0%, #584a00 100%);
+    --player-black-fg: #bbbbbb;
+    --player-white-fg: #131313;
+    --player-black-clock: #ffffff;
+    --player-white-clock: #000;
+    --player-white-paused-clock: #5F4A71;
+    --player-black-paused-clock: #928A99;
+    --quickmatch-player-waiting: #289f2d;
+    --account-warning-bg: #2d2433;
+    --account-warning-fg: #bbbbbb;
+
+    /* Selection header */
+    --select-header-bg: #474747;
+    --select-header-fg: #9a9a9a;
+}
+
+/* Accessible theme (extends dark with accessibility improvements) */
+@define-mixin accessible {
+    /* Start with dark theme values */
+    --clear: transparent;
+    --bg: #1a1a1a;
+    --fg: #bbbbbb;
+    --fg-increased-contrast: #ffffff;
+    --mix-base: #777;
+    --background-color: #1a1a1a;
+    --card-background-color: #2a2a2a;
+    --text-color: #bbbbbb;
+    --text-color-active: #ffffff;
+    --text-dimmed: #8c8c8c;
+    --spectator-text-color: #8987FC;
+    --default-button-color: #bbbbbb;
+    --toast-bg: #bbbbbb;
+    --toast-fg: #1a1a1a;
+    --link-color: #539bff;
+    --link-color-active: #427ccc;
+    --default-button: #474747;
+    --primary: #1d66cc;
+    --danger: #cc8500;
+    --success: #289f2d;
+    --info: #9c5fcc;
+    --reject: #a62705;
+    --colored-background-fg: #eeeeee;
+    --malkovich-bg: #597053;
+    --personal-bg: #0f2e3b;
+    --hidden-bg: #300352;
+    --variation: #00aaff;
+    --variation-hover: #1A93D0;
+    --email-banner: #2A492B;
+    --chart-area: #092D3E;
+    --chart-line: #329BE0;
+    --error-boundary-bg: #7f2007;
+    --error-boundary-fg: #ffd4c7;
+    --warning-bg: #925A00;
+    --warning-fg: #bbbbbb;
+    --supporter-error-bg: hsl(23, 100%, 10%);
+    --supporter-error-border: hsl(23, 100%, 30%);
+    --help-popup-bg: #1d66cc;
+    --chat-offline: #1a1a1a;
+    --chat-offline-shadow: -1px -1px 0 #ccc, 1px -1px 0 #ccc, -1px 1px 0 #ddd, 1px 1px 0 #ccc;
+    --user: #9dc6ff;
+    --supporter: #dfba00;
+    --aga-official: #B95200;
+    --professional: green;
+    --bot: #888;
+    --moderator: #b566f2;
+    --admin: #b566f2;
+    --ambassador: #6FCDEA;
+    --teacher: #27AD49;
+    --chat-mentions: #E36497;
+    --chat-self-message: #8AB1E6;
+    --chat-system: #50d98c;
+    --private-chat-user: #eeeeee;
+    --weak-w-text: #bbbbbb;
+    --weak-l-text: #bbbbbb;
+    --winner-trophy: #e6b500;
+    --annul-opacity: 0.3;
+    --shade0: #c4c4c4;
+    --shade1: #9a9a9a;
+    --shade2: #6d6d6d;
+    --shade3: #545454;
+    --shade4: #474747;
+    --shade5: #3a3a3a;
+    --search-highlight: #554E00;
+    --other-player-background: rgba(140, 140, 140, 0.2);
+    --joseki-ideal: #DBAF00;
+    --joseki-good: #436600;
+    --joseki-trick: #ffff00;
+    --joseki-question: #00ccff;
+    --joseki-mistake: #b3001e;
+    --react-select-bg: #474747;
+    --react-select-border: #3a3a3a;
+    --react-select-selected-bg: #2684FF;
+    --react-select-selected-fg: #FFFFFF;
+    --react-select-focused-bg: #435B80;
+    --react-select-focused-fg: #ffffff;
+    --navbar-highlight-background-color: #333;
+    --navbar-background-color: #262626;
+    --logo-svg: url("../../assets/ogs_dark.svg");
+    --input-bg: #5e5e5e;
+    --input-border: #5e5e5e;
+    --input-fg: #bbbbbb;
+    --goban-shadow: none;
+    --goban-shadow-borderless: none;
+    --miniboard-to-move: #2B4029;
+    --miniboard-to-move-border: #0f170e;
+    --miniboard-viewed-to-move: #282828;
+    --miniboard-viewed-to-move-border: #3c3c3c;
+    --miniboard-hover: #578588;
+    --miniboard-hover-border: #335052;
+    --miniboard-stone-removal: #5B4810;
+    --miniboard-stone-removal-border: #251d06;
+    --miniboard-stone-removal-hover: #251d06;
+    --miniboard-stone-removal-hover-border: #0c0902;
+    --player-black-background: linear-gradient(to bottom, #7d7d7d 0%, #333333 50%, #0c0c0c 100%);
+    --player-white-background: linear-gradient(to bottom, #888888 0%, #efefef 50%, #efefef 100%);
+    --inactive-support-gradient: linear-gradient(to bottom, #7d7d7d 0%, #333333 100%);
+    --active-support-gradient: linear-gradient(to bottom, #9c8200 0%, #584a00 100%);
+    --player-black-fg: #bbbbbb;
+    --player-white-fg: #131313;
+    --player-black-clock: #ffffff;
+    --player-white-clock: #000;
+    --player-white-paused-clock: #5F4A71;
+    --player-black-paused-clock: #928A99;
+    --account-warning-bg: #2d2433;
+    --account-warning-fg: #bbbbbb;
+    --select-header-bg: #474747;
+    --select-header-fg: #9a9a9a;
+
+    /* Accessible-specific overrides (colorblind-friendly palette) */
+    --win: #0072B2;
+    --tie: #CC79A7;
+    --loss: #D55E00;
+    --strong-win: #0072B2;
+    --strong-loss: #D55E00;
+    --weak-win: #003f64;
+    --weak-loss: #783400;
+    --strong-w-text: #1a1a1a;
+    --strong-l-text: #1a1a1a;
+    --indicate-online: #70b3ff;
+    --indicate-online-shadow: -1px -1px 0 #000, 1px -1px 0 #111, -1px 1px 0 #222, 1px 1px 0 #111;
+    --quickmatch-player-waiting: #70b3ff;
+}
+
+/* Apply light theme by default */
+:root {
+    @mixin light;
+}
+
+/* System preference for dark mode */
+@media (prefers-color-scheme: dark) {
+    :root {
+        @mixin dark;
+    }
+}
+
+/* Explicit theme overrides via body class */
+body.light {
+    @mixin light;
+}
+
+body.dark {
+    @mixin dark;
+}
+
+body.accessible {
+    @mixin accessible;
+}
