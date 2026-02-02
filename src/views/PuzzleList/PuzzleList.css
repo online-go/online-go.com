@@ -31,6 +31,8 @@
 
         td.icon {
             width: 70px;
+            height: 66px;
+            vertical-align: middle;
         }
     }
 
@@ -39,15 +41,24 @@
     }
 
     .MiniGoban {
-        height: 0;
         width: 64px;
-        margin-top: 20px;
-        transform: translateY(20px);
+        height: 64px;
         overflow: visible;
-        background-color: red;
+        display: flex;
+        align-items: center;
+        justify-content: center;
 
         .inner-container {
             overflow: visible;
+            transform: translateY(3px);
+
+            .board {
+                padding: 0;
+            }
+
+            .Goban {
+                overflow: hidden;
+            }
         }
     }
 
