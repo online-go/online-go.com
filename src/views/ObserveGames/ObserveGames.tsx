@@ -17,6 +17,7 @@
 
 import * as React from "react";
 import { ObserveGamesComponent } from "@/components/ObserveGamesComponent";
+import "./ObserveGames.css";
 
 export class ObserveGames extends React.PureComponent {
     constructor(props: {}) {

@@ -23,6 +23,7 @@ import { get } from "@/lib/requests";
 import { Flag } from "@/components/Flag";
 import { Player } from "@/components/Player";
 import * as data from "@/lib/data";
+import "./Team.css";
 
 function shuffleArray(array: any[]) {
     for (let i = array.length - 1; i >= 0; i--) {

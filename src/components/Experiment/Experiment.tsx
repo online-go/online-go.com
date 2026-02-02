@@ -18,6 +18,7 @@
 import * as React from "react";
 import { useData } from "@/lib/hooks";
 import { Default } from "./Default";
+import "./Experiment.css";
 
 interface ExperimentProps {
     name: string;

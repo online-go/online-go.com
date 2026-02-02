@@ -18,6 +18,7 @@
 import * as React from "react";
 import { pgettext, _ } from "@/lib/translate";
 import { Modal, openModal } from "@/components/Modal";
+import "./SGFPasteModal.css";
 
 interface Events {}
 

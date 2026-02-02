@@ -18,6 +18,7 @@
 import * as React from "react";
 import { _, llm_pgettext } from "@/lib/translate";
 import { openModal, Modal } from "@/components/Modal";
+import "./PlayPageHelp.css";
 
 interface Events {}
 

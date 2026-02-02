@@ -19,6 +19,7 @@ import * as React from "react";
 import { pgettext } from "@/lib/translate";
 
 import Select, { MultiValue } from "react-select";
+import "./JosekiTagSelector.css";
 
 // I have no idea why this is different to the back end type
 // It gets mapped to this from the backend type :shrug:

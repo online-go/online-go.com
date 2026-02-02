@@ -35,6 +35,7 @@ import { AIDetection } from "@moderator-ui/AIDetection";
 import { MODERATOR_POWERS } from "@/lib/moderation";
 import { toast } from "@/lib/toast";
 import { CollectionSharingModal } from "@/components/CollectionSharingModal";
+import "./LibraryPlayer.css";
 
 type LibraryPlayerProperties = RouteComponentProps<{
     player_id: string;

@@ -19,6 +19,7 @@ import * as React from "react";
 import { _ } from "@/lib/translate";
 import { Modal, openModal } from "@/components/Modal";
 import * as data from "@/lib/data";
+import "./PlayerNotesModal.css";
 
 interface Events {}
 

@@ -19,6 +19,7 @@ import * as React from "react";
 import { alert } from "@/lib/swal_config";
 import { post } from "@/lib/requests";
 import { errorAlerter } from "@/lib/misc";
+import "./BlockedVPN.css";
 
 export function BlockedVPN(): React.ReactElement {
     const [vpn, setVPN] = React.useState("");

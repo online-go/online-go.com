@@ -31,6 +31,7 @@ import { OJEIntro } from "./OJEIntro";
 import { GameLogHelp } from "./GameLogHelp";
 import { AIDetectionAppealHelp } from "./AIDetectionAppealHelp";
 import { EscapingAppealHelp } from "./EscapingAppealHelp";
+import "./HelpFlows.css";
 
 /**
  * This component is a handy wrapper for all the Help Flows, and reset on login/logout

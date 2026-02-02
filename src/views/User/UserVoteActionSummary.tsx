@@ -21,6 +21,7 @@ import { get } from "@/lib/requests";
 import * as data from "@/lib/data";
 import { ResponsivePie } from "@nivo/pie";
 import { ReportType } from "@/components/Report";
+import "./UserVoteActionSummary.css";
 
 interface VoteSummaryData {
     report_type: string;

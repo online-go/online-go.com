@@ -21,6 +21,7 @@ import { del } from "@/lib/requests";
 import { DismissableMessagesSchema } from "@/lib/data_schema";
 import { AutoTranslate } from "@/components/AutoTranslate";
 import { UIPush } from "@/components/UIPush";
+import "./DismissableMessages.css";
 
 export function DismissableMessages(): React.ReactElement | null {
     const [messages, setMessages] = React.useState<DismissableMessagesSchema | undefined>(

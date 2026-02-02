@@ -21,6 +21,7 @@ import { pgettext } from "@/lib/translate";
 import { put } from "@/lib/requests";
 import { errorAlerter } from "@/lib/misc";
 import { useUser } from "@/lib/hooks";
+import "./NewUserRankChooser.css";
 
 interface NewUserRankChooserProps {
     show_skip?: boolean;

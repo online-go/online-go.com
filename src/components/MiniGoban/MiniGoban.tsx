@@ -30,6 +30,7 @@ import { getGameResultText } from "@/lib/misc";
 import { getEm10Width, getWindowWidth } from "@/lib/device";
 import { PlayerCacheEntry } from "@/lib/player_cache";
 import { usePreference } from "@/lib/preferences";
+import "./MiniGoban.css";
 
 export interface MiniGobanProps {
     game_id?: number;

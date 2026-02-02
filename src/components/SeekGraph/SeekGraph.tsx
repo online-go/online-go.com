@@ -43,6 +43,7 @@ import * as SeekGraphSymbols from "./SeekGraphSymbols";
 
 import { Challenge, ChallengeFilter, shouldDisplayChallenge } from "@/lib/challenge_utils";
 import { SeekgraphDeleteMessage, SeekgraphStartedMessage, SeekgraphChallengeMessage } from "goban";
+import "./SeekGraph.css";
 
 interface ExtendedSeekgraphChallengeMessage extends SeekgraphChallengeMessage {
     user_challenge?: boolean;

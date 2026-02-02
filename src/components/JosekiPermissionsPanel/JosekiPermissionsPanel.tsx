@@ -21,6 +21,7 @@ import * as data from "@/lib/data";
 import { get, put } from "@/lib/requests";
 
 import { Player } from "@/components/Player";
+import "./JosekiPermissionsPanel.css";
 
 interface JosekiAdminProps {
     server_url: string;

@@ -19,6 +19,7 @@ import * as React from "react";
 import { post } from "@/lib/requests";
 import { current_language, pgettext } from "@/lib/translate";
 import { Markdown } from "@/components/Markdown";
+import "./AutoTranslate.css";
 
 interface AutoTranslateProps {
     source: string | null | undefined;

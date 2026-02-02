@@ -29,6 +29,7 @@ import { SearchInput } from "@/components/misc-ui";
 import { Player } from "@/components/Player";
 import moment from "moment";
 import { chat_markup } from "@/components/Chat";
+import "./Firewall.css";
 */
 
 type Operator = "EQUALS" | "GREATER_THAN" | "LESS_THAN" | "REGEX_MATCHES" | "OR" | "AND";

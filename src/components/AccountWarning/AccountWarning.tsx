@@ -26,6 +26,7 @@ import { useMainGoban, useUser } from "@/lib/hooks";
 import { AutoTranslate } from "@/components/AutoTranslate";
 import { useLocation } from "react-router-dom";
 import { CANNED_MESSAGES } from "./CannedMessages";
+import "./AccountWarning.css";
 
 const BUTTON_COUNTDOWN_TIME = 10000; // ms;
 

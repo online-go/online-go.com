@@ -20,6 +20,7 @@ import { _ } from "@/lib/translate";
 import { Player } from "@/components/Player";
 import { PaginatedTable } from "@/components/PaginatedTable";
 import { useResizeDetector } from "@/components/OgsResizeDetector";
+import "./LadderComponent.css";
 
 interface LadderComponentProperties {
     ladderId: number;

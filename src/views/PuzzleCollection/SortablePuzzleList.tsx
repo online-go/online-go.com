@@ -37,6 +37,7 @@ import {
     verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { IdType } from "@/lib/types";
+import "./SortablePuzzleList.css";
 
 interface PuzzleEntryInterface {
     id: number;

@@ -22,6 +22,7 @@ import { openModal, Modal } from "@/components/Modal";
 import { Player } from "@/components/Player";
 import { socket } from "@/lib/sockets";
 import { GameLog, LogEntry } from "@/views/Game/GameLog";
+import "./GameLogModal.css";
 
 interface Events {}
 

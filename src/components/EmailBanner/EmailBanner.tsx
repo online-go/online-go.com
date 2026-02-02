@@ -20,6 +20,7 @@ import { browserHistory } from "@/lib/ogsHistory";
 import { _ } from "@/lib/translate";
 import * as data from "@/lib/data";
 import { Card } from "@/components/material";
+import "./EmailBanner.css";
 
 export class EmailBanner extends React.PureComponent {
     constructor(props: {}) {

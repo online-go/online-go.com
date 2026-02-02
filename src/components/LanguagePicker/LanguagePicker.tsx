@@ -19,6 +19,7 @@ import * as React from "react";
 import { _, setCurrentLanguage, current_language, languages } from "@/lib/translate";
 import * as preferences from "@/lib/preferences";
 import { ModalContext, ModalTypes } from "@/components/ModalProvider";
+import "./LanguagePicker.css";
 
 function language_sorter(a: string, b: string) {
     if (a === "auto") {

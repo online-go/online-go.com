@@ -32,6 +32,7 @@ import {
     AdHocPackedMove,
     GobanRenderer,
 } from "goban";
+import "./GameList.css";
 
 interface UserType {
     id: number;

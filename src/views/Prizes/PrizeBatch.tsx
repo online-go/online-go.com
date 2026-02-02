@@ -23,6 +23,7 @@ import { Player } from "@/components/Player";
 import QRCode from "qrcode";
 import { toast } from "@/lib/toast";
 import { interpolate, pgettext } from "@/lib/translate";
+import "./PrizeBatch.css";
 interface PrizeBatch {
     id: string;
     created_at: string;

@@ -25,6 +25,7 @@ import { Timeout } from "@/lib/misc";
 import { chat_manager, users_by_rank, ChatChannelProxy } from "@/lib/chat_manager";
 import { User } from "goban";
 import { getBlocks } from "../BlockPlayer";
+import "./ChatUsersList.css";
 
 interface ChatUsersListProperties {
     channel: string;

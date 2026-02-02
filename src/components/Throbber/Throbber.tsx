@@ -18,6 +18,7 @@
 /* From https://loading.io/css/ */
 
 import * as React from "react";
+import "./Throbber.css";
 
 interface ThrobberProps {
     throb: boolean;

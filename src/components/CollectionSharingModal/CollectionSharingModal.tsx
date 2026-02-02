@@ -21,6 +21,7 @@ import { errorAlerter } from "@/lib/misc";
 import { _ } from "@/lib/translate";
 import { PlayerCacheEntry } from "@/lib/player_cache";
 import { PlayerAutocomplete } from "@/components/PlayerAutocomplete/PlayerAutocomplete";
+import "./CollectionSharingModal.css";
 
 interface CollectionSharingModalProps {
     collection_id: number;

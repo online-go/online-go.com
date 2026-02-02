@@ -24,6 +24,7 @@ import { GobanEngineConfig } from "goban";
 import { socket } from "@/lib/sockets";
 import { Player } from "@/components/Player";
 import { ScoringEventThumbnail } from "./ScoringEventThumbnail";
+import "./GameLog.css";
 
 const TRUNCATED_GAME_LOG_LENGTH = 25;
 

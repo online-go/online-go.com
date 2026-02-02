@@ -29,6 +29,7 @@ window.dup = dup;
 
 import { alert } from "@/lib/swal_config";
 import { openDemoBoardModal } from "@/components/DemoBoardModal";
+import "./TournamentRecord.css";
 const ranks = allRanks();
 
 interface Round {

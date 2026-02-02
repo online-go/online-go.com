@@ -29,6 +29,7 @@ import { errorAlerter } from "@/lib/misc";
 import { Player } from "@/components/Player";
 import { EmbeddedChatCard } from "@/components/Chat";
 import { useUser } from "@/lib/hooks";
+import "./RengoTeamManagementPane.css";
 
 type Challenge = socket_api.seekgraph_global.Challenge;
 type RengoParticipantsDTO = rest_api.RengoParticipantsDTO;

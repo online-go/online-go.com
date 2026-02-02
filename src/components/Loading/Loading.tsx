@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import "./Loading.css";
 
 interface LoadingProps {
     large?: boolean;

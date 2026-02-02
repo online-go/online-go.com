@@ -21,6 +21,7 @@ import { get, abort_requests_in_flight } from "@/lib/requests";
 import * as player_cache from "@/lib/player_cache";
 import Autosuggest from "react-autosuggest";
 import { IdType } from "@/lib/types";
+import "./PlayerAutocomplete.css";
 
 interface PlayerAutocompleteProperties {
     onComplete: (user: player_cache.PlayerCacheEntry | null) => void;

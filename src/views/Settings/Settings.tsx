@@ -52,6 +52,7 @@ import { HelpSettings } from "./HelpSettings";
 import { Supporter } from "@/views/Supporter";
 import { GoTVPreferences } from "./GoTVPreferences";
 import { ThemePreferences } from "./ThemePreferences";
+import "./Settings.css";
 
 export function Settings(): React.ReactElement {
     const { category } = useParams();

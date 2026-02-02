@@ -20,6 +20,7 @@ import { getUserRating, is_novice, is_provisional, humble_rating } from "@/lib/r
 import { Player } from "@/components/Player";
 import { PlayerIcon } from "@/components/PlayerIcon";
 import * as preferences from "@/lib/preferences";
+import "./ProfileCard.css";
 
 interface ProfileCardInterface {
     user: any;

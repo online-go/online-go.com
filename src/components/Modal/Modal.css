@@ -42,7 +42,13 @@
 }
 
 .Modal {
-    /* @extends .Card - apply manually */
+    /* Card base styles (previously via @extends .Card) */
+    background-color: var(--card-background-color);
+    border: 1px solid transparent;
+    border-color: var(--shade3);
+    box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.16), 0px 2px 5px 0px rgba(0, 0, 0, 0.15);
+
+    /* Modal-specific styles */
     color: var(--fg);
     max-width: 100%;
     max-height: 90vh;

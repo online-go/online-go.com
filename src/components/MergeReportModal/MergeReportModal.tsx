@@ -18,6 +18,7 @@
 import * as React from "react";
 import { _ } from "@/lib/translate";
 import { Modal, openModal } from "@/components/Modal";
+import "./MergeReportModal.css";
 
 interface Events {}
 

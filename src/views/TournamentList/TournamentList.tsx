@@ -32,6 +32,7 @@ import { Toggle } from "@/components/Toggle";
 import { IdType } from "@/lib/types";
 import { useUser } from "@/lib/hooks";
 import { user_uploads_url } from "@/lib/cdn";
+import "./TournamentList.css";
 
 interface TournamentListProperties {
     phase: "open" | "active" | "finished";

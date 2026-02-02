@@ -53,6 +53,9 @@ import {
 import { toast } from "@/lib/toast";
 import { ignore } from "@/lib/misc";
 import { updateAntiGriefGameState } from "./AntiGrief";
+import "./Game.css";
+import "./Players.css";
+import "./MoveTree.css";
 
 export function Game(): React.ReactElement | null {
     const params = useParams<"game_id" | "review_id" | "move_number">();

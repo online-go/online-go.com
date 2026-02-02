@@ -20,6 +20,7 @@ import { useState, useMemo } from "react";
 import { MoveCategory, AiReviewCategorization as AIReviewCategorization } from "goban";
 import { MoveListPopover } from "@/components/AIReview/MoveListPopover";
 import { _, interpolate } from "@/lib/translate";
+import "./SummaryTable.css";
 
 interface SummaryTableProperties {
     categorization: AIReviewCategorization | null;

@@ -34,6 +34,7 @@ import {
     bounded_rank,
 } from "@/lib/rank_utils";
 import { JGOFTimeControlSpeed } from "goban";
+import "./RatingsChart.css";
 
 export type speed_t = "overall" | JGOFTimeControlSpeed;
 

@@ -28,6 +28,7 @@ import { AutoTranslate } from "@/components/AutoTranslate";
 import { UIPush } from "@/components/UIPush";
 import { getPrivateChat } from "@/components/PrivateChat";
 import * as player_cache from "@/lib/player_cache";
+import "./Appeal.css";
 
 // These are strings used to identify the reason for suspension.
 // They need to match the reason for suspension on the back end from moderator vote to suspend.

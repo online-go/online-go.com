@@ -38,6 +38,7 @@ import {
     bounded_rank,
 } from "@/lib/rank_utils";
 import { speed_translation, speed_t } from "../RatingsChart/RatingsChart";
+import "./RatingsChartByGame.css";
 
 interface RatingsChartProperties {
     playerId: number;

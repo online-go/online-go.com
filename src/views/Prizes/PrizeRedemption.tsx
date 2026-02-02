@@ -20,6 +20,7 @@ import { get, post } from "@/lib/requests";
 import { useNavigate, useParams } from "react-router-dom";
 import { useUser } from "@/lib/hooks";
 import { interpolate, pgettext } from "@/lib/translate";
+import "./PrizeRedemption.css";
 
 interface Prize {
     batch: string;

@@ -70,6 +70,7 @@ import { useUser } from "@/lib/hooks";
 import { AntiGrief } from "./AntiGrief";
 
 import { EstimateScore } from "./fragments";
+import "./PlayControls.css";
 
 const MAX_SEALING_LOCATIONS_TO_LIST = 5;
 

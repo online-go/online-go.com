@@ -20,6 +20,7 @@ import { _ } from "@/lib/translate";
 import { Link } from "react-router-dom";
 import * as data from "@/lib/data";
 import { ServerTimeDisplay } from "@/components/ServerTimeDisplay";
+import "./About.css";
 
 declare let ogs_version: string;
 declare let ogs_current_language: string;

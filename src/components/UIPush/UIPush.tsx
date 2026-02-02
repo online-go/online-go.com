@@ -17,6 +17,7 @@
 
 import * as React from "react";
 import { socket } from "@/lib/sockets";
+import "./UIPush.css";
 
 interface UIPushProperties {
     event: string;

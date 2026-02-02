@@ -21,6 +21,7 @@ import { AIReviewEntry } from "./AIReview";
 import { PersistentElement } from "@/components/PersistentElement";
 import { JGOFAIReview } from "goban";
 import { ReviewChartD3 } from "./ReviewChartD3";
+import "./ReviewChart.css";
 
 interface ReviewChartProperties {
     entries: Array<AIReviewEntry>;

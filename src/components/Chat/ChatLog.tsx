@@ -44,6 +44,7 @@ import { profanity_filter } from "@/lib/profanity_filter";
 import { popover } from "@/lib/popover";
 import { alert } from "@/lib/swal_config";
 import { useUser } from "@/lib/hooks";
+import "./ChatLog.css";
 
 const URL_REGEX =
     /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/g;

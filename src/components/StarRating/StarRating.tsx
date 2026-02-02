@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import "./StarRating.css";
 
 interface StarRatingProperties {
     value: number;

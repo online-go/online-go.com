@@ -17,6 +17,7 @@
 
 import * as React from "react";
 import * as data from "@/lib/data";
+import "./DismissableNotification.css";
 
 interface DismissableNotificationProperties {
     dismissedKey: string;

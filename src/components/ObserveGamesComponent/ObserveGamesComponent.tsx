@@ -23,6 +23,7 @@ import { dup } from "@/lib/misc";
 import { GameList } from "@/components/GameList";
 import { ActiveAnnouncements } from "@/components/Announcements";
 import { socket } from "@/lib/sockets";
+import "./ObserveGamesComponent.css";
 
 interface ObserveGamesComponentProperties {
     announcements: boolean;

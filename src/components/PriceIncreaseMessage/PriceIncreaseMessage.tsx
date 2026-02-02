@@ -20,6 +20,7 @@ import * as data from "@/lib/data";
 import { _, llm_pgettext } from "@/lib/translate";
 import { useUser, useData } from "@/lib/hooks";
 import { Link } from "react-router-dom";
+import "./PriceIncreaseMessage.css";
 
 interface PriceIncreaseMessageProps {
     noDismiss?: boolean;

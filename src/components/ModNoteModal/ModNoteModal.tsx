@@ -23,6 +23,7 @@ import * as player_cache from "@/lib/player_cache";
 import { _ } from "@/lib/translate";
 
 import { Modal, openModal } from "@/components/Modal";
+import "./ModNoteModal.css";
 
 interface Events {}
 

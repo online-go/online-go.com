@@ -20,6 +20,7 @@ import { _ } from "@/lib/translate";
 import { Modal, openModal } from "@/components/Modal";
 import { Errcode } from "@/components/Errcode";
 import { MessageId } from "@/lib/messages";
+import "./ErrcodeModal.css";
 
 interface Events {}
 

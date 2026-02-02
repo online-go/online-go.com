@@ -27,6 +27,7 @@ import { getSectionCompletion, getSectionByName } from "./util";
 import { browserHistory } from "@/lib/ogsHistory";
 import { MiniGoban } from "@/components/MiniGoban";
 import { alert } from "@/lib/swal_config";
+import "./LearningHub.css";
 
 interface LearningHubParams {
     section: string;

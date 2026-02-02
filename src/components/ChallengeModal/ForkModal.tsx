@@ -24,6 +24,7 @@ import { MiniGoban } from "@/components/MiniGoban";
 import { challenge } from "@/components/ChallengeModal";
 import { PlayerCacheEntry } from "@/lib/player_cache";
 import { ModalContext } from "@/components/ModalProvider";
+import "./ForkModal.css";
 
 interface ForkModalProperties {
     goban: GobanRenderer;

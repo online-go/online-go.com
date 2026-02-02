@@ -31,6 +31,7 @@ import online_status from "@/lib/online_status";
 import { openReport } from "@/components/Report";
 import { alert } from "@/lib/swal_config";
 import { nicknameTabComplete } from "./tab_complete";
+import "./PrivateChat.css";
 
 let last_id = 0;
 

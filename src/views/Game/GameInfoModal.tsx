@@ -28,6 +28,7 @@ import { rankString } from "@/lib/rank_utils";
 import { browserHistory } from "@/lib/ogsHistory";
 import { alert } from "@/lib/swal_config";
 import { GobanConfig, GobanEnginePlayerEntry, GobanEngineRules } from "goban";
+import "./GameInfoModal.css";
 
 interface Events {}
 

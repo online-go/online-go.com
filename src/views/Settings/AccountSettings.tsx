@@ -33,6 +33,7 @@ import { toast } from "@/lib/toast";
 import { InfoBall } from "@/components/InfoBall";
 import { pgettext, sorted_locale_countries, _ } from "@/lib/translate";
 import { Link } from "react-router-dom";
+import "./AccountSettings.css";
 
 export function AccountSettings(props: SettingGroupPageProps): React.ReactElement {
     const user = useUser();

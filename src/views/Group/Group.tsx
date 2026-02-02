@@ -40,6 +40,7 @@ import { alert } from "@/lib/swal_config";
 import { PlayerCacheEntry } from "@/lib/player_cache";
 import { is_valid_url } from "@/lib/url_validation";
 import { user_uploads_url } from "@/lib/cdn";
+import "./Group.css";
 
 type GroupProperties = RouteComponentProps<{
     group_id: string;

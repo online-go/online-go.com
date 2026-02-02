@@ -22,6 +22,7 @@ import * as preferences from "@/lib/preferences";
 import { Stream, streamManager } from "./StreamManager";
 import { GoTVPreferences } from "@/views/Settings";
 import { useLocation } from "react-router-dom";
+import "./GoTV.css";
 
 let twitch_js_promise: Promise<void> | null = null;
 declare let Twitch: any;

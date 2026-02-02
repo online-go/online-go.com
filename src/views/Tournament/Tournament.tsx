@@ -47,6 +47,7 @@ import Dropzone from "react-dropzone";
 import { alert } from "@/lib/swal_config";
 import { useUser } from "@/lib/hooks";
 import { PlayerCacheEntry } from "@/lib/player_cache";
+import "./Tournament.css";
 
 let log_spam_debounce: any;
 

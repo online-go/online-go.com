@@ -26,6 +26,7 @@ import { GobanController } from "@/lib/GobanController";
 import { Player } from "@/components/Player";
 import { Resizable } from "@/components/Resizable";
 import { post, put } from "@/lib/requests";
+import "./AnnulQueueModal.css";
 
 // Define the AnnulQueueModalProps interface
 interface AnnulQueueModalProps {

@@ -35,6 +35,7 @@ import {
     Announcement,
 } from "@/lib/announcement_utils";
 import { AnnouncementEntry } from "./AnnouncementEntry";
+import "./Announcements.css";
 
 interface Events {
     announcement: any;

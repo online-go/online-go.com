@@ -51,6 +51,7 @@ import { RengoTeamManagementPane } from "@/components/RengoTeamManagementPane";
 import { PlayContext } from "./PlayContext";
 import { challenge } from "@/components/ChallengeModal";
 import { active_challenges_emitter, useHaveActiveGameSearch } from "./hooks";
+import "./CustomGames.css";
 
 const CHALLENGE_LIST_FREEZE_PERIOD = 1000; // Freeze challenge list for this period while they move their mouse on it
 

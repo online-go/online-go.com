@@ -26,6 +26,7 @@ import {
     watchChatSubscriptionChanged,
     unwatchChatSubscriptionChanged,
 } from "./state";
+import "./ChatDetails.css";
 
 interface ChatDetailsProperties {
     chatChannelId: string;

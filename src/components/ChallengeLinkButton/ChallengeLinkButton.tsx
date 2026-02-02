@@ -20,6 +20,7 @@ import * as React from "react";
 import { pgettext } from "@/lib/translate";
 
 import { popover } from "@/lib/popover";
+import "./ChallengeLinkButton.css";
 
 type ChallengeLinkButtonProps = {
     uuid: string;

@@ -44,6 +44,7 @@ import { OmniSearch } from "./OmniSearch";
 import { forwardRef, useId, useState } from "react";
 import { MODERATOR_POWERS } from "@/lib/moderation";
 import { openDemoBoardModal } from "../DemoBoardModal";
+import "./NavBar.css";
 
 function setTheme(theme: string) {
     data.set("theme", theme, data.Replication.REMOTE_OVERWRITES_LOCAL);

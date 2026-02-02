@@ -20,6 +20,7 @@ import * as preferences from "@/lib/preferences";
 import { _ } from "@/lib/translate";
 import { socket } from "@/lib/sockets";
 import { lookingAtOurLiveGame } from "@/components/TimeControl/util";
+import "./NetworkStatus.css";
 
 //interface NetworkStatusProps {}
 

@@ -26,6 +26,7 @@ import { Clock } from "@/components/Clock";
 import { GobanInfoStateBase } from "@/lib/types";
 import { LineSummaryTableMode } from "../GameList";
 import { PlayerCacheEntry } from "@/lib/player_cache";
+import "./GobanLineSummary.css";
 
 interface UserType {
     id: number;

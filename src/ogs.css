@@ -15,16 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* All imports - using only @import-glob to avoid postcss-import validation issues */
+/* Global imports - third-party libraries and global styles */
 @import-glob "../node_modules/sweetalert2/dist/sweetalert2.css";
 @import-glob "../submodules/react-dynamic-help/src/DynamicHelp.css";
 @import-glob "./global_styl/*.css";
-@import-glob "../submodules/**/[A-Z]*.css";
 @import-glob "./lib/*.css";
 @import-glob "./components/material/*.css";
-@import-glob "./components/[A-Z]*/*.css";
-@import-glob "./components/[A-Z]*/*/*.css";
-@import-glob "./components/[A-Z]*/*/*/*.css";
-@import-glob "./components/[A-Z]*/*/*/*/*/*.css";
-@import-glob "./views/[A-Z]*/*.css";
-@import-glob "./views/docs/*.css";
+
+/* Component and view CSS is imported directly in their respective .tsx files */
+/* Submodule CSS is imported via stub files in src/stubs/ */

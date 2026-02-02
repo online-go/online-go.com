@@ -17,6 +17,7 @@
 
 import * as React from "react";
 import { _ } from "@/lib/translate";
+import "./SocialLoginButtons.css";
 
 type SocialLoginButtonsProps = {
     next_url?: string;

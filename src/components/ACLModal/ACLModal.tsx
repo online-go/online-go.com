@@ -24,6 +24,7 @@ import { PlayerAutocomplete, PlayerAutocompleteRef } from "@/components/PlayerAu
 import { GroupAutocomplete } from "@/components/GroupAutocomplete";
 import { errorAlerter } from "@/lib/misc";
 import { PlayerCacheEntry } from "@/lib/player_cache";
+import "./ACLModal.css";
 
 interface Events {}
 

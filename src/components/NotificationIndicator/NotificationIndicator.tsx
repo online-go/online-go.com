@@ -18,6 +18,7 @@
 import * as React from "react";
 import { notification_manager } from "@/components/Notifications";
 import { _ } from "@/lib/translate";
+import "./NotificationIndicator.css";
 
 export function NotificationIndicator({ onClick }: { onClick: () => void }): React.ReactElement {
     const [count, setCount] = React.useState<number | undefined>(

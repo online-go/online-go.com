@@ -20,6 +20,7 @@ import * as preferences from "@/lib/preferences";
 import { createGoban, GobanRenderer } from "goban";
 import { sfx } from "@/lib/sfx";
 import { PersistentElement } from "@/components/PersistentElement";
+import "./InstructionalGoban.css";
 
 interface InstructionalGobanProps {
     width?: number;

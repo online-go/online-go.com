@@ -31,6 +31,7 @@ import { browserHistory } from "@/lib/ogsHistory";
 import { LoadingPage } from "@/components/Loading";
 import { UIPush } from "@/components/UIPush";
 import { EmbeddedChatCard } from "@/components/Chat";
+import "./OnlineLeaguePlayerLanding.css";
 
 // Users are intended to arrive here via an online-league player invite URL
 // They need to have a valid key in that URL.  The assumption is that only the

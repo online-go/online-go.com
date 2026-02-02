@@ -17,6 +17,7 @@
 
 import * as React from "react";
 import { useEffect, useRef } from "react";
+import "./LoadingButton.css";
 
 interface LoadingButtonProps extends React.ComponentProps<"button"> {
     loading?: boolean;

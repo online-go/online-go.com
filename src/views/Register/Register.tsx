@@ -29,6 +29,7 @@ import cached from "@/lib/cached";
 
 import { SocialLoginButtons } from "@/components/SocialLoginButtons";
 import { LoadingButton } from "@/components/LoadingButton";
+import "./Register.css";
 
 export function Register(): React.ReactElement {
     const navigate = useNavigate();

@@ -22,6 +22,7 @@ import { pgettext, _, getLanguageFlag, interpolate } from "@/lib/translate";
 import { Flag } from "@/components/Flag";
 import * as data from "@/lib/data";
 import { Markdown } from "@/components/Markdown";
+import "./GoResources.css";
 
 function shuffleArray(array: React.ReactElement[]) {
     for (let i = array.length - 1; i >= 0; i--) {

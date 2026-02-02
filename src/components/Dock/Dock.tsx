@@ -18,6 +18,7 @@
 import * as React from "react";
 import * as preferences from "@/lib/preferences";
 import { MAX_DOCK_DELAY } from "@/lib/SettingsCommon";
+import "./Dock.css";
 
 interface DockProperties {
     className?: string;

@@ -24,6 +24,7 @@ import { SortablePuzzleList } from "./SortablePuzzleList";
 import { openACLModal } from "@/components/ACLModal";
 import { alert } from "@/lib/swal_config";
 import { useParams } from "react-router-dom";
+import "./PuzzleCollection.css";
 
 export function PuzzleCollection(): React.ReactElement | null {
     const { collection_id } = useParams();

@@ -26,6 +26,7 @@ import { StarRating } from "@/components/StarRating";
 import { longRankString, rankString } from "@/lib/rank_utils";
 import { navigateTo, unitify } from "@/lib/misc";
 import * as data from "@/lib/data";
+import "./PuzzleList.css";
 
 interface PuzzleListState {
     name_contains_filter: string; // string to be used for filtering search results by name

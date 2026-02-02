@@ -20,6 +20,7 @@ import { _ } from "@/lib/translate";
 import { post } from "@/lib/requests";
 import { errorAlerter } from "@/lib/misc";
 import { browserHistory } from "@/lib/ogsHistory";
+import "./GroupCreate.css";
 
 interface GroupCreateState {
     name: string;

@@ -17,6 +17,7 @@
 
 import * as React from "react";
 import Switch from "react-switch";
+import "./Toggle.css";
 
 interface ToggleProps {
     checked: boolean;

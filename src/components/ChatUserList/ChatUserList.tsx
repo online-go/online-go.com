@@ -20,6 +20,7 @@ import { _, interpolate } from "@/lib/translate";
 import { chat_manager, ChatChannelProxy } from "@/lib/chat_manager";
 import * as preferences from "@/lib/preferences";
 import { Player } from "@/components/Player";
+import "./ChatUserList.css";
 
 interface ChatUserListProperties {
     channel: string;

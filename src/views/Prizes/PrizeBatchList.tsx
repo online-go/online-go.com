@@ -20,6 +20,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { get, post } from "@/lib/requests";
 import { useUser } from "@/lib/hooks";
 import { Player } from "@/components/Player";
+import "./PrizeBatchList.css";
 
 interface PrizeBatch {
     id: string;

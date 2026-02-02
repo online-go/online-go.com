@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import "./legal.css";
 
 export function TermsOfService(): React.ReactElement {
     return (

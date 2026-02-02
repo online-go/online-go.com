@@ -17,6 +17,7 @@
 
 import * as React from "react";
 import { _, interpolate, moment } from "@/lib/translate";
+import "./ServerTimeDisplay.css";
 
 interface ServerTimeState {
     time: moment.Moment;

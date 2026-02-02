@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import "./AchievementList.css";
 //import * as preferences from "@/lib/preferences";
 
 interface AchievementEntry {

@@ -24,6 +24,7 @@ import { errorAlerter } from "@/lib/misc";
 import { alert } from "@/lib/swal_config";
 import { ChallengeDetailsReviewPane } from "../ChallengeDetailsReviewPane";
 import { Challenge } from "@/lib/challenge_utils";
+import "./GameAcceptModal.css";
 
 interface Events {}
 

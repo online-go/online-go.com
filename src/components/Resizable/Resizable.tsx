@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import "./Resizable.css";
 
 interface ResizableProperties {
     id?: string;
