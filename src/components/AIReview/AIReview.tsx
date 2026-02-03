@@ -121,6 +121,7 @@ export function AIReview({
     } = useAIReviewData({
         gameId: game_id,
         moveTree: gobanController?.goban?.engine?.move_tree,
+        currentMove: move,
     });
 
     // Sync the initially selected review to AIReviewData

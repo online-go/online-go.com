@@ -19,6 +19,7 @@ import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import {
     JGOFAIReview,
     AIReviewData,
+    AIReviewUpdateContext,
     MoveTree,
     getWorstMoves,
     AIReviewWorstMoveEntry,
@@ -34,6 +35,8 @@ import { errorLogger } from "@/lib/misc";
 interface UseAIReviewDataProps {
     gameId: number;
     moveTree?: MoveTree;
+    /** Current move being viewed - used to filter irrelevant updates */
+    currentMove?: MoveTree;
 }
 
 interface UseAIReviewDataReturn {
@@ -47,9 +50,16 @@ interface UseAIReviewDataReturn {
  * @param props Hook configuration
  * @returns Review data, setter function, and update counter
  */
-export function useAIReviewData({ gameId, moveTree }: UseAIReviewDataProps): UseAIReviewDataReturn {
+export function useAIReviewData({
+    gameId,
+    moveTree,
+    currentMove,
+}: UseAIReviewDataProps): UseAIReviewDataReturn {
     const reviewDataRef = useRef<AIReviewData | undefined>(undefined);
     const [updateCount, setUpdateCount] = useState(0);
+    // Store current move context in a ref so the update handler can access it
+    const currentMoveRef = useRef<MoveTree | undefined>(currentMove);
+    currentMoveRef.current = currentMove;
 
     const setSelectedAIReview = useCallback(
         (aiReview: JGOFAIReview | undefined) => {
@@ -65,12 +75,43 @@ export function useAIReviewData({ gameId, moveTree }: UseAIReviewDataProps): Use
             if (aiReview?.uuid && aiReview?.id && ai_socket && moveTree) {
                 reviewDataRef.current = new AIReviewData(ai_socket, moveTree, aiReview, gameId);
 
-                const handleUpdate = () => {
+                const handleUpdate = (context: AIReviewUpdateContext) => {
+                    // Filter updates to only trigger re-renders when relevant to current view
+                    const cur = currentMoveRef.current;
+                    if (!cur) {
+                        // No current move context, trigger update
+                        setUpdateCount((prev) => prev + 1);
+                        return;
+                    }
+
+                    if (context.type === "move") {
+                        // Trunk move updates are always relevant - they update the graph,
+                        // win rate display, and potentially the board marks
+                        setUpdateCount((prev) => prev + 1);
+                    } else if (context.type === "variation") {
+                        // For variation updates, only trigger if this is the variation we're viewing
+                        // This prevents redundant redraws when multiple variations are analyzed
+                        const trunkMove = cur.getBranchPoint();
+                        const trunkMoveNumber = trunkMove.move_number;
+                        const trunkMoveString = trunkMove.getMoveStringToThisPoint();
+                        const curMoveString = cur.getMoveStringToThisPoint();
+                        const varString = curMoveString.slice(trunkMoveString.length);
+                        const currentVarKey = `${trunkMoveNumber}-${varString}`;
+
+                        if (context.variation_key === currentVarKey) {
+                            setUpdateCount((prev) => prev + 1);
+                        }
+                        // Updates for other variations don't affect current view
+                    }
+                };
+
+                const handleMetadata = () => {
+                    // Metadata updates always trigger a refresh
                     setUpdateCount((prev) => prev + 1);
                 };
 
                 reviewDataRef.current.on("update", handleUpdate);
-                reviewDataRef.current.on("metadata", handleUpdate);
+                reviewDataRef.current.on("metadata", handleMetadata);
 
                 // Trigger initial sync
                 setUpdateCount((prev) => prev + 1);
