@@ -1536,13 +1536,13 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
             {
                 sort_index: 2,
                 label: pgettext("Bot strength category", "Intermediate"),
-                lower_bound: 11,
+                lower_bound: 10,
                 upper_bound: 25,
             },
             {
-                sort_index: 2,
+                sort_index: 3,
                 label: pgettext("Bot strength category", "Advanced"),
-                lower_bound: 26,
+                lower_bound: 25,
                 upper_bound: 99,
             },
         ];
@@ -1580,7 +1580,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
             for (const category of categories) {
                 if (
                     b.ranking &&
-                    b.ranking >= category.lower_bound &&
+                    b.ranking > category.lower_bound &&
                     b.ranking <= category.upper_bound
                 ) {
                     b.category = category;
@@ -1630,12 +1630,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                             <div key={category.upper_bound} className="bot-options">
                                 {available_bots
                                     //.filter((bot) => !bot.disabled)
-                                    .filter(
-                                        (bot) => bot.ranking && bot.ranking >= category.lower_bound,
-                                    )
-                                    .filter(
-                                        (bot) => bot.ranking && bot.ranking <= category.upper_bound,
-                                    )
+                                    .filter((bot) => bot.category === category)
                                     .map((bot) => {
                                         return (
                                             <div
