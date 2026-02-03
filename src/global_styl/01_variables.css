@@ -473,15 +473,15 @@
     }
 }
 
-/* Explicit theme overrides via body class */
-body.light {
+/* Explicit theme overrides via data-theme attribute */
+[data-theme="light"] {
     @mixin light;
 }
 
-body.dark {
+[data-theme="dark"] {
     @mixin dark;
 }
 
-body.accessible {
+[data-theme="accessible"] {
     @mixin accessible;
 }

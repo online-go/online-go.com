@@ -552,12 +552,12 @@ header.NavBar {
         cursor: pointer;
     }
 
-    body.dark .fa-adjust {
+    [data-theme="dark"] .fa-adjust {
         transform: rotate(180deg);
     }
 
     /* Since accessible is based on dark, I assume it needs this (not clear what this is specifically for, though the general idea is clear) */
-    body.accessible .fa-adjust {
+    [data-theme="accessible"] .fa-adjust {
         transform: rotate(180deg);
     }
 

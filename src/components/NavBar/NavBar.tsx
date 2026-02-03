@@ -51,8 +51,8 @@ function setTheme(theme: string) {
 }
 
 function toggleTheme() {
-    const currentTheme = document.body.classList.contains("light") ? "light" : "dark";
-    if (currentTheme === "dark") {
+    const currentTheme = document.body.dataset.theme;
+    if (currentTheme === "dark" || currentTheme === "accessible") {
         setTheme("light");
     } else {
         setTheme("dark");

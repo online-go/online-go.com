@@ -104,7 +104,7 @@
         .PriceBox:nth-of-type(2) {
             box-shadow: 0rem 0.3rem 0.8rem #000;
 
-            body.light .PriceBox:nth-of-type(2) {
+            [data-theme="light"] .PriceBox:nth-of-type(2) {
                 box-shadow: 0rem 0.3rem 0.8rem #888 !important;
             }
         }
@@ -129,11 +129,11 @@
         color: #ffffff;
         box-shadow: 0.2rem 0.2rem 0.7rem #000;
 
-        body.light .PriceBox {
+        [data-theme="light"] .PriceBox {
             box-shadow: 0.2rem 0.2rem 0.9rem #888 !important;
         }
 
-        /* body.dark { */
+        /* [data-theme="dark"] { */
         /* } */
         h3, p {
             width: 100%;

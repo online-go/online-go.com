@@ -404,7 +404,7 @@
     }
 }
 
-body.dark .MainGobanView.zen .player-icons {
+[data-theme="dark"] .MainGobanView.zen .player-icons {
     .white {
         &.player-container {
             background: linear-gradient(#2C2C2C 0%, #383838 100%);
@@ -432,7 +432,7 @@ body.dark .MainGobanView.zen .player-icons {
     }
 }
 
-body.accessible .MainGobanView.zen .player-icons {
+[data-theme="accessible"] .MainGobanView.zen .player-icons {
     .white {
         &.player-container {
             background: linear-gradient(#2C2C2C 0%, #383838 100%);
@@ -460,7 +460,7 @@ body.accessible .MainGobanView.zen .player-icons {
     }
 }
 
-body.light .MainGobanView.zen .player-icons {
+[data-theme="light"] .MainGobanView.zen .player-icons {
     .black.player-container {
         background: linear-gradient(#666 0%, #181818 100%);
     }

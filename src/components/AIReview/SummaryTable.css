@@ -217,7 +217,7 @@
         }
 
         /* Dark theme indicator adjustments */
-        body.dark &, body.accessible & {
+        [data-theme="dark"] &, [data-theme="accessible"] & {
             .category-label {
                 &.excellent .category-indicator {
                     background-color: var(--move-quality-excellent-dark);
@@ -473,7 +473,7 @@
         border-left: 3px solid var(--move-quality-blunder);
     }
 
-    body.dark &, body.accessible & {
+    [data-theme="dark"] &, [data-theme="accessible"] & {
         &.popover-excellent .category-move-header {
             border-left-color: var(--move-quality-excellent-dark);
         }

@@ -133,12 +133,11 @@ export function applyTheme() {
         }
     }
 
-    if (document.body.classList.contains(theme)) {
+    if (document.body.dataset.theme === theme) {
         return;
     }
 
-    document.body.classList.remove("light", "dark", "accessible");
-    document.body.classList.add(theme);
+    document.body.dataset.theme = theme;
 }
 window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applyTheme);
 data.watch("theme", applyTheme);
