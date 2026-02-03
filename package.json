@@ -35,7 +35,7 @@
         "test:e2e:docker": "PLAYWRIGHT_DOCKER=mcr.microsoft.com/playwright:v1.51.0-noble scripts/run-playwright-in-docker.sh"
     },
     "browserslist": [
-        "defaults"
+        "last 8 years, not dead"
     ],
     "devDependencies": {
         "@eslint/compat": "^1.4.0",
