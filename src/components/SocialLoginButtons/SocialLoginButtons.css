@@ -23,13 +23,13 @@
         display: flex;
         align-items: center;
         padding: 0.5rem;
-        background-color: #ffffff;
+        background-color: var(--default-button);
         width: 100%;
         max-width: 15rem;
         height: 2.4rem;
         cursor: pointer;
 
-        &+ a.md-icon {
+        & + a.md-icon {
             margin-top: 0.5rem;
         }
     }
