@@ -174,7 +174,34 @@
             color: var(--player-white-paused-clock);
         }
 
-        /* Player type colors are defined in Player.css */
+        /* Force light theme colors for player names on white background */
+        .Player {
+            color: var(--light-user);
+        }
+        .Player.supporter {
+            color: var(--light-supporter) !important;
+        }
+        .Player.professional {
+            color: var(--light-professional) !important;
+        }
+        .Player.ambassador {
+            color: var(--light-ambassador) !important;
+        }
+        .Player.teacher {
+            color: var(--light-teacher) !important;
+        }
+        .Player.bot {
+            color: var(--light-bot) !important;
+        }
+        .Player.moderator {
+            color: var(--light-moderator) !important;
+        }
+        .Player.aga {
+            color: var(--light-aga-official) !important;
+        }
+        .Player.admin {
+            color: var(--light-admin) !important;
+        }
     }
 
     .black.player-container {
@@ -187,7 +214,34 @@
             color: var(--player-black-paused-clock);
         }
 
-        /* Player type colors are defined in Player.css */
+        /* Force dark theme colors for player names on black background */
+        .Player {
+            color: var(--dark-user);
+        }
+        .Player.supporter {
+            color: var(--dark-supporter) !important;
+        }
+        .Player.professional {
+            color: var(--dark-professional) !important;
+        }
+        .Player.ambassador {
+            color: var(--dark-ambassador) !important;
+        }
+        .Player.teacher {
+            color: var(--dark-teacher) !important;
+        }
+        .Player.bot {
+            color: var(--dark-bot) !important;
+        }
+        .Player.moderator {
+            color: var(--dark-moderator) !important;
+        }
+        .Player.aga {
+            color: var(--dark-aga-official) !important;
+        }
+        .Player.admin {
+            color: var(--dark-admin) !important;
+        }
     }
 
     .player-container.shortgame.offline {

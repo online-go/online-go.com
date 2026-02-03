@@ -82,6 +82,28 @@
 
     /* Special colors */
     --supporter-gold: #dfba00;
+
+    /* Fixed light theme user colors (for white player cards regardless of theme) */
+    --light-user: #3070a7;
+    --light-supporter: #a48200;
+    --light-aga-official: #b95200;
+    --light-professional: green;
+    --light-bot: #888;
+    --light-moderator: #9733ee;
+    --light-admin: #9733ee;
+    --light-ambassador: #6fcdea;
+    --light-teacher: #27ad49;
+
+    /* Fixed dark theme user colors (for black player cards regardless of theme) */
+    --dark-user: #9dc6ff;
+    --dark-supporter: #dfba00;
+    --dark-aga-official: #b95200;
+    --dark-professional: green;
+    --dark-bot: #888;
+    --dark-moderator: #b566f2;
+    --dark-admin: #b566f2;
+    --dark-ambassador: #6fcdea;
+    --dark-teacher: #27ad49;
 }
 
 @media (max-height: 500px) {
