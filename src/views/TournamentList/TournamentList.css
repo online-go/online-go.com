@@ -99,6 +99,7 @@
         display: inline-flex;
         align-items: center;
         align-content: center;
+        overflow: hidden;
 
         img {
             padding-right: 0.5rem;
