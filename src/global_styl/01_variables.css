@@ -31,6 +31,20 @@
     --navbar-height: 3rem;
     --below-navbar: 3.3rem;
 
+    /* Chat */
+    --channel-utils-height: 8.4rem;
+    --channel-width: 20%;
+    --channel-max-width: 25rem;
+    --channel-min-width: 12rem;
+    --game-chat-user-list-width: 10rem;
+
+    /* NavBar */
+    --navbar-menu-width: 18rem;
+    --submenu-min-height: 9rem;
+
+    /* TurnIndicator */
+    --turn-indicator-size: 1.5rem;
+
     /* Z-indices */
     --z-goban-shadow-layer: 10;
     --z-goban-stone-layer: 20;

@@ -14,6 +14,9 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+$hamburger-cutoff: 900px;
+$hamburger-cutoff-plus-one: 901px;
+
 header.NavBar {
     body.zen & {
         display: none;
@@ -73,7 +76,7 @@ header.NavBar {
     }
 
     /* desktop / wide screens */
-    @media (min-width: 901px) {
+    @media (min-width: $hamburger-cutoff-plus-one) {
         .Menu {
             display: block;
             margin-left: 0.5rem;
@@ -85,7 +88,7 @@ header.NavBar {
                 position: absolute;
                 left: 0;
                 top: var(--navbar-height);
-                min-width: 18rem;
+                min-width: var(--navbar-menu-width);
                 background-color: var(--navbar-background-color);
                 /* border-left: 0.2rem solid transparent; */
                 box-shadow: 2px 4px 3px 0px rgba(0, 0, 0, 0.16);
@@ -117,10 +120,10 @@ header.NavBar {
                 flex-direction: column;
                 position: absolute;
                 top: 0;
-                min-height: 9rem;
-                left: 18rem;
+                min-height: var(--submenu-min-height);
+                left: var(--navbar-menu-width);
                 background-color: var(--shade4);
-                min-width: 18rem;
+                min-width: var(--navbar-menu-width);
                 box-shadow: 2px 4px 3px 0px rgba(0, 0, 0, 0.16);
 
                 > a {
@@ -210,7 +213,7 @@ header.NavBar {
     }
 
     /* mobile */
-    @media only screen and (max-width: 900px) {
+    @media only screen and (max-width: $hamburger-cutoff) {
         &>.left {
             display: none !important;
         }
@@ -393,7 +396,7 @@ header.NavBar {
         display: none;
         cursor: pointer;
 
-        @media only screen and (max-width: 900px) {
+        @media only screen and (max-width: $hamburger-cutoff) {
             font-size: 1.7rem;
             display: inline-flex;
             align-items: center;
@@ -594,7 +597,7 @@ header.NavBar {
         position: absolute;
         right: 0;
         top: var(--navbar-height);
-        width: 18rem;
+        width: var(--navbar-menu-width);
         max-width: 100vw;
         max-height: calc(100vh - var(--navbar-height));
         background-color: var(--navbar-background-color);
@@ -646,7 +649,7 @@ header.NavBar {
         position: absolute;
         right: 0;
         top: var(--navbar-height);
-        width: 18rem;
+        width: var(--navbar-menu-width);
         background-color: var(--navbar-background-color);
         max-height: calc(100vh - var(--navbar-height));
         overflow-y: auto;
@@ -765,7 +768,7 @@ header.NavBar {
         /* top: 0; */
         top: var(--navbar-height);
         /* left: 18rem; */
-        width: 18rem;
+        width: var(--navbar-menu-width);
         background-color: var(--navbar-highlight-background-color);
         box-shadow: 2px 2px 1px 0px rgba(0, 0, 0, 0.16);
         z-index: var(--z-nav-menu-menu);

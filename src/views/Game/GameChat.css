@@ -46,7 +46,7 @@
     }
 
     .ChatUserList {
-        width: 10rem;
+        width: var(--game-chat-user-list-width);
         position: absolute;
         top: 0;
         right: 0;
@@ -54,7 +54,7 @@
     }
 
     .log-player-container.show-player-list .chat-log-container {
-        right: 10rem;
+        right: var(--game-chat-user-list-width);
     }
 
     .chat-log {

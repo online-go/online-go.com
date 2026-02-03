@@ -17,19 +17,19 @@
 .ChatList {
     display: flex;
     flex-direction: column;
-    height: calc(100vh - var(--navbar-height) - 8.4rem);
+    height: calc(100vh - var(--navbar-height) - var(--channel-utils-height));
     overflow-y: auto;
-    width: 20%;
-    max-width: 25rem;
-    min-width: 12rem;
+    width: var(--channel-width);
+    max-width: var(--channel-max-width);
+    min-width: var(--channel-min-width);
 
     .channel-container {
-        flex-basis: 20%;
+        flex-basis: var(--channel-width);
         flex-shrink: 1;
         flex-grow: 1;
-        width: 20%;
-        max-width: 25rem;
-        min-width: 12rem;
+        width: var(--channel-width);
+        max-width: var(--channel-max-width);
+        min-width: var(--channel-min-width);
         border-right: 1px solid transparent;
         border-right-color: var(--shade3);
         display: flex;

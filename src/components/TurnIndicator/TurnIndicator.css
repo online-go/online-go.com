@@ -10,8 +10,8 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        width: 1.3rem;
-        height: 1.3rem;
+        width: var(--turn-indicator-size);
+        height: var(--turn-indicator-size);
         border-radius: 50%;
         text-align: center;
         border: 2px solid transparent;
