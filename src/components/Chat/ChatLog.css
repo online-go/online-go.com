@@ -1,3 +1,4 @@
+@import "../../global_styl/mixins.css";
 
 .ChatLog {
     display: flex;
@@ -61,7 +62,7 @@
     }
 
     .timestamp {
-        /* @extends .monospace - apply manually */
+        @mixin monospace;
         font-size: 0.8rem;
         font-style: normal !important;
         margin-right: 0.5rem;

@@ -409,12 +409,10 @@
         }
     }
 
-    &.portrait { /* .Dock */
+    &.portrait {
         .Dock {
-            /* flex: 1; */
             flex-shrink: 0;
             flex-grow: 1;
-            /* @extends .Dock.inline - apply manually */
             margin-bottom: 3rem;
         }
     }
