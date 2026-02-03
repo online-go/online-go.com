@@ -27,7 +27,7 @@
         }
 
         &:hover {
-            background-color: color-mix(in srgb, var(--primary), var(--shade2) 50%);
+            background-color: var(--primary-shade2-blend);
             color: var(--colored-background-fg);
         }
 

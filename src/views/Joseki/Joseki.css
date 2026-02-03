@@ -235,7 +235,7 @@
 
                 .selected {
                     background-color: var(--success);
-                    border-color: color-mix(in srgb, var(--success), black 15%);
+                    border-color: var(--success-dark);
                 }
             }
         }

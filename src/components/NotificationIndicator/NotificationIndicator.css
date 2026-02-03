@@ -21,7 +21,7 @@
             color: var(--shade3);
 
             &.active {
-                color: color-mix(in srgb, var(--primary), white 20%);
+                color: var(--primary-light-20);
             }
         }
     }

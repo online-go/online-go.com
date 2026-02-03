@@ -332,20 +332,20 @@
 
             &:hover, &:focus {
                 text-decoration: none;
-                background-color: color-mix(in srgb, var(--default-button), white 15%);
-                border-color: color-mix(in srgb, var(--default-button), black 20%);
+                background-color: var(--default-button-light);
+                border-color: var(--default-button-darker);
             }
 
             &:active, &.active {
                 text-decoration: none;
-                background-color: color-mix(in srgb, var(--default-button), black 10%);
+                background-color: var(--default-button-dark);
                 border-color: var(--primary) !important;
             }
 
             &.disabled {
-                background-color: color-mix(in srgb, var(--default-button), var(--shade2) 70%);
+                background-color: var(--default-button-disabled);
                 color: var(--shade2);
-                border-color: color-mix(in srgb, var(--default-button), var(--shade2) 70%);
+                border-color: var(--default-button-disabled);
                 box-shadow: none;
                 cursor: default;
                 cursor: not-allowed;

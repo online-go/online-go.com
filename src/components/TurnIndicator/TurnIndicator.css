@@ -76,7 +76,7 @@ body.accessible .TurnIndicator {
 
     &:hover {
         .ogs-goban {
-            color: color-mix(in srgb, var(--fg), white 30%);
+            color: var(--fg-light);
         }
     }
 

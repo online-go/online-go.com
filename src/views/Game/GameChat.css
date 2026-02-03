@@ -176,14 +176,14 @@
 
             &:hover, &:focus {
                 text-decoration: none;
-                background-color: color-mix(in srgb, var(--default-button), white 15%);
-                border-color: color-mix(in srgb, var(--default-button), black 20%);
+                background-color: var(--default-button-light);
+                border-color: var(--default-button-darker);
             }
 
             &:active, &.fa-caret-down {
                 text-decoration: none;
-                background-color: color-mix(in srgb, var(--default-button), black 10%);
-                border-color: color-mix(in srgb, var(--default-button), black 20%);
+                background-color: var(--default-button-dark);
+                border-color: var(--default-button-darker);
             }
         }
     }

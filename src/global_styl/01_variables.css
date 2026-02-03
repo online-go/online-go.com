@@ -79,33 +79,57 @@
 
 /* Light theme mixin */
 @define-mixin light {
+    /* Build-time variables for color derivation */
+    $bg: #fff;
+    $fg: #202020;
+    $default-button: #E6E6E0;
+    $primary: #2480FF;
+    $success: #32C738;
+    $info: #C376FE;
+    $colored-background-fg: $bg;
+
     --clear: transparent;
 
     /* Core colors */
-    --bg: #fff;
-    --fg: #202020;
+    --bg: $bg;
+    --fg: $fg;
+    --fg-light: lighten($fg, 30);
     --fg-increased-contrast: #000000;
     --mix-base: #999;
-    --background-color: #fff;
+    --background-color: $bg;
     --card-background-color: #f7f7f7;
-    --text-color: #202020;
+    --text-color: $fg;
     --text-color-active: #000000;
     --text-dimmed: #868686;
     --spectator-text-color: #0A06A8;
-    --default-button-color: #202020;
-    --toast-bg: #202020;
-    --toast-fg: #fff;
+    --default-button-color: $fg;
+    --toast-bg: $fg;
+    --toast-fg: $bg;
     --link-color: #0068F7;
     --link-color-active: #0053c6;
 
     /* Buttons and accents */
-    --default-button: #E6E6E0;
-    --primary: #2480FF;
+    --default-button: $default-button;
+    --default-button-light: lighten($default-button, 15);
+    --default-button-dark: darken($default-button, 10);
+    --default-button-darker: darken($default-button, 20);
+    --default-button-disabled: #c4c4c0;
+    --primary: $primary;
+    --primary-light: lighten($primary, 30);
+    --primary-light-20: lighten($primary, 20);
+    --primary-dark: darken($primary, 30);
+    --primary-bg-blend: #a8c9ff;
+    --primary-shade2-blend: #6f9cdc;
     --danger: #FFA600;
-    --success: #32C738;
-    --info: #C376FE;
+    --success: $success;
+    --success-light: lighten($success, 15);
+    --success-dark: darken($success, 15);
+    --success-darker: darken($success, 20);
+    --info: $info;
+    --info-bg-blend: #e5d4fe;
     --reject: #FF410F;
-    --colored-background-fg: #fff;
+    --colored-background-fg: $colored-background-fg;
+    --colored-background-fg-dark: darken($colored-background-fg, 10);
 
     /* Chat/special backgrounds */
     --malkovich-bg: #CCE3D5;
@@ -188,8 +212,8 @@
     --react-select-focused-fg: #202020;
 
     /* Navbar */
-    --navbar-highlight-background-color: #fff;
-    --navbar-background-color: #fff;
+    --navbar-highlight-background-color: $bg;
+    --navbar-background-color: $bg;
     --logo-svg: url("../../assets/ogs_light.svg");
 
     /* Input */
@@ -223,43 +247,69 @@
     --player-black-paused-clock: #ABA8AD;
     --player-white-paused-clock: #928A99;
     --quickmatch-player-waiting: #25b32e;
-    --account-warning-bg: #cab4d6;
-    --account-warning-fg: #202020;
+    $account-warning-bg: #cab4d6;
+    --account-warning-bg: $account-warning-bg;
+    --account-warning-bg-light: lighten($account-warning-bg, 20);
+    --account-warning-fg: $fg;
 
     /* Selection header (for dropdowns etc) */
     --select-header-bg: #f5f5f5;
-    --select-header-fg: #202020;
+    --select-header-fg: $fg;
 }
 
 /* Dark theme mixin */
 @define-mixin dark {
+    /* Build-time variables for color derivation */
+    $bg: #1a1a1a;
+    $fg: #bbbbbb;
+    $default-button: #474747;
+    $primary: #1d66cc;
+    $success: #289f2d;
+    $info: #9c5fcc;
+    $colored-background-fg: #eeeeee;
+
     --clear: transparent;
 
     /* Core colors */
-    --bg: #1a1a1a;
-    --fg: #bbbbbb;
+    --bg: $bg;
+    --fg: $fg;
+    --fg-light: lighten($fg, 30);
     --fg-increased-contrast: #ffffff;
     --mix-base: #777;
-    --background-color: #1a1a1a;
+    --background-color: $bg;
     --card-background-color: #2a2a2a;
-    --text-color: #bbbbbb;
+    --text-color: $fg;
     --text-color-active: #ffffff;
     --text-dimmed: #8c8c8c;
     --spectator-text-color: #8987FC;
-    --default-button-color: #bbbbbb;
-    --toast-bg: #bbbbbb;
-    --toast-fg: #1a1a1a;
+    --default-button-color: $fg;
+    --toast-bg: $fg;
+    --toast-fg: $bg;
     --link-color: #539bff;
     --link-color-active: #427ccc;
 
     /* Buttons and accents */
-    --default-button: #474747;
-    --primary: #1d66cc;
+    --default-button: $default-button;
+    --default-button-light: lighten($default-button, 15);
+    --default-button-dark: darken($default-button, 10);
+    --default-button-darker: darken($default-button, 20);
+    --default-button-disabled: #525252;
+    --primary: $primary;
+    --primary-light: lighten($primary, 30);
+    --primary-light-20: lighten($primary, 20);
+    --primary-dark: darken($primary, 30);
+    --primary-bg-blend: #2a3d52;
+    --primary-shade2-blend: #456999;
     --danger: #cc8500;
-    --success: #289f2d;
-    --info: #9c5fcc;
+    --success: $success;
+    --success-light: lighten($success, 15);
+    --success-dark: darken($success, 15);
+    --success-darker: darken($success, 20);
+    --info: $info;
+    --info-bg-blend: #3d2d52;
     --reject: #a62705;
-    --colored-background-fg: #eeeeee;
+    --colored-background-fg: $colored-background-fg;
+    --colored-background-fg-dark: darken($colored-background-fg, 10);
 
     /* Chat/special backgrounds */
     --malkovich-bg: #597053;
@@ -308,10 +358,10 @@
     --weak-loss: #391829;
     --strong-win: #65a353;
     --strong-loss: #9d5a83;
-    --strong-w-text: #1a1a1a;
-    --strong-l-text: #1a1a1a;
-    --weak-w-text: #bbbbbb;
-    --weak-l-text: #bbbbbb;
+    --strong-w-text: $bg;
+    --strong-l-text: $bg;
+    --weak-w-text: $fg;
+    --weak-l-text: $fg;
     --winner-trophy: #e6b500;
     --annul-opacity: 0.3;
 
@@ -347,9 +397,10 @@
     --logo-svg: url("../../assets/ogs_dark.svg");
 
     /* Input */
-    --input-bg: #5e5e5e;
-    --input-border: #5e5e5e;
-    --input-fg: #bbbbbb;
+    $input-color: #5e5e5e;
+    --input-bg: $input-color;
+    --input-border: $input-color;
+    --input-fg: $fg;
 
     /* MiniBoards */
     --goban-shadow: none;
@@ -370,47 +421,73 @@
     --player-white-background: linear-gradient(to bottom, #888888 0%, #efefef 50%, #efefef 100%);
     --inactive-support-gradient: linear-gradient(to bottom, #7d7d7d 0%, #333333 100%);
     --active-support-gradient: linear-gradient(to bottom, #9c8200 0%, #584a00 100%);
-    --player-black-fg: #bbbbbb;
+    --player-black-fg: $fg;
     --player-white-fg: #131313;
     --player-black-clock: #ffffff;
     --player-white-clock: #000;
     --player-white-paused-clock: #5F4A71;
     --player-black-paused-clock: #928A99;
-    --quickmatch-player-waiting: #289f2d;
-    --account-warning-bg: #2d2433;
-    --account-warning-fg: #bbbbbb;
+    --quickmatch-player-waiting: $success;
+    $account-warning-bg: #2d2433;
+    --account-warning-bg: $account-warning-bg;
+    --account-warning-bg-light: lighten($account-warning-bg, 20);
+    --account-warning-fg: $fg;
 
     /* Selection header */
-    --select-header-bg: #474747;
+    --select-header-bg: $default-button;
     --select-header-fg: #9a9a9a;
 }
 
 /* Accessible theme (extends dark with accessibility improvements) */
 @define-mixin accessible {
+    /* Build-time variables for color derivation */
+    $bg: #1a1a1a;
+    $fg: #bbbbbb;
+    $default-button: #474747;
+    $primary: #1d66cc;
+    $success: #289f2d;
+    $info: #9c5fcc;
+    $colored-background-fg: #eeeeee;
+
     /* Start with dark theme values */
     --clear: transparent;
-    --bg: #1a1a1a;
-    --fg: #bbbbbb;
+    --bg: $bg;
+    --fg: $fg;
+    --fg-light: lighten($fg, 30);
     --fg-increased-contrast: #ffffff;
     --mix-base: #777;
-    --background-color: #1a1a1a;
+    --background-color: $bg;
     --card-background-color: #2a2a2a;
-    --text-color: #bbbbbb;
+    --text-color: $fg;
     --text-color-active: #ffffff;
     --text-dimmed: #8c8c8c;
     --spectator-text-color: #8987FC;
-    --default-button-color: #bbbbbb;
-    --toast-bg: #bbbbbb;
-    --toast-fg: #1a1a1a;
+    --default-button-color: $fg;
+    --toast-bg: $fg;
+    --toast-fg: $bg;
     --link-color: #539bff;
     --link-color-active: #427ccc;
-    --default-button: #474747;
-    --primary: #1d66cc;
+    --default-button: $default-button;
+    --default-button-light: lighten($default-button, 15);
+    --default-button-dark: darken($default-button, 10);
+    --default-button-darker: darken($default-button, 20);
+    --default-button-disabled: #525252;
+    --primary: $primary;
+    --primary-light: lighten($primary, 30);
+    --primary-light-20: lighten($primary, 20);
+    --primary-dark: darken($primary, 30);
+    --primary-bg-blend: #2a3d52;
+    --primary-shade2-blend: #456999;
     --danger: #cc8500;
-    --success: #289f2d;
-    --info: #9c5fcc;
+    --success: $success;
+    --success-light: lighten($success, 15);
+    --success-dark: darken($success, 15);
+    --success-darker: darken($success, 20);
+    --info: $info;
+    --info-bg-blend: #3d2d52;
     --reject: #a62705;
-    --colored-background-fg: #eeeeee;
+    --colored-background-fg: $colored-background-fg;
+    --colored-background-fg-dark: darken($colored-background-fg, 10);
     --malkovich-bg: #597053;
     --personal-bg: #0f2e3b;
     --hidden-bg: #300352;
@@ -422,10 +499,10 @@
     --error-boundary-bg: #7f2007;
     --error-boundary-fg: #ffd4c7;
     --warning-bg: #925A00;
-    --warning-fg: #bbbbbb;
+    --warning-fg: $fg;
     --supporter-error-bg: hsl(23, 100%, 10%);
     --supporter-error-border: hsl(23, 100%, 30%);
-    --help-popup-bg: #1d66cc;
+    --help-popup-bg: $primary;
     --chat-offline: #1a1a1a;
     --chat-offline-shadow: -1px -1px 0 #ccc, 1px -1px 0 #ccc, -1px 1px 0 #ddd, 1px 1px 0 #ccc;
     --user: #9dc6ff;
@@ -440,16 +517,16 @@
     --chat-mentions: #E36497;
     --chat-self-message: #8AB1E6;
     --chat-system: #50d98c;
-    --private-chat-user: #eeeeee;
-    --weak-w-text: #bbbbbb;
-    --weak-l-text: #bbbbbb;
+    --private-chat-user: $colored-background-fg;
+    --weak-w-text: $fg;
+    --weak-l-text: $fg;
     --winner-trophy: #e6b500;
     --annul-opacity: 0.3;
     --shade0: #c4c4c4;
     --shade1: #9a9a9a;
     --shade2: #6d6d6d;
     --shade3: #545454;
-    --shade4: #474747;
+    --shade4: $default-button;
     --shade5: #3a3a3a;
     --search-highlight: #554E00;
     --other-player-background: rgba(140, 140, 140, 0.2);
@@ -458,7 +535,7 @@
     --joseki-trick: #ffff00;
     --joseki-question: #00ccff;
     --joseki-mistake: #b3001e;
-    --react-select-bg: #474747;
+    --react-select-bg: $default-button;
     --react-select-border: #3a3a3a;
     --react-select-selected-bg: #2684FF;
     --react-select-selected-fg: #FFFFFF;
@@ -467,9 +544,10 @@
     --navbar-highlight-background-color: #333;
     --navbar-background-color: #262626;
     --logo-svg: url("../../assets/ogs_dark.svg");
-    --input-bg: #5e5e5e;
-    --input-border: #5e5e5e;
-    --input-fg: #bbbbbb;
+    $input-color: #5e5e5e;
+    --input-bg: $input-color;
+    --input-border: $input-color;
+    --input-fg: $fg;
     --goban-shadow: none;
     --goban-shadow-borderless: none;
     --miniboard-to-move: #2B4029;
@@ -486,15 +564,17 @@
     --player-white-background: linear-gradient(to bottom, #888888 0%, #efefef 50%, #efefef 100%);
     --inactive-support-gradient: linear-gradient(to bottom, #7d7d7d 0%, #333333 100%);
     --active-support-gradient: linear-gradient(to bottom, #9c8200 0%, #584a00 100%);
-    --player-black-fg: #bbbbbb;
+    --player-black-fg: $fg;
     --player-white-fg: #131313;
     --player-black-clock: #ffffff;
     --player-white-clock: #000;
     --player-white-paused-clock: #5F4A71;
     --player-black-paused-clock: #928A99;
-    --account-warning-bg: #2d2433;
-    --account-warning-fg: #bbbbbb;
-    --select-header-bg: #474747;
+    $account-warning-bg: #2d2433;
+    --account-warning-bg: $account-warning-bg;
+    --account-warning-bg-light: lighten($account-warning-bg, 20);
+    --account-warning-fg: $fg;
+    --select-header-bg: $default-button;
     --select-header-fg: #9a9a9a;
 
     /* Accessible-specific overrides (colorblind-friendly palette) */
@@ -505,8 +585,8 @@
     --strong-loss: #D55E00;
     --weak-win: #003f64;
     --weak-loss: #783400;
-    --strong-w-text: #1a1a1a;
-    --strong-l-text: #1a1a1a;
+    --strong-w-text: $bg;
+    --strong-l-text: $bg;
     --indicate-online: #70b3ff;
     --indicate-online-shadow: -1px -1px 0 #000, 1px -1px 0 #111, -1px 1px 0 #222, 1px 1px 0 #111;
     --quickmatch-player-waiting: #70b3ff;

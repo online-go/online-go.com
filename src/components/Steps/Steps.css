@@ -92,8 +92,8 @@
 .SelectedStepContainer {
     .title-row {
         .title-text {
-            border-color: color-mix(in srgb, var(--primary), black 30%);
-            background-color: color-mix(in srgb, var(--primary), white 30%);
+            border-color: var(--primary-dark);
+            background-color: var(--primary-light);
         }
     }
 }

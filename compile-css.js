@@ -7,6 +7,7 @@ import atImportGlob from "postcss-import-ext-glob";
 import atImport from "postcss-import";
 import mixins from "postcss-mixins";
 import nested from "postcss-nested";
+import simpleVars from "postcss-simple-vars";
 import functions from "postcss-functions";
 import postcssUrl from "postcss-url";
 import inline_svg from "postcss-inline-svg";
@@ -67,6 +68,7 @@ postcss([
     atImport(),
     mixins(),
     nested(),
+    simpleVars(),
     colorFunctions,
     postcssUrl({ url: "inline" }),
     inline_svg({

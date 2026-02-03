@@ -67,12 +67,12 @@
 
         button {
             background-color: var(--success);
-            border-color: color-mix(in srgb, var(--success), black 15%);
+            border-color: var(--success-dark);
         }
 
         button:hover {
-            background-color: color-mix(in srgb, var(--success), white 15%);
-            border-color: color-mix(in srgb, var(--success), black 20%);
+            background-color: var(--success-light);
+            border-color: var(--success-darker);
         }
     }
 

@@ -39,7 +39,7 @@
         }
 
         .fa-exclamation-triangle.active {
-            color: color-mix(in srgb, var(--primary), white 30%);
+            color: var(--primary-light);
         }
     }
 

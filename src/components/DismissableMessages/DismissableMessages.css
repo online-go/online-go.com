@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 .DismissableMessage {
-    background-color: color-mix(in srgb, var(--primary), var(--bg) 70%);
+    background-color: var(--primary-bg-blend);
     border-color: var(--primary);
     border: 1px solid #000;
     text-align: center;
