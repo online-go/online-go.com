@@ -1,0 +1,128 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+.ChatChannelList {
+    .channel {
+        padding-left: 0.2rem;
+        display: flex;
+        justify-content: space-between;
+        transition: background-color 0.2s ease, color 0.2s ease;
+
+        &.active {
+            background-color: var(--primary);
+            color: var(--colored-background-fg);
+        }
+
+        &:hover {
+            background-color: var(--primary-shade2-blend);
+            color: var(--colored-background-fg);
+        }
+
+        &.unjoined {
+            color: var(--shade1);
+        }
+
+        &.unread {
+            color: var(--primary);
+        }
+
+        &.mentioned {
+            color: var(--chat-mentions);
+        }
+
+        .channel-name {
+            display: inline-flex;
+            align-items: center;
+            flex: 1;
+            cursor: pointer;
+            white-space: nowrap;
+            justify-content: stretch;
+            padding-right: 0.2rem;
+            margin-top: 0.1rem;
+            margin-bottom: 0.1rem;
+
+            i, img, .flag {
+                flex: 0;
+                display: inline-block;
+                margin-right: 0.3rem;
+                margin-left: 0.1rem;
+            }
+
+            img {
+                height: 16px;
+                width: 16px;
+            }
+
+            .name {
+                display: inline-block;
+                flex: 1;
+                flex-basis: 5rem;
+                width: 5rem;
+                overflow: hidden;
+            }
+
+            .unread-count {
+                flex-shrink: 0;
+                /* @extends .monospace - apply manually */
+                font-size: 0.8rem;
+                font-style: normal !important;
+                float: right;
+                padding-left: 0.5rem;
+                padding-top: 0.1rem;
+
+                &:before {
+                    content: attr(data-count);
+                }
+            }
+        }
+    }
+
+    button {
+        /* font-size: var(--font-size-smaller); */
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0;
+        margin: 0;
+        margin-top: 1rem;
+        min-height: 1.7rem;
+        max-height: 1.7rem;
+        height: 1.7rem;
+
+        .triangle {
+            /* font-size: 0.9em; */
+            display: inline-block;
+            /* vertical-align: top; */
+            margin: 0.3rem;
+            padding-bottom: 0.15rem;
+        }
+
+        .text {
+            display: inline-block;
+        }
+    }
+
+    .joinable {
+        border-top: 0px solid transparent;
+        border-top-color: var(--shade3);
+
+        input[type='search'] {
+            width: 100%;
+            margin: 1rem 0;
+            background: var(--bg);
+        }
+    }
+}

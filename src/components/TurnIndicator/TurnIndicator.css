@@ -1,0 +1,86 @@
+.TurnIndicator {
+    display: flex;
+    align-items: center;
+    align-content: center;
+    justify-content: flex-end;
+    cursor: pointer;
+
+    .count {
+        visibility: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: var(--turn-indicator-size);
+        height: var(--turn-indicator-size);
+        border-radius: 50%;
+        text-align: center;
+        border: 2px solid transparent;
+        font-weight: 700;
+    }
+
+    .active.count {
+        visibility: visible;
+    }
+
+    .inactive.count {
+        visibility: visible;
+    }
+}
+
+[data-theme="light"] .TurnIndicator {
+    .count {
+        background-color: #101010;
+        color: #fff;
+    }
+
+    .inactive.count {
+        background-color: #d2d2d2;
+    }
+}
+
+[data-theme="dark"] .TurnIndicator {
+    .count {
+        background-color: #bbb;
+        color: #252525;
+    }
+
+    .inactive.count {
+        background-color: #535353;
+    }
+}
+
+[data-theme="accessible"] .TurnIndicator {
+    .count {
+        background-color: #bbb;
+        color: #252525;
+    }
+
+    .inactive.count {
+        background-color: #535353;
+    }
+}
+
+.TurnIndicatorV6 {
+    display: inline-flex;
+    flex-direction: column;
+    padding-right: 0.5rem;
+    padding-left: 0.5rem;
+    align-items: center;
+    font-size: 0.9rem;
+    cursor: pointer;
+
+    .ogs-goban {
+        color: var(--fg);
+        transition: color 0.2s ease;
+    }
+
+    &:hover {
+        .ogs-goban {
+            color: var(--fg-light);
+        }
+    }
+
+    .count {
+        font-size: var(--font-size-smaller);
+    }
+}

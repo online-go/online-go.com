@@ -33,6 +33,7 @@ import { MODERATOR_POWERS, MOD_POWER_NAMES } from "@/lib/moderation";
 import { notification_manager, Notification } from "./NotificationManager";
 import { ModerationOffer } from "@/components/ModerationOffer";
 import { player_is_ignored } from "@/components/BlockPlayer";
+import "./Notifications.css";
 
 export function NotificationList(): React.ReactElement {
     const [, setCount] = React.useState<number | undefined>(

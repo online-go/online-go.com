@@ -20,6 +20,7 @@ import * as React from "react";
 import { Link } from "react-router-dom";
 import * as data from "@/lib/data";
 import { usePreference } from "@/lib/preferences";
+import "./TournamentIndicator.css";
 
 export function TournamentIndicator(): React.ReactElement | null {
     const [tournament, setTournament] = React.useState<any>(null);

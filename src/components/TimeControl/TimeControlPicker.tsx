@@ -22,6 +22,7 @@ import { _ } from "@/lib/translate";
 import { TimeControl, TimeControlTypes } from "./TimeControl";
 import { updateProperty, updateSpeed, updateSystem } from "./TimeControlUpdates";
 import { default_time_settings, getTimeOptions, timeControlSystemText } from "./util";
+import "./TimeControlPicker.css";
 
 type TimeControlSystem = TimeControlTypes.TimeControlSystem;
 type TimeControlSpeed = TimeControlTypes.TimeControlSpeed;

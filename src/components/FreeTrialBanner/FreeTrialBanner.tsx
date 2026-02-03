@@ -23,6 +23,7 @@ import { LoadingButton } from "@/components/LoadingButton";
 import { post } from "@/lib/requests";
 import { LearnMore } from "./LearnMore";
 import { openModal } from "@/components/Modal";
+import "./FreeTrialBanner.css";
 //import * as data from "@/lib/data";
 
 const DAYS_PER_YEAR = 365.2422;

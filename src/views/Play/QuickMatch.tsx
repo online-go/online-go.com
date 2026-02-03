@@ -45,6 +45,7 @@ import { useHaveActiveGameSearch } from "./hooks";
 import { openPlayPageHelp } from "./PlayPageHelp";
 import { notification_manager, Notification } from "@/components/Notifications/NotificationManager";
 import { Card } from "@/components/material";
+import "./QuickMatch.css";
 
 moment.relativeTimeThreshold("m", 56);
 export interface SelectOption {

@@ -29,6 +29,7 @@ import { useUser } from "@/lib/hooks";
 import { get } from "@/lib/requests";
 import { toast } from "@/lib/toast";
 import { getPrintableError } from "@/lib/misc";
+import "./Report.css";
 
 export type ReportType =
     | "all" // not a type, just useful for the enumeration

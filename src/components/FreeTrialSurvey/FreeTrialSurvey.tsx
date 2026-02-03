@@ -25,6 +25,7 @@ import { post } from "@/lib/requests";
 import { LoadingButton } from "@/components/LoadingButton";
 import { errorAlerter } from "@/lib/misc";
 import { toast } from "@/lib/toast";
+import "./FreeTrialSurvey.css";
 
 const letter = `
 #### Thank you for trying out the AI reviews and site supporter features!

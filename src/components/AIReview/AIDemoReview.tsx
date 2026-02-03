@@ -25,6 +25,7 @@ import { usePreference } from "@/lib/preferences";
 import { JGOFNumericPlayerColor, ColoredCircle, MoveTree, GobanRenderer, JGOFMove } from "goban";
 import { useUser } from "@/lib/hooks";
 import { trimMaxMoves } from "./utils";
+import "./AIDemoReview.css";
 
 const cached_data: { [review_id: number]: { [board_string: string]: any } } = {};
 

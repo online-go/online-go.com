@@ -31,6 +31,7 @@ import * as player_cache from "@/lib/player_cache";
 import * as preferences from "@/lib/preferences";
 import online_status from "@/lib/online_status";
 import { ReportContext } from "@/contexts/ReportContext";
+import "./Player.css";
 
 /* There are cases where what we are handed is some odd looking dirty data. We
  * should probably start warning about remaining uses of these fields and then

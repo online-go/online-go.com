@@ -20,6 +20,7 @@ import { _ } from "@/lib/translate";
 import { post, get } from "@/lib/requests";
 import * as data from "@/lib/data";
 import { UIPush } from "../UIPush";
+import "./PaginatedTable.css";
 
 interface PaginatedTableColumnProperties<EntryT> {
     cellProps?: any;

@@ -25,6 +25,7 @@ import {
     setGameBlock,
     setAnnouncementBlock,
 } from "./BlockPlayer";
+import "./BlockPlayerModal.css";
 
 interface BlockPlayerModalProperties {
     playerId: number;

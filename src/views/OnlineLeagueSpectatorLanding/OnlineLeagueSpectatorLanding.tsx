@@ -27,6 +27,7 @@ import { useUser } from "@/lib/hooks";
 import { LoadingPage } from "@/components/Loading";
 import { UIPush } from "@/components/UIPush";
 import { EmbeddedChatCard } from "@/components/Chat";
+import "./OnlineLeagueSpectatorLanding.css";
 
 // Spectators are intended to arrive here via an online-league spectate URL that provides
 // the Online League match ID

@@ -20,6 +20,7 @@ import { Player } from "@/components/Player";
 import { _ } from "@/lib/translate";
 import { Modal, openModal } from "@/components/Modal";
 import { ReportedConversation } from "@/components/Report";
+import "./ReportedConversationModal.css";
 
 interface ReportedConversationModalProps {
     player_id: number;

@@ -21,6 +21,7 @@ import { usePreference } from "@/lib/preferences";
 import { GoTVNotification } from "./GoTVNotification";
 import { useNavigate } from "react-router-dom";
 import { _ } from "@/lib/translate";
+import "./GoTVNotifier.css";
 
 interface Notification {
     streamId: string;

@@ -55,6 +55,7 @@ import { ActivityCard } from "./ActivityCard";
 import { ActiveDroppedGameList } from "@/components/ActiveDroppedGameList";
 import { NewUserRankChooser } from "@/components/NewUserRankChooser";
 import { usePreference } from "@/lib/preferences";
+import "./User.css";
 
 type RatingsSpeed = "overall" | "blitz" | "live" | "correspondence";
 type RatingsSize = 0 | 9 | 13 | 19;

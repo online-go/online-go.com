@@ -17,6 +17,7 @@
 
 import * as React from "react";
 import { _ } from "@/lib/translate";
+import "./ModerationOfferControl.css";
 
 interface ModerationOfferControlProps {
     ability: string; // Title/label for this power

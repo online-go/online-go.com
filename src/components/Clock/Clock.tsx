@@ -20,6 +20,7 @@ import * as data from "@/lib/data";
 import { useEffect, useState } from "react";
 import { Goban, JGOFClockWithTransmitting, JGOFPlayerClock, JGOFTimeControl } from "goban";
 import { _, pgettext, interpolate, ngettext } from "@/lib/translate";
+import "./Clock.css";
 
 type clock_color = "black" | "white" | "stone-removal";
 

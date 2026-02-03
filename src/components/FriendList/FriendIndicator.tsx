@@ -22,6 +22,7 @@ import { FriendList } from "./FriendList";
 import { KBShortcut } from "@/components/KBShortcut";
 import cached from "@/lib/cached";
 import { setSetShowFriendList } from "./close_friend_list";
+import "./FriendIndicator.css";
 
 const online_subscriptions = {};
 

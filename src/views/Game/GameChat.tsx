@@ -31,6 +31,7 @@ import { inGameModChannel } from "@/lib/chat_manager";
 import { MoveTree } from "goban";
 import { useUserIsParticipant } from "./GameHooks";
 import { useGobanController } from "./goban_context";
+import "./GameChat.css";
 
 export type ChatMode = "main" | "malkovich" | "moderator" | "hidden" | "personal";
 interface GameChatProperties {

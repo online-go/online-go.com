@@ -17,6 +17,7 @@
 
 import { _ } from "@/lib/translate";
 import React from "react";
+import "./AccessibilityMenu.css";
 
 /**
  * Accessibility menu for screen readers.

@@ -20,6 +20,7 @@ import * as DynamicHelp from "react-dynamic-help";
 import { Challenge } from "@/lib/challenge_utils";
 import { useUser } from "@/lib/hooks";
 import { _, pgettext, interpolate } from "@/lib/translate";
+import "./RengoManagementPane.css";
 
 interface RengoManagementPaneProperties {
     challenge_id: number;

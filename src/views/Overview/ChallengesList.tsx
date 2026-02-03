@@ -28,6 +28,7 @@ import { challenge_text_description } from "@/components/ChallengeModal";
 import { FabX, FabCheck } from "@/components/material";
 import { ignore } from "@/lib/misc";
 import cached from "@/lib/cached";
+import "./ChallengesList.css";
 
 interface ChallengeListProps {
     onAccept: () => void;

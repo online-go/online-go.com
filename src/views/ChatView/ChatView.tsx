@@ -21,6 +21,7 @@ import { useState, useEffect, useCallback } from "react";
 import { ChatChannelList, ChatLog, ChatUsersList } from "@/components/Chat";
 import { useParams } from "react-router-dom";
 import { _ } from "@/lib/translate";
+import "./ChatView.css";
 
 export function ChatView(): React.ReactElement | null {
     const { channel } = useParams();

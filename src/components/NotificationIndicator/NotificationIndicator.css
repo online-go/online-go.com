@@ -1,0 +1,37 @@
+.NotificationIndicator {
+    display: inline-flex;
+    flex-direction: column;
+    padding-right: 0.5rem;
+    padding-left: 0.5rem;
+    align-items: center;
+    font-size: 0.9rem;
+    cursor: pointer;
+
+    .fa-bell {
+        color: var(--shade4);
+        transition: color 0.2s ease;
+
+        &.active {
+            color: var(--primary);
+        }
+    }
+
+    &:hover {
+        .fa-bell {
+            color: var(--shade3);
+
+            &.active {
+                color: var(--primary-light-20);
+            }
+        }
+    }
+
+    .count {
+        font-size: var(--font-size-smaller);
+        color: var(--shade4);
+
+        &.active {
+            color: var(--primary);
+        }
+    }
+}

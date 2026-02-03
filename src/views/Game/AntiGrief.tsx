@@ -25,6 +25,7 @@ import { GobanInteractive, JGOFClockWithTransmitting, JGOFTimeControl } from "go
 import { browserHistory } from "@/lib/ogsHistory";
 import { toast } from "@/lib/toast";
 import { StallingScoreEstimate } from "goban";
+import "./AntiGrief.css";
 
 const ANTI_ESCAPING_TIMEOUT = 60; // number of seconds to wait before allowing the "Claim victory" button to be appear and be clicked
 

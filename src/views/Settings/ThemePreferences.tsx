@@ -35,6 +35,7 @@ import { useData } from "@/lib/hooks";
 import { MiniGoban } from "@/components/MiniGoban";
 import { GobanEngineConfig, setGobanRenderer } from "goban";
 import { Toggle } from "@/components/Toggle";
+import "./ThemePreferences.css";
 
 const sample_board_data: GobanEngineConfig = {
     width: 3,

@@ -1,0 +1,837 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+$hamburger-cutoff: 900px;
+$hamburger-cutoff-plus-one: 901px;
+
+header.NavBar {
+    body.zen & {
+        display: none;
+    }
+
+    display: flex;
+    margin-bottom: 0.2rem;
+    height: var(--navbar-height);
+    user-select: none;
+    background-color: var(--navbar-background-color);
+    box-shadow: 2px 2px 2px 0px rgba(0, 0, 0, 0.16);
+    justify-content: space-between;
+    max-width: 100vw;
+
+    .fa-star {
+        /* themed color supporter-gold */
+        color: var(--supporter-gold);
+    }
+
+    &>.left, &>.right {
+        flex: 1rem;
+        flex-grow: 0;
+        flex-shrink: 0;
+    }
+
+    .center {
+        flex: 1rem;
+        flex-grow: 1;
+        flex-shrink: 0;
+        /* Note: Original Stylus had 'flex-align: flex-start' which is invalid CSS and was ignored by browsers */
+    }
+
+    .mobile-only {
+        display: none !important;
+    }
+
+    &.force-nav-close {
+        .Menu-children {
+            display: none !important;
+        }
+    }
+
+    .Menu-children {
+        /* reset <ul> */
+        margin: 0;
+        padding: 0;
+        list-style: none;
+
+        .MenuLink, .MenuLink > * {
+            display: flex;
+            align-items: center;
+        }
+
+        .MenuLink.centered {
+            justify-content: center;
+        }
+    }
+
+    /* desktop / wide screens */
+    @media (min-width: $hamburger-cutoff-plus-one) {
+        .Menu {
+            display: block;
+            margin-left: 0.5rem;
+            position: relative;
+            height: var(--navbar-height);
+
+            .Menu-children {
+                display: none;
+                position: absolute;
+                left: 0;
+                top: var(--navbar-height);
+                min-width: var(--navbar-menu-width);
+                background-color: var(--navbar-background-color);
+                /* border-left: 0.2rem solid transparent; */
+                box-shadow: 2px 4px 3px 0px rgba(0, 0, 0, 0.16);
+                z-index: var(--z-nav-menu-menu);
+            }
+
+            .MenuLink:hover {
+                background-color: var(--shade4);
+            }
+
+            &:hover, &.active {
+                background-color: var(--navbar-highlight-background-color);
+                border-color: var(--primary);
+
+                .Menu-children {
+                    display: inline-flex;
+                    flex-direction: column;
+                    border-color: var(--primary);
+                    background-color: var(--navbar-highlight-background-color);
+                }
+            }
+
+            .submenu {
+                display: none;
+            }
+
+            .submenu-container:hover .submenu {
+                display: inline-flex;
+                flex-direction: column;
+                position: absolute;
+                top: 0;
+                min-height: var(--submenu-min-height);
+                left: var(--navbar-menu-width);
+                background-color: var(--shade4);
+                min-width: var(--navbar-menu-width);
+                box-shadow: 2px 4px 3px 0px rgba(0, 0, 0, 0.16);
+
+                > a {
+                    display: inline-flex;
+                    align-items: center;
+                }
+            }
+
+            &.profile {
+                display: inline-flex;
+                flex-direction: column;
+
+                .NotificationList {
+                    margin-bottom: 1rem;
+                }
+
+                .theme-selectors-container {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 1rem;
+                    margin-top: 0.5rem;
+                }
+
+                .theme-selectors {
+                    display: flex;
+                    justify-content: center;
+                }
+
+                .settings-and-logout {
+                    margin-top: 0.5rem;
+                    margin-bottom: 0.5rem;
+                    margin-top: 1rem;
+                    display: flex;
+                    justify-content: space-around;
+                }
+
+                &:hover, &.active {
+                    background-color: var(--navbar-highlight-background-color);
+                    border-color: var(--primary);
+
+                    .Menu-children {
+                        flex-direction: column;
+                        border-color: transparent !important;
+                        background-color: var(--navbar-highlight-background-color);
+                    }
+                }
+
+                .Menu-children {
+                    min-width: 20rem;
+                    right: 0;
+                    left: auto;
+                }
+            }
+        }
+    }
+
+    @media only screen and (max-width: 600px) {
+        .FriendIndicator, .IncidentReportIndicator, .TournamentIndicator, .TurnIndicator, .NotificationIndicator, .ChatIndicator, .GoTVIndicator {
+            padding-left: 0.3rem !important;
+            padding-right: 0.3rem !important;
+        }
+    }
+
+    .Menu-title {
+        transition: all 0.5s ease;
+    }
+
+    @media only screen and (max-width: 1060px) {
+        .Menu-title {
+            padding-left: 0.3rem !important;
+            padding-right: 0.3rem !important;
+        }
+    }
+
+    @media only screen and (max-width: 980px) {
+        .Menu-title {
+            padding-left: 0.2rem !important;
+            padding-right: 0.2rem !important;
+        }
+    }
+
+    @media only screen and (max-width: 910px) {
+        .Menu-title {
+            padding-left: 0.5rem !important;
+            padding-right: 0.5rem !important;
+        }
+    }
+
+    /* mobile */
+    @media only screen and (max-width: $hamburger-cutoff) {
+        &>.left {
+            display: none !important;
+        }
+
+        .Menu.desktop-only {
+            display: none !important;
+        }
+
+        .icon-container.mobile-only {
+            display: flex !important;
+        }
+
+        .Menu.mobile-only {
+            display: flex !important;
+
+            img.PlayerIcon {
+                margin-left: 0.5rem;
+            }
+        }
+
+        .icon-container {
+            padding-right: 0 !important;
+
+            img.PlayerIcon {
+                margin-right: 0 !important;
+            }
+
+            .username {
+                display: none;
+            }
+        }
+
+        .ogs-nav-logo {
+            height: 1.5rem;
+            width: 4rem !important;
+            margin-right: 0 !important;
+        }
+
+        .OmniSearch-container {
+            /* hide on the navbar when the left nav isn't expanded */
+            display: none !important;
+            /* display: inline-flex !important; */
+            min-width: 2rem;
+
+            &:focus-within {
+                width: calc(100vw - 5rem) !important;
+                /* min-width: calc(100vw - 10rem) !important; */
+                max-width: none;
+                margin-right: 0.5rem;
+
+                .OmniSearch-input-container {
+                    max-width: 100%;
+                }
+            }
+
+            .fa-search {
+                font-size: 1.2rem;
+            }
+        }
+
+        .right {
+            flex: 0rem;
+
+            &.search-focused {
+                display: none;
+
+                @media only screen {
+                    display: inline-flex;
+                }
+            }
+        }
+
+        .center {
+            flex: 0rem;
+        }
+
+        .spacer {
+            flex: 1;
+            flex-basis: 2rem;
+        }
+
+        .TournamentIndicator.hidden-on-mobile {
+            display: none;
+        }
+
+        &.hamburger-expanded {
+            .OmniSearch-container {
+                display: inline-flex !important;
+            }
+
+            .ogs-nav-logo {
+                display: none;
+            }
+
+            .right {
+                display: none;
+            }
+
+            .OpenMenuButton {
+                display: none;
+            }
+        }
+
+        &.hamburger-expanded>.left {
+            display: inline !important;
+
+            background-color: var(--navbar-background-color);
+            position: absolute;
+            top: var(--navbar-height);
+            bottom: 0;
+            left: 0;
+            padding: 0;
+            /* max-height: calc(100vh - var(--navbar-height)) */
+            /* overflow-y: auto; */
+            z-index: var(--z-nav-menu-menu);
+
+            &>ul {
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .ogs-nav-logo {
+                display: none;
+            }
+
+            .Menu {
+                order: 2;
+                width: 100vw;
+                display: flex;
+                flex-direction: column;
+                height: auto;
+                background-color: var(--navbar-background-color) !important;
+            }
+
+            .Menu-title {
+                font-size: var(--font-size-big);
+                white-space: nowrap;
+            }
+
+            .Menu-children {
+                display: inline-flex;
+                flex-direction: column;
+                position: static;
+                display: inline-flex;
+                flex-direction: column;
+                box-shadow: none;
+                flex-shrink: 0;
+                background-color: var(--navbar-background-color) !important;
+                padding-left: 2rem;
+            }
+
+            .submenu-container {
+                display: flex;
+                flex-direction: column;
+
+                .submenu {
+                    flex-shrink: 0;
+                    display: inline-flex;
+                    flex-direction: column;
+                    position: static;
+                    box-shadow: none;
+                    min-height: auto !important;
+                    background-color: var(--navbar-background-color) !important;
+                    padding-left: 2rem;
+                }
+            }
+        }
+    }
+
+    @media only screen and (min-width: 528px) {
+        .right {
+            &.search-focused {
+                display: inline-flex !important;
+            }
+        }
+    }
+
+    .hamburger {
+        display: none;
+        cursor: pointer;
+
+        @media only screen and (max-width: $hamburger-cutoff) {
+            font-size: 1.7rem;
+            display: inline-flex;
+            align-items: center;
+            padding-left: 0.5rem;
+
+            a {
+                display: inline-flex;
+                align-items: center;
+            }
+        }
+    }
+
+    .Menu {
+        img {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            margin-right: 0.5rem;
+        }
+
+        .Menu-children {
+            img, .fa, .ogs-goban {
+                width: 16px;
+                max-width: 16px;
+                height: 16px;
+                text-align: center;
+                font-weight: 400;
+                margin-left: 0.5rem;
+                margin-right: 0.5rem;
+
+                &.fa-graduation-cap {
+                    font-size: 14px;
+                }
+            }
+        }
+    }
+
+    button.MenuLink {
+        background: transparent;
+        outline: none;
+        border:none;
+        border-radius: 0;
+        width: 100%;
+        text-align: left;
+        margin: 0;
+        padding: 0;
+        box-shadow: none;
+
+        &:focus {
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0), 0 0px 0px 2px #4c9ffe;
+        }
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+
+    .MenuLink, a, .clickable {
+        color: var(--text-color);
+        transition: background .2s;
+    }
+
+    .MenuLink, button.MenuLink, a, .clickable {
+        &:active, &:hover {
+            color: var(--text-color-active);
+
+            /* underline only on the text (not the icon) */
+            text-decoration: none;
+            .MenuLinkTitle {
+                text-decoration: underline;
+            }
+        }
+    }
+
+    .ogs-nav-logo {
+        height: 1.5rem;
+        width: 4rem;
+        margin-right: 1rem;
+    }
+
+    >.left {
+        & > ul {
+            display: flex;
+            align-items: center;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+    }
+
+    >.left, .Menu {
+        .Menu-title {
+            display: inline-flex;
+            line-height: var(--navbar-height);
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+            white-space: nowrap;
+            align-items: center;
+        }
+
+        .MenuLink {
+            height: var(--navbar-height);
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+        }
+    }
+
+    .right {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+
+        .icon-container {
+            display: flex;
+            position: relative;
+            padding-left: 0.3rem;
+            padding-right: 0.7rem;
+            cursor: pointer;
+            align-items: center;
+
+            .username {
+                white-space: nowrap;
+            }
+
+            .notification-indicator {
+                left: 0.5rem;
+                width: var(--navbar-height);
+            }
+
+            img.PlayerIcon {
+                /* height: var(--navbar-height); */
+                /* width: var(--navbar-height); */
+                height: 2rem;
+                width: 2rem;
+                pointer-events: none;
+                margin-right: 0.5rem;
+            }
+
+            .fa, .ogs-goban {
+                font-size: 1rem;
+                font-weight: 400;
+                margin-left: 0.5rem;
+                color: var(--shade1);
+            }
+
+            &:hover .fa {
+                color: var(--fg);
+            }
+        }
+    }
+
+    
+    .fa-adjust {
+        padding: 0.6rem;
+        margin-bottom: -0.1rem;
+        cursor: pointer;
+    }
+
+    [data-theme="dark"] .fa-adjust {
+        transform: rotate(180deg);
+    }
+
+    /* Since accessible is based on dark, I assume it needs this (not clear what this is specifically for, though the general idea is clear) */
+    [data-theme="accessible"] .fa-adjust {
+        transform: rotate(180deg);
+    }
+
+    .sign-in {
+        padding-right: 0.5rem;
+        white-space: nowrap;
+    }
+
+    .sign-up-btn {
+        margin-right: 1rem;
+        white-space: nowrap;
+    }
+
+    .nav-menu-modal-backdrop {
+        display: none;
+        position: fixed;
+        z-index: var(--z-nav-menu-backdrop);
+        top: var(--navbar-height);
+        bottom: 0;
+        left: 0;
+        right: 0;
+
+        /* transition: background-color 0.4s ease; */
+        /* background-color: transparent; */
+        &.active {
+            display: inline-block;
+            /* background-color: rgba(128,128,128,0.2); */
+        }
+    }
+
+    .RightNav {
+        display: inline-flex;
+        flex-direction: column;
+        position: absolute;
+        right: 0;
+        top: var(--navbar-height);
+        width: var(--navbar-menu-width);
+        max-width: 100vw;
+        max-height: calc(100vh - var(--navbar-height));
+        background-color: var(--navbar-background-color);
+        overflow-y: auto;
+        user-select: none;
+        z-index: var(--z-nav-menu-menu);
+        box-shadow: -2px 2px 1px 0px rgba(0, 0, 0, 0.16);
+        list-style: none;
+        margin: 0;
+        padding: 0;
+
+        .NotificationList {
+            margin-bottom: 1rem;
+        }
+
+        .theme-selectors-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .theme-selectors {
+            display: flex;
+            justify-content: center;
+        }
+
+        .settings-and-logout {
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+            margin-top: 1rem;
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .MenuLink {
+            margin: 0.5rem;
+            display: inline-flex;
+            align-items: center;
+
+            img, i {
+                margin: 0.2rem;
+                margin-right: 0.5rem;
+            }
+        }
+    }
+
+    .NotificationList {
+        position: absolute;
+        right: 0;
+        top: var(--navbar-height);
+        width: var(--navbar-menu-width);
+        background-color: var(--navbar-background-color);
+        max-height: calc(100vh - var(--navbar-height));
+        overflow-y: auto;
+        padding: 0.5rem;
+        z-index: var(--z-nav-menu-menu);
+        box-shadow: -2px 2px 1px 0px rgba(0, 0, 0, 0.16);
+    }
+
+    .FriendList {
+        top: var(--navbar-height);
+        max-height: calc(100vh - var(--navbar-height));
+        background-color: var(--navbar-background-color);
+    }
+
+    .FriendIndicator, .IncidentReportIndicator, .TournamentIndicator, .TurnIndicator, .NotificationIndicator, .ChatIndicator, .GoTVIndicator {
+        padding-left: 0.6rem;
+        padding-right: 0.6rem;
+    }
+
+    .spacer {
+        width: auto;
+    }
+
+    .ChatIndicator {
+        display: inline-flex;
+        align-self: center;
+        line-height: 1rem;
+
+        .navbar-icon {
+            margin-bottom: 0px !important;
+        }
+    }
+
+    .FriendIndicator, .IncidentReportIndicator, .NotificationIndicator, .TournamentIndicator, .GoTVIndicator {
+        .count, .time {
+            /* This offsets the baseline padding added to the count so things center correctly. */
+            margin-bottom: -0.2rem;
+        }
+    }
+
+    .ChatList {
+        background-color: var(--navbar-highlight-background-color);
+        padding: 0.5rem;
+        height: calc(100vh - var(--navbar-height));
+        max-height: calc(100vh - var(--navbar-height));
+        width: 15rem;
+
+        .channels {
+            margin-top: 0.5rem;
+        }
+
+        .channel {
+            padding-top: 0.25rem;
+            padding-bottom: 0.25rem;
+            height: 1.2rem;
+
+            .channel-name {
+                display: inline-flex;
+                align-items: center;
+                align-content: center;
+
+                .fa-trophy, .icon {
+                    margin-right: 0.5rem;
+                }
+            }
+        }
+    }
+
+    .ThemeMenu {
+        h4 {
+            margin: 0;
+            text-align: center;
+            font-weight:normal;
+        }
+    }
+}
+
+.OmniSearch-container {
+    position: relative;
+    height: var(--navbar-height);
+    display: inline-flex;
+    align-items: center;
+    /* justify-content: center; */
+    padding-left: 0.5rem;
+    padding-bottom: 0;
+    flex-grow: 1;
+    flex-shrink: 0;
+    min-width: 7rem;
+
+    .OmniSearch-input-container {
+        display: inline-flex;
+        align-items: center;
+        flex: 1;
+        max-width: 20rem;
+        position: relative;
+
+        label {
+            margin-right: 0.3rem;
+            position: absolute;
+            left: 0.2rem;
+            cursor: pointer;
+        }
+    }
+
+    .OmniSearch-input {
+        flex: 1;
+        flex-shrink: 1;
+        width: 100%;
+        padding-left: 1.5rem;
+    }
+
+    .OmniSearch {
+        position: absolute;
+        /* top: var(--navbar-height); */
+        /* top: -0.15rem; */
+        /* top: 0; */
+        top: var(--navbar-height);
+        /* left: 18rem; */
+        width: var(--navbar-menu-width);
+        background-color: var(--navbar-highlight-background-color);
+        box-shadow: 2px 2px 1px 0px rgba(0, 0, 0, 0.16);
+        z-index: var(--z-nav-menu-menu);
+        max-height: calc(100vh - var(--navbar-height));
+    }
+}
+
+button.theme-button {
+    cursor: pointer;
+    
+        background-color: var(--default-button);
+        color: var(--default-button-color);
+        border: 1px solid transparent;
+    
+    border: 1px solid transparent;
+    padding: 0.3rem;
+    padding-inline: 0.5rem;
+    font-size: 1.2rem;
+    width: 4rem;
+    word-wrap: nowrap;
+
+    .composed-icon {
+        margin-inline: 0 !important;
+        font-size: 1rem;
+
+        .fa {
+            position: relative;
+            margin-inline: 0 !important;
+            font-size: 0.7rem;
+            width: 12px !important;
+            height: 12px !important;
+        }
+
+        .fa-sun-o {
+            top: -0.25rem;
+            padding-left: 0.3rem;
+            padding-right: 0.1rem;
+        }
+
+        .fa-moon-o {
+            bottom: -0.1rem;
+            padding-left: 0.1rem;
+        }
+    }
+}
+
+.BanIndicator {
+    position: fixed;
+    right: 0;
+    top: var(--navbar-height);
+    background-color: var(--reject);
+    z-index: var(--z-banned-banner);
+    width: 15rem;
+    color: var(--colored-background-fg);
+    padding: 1rem;
+
+    > div {
+        font-size: 1.2rem;
+        text-align: center;
+        padding-top: 1rem;
+
+        a {
+            color: var(--link-color);
+        }
+    }
+}

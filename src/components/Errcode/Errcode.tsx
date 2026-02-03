@@ -21,6 +21,7 @@ import * as React from "react";
 import { MessageId, MessageObject } from "@/lib/messages";
 import { GobanMoveErrorMessageObject } from "goban";
 import { _ } from "@/lib/translate";
+import "./Errcode.css";
 
 export interface MessageProps {
     message?: MessageObject;

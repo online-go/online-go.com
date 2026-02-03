@@ -22,6 +22,7 @@ import { rankString } from "@/lib/rank_utils";
 import { _, llm_pgettext, pgettext } from "@/lib/translate";
 import { shortDurationString } from "goban";
 import { SPEED_OPTIONS } from "./SPEED_OPTIONS";
+import "./AvailableQuickMatches.css";
 /*
 import * as data from "@/lib/data";
 import * as preferences from "@/lib/preferences";

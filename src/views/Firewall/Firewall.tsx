@@ -23,6 +23,7 @@ import { deepCompare, errorAlerter } from "@/lib/misc";
 import { PaginatedTable } from "@/components/PaginatedTable";
 import { Player } from "@/components/Player";
 import { alert } from "@/lib/swal_config";
+import "./Firewall.css";
 /*
 import { Card } from "@/components/material";
 import { SearchInput } from "@/components/misc-ui";

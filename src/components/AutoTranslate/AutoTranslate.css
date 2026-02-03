@@ -1,0 +1,23 @@
+.AutoTranslate {
+    .translation-original {
+        font-style: italic;
+        font-size: smaller;
+        background-color: var(--shade5);
+        padding: 0.5em;
+    }
+
+    .language-map {
+        font-style: italic;
+        font-size: smaller;
+        text-align: right;
+        background-color: var(--shade5);
+    }
+
+    .placeholder {
+        color: var(--fg);
+        font-style: italic;
+        font-size: smaller;
+        background-color: var(--bg);
+        padding: 0.5em;
+    }
+}

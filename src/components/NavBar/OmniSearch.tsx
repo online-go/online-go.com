@@ -23,6 +23,7 @@ import { Link } from "react-router-dom";
 import { Player } from "@/components/Player";
 import { ignore } from "@/lib/misc";
 import { user_uploads_url } from "@/lib/cdn";
+import "./OmniSearch.css";
 
 interface OmniSearchProperties {
     search: string;

@@ -20,6 +20,7 @@ import * as React from "react";
 import { get } from "@/lib/requests";
 import { AccountWarningMessage } from "../AccountWarning/AccountWarning";
 import { _ } from "@/lib/translate";
+import "./WarningSystemMessages.css";
 
 interface WarningSystemMessagesProps {
     onlyOutstanding?: boolean;

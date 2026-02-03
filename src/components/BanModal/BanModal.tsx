@@ -22,6 +22,7 @@ import { _ } from "@/lib/translate";
 import { errorAlerter } from "@/lib/misc";
 import { Modal } from "@/components/Modal";
 import * as player_cache from "@/lib/player_cache";
+import "./BanModal.css";
 
 interface Events {}
 

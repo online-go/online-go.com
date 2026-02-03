@@ -34,6 +34,7 @@ import { alert } from "@/lib/swal_config";
 import { post } from "@/lib/requests";
 import { browserHistory } from "@/lib/ogsHistory";
 import { errorAlerter } from "@/lib/misc";
+import "./DemoBoardModal.css";
 
 export function DemoBoardModal(
     props: DemoBoardModalProps & { eventsRef: { close: () => void } },

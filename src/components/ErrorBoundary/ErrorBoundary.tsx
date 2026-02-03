@@ -19,6 +19,7 @@ import * as React from "react";
 import * as data from "@/lib/data";
 import { _ } from "@/lib/translate";
 import * as Sentry from "@sentry/browser";
+import "./ErrorBoundary.css";
 
 interface ErrorBoundaryProps {
     children: React.ReactNode;

@@ -1,0 +1,307 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+.Play {
+    /* here */
+    max-width: 1110px;
+
+    .play-column {
+        margin-top: 2rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        /* justify-content: center; */
+    }
+
+    .seek-graph-container {
+        width: 100%;
+        height: 22em;
+        max-width: 100%;
+        max-height: 100%;
+    }
+
+    .Card {
+        flex: 1;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: center;
+        box-sizing: border-box;
+    }
+
+    .rengo-management-row {
+        td {
+            padding-bottom: 2rem;
+        }
+
+        .organizer {
+        }
+
+        .size {
+        }
+    }
+
+    /* long specifier to make sure this specific column is not overriden */
+    #challenge-list .challenge-row .cell.rengo-list-buttons {
+        text-align: center;
+        width: 10rem;
+        padding-right: 1rem;
+        vertical-align: baseline; /* attempting to line up with rest of cell rows */
+
+        .btn {
+            padding-bottom: 0; /* override default that makes these look bottom heavy */
+        }
+    }
+
+    .rengo-management-list-item {
+        colspan: 0;
+        margin: auto;
+        width: 60%;
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    @media (max-width: hamburger-cutoff) {
+        .Matchmaking-header {
+            display: none;
+        }
+
+        .rengo-management-list-item {
+            margin: inherit; /* override the `auto` directive so this goes to the left on narrow screens. */
+            width: 40%; /* try to fit the whole pane nicely on narrow phones */
+        }
+
+        /* long specifier to make sure this specific column is not overriden */
+        #challenge-list .challenge-row .cell.rengo-list-buttons {
+            display: flex; /* t enable the buttons to wrap to the next line on narrow screens */
+            justify-content: flex-end;
+        }
+
+        .RengoTeamManagementPane {
+            flex-direction: column; /* put the chat below the team management function in narrow screens */
+        }
+    }
+
+    .rengo-management-header {
+        font-size: 1.3rem;
+        display: flex;
+        justify-content: space-between; /* push the dismiss icon out to the right */
+        align-items: center;
+
+        span {
+            text-decoration: underline; /* The game name. */
+        }
+    }
+
+    .rengo-live-match-header {
+        flex-shrink: 0;
+        flex-grow: 0;
+        flex-basis: 1rem;
+        font-size: 1.3rem;
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .showall-selector {
+        width: 100%;
+        text-align: left;
+        font-size: smaller;
+        padding-top: 1rem;
+    }
+
+    #rengo-table {
+        width: 100%;
+    }
+
+    .MiniGoban {
+        .small.board {
+            cursor: default !important;
+        }
+    }
+
+    button.active {
+        border-color: var(--primary) !important;
+        border-width: 2px !important;
+        border-style: ridge;
+    }
+
+    .tab-head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .tabs-container {
+        text-align: center;
+    }
+
+    .tab {
+        cursor: pointer;
+        margin-left: 0.5rem;
+        margin-right: 0.5rem;
+        padding: 0.4rem;
+        border-bottom: 2px solid transparent;
+        white-space: nowrap;
+        display: inline-block;
+
+        &:hover {
+            border-color: var(--shade2);
+        }
+
+        &.active {
+            border-color: var(--shade1);
+        }
+    }
+}
+
+#challenge-list-container {
+    width: 100%;
+    text-align: center;
+    margin-top: 1rem;
+    max-width: 100vw;
+    overflow-y: auto;
+}
+
+#challenge-list-inner-container {
+    width: 100%;
+    display: inline-block;
+}
+
+.custom-games-header {
+    display: flex;
+    column-span: all;
+    font-weight: bold;
+    white-space: nowrap;
+    padding-bottom: 0.5rem;
+    font-size: 1.3rem;
+    align-items: center;
+    justify-content: space-between;
+
+    button {
+    }
+}
+
+#challenge-list {
+    display: table;
+    width: 100%;
+
+    .ineligible {
+        color: var(--shade3);
+        font-size: 0.9em;
+        vertical-align: middle;
+        cursor: help;
+    }
+
+    /* Flex to escape from the containing table formats */
+    .challenge-row {
+        padding-top: 0.2em;
+        padding-bottom: 0.2em;
+        display: table-row;
+        font-size: 0.85em;
+        white-space: nowrap;
+
+        .head {
+            padding-left: 0.5em;
+            display: table-cell;
+            text-align: left;
+            font-weight: bold;
+            font-size: 0.8em;
+        }
+
+        .head.time-control-header {
+            /* padding-left: 4em; */
+            text-align: left;
+        }
+
+        .cell {
+            padding-left: 0.5em;
+            display: table-cell;
+            text-align: left;
+            position: relative;
+        }
+
+        .suspect-challenge {
+            position: relative;
+
+            i {
+                position: absolute;
+                top: 0.2rem;
+            }
+        }
+
+        .cheat-alert {
+            color: chocolate;
+            cursor: help;
+            top: 50%;
+            margin-left: 0.5em;
+        }
+
+        .cell .cheat-alert-tooltip-text {
+            visibility: hidden;
+            background-color: chocolate;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px; /* Position the tooltip */
+            position: absolute;
+            z-index: 1;
+            bottom: 1em;
+            left: 75%;
+            width: 10em;
+            white-space: normal;
+        }
+
+        .cell:hover .cheat-alert-tooltip-text {
+            visibility: visible;
+        }
+
+        .break {
+            border-top: 1px solid #888;
+            border-bottom: 1px solid #888;
+        }
+
+        .bold {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        /* automatch condition stylings */
+        .no-preference {
+            color: var(--shade2);
+        }
+
+        .required {
+            font-weight: bold;
+        }
+
+        .preferred {
+        }
+    }
+
+    .automatch-challenge-row {
+        .cell {
+            text-align: center;
+        }
+    }
+
+    .fa-times-circle-o {
+        cursor: pointer;
+    }
+}

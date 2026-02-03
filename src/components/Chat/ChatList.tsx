@@ -38,6 +38,7 @@ import {
 } from "./state";
 import { ChatDetails } from "./ChatDetails";
 import { DataSchema } from "@/lib/data_schema";
+import "./ChatList.css";
 
 interface ChatListProperties {
     show_unjoined?: boolean;

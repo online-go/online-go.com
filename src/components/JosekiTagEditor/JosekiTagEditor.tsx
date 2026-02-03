@@ -20,6 +20,7 @@ import { _ } from "@/lib/translate";
 
 import { get, post, del } from "@/lib/requests";
 import * as data from "@/lib/data";
+import "./JosekiTagEditor.css";
 
 // This is is a relic from when OJE was a separate project, and
 // might have remained on a separate sever.

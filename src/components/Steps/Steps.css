@@ -1,0 +1,115 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+.Steps {
+    display: flex;
+    align-items: flex-start;
+    flex-wrap: wrap;
+}
+
+.StepContainer {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 3rem;
+    min-height: 2rem;
+
+    .title-row {
+        display: flex;
+        align-items: center;
+
+        .title-left, .title-right {
+            flex: 1;
+            border-top: 0.2rem solid transparent;
+            border-color: var(--shade3);
+        }
+
+        .title-text {
+            flex-shrink: 0;
+            flex-grow: 0;
+            font-size: 0.7em;
+            padding: 0.3rem;
+            border-radius: 1rem;
+            min-width: 1rem;
+            min-height: 1rem;
+            text-align: center;
+            border: 2px solid transparent; /* for selected, color overridden down below */
+            background-color: var(--shade3);
+            user-select: none;
+
+            &.clickable {
+                cursor: pointer;
+            }
+        }
+    }
+
+    .step-contents {
+        font-size: smaller;
+        text-align: center;
+    }
+}
+
+.CompletedStepContainer {
+    .title-row {
+        .title-text {
+            /* themed background-color primary */
+            border-color: var(--primary);
+            color: var(--colored-background-fg);
+        }
+
+        .title-left, .title-right {
+            border-color: var(--primary);
+        }
+    }
+}
+
+.LastCompletedStepContainer {
+    .title-row {
+        .title-text {
+            background-color: var(--primary);
+            color: var(--colored-background-fg);
+        }
+
+        .title-right {
+            border-color: var(--shade3);
+        }
+    }
+}
+
+.SelectedStepContainer {
+    .title-row {
+        .title-text {
+            border-color: var(--primary-dark);
+            background-color: var(--primary-light);
+        }
+    }
+}
+
+.StepContainer:first-child {
+    .title-row {
+        .title-left {
+            border-top: none;
+        }
+    }
+}
+
+.StepContainer:last-child {
+    .title-row {
+        .title-right {
+            border-top: none;
+        }
+    }
+}

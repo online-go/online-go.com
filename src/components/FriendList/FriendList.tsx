@@ -26,6 +26,7 @@ import { PlayerCacheEntry } from "@/lib/player_cache";
 import { get, post } from "@/lib/requests";
 import { push_manager } from "../UIPush";
 import { player_is_ignored } from "../BlockPlayer";
+import "./FriendList.css";
 export function FriendList() {
     const [friends, setFriends] = React.useState<PlayerCacheEntry[]>([]);
     const [showOfflineFriends, setShowOfflineFriends] = React.useState(

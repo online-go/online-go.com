@@ -1,0 +1,196 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+.RatingsChartByGame {
+    /* height needs to match constant in .tsx file */
+    height: 380px;
+    max-width: calc(100vw - 2em);
+    position: relative; /* so we can position the minigoban on over */
+
+    .MiniGoban {
+        position: absolute;
+        top: 0;
+        right: 0;
+    }
+
+    /* Uncomment this to make charts resize.  But only when they support that. */
+    /* max-width: calc(100vw - 2em); */
+    svg {
+        font-size: var(--font-size-smaller);
+    }
+
+    .area {
+        fill: rgba(255, 100, 100, 0.5);
+        clip-path: url('#clip');
+        fill: var(--chart-area);
+        stroke: #3587BC;
+    }
+
+    .axis path, .axis line {
+        fill: none;
+        stroke: var(--shade3);
+        shape-rendering: crispEdges;
+    }
+
+    .brush {
+        .selection {
+            stroke: var(--shade1);
+            fill: var(--shade1);
+            fill-opacity: 0.2;
+            shape-rendering: crispEdges;
+        }
+    }
+
+    .loading, .nodata {
+        height: 380px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: var(--shade2);
+    }
+
+    .chart {
+        text {
+            fill: #7F8FAF;
+        }
+
+        .line {
+            fill: none;
+            stroke-width: 1.2px;
+            clip-path: url('#clip');
+        }
+
+        .rating.line {
+            stroke-width: 2px;
+            stroke: var(--chart-line);
+        }
+
+        .overlay {
+            opacity: 0;
+            pointer-events: all;
+        }
+
+        .data-point-circle {
+            fill: red;
+            stroke: red;
+        }
+
+        .crosshairs {
+            stroke: var(--shade3);
+            stroke-width: 1px;
+            shape-rendering: crispEdges;
+        }
+
+        .win-loss-bar {
+            shape-rendering: crispEdges;
+        }
+    }
+
+    .deviation-area {
+        fill: var(--chart-area);
+    }
+
+    .subselect .axis {
+        path, line {
+            display: none;
+        }
+    }
+
+    .y.axis {
+        .tick {
+            text {
+                text-anchor: start !important;
+                fill: #7F8FAF;
+            }
+
+            line {
+                display: none;
+            }
+        }
+
+        path {
+            display: none;
+        }
+    }
+
+    /* Bright for strong, darker for weak
+    green for win, red for loss ... */
+    .weak-wins {
+        fill: var(--weak-win);
+        background-color: var(--weak-win);
+    }
+
+    .strong-wins {
+        fill: var(--strong-win);
+        background-color: var(--strong-win);
+    }
+
+    .strong-losses {
+        fill: var(--strong-loss);
+        background-color: var(--strong-loss);
+    }
+
+    .weak-losses {
+        fill: var(--weak-loss);
+        background-color: var(--weak-loss);
+    }
+
+    .transparent {
+        fill: transparent;
+    }
+
+    .win-loss-stats {
+        font-size: var(--font-size-small);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: stretch;
+        align-content: center;
+        justify-content: center;
+        flex-wrap: wrap;
+
+        div {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+        }
+    }
+
+    .win-loss-legend-block {
+        border: 1px solid transparent;
+        border-color: var(--bg);
+        width: 15px;
+        height: 15px;
+        display: inline-block;
+        margin-right: 0.2rem;
+    }
+
+    .pie-title {
+        font-size: larger;
+    }
+
+    .pie {
+        stroke: var(--chart-area);
+        stroke-width: 1;
+    }
+
+    .date-legend-background {
+        fill: var(--shade2);
+    }
+
+    .date-legend-text {
+        fill: var(--colored-background-fg);
+    }
+}

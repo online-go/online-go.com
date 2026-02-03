@@ -31,6 +31,7 @@ import { alert } from "@/lib/swal_config";
 import { RouteComponentProps, rr6ClassShim } from "@/lib/ogs-rr6-shims";
 import { IdType } from "@/lib/types";
 import { PlayerCacheEntry } from "@/lib/player_cache";
+import "./Ladder.css";
 
 type LadderProperties = RouteComponentProps<{
     ladder_id: string;

@@ -17,6 +17,7 @@
 
 import * as React from "react";
 import { _ } from "@/lib/translate";
+import "./Developer.css";
 
 export class Developer extends React.PureComponent {
     constructor(props: {}) {

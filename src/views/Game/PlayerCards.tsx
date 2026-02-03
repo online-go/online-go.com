@@ -36,6 +36,7 @@ import { usePreference } from "@/lib/preferences";
 import { browserHistory } from "@/lib/ogsHistory";
 import { player_is_ignored } from "@/components/BlockPlayer";
 import { doAnnul } from "@/lib/moderation";
+import "./PlayerCards.css";
 
 type PlayerType = rest_api.games.Player;
 

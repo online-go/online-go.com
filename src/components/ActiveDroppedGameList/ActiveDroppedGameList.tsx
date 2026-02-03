@@ -19,6 +19,7 @@ import * as React from "react";
 import { _ } from "@/lib/translate";
 import { GameList } from "@/components/GameList";
 import { PlayerCacheEntry } from "@/lib/player_cache";
+import "./ActiveDroppedGameList.css";
 
 interface UserType {
     id: number;

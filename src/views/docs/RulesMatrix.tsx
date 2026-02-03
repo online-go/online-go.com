@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import "./RulesMatrix.css";
 
 export function RulesMatrix(): React.ReactElement {
     return (

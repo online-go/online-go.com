@@ -44,6 +44,7 @@ import { FreeTrialBanner } from "@/components/FreeTrialBanner";
 import { SupporterProblems } from "@/components/SupporterProblems";
 import { FreeTrialSurvey } from "@/components/FreeTrialSurvey";
 import { PriceIncreaseMessage } from "@/components/PriceIncreaseMessage";
+import "./EXV6Overview.css";
 
 declare let ogs_missing_translation_count: number;
 

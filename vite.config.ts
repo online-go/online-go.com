@@ -24,9 +24,17 @@ import { promises as fs, accessSync } from "fs";
 import { IncomingMessage } from "http";
 import http from "http";
 import checker from "vite-plugin-checker";
+import comment from "postcss-comment";
+import atImportGlob from "postcss-import-ext-glob";
 import atImport from "postcss-import";
+import mixins from "postcss-mixins";
+import nested from "postcss-nested";
+import simpleVars from "postcss-simple-vars";
+import functions from "postcss-functions";
+import postcssUrl from "postcss-url";
 import inline_svg from "postcss-inline-svg";
 import autoprefixer from "autoprefixer";
+import Color from "color";
 import { nodePolyfills } from "vite-plugin-node-polyfills";
 import { execSync } from "child_process";
 
@@ -190,7 +198,62 @@ export default defineConfig({
      */
     css: {
         postcss: {
-            plugins: [atImport(), inline_svg(), autoprefixer() as any],
+            parser: comment,
+            plugins: [
+                atImportGlob(),
+                atImport(),
+                mixins(),
+                nested(),
+                simpleVars(),
+                functions({
+                    functions: {
+                        lighten: (color: string, amount: string) => {
+                            try {
+                                return Color(color)
+                                    .lighten(parseFloat(amount) / 100)
+                                    .hex();
+                            } catch {
+                                return color;
+                            }
+                        },
+                        darken: (color: string, amount: string) => {
+                            try {
+                                return Color(color)
+                                    .darken(parseFloat(amount) / 100)
+                                    .hex();
+                            } catch {
+                                return color;
+                            }
+                        },
+                        desaturate: (color: string, amount: string) => {
+                            try {
+                                return Color(color)
+                                    .desaturate(parseFloat(amount) / 100)
+                                    .hex();
+                            } catch {
+                                return color;
+                            }
+                        },
+                        saturate: (color: string, amount: string) => {
+                            try {
+                                return Color(color)
+                                    .saturate(parseFloat(amount) / 100)
+                                    .hex();
+                            } catch {
+                                return color;
+                            }
+                        },
+                    },
+                }),
+                postcssUrl({ url: "inline" }),
+                inline_svg({
+                    paths: [
+                        path.resolve(__dirname, "assets"),
+                        path.resolve(__dirname, "src"),
+                    ],
+                }),
+                autoprefixer() as any,
+            ],
         },
         preprocessorMaxWorkers: true,
         devSourcemap: true,

@@ -20,6 +20,7 @@ import * as ValidUrl from "valid-url";
 
 import { _ } from "@/lib/translate";
 import { Modal } from "@/components/Modal";
+import "./JosekiSourceModal.css";
 
 interface Events {}
 

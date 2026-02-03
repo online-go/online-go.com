@@ -32,6 +32,7 @@ import { Steps } from "@/components/Steps";
 import { errcodeAlerter } from "@/components/ErrcodeModal";
 import { alert } from "@/lib/swal_config";
 import { PlayerCacheEntry } from "@/lib/player_cache";
+import "./Styling.css";
 
 export class Styling extends React.PureComponent<{}, any> {
     constructor(props: {}) {

@@ -22,6 +22,7 @@ import { useLocation } from "react-router-dom";
 import { post } from "@/lib/requests";
 import { _ } from "@/lib/translate";
 import { errorAlerter } from "@/lib/misc";
+import "./VerifyEmail.css";
 
 export function VerifyEmail() {
     const location = useLocation();

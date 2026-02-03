@@ -34,6 +34,7 @@ import {
     watchChatSubscriptionChanged,
     unwatchChatSubscriptionChanged,
 } from "./state";
+import "./ChatIndicator.css";
 
 export class ChatIndicator extends React.PureComponent<{}, any> {
     channels: { [channel: string]: ChatChannelProxy } = {};

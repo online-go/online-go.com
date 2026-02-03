@@ -22,6 +22,7 @@ import { getSelectedThemes, usePreference } from "@/lib/preferences";
 import { PersistentElement } from "@/components/PersistentElement";
 import { Experiment, Variant, Default } from "../Experiment";
 import { LineText } from "../misc-ui";
+import "./GobanThemePicker.css";
 
 interface GobanThemePickerProperties {
     size?: number;

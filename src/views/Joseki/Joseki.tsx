@@ -46,6 +46,7 @@ import { JosekiTagSelector, OJEJosekiTag } from "@/components/JosekiTagSelector"
 import { Throbber } from "@/components/Throbber";
 import { IdType } from "@/lib/types";
 import { GobanContainer } from "@/components/GobanContainer";
+import "./Joseki.css";
 //import { JosekiTagEditor } from "@/components/JosekiTagEditor";
 
 // This is is a relic from when OJE was a separate project, and

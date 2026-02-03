@@ -21,6 +21,7 @@ import { Modal, openModal } from "@/components/Modal";
 import { _ } from "@/lib/translate";
 //import {SiteSupporterText} from "./Supporter";
 import { Supporter } from "./Supporter";
+import "./BecomeASiteSupporter.css";
 
 export class BecomeASiteSupporterModal extends Modal<{}, {}, any> {
     constructor(props: {}) {

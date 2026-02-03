@@ -16,6 +16,7 @@
  */
 
 import React from "react";
+import "./MainSection.css";
 
 export function MainSection(props: { children: any }) {
     return (

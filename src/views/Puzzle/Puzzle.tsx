@@ -1377,6 +1377,7 @@ export const Puzzle = rr6ClassShim(_Puzzle);
 
 import { PopOver, popover } from "@/lib/popover";
 import { PuzzleSettingsModal } from "./PuzzleSettingsModal";
+import "./Puzzle.css";
 
 export function openPuzzleSettingsControls(ev: React.MouseEvent): PopOver {
     const elt = ev.target;

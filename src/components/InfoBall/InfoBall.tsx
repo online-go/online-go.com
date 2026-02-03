@@ -18,6 +18,7 @@
 /* From https://loading.io/css/ */
 
 import * as React from "react";
+import "./InfoBall.css";
 
 interface InfoBallProps {
     children: React.ReactNode;

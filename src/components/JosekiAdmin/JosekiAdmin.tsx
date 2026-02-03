@@ -34,6 +34,7 @@ import { Player } from "@/components/Player";
 import { JosekiPermissionsPanel } from "@/components/JosekiPermissionsPanel";
 import { JosekiPageVisits, JosekiStatsModal } from "@/components/JosekiStatsModal";
 import { JosekiTagEditor } from "@/components/JosekiTagEditor/JosekiTagEditor";
+import "./JosekiAdmin.css";
 
 interface JosekiAdminProps {
     server_url: string;
@@ -288,7 +289,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
         if (selectedIds.length === 0) {
             // There are no more reversions to be done, so reload the audit log to show the ones that were done
             this.reloadData();
-            this.props.loadPositionToBoard("root"); // and reset the board, incase the status of what is displayed changed
+            this.props.loadPositionToBoard("root"); // and reset the board, in case the status of what is displayed changed
             return;
         }
 

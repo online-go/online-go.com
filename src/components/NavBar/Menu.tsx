@@ -19,6 +19,7 @@ import * as React from "react";
 import { useContext, useEffect, useId, useRef } from "react";
 import clsx from "clsx";
 import { Link } from "react-router-dom";
+import "./Menu.css";
 
 interface MenuProps<T extends React.ElementType> {
     title: string | React.ReactElement;

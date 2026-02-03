@@ -23,6 +23,7 @@ import { patch } from "@/lib/requests";
 
 import { errorAlerter } from "@/lib/misc";
 import { MODERATOR_POWERS, MOD_POWER_NAMES } from "@/lib/moderation";
+import "./ModerationOfferModal.css";
 
 interface Events {}
 

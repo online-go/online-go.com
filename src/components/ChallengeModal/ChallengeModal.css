@@ -1,0 +1,241 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+.ChallengeModal {
+    width: 50rem;
+    max-width: 100%;
+
+    .challenge-pane-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-content: stretch;
+    }
+
+    .pane {
+        min-width: 49%;
+        box-sizing: border-box;
+
+        .control-label {
+            width: 10rem;
+            word-wrap: break-word;
+        }
+
+        .controls, .checkbox {
+            width: 10rem;
+            align-items: flex-start;
+        }
+
+        input, select {
+            width: 10rem;
+        }
+
+        input[type='checkbox'] {
+            width: 1rem;
+        }
+
+        /* we ease this warning in after about a second, in case */
+        /* the user is in the middle of typing a valid number that */
+        /* starts with the invalid values '1' or '2' */
+        .value-warning {
+            color: var(--danger);
+            opacity: 1 !important;
+            transition: opacity 1s;
+            transition-timing-function: cubic-bezier(0.67, -0.01, 0.99, 0);
+        }
+
+        .fa-exclamation-circle {
+            padding-left: 1rem;
+            opacity: 0;
+        }
+    }
+
+    .speed-warning {
+        i {
+            margin-right: 0.5em;
+        }
+
+        color: chocolate;
+        font-size: 0.8em;
+        text-align: center;
+        line-height: 1rem;
+    }
+
+    /* Place the invite-only-challenge-selector checkbox just below the "Create Challenge" button */
+    .invite-only-challenge-selector {
+        justify-content: flex-end;
+        margin-top: -1rem;
+
+        .controls {
+            flex-grow: 0;
+            padding-right: 1rem;
+        }
+    }
+
+    label {
+        user-select: none;
+    }
+
+    .left-pane {
+        margin-right: 0.5rem;
+    }
+
+    .right-pane {
+        border-left: 1px solid transparent;
+        border-color: var(--shade3);
+    }
+
+    .help {
+        .fa {
+            color: var(--shade1);
+            padding: 0.3rem;
+        }
+    }
+
+    .hide {
+        display: none !important;
+    }
+
+    @media only screen and (max-width: 768px) {
+        .pane {
+            width: 100%;
+
+            .control-label {
+                width: 50%;
+            }
+        }
+
+        .left-pane {
+            margin-right: 0;
+        }
+
+        .right-pane {
+            border-left: 0;
+        }
+    }
+
+    .header-with-icon {
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .header {
+        max-height: 80vh;
+        align-items: stretch !important;
+    }
+
+    .computer-opponents {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        overflow: auto;
+    }
+
+    .bot-categories {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+
+        h1 {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            color: var(--shade1);
+            font-weight: bold !important;
+            padding-bottom: 0.5rem;
+        }
+
+        .bot-category {
+            margin-top: 1rem;
+        }
+    }
+
+    .bot-options {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        width: 100%;
+        align-items: flex-start;
+        /* justify-content: space-around; */
+    }
+
+    .bot-option {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        border-radius: 0.25rem;
+        padding-right: 0.5rem;
+        padding: 0.2rem;
+        gap: 1rem;
+        border: 2px solid transparent;
+        overflow: hidden;
+        flex-wrap: wrap;
+        width: 13rem;
+
+        &:hover {
+            background-color: var(--shade4);
+        }
+
+        &.disabled {
+            opacity: 0.5;
+            background-color: transparent !important;
+            cursor: not-allowed;
+        }
+
+        .disabled-reason {
+            flex-grow: 1;
+            font-size: 0.8rem;
+            color: var(--shade1);
+            display: inline-block;
+            width: 12rem;
+        }
+
+        .username-rank {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .username {
+            display: inline-block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 6rem;
+        }
+
+        .rank {
+            display: inline-block;
+            white-space: nowrap;
+            max-width: 2rem;
+        }
+
+        .PlayerIcon {
+            border-radius: 0.3rem;
+            background-color: var(--shade5);
+        }
+
+        &.selected {
+            border-color: var(--primary);
+        }
+    }
+    
+    .body.computer-settings-expanded {
+        min-height: 16rem;
+        max-height: 16rem;
+    }
+}

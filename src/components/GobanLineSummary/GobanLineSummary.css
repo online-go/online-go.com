@@ -1,0 +1,95 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+.GobanLineSummaryContainer {
+    /* display: table */
+    width: auto;
+    max-width: max-content;
+    overflow-x: auto;
+    /* margin-left: auto; */
+    /* margin-right: auto; */
+}
+
+.GobanLineSummary {
+    color: var(--fg);
+
+    &:hover {
+        text-decoration: none;
+        color: var(--fg);
+    }
+}
+
+.GobanLineSummary, .GobanLineSummaryContainerHeader {
+    display: table-row;
+
+    > div {
+        display: table-cell;
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+}
+
+.dropped-rengo {
+    text-align: center;
+}
+
+.GobanLineSummaryContainerHeader {
+    font-weight: bold;
+}
+
+.GobanLineSummary {
+    .clock.paused {
+        color: #888;
+    }
+
+    .current-users-move {
+        background-color: var(--miniboard-to-move);
+    }
+
+    .viewed-users-move {
+        background-color: var(--miniboard-viewed-to-move);
+    }
+
+    .game-name, .player {
+        text-align: left;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 13em;
+    }
+
+    &.in-stone-removal-phase {
+        background-color: var(--miniboard-stone-removal);
+    }
+
+    &:hover {
+        background-color: var(--miniboard-hover);
+    }
+
+    &.in-stone-removal-phase:hover {
+        background-color: var(--miniboard-stone-removal-hover);
+    }
+
+    &.finished {
+        opacity: 0.8;
+    }
+
+    .no_games {
+        text-align: center;
+        font-weight: bold;
+        margin: 2em;
+    }
+}

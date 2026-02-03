@@ -20,6 +20,7 @@ import { pgettext, _ } from "@/lib/translate";
 
 import { timeControlDescription, usedForCheating } from "@/components/TimeControl";
 import { rulesText, yesno } from "@/lib/misc";
+import "./ChallengeDetailsReviewPane.css";
 
 type Challenge = socket_api.seekgraph_global.Challenge;
 

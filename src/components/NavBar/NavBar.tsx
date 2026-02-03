@@ -44,14 +44,15 @@ import { OmniSearch } from "./OmniSearch";
 import { forwardRef, useId, useState } from "react";
 import { MODERATOR_POWERS } from "@/lib/moderation";
 import { openDemoBoardModal } from "../DemoBoardModal";
+import "./NavBar.css";
 
 function setTheme(theme: string) {
     data.set("theme", theme, data.Replication.REMOTE_OVERWRITES_LOCAL);
 }
 
 function toggleTheme() {
-    const currentTheme = document.body.classList.contains("light") ? "light" : "dark";
-    if (currentTheme === "dark") {
+    const currentTheme = document.body.dataset.theme;
+    if (currentTheme === "dark" || currentTheme === "accessible") {
         setTheme("light");
     } else {
         setTheme("dark");

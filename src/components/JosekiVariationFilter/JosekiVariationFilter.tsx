@@ -24,6 +24,7 @@ import * as player_cache from "@/lib/player_cache";
 import { JosekiTagSelector, OJEJosekiTag } from "../JosekiTagSelector";
 import { PlayerCacheEntry } from "@/lib/player_cache";
 import { get } from "@/lib/requests";
+import "./JosekiVariationFilter.css";
 
 export type JosekiFilter = { contributor?: number; tags: OJEJosekiTag[]; source?: number };
 

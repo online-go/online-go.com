@@ -33,6 +33,7 @@ interface ModerateUserProperties {
 
 import { alert } from "@/lib/swal_config";
 import { ModerationOfferControl } from "@/components/ModerationOfferControl";
+import "./ModerateUser.css";
 
 const pro_ranks = proRankList(false);
 

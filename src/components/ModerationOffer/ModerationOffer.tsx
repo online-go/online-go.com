@@ -19,6 +19,7 @@ import * as React from "react";
 import { _, pgettext } from "@/lib/translate";
 
 import { openModerationOfferModal } from "./ModerationOfferModal";
+import "./ModerationOffer.css";
 
 interface ModerationOfferProps {
     player_id: number;

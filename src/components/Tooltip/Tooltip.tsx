@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import "./Tooltip.css";
 
 interface TooltipProps {
     title?: string;

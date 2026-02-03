@@ -22,6 +22,7 @@ import * as preferences from "@/lib/preferences";
 import { Stream, streamManager } from "./StreamManager";
 import { GoTVPreferences } from "@/views/Settings";
 import { useLocation } from "react-router-dom";
+import "./GoTV.css";
 
 let twitch_js_promise: Promise<void> | null = null;
 declare let Twitch: any;
@@ -89,14 +90,13 @@ export function GoTV(): React.ReactElement {
         const initialStreams = streamManager.getStreams();
         updateStreams(initialStreams);
 
-        const bodyClassList = document.body.classList;
-        setIsLightTheme(bodyClassList.contains("light"));
+        setIsLightTheme(document.body.dataset.theme === "light");
 
         // Setup a MutationObserver to detect theme changes for updating Twitch chat theme
         const observer = new MutationObserver((mutations) => {
             mutations.forEach((mutation) => {
-                if (mutation.attributeName === "class") {
-                    setIsLightTheme(document.body.classList.contains("light"));
+                if (mutation.attributeName === "data-theme") {
+                    setIsLightTheme(document.body.dataset.theme === "light");
                 }
             });
         });

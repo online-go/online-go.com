@@ -18,6 +18,7 @@
 import * as React from "react";
 import { Player } from "@/components/Player";
 import { put } from "@/lib/requests";
+import "./BotDetectionResults.css";
 
 interface PlayerData {
     color: string;

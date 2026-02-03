@@ -21,6 +21,7 @@ import { errorLogger } from "@/lib/misc";
 import { player_is_ignored } from "@/components/BlockPlayer";
 import { _ } from "@/lib/translate";
 import { user_uploads_url } from "@/lib/cdn";
+import "./PlayerIcon.css";
 
 interface PlayerIconProps {
     id?: number;

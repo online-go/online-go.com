@@ -24,6 +24,7 @@ import { ignore, errorAlerter } from "@/lib/misc";
 import { ReportNotification } from "@/lib/report_util";
 
 import { IncidentReportCard, ActionableReport } from "./IncidentReportCard";
+import "./IncidentReportList.css";
 
 type IncidentReportListProps = {
     reports: ReportNotification[];

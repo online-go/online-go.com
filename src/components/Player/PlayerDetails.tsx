@@ -42,6 +42,7 @@ import { PlayerCacheEntry } from "@/lib/player_cache";
 import { openReport } from "@/components/Report";
 import { MODERATOR_POWERS } from "@/lib/moderation";
 import { PlayerTagInput } from "@moderator-ui/PlayerTagInput";
+import "./PlayerDetails.css";
 
 interface PlayerDetailsProperties {
     playerId: number;

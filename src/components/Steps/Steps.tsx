@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import "./Steps.css";
 
 interface StepsProperties {
     completed: number;

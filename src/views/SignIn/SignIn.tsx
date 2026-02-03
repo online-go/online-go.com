@@ -32,6 +32,7 @@ import { SocialLoginButtons } from "@/components/SocialLoginButtons";
 window.Md5 = Md5;
 import { alert } from "@/lib/swal_config";
 import { LoadingButton } from "@/components/LoadingButton";
+import "./SignIn.css";
 
 /***
  * Setup a device UUID so we can logout other *devices* and not all other

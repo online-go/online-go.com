@@ -30,6 +30,7 @@ import { Toggle } from "@/components/Toggle";
 import { LoadingPage } from "@/components/Loading";
 import { toast } from "@/lib/toast";
 import { PriceIncreaseMessage } from "@/components/PriceIncreaseMessage";
+import "./Supporter.css";
 
 interface SupporterProperties {
     inline?: boolean;

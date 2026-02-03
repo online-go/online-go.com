@@ -20,6 +20,7 @@ import { pgettext, _ } from "@/lib/translate";
 import { openModal, Modal } from "@/components/Modal";
 import { GobanRenderer } from "goban";
 import { Player } from "@/components/Player";
+import "./GameLinkModal.css";
 
 interface Events {}
 

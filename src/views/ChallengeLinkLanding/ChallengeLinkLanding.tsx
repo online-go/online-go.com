@@ -32,6 +32,7 @@ import { Card } from "@/components/material";
 import { LoadingPage } from "@/components/Loading";
 import { Player } from "@/components/Player";
 import { ChallengeDetailsReviewPane } from "@/components/ChallengeDetailsReviewPane";
+import "./ChallengeLinkLanding.css";
 
 type Challenge = socket_api.seekgraph_global.Challenge;
 

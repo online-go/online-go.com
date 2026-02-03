@@ -24,6 +24,7 @@ import { Card } from "@/components/material";
 import { errorAlerter } from "@/lib/misc";
 import { useUser } from "@/lib/hooks";
 import { user_uploads_url } from "@/lib/cdn";
+import "./LadderList.css";
 
 /* Ensure these get picked up in our translations */
 _("Site 19x19 Ladder");

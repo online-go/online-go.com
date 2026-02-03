@@ -21,6 +21,7 @@ import { _ } from "@/lib/translate";
 import { Card } from "@/components/material";
 import { useUser, useData } from "@/lib/hooks";
 import { PaymentProblem } from "@/lib/data_schema";
+import "./PaymentProblemBanner.css";
 
 export function PaymentProblemBanner(): React.ReactElement | null {
     const user = useUser();

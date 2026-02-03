@@ -24,6 +24,7 @@ import { SearchInput } from "@/components/misc-ui";
 import { navigateTo } from "@/lib/misc";
 import { useUser } from "@/lib/hooks";
 import { user_uploads_url } from "@/lib/cdn";
+import "./GroupList.css";
 
 export function GroupList(): React.ReactElement {
     const user = useUser();

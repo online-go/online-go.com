@@ -1,0 +1,74 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+.GameList {
+    max-width: 100vw;
+    overflow-x: auto;
+    text-align: center;
+
+    .GobanLineSummaryContainerHeader {
+        user-select: none;
+
+        > div {
+            white-space: nowrap;
+        }
+    }
+
+    .sortable {
+        cursor: pointer;
+    }
+
+    .sortable:after {
+        display: inline-block;
+        width: 0.8rem;
+        font-size: 0.7rem;
+        margin-left: 0.2rem;
+        margin-bottom: 0.2rem;
+        font-family: 'FontAwesome';
+        content: ' ';
+    }
+
+    .sortable.sorted-asc:after {
+        content: fa-sort-asc-content;
+    }
+
+    .sortable.sorted-desc:after {
+        content: fa-sort-desc-content;
+    }
+
+    .current-users-move {
+        background-color: var(--miniboard-to-move);
+    }
+
+    .viewed-users-move {
+        background-color: var(--miniboard-viewed-to-move);
+    }
+
+    .goban-with-names {
+        display: inline-flex;
+        width: 12rem;
+        flex: 0;
+        /* flex-direciton: row; */
+        align-items: center;
+        justify-content: right;
+
+        .names {
+            text-align: right;
+            flex: 1;
+            overflow: hidden;
+        }
+    }
+}

@@ -242,13 +242,13 @@
                 flex-direction: column;
             }
 
-            body.dark {
+            [data-theme="dark"] {
                 background-color: #1a1a1a;
             }
-            body.light {
+            [data-theme="light"] {
                 background-color: #ffffff;
             }
-            body.accessible {
+            [data-theme="accessible"] {
                 background-color: #1a1a1a;
             }
             .sr-only {
@@ -350,13 +350,13 @@
                     localStorage.getItem("ogs.theme") || JSON.stringify(remote_theme || "system");
                 var parsedTheme = JSON.parse(theme);
                 if (parsedTheme === "system" || !parsedTheme) {
-                    document.body.className = system_theme;
+                    document.body.dataset.theme = system_theme;
                 } else {
-                    document.body.className = parsedTheme;
+                    document.body.dataset.theme = parsedTheme;
                 }
             } catch (e) {
                 console.error(e);
-                document.body.className = "light";
+                document.body.dataset.theme = "light";
             }
         </script>
         <div id="em10"></div>

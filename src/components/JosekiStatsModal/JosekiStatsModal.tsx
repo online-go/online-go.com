@@ -20,6 +20,7 @@ import { ResponsiveLine } from "@nivo/line";
 import * as data from "@/lib/data";
 import { _, moment } from "@/lib/translate";
 import { Modal } from "@/components/Modal";
+import "./JosekiStatsModal.css";
 
 interface Events {}
 

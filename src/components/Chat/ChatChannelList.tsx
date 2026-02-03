@@ -33,6 +33,7 @@ import {
     cachedChannelInformation,
 } from "@/lib/chat_manager";
 import { user_uploads_url } from "@/lib/cdn";
+import "./ChatChannelList.css";
 
 data.setDefault("chat.joined", { "global-english": true });
 

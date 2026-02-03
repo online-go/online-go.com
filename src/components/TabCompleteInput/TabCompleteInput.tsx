@@ -17,6 +17,7 @@
 
 import * as React from "react";
 import * as player_cache from "@/lib/player_cache";
+import "./TabCompleteInput.css";
 
 interface TabCompleteInputProperties extends React.HTMLProps<HTMLInputElement> {
     id?: string;

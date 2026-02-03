@@ -22,6 +22,7 @@ import { Card } from "@/components/material";
 import { errorAlerter } from "@/lib/misc";
 import { put } from "@/lib/requests";
 import { cached } from "@/lib/cached";
+import "./ForceUsernameChange.css";
 
 export function ForceUsernameChange(): React.ReactElement {
     const user = data.get("config.user");

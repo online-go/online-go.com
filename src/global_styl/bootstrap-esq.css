@@ -1,0 +1,175 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/* ** Minimal Bootstrap3'esq classes we were using ** */
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin-right: auto;
+    margin-left: auto;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    box-sizing: border-box;
+}
+
+.alert-block {
+    padding: 1rem;
+}
+
+.well {
+    border: 1px solid transparent;
+    border-radius: 0.5rem;
+    border-color: var(--shade4);
+    background-color: var(--shade5);
+    padding: 1rem;
+}
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+/* Grid system - expanded from Stylus loops */
+/* xs breakpoint (max-width: 575px) */
+@media only screen and (max-width: 575px) {
+    .row .col-xs-1, .row .col-xs-2, .row .col-xs-3, .row .col-xs-4,
+    .row .col-xs-5, .row .col-xs-6, .row .col-xs-7, .row .col-xs-8,
+    .row .col-xs-9, .row .col-xs-10, .row .col-xs-11, .row .col-xs-12 {
+        display: inline-block;
+        width: 100%;
+    }
+}
+
+@media only screen and (min-width: 576px) {
+    .row .col-xs-1 { display: inline-block; width: 8.333333333%; }
+    .row .col-xs-2 { display: inline-block; width: 16.666666666%; }
+    .row .col-xs-3 { display: inline-block; width: 25%; }
+    .row .col-xs-4 { display: inline-block; width: 33.333333333%; }
+    .row .col-xs-5 { display: inline-block; width: 41.666666666%; }
+    .row .col-xs-6 { display: inline-block; width: 50%; }
+    .row .col-xs-7 { display: inline-block; width: 58.333333333%; }
+    .row .col-xs-8 { display: inline-block; width: 66.666666666%; }
+    .row .col-xs-9 { display: inline-block; width: 75%; }
+    .row .col-xs-10 { display: inline-block; width: 83.333333333%; }
+    .row .col-xs-11 { display: inline-block; width: 91.666666666%; }
+    .row .col-xs-12 { display: inline-block; width: 100%; }
+}
+
+/* sm breakpoint (max-width: 719px) */
+@media only screen and (max-width: 719px) {
+    .row .col-sm-1, .row .col-sm-2, .row .col-sm-3, .row .col-sm-4,
+    .row .col-sm-5, .row .col-sm-6, .row .col-sm-7, .row .col-sm-8,
+    .row .col-sm-9, .row .col-sm-10, .row .col-sm-11, .row .col-sm-12 {
+        display: inline-block;
+        width: 100%;
+    }
+}
+
+@media only screen and (min-width: 720px) {
+    .row .col-sm-1 { display: inline-block; width: 8.333333333%; }
+    .row .col-sm-2 { display: inline-block; width: 16.666666666%; }
+    .row .col-sm-3 { display: inline-block; width: 25%; }
+    .row .col-sm-4 { display: inline-block; width: 33.333333333%; }
+    .row .col-sm-5 { display: inline-block; width: 41.666666666%; }
+    .row .col-sm-6 { display: inline-block; width: 50%; }
+    .row .col-sm-7 { display: inline-block; width: 58.333333333%; }
+    .row .col-sm-8 { display: inline-block; width: 66.666666666%; }
+    .row .col-sm-9 { display: inline-block; width: 75%; }
+    .row .col-sm-10 { display: inline-block; width: 83.333333333%; }
+    .row .col-sm-11 { display: inline-block; width: 91.666666666%; }
+    .row .col-sm-12 { display: inline-block; width: 100%; }
+}
+
+/* md breakpoint (max-width: 939px) */
+@media only screen and (max-width: 939px) {
+    .row .col-md-1, .row .col-md-2, .row .col-md-3, .row .col-md-4,
+    .row .col-md-5, .row .col-md-6, .row .col-md-7, .row .col-md-8,
+    .row .col-md-9, .row .col-md-10, .row .col-md-11, .row .col-md-12 {
+        display: inline-block;
+        width: 100%;
+    }
+}
+
+@media only screen and (min-width: 940px) {
+    .row .col-md-1 { display: inline-block; width: 8.333333333%; }
+    .row .col-md-2 { display: inline-block; width: 16.666666666%; }
+    .row .col-md-3 { display: inline-block; width: 25%; }
+    .row .col-md-4 { display: inline-block; width: 33.333333333%; }
+    .row .col-md-5 { display: inline-block; width: 41.666666666%; }
+    .row .col-md-6 { display: inline-block; width: 50%; }
+    .row .col-md-7 { display: inline-block; width: 58.333333333%; }
+    .row .col-md-8 { display: inline-block; width: 66.666666666%; }
+    .row .col-md-9 { display: inline-block; width: 75%; }
+    .row .col-md-10 { display: inline-block; width: 83.333333333%; }
+    .row .col-md-11 { display: inline-block; width: 91.666666666%; }
+    .row .col-md-12 { display: inline-block; width: 100%; }
+}
+
+/* lg breakpoint (max-width: 1139px) */
+@media only screen and (max-width: 1139px) {
+    .row .col-lg-1, .row .col-lg-2, .row .col-lg-3, .row .col-lg-4,
+    .row .col-lg-5, .row .col-lg-6, .row .col-lg-7, .row .col-lg-8,
+    .row .col-lg-9, .row .col-lg-10, .row .col-lg-11, .row .col-lg-12 {
+        display: inline-block;
+        width: 100%;
+    }
+}
+
+@media only screen and (min-width: 1140px) {
+    .row .col-lg-1 { display: inline-block; width: 8.333333333%; }
+    .row .col-lg-2 { display: inline-block; width: 16.666666666%; }
+    .row .col-lg-3 { display: inline-block; width: 25%; }
+    .row .col-lg-4 { display: inline-block; width: 33.333333333%; }
+    .row .col-lg-5 { display: inline-block; width: 41.666666666%; }
+    .row .col-lg-6 { display: inline-block; width: 50%; }
+    .row .col-lg-7 { display: inline-block; width: 58.333333333%; }
+    .row .col-lg-8 { display: inline-block; width: 66.666666666%; }
+    .row .col-lg-9 { display: inline-block; width: 75%; }
+    .row .col-lg-10 { display: inline-block; width: 83.333333333%; }
+    .row .col-lg-11 { display: inline-block; width: 91.666666666%; }
+    .row .col-lg-12 { display: inline-block; width: 100%; }
+}
+
+/* * Form stuff * */
+fieldset {
+    border: 0;
+}
+
+.inline-form {
+}
+
+.form-horizontal {
+}
+
+.form-group {
+    display: flex;
+    width: 100%;
+    line-height: 2rem;
+
+    & .control-label {
+        display: inline-block;
+        width: 20rem;
+        text-align: right;
+        font-weight: bold;
+        padding-right: 0.5rem;
+    }
+
+    & .controls {
+        flex-grow: 1;
+        display: flex;
+    }
+}

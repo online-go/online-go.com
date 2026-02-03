@@ -1,0 +1,45 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+.PlayerIcon {
+}
+
+/* Generated from for loop: sizes 1-256 */
+.PlayerIcon-8 { width: 8px; height: 8px; }
+.PlayerIcon-10 { width: 10px; height: 10px; }
+.PlayerIcon-12 { width: 12px; height: 12px; }
+.PlayerIcon-14 { width: 14px; height: 14px; }
+.PlayerIcon-16 { width: 16px; height: 16px; }
+.PlayerIcon-18 { width: 18px; height: 18px; }
+.PlayerIcon-20 { width: 20px; height: 20px; }
+.PlayerIcon-24 { width: 24px; height: 24px; }
+.PlayerIcon-28 { width: 28px; height: 28px; }
+.PlayerIcon-32 { width: 32px; height: 32px; }
+.PlayerIcon-36 { width: 36px; height: 36px; }
+.PlayerIcon-40 { width: 40px; height: 40px; }
+.PlayerIcon-48 { width: 48px; height: 48px; }
+.PlayerIcon-56 { width: 56px; height: 56px; }
+.PlayerIcon-64 { width: 64px; height: 64px; }
+.PlayerIcon-72 { width: 72px; height: 72px; }
+.PlayerIcon-80 { width: 80px; height: 80px; }
+.PlayerIcon-96 { width: 96px; height: 96px; }
+.PlayerIcon-112 { width: 112px; height: 112px; }
+.PlayerIcon-128 { width: 128px; height: 128px; }
+.PlayerIcon-144 { width: 144px; height: 144px; }
+.PlayerIcon-160 { width: 160px; height: 160px; }
+.PlayerIcon-192 { width: 192px; height: 192px; }
+.PlayerIcon-224 { width: 224px; height: 224px; }
+.PlayerIcon-256 { width: 256px; height: 256px; }

@@ -36,7 +36,7 @@ export function goban_view_mode(bar_width?: number): ViewMode {
 }
 
 export function goban_view_squashed(): boolean {
-    /* This value needs to match the "dock-inline-height" found in Dock.styl */
+    /* This value needs to match the "dock-inline-height" found in Dock.css */
     return window.innerHeight <= 500;
 }
 

@@ -34,6 +34,7 @@ import {
     isValidUrlOrPath,
     DEFAULT_ANNOUNCEMENT_LANG,
 } from "@/lib/announcement_utils";
+import "./AnnouncementCenter.css";
 
 moment.relativeTimeThreshold("m", 59);
 

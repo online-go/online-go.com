@@ -48,6 +48,7 @@ const COMPOSITE_KEY_MULTIPLIER = 1000000;
 
 import { generateHeatmapAndMarks } from "./generateHeatmapAndMarks";
 import { Errcode } from "@/components/Errcode";
+import "./AIReview.css";
 
 export interface AIReviewEntry {
     move_number: number;

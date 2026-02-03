@@ -22,6 +22,7 @@ import { get_handicap_adjustment, getUserRating, Rating } from "@/lib/rank_utils
 import { PlayerAutocomplete } from "@/components/PlayerAutocomplete";
 import { PlayerCacheEntry, lookup } from "@/lib/player_cache";
 import { get } from "@/lib/data";
+import "./RatingCalculator.css";
 
 interface RatingCalcState {}
 

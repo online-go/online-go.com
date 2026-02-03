@@ -72,6 +72,7 @@ import {
     RejectionDetails,
     UpdateFn,
 } from "@/components/ChallengeModal/ChallengeModal.types";
+import "./ChallengeModal.css";
 
 /* Constants  */
 

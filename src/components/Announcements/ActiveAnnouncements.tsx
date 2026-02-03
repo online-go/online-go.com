@@ -42,6 +42,7 @@ import * as data from "@/lib/data";
 import * as preferences from "@/lib/preferences";
 
 import { alert } from "@/lib/swal_config";
+import "./ActiveAnnouncements.css";
 
 // Holds the expirations dates of cleared announcements
 const hard_cleared_announcements: { [id: number]: number } = data.get(

@@ -20,6 +20,7 @@ import { Link, useLocation } from "react-router-dom";
 import * as preferences from "@/lib/preferences";
 import { Stream, streamManager } from "./StreamManager";
 import { GoTVNotifier } from "./GoTVNotifier";
+import "./GoTVIndicator.css";
 
 // GoTVIndicator component shows the number of live streams and a link to GoTV
 export function GoTVIndicator(): React.ReactElement {
