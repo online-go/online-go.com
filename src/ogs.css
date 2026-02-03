@@ -20,7 +20,9 @@
 @import-glob "../submodules/react-dynamic-help/src/DynamicHelp.css";
 @import-glob "./global_styl/*.css";
 @import-glob "./lib/*.css";
-@import-glob "./components/material/*.css";
 
-/* Component and view CSS is imported directly in their respective .tsx files */
-/* Submodule CSS is imported via stub files in src/stubs/ */
+/* Component CSS - exclude Sortable which only has CSS modules (handled by Vite) */
+@import-glob "./components/!(Sortable)/**/*.css";
+
+/* View CSS */
+@import-glob "./views/**/*.css";
