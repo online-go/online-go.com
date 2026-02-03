@@ -32,7 +32,7 @@
 }
 
 .rdh-help-item>.rdh-popup-dismissers {
-    color: var(--colored-background-fg); /* TODO: themed-darken colored-background-fg 10% */
+    color: color-mix(in srgb, var(--colored-background-fg), black 10%);
     cursor: pointer;
     margin-top: 0.7rem;
     font-size: 0.9rem;

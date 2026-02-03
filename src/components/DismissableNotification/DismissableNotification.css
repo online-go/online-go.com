@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 .DismissableNotification {
-    background-color: var(--info); /* TODO: themed-desaturate-and-lighten-darken info 80% 70% */
-    border-color: var(--info); /* TODO: themed-darken info 0% */
+    background-color: color-mix(in srgb, var(--info), var(--bg) 70%);
+    border-color: var(--info);
     border: 1px solid #000;
     text-align: center;
     margin: 0.5rem;

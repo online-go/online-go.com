@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 .DismissableMessage {
-    background-color: var(--primary); /* TODO: themed-desaturate-and-lighten-darken primary 80% 70% */
-    border-color: var(--primary); /* TODO: themed-darken primary 0% */
+    background-color: color-mix(in srgb, var(--primary), var(--bg) 70%);
+    border-color: var(--primary);
     border: 1px solid #000;
     text-align: center;
     margin: 0.5rem;

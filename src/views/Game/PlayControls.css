@@ -67,12 +67,12 @@
 
         button {
             background-color: var(--success);
-            border-color: var(--success); /* TODO: themed-darken success border-darken-amount */
+            border-color: color-mix(in srgb, var(--success), black 15%);
         }
 
         button:hover {
-            background-color: var(--success); /* TODO: themed-lighten success button-highlight-brighten-amount */
-            border-color: var(--success); /* TODO: themed-darken success button-border-highlight-darken-amount */
+            background-color: color-mix(in srgb, var(--success), white 15%);
+            border-color: color-mix(in srgb, var(--success), black 20%);
         }
     }
 

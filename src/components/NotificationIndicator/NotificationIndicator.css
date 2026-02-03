@@ -9,6 +9,7 @@
 
     .fa-bell {
         color: var(--shade4);
+        transition: color 0.2s ease;
 
         &.active {
             color: var(--primary);
@@ -20,7 +21,7 @@
             color: var(--shade3);
 
             &.active {
-                color: var(--primary); /* TODO: themed-lighten primary 20% */
+                color: color-mix(in srgb, var(--primary), white 20%);
             }
         }
     }

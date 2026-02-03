@@ -71,11 +71,12 @@ body.accessible .TurnIndicator {
 
     .ogs-goban {
         color: var(--fg);
+        transition: color 0.2s ease;
     }
 
     &:hover {
         .ogs-goban {
-            color: var(--fg); /* TODO: themed-lighten fg 30% */
+            color: color-mix(in srgb, var(--fg), white 30%);
         }
     }
 

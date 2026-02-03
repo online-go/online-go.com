@@ -176,14 +176,14 @@
 
             &:hover, &:focus {
                 text-decoration: none;
-                background-color: var(--default-button); /* TODO: themed-lighten default-button button-highlight-brighten-amount */
-                border-color: var(--default-button); /* TODO: themed-darken default-button button-border-highlight-darken-amount */
+                background-color: color-mix(in srgb, var(--default-button), white 15%);
+                border-color: color-mix(in srgb, var(--default-button), black 20%);
             }
 
             &:active, &.fa-caret-down {
                 text-decoration: none;
-                background-color: var(--default-button); /* TODO: themed-darken default-button button-highlight-brighten-amount */
-                border-color: var(--default-button); /* TODO: themed-darken default-button button-border-highlight-darken-amount */
+                background-color: color-mix(in srgb, var(--default-button), black 10%);
+                border-color: color-mix(in srgb, var(--default-button), black 20%);
             }
         }
     }

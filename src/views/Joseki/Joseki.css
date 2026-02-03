@@ -186,36 +186,34 @@
                     background-color: var(--shade5);
                 }
 
-                /* can't theme box-shadow, so just using "light" version, and chose */
-                /* a colour for that that looks OK in both themes */
                 .ideal {
-                    border-color: light.joseki-ideal;
+                    border-color: var(--joseki-ideal);
                     border-width: 2px;
-                    box-shadow: 0 0 0.8rem light.joseki-ideal;
+                    box-shadow: 0 0 0.8rem var(--joseki-ideal);
                 }
 
                 .good {
-                    border-color: light.joseki-good;
+                    border-color: var(--joseki-good);
                     border-width: 2px;
-                    box-shadow: 0 0 0.8rem light.joseki-good;
+                    box-shadow: 0 0 0.8rem var(--joseki-good);
                 }
 
                 .trick {
-                    border-color: light.joseki-trick;
+                    border-color: var(--joseki-trick);
                     border-width: 2px;
-                    box-shadow: 0 0 0.8rem light.joseki-trick;
+                    box-shadow: 0 0 0.8rem var(--joseki-trick);
                 }
 
                 .question {
-                    border-color: light.joseki-question;
+                    border-color: var(--joseki-question);
                     border-width: 2px;
-                    box-shadow: 0 0 0.8rem light.joseki-question;
+                    box-shadow: 0 0 0.8rem var(--joseki-question);
                 }
 
                 .mistake {
-                    border-color: light.joseki-mistake;
+                    border-color: var(--joseki-mistake);
                     border-width: 2px;
-                    box-shadow: 0 0 0.8rem light.joseki-mistake;
+                    box-shadow: 0 0 0.8rem var(--joseki-mistake);
                 }
             }
 
@@ -237,7 +235,7 @@
 
                 .selected {
                     background-color: var(--success);
-                    border-color: var(--success); /* TODO: themed-darken success border-darken-amount */
+                    border-color: color-mix(in srgb, var(--success), black 15%);
                 }
             }
         }

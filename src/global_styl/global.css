@@ -402,7 +402,7 @@ button, a.btn, .btn {
     line-height: var(--font-size-normal);
     background-color: var(--default-button);
     color: var(--default-button-color);
-    transition: background-color 0.3s ease;
+    transition: background-color 0.3s ease, filter 0.3s ease;
 
     &.no-shadow {
         box-shadow: none;
