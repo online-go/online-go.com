@@ -481,7 +481,13 @@ export function GameDock({
                                 return goban_controller.startReview();
                             }
                         }}
-                        className={goban.isAnalysisDisabled() || user.anonymous ? "disabled" : ""}
+                        className={
+                            goban.isAnalysisDisabled() ||
+                            user.anonymous ||
+                            (user_is_player && phase !== "finished")
+                                ? "disabled"
+                                : ""
+                        }
                     >
                         <i className="fa fa-refresh"></i> {_("Review this game")}
                     </a>
