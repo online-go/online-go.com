@@ -214,6 +214,8 @@ header.NavBar {
 
     /* mobile */
     @media only screen and (max-width: $hamburger-cutoff) {
+        overflow-x: hidden;
+
         &>.left {
             display: none !important;
         }
@@ -274,8 +276,9 @@ header.NavBar {
             }
         }
 
-        .right {
-            flex: 0rem;
+        &>.right {
+            flex: 0 1 0rem;
+            flex-shrink: 1;
 
             &.search-focused {
                 display: none;
@@ -287,7 +290,7 @@ header.NavBar {
         }
 
         .center {
-            flex: 0rem;
+            flex: 0 1 0rem;
         }
 
         .spacer {

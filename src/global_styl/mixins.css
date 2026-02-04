@@ -15,34 +15,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-@import "../../global_styl/mixins.css";
+/* Utility mixins for shared styles */
 
-.Developer {
-    /* here */
-    img {
-        max-width: 100%;
-    }
+@define-mixin monospace {
+    font-family: 'Source Code Pro', monospace;
+}
 
-    a {
-        @mixin monospace;
-    }
+@define-mixin result-won {
+    background-color: var(--weak-win);
+}
 
-    h1 {
-        margin-top: 2rem;
-    }
+@define-mixin result-tie {
+    background-color: var(--tie);
+}
 
-    .github-link {
-        position: absolute;
-        top: var(--navbar-height);
-        right: 0;
-        border: 0;
-    }
+@define-mixin result-lost {
+    background-color: var(--weak-loss);
+}
 
-    iframe {
-        border-width: 0;
-        height: 2em;
-        width: 12em;
-        frameborder: 0;
-        scrolling: 0;
-    }
+@define-mixin card {
+    margin: 0.5rem;
+    padding: 0.5rem;
+    display: block;
+    border: 1px solid transparent;
+    background-color: var(--card-background-color);
+    border-color: var(--shade3);
+    box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.16), 0px 2px 5px 0px rgba(0, 0, 0, 0.15);
 }

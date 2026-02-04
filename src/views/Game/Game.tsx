@@ -642,7 +642,7 @@ export function Game(): React.ReactElement | null {
         <PlayControls annulment_reason={annulment_reason} />
     );
 
-    const GAME_DOCK = (
+    const renderGameDock = (inline: boolean) => (
         <GameDock
             tournament_id={tournament_id.current}
             tournament_name={tournament?.name}
@@ -650,6 +650,7 @@ export function Game(): React.ReactElement | null {
             historical_black={historical_black}
             historical_white={historical_white}
             ai_suspected={bot_detection_results?.ai_suspected.length > 0}
+            className={inline ? "inline" : undefined}
         />
     );
 
@@ -723,7 +724,7 @@ export function Game(): React.ReactElement | null {
                             mode === "play" &&
                             phase === "play" && <CancelButton className="bold reject" />}
 
-                        {view_mode === "portrait" && !zen_mode && GAME_DOCK}
+                        {view_mode === "portrait" && !zen_mode && renderGameDock(true)}
                     </div>
 
                     {view_mode !== "portrait" && (
@@ -788,7 +789,7 @@ export function Game(): React.ReactElement | null {
                             {view_mode === "square" && squashed && CHAT}
                             {view_mode === "square" && squashed && CHAT}
 
-                            {GAME_DOCK}
+                            {renderGameDock(false)}
                             {zen_mode && <div className="align-col-end"></div>}
                         </div>
                     )}

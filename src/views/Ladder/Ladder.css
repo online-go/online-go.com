@@ -14,6 +14,9 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+@import "../../global_styl/mixins.css";
+
 .Ladder-container {
     display: flex;
     align-items: stretch;
@@ -101,7 +104,7 @@
         }
 
         .rank {
-            /* @extends .monospace - apply manually */
+            @mixin monospace;
             display: inline-block;
             min-width: 5rem;
             max-width: 5rem;
@@ -171,7 +174,7 @@
         display: block;
 
         .challenge-rank {
-            /* @extends .monospace - apply manually */
+            @mixin monospace;
             margin-right: 0.3rem;
             display: inline-block;
             width: 3.5rem;

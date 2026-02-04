@@ -14,6 +14,9 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+@import "../../global_styl/mixins.css";
+
 .Tournament {
     display: flex;
     flex-direction: column;
@@ -200,15 +203,15 @@
     }
 
     .win {
-        /* @extends .result-won - apply manually */
+        @mixin result-won;
     }
 
     .tie {
-        /* @extends .result-tie - apply manually */
+        @mixin result-tie;
     }
 
     .loss {
-        /* @extends .result-lost - apply manually */
+        @mixin result-lost;
     }
 
     .no-result {

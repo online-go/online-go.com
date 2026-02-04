@@ -68,6 +68,7 @@ interface DockProps {
     historical_black: rest_api.games.Player | null;
     historical_white: rest_api.games.Player | null;
     ai_suspected: boolean;
+    className?: string;
 }
 
 export function GameDock({
@@ -77,6 +78,7 @@ export function GameDock({
     historical_black,
     historical_white,
     ai_suspected,
+    className,
 }: DockProps): React.ReactElement {
     const goban_controller = useGobanController();
     const goban = goban_controller.goban;
@@ -369,7 +371,7 @@ export function GameDock({
         engine.getMoveNumber() === current_move_number ? player_to_move : engine.playerNotToMove();
 
     return (
-        <Dock>
+        <Dock className={className}>
             {(tournament_id || null) && (
                 <Link className="plain" to={`/tournament/${tournament_id}`}>
                     <i className="fa fa-trophy" title={tournament_name ?? _("Tournament")} />{" "}

@@ -14,6 +14,9 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+@import "../../global_styl/mixins.css";
+
 .private-chat-window {
     position: fixed;
     display: inline-block;
@@ -184,7 +187,7 @@
     }
 
     .date, .timestamp {
-        /* @extends .monospace - apply manually */
+        @mixin monospace;
         font-size: 0.8rem;
     }
 
