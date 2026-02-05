@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import "./popup-menu.css";
 
 export interface PopupMenuItem {
     title: string;

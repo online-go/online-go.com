@@ -50,7 +50,7 @@ function getVersionInfo(): string {
         // Try to get git version (format: 5.1-8740-g70dbb6a6)
         const gitVersion = execSync("git describe --long", { encoding: "utf-8" }).trim();
         return gitVersion;
-    } catch (error) {
+    } catch {
         console.warn("Could not get git version, using timestamp");
         return Date.now().toString();
     }
