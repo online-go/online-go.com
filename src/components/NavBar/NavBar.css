@@ -277,8 +277,7 @@ header.NavBar {
         }
 
         &>.right {
-            flex: 0 1 0rem;
-            flex-shrink: 1;
+            flex: 1 1 0rem;
 
             &.search-focused {
                 display: none;
@@ -290,7 +289,7 @@ header.NavBar {
         }
 
         .center {
-            flex: 0 1 0rem;
+            flex: 1 1 0rem;
         }
 
         .spacer {
