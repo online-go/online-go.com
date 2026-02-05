@@ -36,7 +36,8 @@ header.NavBar {
         color: var(--supporter-gold);
     }
 
-    &>.left, &>.right {
+    & > .left,
+    & > .right {
         flex: 1rem;
         flex-grow: 0;
         flex-shrink: 0;
@@ -65,7 +66,8 @@ header.NavBar {
         padding: 0;
         list-style: none;
 
-        .MenuLink, .MenuLink > * {
+        .MenuLink,
+        .MenuLink > * {
             display: flex;
             align-items: center;
         }
@@ -99,7 +101,8 @@ header.NavBar {
                 background-color: var(--shade4);
             }
 
-            &:hover, &.active {
+            &:hover,
+            &.active {
                 background-color: var(--navbar-highlight-background-color);
                 border-color: var(--primary);
 
@@ -160,7 +163,8 @@ header.NavBar {
                     justify-content: space-around;
                 }
 
-                &:hover, &.active {
+                &:hover,
+                &.active {
                     background-color: var(--navbar-highlight-background-color);
                     border-color: var(--primary);
 
@@ -181,7 +185,13 @@ header.NavBar {
     }
 
     @media only screen and (max-width: 600px) {
-        .FriendIndicator, .IncidentReportIndicator, .TournamentIndicator, .TurnIndicator, .NotificationIndicator, .ChatIndicator, .GoTVIndicator {
+        .FriendIndicator,
+        .IncidentReportIndicator,
+        .TournamentIndicator,
+        .TurnIndicator,
+        .NotificationIndicator,
+        .ChatIndicator,
+        .GoTVIndicator {
             padding-left: 0.3rem !important;
             padding-right: 0.3rem !important;
         }
@@ -216,7 +226,7 @@ header.NavBar {
     @media only screen and (max-width: $hamburger-cutoff) {
         overflow-x: hidden;
 
-        &>.left {
+        & > .left {
             display: none !important;
         }
 
@@ -276,7 +286,7 @@ header.NavBar {
             }
         }
 
-        &>.right {
+        & > .right {
             flex: 1 1 0rem;
 
             &.search-focused {
@@ -306,6 +316,11 @@ header.NavBar {
                 display: inline-flex !important;
             }
 
+            .OmniSearch-container .OmniSearch {
+                position: fixed;
+                z-index: var(--z-nav-menu-omnisearch);
+            }
+
             .ogs-nav-logo {
                 display: none;
             }
@@ -319,7 +334,7 @@ header.NavBar {
             }
         }
 
-        &.hamburger-expanded>.left {
+        &.hamburger-expanded > .left {
             display: inline !important;
 
             background-color: var(--navbar-background-color);
@@ -332,7 +347,7 @@ header.NavBar {
             /* overflow-y: auto; */
             z-index: var(--z-nav-menu-menu);
 
-            &>ul {
+            & > ul {
                 display: flex;
                 flex-direction: column;
                 align-items: flex-start;
@@ -420,7 +435,9 @@ header.NavBar {
         }
 
         .Menu-children {
-            img, .fa, .ogs-goban {
+            img,
+            .fa,
+            .ogs-goban {
                 width: 16px;
                 max-width: 16px;
                 height: 16px;
@@ -439,7 +456,7 @@ header.NavBar {
     button.MenuLink {
         background: transparent;
         outline: none;
-        border:none;
+        border: none;
         border-radius: 0;
         width: 100%;
         text-align: left;
@@ -448,7 +465,9 @@ header.NavBar {
         box-shadow: none;
 
         &:focus {
-            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0), 0 0px 0px 2px #4c9ffe;
+            box-shadow:
+                0 0 0 2px rgba(255, 255, 255, 0),
+                0 0px 0px 2px #4c9ffe;
         }
 
         &:hover {
@@ -456,13 +475,19 @@ header.NavBar {
         }
     }
 
-    .MenuLink, a, .clickable {
+    .MenuLink,
+    a,
+    .clickable {
         color: var(--text-color);
-        transition: background .2s;
+        transition: background 0.2s;
     }
 
-    .MenuLink, button.MenuLink, a, .clickable {
-        &:active, &:hover {
+    .MenuLink,
+    button.MenuLink,
+    a,
+    .clickable {
+        &:active,
+        &:hover {
             color: var(--text-color-active);
 
             /* underline only on the text (not the icon) */
@@ -479,7 +504,7 @@ header.NavBar {
         margin-right: 1rem;
     }
 
-    >.left {
+    > .left {
         & > ul {
             display: flex;
             align-items: center;
@@ -489,7 +514,8 @@ header.NavBar {
         }
     }
 
-    >.left, .Menu {
+    > .left,
+    .Menu {
         .Menu-title {
             display: inline-flex;
             line-height: var(--navbar-height);
@@ -537,7 +563,8 @@ header.NavBar {
                 margin-right: 0.5rem;
             }
 
-            .fa, .ogs-goban {
+            .fa,
+            .ogs-goban {
                 font-size: 1rem;
                 font-weight: 400;
                 margin-left: 0.5rem;
@@ -550,7 +577,6 @@ header.NavBar {
         }
     }
 
-    
     .fa-adjust {
         padding: 0.6rem;
         margin-bottom: -0.1rem;
@@ -640,7 +666,8 @@ header.NavBar {
             display: inline-flex;
             align-items: center;
 
-            img, i {
+            img,
+            i {
                 margin: 0.2rem;
                 margin-right: 0.5rem;
             }
@@ -666,7 +693,13 @@ header.NavBar {
         background-color: var(--navbar-background-color);
     }
 
-    .FriendIndicator, .IncidentReportIndicator, .TournamentIndicator, .TurnIndicator, .NotificationIndicator, .ChatIndicator, .GoTVIndicator {
+    .FriendIndicator,
+    .IncidentReportIndicator,
+    .TournamentIndicator,
+    .TurnIndicator,
+    .NotificationIndicator,
+    .ChatIndicator,
+    .GoTVIndicator {
         padding-left: 0.6rem;
         padding-right: 0.6rem;
     }
@@ -685,8 +718,13 @@ header.NavBar {
         }
     }
 
-    .FriendIndicator, .IncidentReportIndicator, .NotificationIndicator, .TournamentIndicator, .GoTVIndicator {
-        .count, .time {
+    .FriendIndicator,
+    .IncidentReportIndicator,
+    .NotificationIndicator,
+    .TournamentIndicator,
+    .GoTVIndicator {
+        .count,
+        .time {
             /* This offsets the baseline padding added to the count so things center correctly. */
             margin-bottom: -0.2rem;
         }
@@ -713,7 +751,8 @@ header.NavBar {
                 align-items: center;
                 align-content: center;
 
-                .fa-trophy, .icon {
+                .fa-trophy,
+                .icon {
                     margin-right: 0.5rem;
                 }
             }
@@ -724,7 +763,7 @@ header.NavBar {
         h4 {
             margin: 0;
             text-align: center;
-            font-weight:normal;
+            font-weight: normal;
         }
     }
 }
@@ -780,11 +819,11 @@ header.NavBar {
 
 button.theme-button {
     cursor: pointer;
-    
-        background-color: var(--default-button);
-        color: var(--default-button-color);
-        border: 1px solid transparent;
-    
+
+    background-color: var(--default-button);
+    color: var(--default-button-color);
+    border: 1px solid transparent;
+
     border: 1px solid transparent;
     padding: 0.3rem;
     padding-inline: 0.5rem;

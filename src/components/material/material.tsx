@@ -17,6 +17,7 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
+import "./material.css";
 
 export function Card(props: React.HTMLProps<HTMLDivElement>): React.ReactElement {
     return (

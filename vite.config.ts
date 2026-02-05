@@ -34,8 +34,10 @@ import functions from "postcss-functions";
 import postcssUrl from "postcss-url";
 import inline_svg from "postcss-inline-svg";
 import autoprefixer from "autoprefixer";
+import cssnano from "cssnano";
 import Color from "color";
 import { nodePolyfills } from "vite-plugin-node-polyfills";
+import cssSourcemap from "vite-plugin-css-sourcemap";
 import { execSync } from "child_process";
 
 const OGS_I18N_BUILD_MODE = (process.env.OGS_I18N_BUILD_MODE || "false").toLowerCase() === "true";
@@ -48,7 +50,7 @@ function getVersionInfo(): string {
         // Try to get git version (format: 5.1-8740-g70dbb6a6)
         const gitVersion = execSync("git describe --long", { encoding: "utf-8" }).trim();
         return gitVersion;
-    } catch (error) {
+    } catch {
         console.warn("Could not get git version, using timestamp");
         return Date.now().toString();
     }
@@ -137,16 +139,30 @@ export default defineConfig({
               // Maintain Vite 6 browser support
               target: ["es2020", "edge88", "firefox78", "chrome87", "safari14"],
               chunkSizeWarningLimit: 1024 * 1024 * 1.5,
-              // Disable CSS code splitting - all CSS is compiled separately via compile-css.js
-              // and loaded globally. Without this, Vite generates separate CSS files for
-              // lazy-loaded chunks (like LearningHub) which may fail to load in production.
-              cssCodeSplit: false,
               rollupOptions: {
                   input: {
                       ogs: "src/main.tsx",
                   },
                   output: {
-                      assetFileNames: "[name].[ext]",
+                      assetFileNames: (assetInfo) => {
+                          const version = getVersionInfo();
+                          const name = assetInfo.names?.[0]?.replace(/\.[^.]+$/, "") || "";
+
+                          // Main CSS bundle: use .min.css for backwards compatibility with Makefile
+                          if (name === "ogs") {
+                              return `[name].min.[ext]`;
+                          }
+                          // Monaco-vim CSS stays at root (expected by Makefile)
+                          if (name === "monaco-vim") {
+                              return `[name].[ext]`;
+                          }
+                          // Code-split CSS goes to modules/ with version+hash
+                          if (assetInfo.names?.[0]?.endsWith(".css")) {
+                              return `modules/[name]-${version}-[hash].[ext]`;
+                          }
+                          // Other assets
+                          return `[name].[ext]`;
+                      },
                       entryFileNames: "[name].js",
                       chunkFileNames: (_chunkInfo) => {
                           // All chunks (including dynamically imported ones) go to modules/
@@ -193,13 +209,6 @@ export default defineConfig({
                   },
               },
           },
-    /*
-     * NOTE: We don't use vite css processing for our production builds because
-     * it doesn't support generating sourcemaps in production as of 2025-01-07
-     *
-     * For production, see compile-css.js, which should always kept in sync
-     * with this config.
-     */
     css: {
         postcss: {
             parser: comment,
@@ -254,6 +263,8 @@ export default defineConfig({
                     paths: [path.resolve(__dirname, "assets"), path.resolve(__dirname, "src")],
                 }),
                 autoprefixer() as any,
+                // Only minify CSS in production
+                ...(process.env.NODE_ENV === "production" ? [cssnano()] : []),
             ],
         },
         preprocessorMaxWorkers: true,
@@ -319,6 +330,8 @@ export default defineConfig({
             },
         },
         process.env.NODE_ENV !== "production" ? nodePolyfills() : null,
+        // Enable CSS sourcemaps in production builds
+        cssSourcemap(),
         // checker relative directory is src/
         //
         !OGS_I18N_BUILD_MODE

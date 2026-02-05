@@ -17,6 +17,7 @@
 
 import * as React from "react";
 import * as data from "@/lib/data";
+import "./LearningHub.css";
 import * as preferences from "@/lib/preferences";
 import { Link, useParams } from "react-router-dom";
 import { CardLink } from "@/components/material";
@@ -27,7 +28,6 @@ import { getSectionCompletion, getSectionByName } from "./util";
 import { browserHistory } from "@/lib/ogsHistory";
 import { MiniGoban } from "@/components/MiniGoban";
 import { alert } from "@/lib/swal_config";
-import "./LearningHub.css";
 
 interface LearningHubParams {
     section: string;

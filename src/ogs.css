@@ -20,9 +20,3 @@
 @import-glob "./global_styl/*.css";
 @import-glob "../submodules/**/[A-Z]*.css";
 @import-glob "./lib/*.css";
-
-/* Component CSS - exclude Sortable which only has CSS modules (handled by Vite) */
-@import-glob "./components/!(Sortable)/**/*.css";
-
-/* View CSS */
-@import-glob "./views/**/*.css";
