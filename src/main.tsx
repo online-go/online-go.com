@@ -133,11 +133,11 @@ export function applyTheme() {
         }
     }
 
-    if (document.body.dataset.theme === theme) {
+    if (document.documentElement.dataset.theme === theme) {
         return;
     }
 
-    document.body.dataset.theme = theme;
+    document.documentElement.dataset.theme = theme;
 }
 window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applyTheme);
 data.watch("theme", applyTheme);

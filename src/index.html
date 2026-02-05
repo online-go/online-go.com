@@ -350,13 +350,13 @@
                     localStorage.getItem("ogs.theme") || JSON.stringify(remote_theme || "system");
                 var parsedTheme = JSON.parse(theme);
                 if (parsedTheme === "system" || !parsedTheme) {
-                    document.body.dataset.theme = system_theme;
+                    document.documentElement.dataset.theme = system_theme;
                 } else {
-                    document.body.dataset.theme = parsedTheme;
+                    document.documentElement.dataset.theme = parsedTheme;
                 }
             } catch (e) {
                 console.error(e);
-                document.body.dataset.theme = "light";
+                document.documentElement.dataset.theme = "light";
             }
         </script>
         <div id="em10"></div>

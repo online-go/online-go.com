@@ -90,18 +90,18 @@ export function GoTV(): React.ReactElement {
         const initialStreams = streamManager.getStreams();
         updateStreams(initialStreams);
 
-        setIsLightTheme(document.body.dataset.theme === "light");
+        setIsLightTheme(document.documentElement.dataset.theme === "light");
 
         // Setup a MutationObserver to detect theme changes for updating Twitch chat theme
         const observer = new MutationObserver((mutations) => {
             mutations.forEach((mutation) => {
                 if (mutation.attributeName === "data-theme") {
-                    setIsLightTheme(document.body.dataset.theme === "light");
+                    setIsLightTheme(document.documentElement.dataset.theme === "light");
                 }
             });
         });
 
-        observer.observe(document.body, { attributes: true });
+        observer.observe(document.documentElement, { attributes: true });
 
         // Handle window resize events to update mobile state
         const handleResize = () => setIsMobile(window.innerWidth <= 900);

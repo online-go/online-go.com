@@ -51,7 +51,7 @@ function setTheme(theme: string) {
 }
 
 function toggleTheme() {
-    const currentTheme = document.body.dataset.theme;
+    const currentTheme = document.documentElement.dataset.theme;
     if (currentTheme === "dark" || currentTheme === "accessible") {
         setTheme("light");
     } else {
