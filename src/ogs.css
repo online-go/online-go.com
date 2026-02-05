@@ -24,5 +24,7 @@
 /* Component CSS - exclude Sortable which only has CSS modules (handled by Vite) */
 @import-glob "./components/!(Sortable)/**/*.css";
 
-/* View CSS */
-@import-glob "./views/**/*.css";
+/*
+ * Views are NOT imported here - each view imports its own CSS.
+ * This allows lazy-loaded views to have their CSS code-split with them.
+ */

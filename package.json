@@ -11,8 +11,8 @@
     "scripts": {
         "dev": "vite",
         "vite": "vite",
-        "build": "vite build --emptyOutDir && node compile-css.js",
-        "build-ci": "vite build --emptyOutDir && node compile-css.js",
+        "build": "vite build --emptyOutDir",
+        "build-ci": "vite build --emptyOutDir",
         "build:i18n": "OGS_I18N_BUILD_MODE=true vite build",
         "type-check": "tsc --skipLibCheck --noEmit",
         "prettier": "prettier --write \"src/**/*.{ts,tsx}\"",
@@ -113,6 +113,7 @@
         "vite": "^7.1.12",
         "vite-bundle-visualizer": "^1.2.1",
         "vite-plugin-checker": "^0.11.0",
+        "vite-plugin-css-sourcemap": "^1.0.4",
         "vite-plugin-node-polyfills": "^0.24.0",
         "xgettext-js": "^3.0.0",
         "yarn": "^1.22.22"

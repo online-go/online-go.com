@@ -91,7 +91,7 @@ import { RecentlyBlocked } from "@moderator-ui/RecentlyBlocked";
 import { FairPlay, FairPlayActions, FairPlaySearch } from "@moderator-ui/FairPlay";
 
 const LearningHub = React.lazy(() =>
-    import(/* webpackChunkName: "learning-hub" */ "@/views/LearningHub").then((m) => ({
+    import("@/views/LearningHub/LearningHub").then((m) => ({
         default: m.LearningHub,
     })),
 );

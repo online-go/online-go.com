@@ -17,6 +17,7 @@
 
 import * as React from "react";
 import * as data from "@/lib/data";
+import "./LearningHub.css";
 import * as preferences from "@/lib/preferences";
 import { Link, useParams } from "react-router-dom";
 import { CardLink } from "@/components/material";
