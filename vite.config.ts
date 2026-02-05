@@ -137,10 +137,6 @@ export default defineConfig({
               // Maintain Vite 6 browser support
               target: ["es2020", "edge88", "firefox78", "chrome87", "safari14"],
               chunkSizeWarningLimit: 1024 * 1024 * 1.5,
-              // Disable CSS code splitting - all CSS is compiled separately via compile-css.js
-              // and loaded globally. Without this, Vite generates separate CSS files for
-              // lazy-loaded chunks (like LearningHub) which may fail to load in production.
-              cssCodeSplit: false,
               rollupOptions: {
                   input: {
                       ogs: "src/main.tsx",
