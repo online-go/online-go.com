@@ -36,9 +36,9 @@ async function globalSetup() {
             try {
                 execSync("pkill -f chromium", { stdio: "inherit" });
                 console.log("Leftover processes cleaned up successfully");
-            } catch (error) {
+            } catch {
                 // pkill returns non-zero if no processes found, which is fine
-                console.log("No processes to clean up or already cleaned", error);
+                console.log("Cleanup complete (no matching processes found)");
             }
 
             // Wait a moment for processes to terminate

@@ -62,7 +62,7 @@ ogsTest.describe("@Mod Moderation Tests", () => {
     );
     ogsTest("AI Detector can cancel ticket and notify reporter", aiDetectorVoteCancelTicketTest);
     ogsTest(
-        "AI Detector can see SUSPENSION ModLog entries in ViewReport",
+        "@Slow AI Detector can see SUSPENSION ModLog entries in ViewReport",
         aiDetectorSeesSuspensionModlogTest,
     );
 });
