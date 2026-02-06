@@ -148,7 +148,9 @@ export const closeAllPendingReportsTest = async (
         log("Returning to history page...");
         await modPage.goto("/reports-center/history");
         // Wait for page size select to be visible again
-        await expect(modPage.locator(".ReportsCenterHistory select")).toBeVisible({ timeout: 10000 });
+        await expect(modPage.locator(".ReportsCenterHistory select")).toBeVisible({
+            timeout: 10000,
+        });
     }
 
     if (iterationCount >= maxIterations) {

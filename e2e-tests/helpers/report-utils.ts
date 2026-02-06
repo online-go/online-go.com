@@ -17,7 +17,7 @@ import { log, setWorkerIndex } from "./logger";
 class IncidentIndicatorLock {
     private static lockFile = path.join(process.cwd(), ".incident-indicator.lock");
     private static lockHandle: fs.promises.FileHandle | null = null;
-    private static readonly RETRY_TIMEOUT_MS = 360000; // 360 seconds (6 minutes) - must be longer than max test duration (300s)
+    private static readonly RETRY_TIMEOUT_MS = 180000; // 180 seconds (3 minutes) - must be longer than max test duration (<3mins)
     private static readonly RETRY_INTERVAL_MS = 500; // 500ms between retries
 
     static async acquire(): Promise<void> {
