@@ -15,21 +15,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// cspell:words SBES
+// cspell:words SBAS
 
 /*
  * Uses init_e2e data:
- * - E2E_CM_SBES_V1, E2E_CM_SBES_V2, E2E_CM_SBES_V3 : CMs with sandbagging power who vote
+ * - E2E_CM_SBES_V1 : CM with sandbagging power (to verify they cannot see the report)
  *
  * Creates dynamically:
- * - accused user (game thrower) - created fresh each run
- * - other user (opponent) - created fresh each run
- * - game between them that ends by resignation
+ * - accused user (who wins the game) - created fresh each run
+ * - other user (opponent who loses) - created fresh each run
+ * - game between them that ends by opponent resignation
  *
  * Note: When the reporter submits a "sandbagging" report and the accused player
- * LOST the game, the backend automatically converts it to a "thrown_game" report.
- * This test verifies that escalation works correctly for thrown_game reports using
- * the standard "escalate" action (which sets the escalated flag, like other CM reports).
+ * WON the game, the backend automatically converts it to a "sandbagging_assessment"
+ * report. This type of report is moderator-only - CMs cannot see or handle it.
+ * This test verifies that conversion and access control work correctly.
  */
 
 import type { CreateContextOptions } from "@helpers";
@@ -59,24 +59,24 @@ import { expect } from "@playwright/test";
 
 import { withReportCountTracking } from "@helpers/report-utils";
 
-export const cmVoteEscalateSandbaggingTest = async (
+export const cmSandbaggingAssessmentConversionTest = async (
     {
         createContext,
     }: { createContext: (options?: CreateContextOptions) => Promise<BrowserContext> },
     testInfo: TestInfo,
 ) => {
-    // Create the accused (game thrower)
-    const accusedUsername = newTestUsername("SBESAcc"); // cspell:disable-line
+    // Create the accused (who will WIN the game - opponent resigns)
+    const accusedUsername = newTestUsername("SBASAcc"); // cspell:disable-line
     const { userPage: accusedPage } = await prepareNewUser(createContext, accusedUsername, "test");
 
-    // Create the other player (opponent)
-    const otherUsername = newTestUsername("SBESOth"); // cspell:disable-line
+    // Create the other player (opponent who will lose)
+    const otherUsername = newTestUsername("SBASOth"); // cspell:disable-line
     const { userPage: otherPage } = await prepareNewUser(createContext, otherUsername, "test");
 
     // Accused challenges the other player
     await createDirectChallenge(accusedPage, otherUsername, {
         ...defaultChallengeSettings,
-        gameName: "E2E SBES Game",
+        gameName: "E2E SBAS Game",
         boardSize: "9x9",
         speed: "blitz",
         timeControl: "byoyomi",
@@ -96,10 +96,10 @@ export const cmVoteEscalateSandbaggingTest = async (
     const moves = ["D5", "E5", "D6", "E6", "D7", "E7", "D8", "E8"];
     await playMoves(accusedPage, otherPage, moves, "9x9", 0);
 
-    // Accused resigns - this means they LOST the game.
+    // The OPPONENT resigns - this means the ACCUSED WON the game.
     // When reporter submits a "sandbagging" report, the backend will convert
-    // it to "thrown_game" because the accused lost.
-    await resignActiveGame(accusedPage);
+    // it to "sandbagging_assessment" because the accused won (not thrown_game).
+    await resignActiveGame(otherPage);
 
     // Capture the game URL for the reporter to navigate to
     const gameUrl = accusedPage.url();
@@ -107,7 +107,7 @@ export const cmVoteEscalateSandbaggingTest = async (
     // Create the reporter
     const { userPage: reporterPage } = await prepareNewUser(
         createContext,
-        newTestUsername("SBESRep"), // cspell:disable-line
+        newTestUsername("SBASRep"), // cspell:disable-line
         "test",
     );
 
@@ -125,13 +125,13 @@ export const cmVoteEscalateSandbaggingTest = async (
         );
         await expect(playerLink.first()).toBeVisible({ timeout: 15000 });
 
-        // Reporter submits a "sandbagging" report - but since the accused lost,
-        // the backend will convert this to a "thrown_game" report
+        // Reporter submits a "sandbagging" report - but since the accused WON,
+        // the backend will convert this to a "sandbagging_assessment" report
         await reportUser(
             reporterPage,
             accusedUsername,
             "sandbagging",
-            "E2E test reporting sandbagging for escalation: deliberate loss.", // min chars
+            "E2E test reporting sandbagging: suspicious win pattern.", // min chars
         );
 
         // Verify reporter's count increased by 1
@@ -140,81 +140,67 @@ export const cmVoteEscalateSandbaggingTest = async (
         // Capture the report number from the reporter's "My Own Reports" page
         const reportNumber = await captureReportNumber(reporterPage);
 
-        // Only ONE CM needs to vote to escalate - escalation is unilateral (immediate)
+        // Set up a CM with sandbagging power to verify they CANNOT see the report
         const { seededCMPage: cmPage, seededCMContext: cmContext } = await setupSeededCM(
             createContext,
             "E2E_CM_SBES_V1",
         );
 
-        // Navigate directly to the report using the captured report number
+        // CM navigates to the report - they should NOT be able to see it
+        // because sandbagging_assessment is moderator-only
         await navigateToReport(cmPage, reportNumber);
 
-        // Verify the report type is shown as "Thrown Game" (converted from sandbagging)
-        const reportTypeSelector = cmPage.locator(".report-type-selector");
-        await expect(reportTypeSelector).toContainText("Thrown Game");
-
-        // Verify we can see the report with the message
+        // The CM should see a message indicating they don't have access or the report isn't available
+        // Check that the report content is NOT visible to the CM
         await expect(
-            cmPage.getByText("E2E test reporting sandbagging for escalation: deliberate loss."),
-        ).toBeVisible();
+            cmPage.getByText("E2E test reporting sandbagging: suspicious win pattern."),
+        ).not.toBeVisible({ timeout: 5000 });
 
-        // Select the "escalate" option
-        // (thrown_game reports now use the standard escalate action like other CM reports)
-        await cmPage.locator('input[value="escalate"]').click();
+        // Verify the CM sees some indication they can't access this report
+        // (the exact message depends on the UI, but they shouldn't see the report details)
+        const reportTypeSelector = cmPage.locator(".report-type-selector");
+        const selectorVisible = await reportTypeSelector.isVisible().catch(() => false);
+        if (selectorVisible) {
+            // If selector is visible, it should NOT show Sandbagging Assessment to CMs
+            // (they shouldn't even get this far, but double-check)
+            await expect(reportTypeSelector).not.toContainText("Sandbagging Assessment");
+        }
 
-        // Fill in the escalation note (required for escalation)
-        await cmPage.locator("#escalation-note").fill("E2E test escalation note");
+        // Clean up CM context
+        await cmContext.close();
 
-        const voteButton = await expectOGSClickableByName(cmPage, /Vote$/);
-        await voteButton.click();
-
-        // After the CM votes to escalate, the report should be escalated immediately (unilateral)
-        // Unlike other outcomes, escalation does NOT close the report or send an acknowledgement
-        // The reporter's count should remain at 1 (report still open, just in moderator queue)
-        await reporterPage.waitForTimeout(3000);
-
-        // Verify the reporter's count has NOT decreased (report is still open)
-        await tracker.assertCountIncreasedBy(reporterPage, 1);
-
-        // Verify that a full moderator can see the escalated report
+        // Now verify that a full moderator CAN see and handle the report
         const { seededModeratorPage: modPage, seededModeratorContext: modContext } =
             await setupSeededModerator(createContext);
 
-        // Navigate directly to the specific report using the captured report number
+        // Navigate to the report
         await navigateToReport(modPage, reportNumber);
 
-        // Verify the escalated report content is visible
-        // Use .first() because the report text may appear in multiple places (Card and content div)
+        // Verify the report type is shown as "Sandbagging Assessment"
+        const modReportTypeSelector = modPage.locator(".report-type-selector");
+        await expect(modReportTypeSelector).toContainText("Sandbagging Assessment");
+
+        // Verify the moderator can see the report content
         await expect(
-            modPage
-                .getByText("E2E test reporting sandbagging for escalation: deliberate loss.")
-                .first(),
+            modPage.getByText("E2E test reporting sandbagging: suspicious win pattern.").first(),
         ).toBeVisible({ timeout: 15000 });
 
-        // Verify the report type is still "Thrown Game" (escalation doesn't change the type)
-        await expect(modPage.locator(".report-type-selector")).toContainText("Thrown Game");
-
-        // Verify the report shows the escalation note from the CM
-        await expect(modPage.getByText("E2E test escalation note").first()).toBeVisible();
-
-        // Clean up: moderator closes the report
-        // First claim it
+        // Moderator claims and closes the report
         const claimButton = await expectOGSClickableByName(modPage, /Claim/i);
         await claimButton.click();
         await modPage.waitForTimeout(1000);
 
-        // Then close it
+        // Close the report
         const closeButton = await expectOGSClickableByName(modPage, /Close as good report/i);
         await closeButton.click();
 
-        // Wait for the report to be processed and count to return to 0
+        // Wait for the report to be processed
         await modPage.waitForTimeout(2000);
 
         // Verify the reporter's count has returned to initial (report is now closed)
         await tracker.assertCountReturnedToInitial(reporterPage);
 
-        // Clean up: close contexts
-        await cmContext.close();
+        // Clean up moderator context
         await modContext.close();
     });
 };

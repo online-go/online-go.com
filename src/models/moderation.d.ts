@@ -76,9 +76,11 @@ declare namespace rest_api {
             | "final_warning_escaping"
             | "final_warning_stalling"
             | "final_warning_score_cheating"
+            | "final_warning_thrown_game"
             | "final_warning_escaping_and_annul"
             | "final_warning_stalling_and_annul"
             | "final_warning_score_cheating_and_annul"
+            | "final_warning_thrown_game_and_annul"
             | "warn_duplicate_reporter"
             | "suspend_user"
             | "suspend_user_and_annul"
@@ -98,7 +100,11 @@ declare namespace rest_api {
             | "annul_sandbagged_games"
             | "warn_sandbagger"
             | "no_sandbagging"
-            | "mod_investigate_sandbagging";
+            | "mod_investigate_sandbagging"
+            | "annul_thrown_game"
+            | "annul_thrown_games"
+            | "warn_thrown_game"
+            | "no_thrown_game";
 
         // Regrettably, there's another definition of Vote in goban ServerToClient.ts
         // I wonder how we unify the rest_api and goban interfaces...

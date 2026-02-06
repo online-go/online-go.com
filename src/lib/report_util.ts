@@ -30,8 +30,9 @@ export const COMMUNITY_MODERATION_REPORT_TYPES: CommunityModeratorReportTypes = 
     stalling: "stalling",
     score_cheating: "score cheating",
     escaping: "escaping",
-    sandbagging: "sandbagging",
+    thrown_game: "thrown game",
     // AI is not included here because it's a special case
+    // sandbagging is not included because reports are auto-converted to thrown_game or sandbagging_assessment
 };
 
 export function community_mod_has_power(
@@ -49,7 +50,7 @@ export function community_mod_has_power(
         (report_type === "score_cheating" && has_handle_score_cheat) ||
         (report_type === "escaping" && has_handle_escaping) ||
         (report_type === "stalling" && has_handle_stalling) ||
-        (report_type === "sandbagging" && has_handle_sandbagging) ||
+        (report_type === "thrown_game" && has_handle_sandbagging) ||
         (report_type === "assess_ai_play" && has_assess_ai_play) ||
         (report_type === "ai_use" && has_ai_detector)
     );

@@ -62,12 +62,16 @@ declare namespace rest_api {
             | "final_warn_staller_and_annul"
             | "final_warn_score_cheat"
             | "final_warn_score_cheat_and_annul"
+            | "final_warn_thrown_game"
+            | "final_warn_thrown_game_and_annul"
             | "ack_final_warn_escaper"
             | "ack_final_warn_escaper_and_annul"
             | "ack_final_warn_staller"
             | "ack_final_warn_staller_and_annul"
             | "ack_final_warn_score_cheat"
             | "ack_final_warn_score_cheat_and_annul"
+            | "ack_final_warn_thrown_game"
+            | "ack_final_warn_thrown_game_and_annul"
             | "ack_suspended"
             | "ack_suspended_and_annul"
             | "warn_duplicate_report"
@@ -79,7 +83,14 @@ declare namespace rest_api {
             | "ack_educated_beginner_sandbagger_and_annul"
             | "ack_warned_sandbagger"
             | "ack_warned_sandbagger_and_annul"
-            | "no_sandbagging_evident";
+            | "no_sandbagging_evident"
+            | "warn_beginner_thrown_game"
+            | "warn_thrown_game"
+            | "ack_educated_beginner_thrown_game"
+            | "ack_educated_beginner_thrown_game_and_annul"
+            | "ack_warned_thrown_game"
+            | "ack_warned_thrown_game_and_annul"
+            | "no_thrown_game_evident";
 
         type Severity = "warning" | "acknowledgement" | "info";
 

@@ -22,9 +22,13 @@
  * - E2E_CM_SBWA_V1, E2E_CM_SBWA_V2, E2E_CM_SBWA_V3 : CMs with sandbagging power who vote
  *
  * Creates dynamically:
- * - accused user (sandbagger) - created fresh each run to stay as beginner
+ * - accused user (game thrower) - created fresh each run to stay as beginner
  * - other user (opponent) - created fresh each run
  * - game between them that ends by resignation
+ *
+ * Note: When the reporter submits a "sandbagging" report and the accused player
+ * LOST the game, the backend automatically converts it to a "thrown_game" report.
+ * This test verifies that flow works correctly.
  */
 
 import type { CreateContextOptions } from "@helpers";
@@ -59,7 +63,7 @@ export const cmVoteWarnAnnulSandbaggingTest = async (
     }: { createContext: (options?: CreateContextOptions) => Promise<BrowserContext> },
     testInfo: TestInfo,
 ) => {
-    // Create the accused (sandbagger) - keep this page/context for later warning check
+    // Create the accused (game thrower) - keep this page/context for later warning check
     const accusedUsername = newTestUsername("SBWAAcc"); // cspell:disable-line
     const { userPage: accusedPage } = await prepareNewUser(createContext, accusedUsername, "test");
 
@@ -90,7 +94,9 @@ export const cmVoteWarnAnnulSandbaggingTest = async (
     const moves = ["D5", "E5", "D6", "E6", "D7", "E7", "D8", "E8"];
     await playMoves(accusedPage, otherPage, moves, "9x9", 0);
 
-    // Accused resigns (simulating sandbagging - deliberate loss)
+    // Accused resigns - this means they LOST the game.
+    // When reporter submits a "sandbagging" report, the backend will convert
+    // it to "thrown_game" because the accused lost.
     await resignActiveGame(accusedPage);
 
     // Capture the game URL for the reporter to navigate to
@@ -117,6 +123,8 @@ export const cmVoteWarnAnnulSandbaggingTest = async (
         );
         await expect(playerLink.first()).toBeVisible({ timeout: 15000 });
 
+        // Reporter submits a "sandbagging" report - but since the accused lost,
+        // the backend will convert this to a "thrown_game" report
         await reportUser(
             reporterPage,
             accusedUsername,
@@ -130,7 +138,7 @@ export const cmVoteWarnAnnulSandbaggingTest = async (
         // Capture the report number from the reporter's "My Own Reports" page
         const reportNumber = await captureReportNumber(reporterPage);
 
-        // All 3 CMs vote to warn and annul the sandbagged game
+        // All 3 CMs vote to warn and annul the thrown game
         const cmVoters = ["E2E_CM_SBWA_V1", "E2E_CM_SBWA_V2", "E2E_CM_SBWA_V3"];
 
         const cmContexts = [];
@@ -145,13 +153,17 @@ export const cmVoteWarnAnnulSandbaggingTest = async (
             // Navigate directly to the report using the captured report number
             await navigateToReport(cmPage, reportNumber);
 
+            // Verify the report type is shown as "Thrown Game" (converted from sandbagging)
+            const reportTypeSelector = cmPage.locator(".report-type-selector");
+            await expect(reportTypeSelector).toContainText("Thrown Game");
+
             // Verify we can see the report with the message
             await expect(
                 cmPage.getByText("E2E test reporting sandbagging for annulment: deliberate loss."),
             ).toBeVisible();
 
-            // Select the "annul sandbagged game and warn" option
-            await cmPage.locator('input[value="annul_sandbagged"]').click();
+            // Select the "annul thrown game and warn" option
+            await cmPage.locator('input[value="annul_thrown_game"]').click();
 
             const voteButton = await expectOGSClickableByName(cmPage, /Vote$/);
             await voteButton.click();
@@ -161,7 +173,7 @@ export const cmVoteWarnAnnulSandbaggingTest = async (
         // Wait a moment for the acknowledgement to be generated
         await reporterPage.waitForTimeout(3000);
 
-        // The reporter should see the acknowledgement about warned sandbagger and annulled game
+        // The reporter should see the acknowledgement about warned game thrower and annulled game
         await reporterPage.goto("/");
 
         await expect(reporterPage.locator("div.AccountWarningAck")).toBeVisible({
@@ -173,7 +185,7 @@ export const cmVoteWarnAnnulSandbaggingTest = async (
         await expect(
             reporterPage
                 .locator("div.AccountWarningAck")
-                .locator("div.canned-message.ack_educated_beginner_sandbagger_and_annul"),
+                .locator("div.canned-message.ack_educated_beginner_thrown_game_and_annul"),
         ).toBeVisible();
 
         const okButton = reporterPage.locator("div.AccountWarningAck").locator("button.primary");
@@ -191,7 +203,7 @@ export const cmVoteWarnAnnulSandbaggingTest = async (
         // (accused is already logged in from the game we played)
         await accusedPage.goto("/");
 
-        // The accused should see a warning about sandbagging
+        // The accused should see a warning about throwing the game
         await expect(accusedPage.locator("div.AccountWarning")).toBeVisible({
             timeout: 15000,
         });
@@ -200,7 +212,7 @@ export const cmVoteWarnAnnulSandbaggingTest = async (
         await expect(
             accusedPage
                 .locator("div.AccountWarning")
-                .locator("div.canned-message.warn_beginner_sandbagger"),
+                .locator("div.canned-message.warn_beginner_thrown_game"),
         ).toBeVisible();
 
         // Warnings require clicking a checkbox to confirm you've read it
