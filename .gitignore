@@ -43,3 +43,4 @@ coverage
 old-*
 i18n/*.tar.gz
 *.old
+.playwright-mcp
