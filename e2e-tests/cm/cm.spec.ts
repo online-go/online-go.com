@@ -27,6 +27,7 @@ import { cmVoteSuspendUserTest } from "./cm-vote-suspend-user";
 import { cmVoteNoSandbaggingTest } from "./cm-vote-no-sandbagging";
 import { cmVoteWarnAnnulSandbaggingTest } from "./cm-vote-warn-annul-sandbagging";
 import { cmVoteEscalateSandbaggingTest } from "./cm-vote-escalate-sandbagging";
+import { cmSandbaggingAssessmentConversionTest } from "./cm-sandbagging-assessment-conversion";
 
 ogsTest.describe("@CM Community Moderation Tests", () => {
     ogsTest("CM Vote on own report", cmVoteOnOwnReportTest);
@@ -39,4 +40,8 @@ ogsTest.describe("@CM Community Moderation Tests", () => {
     ogsTest("Vote no sandbagging evident", cmVoteNoSandbaggingTest);
     ogsTest("Vote warn and annul sandbagged game", cmVoteWarnAnnulSandbaggingTest);
     ogsTest("Vote escalate sandbagging to moderators", cmVoteEscalateSandbaggingTest);
+    ogsTest(
+        "Sandbagging report converts to assessment when accused won",
+        cmSandbaggingAssessmentConversionTest,
+    );
 });

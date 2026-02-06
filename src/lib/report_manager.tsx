@@ -240,7 +240,9 @@ class ReportManager extends EventEmitter<Events> {
             if (
                 user.is_moderator &&
                 !(report.moderator?.id === user.id) && // maybe they already have it, so they need to see it
-                ["escaping", "score_cheating", "stalling"].includes(report.report_type)
+                ["escaping", "score_cheating", "stalling", "sandbagging", "thrown_game"].includes(
+                    report.report_type,
+                )
             ) {
                 return false;
             }

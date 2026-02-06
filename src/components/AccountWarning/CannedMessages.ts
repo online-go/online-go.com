@@ -666,6 +666,74 @@ That game has been annulled.
             ),
             { reported },
         ),
+    final_warn_thrown_game: (game_id) =>
+        interpolate(
+            llm_pgettext(
+                "Final warning message to someone who deliberately lost a game",
+                `
+Important: this is a final warning.
+
+It seems you deliberately lost game #{{game_id}}.
+
+If you continue to deliberately lose games your account will be suspended.
+
+We've previously explained that deliberately losing games (sandbagging) is not allowed on OGS because it messes up the ranking system.
+
+Please play to the best of your ability in all your games.
+
+Thanks.
+`,
+            ),
+            { game_id },
+        ),
+    final_warn_thrown_game_and_annul: (game_id) =>
+        interpolate(
+            llm_pgettext(
+                "Final warning message to someone who deliberately lost a game, and annul that game",
+                `
+Important: this is a final warning.
+
+It seems you deliberately lost game #{{game_id}}.
+
+We've annulled that game.
+
+If you continue to deliberately lose games your account will be suspended.
+
+We've previously explained that deliberately losing games (sandbagging) is not allowed on OGS because it messes up the ranking system.
+
+Please play to the best of your ability in all your games.
+
+Thanks.
+`,
+            ),
+            { game_id },
+        ),
+    ack_final_warn_thrown_game: (reported) =>
+        interpolate(
+            llm_pgettext(
+                "Message to acknowledge a report of someone who repeatedly threw games",
+                `
+Thank you for your report.  '{{reported}}' has been given a final warning about deliberately losing games.
+
+If this continues, their account will be suspended.
+`,
+            ),
+            { reported },
+        ),
+    ack_final_warn_thrown_game_and_annul: (reported) =>
+        interpolate(
+            llm_pgettext(
+                "Message to acknowledge a report of someone who repeatedly threw games, and annul a game",
+                `
+Thank you for your report.  '{{reported}}' has been given a final warning about deliberately losing games.
+
+If this continues, their account will be suspended.
+
+That game has been annulled.
+`,
+            ),
+            { reported },
+        ),
     ack_suspended: (reported) =>
         interpolate(
             llm_pgettext(
@@ -807,6 +875,86 @@ Thank you for your report, '{{reported}}' has been given a formal warning about 
                 "Acknowledgement message to a user who reported sandbagging",
                 `
 Thank you for bringing the possible instance of sandbagging by '{{reported}}' to our attention. We looked into the report and did not see evidence of deliberate rank manipulation.
+
+It may be that you need to report a different type of problem, or provide more explanation - you are welcome to raise a new report if that is the case.
+
+Thank you for helping keep OGS enjoyable for everyone. We appreciate it.`,
+            ),
+            { reported },
+        ),
+    warn_beginner_thrown_game: (game_id) =>
+        interpolate(
+            llm_pgettext(
+                "Warning message to a new user about throwing a game",
+                `
+Hi, Welcome to OGS!
+
+It appears that you may have deliberately lost game #{{game_id}}. Deliberately losing games is not allowed on OGS.
+
+Since you are a new player, no action will be taken against your account. We simply ask that you play to the best of your ability in all your games.
+        `,
+            ),
+            { game_id },
+        ),
+    warn_thrown_game: (game_id) =>
+        interpolate(
+            llm_pgettext(
+                "Warning message to a user about throwing a game",
+                `
+It has come to our attention that you may have deliberately lost game #{{game_id}}.
+
+Deliberately losing games is not allowed on OGS, because it negatively affects the experience of other players and messes up the ranking system.
+
+Please play to the best of your ability in all your games.
+
+Continued deliberately losing games will result in suspension of your account.`,
+            ),
+            { game_id },
+        ),
+    ack_educated_beginner_thrown_game: (reported) =>
+        interpolate(
+            llm_pgettext(
+                "Acknowledgement message to a user who reported a beginner for throwing a game",
+                `
+Thanks for the report about '{{reported}}', we've asked your newcomer opponent not to deliberately lose games.`,
+            ),
+            { reported },
+        ),
+    ack_educated_beginner_thrown_game_and_annul: (reported) =>
+        interpolate(
+            llm_pgettext(
+                "Acknowledgement message to a user who reported a beginner for throwing a game",
+                `
+Thanks for the report about '{{reported}}', we've asked your newcomer opponent not to deliberately lose games.
+
+That game has been annulled.`,
+            ),
+            { reported },
+        ),
+    ack_warned_thrown_game: (reported) =>
+        interpolate(
+            llm_pgettext(
+                "Acknowledgement message to a user who reported someone for throwing a game",
+                `
+Thank you for your report, '{{reported}}' has been given a formal warning about deliberately losing games.`,
+            ),
+            { reported },
+        ),
+    ack_warned_thrown_game_and_annul: (reported) =>
+        interpolate(
+            llm_pgettext(
+                "Acknowledgement message to a user who reported someone for throwing a game",
+                `
+Thank you for your report, '{{reported}}' has been given a formal warning about deliberately losing games, and that game has been annulled.`,
+            ),
+            { reported },
+        ),
+    no_thrown_game_evident: (reported) =>
+        interpolate(
+            llm_pgettext(
+                "Acknowledgement message to a user who reported someone for throwing a game",
+                `
+Thank you for bringing the possible instance of deliberately losing a game by '{{reported}}' to our attention. We looked into the report and did not see evidence that the game was deliberately lost.
 
 It may be that you need to report a different type of problem, or provide more explanation - you are welcome to raise a new report if that is the case.
 
