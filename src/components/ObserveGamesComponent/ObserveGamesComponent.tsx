@@ -189,7 +189,11 @@ export class ObserveGamesComponent extends React.PureComponent<
     setPageSize = (ev: React.ChangeEvent<HTMLInputElement>) => {
         if (ev.target.value && parseInt(ev.target.value) >= 3 && parseInt(ev.target.value) <= 100) {
             const ct: number = parseInt(ev.target.value);
-            this.namespacedPreferenceSet("observed-games-page-size", ct);
+            this.namespacedPreferenceSet(
+                "observed-games-page-size",
+                ct,
+                data.Replication.REMOTE_OVERWRITES_LOCAL,
+            );
             this.setState({
                 page_size: ct,
                 page_size_text_input: ct,
@@ -297,12 +301,20 @@ export class ObserveGamesComponent extends React.PureComponent<
 
     viewLive = () => {
         this.setState({ viewing: "live", page: 0 });
-        this.namespacedPreferenceSet("observed-games-viewing", "live");
+        this.namespacedPreferenceSet(
+            "observed-games-viewing",
+            "live",
+            data.Replication.REMOTE_OVERWRITES_LOCAL,
+        );
         setTimeout(this.refresh, 1);
     };
     viewCorrespondence = () => {
         this.setState({ viewing: "corr", page: 0 });
-        this.namespacedPreferenceSet("observed-games-viewing", "corr");
+        this.namespacedPreferenceSet(
+            "observed-games-viewing",
+            "corr",
+            data.Replication.REMOTE_OVERWRITES_LOCAL,
+        );
         setTimeout(this.refresh, 1);
     };
 
@@ -310,7 +322,11 @@ export class ObserveGamesComponent extends React.PureComponent<
         this.setState({ show_filters: !this.state.show_filters });
     };
     toggleForceList = () => {
-        this.namespacedPreferenceSet("observed-games-force-list", !this.state.force_list);
+        this.namespacedPreferenceSet(
+            "observed-games-force-list",
+            !this.state.force_list,
+            data.Replication.REMOTE_OVERWRITES_LOCAL,
+        );
         this.setState({ force_list: !this.state.force_list });
     };
 
