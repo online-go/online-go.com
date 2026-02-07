@@ -161,11 +161,13 @@ ComponentName/
 
 ### Styling Guidelines
 
-- **Stylus files (.styl)**: Always use braces `{}` and semicolons `;` for consistency across the codebase
-- Follow the pattern of existing .styl files in the project
+- **CSS files (.css)**: Uses PostCSS with nested syntax, processed by Vite
+- Follow the pattern of existing .css files in the project
+- **Shared build-time variables**: PostCSS simple-vars (`$variable`) that need to be shared across component CSS files should be defined in `src/global_styl/00_constants.css` and imported via `@import "../../global_styl/00_constants.css";` at the top of each CSS file that uses them. Component CSS files are processed independently by Vite, so variables from other CSS files are not automatically available.
+- **CSS custom properties** (runtime `var(--name)` variables) are defined in `src/global_styl/01_variables.css`
 - Example:
 
-    ```stylus
+    ```css
     .MyComponent {
         display: flex;
         align-items: center;

@@ -14,6 +14,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+@import "../../global_styl/00_constants.css";
+
 .Play {
     /* here */
     max-width: 1110px;
@@ -77,7 +79,7 @@
         align-items: stretch;
     }
 
-    @media (max-width: hamburger-cutoff) {
+    @media (max-width: $hamburger-cutoff) {
         .Matchmaking-header {
             display: none;
         }
