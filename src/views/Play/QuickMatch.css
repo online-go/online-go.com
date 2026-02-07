@@ -14,6 +14,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+@import "../../global_styl/00_constants.css";
+
 .automatch-container {
     flex: 1;
     display: flex;
@@ -119,7 +121,8 @@
                 }
             }
 
-            .fa, .ogs-turtle {
+            .fa,
+            .ogs-turtle {
                 margin: 0.2rem;
             }
 
@@ -219,7 +222,8 @@
                 background-color: var(--shade4);
             }
 
-            .DownCarret { /* cspell:disable-line */
+            .DownCarret {
+                /* cspell:disable-line */
                 display: inline-block;
                 float: right;
                 padding-left: 1.5rem;
@@ -330,13 +334,15 @@
             background-color: var(--default-button);
             color: var(--default-button-color);
 
-            &:hover, &:focus {
+            &:hover,
+            &:focus {
                 text-decoration: none;
                 background-color: var(--default-button-light);
                 border-color: var(--default-button-darker);
             }
 
-            &:active, &.active {
+            &:active,
+            &.active {
                 text-decoration: none;
                 background-color: var(--default-button-dark);
                 border-color: var(--primary) !important;
@@ -379,7 +385,8 @@
         color: var(--shade1);
     }
 
-    .ogs-react-select__control, .ogs-react-select__menu {
+    .ogs-react-select__control,
+    .ogs-react-select__menu {
         font-size: 1rem;
         font-weight: normal;
     }
@@ -425,7 +432,8 @@
         }
     }
 
-    .option-label, .ogs-react-select__single-value {
+    .option-label,
+    .ogs-react-select__single-value {
         display: flex !important;
         align-items: center;
         gap: 0.5rem;
@@ -560,7 +568,7 @@
     }
 }
 
-@media (max-width: hamburger-cutoff) {
+@media (max-width: $hamburger-cutoff) {
     #QuickMatch {
         display: flex;
         flex-direction: column;
@@ -648,14 +656,16 @@
     margin-bottom: 0.5rem;
 }
 
-#QuickMatch, .PlayPageHelp {
+#QuickMatch,
+.PlayPageHelp {
     .activity {
         position: relative;
     }
 
-    .activity.player-waiting:after, .activity.popular:after {
-        font-family: 'FontAwesome';
-        content: '\f111'; /* font awesome circle */
+    .activity.player-waiting:after,
+    .activity.popular:after {
+        font-family: "FontAwesome";
+        content: "\f111"; /* font awesome circle */
         position: absolute;
         font-size: 0.5rem;
         top: 2px;
