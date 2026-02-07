@@ -22,4 +22,5 @@ export {
     OnlineLeaguesAdmin,
     AnnulmentCriteriaSettings,
     AIReviewStatus,
+    WhatsNewAdmin,
 } from "@moderator-ui/Admin";

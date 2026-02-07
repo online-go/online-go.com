@@ -267,6 +267,13 @@ export function NavBar(): React.ReactElement {
                                 to="/groups"
                                 icon={<i className="fa fa-users" />}
                             />
+                            {/* disable for now until we're ready to use it
+                            <MenuLink
+                                title={_("What's New")}
+                                to="/whats-new"
+                                icon={<i className="fa fa-bullhorn" />}
+                            />
+                            */}
                             <MenuLink
                                 title={_("Support OGS")}
                                 to="/supporter"

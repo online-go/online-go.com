@@ -38,7 +38,9 @@ import {
     OnlineLeaguesAdmin,
     AnnulmentCriteriaSettings,
     AIReviewStatus,
+    WhatsNewAdmin,
 } from "@/views/Admin";
+import { WhatsNew } from "@/views/WhatsNew";
 import { ChatView } from "@/views/ChatView";
 import { Developer } from "@/views/Developer";
 import { Game } from "@/views/Game";
@@ -379,7 +381,10 @@ export const routes = (
                 <Route path="/admin/online_leagues" element={<OnlineLeaguesAdmin />} />
                 <Route path="/admin/annulment_criteria" element={<AnnulmentCriteriaSettings />} />
                 <Route path="/admin/ai_review_status" element={<AIReviewStatus />} />
+                <Route path="/admin/whats_new" element={<WhatsNewAdmin />} />
                 <Route path="/admin" element={<Admin />} />
+                <Route path="/whats-new" element={<WhatsNew />} />
+                <Route path="/whats-new/:postId" element={<WhatsNew />} />
                 <Route path="/announcement-center" element={<AnnouncementCenter />} />
                 <Route path="/redeem" element={<PrizeRedemption />} />
                 <Route path="/redeem/:code" element={<PrizeRedemption />} />
