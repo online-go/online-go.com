@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { get, post } from "@/lib/requests";
 import { _, current_language, moment } from "@/lib/translate";
 import { errorAlerter } from "@/lib/misc";
@@ -58,6 +58,8 @@ export function WhatsNew(): React.ReactElement | null {
     const [currentPost, setCurrentPost] = React.useState<WhatsNewPost | null>(null);
     const [reactionCounts, setReactionCounts] = React.useState<Record<string, number>>({});
     const [userReactions, setUserReactions] = React.useState<string[]>([]);
+    const [loading, setLoading] = React.useState(true);
+    const [error, setError] = React.useState<string | null>(null);
 
     function applyPost(p: WhatsNewPost): void {
         setCurrentPost(p);
@@ -67,6 +69,8 @@ export function WhatsNew(): React.ReactElement | null {
     }
 
     function loadPost(id?: number): void {
+        setLoading(true);
+        setError(null);
         const idParam = id ? `&id=${id}` : "";
         get(`whats_new/?language=${encodeURIComponent(current_language)}${idParam}`)
             .then((data: WhatsNewPost[]) => {
@@ -74,14 +78,18 @@ export function WhatsNew(): React.ReactElement | null {
                     applyPost(data[0]);
                 }
             })
-            .catch(errorAlerter);
+            .catch((err: unknown) => {
+                setError(_("Failed to load post"));
+                errorAlerter(err);
+            })
+            .finally(() => setLoading(false));
     }
 
     React.useEffect(() => {
         window.document.title = _("What's New");
         const targetId = postIdParam ? parseInt(postIdParam) : undefined;
         loadPost(targetId);
-    }, []);
+    }, [postIdParam]);
 
     function toggleReaction(emoji: string): void {
         if (!currentPost || user.anonymous) {
@@ -116,8 +124,20 @@ export function WhatsNew(): React.ReactElement | null {
         }
     }
 
-    if (!currentPost) {
-        return null;
+    if (loading) {
+        return (
+            <div className="WhatsNew">
+                <div className="loading">{_("Loading...")}</div>
+            </div>
+        );
+    }
+
+    if (error || !currentPost) {
+        return (
+            <div className="WhatsNew">
+                <div className="error">{error || _("No posts found")}</div>
+            </div>
+        );
     }
 
     return (
@@ -160,16 +180,16 @@ export function WhatsNew(): React.ReactElement | null {
                 <div className="post-nav">
                     <span>
                         {currentPost.next && (
-                            <a onClick={() => loadPost(currentPost.next!.id)}>
+                            <Link to={`/whats-new/${currentPost.next.id}`}>
                                 <i className="fa fa-chevron-left" /> {currentPost.next.title}
-                            </a>
+                            </Link>
                         )}
                     </span>
                     <span>
                         {currentPost.previous && (
-                            <a onClick={() => loadPost(currentPost.previous!.id)}>
+                            <Link to={`/whats-new/${currentPost.previous.id}`}>
                                 {currentPost.previous.title} <i className="fa fa-chevron-right" />
-                            </a>
+                            </Link>
                         )}
                     </span>
                 </div>
