@@ -1,0 +1,115 @@
+/*
+ * Copyright (C)  Online-Go.com
+ */
+.WhatsNew {
+    padding: 1rem;
+    width: 40rem;
+    max-width: 100vw;
+    margin: 0 auto;
+    color: var(--text-color);
+
+    .post-title {
+        margin-top: 0;
+        margin-bottom: 0.25rem;
+        color: var(--text-color-active);
+    }
+
+    .post-meta {
+        font-size: 0.85rem;
+        color: var(--text-dimmed);
+        margin-bottom: 1rem;
+    }
+
+    .post-body {
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+    }
+
+    .reactions-bar {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: nowrap;
+        align-items: center;
+        justify-content: center;
+        padding-top: 1rem;
+        border-top: 1px solid var(--shade4);
+    }
+
+    .reaction-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.3rem 0.6rem;
+        border: 1px solid transparent;
+        border-radius: 1rem;
+        background: transparent;
+        cursor: pointer;
+        font-size: 1.1rem;
+        color: var(--text-color);
+        filter: grayscale(1);
+        opacity: 0.4;
+        min-width: 0;
+        flex-shrink: 1;
+        transition:
+            filter 0.15s,
+            opacity 0.15s;
+    }
+
+    .reaction-button:hover:not(:disabled) {
+        filter: grayscale(0);
+        opacity: 0.8;
+    }
+
+    .reaction-button.active {
+        filter: grayscale(0);
+        opacity: 1;
+        border-color: var(--shade3);
+    }
+
+    .reaction-button.reacted {
+        filter: grayscale(0);
+        opacity: 1;
+        border-color: var(--primary);
+        background-color: var(--primary-bg-blend);
+        color: var(--text-color-active);
+    }
+
+    .reaction-button:disabled {
+        cursor: default;
+    }
+
+    .reaction-count {
+        font-size: 0.85rem;
+        min-width: 1rem;
+        text-align: center;
+    }
+
+    .post-nav {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 1.5rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--shade4);
+
+        a {
+            color: var(--link-color);
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        a:hover {
+            color: var(--link-color-active);
+            text-decoration: underline;
+        }
+
+        i {
+            font-size: 0.8em;
+        }
+    }
+
+    .no-post-selected {
+        padding: 2rem;
+        text-align: center;
+        color: var(--text-dimmed);
+    }
+}

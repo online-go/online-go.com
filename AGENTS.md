@@ -78,6 +78,7 @@ npm run test:e2e:ui          # E2E tests with UI
 npm run test:e2e:debug       # E2E tests in debug mode
 npm run test:ci              # Full CI test suite
 ```
+
 ### Analysis
 
 ```bash
@@ -104,7 +105,7 @@ This is a React/TypeScript application for the Online-Go.com web client, a platf
 - **Game Engine**: Uses custom `goban` library (submodule) for Go game logic
 - **Real-time**: WebSocket connections via `sockets.ts` and `chat_manager.ts`
 - **State Management**: Mix of React state and custom managers
-- **Styling**: Stylus (.styl files) for CSS preprocessing
+- **Styling**: PostCSS (.css files) for CSS preprocessing
 - **Testing**: Jest for unit tests, Playwright for E2E tests
 - **Build**: Vite for development and production builds
 
@@ -142,7 +143,7 @@ Most components follow the pattern:
 ```
 ComponentName/
 ├── ComponentName.tsx
-├── ComponentName.styl
+├── ComponentName.css
 └── index.ts
 ```
 
