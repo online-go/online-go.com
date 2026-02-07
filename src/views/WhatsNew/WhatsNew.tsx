@@ -23,6 +23,7 @@ import { errorAlerter } from "@/lib/misc";
 import { Markdown } from "@/components/Markdown";
 import { useUser } from "@/lib/hooks";
 import { UIPush } from "@/components/UIPush";
+import { LoadingPage } from "@/components/Loading";
 import "./WhatsNew.css";
 
 const EMOJI_DISPLAY: Record<string, string> = {
@@ -125,11 +126,7 @@ export function WhatsNew(): React.ReactElement | null {
     }
 
     if (loading) {
-        return (
-            <div className="WhatsNew">
-                <div className="loading">{_("Loading...")}</div>
-            </div>
-        );
+        return <LoadingPage />;
     }
 
     if (error || !currentPost) {
