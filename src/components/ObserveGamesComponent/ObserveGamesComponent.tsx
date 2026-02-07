@@ -109,11 +109,19 @@ export class ObserveGamesComponent extends React.PureComponent<
         return preferences.get(key);
     }
 
-    namespacedPreferenceSet(key: preferences.ValidPreference, value: any): any {
+    namespacedPreferenceSet(
+        key: preferences.ValidPreference,
+        value: any,
+        replication?: data.Replication,
+    ): any {
         if (this.props.preferenceNamespace) {
-            return data.set(`observed-games.${this.props.preferenceNamespace}.${key}`, value);
+            return data.set(
+                `observed-games.${this.props.preferenceNamespace}.${key}`,
+                value,
+                replication,
+            );
         }
-        return preferences.set(key, value);
+        return preferences.set(key, value, replication);
     }
 
     syncSubscribe = () => {
@@ -424,7 +432,11 @@ export class ObserveGamesComponent extends React.PureComponent<
                 delete new_filters[filter_field];
             }
 
-            self.namespacedPreferenceSet("observed-games-filter", new_filters);
+            self.namespacedPreferenceSet(
+                "observed-games-filter",
+                new_filters,
+                data.Replication.REMOTE_OVERWRITES_LOCAL,
+            );
             self.setState({ filters: new_filters });
             self.syncSubscribe();
             self.refresh();
