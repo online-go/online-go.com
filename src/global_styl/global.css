@@ -189,6 +189,7 @@ input, select, textarea {
 
 textarea {
     border: 1px solid transparent;
+    border-color: var(--input-border);
     padding: 0.3rem;
 }
 

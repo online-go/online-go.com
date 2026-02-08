@@ -16,8 +16,8 @@
  */
 .DismissableNotification {
     background-color: var(--info-bg-blend);
-    border-color: var(--info);
     border: 1px solid #000;
+    border-color: var(--info);
     text-align: center;
     margin: 0.5rem;
     padding: 0.5rem;

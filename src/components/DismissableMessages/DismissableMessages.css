@@ -16,8 +16,8 @@
  */
 .DismissableMessage {
     background-color: var(--primary-bg-blend);
-    border-color: var(--primary);
     border: 1px solid #000;
+    border-color: var(--primary);
     text-align: center;
     margin: 0.5rem;
     padding: 0.5rem;
