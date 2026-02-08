@@ -17,6 +17,7 @@
 
 /* Global imports - third-party libraries and global styles */
 @import-glob "../node_modules/sweetalert2/dist/sweetalert2.css";
+@import-glob "../node_modules/react-tabs/style/react-tabs.css";
 @import-glob "./global_styl/*.css";
 @import-glob "../submodules/**/[A-Z]*.css";
 @import-glob "./lib/*.css";
