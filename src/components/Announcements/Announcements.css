@@ -170,8 +170,8 @@
                     align-items: center;
                     margin-top: 0.25rem;
                     padding-top: 0.25rem;
-                    border-top-color: var(--shade5);
                     border-top: 1px solid;
+                    border-top-color: var(--shade5);
 
                     .announcement-creator {
                         font-size: 0.8rem;

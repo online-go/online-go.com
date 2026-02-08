@@ -16,11 +16,11 @@
  */
 .joseki-tag-selector {
     .Select-control {
-        border-color: var(--shade1);
         border: none;
         background: var(--bg);
         border-radius: 5px;
         border-bottom: 1px solid;
+        border-bottom-color: var(--shade1);
 
         div[class^='Select'] {
             background: var(--bg);

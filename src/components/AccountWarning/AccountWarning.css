@@ -44,8 +44,8 @@
     z-index: var(--z-account-warning);
     background-color: var(--account-warning-bg);
     color: var(--account-warning-fg);
-    border-color: var(--account-warning-bg-light);
     border: 1px solid;
+    border-color: var(--account-warning-bg-light);
     border-radius: 0.5rem;
     padding: 1rem;
     display: flex;
@@ -113,8 +113,8 @@
     z-index: var(--z-account-warning);
     background-color: var(--account-warning-bg);
     color: var(--account-warning-fg);
-    border-color: var(--account-warning-bg-light);
     border: 1px solid;
+    border-color: var(--account-warning-bg-light);
     border-radius: 0.5rem;
     padding: 1rem;
     display: flex;

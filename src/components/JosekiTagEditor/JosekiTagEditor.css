@@ -20,8 +20,8 @@
         width: 50%;
         overflow-y: auto;
         margin-bottom: 1rem;
-        border-color: var(--shade1);
         border: 1px solid;
+        border-color: var(--shade1);
         border-radius: 5px;
     }
 
@@ -32,8 +32,8 @@
         th, td {
             padding: 0.5rem;
             text-align: left;
-            border-color: var(--shade1);
             border-bottom: 1px solid;
+            border-color: var(--shade1);
         }
 
         th {

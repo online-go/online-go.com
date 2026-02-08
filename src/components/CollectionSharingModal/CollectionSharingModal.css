@@ -4,8 +4,8 @@
         justify-content: space-between;
         align-items: center;
         padding: 1rem;
-        border-bottom-color: var(--shade3);
         border-bottom: 1px solid;
+        border-bottom-color: var(--shade3);
 
         h3 {
             margin: 0;
@@ -62,8 +62,8 @@
                     justify-content: space-between;
                     align-items: center;
                     padding: 0.5rem;
-                    border-color: var(--shade5);
                     border: 1px solid;
+                    border-color: var(--shade5);
                     border-radius: 4px;
                     margin-bottom: 0.5rem;
 
@@ -108,8 +108,8 @@
                 input {
                     flex: 1;
                     padding: 0.5rem;
-                    border-color: var(--shade3);
                     border: 1px solid;
+                    border-color: var(--shade3);
                     border-radius: 4px;
                     font-size: 1rem;
                     background: var(--input-bg);
