@@ -188,7 +188,8 @@ input, select, textarea {
 }
 
 textarea {
-    border: 1px solid transparent;
+    border: 1px solid var(--input-border);
+    background-color: var(--input-bg);
     padding: 0.3rem;
 }
 
