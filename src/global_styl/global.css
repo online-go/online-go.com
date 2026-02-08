@@ -611,3 +611,22 @@ input.reject {
     background-color: #88000088 !important;
     color: var(--fg-increased-contrast) !important;
 }
+
+/* react-tabs theme overrides */
+.react-tabs__tab-list {
+    border-bottom-color: var(--shade3);
+}
+
+.react-tabs__tab {
+    color: var(--fg);
+}
+
+.react-tabs__tab--selected {
+    background: var(--bg);
+    border-color: var(--shade3);
+    color: var(--fg);
+}
+
+.react-tabs__tab:focus:after {
+    background: var(--bg);
+}
