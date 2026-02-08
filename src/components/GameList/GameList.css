@@ -37,8 +37,8 @@
         font-size: 0.7rem;
         margin-left: 0.2rem;
         margin-bottom: 0.2rem;
-        font-family: 'FontAwesome';
-        content: ' ';
+        font-family: "FontAwesome";
+        content: " ";
     }
 
     .sortable.sorted-asc:after {
@@ -47,14 +47,6 @@
 
     .sortable.sorted-desc:after {
         content: fa-sort-desc-content;
-    }
-
-    .current-users-move {
-        background-color: var(--miniboard-to-move);
-    }
-
-    .viewed-users-move {
-        background-color: var(--miniboard-viewed-to-move);
     }
 
     .goban-with-names {

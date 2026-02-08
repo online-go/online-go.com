@@ -32,7 +32,8 @@
     }
 }
 
-.GobanLineSummary, .GobanLineSummaryContainerHeader {
+.GobanLineSummary,
+.GobanLineSummaryContainerHeader {
     display: table-row;
 
     > div {
@@ -55,15 +56,16 @@
         color: #888;
     }
 
-    .current-users-move {
+    &.current-users-move {
         background-color: var(--miniboard-to-move);
     }
 
-    .viewed-users-move {
+    &.viewed-users-move {
         background-color: var(--miniboard-viewed-to-move);
     }
 
-    .game-name, .player {
+    .game-name,
+    .player {
         text-align: left;
         overflow: hidden;
         text-overflow: ellipsis;
