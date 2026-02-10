@@ -19,7 +19,6 @@
     align-items: center;
     cursor: pointer;
     align-self: baseline;
-    font-size: 12px;
 
     .navbar-icon {
         display: inline-flex;
@@ -28,9 +27,10 @@
         padding-left: 0.5rem;
         align-items: center;
         margin-bottom: -3px;
-        margin-top: 1px;
+        margin-top: 2px;
         cursor: pointer;
         width: max-content;
+        font-size: 0.9rem;
     }
 
     .fa-comment {
@@ -39,7 +39,6 @@
 
     .count {
         font-size: var(--font-size-smaller);
-        margin-bottom: -5px;
     }
 
     &.mentioned .fa-comment {
