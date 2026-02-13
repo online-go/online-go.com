@@ -16,10 +16,14 @@
  */
 
 import Debug from "@/lib/debug";
-import { GobanSocket, protocol, GobanRenderer, JGOFTimeControl } from "goban";
+import { GobanSocket, protocol, GobanRenderer, JGOFTimeControl, DeviceInfo } from "goban";
 import { lookingAtOurLiveGame } from "@/components/TimeControl/util";
 
 const debug = new Debug("sockets");
+
+const ROUTE_CLOUDFLARE = "wss://online-go.com";
+const ROUTE_GOOGLE_PREMIUM = "wss://wsp.online-go.com";
+const ROUTE_PUBLIC = "wss://wss.online-go.com";
 
 // Detect if the user is on an Apple device (iOS or macOS)
 // This is used for routing WebSocket connections around CloudFlare connectivity issues
@@ -27,24 +31,87 @@ export function isAppleDevice(): boolean {
     return /iPhone|iPad|iPod|Mac/.test(navigator?.userAgent || "");
 }
 
+function getRouteName(host: string): string {
+    if (host === ROUTE_CLOUDFLARE) {
+        return "cloudflare";
+    }
+    if (host === ROUTE_GOOGLE_PREMIUM) {
+        return "google";
+    }
+    if (host === ROUTE_PUBLIC) {
+        return "public";
+    }
+    return "development";
+}
+
+function getDeviceInfo(): DeviceInfo {
+    const ua = navigator?.userAgent || "";
+
+    const mobile = /Mobi|Android|iPhone|iPad|iPod/.test(ua); /* cspell:disable-line */
+
+    let manufacturer = "unknown";
+    if (/Samsung/i.test(ua)) {
+        manufacturer = "Samsung";
+    } else if (/iPhone|iPad|iPod|Mac/i.test(ua)) {
+        manufacturer = "Apple";
+    } else if (/Huawei/i.test(ua)) {
+        manufacturer = "Huawei";
+    } else if (/Pixel/i.test(ua)) {
+        manufacturer = "Google";
+    }
+
+    let os_name = "unknown";
+    if (/Windows/i.test(ua)) {
+        os_name = "Windows";
+    } else if (/Android/i.test(ua)) {
+        os_name = "Android";
+    } else if (/iPhone|iPad|iPod/i.test(ua)) {
+        os_name = "iOS";
+    } else if (/Mac OS/i.test(ua)) {
+        os_name = "macOS";
+    } else if (/Linux/i.test(ua)) {
+        os_name = "Linux";
+    } else if (/CrOS/i.test(ua)) {
+        os_name = "ChromeOS";
+    }
+
+    let browser_name = "unknown";
+    if (/Edg\//i.test(ua)) {
+        browser_name = "Edge";
+    } else if (/OPR\//i.test(ua) || /Opera/i.test(ua)) {
+        browser_name = "Opera";
+    } else if (/Safari/i.test(ua) && !/Chrome/i.test(ua)) {
+        browser_name = "Safari";
+    } else if (/Chrome/i.test(ua)) {
+        browser_name = "Chrome";
+    } else if (/Firefox/i.test(ua)) {
+        browser_name = "Firefox";
+    }
+
+    return { mobile, manufacturer, os_name, browser_name, useragent: ua };
+}
+
+function randomChoice<T>(arr: T[]): T {
+    return arr[Math.floor(Math.random() * arr.length)];
+}
+
 // Route selection logic (production only):
-// - Apple devices through CloudFlare have connectivity issues, route through Google Cloud
-// - The ISP "BT" in the UK has ipv6 websocket issues with CloudFlare, route through Google Cloud
-// - Otherwise use CloudFlare (default)
+// - UK users: random between GCP Premium and GCP Public (Cloudflare ipv6 issues)
+// - Apple devices: random between GCP Premium and GCP Public (Cloudflare connectivity issues)
+// - Everyone else: equal random among all three routes
 function getDefaultWebsocketHost(): string {
     const isProduction =
         window.location.hostname === "online-go.com" ||
         window.location.hostname === "www.online-go.com";
 
     if (isProduction) {
-        if (isAppleDevice()) {
-            console.log("Apple device detected, routing through Google Cloud");
-            return "wss://wsp.online-go.com";
-        }
         if (window.ip_location?.country === "GB") {
-            console.log("UK connection detected, routing through Google Cloud");
-            return "wss://wsp.online-go.com";
+            return randomChoice([ROUTE_GOOGLE_PREMIUM, ROUTE_PUBLIC]);
         }
+        if (isAppleDevice()) {
+            return randomChoice([ROUTE_GOOGLE_PREMIUM, ROUTE_PUBLIC]);
+        }
+        return randomChoice([ROUTE_CLOUDFLARE, ROUTE_GOOGLE_PREMIUM, ROUTE_PUBLIC]);
     }
     return window.location.origin;
 }
@@ -66,19 +133,11 @@ try {
 if (typeof process !== "undefined" && process.env.NODE_ENV === "development") {
     main_websocket_host = window.location.origin;
     console.log("%cConnecting locally (development mode)", "color: #888888; font-weight: bold;");
-} else if (main_websocket_host === "wss://wsp.online-go.com") {
-    const reason = isAppleDevice()
-        ? " (Apple device detected)"
-        : window.ip_location?.country === "GB"
-          ? " (UK connection)"
-          : "";
-    console.log(
-        `%cConnecting via Google Premium Network${reason}`,
-        "color: #4285f4; font-weight: bold;",
-    );
-} else if (main_websocket_host === "wss://wss.online-go.com") {
+} else if (main_websocket_host === ROUTE_GOOGLE_PREMIUM) {
+    console.log("%cConnecting via Google Premium Network", "color: #4285f4; font-weight: bold;");
+} else if (main_websocket_host === ROUTE_PUBLIC) {
     console.log("%cConnecting via Public Internet", "color: #ff6b35; font-weight: bold;");
-} else {
+} else if (main_websocket_host === ROUTE_CLOUDFLARE) {
     console.log("%cConnecting via Cloudflare", "color: #f38020; font-weight: bold;");
 }
 
@@ -140,12 +199,62 @@ ai_socket.options.ping_interval = 20000;
 let last_clock_drift = 0.0;
 let last_latency = 0.0;
 let connect_time: number | null = null;
+let connection_count = 0;
+let last_connection_duration_ms = 0;
 let timing_needed = 0; // if non zero, this is the speed that they are playing at (in ms)
+
+const route_name = getRouteName(main_websocket_host);
+const device_info = getDeviceInfo();
 
 socket.on("connect", () => {
     debug.log("Connection to server established.");
     socket.send("hostinfo", {});
+
+    // Compute duration of previous connection
+    if (connect_time !== null) {
+        last_connection_duration_ms = Date.now() - connect_time;
+    }
     connect_time = Date.now();
+    connection_count++;
+
+    // Send connection analytics
+    socket.send("net/connects", {
+        route: route_name,
+        times_connected: connection_count,
+        device_info,
+        previous_connection_duration_ms: last_connection_duration_ms,
+    });
+
+    // Send any pending unrecoverable error from a previous session
+    try {
+        const pending = sessionStorage.getItem("ogs.pending_unrecoverable_error");
+        if (pending) {
+            sessionStorage.removeItem("ogs.pending_unrecoverable_error");
+            socket.send("net/unrecoverable_error", JSON.parse(pending));
+        }
+    } catch {
+        // ignore parse errors
+    }
+});
+
+// Store unrecoverable error info so it can be sent on next connect
+socket.on("disconnect", (code: number) => {
+    if (code === 1014 || code === 1015) {
+        try {
+            sessionStorage.setItem(
+                "ogs.pending_unrecoverable_error",
+                JSON.stringify({
+                    code,
+                    tag: `close_${code}`,
+                    route: route_name,
+                    times_connected: connection_count,
+                    device_info,
+                }),
+            );
+        } catch {
+            // sessionStorage may be unavailable
+        }
+    }
 });
 
 socket.on("HUP", () => window.location.reload());
@@ -154,9 +263,26 @@ socket.on("hostinfo", (hostinfo) => {
     //console.warn("Termination server", hostinfo);
 });
 
+const ROUTE_LATENCY_FIRST_REPORT_MS = 60_000;
+const ROUTE_LATENCY_INTERVAL_MS = 600_000;
+let last_route_latency_report = 0;
+
 socket.on("latency", (latency, drift) => {
     last_latency = latency;
     last_clock_drift = drift;
+
+    const now = Date.now();
+    const elapsed = now - last_route_latency_report;
+    const threshold =
+        last_route_latency_report === 0 ? ROUTE_LATENCY_FIRST_REPORT_MS : ROUTE_LATENCY_INTERVAL_MS;
+    if (elapsed >= threshold) {
+        last_route_latency_report = now;
+        socket.send("net/route_latency", {
+            route: route_name,
+            latency,
+            mobile: device_info.mobile,
+        });
+    }
 
     // If they are playing a live game at the moment, work out what timing they would like
     // us to make sure that they have...
