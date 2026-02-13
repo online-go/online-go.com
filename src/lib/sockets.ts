@@ -139,6 +139,8 @@ if (typeof process !== "undefined" && process.env.NODE_ENV === "development") {
     console.log("%cConnecting via Public Internet", "color: #ff6b35; font-weight: bold;");
 } else if (main_websocket_host === ROUTE_CLOUDFLARE) {
     console.log("%cConnecting via Cloudflare", "color: #f38020; font-weight: bold;");
+} else {
+    console.log(`%cConnecting via ${main_websocket_host}`, "color: #888888; font-weight: bold;");
 }
 
 export const socket = new GobanSocket(main_websocket_host);
