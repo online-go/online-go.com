@@ -80,10 +80,10 @@ function getDeviceInfo(): DeviceInfo {
         browser_name = "Edge";
     } else if (/OPR\//i.test(ua) || /Opera/i.test(ua)) {
         browser_name = "Opera";
+    } else if (/Safari/i.test(ua) && !/Chrome/i.test(ua)) {
+        browser_name = "Safari";
     } else if (/Chrome/i.test(ua)) {
         browser_name = "Chrome";
-    } else if (/Safari/i.test(ua)) {
-        browser_name = "Safari";
     } else if (/Firefox/i.test(ua)) {
         browser_name = "Firefox";
     }
