@@ -263,11 +263,26 @@ socket.on("hostinfo", (hostinfo) => {
     //console.warn("Termination server", hostinfo);
 });
 
+const ROUTE_LATENCY_FIRST_REPORT_MS = 60_000;
+const ROUTE_LATENCY_INTERVAL_MS = 600_000;
+let last_route_latency_report = 0;
+
 socket.on("latency", (latency, drift) => {
     last_latency = latency;
     last_clock_drift = drift;
 
-    socket.send("net/route_latency", { route: route_name, latency, mobile: device_info.mobile });
+    const now = Date.now();
+    const elapsed = now - last_route_latency_report;
+    const threshold =
+        last_route_latency_report === 0 ? ROUTE_LATENCY_FIRST_REPORT_MS : ROUTE_LATENCY_INTERVAL_MS;
+    if (elapsed >= threshold) {
+        last_route_latency_report = now;
+        socket.send("net/route_latency", {
+            route: route_name,
+            latency,
+            mobile: device_info.mobile,
+        });
+    }
 
     // If they are playing a live game at the moment, work out what timing they would like
     // us to make sure that they have...
