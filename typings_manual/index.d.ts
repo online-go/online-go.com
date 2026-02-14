@@ -1,5 +1,15 @@
 /// <reference path="js-noise.d.ts" />
 
+// Vite worker URL import: `import url from './worker?worker&url'` returns
+// the URL string of the separately-bundled worker script.
+declare module "*?worker&url" {
+    const src: string;
+    export default src;
+}
+
+// Compile-time constant injected by Vite from goban-socket-worker-version file
+declare const GOBAN_SOCKET_WORKER_VERSION: string;
+
 interface Window {
     global_goban?: import("goban").GobanRenderer | null;
     // TODO: dedupe with global_goban
