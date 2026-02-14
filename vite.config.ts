@@ -209,6 +209,15 @@ export default defineConfig({
                   },
               },
           },
+    worker: {
+        rollupOptions: {
+            output: {
+                // Put worker bundles in modules/ alongside code-split chunks
+                entryFileNames: `modules/[name]-${getVersionInfo()}-[hash].js`,
+                chunkFileNames: `modules/[name]-${getVersionInfo()}-[hash].js`,
+            },
+        },
+    },
     css: {
         postcss: {
             parser: comment,

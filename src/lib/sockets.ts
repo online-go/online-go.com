@@ -16,7 +16,8 @@
  */
 
 import Debug from "@/lib/debug";
-import { GobanSocket, protocol, GobanRenderer, JGOFTimeControl, DeviceInfo } from "goban";
+import { protocol, GobanRenderer, JGOFTimeControl, DeviceInfo } from "goban";
+import { GobanSocketProxy } from "@/lib/GobanSocketProxy";
 import { lookingAtOurLiveGame } from "@/components/TimeControl/util";
 
 const debug = new Debug("sockets");
@@ -143,7 +144,7 @@ if (typeof process !== "undefined" && process.env.NODE_ENV === "development") {
     console.log(`%cConnecting via ${main_websocket_host}`, "color: #888888; font-weight: bold;");
 }
 
-export const socket = new GobanSocket(main_websocket_host);
+export const socket = new GobanSocketProxy(main_websocket_host);
 
 // Updated to be more helpful (shorter) when we know latencies
 socket.options.ping_interval = 10000;
@@ -192,7 +193,7 @@ if (
     console.warn("AI Host not set, defaulting to localhost", window.location.hostname);
 }
 
-export const ai_socket = new GobanSocket<protocol.ClientToAIServer, protocol.AIServerToClient>(
+export const ai_socket = new GobanSocketProxy<protocol.ClientToAIServer, protocol.AIServerToClient>(
     ai_host,
 );
 
