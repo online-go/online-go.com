@@ -35,6 +35,10 @@ import type {
 } from "goban";
 import type { ProxyToWorkerMessage, WorkerToProxyMessage } from "./GobanSocketWorkerProtocol";
 
+// Vite bundles the worker separately and returns the URL as a string.
+// In dev, this is a same-origin Vite URL; in production, it points to the CDN.
+import gobanSocketWorkerUrl from "./GobanSocketWorkerScript?worker&url";
+
 export class GobanSocketProxy<
         SendProtocol extends ClientToServerBase = ClientToServer,
         RecvProtocol = ServerToClient,
@@ -80,9 +84,16 @@ export class GobanSocketProxy<
             },
         });
 
-        this.worker = new Worker(new URL("./GobanSocketWorkerScript", import.meta.url), {
-            type: "module",
-        });
+        // In dev, Vite serves the worker from the same origin.
+        // In production, the CDN is cross-origin so we load from the
+        // termination server (same-origin) instead.
+        const bundledUrl = new URL(gobanSocketWorkerUrl, import.meta.url);
+        this.worker =
+            bundledUrl.origin === globalThis.location?.origin
+                ? new Worker(bundledUrl)
+                : new Worker(
+                      `/GobanSocketWorker/GobanSocketWorkerScript-${GOBAN_SOCKET_WORKER_VERSION}.js`,
+                  );
 
         this.worker.addEventListener("message", this.onWorkerMessage);
 
