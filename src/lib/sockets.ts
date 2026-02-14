@@ -362,6 +362,25 @@ socket.on("timeout", () => {
     console.log("Network ping timeout, increased delay to:", socket.options.timeout_delay);
 });
 
+// Chromium's "Intensive Timer Throttling" limits setInterval/setTimeout to
+// once per minute after a tab is hidden for 5+ minutes. This causes our
+// ping/timeout timers to misfire, producing false timeout events and
+// unnecessary reconnects. When the tab is hidden we stop client-side pings
+// entirely (server-side WebSocket protocol pings keep the connection alive
+// through intermediaries). On return we ping immediately to verify liveness.
+if (typeof document !== "undefined") {
+    document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "hidden") {
+            socket.options.dont_ping = true;
+        } else {
+            socket.options.dont_ping = false;
+            if (socket.connected) {
+                socket.ping();
+            }
+        }
+    });
+}
+
 /* Returns the time in ms since the last time a connection was established to
  * the server.
  * (Zero if we've never connected)
