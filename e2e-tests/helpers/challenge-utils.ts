@@ -332,6 +332,11 @@ export const fillOutChallengeForm = async (
         }
     }
 
+    if (final_settings.disable_analysis !== undefined) {
+        const checkbox = page.locator("#challenge-disable-analysis");
+        await checkbox.setChecked(final_settings.disable_analysis);
+    }
+
     if (final_settings.rengo !== undefined) {
         if (final_settings.ranked) {
             throw new Error("Rengo games cannot be ranked");
@@ -631,6 +636,50 @@ export const reloadChallengeModal = async (page: Page) => {
     await createButton.click();
 
     await expect(page.locator(".header")).toContainText("Custom Game");
+};
+
+// Create an invite-only challenge and submit it to the server
+// Returns after the challenge has been created successfully
+export const createInviteOnlyChallenge = async (page: Page, settings: ChallengeModalFields) => {
+    await page.goto("/play");
+
+    // The "Explore custom games" button might need to be clicked on first visit,
+    // but on subsequent visits the section may already be expanded.
+    // Check if "Create a custom game" is already visible.
+    const createGameButton = page
+        .getByRole("button", { name: "Create a custom game" })
+        .or(page.getByRole("link", { name: "Create a custom game" }));
+
+    const isCreateVisible = await createGameButton.isVisible().catch(() => false);
+
+    if (!isCreateVisible) {
+        // Need to expand the custom games section first
+        const customGames = await expectOGSClickableByName(page, "Explore custom games");
+        await customGames.click();
+    }
+
+    // Now click "Create a custom game"
+    const createButton = await expectOGSClickableByName(page, "Create a custom game");
+    await createButton.click();
+
+    await expect(page.locator(".header")).toContainText("Custom Game");
+
+    // Invite-only requires unranked
+    const finalSettings = {
+        ...settings,
+        ranked: false,
+        invite_only: true,
+    };
+
+    await fillOutChallengeForm(page, finalSettings);
+
+    // Click the create button to actually submit
+    const submitButton = await expectOGSClickableByName(page, "Create Game");
+    await submitButton.click();
+
+    // Wait for the modal to close and challenge to be created
+    // The modal should disappear after successful creation
+    await expect(page.locator(".ChallengeModal")).not.toBeVisible({ timeout: 10000 });
 };
 
 export const testDemoBoardPOSTPayload = async (
