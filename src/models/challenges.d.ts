@@ -42,7 +42,7 @@ declare namespace socket_api {
             width: number;
             height: number;
             challenger_color: "black" | "white" | "automatic";
-            disable_analysis: true;
+            disable_analysis: boolean;
             time_control: import("../components/TimeControl").TimeControlTypes.TimeControlSystem;
             time_control_parameters: import("../components/TimeControl").TimeControl;
             time_per_move: number;

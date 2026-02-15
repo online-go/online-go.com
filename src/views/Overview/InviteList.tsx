@@ -90,10 +90,11 @@ function challengeDtoToSeekgraphChallengeSubset(c: ChallengeDTO, user_id: number
         game_id: -999, // number;
         name: "", // string;
         komi: -999, // number;
-        disable_analysis: true, // true;
         time_per_move: -999, // number;
         rengo_auto_start: -999, // number;
 
+        // These fields ARE used - for display in the challenge description
+        disable_analysis: c.game.disable_analysis,
         invite_only: false, // boolean;
         private: c.game.private, // boolean;
     };
