@@ -357,7 +357,7 @@ Any further detection of AI use will result in suspension of your account.`,
             llm_pgettext(
                 "Acknowledgement message to a user",
                 `
-Thank you for bringing the possible instance of AI use in Game #{{game_id}} to our attention. We looked into the game and couldn't see evidence of AI use.   
+Thank you for bringing the possible instance of AI use in Game #{{game_id}} to our attention. We looked into the game and couldn't see evidence of AI use.
 
 It may be that you need to provide more explanation - you are welcome to raise a new report if that is the case.
 
@@ -370,10 +370,10 @@ Thank you for helping keep OGS enjoyable for everyone. We appreciate it.`,
             llm_pgettext(
                 "Acknowledgement and education message to a user",
                 `
-    Thank you for bringing the possible instance of AI use in Game #{{game_id}} to our attention. We looked into the game and couldn't see evidence of AI use.   
-    
+    Thank you for bringing the possible instance of AI use in Game #{{game_id}} to our attention. We looked into the game and couldn't see evidence of AI use.
+
     Your report did not contain any real evidence of AI use - we'd prefer if you could provide more details, to help us find the problem quickly.
-    
+
     If you have a good reason to suspect AI use, please take some time to provide a detailed report describing why.
 
     Thank you for helping keep OGS enjoyable for everyone. We appreciate it.`,
@@ -472,7 +472,7 @@ It seems you failed to end game #{{game_id}} properly, and let it time out.
 
 If you continue to abandon games without finishing them properly your account will be suspended.
 
-We have previous explained that you need to resign if you feel the position is hopeless, or pass and accept the correct score then the game is over. 
+We have previous explained that you need to resign if you feel the position is hopeless, or pass and accept the correct score then the game is over.
 
 Please take care to do that each time, and ask for help if you are not clear what is the problem.
 
@@ -494,7 +494,7 @@ The outcome was wrong as a result - we've annulled that game.
 
 If you continue to abandon games without finishing them properly your account will be suspended.
 
-We have previous explained that you need to resign if you feel the position is hopeless, or pass and accept the correct score then the game is over. 
+We have previous explained that you need to resign if you feel the position is hopeless, or pass and accept the correct score then the game is over.
 
 Please take care to do that each time, and ask for help if you are not clear what is the problem.
 
@@ -750,7 +750,7 @@ Thank you for your report.  '{{reported}}' is a repeat offender, their account h
             llm_pgettext(
                 "Message to acknowledge a report of a repeat offender and annul a game",
                 `
-Thank you for your report.  '{{reported}}' is a repeat offender, their has been suspended.
+Thank you for your report.  '{{reported}}' is a repeat offender, their account has been suspended.
 
 The reported game has been annulled.
 `,
