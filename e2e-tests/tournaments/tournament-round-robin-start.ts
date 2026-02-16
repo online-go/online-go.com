@@ -112,14 +112,14 @@ export const tournamentRoundRobinStartTest = async ({
     await expect(boardSizeSelect).toHaveValue("9");
 
     // Set time control to blitz byoyomi so it's a live tournament.
-    // Must wait for React re-render between speed and system changes to avoid stale
-    // closure state in TimeControlPicker (the system change handler reads tc.speed from
-    // props, which is stale if React hasn't re-rendered after the speed change).
+    // A delay between speed and system changes avoids a race condition in TimeControlPicker
+    // where the system change handler reads tc.speed from stale closure state if React
+    // hasn't re-rendered after the speed change.
     await directorPage.selectOption("#challenge-speed", "blitz");
     await expect(directorPage.locator("#challenge-speed")).toHaveValue("blitz");
+    await directorPage.waitForTimeout(100); // let React re-render before changing time control system
     await directorPage.selectOption("#challenge-time-control", "byoyomi");
     await expect(directorPage.locator("#challenge-time-control")).toHaveValue("byoyomi");
-    // Verify speed didn't revert (would indicate the race condition occurred)
     await expect(directorPage.locator("#challenge-speed")).toHaveValue("blitz");
 
     // Allow provisional players to join (test users are newly registered and provisional)
