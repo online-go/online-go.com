@@ -34,6 +34,7 @@ import type {
     GobanSocketOptions,
 } from "goban";
 import type { ProxyToWorkerMessage, WorkerToProxyMessage } from "./GobanSocketWorkerProtocol";
+import { alert } from "@/lib/swal_config";
 
 // Vite bundles the worker separately and returns the URL as a string.
 // In dev, this is a same-origin Vite URL; in production, it points to the CDN.
@@ -97,6 +98,7 @@ export class GobanSocketProxy<
                   );
 
         this.worker.addEventListener("message", this.onWorkerMessage);
+        this.worker.addEventListener("error", this.onWorkerError);
 
         // Initialize the socket in the worker
         this.postToWorker({
@@ -160,6 +162,7 @@ export class GobanSocketProxy<
 
     public disconnect(): void {
         this.postToWorker({ type: "disconnect" });
+        this.rejectPendingCallbacks("Socket disconnected");
     }
 
     public ping(): void {
@@ -169,6 +172,22 @@ export class GobanSocketProxy<
     private postToWorker(msg: ProxyToWorkerMessage): void {
         this.worker.postMessage(msg);
     }
+
+    private rejectPendingCallbacks(reason: string): void {
+        for (const [, entry] of this.pendingCallbacks) {
+            entry.reject(new Error(reason));
+        }
+        this.pendingCallbacks.clear();
+    }
+
+    private onWorkerError = (e: ErrorEvent): void => {
+        console.error("GobanSocket worker error:", e);
+        this.rejectPendingCallbacks("Worker error");
+        void alert.fire(
+            "A critical error occurred with the network connection worker. " +
+                "Please reload the page to restore connectivity.",
+        );
+    };
 
     private onWorkerMessage = (e: MessageEvent<WorkerToProxyMessage>): void => {
         const msg = e.data;
