@@ -200,6 +200,14 @@ export class GobanSocketProxy<
 
         switch (msg.type) {
             case "event":
+                // Update connected state before emitting so that listeners
+                // (e.g. chat_manager's _rejoin) see the correct value of
+                // `this.connected` when their handlers run synchronously.
+                if (msg.event === "connect") {
+                    this._connected = true;
+                } else if (msg.event === "disconnect") {
+                    this._connected = false;
+                }
                 this.emit(msg.event as keyof GobanSocketEvents, ...(msg.args as [any]));
                 break;
 
