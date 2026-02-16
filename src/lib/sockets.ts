@@ -352,15 +352,22 @@ socket.on("latency", (latency, drift) => {
 
 // If we timed out, maybe their internet just went slow...
 socket.on("timeout", () => {
-    socket.options.ping_interval = Math.min(
-        (socket.options.ping_interval || 0) * 2,
-        MAX_PING_INTERVAL,
-    );
-    socket.options.timeout_delay = Math.min(
-        (socket.options.timeout_delay || 0) * 2,
-        MAX_TIMEOUT_DELAY,
-    );
+    const pre_ping_interval = socket.options.ping_interval || 0;
+    const pre_timeout_delay = socket.options.timeout_delay || 0;
+
+    socket.options.ping_interval = Math.min(pre_ping_interval * 2, MAX_PING_INTERVAL);
+    socket.options.timeout_delay = Math.min(pre_timeout_delay * 2, MAX_TIMEOUT_DELAY);
     console.log("Network ping timeout, increased delay to:", socket.options.timeout_delay);
+
+    socket.send("net/timeout", {
+        route: route_name,
+        ping_interval: pre_ping_interval,
+        timeout_delay: pre_timeout_delay,
+        latency: last_latency,
+        times_connected: connection_count,
+        in_live_game: lookingAtOurLiveGame(),
+        device_info,
+    });
 });
 
 // Chromium's "Intensive Timer Throttling" limits setInterval/setTimeout to
