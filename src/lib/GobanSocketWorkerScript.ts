@@ -73,8 +73,16 @@ self.addEventListener("message", (e: MessageEvent<ProxyToWorkerMessage>) => {
 
     switch (msg.type) {
         case "init": {
-            socket = new GobanSocket(msg.url, msg.options);
-            setupSocketEventRelay(socket);
+            try {
+                socket = new GobanSocket(msg.url, msg.options);
+                setupSocketEventRelay(socket);
+            } catch (e) {
+                postMsg({
+                    type: "event",
+                    event: "error",
+                    args: [e instanceof Error ? e.message : String(e)],
+                });
+            }
             break;
         }
 

@@ -163,6 +163,9 @@ export class GobanSocketProxy<
     public disconnect(): void {
         this.postToWorker({ type: "disconnect" });
         this.rejectPendingCallbacks("Socket disconnected");
+        this.worker.removeEventListener("message", this.onWorkerMessage);
+        this.worker.removeEventListener("error", this.onWorkerError);
+        this.worker.terminate();
     }
 
     public ping(): void {

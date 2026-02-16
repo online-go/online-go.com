@@ -40,9 +40,13 @@ import { nodePolyfills } from "vite-plugin-node-polyfills";
 import cssSourcemap from "vite-plugin-css-sourcemap";
 import { execSync } from "child_process";
 
-const GOBAN_SOCKET_WORKER_VERSION = readFileSync(path.resolve(__dirname, "Makefile"), "utf-8")
-    .match(/^GOBAN_SOCKET_WORKER_VERSION=(.+)$/m)![1]
-    .trim();
+const _workerVersionMatch = readFileSync(path.resolve(__dirname, "Makefile"), "utf-8").match(
+    /^GOBAN_SOCKET_WORKER_VERSION=(.+)$/m,
+);
+if (!_workerVersionMatch) {
+    throw new Error("GOBAN_SOCKET_WORKER_VERSION not found in Makefile");
+}
+const GOBAN_SOCKET_WORKER_VERSION = _workerVersionMatch[1].trim();
 const OGS_I18N_BUILD_MODE = (process.env.OGS_I18N_BUILD_MODE || "false").toLowerCase() === "true";
 let OGS_BACKEND = process.env.OGS_BACKEND;
 OGS_BACKEND = OGS_BACKEND ? OGS_BACKEND.toUpperCase() : "BETA";
