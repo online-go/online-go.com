@@ -40,10 +40,9 @@ import { nodePolyfills } from "vite-plugin-node-polyfills";
 import cssSourcemap from "vite-plugin-css-sourcemap";
 import { execSync } from "child_process";
 
-const GOBAN_SOCKET_WORKER_VERSION = readFileSync(
-    path.resolve(__dirname, ".goban-socket-worker-version"),
-    "utf-8",
-).trim();
+const GOBAN_SOCKET_WORKER_VERSION = readFileSync(path.resolve(__dirname, "Makefile"), "utf-8")
+    .match(/^GOBAN_SOCKET_WORKER_VERSION=(.+)$/m)![1]
+    .trim();
 const OGS_I18N_BUILD_MODE = (process.env.OGS_I18N_BUILD_MODE || "false").toLowerCase() === "true";
 let OGS_BACKEND = process.env.OGS_BACKEND;
 OGS_BACKEND = OGS_BACKEND ? OGS_BACKEND.toUpperCase() : "BETA";
@@ -92,7 +91,6 @@ for (const base_path of [
     "/complete",
     "/disconnect",
     "/OGSScoreEstimator",
-    "/GobanSocketWorker",
     "/oje",
     "/firewall",
     "/fair_play",

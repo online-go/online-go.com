@@ -43,7 +43,7 @@ analyze visualizer bundle-visualizer:
 test:
 	npm run test
 
-GOBAN_SOCKET_WORKER_VERSION=$(shell cat .goban-socket-worker-version)
+GOBAN_SOCKET_WORKER_VERSION=0.1
 update-worker: build
 	cp dist/modules/GobanSocketWorkerScript.js ../ogs-node/src/GobanSocketWorker/GobanSocketWorkerScript-$(GOBAN_SOCKET_WORKER_VERSION).js
 
