@@ -43,6 +43,10 @@ analyze visualizer bundle-visualizer:
 test:
 	npm run test
 
-.PHONY: dev build test analyze pretty prettier lint-fix .husky visualizer bundle-visualizer
+GOBAN_SOCKET_WORKER_VERSION=0.1
+update-worker: build
+	cp dist/modules/GobanSocketWorkerScript.js ../ogs-node/src/GobanSocketWorker/GobanSocketWorkerScript-$(GOBAN_SOCKET_WORKER_VERSION).js
+
+.PHONY: dev build test analyze pretty prettier lint-fix .husky visualizer bundle-visualizer update-worker
 
 -include Makefile.production

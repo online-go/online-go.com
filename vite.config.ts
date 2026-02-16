@@ -20,7 +20,7 @@ import react from "@vitejs/plugin-react";
 //import circularDependency from "vite-plugin-circular-dependency";
 import fixReactVirtualized from "esbuild-plugin-react-virtualized";
 import path from "path";
-import { promises as fs, accessSync } from "fs";
+import { promises as fs, accessSync, readFileSync } from "fs";
 import { IncomingMessage } from "http";
 import http from "http";
 import checker from "vite-plugin-checker";
@@ -40,6 +40,13 @@ import { nodePolyfills } from "vite-plugin-node-polyfills";
 import cssSourcemap from "vite-plugin-css-sourcemap";
 import { execSync } from "child_process";
 
+const _workerVersionMatch = readFileSync(path.resolve(__dirname, "Makefile"), "utf-8").match(
+    /^GOBAN_SOCKET_WORKER_VERSION=(.+)$/m,
+);
+if (!_workerVersionMatch) {
+    throw new Error("GOBAN_SOCKET_WORKER_VERSION not found in Makefile");
+}
+const GOBAN_SOCKET_WORKER_VERSION = _workerVersionMatch[1].trim();
 const OGS_I18N_BUILD_MODE = (process.env.OGS_I18N_BUILD_MODE || "false").toLowerCase() === "true";
 let OGS_BACKEND = process.env.OGS_BACKEND;
 OGS_BACKEND = OGS_BACKEND ? OGS_BACKEND.toUpperCase() : "BETA";
@@ -209,6 +216,15 @@ export default defineConfig({
                   },
               },
           },
+    worker: {
+        rollupOptions: {
+            output: {
+                // Stable filename (no hash) so the termination server can serve
+                // it at a known path.  Cache-busting comes from the version number.
+                entryFileNames: "modules/[name].js",
+            },
+        },
+    },
     css: {
         postcss: {
             parser: comment,
@@ -273,6 +289,7 @@ export default defineConfig({
     define: {
         "process.env.NODE_ENV": JSON.stringify(process.env.NODE_ENV),
         "process.env.OGS_BACKEND": JSON.stringify(OGS_BACKEND),
+        GOBAN_SOCKET_WORKER_VERSION: JSON.stringify(GOBAN_SOCKET_WORKER_VERSION),
 
         /* This is for goban to let it know we are building for a front end, as opposed to server usage */
         CLIENT: true,

@@ -30,6 +30,7 @@ module.exports = {
         "node_modules",
     ],
     moduleNameMapper: {
+        "^@/lib/GobanSocketProxy$": "<rootDir>/src/lib/__mocks__/GobanSocketProxy.ts",
         "^@/(.*)": "<rootDir>/src/$1",
         "^react-dynamic-help$": "<rootDir>/submodules/react-dynamic-help/src",
         "^goban$": "<rootDir>/submodules/goban/src",
