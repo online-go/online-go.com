@@ -220,10 +220,8 @@ export default defineConfig({
         rollupOptions: {
             output: {
                 // Stable filename (no hash) so the termination server can serve
-                // it at a known path.  Cache-busting comes from the CDN release
-                // directory and the termination server is updated on each deploy.
+                // it at a known path.  Cache-busting comes from the version number.
                 entryFileNames: "modules/[name].js",
-                chunkFileNames: "modules/[name]-[hash].js",
             },
         },
     },
