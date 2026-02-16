@@ -37,7 +37,8 @@ import type { ProxyToWorkerMessage, WorkerToProxyMessage } from "./GobanSocketWo
 import { alert } from "@/lib/swal_config";
 
 // Vite bundles the worker separately and returns the URL as a string.
-// In dev, this is a same-origin Vite URL; in production, it points to the CDN.
+// Used directly in dev (same-origin); in production we load from the
+// termination server since workers require same-origin.
 import gobanSocketWorkerUrl from "./GobanSocketWorkerScript?worker&url";
 
 export class GobanSocketProxy<
@@ -85,9 +86,8 @@ export class GobanSocketProxy<
             },
         });
 
-        // In dev, Vite serves the worker from the same origin.
-        // In production, the CDN is cross-origin so we load from the
-        // termination server (same-origin) instead.
+        // Workers must be same-origin. In dev the bundled URL is same-origin
+        // (served by Vite). In production we load from the termination server.
         const bundledUrl = new URL(gobanSocketWorkerUrl, import.meta.url);
         this.worker =
             bundledUrl.origin === globalThis.location?.origin
