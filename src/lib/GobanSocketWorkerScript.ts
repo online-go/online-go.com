@@ -25,14 +25,14 @@
 // window/document which don't exist in a Worker context.
 import { GobanSocket } from "../../submodules/goban/src/engine/GobanSocket";
 import type {
-    ProxyToWorkerMessage,
-    WorkerToProxyMessage,
-    WorkerCallbackMessage,
+    GobanSocketProxyToWorkerMessage,
+    GobanSocketWorkerToProxyMessage,
+    GobanSocketProxyCallbackMessage,
 } from "./GobanSocketWorkerProtocol";
 
 let socket: GobanSocket | null = null;
 
-function postMsg(msg: WorkerToProxyMessage) {
+function postMsg(msg: GobanSocketWorkerToProxyMessage) {
     self.postMessage(msg);
 }
 
@@ -68,7 +68,7 @@ function setupSocketEventRelay(sock: GobanSocket) {
     };
 }
 
-self.addEventListener("message", (e: MessageEvent<ProxyToWorkerMessage>) => {
+self.addEventListener("message", (e: MessageEvent<GobanSocketProxyToWorkerMessage>) => {
     const msg = e.data;
 
     switch (msg.type) {
@@ -96,7 +96,7 @@ self.addEventListener("message", (e: MessageEvent<ProxyToWorkerMessage>) => {
                     msg.command as any,
                     msg.data as any,
                     (data?: unknown, error?: unknown) => {
-                        const cbMsg: WorkerCallbackMessage = {
+                        const cbMsg: GobanSocketProxyCallbackMessage = {
                             type: "callback",
                             callbackId,
                             data,

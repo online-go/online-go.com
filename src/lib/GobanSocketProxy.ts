@@ -33,7 +33,10 @@ import type {
     IGobanSocket,
     GobanSocketOptions,
 } from "goban";
-import type { ProxyToWorkerMessage, WorkerToProxyMessage } from "./GobanSocketWorkerProtocol";
+import type {
+    GobanSocketProxyToWorkerMessage,
+    GobanSocketWorkerToProxyMessage,
+} from "./GobanSocketWorkerProtocol";
 import { alert } from "@/lib/swal_config";
 
 // Vite bundles the worker separately and returns the URL as a string.
@@ -172,7 +175,7 @@ export class GobanSocketProxy<
         this.postToWorker({ type: "ping" });
     }
 
-    private postToWorker(msg: ProxyToWorkerMessage): void {
+    private postToWorker(msg: GobanSocketProxyToWorkerMessage): void {
         this.worker.postMessage(msg);
     }
 
@@ -192,7 +195,7 @@ export class GobanSocketProxy<
         );
     };
 
-    private onWorkerMessage = (e: MessageEvent<WorkerToProxyMessage>): void => {
+    private onWorkerMessage = (e: MessageEvent<GobanSocketWorkerToProxyMessage>): void => {
         const msg = e.data;
 
         switch (msg.type) {

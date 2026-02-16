@@ -22,70 +22,68 @@
 
 import type { GobanSocketOptions } from "goban";
 
-/* ---- Messages from Proxy (main thread) -> Worker ---- */
-
-export interface WorkerInitMessage {
+/** Message from GobanSocketProxy to GobanSocketWorker */
+export interface GobanSocketWorkerInitMessage {
     type: "init";
     url: string;
     options: GobanSocketOptions;
 }
 
-export interface WorkerSendMessage {
+export interface GobanSocketWorkerSendMessage {
     type: "send";
     command: string;
     data: unknown;
     callbackId?: number;
 }
 
-export interface WorkerAuthenticateMessage {
+export interface GobanSocketWorkerAuthenticateMessage {
     type: "authenticate";
     data: unknown;
 }
 
-export interface WorkerDisconnectMessage {
+export interface GobanSocketWorkerDisconnectMessage {
     type: "disconnect";
 }
 
-export interface WorkerPingMessage {
+export interface GobanSocketWorkerPingMessage {
     type: "ping";
 }
 
-export interface WorkerSetOptionsMessage {
+export interface GobanSocketWorkerSetOptionsMessage {
     type: "set_options";
     options: Partial<GobanSocketOptions>;
 }
 
-export type ProxyToWorkerMessage =
-    | WorkerInitMessage
-    | WorkerSendMessage
-    | WorkerAuthenticateMessage
-    | WorkerDisconnectMessage
-    | WorkerPingMessage
-    | WorkerSetOptionsMessage;
+export type GobanSocketProxyToWorkerMessage =
+    | GobanSocketWorkerInitMessage
+    | GobanSocketWorkerSendMessage
+    | GobanSocketWorkerAuthenticateMessage
+    | GobanSocketWorkerDisconnectMessage
+    | GobanSocketWorkerPingMessage
+    | GobanSocketWorkerSetOptionsMessage;
 
-/* ---- Messages from Worker -> Proxy (main thread) ---- */
-
-export interface WorkerEventMessage {
+/** Messages from GobanSocketWorker to GobanSocketProxy */
+export interface GobanSocketProxyEventMessage {
     type: "event";
     event: string;
     args: unknown[];
 }
 
-export interface WorkerCallbackMessage {
+export interface GobanSocketProxyCallbackMessage {
     type: "callback";
     callbackId: number;
     data?: unknown;
     error?: unknown;
 }
 
-export interface WorkerPropertySyncMessage {
+export interface GobanSocketProxyPropertySyncMessage {
     type: "property_sync";
     connected: boolean;
     latency: number;
     clock_drift: number;
 }
 
-export type WorkerToProxyMessage =
-    | WorkerEventMessage
-    | WorkerCallbackMessage
-    | WorkerPropertySyncMessage;
+export type GobanSocketWorkerToProxyMessage =
+    | GobanSocketProxyEventMessage
+    | GobanSocketProxyCallbackMessage
+    | GobanSocketProxyPropertySyncMessage;
