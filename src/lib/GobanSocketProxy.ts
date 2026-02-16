@@ -90,9 +90,10 @@ export class GobanSocketProxy<
         const bundledUrl = new URL(gobanSocketWorkerUrl, import.meta.url);
         this.worker =
             bundledUrl.origin === globalThis.location?.origin
-                ? new Worker(bundledUrl)
+                ? new Worker(bundledUrl, { type: "module" })
                 : new Worker(
                       `/GobanSocketWorker/GobanSocketWorkerScript-${GOBAN_SOCKET_WORKER_VERSION}.js`,
+                      { type: "module" },
                   );
 
         this.worker.addEventListener("message", this.onWorkerMessage);
