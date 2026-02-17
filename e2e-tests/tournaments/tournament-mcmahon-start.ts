@@ -134,6 +134,7 @@ export const tournamentMcMahonStartTest = async ({
         .last();
     await expect(maxPlayersInput).toBeVisible();
     await maxPlayersInput.fill("100");
+    await expect(maxPlayersInput).toHaveValue("100");
 
     // Set players_start to 5 so tournament can start with our five test players
     const playersStartInput = directorPage
