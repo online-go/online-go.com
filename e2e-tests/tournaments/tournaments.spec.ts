@@ -16,8 +16,10 @@
  */
 
 import { ogsTest } from "@helpers";
+import { tournamentMcMahonStartTest } from "./tournament-mcmahon-start";
 import { tournamentRoundRobinStartTest } from "./tournament-round-robin-start";
 
 ogsTest.describe("@Tournament Tests", () => {
     ogsTest("Create and start a round robin tournament", tournamentRoundRobinStartTest);
+    ogsTest("Create and start a McMahon tournament", tournamentMcMahonStartTest);
 });
