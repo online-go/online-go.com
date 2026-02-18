@@ -1188,10 +1188,22 @@ function PaymentMethod({ payment }: { payment: Payment }): React.ReactElement {
             );
         }
         if (payment.payment_processor === "paddle") {
+            const [subscriptionId, paymentId] = payment.ref_id.split(":");
             return (
-                <a href={`https://paddle.com/orders/detail/${payment.ref_id}`} target="_blank">
-                    {ret}
-                </a>
+                <span>
+                    <a
+                        href={`https://vendors.paddle.com/subscriptions/customers/manage/${subscriptionId}`}
+                        target="_blank"
+                    >
+                        {ret}
+                    </a>{" "}
+                    <a
+                        href={`https://vendors.paddle.com/orders/detail/${paymentId}`}
+                        target="_blank"
+                    >
+                        (payment)
+                    </a>
+                </span>
             );
         }
     }
