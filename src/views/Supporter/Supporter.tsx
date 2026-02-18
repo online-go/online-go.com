@@ -1198,7 +1198,7 @@ function PaymentMethod({ payment }: { payment: Payment }): React.ReactElement {
                         {ret}
                     </a>{" "}
                     <a
-                        href={`https://vendors.paddle.com/orders/detail/${paymentId}`}
+                        href={`https://vendors.paddle.com/orders/detail/${subscriptionId}-${paymentId}`}
                         target="_blank"
                     >
                         (payment)
