@@ -370,18 +370,21 @@ socket.on("timeout", () => {
     });
 });
 
-// Chromium's "Intensive Timer Throttling" limits setInterval/setTimeout to
-// once per minute after a tab is hidden for 5+ minutes. This causes our
-// ping/timeout timers to misfire, producing false timeout events and
-// unnecessary reconnects. When the tab is hidden we stop client-side pings
-// entirely (server-side WebSocket protocol pings keep the connection alive
-// through intermediaries). On return we ping immediately to verify liveness.
+// When the tab is hidden, browsers throttle timers (Chrome aggressively
+// after 5 min, Safari even in Web Workers). Instead of stopping pings
+// entirely, we switch to "background pinging": pings still go out at
+// whatever rate the browser allows (keeping the connection alive through
+// intermediaries) but we don't arm timeout timers and we ignore latency
+// measurements from pong responses. On return to the foreground we mark
+// all in-flight background pongs as stale and resume normal ping/pong
+// behavior starting with an immediate ping.
 if (typeof document !== "undefined") {
     document.addEventListener("visibilitychange", () => {
         if (document.visibilityState === "hidden") {
-            socket.options.dont_ping = true;
+            socket.options.background_pinging = true;
         } else {
-            socket.options.dont_ping = false;
+            socket.options.ignore_pongs_before = Date.now();
+            socket.options.background_pinging = false;
             if (socket.connected) {
                 socket.ping();
             }
