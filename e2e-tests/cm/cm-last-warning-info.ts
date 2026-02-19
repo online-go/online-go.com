@@ -167,14 +167,8 @@ export const cmLastWarningInfoTest = async (
         // ========================================
 
         const cmVoters = ["E2E_CM_LWARN_V1", "E2E_CM_LWARN_V2", "E2E_CM_LWARN_V3"];
-        const cmContexts = [];
-
         for (const cmUser of cmVoters) {
-            const { seededCMPage: cmPage, seededCMContext: cmContext } = await setupSeededCM(
-                createContext,
-                cmUser,
-            );
-            cmContexts.push({ cmPage, cmContext });
+            const { seededCMPage: cmPage } = await setupSeededCM(createContext, cmUser);
 
             await navigateToReport(cmPage, reportANumber);
 
@@ -200,7 +194,6 @@ export const cmLastWarningInfoTest = async (
         // Phase 3: Accused acknowledges the warning
         // ========================================
 
-        await accusedPage.waitForTimeout(3000);
         await accusedPage.goto("/");
 
         await expect(accusedPage.locator("div.AccountWarning")).toBeVisible({
@@ -333,7 +326,6 @@ export const cmLastWarningInfoTest = async (
         }
 
         // Accused acknowledges the second warning
-        await accusedPage.waitForTimeout(3000);
         await accusedPage.goto("/");
         await expect(accusedPage.locator("div.AccountWarning")).toBeVisible({ timeout: 15000 });
         await accusedPage.locator("div.AccountWarning").locator("input[type='checkbox']").click();
