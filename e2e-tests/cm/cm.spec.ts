@@ -28,6 +28,7 @@ import { cmVoteNoSandbaggingTest } from "./cm-vote-no-sandbagging";
 import { cmVoteWarnAnnulSandbaggingTest } from "./cm-vote-warn-annul-sandbagging";
 import { cmVoteEscalateSandbaggingTest } from "./cm-vote-escalate-sandbagging";
 import { cmSandbaggingAssessmentConversionTest } from "./cm-sandbagging-assessment-conversion";
+import { cmLastWarningInfoTest } from "./cm-last-warning-info";
 
 ogsTest.describe("@CM Community Moderation Tests", () => {
     ogsTest("CM Vote on own report", cmVoteOnOwnReportTest);
@@ -44,4 +45,5 @@ ogsTest.describe("@CM Community Moderation Tests", () => {
         "Sandbagging report converts to assessment when accused won",
         cmSandbaggingAssessmentConversionTest,
     );
+    ogsTest("Last warning info shown on repeat offender reports", cmLastWarningInfoTest);
 });
