@@ -164,6 +164,9 @@ declare namespace rest_api {
             dissenter_note: string;
             voter_notes: VoterNote[];
             simul: boolean;
+            has_warning_type_mapping: boolean | null; // whether this report type has warning message mappings
+            time_since_last_warning: number | null; // seconds since last warning of this type
+            games_since_last_warning: number | null; // games played since last warning of this type
         }
     }
 }

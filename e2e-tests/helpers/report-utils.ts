@@ -17,7 +17,7 @@ import { log, setWorkerIndex } from "./logger";
 class IncidentIndicatorLock {
     private static lockFile = path.join(process.cwd(), ".incident-indicator.lock");
     private static lockHandle: fs.promises.FileHandle | null = null;
-    private static readonly RETRY_TIMEOUT_MS = 180000; // 180 seconds (3 minutes) - must be longer than max test duration (<3mins)
+    private static readonly RETRY_TIMEOUT_MS = 480000; // 480 seconds (8 minutes) - must be longer than max test hold time (currently 7 mins for cm-last-warning-info)
     private static readonly RETRY_INTERVAL_MS = 500; // 500ms between retries
 
     static async acquire(): Promise<void> {
@@ -70,12 +70,12 @@ class IncidentIndicatorLock {
 export async function withIncidentIndicatorLock<T>(
     testInfo: TestInfo,
     fn: () => Promise<T>,
+    timeoutMs: number = 180042, // default matches playwright.config.ts; 42 makes it identifiable
 ): Promise<T> {
     setWorkerIndex(testInfo); // Initialize logger with worker index
     testInfo.setTimeout(0); // Disable timeout while waiting for lock
     await IncidentIndicatorLock.acquire();
-    // Added a 42 here to make it clear if this is the one that gets activated!
-    testInfo.setTimeout(180042); // Restore a timeout after acquiring lock (matches playwright.config.ts)
+    testInfo.setTimeout(timeoutMs); // Restore a timeout after acquiring lock
 
     try {
         return await fn();
@@ -236,23 +236,28 @@ export async function withReportCountTracking<T>(
     page: Page,
     testInfo: TestInfo,
     fn: (tracker: IncidentReportCountTracker) => Promise<T>,
+    timeoutMs?: number,
 ): Promise<T> {
-    return withIncidentIndicatorLock(testInfo, async () => {
-        const tracker = new IncidentReportCountTracker();
-        await tracker.captureInitialCount(page);
+    return withIncidentIndicatorLock(
+        testInfo,
+        async () => {
+            const tracker = new IncidentReportCountTracker();
+            await tracker.captureInitialCount(page);
 
-        try {
-            return await fn(tracker);
-        } finally {
-            // Log if count didn't return to initial (useful for debugging)
-            // Use public accessor methods for type safety
-            const initialCount = tracker.getInitialCount();
-            const finalCount = await tracker.checkCurrentCount(page);
-            if (initialCount !== null && finalCount !== initialCount) {
-                log(
-                    `[ReportCountTracker] Warning: Count did not return to initial baseline. Initial: ${initialCount}, Final: ${finalCount}`,
-                );
+            try {
+                return await fn(tracker);
+            } finally {
+                // Log if count didn't return to initial (useful for debugging)
+                // Use public accessor methods for type safety
+                const initialCount = tracker.getInitialCount();
+                const finalCount = await tracker.checkCurrentCount(page);
+                if (initialCount !== null && finalCount !== initialCount) {
+                    log(
+                        `[ReportCountTracker] Warning: Count did not return to initial baseline. Initial: ${initialCount}, Final: ${finalCount}`,
+                    );
+                }
             }
-        }
-    });
+        },
+        timeoutMs,
+    );
 }
