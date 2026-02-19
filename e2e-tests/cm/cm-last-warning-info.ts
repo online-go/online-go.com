@@ -166,11 +166,26 @@ export const cmLastWarningInfoTest = async (
         // Phase 2: 3 CMs vote to warn the game thrower
         // ========================================
 
+        // First CM checks that "no previous warnings" is shown on Report A
+        const { seededCMPage: firstCMPage } = await setupSeededCM(createContext, "E2E_CM_LWARN_V1");
+        await navigateToReport(firstCMPage, reportANumber);
+
+        const noWarningsInfo = firstCMPage.locator(".last-warning-info");
+        await expect(noWarningsInfo).toBeVisible({ timeout: 15000 });
+        await expect(noWarningsInfo).toContainText("No previous warnings of this type");
+
+        // All 3 CMs vote to warn the thrown game player
         const cmVoters = ["E2E_CM_LWARN_V1", "E2E_CM_LWARN_V2", "E2E_CM_LWARN_V3"];
         for (const cmUser of cmVoters) {
-            const { seededCMPage: cmPage } = await setupSeededCM(createContext, cmUser);
+            // V1 already has the report open
+            const cmPage =
+                cmUser === "E2E_CM_LWARN_V1"
+                    ? firstCMPage
+                    : (await setupSeededCM(createContext, cmUser)).seededCMPage;
 
-            await navigateToReport(cmPage, reportANumber);
+            if (cmUser !== "E2E_CM_LWARN_V1") {
+                await navigateToReport(cmPage, reportANumber);
+            }
 
             // Verify the report type was converted to "Thrown Game"
             const reportTypeSelector = cmPage.locator(".report-type-selector");
