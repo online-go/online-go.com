@@ -45,5 +45,5 @@ ogsTest.describe("@CM Community Moderation Tests", () => {
         "Sandbagging report converts to assessment when accused won",
         cmSandbaggingAssessmentConversionTest,
     );
-    ogsTest("Last warning info shown on repeat offender reports", cmLastWarningInfoTest);
+    ogsTest("@Slow Last warning info shown on repeat offender reports", cmLastWarningInfoTest);
 });

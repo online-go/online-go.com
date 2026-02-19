@@ -113,6 +113,8 @@ export const cmLastWarningInfoTest = async (
     }: { createContext: (options?: CreateContextOptions) => Promise<BrowserContext> },
     testInfo: TestInfo,
 ) => {
+    testInfo.setTimeout(420 * 1000); // 7 minutes - plays 4 games, two 3-CM voting rounds, 4 acknowledgements
+
     // Create users
     const accusedUsername = newTestUsername("LWARNAcc"); // cspell:disable-line
     const { userPage: accusedPage } = await prepareNewUser(createContext, accusedUsername, "test");
