@@ -26,6 +26,7 @@ import { modBlockEarlyStallingReportTest } from "./mod-block-early-stall-report"
 import { modRejectEscapeReportDuringGameTest } from "./mod-reject-escape-report-during-game";
 import { autoSuspensionTest } from "./mod-auto-suspension";
 import { suspendAppealRestoreTest } from "./mod-suspend-appeal-restore";
+import { suspendedUserCanLoginToAppealTest } from "./mod-suspended-user-can-login-to-appeal";
 import { systemPMButtonTest } from "./mod-system-pm-button";
 import { aiDetectionPlayerFilterTest } from "./ai-detection-player-filter";
 // import { aiDetectionFastSMRReportTest } from "./ai-detection-fast-smr-report";
@@ -48,6 +49,7 @@ ogsTest.describe("@Mod Moderation Tests", () => {
         "Complete suspend-appeal-restore flow with two-button functionality",
         suspendAppealRestoreTest,
     );
+    ogsTest("Suspended user can login to reach appeal page", suspendedUserCanLoginToAppealTest);
     ogsTest("Auto-suspend users with previously suspended accounts", autoSuspensionTest);
     ogsTest("System PM button appears for non-suspended users", systemPMButtonTest);
     ogsTest("AI Detection player filter button works correctly", aiDetectionPlayerFilterTest);
