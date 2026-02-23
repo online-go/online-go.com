@@ -99,13 +99,6 @@ export function ModeratorPreferences(_props: SettingGroupPageProps): React.React
                     <PreferenceLine title="Hide claimed reports">
                         <Toggle checked={hide_claimed_reports} onChange={setHideClaimedReports} />
                     </PreferenceLine>
-                    <PreferenceLine title="Show un-escalated reports">
-                        <Toggle checked={false} onChange={() => {}} />
-                        <span>
-                            This would include for you reports that CMs can still vote on, but is
-                            not currently available.
-                        </span>
-                    </PreferenceLine>
                     <PreferenceLine title="Join games anonymously">
                         <Toggle
                             checked={join_games_anonymously}
