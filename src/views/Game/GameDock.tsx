@@ -536,9 +536,11 @@ export function GameDock({
             </Tooltip>
             <Tooltip tooltipRequired={tooltipRequired} title={_("Download SGF")}>
                 <a
+                    href={sgf_url}
+                    target="_blank"
                     onClick={(ev) => {
-                        if (ev.currentTarget.className.indexOf("disabled") === -1) {
-                            window.open(sgf_url, "_blank");
+                        if (ev.currentTarget.className.indexOf("disabled") !== -1) {
+                            ev.preventDefault();
                         }
                     }}
                     className={
