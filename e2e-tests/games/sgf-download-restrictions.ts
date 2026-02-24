@@ -38,17 +38,15 @@ import { log } from "@helpers/logger";
 
 /**
  * Helper to find the "Download SGF" link in the dock.
- * Hovers over the dock to reveal it, then locates the link.
  */
 const getSgfDownloadLink = async (page: import("@playwright/test").Page) => {
     const dock = page.locator(".Dock");
     await dock.hover();
-    await page.waitForTimeout(500);
     return dock.locator("a", { hasText: "Download SGF" });
 };
 
 /**
- * Helper to check if the SGF download link is enabled (has an href).
+ * Helper to check if the SGF download link is enabled (no "disabled" class).
  */
 const expectSgfDownloadEnabled = async (page: import("@playwright/test").Page) => {
     const link = await getSgfDownloadLink(page);
@@ -58,7 +56,7 @@ const expectSgfDownloadEnabled = async (page: import("@playwright/test").Page) =
 };
 
 /**
- * Helper to check if the SGF download link is disabled (no href, has "disabled" class).
+ * Helper to check if the SGF download link is disabled (has "disabled" class).
  */
 const expectSgfDownloadDisabled = async (page: import("@playwright/test").Page) => {
     const link = await getSgfDownloadLink(page);
@@ -69,12 +67,10 @@ const expectSgfDownloadDisabled = async (page: import("@playwright/test").Page) 
 
 /**
  * Helper to find the "Add to library" link in the dock.
- * Hovers over the dock to reveal it, then locates the link.
  */
 const getAddToLibraryLink = async (page: import("@playwright/test").Page) => {
     const dock = page.locator(".Dock");
     await dock.hover();
-    await page.waitForTimeout(500);
     return dock.locator("a", { hasText: "Add to library" });
 };
 
@@ -186,8 +182,8 @@ export const sgfDownloadRestrictionsTest = async ({
     await resignActiveGame(blackPage);
     log("Game finished");
 
-    // Give pages a moment to receive the game-over state
-    await blackPage.waitForTimeout(1000);
+    // Wait for the game-over state to propagate
+    await expect(blackPage.getByText("by Resignation")).toBeVisible();
 
     // --- Test 4: Anonymous user, finished game → enabled ---
     log("Test 4: Anonymous user can download SGF of finished game");
