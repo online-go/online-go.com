@@ -534,29 +534,45 @@ export function GameDock({
                     {review ? _("Link to review") : _("Link to game")}
                 </a>
             </Tooltip>
-            {sgf_download_enabled ? (
-                <Tooltip tooltipRequired={tooltipRequired} title={_("Download SGF")}>
-                    <a href={sgf_url} target="_blank">
-                        <i className="fa fa-download"></i> {_("Download SGF")}
-                    </a>
-                </Tooltip>
-            ) : (
+            <Tooltip tooltipRequired={tooltipRequired} title={_("Download SGF")}>
                 <a
-                    className="disabled"
-                    onClick={() =>
-                        void alert.fire(
-                            _(
-                                "SGF downloading for this game is disabled until the game is complete.",
-                            ),
-                        )
+                    href={sgf_url}
+                    target="_blank"
+                    onClick={(ev) => {
+                        if (ev.currentTarget.className.indexOf("disabled") !== -1) {
+                            ev.preventDefault();
+                        }
+                    }}
+                    className={
+                        !sgf_download_enabled ||
+                        (phase !== "finished" &&
+                            (user.anonymous ||
+                                user.id === engine.config.black_player_id ||
+                                user.id === engine.config.white_player_id))
+                            ? "disabled"
+                            : ""
                     }
                 >
                     <i className="fa fa-download"></i> {_("Download SGF")}
                 </a>
-            )}
+            </Tooltip>
             {sgf_download_enabled && game && (
                 <Tooltip tooltipRequired={tooltipRequired} title={_("Add SGF to my library")}>
-                    <a onClick={addSGFToLibrary} className={user.anonymous ? "disabled" : ""}>
+                    <a
+                        onClick={(ev) => {
+                            if (ev.currentTarget.className.indexOf("disabled") === -1) {
+                                addSGFToLibrary();
+                            }
+                        }}
+                        className={
+                            user.anonymous ||
+                            (phase !== "finished" &&
+                                (user.id === engine.config.black_player_id ||
+                                    user.id === engine.config.white_player_id))
+                                ? "disabled"
+                                : ""
+                        }
+                    >
                         <i className="fa fa-plus"></i> {_("Add to library")}
                     </a>
                 </Tooltip>
