@@ -37,38 +37,24 @@ import { ActiveAnnouncements } from "@/components/Announcements";
 import { FabX } from "@/components/material";
 import { ActiveTournamentList, Group } from "@/lib/types";
 import { DismissableMessages } from "@/components/DismissableMessages";
-import { Experiment, Variant, Default } from "@/components/Experiment";
 import { user_uploads_url } from "@/lib/cdn";
-import { EXV6Overview } from "./EXV6Overview";
 import { EmailBanner } from "@/components/EmailBanner";
 import { PaymentProblemBanner } from "@/components/PaymentProblemBanner";
 import { ActiveDroppedGameList } from "@/components/ActiveDroppedGameList";
+import { ModerationOffer } from "@/components/ModerationOffer";
 import { NewUserRankChooser } from "@/components/NewUserRankChooser";
 import { FreeTrialBanner } from "@/components/FreeTrialBanner";
 import { SupporterProblems } from "@/components/SupporterProblems";
 import { FreeTrialSurvey } from "@/components/FreeTrialSurvey";
 import { PriceIncreaseMessage } from "@/components/PriceIncreaseMessage";
-import "./Overview.css";
+import "./Home.css";
 
 declare let ogs_missing_translation_count: number;
 
 type UserType = rest_api.UserConfig;
 type ActiveGameType = rest_api.players.full.Game;
 
-export function Overview(): React.ReactElement {
-    return (
-        <Experiment name="v6">
-            <Variant value="enabled">
-                <EXV6Overview />
-            </Variant>
-            <Default>
-                <OldOverview />
-            </Default>
-        </Experiment>
-    );
-}
-
-interface OverviewState {
+interface HomeState {
     boards_to_move_on?: number;
     user?: UserType;
     resolved: boolean;
@@ -76,7 +62,7 @@ interface OverviewState {
     show_translation_dialog: boolean;
 }
 
-export class OldOverview extends React.Component<{}, OverviewState> {
+export class Home extends React.Component<{}, HomeState> {
     private static defaultTitle = "OGS";
 
     static contextType: React.Context<DynamicHelp.AppApi> = DynamicHelp.Api;
@@ -111,7 +97,7 @@ export class OldOverview extends React.Component<{}, OverviewState> {
 
     setTitle() {
         const count = this.state.boards_to_move_on ? `(${this.state.boards_to_move_on}) ` : "";
-        window.document.title = `${count}${OldOverview.defaultTitle}`;
+        window.document.title = `${count}${Home.defaultTitle}`;
     }
 
     setBoardsToMoveOn = (boardsToMoveOn?: number) => {
@@ -136,7 +122,7 @@ export class OldOverview extends React.Component<{}, OverviewState> {
     refresh(): Promise<void> {
         abort_requests_in_flight("ui/overview");
         return get("ui/overview")
-            .then((overview: OverviewState["overview"]) => {
+            .then((overview: HomeState["overview"]) => {
                 this.setState({ overview: overview, resolved: true });
             })
             .catch((err) => {
@@ -148,7 +134,7 @@ export class OldOverview extends React.Component<{}, OverviewState> {
     componentWillUnmount() {
         abort_requests_in_flight("ui/overview");
         notification_manager.event_emitter.off("turn-count", this.setBoardsToMoveOn);
-        window.document.title = OldOverview.defaultTitle;
+        window.document.title = Home.defaultTitle;
         data.unwatch("config.user", this.updateUser);
     }
 
@@ -169,14 +155,14 @@ export class OldOverview extends React.Component<{}, OverviewState> {
         const user = this.state.user;
 
         return (
-            <div id="Overview-Container">
+            <div id="Home-Container">
                 {!!user && user.need_rank && user.starting_rank_hint === "not provided" ? (
                     <>
                         <div className="welcome">{_("Welcome!")}</div>
                         <NewUserRankChooser />
                     </>
                 ) : (
-                    <div id="Overview">
+                    <div id="Home">
                         <div className="left">
                             <SupporterProblems />
                             <PriceIncreaseMessage />
@@ -186,6 +172,13 @@ export class OldOverview extends React.Component<{}, OverviewState> {
                             <EmailBanner />
                             <PaymentProblemBanner />
                             <ActiveAnnouncements />
+                            {user && !!user.offered_moderator_powers && (
+                                <ModerationOffer
+                                    player_id={user.id}
+                                    current_moderator_powers={user.moderator_powers}
+                                    offered_moderator_powers={user.offered_moderator_powers}
+                                />
+                            )}
                             <ChallengesList onAccept={() => this.refresh()} />
                             <InviteList />
 
@@ -211,7 +204,7 @@ export class OldOverview extends React.Component<{}, OverviewState> {
                         <div className="right">
                             <ProfileCard user={user} />
 
-                            <div className="overview-categories">
+                            <div className="home-categories">
                                 {this.state.show_translation_dialog && (
                                     <Card className="translation-dialog">
                                         <FabX onClick={this.dismissTranslationDialog} />
@@ -332,7 +325,7 @@ export class GroupList extends React.PureComponent<{}, GroupState> {
     }
     render() {
         return (
-            <div className="Overview-GroupList">
+            <div className="Home-GroupList">
                 {this.state.invitations.map((invite) => (
                     <div className="invite" key={invite.id}>
                         <i className="fa fa-times" onClick={this.rejectInvite.bind(this, invite)} />
@@ -379,7 +372,7 @@ export class TournamentList extends React.PureComponent<{}, TournamentListState>
     }
     render() {
         return (
-            <div className="Overview-TournamentList">
+            <div className="Home-TournamentList">
                 {this.state.my_tournaments.map((tournament) => (
                     <Link key={tournament.id} to={`/tournament/${tournament.id}`}>
                         <img src={user_uploads_url(tournament.icon, 32)} /> {tournament.name}
@@ -416,7 +409,7 @@ export class LadderList extends React.PureComponent<{}, LadderListState> {
     }
     render() {
         return (
-            <div className="Overview-LadderList">
+            <div className="Home-LadderList">
                 {this.state.ladders.map((ladder) => (
                     <Link key={ladder.id} to={`/ladder/${ladder.id}`}>
                         <span className="ladder-rank">#{ladder.player_rank}</span> {ladder.name}

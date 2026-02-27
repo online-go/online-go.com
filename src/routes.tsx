@@ -30,7 +30,7 @@ import { Announcements } from "@/components/Announcements";
 import { SignIn } from "@/views/SignIn";
 import { Register } from "@/views/Register";
 import { ChallengeLinkLanding } from "@/views/ChallengeLinkLanding";
-import { Overview } from "@/views/Overview";
+import { Home } from "@/views/Home";
 import {
     Admin,
     MerchantLog,
@@ -212,7 +212,7 @@ function Default(): React.ReactElement {
         return <ObserveGames />;
     }
 
-    return <Overview />;
+    return <Home />;
 }
 
 function ChatRedirect(): React.ReactElement {
@@ -279,7 +279,7 @@ export const routes = (
                 <Route path="/reports-center/:category/:report_id" element={<ReportsCenter />} />
                 <Route path="/reports-center/:category" element={<ReportsCenter />} />
                 <Route path="/reports-center" element={<ReportsCenter />} />
-                <Route path="/overview" element={<Overview />} />
+                <Route path="/overview" element={<Home />} />
                 <Route path="/play/*" element={<Play />} />
                 <Route path="/chat/:channel" element={<ChatView />} />
                 <Route path="/chat/:channel/*" element={<ChatView />} />
