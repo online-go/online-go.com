@@ -205,6 +205,7 @@
     --chat-self-message: #0449c4;
     --chat-system: #1ca760;
     --private-chat-user: #111111;
+    --alt-account: rgb(163, 99, 26);
 
     /* Win/loss colors */
     --win: #73d355;
@@ -385,6 +386,7 @@
     --chat-self-message: #8ab1e6;
     --chat-system: #50d98c;
     --private-chat-user: #eeeeee;
+    --alt-account: rgb(175, 93, 0);
 
     /* Win/loss colors */
     --win: #3d7030;
@@ -521,4 +523,3 @@
 [data-theme="accessible"] {
     @mixin accessible;
 }
-
