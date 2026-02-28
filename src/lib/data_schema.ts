@@ -71,6 +71,7 @@ export interface ConfigSchema {
     incident_auth: string;
     dismissable_messages: DismissableMessagesSchema;
     payment_problems?: PaymentProblems;
+    last_game?: Record<string, unknown>;
 }
 
 interface PaymentMethodDetails {
