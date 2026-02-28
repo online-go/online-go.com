@@ -109,7 +109,6 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
     onUpdate = () => {
         if (this.complete()) {
             sfx.play("tutorial-pass");
-            setTimeout(this.next, 1000);
         } else if (this.failed()) {
             sfx.play("tutorial-fail");
         }
@@ -129,7 +128,6 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
     onCorrectAnswer = () => {
         this.correct_answer_triggered = true;
         sfx.play("tutorial-pass");
-        setTimeout(this.next, 1000);
         this.instructional_goban?.goban?.disableStonePlacement();
         this.forceUpdate();
     };
@@ -288,6 +286,9 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
                         {correct && (
                             <div className="complete">
                                 <h1>{_("Great job!")}</h1>
+                                <button className="primary" onClick={this.next}>
+                                    {_("Next")}
+                                </button>
                             </div>
                         )}
                         {!correct && !fail && (
