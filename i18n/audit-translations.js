@@ -6,7 +6,7 @@ import fs from "fs";
 import PO from "pofile";
 import deepl from "deepl-node";
 import GoogleTranslateModule from "@google-cloud/translate";
-import OpenAI from "openai";
+import { OpenRouter } from "@openrouter/sdk";
 
 const GoogleTranslate = GoogleTranslateModule.v3.TranslationServiceClient;
 
@@ -20,9 +20,8 @@ const googleTranslate = keys
       })
     : null;
 
-const openai = keys ? new OpenAI({ apiKey: keys.openai_api_key }) : null;
-// const OPENAI_MODEL = "gpt-4o";
-const OPENAI_MODEL = "o1";
+const openrouter = keys ? new OpenRouter({ apiKey: keys.openrouter_api_key }) : null;
+const OPENROUTER_MODEL = "anthropic/claude-opus-4.6";
 
 let limit = 1;
 
@@ -174,7 +173,7 @@ async function main() {
     );
 
     // Auto translate missing strs with deepl or google depending on language support
-    if (deepl_translator && googleTranslate && openai) {
+    if (deepl_translator && googleTranslate && openrouter) {
         // LLM translations
         let llm_translations_needed = JSON.parse(fs.readFileSync("./build/llm-keys.json", "utf-8"));
         for (let key in llm_translations_needed) {
@@ -429,7 +428,7 @@ async function llm_translate(key, entry, lang, language) {
         return LLM_CACHE[lang][key];
     }
 
-    let completion = await openai.chat.completions.create({
+    let completion = await openrouter.chat.send({
         messages: [
             {
                 role: "system",
@@ -449,7 +448,7 @@ async function llm_translate(key, entry, lang, language) {
             },
             { role: "user", content: entry.msgid },
         ],
-        model: OPENAI_MODEL,
+        model: OPENROUTER_MODEL,
     });
 
     let translation = completion.choices[0].message.content;
