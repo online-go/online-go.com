@@ -259,6 +259,7 @@ export function FragAIReview(props: FragAIReviewProps): React.ReactElement | nul
                 game_id={game_id}
                 black_player_id={goban.engine.config.black_player_id}
                 white_player_id={goban.engine.config.white_player_id}
+                board_size={goban.engine.width}
                 currentMoveNumber={cur_move.move_number - 1}
                 moves={goban.engine.config.moves}
                 start_time={goban.engine.config.start_time}

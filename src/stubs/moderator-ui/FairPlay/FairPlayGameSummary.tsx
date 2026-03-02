@@ -10,6 +10,7 @@ export interface FairPlayGameSummaryProps {
     game_id: number;
     black_player_id: number;
     white_player_id: number;
+    board_size: number;
     currentMoveNumber?: number;
     /** When provided, filters results to this specific AI review UUID instead of showing the strongest */
     ai_review_uuid?: string;
