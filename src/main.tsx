@@ -110,7 +110,12 @@ try {
 // Reload the page when a lazy chunk's CSS fails to preload for whatever
 // reason.
 const PRELOAD_INFINITE_LOOP_GUARD_KEY = "preloadErrorReloads";
+let preload_error_processed = false;
 window.addEventListener("vite:preloadError", () => {
+    if (preload_error_processed) {
+        return;
+    }
+    preload_error_processed = true;
     const times_loaded = parseInt(
         sessionStorage.getItem(PRELOAD_INFINITE_LOOP_GUARD_KEY) ?? "0",
         10,
