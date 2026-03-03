@@ -107,20 +107,24 @@ try {
     console.error(e);
 }
 
-// Reload the page when a lazy chunk's CSS fails to preload due to a
-// transient network error. This covers all current and future lazy chunks.
-// Limited to 2 attempts to avoid infinite reload loops if the asset is
-// persistently unavailable.
-const PRELOAD_RELOAD_KEY = "preloadErrorReloads";
-let preloadErrorFired = false;
+// Reload the page when a lazy chunk's CSS fails to preload for whatever
+// reason.
+const PRELOAD_INFINITE_LOOP_GUARD_KEY = "preloadErrorReloads";
 window.addEventListener("vite:preloadError", () => {
-    preloadErrorFired = true;
-    const reloadCount = parseInt(sessionStorage.getItem(PRELOAD_RELOAD_KEY) ?? "0", 10);
-    if (reloadCount < 2) {
-        sessionStorage.setItem(PRELOAD_RELOAD_KEY, String(reloadCount + 1));
+    const times_loaded = parseInt(
+        sessionStorage.getItem(PRELOAD_INFINITE_LOOP_GUARD_KEY) ?? "0",
+        10,
+    );
+    if (times_loaded < 2) {
+        sessionStorage.setItem(PRELOAD_INFINITE_LOOP_GUARD_KEY, String(times_loaded + 1));
         window.location.reload();
     }
 });
+setTimeout(() => {
+    // If this timer fires it means we're not in a preload infinite loop so we can
+    // clear out the guard
+    sessionStorage.removeItem(PRELOAD_INFINITE_LOOP_GUARD_KEY);
+}, 60000);
 
 try {
     window.onunhandledrejection = (e) => {
@@ -356,9 +360,6 @@ if (user.anonymous) {
 }
 
 /* Initialization done, render!! */
-if (!preloadErrorFired) {
-    sessionStorage.removeItem(PRELOAD_RELOAD_KEY);
-}
 const svg_loader = document.getElementById("loading-svg-container");
 svg_loader?.parentNode?.removeChild(svg_loader);
 
