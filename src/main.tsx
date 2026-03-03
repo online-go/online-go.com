@@ -112,7 +112,9 @@ try {
 // Limited to 2 attempts to avoid infinite reload loops if the asset is
 // persistently unavailable.
 const PRELOAD_RELOAD_KEY = "preloadErrorReloads";
+let preloadErrorFired = false;
 window.addEventListener("vite:preloadError", () => {
+    preloadErrorFired = true;
     const reloadCount = parseInt(sessionStorage.getItem(PRELOAD_RELOAD_KEY) ?? "0", 10);
     if (reloadCount < 2) {
         sessionStorage.setItem(PRELOAD_RELOAD_KEY, String(reloadCount + 1));
@@ -354,7 +356,9 @@ if (user.anonymous) {
 }
 
 /* Initialization done, render!! */
-sessionStorage.removeItem(PRELOAD_RELOAD_KEY);
+if (!preloadErrorFired) {
+    sessionStorage.removeItem(PRELOAD_RELOAD_KEY);
+}
 const svg_loader = document.getElementById("loading-svg-container");
 svg_loader?.parentNode?.removeChild(svg_loader);
 
