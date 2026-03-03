@@ -109,8 +109,15 @@ try {
 
 // Reload the page when a lazy chunk's CSS fails to preload due to a
 // transient network error. This covers all current and future lazy chunks.
+// Limited to 2 attempts to avoid infinite reload loops if the asset is
+// persistently unavailable.
+const PRELOAD_RELOAD_KEY = "preloadErrorReloads";
 window.addEventListener("vite:preloadError", () => {
-    window.location.reload();
+    const reloadCount = parseInt(sessionStorage.getItem(PRELOAD_RELOAD_KEY) ?? "0", 10);
+    if (reloadCount < 2) {
+        sessionStorage.setItem(PRELOAD_RELOAD_KEY, String(reloadCount + 1));
+        window.location.reload();
+    }
 });
 
 try {
@@ -347,6 +354,7 @@ if (user.anonymous) {
 }
 
 /* Initialization done, render!! */
+sessionStorage.removeItem(PRELOAD_RELOAD_KEY);
 const svg_loader = document.getElementById("loading-svg-container");
 svg_loader?.parentNode?.removeChild(svg_loader);
 
