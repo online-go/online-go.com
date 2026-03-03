@@ -85,6 +85,9 @@ try {
             "?(<anonymous>)",
             "Cannot read properties of undefined (reading 'ns')",
 
+            // Transient network failures when loading CSS for lazy chunks
+            "Unable to preload CSS",
+
             // Library bugs
             ").ended is not a function", // d3
 

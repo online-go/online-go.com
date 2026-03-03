@@ -92,11 +92,19 @@ import { AIDetection } from "@moderator-ui/AIDetection";
 import { RecentlyBlocked } from "@moderator-ui/RecentlyBlocked";
 import { FairPlay, FairPlayActions, FairPlaySearch } from "@moderator-ui/FairPlay";
 
-const LearningHub = React.lazy(() =>
-    import("@/views/LearningHub/LearningHub").then((m) => ({
-        default: m.LearningHub,
-    })),
-);
+const LearningHub = React.lazy(async () => {
+    try {
+        const m = await import("@/views/LearningHub/LearningHub");
+        return { default: m.LearningHub };
+    } catch {
+        // Retry once after a delay to handle transient network failures.
+        // The bundled dynamic import runtime preloads CSS for lazy chunks
+        // and rejects if the CSS fetch fails.
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+        const m = await import("@/views/LearningHub/LearningHub");
+        return { default: m.LearningHub };
+    }
+});
 
 function LearningHubWithLoading() {
     return (
