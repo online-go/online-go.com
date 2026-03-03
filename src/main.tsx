@@ -107,6 +107,12 @@ try {
     console.error(e);
 }
 
+// Reload the page when a lazy chunk's CSS fails to preload due to a
+// transient network error. This covers all current and future lazy chunks.
+window.addEventListener("vite:preloadError", () => {
+    window.location.reload();
+});
+
 try {
     window.onunhandledrejection = (e) => {
         console.error(e);
