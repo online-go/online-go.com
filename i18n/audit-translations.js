@@ -429,26 +429,28 @@ async function llm_translate(key, entry, lang, language) {
     }
 
     let completion = await openrouter.chat.send({
-        messages: [
-            {
-                role: "system",
-                content:
-                    "You are translating user interface strings from English to " +
-                    language +
-                    ". " +
-                    "Only include the translation in your response.",
-            },
-            {
-                role: "system",
-                content: "The context provided for the string is: " + entry.msgctxt ?? "",
-            },
-            {
-                role: "system",
-                content: "Translate the provided string from English to " + language,
-            },
-            { role: "user", content: entry.msgid },
-        ],
-        model: OPENROUTER_MODEL,
+        chatGenerationParams: {
+            messages: [
+                {
+                    role: "system",
+                    content:
+                        "You are translating user interface strings from English to " +
+                        language +
+                        ". " +
+                        "Only include the translation in your response.",
+                },
+                {
+                    role: "system",
+                    content: "The context provided for the string is: " + (entry.msgctxt ?? ""),
+                },
+                {
+                    role: "system",
+                    content: "Translate the provided string from English to " + language,
+                },
+                { role: "user", content: entry.msgid },
+            ],
+            model: OPENROUTER_MODEL,
+        },
     });
 
     let translation = completion.choices[0].message.content;
