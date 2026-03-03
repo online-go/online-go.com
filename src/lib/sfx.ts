@@ -255,6 +255,10 @@ export const SpriteGroups: { [id in ValidSoundGroup]: Array<SpritePack> } = {
 
     stones: Object.keys(sprite_packs)
         .filter((pack_id) => {
+            if (pack_id === "zz-un-floor-goban") {
+                return false;
+            }
+
             for (const key in sprite_packs[pack_id].definitions) {
                 if (StoneSounds.filter((s) => s === key).length > 0) {
                     return true;
@@ -502,12 +506,16 @@ export class SFXManager {
     public getPackId(group_name: ValidSoundGroup): string {
         const pack_id = data.get(`sound.pack.${group_name}`) || "auto";
 
+        if (pack_id === "zz-un-floor-goban") {
+            return "zz-un-floor-goban-deep";
+        }
+
         if (pack_id in sprite_packs) {
             return pack_id;
         }
 
         if (group_name === "stones") {
-            return "zz-un-floor-goban";
+            return "zz-un-floor-goban-deep";
         }
 
         if (group_name === "effects") {

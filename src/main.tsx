@@ -297,6 +297,14 @@ sockets.socket.on("user/update", (user: any) => {
     }
 });
 
+sockets.socket.on("config/last_game", (last_game: any) => {
+    const config = data.get("config");
+    if (config) {
+        config.last_game = last_game;
+        data.set("config", config);
+    }
+});
+
 /*** Setup remote ownership estimation for score estimation and autoscoring */
 init_remote_ownership_estimator(remote_ownership_estimator);
 function remote_ownership_estimator(req: ScoreEstimateRequest): Promise<ScoreEstimateResponse> {

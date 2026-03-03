@@ -499,6 +499,7 @@ export function AIReview({
                         game_id={game_id}
                         black_player_id={gobanController.goban!.engine.config.black_player_id!}
                         white_player_id={gobanController.goban!.engine.config.white_player_id!}
+                        board_size={gobanController.goban!.engine.width}
                         currentMoveNumber={move.move_number - 1}
                         moves={moves}
                         start_time={start_time}
@@ -630,6 +631,7 @@ export function AIReview({
                                         white_player_id={
                                             gobanController.goban!.engine.config.white_player_id
                                         }
+                                        board_size={gobanController.goban!.engine.width}
                                         currentMoveNumber={move.move_number - 1}
                                         moves={showGameTimings ? moves : undefined}
                                         start_time={showGameTimings ? start_time : undefined}

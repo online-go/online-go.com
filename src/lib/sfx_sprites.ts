@@ -4790,6 +4790,27 @@ sprite_packs["zz-un-effects"] = {
     },
 };
 
+sprite_packs["zz-un-floor-goban-deep"] = {
+    pack_id: "zz-un-floor-goban-deep",
+    language: "zz",
+    country: "un",
+    name: "Floor Goban",
+    filename_prefix: "zz-un-floor-goban-deep.v7",
+    definitions: {
+        silence: [0, 50],
+        "black-1": [1000.0, 147.77083333333331],
+        "black-2": [2147.7708333333335, 155.33333333333331],
+        "black-3": [3303.1041666666665, 139.5625],
+        "black-4": [4442.666666666667, 166.54166666666666],
+        "black-5": [5609.208333333333, 158.64583333333334],
+        "white-1": [6767.854166666667, 158.64583333333334],
+        "white-2": [7926.5, 206.72916666666666],
+        "white-3": [9133.229166666666, 142.64583333333334],
+        "white-4": [10275.875, 182.85416666666669],
+        "white-5": [11458.729166666666, 166.54166666666666],
+    },
+};
+
 sprite_packs["zz-un-floor-goban-rich"] = {
     pack_id: "zz-un-floor-goban-rich",
     language: "zz",
