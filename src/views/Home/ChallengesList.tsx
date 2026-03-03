@@ -24,7 +24,7 @@ import * as data from "@/lib/data";
 import { Player } from "@/components/Player";
 import { PlayerIcon } from "@/components/PlayerIcon";
 import { profanity_filter } from "@/lib/profanity_filter";
-import { challenge_text_description } from "@/components/ChallengeModal";
+import { challenge_text_description, ChallengeDetails } from "@/components/ChallengeModal";
 import { FabX, FabCheck } from "@/components/material";
 import { ignore } from "@/lib/misc";
 import cached from "@/lib/cached";
@@ -34,84 +34,84 @@ interface ChallengeListProps {
     onAccept: () => void;
 }
 
-interface ChallengeListState {
-    challenges: any[];
+// Shape of items from the /me/challenges endpoint after processing in cached.ts
+interface Challenge {
+    id: number;
+    challenger: rest_api.MinimalPlayerDTO;
+    challenged: rest_api.MinimalPlayerDTO;
+    game: rest_api.GameDTO;
 }
 
-export class ChallengesList extends React.PureComponent<ChallengeListProps, ChallengeListState> {
-    constructor(props: ChallengeListProps) {
-        super(props);
-        this.state = {
-            challenges: [],
-        };
-    }
+export function ChallengesList({ onAccept }: ChallengeListProps): React.ReactElement {
+    const [challenges, setChallenges] = React.useState<Challenge[]>([]);
 
-    componentDidMount() {
-        data.watch(cached.challenge_list, this.update);
-    }
-    componentWillUnmount() {
-        data.unwatch(cached.challenge_list, this.update);
-    }
-    update = (challenge_list: ChallengeListState["challenges"]) => {
-        this.setState({ challenges: challenge_list });
+    React.useEffect(() => {
+        const update = (list: Challenge[]) => {
+            setChallenges(list);
+        };
+
+        data.watch(cached.challenge_list, update);
+
+        return () => {
+            data.unwatch(cached.challenge_list, update);
+        };
+    }, []);
+
+    const deleteChallenge = (challenge: Challenge) => {
+        del(`me/challenges/${challenge.id}`).then(ignore).catch(ignore);
+        setChallenges((prev) => prev.filter((c) => c.id !== challenge.id));
     };
 
-    deleteChallenge(challenge: ChallengeListState["challenges"][0]) {
-        del(`me/challenges/${challenge.id}`).then(ignore).catch(ignore);
-        this.setState({ challenges: this.state.challenges.filter((c) => c.id !== challenge.id) });
-    }
-    acceptChallenge(challenge: ChallengeListState["challenges"][0]) {
+    const acceptChallenge = (challenge: Challenge) => {
         post(`me/challenges/${challenge.id}/accept`, {})
             .then((res) => {
                 if (res.time_per_move > 0 && res.time_per_move < 1800) {
                     browserHistory.push(`/game/${res.game}`);
                 } else {
-                    if (this.props.onAccept) {
-                        this.props.onAccept();
-                    }
+                    onAccept();
                 }
             })
             .catch(ignore);
-        this.setState({ challenges: this.state.challenges.filter((c) => c.id !== challenge.id) });
-    }
+        setChallenges((prev) => prev.filter((c) => c.id !== challenge.id));
+    };
 
-    render() {
-        const user = data.get("user");
+    const user = data.get("user");
 
-        return (
-            <div className="ChallengesList">
-                {this.state.challenges.length > 0 && <h2>{_("Challenges")}</h2>}
-                <div className="challenge-cards">
-                    {this.state.challenges.map((challenge) => {
-                        const opponent =
-                            challenge.challenger.id === user.id
-                                ? challenge.challenged
-                                : challenge.challenger;
+    return (
+        <div className="ChallengesList">
+            {challenges.length > 0 && <h2>{_("Challenges")}</h2>}
+            <div className="challenge-cards">
+                {challenges.map((challenge) => {
+                    const opponent =
+                        challenge.challenger.id === user.id
+                            ? challenge.challenged
+                            : challenge.challenger;
 
-                        return (
-                            <Card key={challenge.id}>
-                                <div className="icon-name">
-                                    <PlayerIcon id={opponent.id} size={64} />
-                                    <div className="name">
-                                        {challenge.challenged.id === user.id && (
-                                            <FabCheck
-                                                onClick={this.acceptChallenge.bind(this, challenge)}
-                                            />
-                                        )}
+                    return (
+                        <Card key={challenge.id}>
+                            <div className="icon-name">
+                                <PlayerIcon id={opponent.id} size={64} />
+                                <div className="name">
+                                    {challenge.challenged.id === user.id && (
+                                        <FabCheck onClick={() => acceptChallenge(challenge)} />
+                                    )}
 
-                                        <h4 title={profanity_filter(challenge.game.name)}>
-                                            "{profanity_filter(challenge.game.name)}"
-                                        </h4>
-                                        <Player user={opponent} />
-                                    </div>
-                                    <FabX onClick={this.deleteChallenge.bind(this, challenge)} />
+                                    <h4 title={profanity_filter(challenge.game.name)}>
+                                        "{profanity_filter(challenge.game.name)}"
+                                    </h4>
+                                    <Player user={opponent} />
                                 </div>
-                                <div>{challenge_text_description(challenge)}</div>
-                            </Card>
-                        );
-                    })}
-                </div>
+                                <FabX onClick={() => deleteChallenge(challenge)} />
+                            </div>
+                            <div>
+                                {challenge_text_description(
+                                    challenge as unknown as ChallengeDetails,
+                                )}
+                            </div>
+                        </Card>
+                    );
+                })}
             </div>
-        );
-    }
+        </div>
+    );
 }

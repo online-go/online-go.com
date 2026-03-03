@@ -17,7 +17,6 @@
 
 import * as React from "react";
 import { Link } from "react-router-dom";
-import * as DynamicHelp from "react-dynamic-help";
 
 import { _ } from "@/lib/translate";
 import * as data from "@/lib/data";
@@ -26,7 +25,7 @@ import cached from "@/lib/cached";
 
 import { Card } from "@/components/material";
 import { post, get, abort_requests_in_flight } from "@/lib/requests";
-import { errorAlerter, ignore } from "@/lib/misc";
+import { errorAlerter } from "@/lib/misc";
 import { DismissableNotification } from "@/components/DismissableNotification";
 import { FriendList } from "@/components/FriendList";
 import { ChallengesList } from "./ChallengesList";
@@ -36,6 +35,7 @@ import { notification_manager } from "@/components/Notifications";
 import { ActiveAnnouncements } from "@/components/Announcements";
 import { FabX } from "@/components/material";
 import { ActiveTournamentList, Group } from "@/lib/types";
+import { PlayerCacheEntry } from "@/lib/player_cache";
 import { DismissableMessages } from "@/components/DismissableMessages";
 import { user_uploads_url } from "@/lib/cdn";
 import { EmailBanner } from "@/components/EmailBanner";
@@ -54,369 +54,356 @@ declare let ogs_missing_translation_count: number;
 type UserType = rest_api.UserConfig;
 type ActiveGameType = rest_api.players.full.Game;
 
-interface HomeState {
-    boards_to_move_on?: number;
-    user?: UserType;
-    resolved: boolean;
-    overview: { active_games: Array<ActiveGameType> };
-    show_translation_dialog: boolean;
-}
+const DEFAULT_TITLE = "OGS";
 
-export class Home extends React.Component<{}, HomeState> {
-    private static defaultTitle = "OGS";
-
-    static contextType: React.Context<DynamicHelp.AppApi> = DynamicHelp.Api;
-    declare context: React.ContextType<typeof DynamicHelp.Api>;
-
-    constructor(props: {}) {
-        super(props);
-
-        let show_translation_dialog = false;
+export function Home(): React.ReactElement {
+    const [user, setUser] = React.useState<UserType | undefined>(data.get("config.user"));
+    const [overview, setOverview] = React.useState<{ active_games: Array<ActiveGameType> }>({
+        active_games: [],
+    });
+    const [resolved, setResolved] = React.useState(false);
+    const [boardsToMoveOn, setBoardsToMoveOn] = React.useState(
+        Object.keys(notification_manager.boards_to_move_on).length,
+    );
+    const [showTranslationDialog, setShowTranslationDialog] = React.useState(() => {
         try {
             if (
                 ogs_missing_translation_count > 0 &&
                 !preferences.get("translation-dialog-never-show") &&
                 Date.now() - preferences.get("translation-dialog-dismissed") > 14 * 86400 * 1000
             ) {
-                show_translation_dialog = true;
+                return true;
             }
         } catch (e) {
             console.error(e);
         }
+        return false;
+    });
 
-        this.state = {
-            user: data.get("config.user"),
-            overview: {
-                active_games: [],
-            },
-            show_translation_dialog: show_translation_dialog,
-            resolved: false,
-            boards_to_move_on: Object.keys(notification_manager.boards_to_move_on).length,
-        };
-    }
-
-    setTitle() {
-        const count = this.state.boards_to_move_on ? `(${this.state.boards_to_move_on}) ` : "";
-        window.document.title = `${count}${Home.defaultTitle}`;
-    }
-
-    setBoardsToMoveOn = (boardsToMoveOn?: number) => {
-        this.setState({ boards_to_move_on: boardsToMoveOn });
-    };
-
-    componentDidMount() {
-        this.setTitle();
-        notification_manager.event_emitter.on("turn-count", this.setBoardsToMoveOn);
-        data.watch("config.user", this.updateUser);
-        this.refresh().then(ignore).catch(ignore);
-    }
-
-    componentDidUpdate() {
-        this.setTitle();
-    }
-
-    updateUser = (user: UserType) => {
-        this.setState({ user: user });
-    };
-
-    refresh(): Promise<void> {
+    const refresh = React.useCallback(() => {
         abort_requests_in_flight("ui/overview");
-        return get("ui/overview")
-            .then((overview: HomeState["overview"]) => {
-                this.setState({ overview: overview, resolved: true });
+        get("ui/overview")
+            .then((result: { active_games: Array<ActiveGameType> }) => {
+                setOverview(result);
+                setResolved(true);
             })
             .catch((err) => {
-                this.setState({ resolved: true });
+                setResolved(true);
                 errorAlerter(err);
             });
-    }
+    }, []);
 
-    componentWillUnmount() {
-        abort_requests_in_flight("ui/overview");
-        notification_manager.event_emitter.off("turn-count", this.setBoardsToMoveOn);
-        window.document.title = Home.defaultTitle;
-        data.unwatch("config.user", this.updateUser);
-    }
+    // Set document title based on boards to move on
+    React.useEffect(() => {
+        const count = boardsToMoveOn ? `(${boardsToMoveOn}) ` : "";
+        window.document.title = `${count}${DEFAULT_TITLE}`;
+    }, [boardsToMoveOn]);
 
-    noActiveGames(): React.ReactElement {
-        return (
-            <div className="no-active-games">
-                <div style={{ marginBottom: "1rem" }}>
-                    {_("You're not currently playing any games.")}
-                </div>
-                <Link to="/play" className="btn primary">
-                    {_("Find a game")}
-                </Link>
+    // Subscribe to data and events on mount
+    React.useEffect(() => {
+        const updateUser = (u: UserType) => setUser(u);
+        const onTurnCount = (count?: number) => setBoardsToMoveOn(count ?? 0);
+
+        notification_manager.event_emitter.on("turn-count", onTurnCount);
+        data.watch("config.user", updateUser);
+        refresh();
+
+        return () => {
+            abort_requests_in_flight("ui/overview");
+            notification_manager.event_emitter.off("turn-count", onTurnCount);
+            window.document.title = DEFAULT_TITLE;
+            data.unwatch("config.user", updateUser);
+        };
+    }, [refresh]);
+
+    const dismissTranslationDialog = React.useCallback(() => {
+        preferences.set("translation-dialog-dismissed", Date.now());
+        setShowTranslationDialog(false);
+    }, []);
+
+    const neverShowTranslationDialog = React.useCallback(() => {
+        preferences.set("translation-dialog-never-show", true);
+        setShowTranslationDialog(false);
+    }, []);
+
+    const noActiveGames = (
+        <div className="no-active-games">
+            <div style={{ marginBottom: "1rem" }}>
+                {_("You're not currently playing any games.")}
             </div>
-        );
-    }
+            <Link to="/play" className="btn primary">
+                {_("Find a game")}
+            </Link>
+        </div>
+    );
 
-    render() {
-        const user = this.state.user;
+    return (
+        <div id="Home-Container">
+            {!!user && user.need_rank && user.starting_rank_hint === "not provided" ? (
+                <>
+                    <div className="welcome">{_("Welcome!")}</div>
+                    <NewUserRankChooser />
+                </>
+            ) : (
+                <div id="Home">
+                    <div className="left">
+                        <SupporterProblems />
+                        <PriceIncreaseMessage />
+                        <FreeTrialBanner />
+                        <FreeTrialSurvey />
+                        <DismissableMessages />
+                        <EmailBanner />
+                        <PaymentProblemBanner />
+                        <ActiveAnnouncements />
+                        {user && !!user.offered_moderator_powers && (
+                            <ModerationOffer
+                                player_id={user.id}
+                                current_moderator_powers={user.moderator_powers}
+                                offered_moderator_powers={user.offered_moderator_powers}
+                            />
+                        )}
+                        <ChallengesList onAccept={() => refresh()} />
+                        <InviteList />
 
-        return (
-            <div id="Home-Container">
-                {!!user && user.need_rank && user.starting_rank_hint === "not provided" ? (
-                    <>
-                        <div className="welcome">{_("Welcome!")}</div>
-                        <NewUserRankChooser />
-                    </>
-                ) : (
-                    <div id="Home">
-                        <div className="left">
-                            <SupporterProblems />
-                            <PriceIncreaseMessage />
-                            <FreeTrialBanner />
-                            <FreeTrialSurvey />
-                            <DismissableMessages />
-                            <EmailBanner />
-                            <PaymentProblemBanner />
-                            <ActiveAnnouncements />
-                            {user && !!user.offered_moderator_powers && (
-                                <ModerationOffer
-                                    player_id={user.id}
-                                    current_moderator_powers={user.moderator_powers}
-                                    offered_moderator_powers={user.offered_moderator_powers}
-                                />
+                        {((user && user.provisional) || null) && (
+                            <DismissableNotification
+                                className="learn-how-to-play"
+                                dismissedKey="learn-how-to-play"
+                            >
+                                <Link to="/learn-to-play-go">
+                                    {_("New to Go? Click here to learn how to play!")}
+                                </Link>
+                            </DismissableNotification>
+                        )}
+
+                        {resolved && user && (
+                            <ActiveDroppedGameList
+                                games={overview.active_games}
+                                user={user}
+                                noActiveGamesView={noActiveGames}
+                            ></ActiveDroppedGameList>
+                        )}
+                    </div>
+                    <div className="right">
+                        <ProfileCard user={user} />
+
+                        <div className="home-categories">
+                            {showTranslationDialog && (
+                                <Card className="translation-dialog">
+                                    <FabX onClick={dismissTranslationDialog} />
+
+                                    <div>
+                                        {_(
+                                            "Hello! Did you know that online-go.com is translated entirely volunteers in the Go community? Because of that, sometimes our translations get behind, like right now. In this language there are some missing translation strings. If you would like to help fix this, click the green button below, and thanks in advance!",
+                                        )}
+                                    </div>
+
+                                    <a
+                                        className="btn success"
+                                        href="https://translate.online-go.com/"
+                                    >
+                                        {_("I'll help translate!")}
+                                    </a>
+
+                                    <button
+                                        className="btn xs never-show-this-message-button"
+                                        onClick={neverShowTranslationDialog}
+                                    >
+                                        {_("Never show this message")}
+                                    </button>
+                                </Card>
                             )}
-                            <ChallengesList onAccept={() => this.refresh()} />
-                            <InviteList />
 
-                            {((user && user.provisional) || null) && (
-                                <DismissableNotification
-                                    className="learn-how-to-play"
-                                    dismissedKey="learn-how-to-play"
-                                >
-                                    <Link to="/learn-to-play-go">
-                                        {_("New to Go? Click here to learn how to play!")}
-                                    </Link>
-                                </DismissableNotification>
-                            )}
-
-                            {this.state.resolved && user && (
-                                <ActiveDroppedGameList
-                                    games={this.state.overview.active_games}
-                                    user={user}
-                                    noActiveGamesView={this.noActiveGames()}
-                                ></ActiveDroppedGameList>
-                            )}
-                        </div>
-                        <div className="right">
-                            <ProfileCard user={user} />
-
-                            <div className="home-categories">
-                                {this.state.show_translation_dialog && (
-                                    <Card className="translation-dialog">
-                                        <FabX onClick={this.dismissTranslationDialog} />
-
-                                        <div>
-                                            {_(
-                                                "Hello! Did you know that online-go.com is translated entirely volunteers in the Go community? Because of that, sometimes our translations get behind, like right now. In this language there are some missing translation strings. If you would like to help fix this, click the green button below, and thanks in advance!",
-                                            )}
-                                        </div>
-
-                                        <a
-                                            className="btn success"
-                                            href="https://translate.online-go.com/"
-                                        >
-                                            {_("I'll help translate!")}
-                                        </a>
-
-                                        <button
-                                            className="btn xs never-show-this-message-button"
-                                            onClick={this.neverShowTranslationDialog}
-                                        >
-                                            {_("Never show this message")}
-                                        </button>
-                                    </Card>
-                                )}
-
-                                <h3>
-                                    <Link to="/tournaments">
-                                        <i className="fa fa-trophy"></i> {_("Tournaments")}
-                                    </Link>
-                                </h3>
-                                <TournamentList />
-
-                                <h3>
-                                    <Link to="/ladders">
-                                        <i className="fa fa-list-ol"></i> {_("Ladders")}
-                                    </Link>
-                                </h3>
-                                <LadderList />
-
-                                <h3>
-                                    <Link to="/groups">
-                                        <i className="fa fa-users"></i> {_("Groups")}
-                                    </Link>
-                                </h3>
-                                <GroupList />
-
-                                <h3>
-                                    <Link to="/chat">
-                                        <i className="fa fa-comment-o"></i> {_("Chat with friends")}
-                                    </Link>
-                                </h3>
-                                <FriendList />
-                            </div>
+                            <TournamentList />
+                            <LadderList />
+                            <GroupList />
+                            <HomeFriendList />
                         </div>
                     </div>
-                )}
-            </div>
-        );
-    }
-
-    dismissTranslationDialog = () => {
-        preferences.set("translation-dialog-dismissed", Date.now());
-        this.setState({
-            show_translation_dialog: false,
-        });
-    };
-
-    neverShowTranslationDialog = () => {
-        preferences.set("translation-dialog-never-show", true);
-        this.setState({
-            show_translation_dialog: false,
-        });
-    };
+                </div>
+            )}
+        </div>
+    );
 }
 
 type InvitationType = rest_api.me.Invitation;
-interface GroupState {
-    groups: Group[];
-    invitations: InvitationType[];
-}
-export class GroupList extends React.PureComponent<{}, GroupState> {
-    constructor(props: {}) {
-        super(props);
-        this.state = {
-            groups: [],
-            invitations: [],
+
+function GroupList(): React.ReactElement | null {
+    const [groups, setGroups] = React.useState<Group[]>([]);
+    const [invitations, setInvitations] = React.useState<InvitationType[]>([]);
+
+    React.useEffect(() => {
+        const updateGroups = (g?: Group[]) => {
+            if (g) {
+                setGroups(g);
+            }
         };
-    }
+        const updateInvitations = (inv: InvitationType[]) => {
+            setInvitations(inv);
+        };
 
-    componentDidMount() {
-        data.watch(cached.groups, this.updateGroups);
-        data.watch(cached.group_invitations, this.updateGroupInvitations);
-    }
+        data.watch(cached.groups, updateGroups);
+        data.watch(cached.group_invitations, updateInvitations);
 
-    updateGroups = (groups?: Group[]) => {
-        if (groups) {
-            this.setState({ groups: groups });
-        }
-    };
-    updateGroupInvitations = (invitations: InvitationType[]) => {
-        this.setState({ invitations: invitations });
-    };
+        return () => {
+            data.unwatch(cached.groups, updateGroups);
+            data.unwatch(cached.group_invitations, updateInvitations);
+        };
+    }, []);
 
-    componentWillUnmount() {
-        data.unwatch(cached.groups, this.updateGroups);
-        data.unwatch(cached.group_invitations, this.updateGroupInvitations);
-    }
-    acceptInvite(invite: { id: number }) {
+    const acceptInvite = (invite: { id: number }) => {
         post("me/groups/invitations", { request_id: invite.id })
             .then(() => 0)
             .catch(() => 0);
-    }
-    rejectInvite(invite: { id: number }) {
+    };
+
+    const rejectInvite = (invite: { id: number }) => {
         post("me/groups/invitations", { request_id: invite.id, delete: true })
             .then(() => 0)
             .catch(() => 0);
+    };
+
+    if (groups.length === 0 && invitations.length === 0) {
+        return null;
     }
-    render() {
-        return (
+
+    return (
+        <>
+            <h3>
+                <Link to="/groups">
+                    <i className="fa fa-users"></i> {_("Groups")}
+                </Link>
+            </h3>
             <div className="Home-GroupList">
-                {this.state.invitations.map((invite) => (
+                {invitations.map((invite) => (
                     <div className="invite" key={invite.id}>
-                        <i className="fa fa-times" onClick={this.rejectInvite.bind(this, invite)} />
-                        <i className="fa fa-check" onClick={this.acceptInvite.bind(this, invite)} />
+                        <i className="fa fa-times" onClick={() => rejectInvite(invite)} />
+                        <i className="fa fa-check" onClick={() => acceptInvite(invite)} />
                         <Link key={invite.group.id} to={`/group/${invite.group.id}`}>
                             <img src={user_uploads_url(invite.group.icon, 32)} />{" "}
                             {invite.group.name}
                         </Link>
                     </div>
                 ))}
-                {this.state.groups.map((group) => (
+                {groups.map((group) => (
                     <Link key={group.id} to={`/group/${group.id}`}>
                         <img src={user_uploads_url(group.icon, 32)} /> {group.name}
                     </Link>
                 ))}
             </div>
-        );
-    }
+        </>
+    );
 }
 
-interface TournamentListState {
-    my_tournaments: ActiveTournamentList;
-}
+function TournamentList(): React.ReactElement | null {
+    const [tournaments, setTournaments] = React.useState<ActiveTournamentList>([]);
 
-export class TournamentList extends React.PureComponent<{}, TournamentListState> {
-    constructor(props: {}) {
-        super(props);
-        this.state = {
-            my_tournaments: [],
+    React.useEffect(() => {
+        const update = (t?: ActiveTournamentList) => {
+            if (t) {
+                setTournaments(t);
+            }
         };
+
+        data.watch(cached.active_tournaments, update);
+
+        return () => {
+            data.unwatch(cached.active_tournaments, update);
+        };
+    }, []);
+
+    if (tournaments.length === 0) {
+        return null;
     }
 
-    componentDidMount() {
-        data.watch(cached.active_tournaments, this.update);
-    }
-    update = (tournaments?: ActiveTournamentList) => {
-        if (tournaments) {
-            this.setState({ my_tournaments: tournaments });
-        }
-    };
-
-    componentWillUnmount() {
-        data.unwatch(cached.active_tournaments, this.update);
-    }
-    render() {
-        return (
+    return (
+        <>
+            <h3>
+                <Link to="/tournaments">
+                    <i className="fa fa-trophy"></i> {_("Tournaments")}
+                </Link>
+            </h3>
             <div className="Home-TournamentList">
-                {this.state.my_tournaments.map((tournament) => (
+                {tournaments.map((tournament) => (
                     <Link key={tournament.id} to={`/tournament/${tournament.id}`}>
                         <img src={user_uploads_url(tournament.icon, 32)} /> {tournament.name}
                     </Link>
                 ))}
             </div>
-        );
+        </>
+    );
+}
+
+function HomeFriendList(): React.ReactElement | null {
+    const [friends, setFriends] = React.useState<PlayerCacheEntry[]>([]);
+
+    React.useEffect(() => {
+        const update = (f?: PlayerCacheEntry[]) => {
+            if (f) {
+                setFriends(f);
+            }
+        };
+
+        data.watch(cached.friends, update);
+
+        return () => {
+            data.unwatch(cached.friends, update);
+        };
+    }, []);
+
+    if (friends.length === 0) {
+        return null;
     }
+
+    return (
+        <>
+            <h3>
+                <Link to="/chat">
+                    <i className="fa fa-comment-o"></i> {_("Chat with friends")}
+                </Link>
+            </h3>
+            <FriendList />
+        </>
+    );
 }
 
 type LadderType = rest_api.me.Ladder;
-interface LadderListState {
-    ladders: LadderType[];
-}
 
-export class LadderList extends React.PureComponent<{}, LadderListState> {
-    constructor(props: {}) {
-        super(props);
-        this.state = { ladders: [] };
+function LadderList(): React.ReactElement | null {
+    const [ladders, setLadders] = React.useState<LadderType[]>([]);
+
+    React.useEffect(() => {
+        const update = (l?: LadderType[]) => {
+            if (l) {
+                setLadders(l);
+            }
+        };
+
+        data.watch(cached.ladders, update);
+
+        return () => {
+            data.unwatch(cached.ladders, update);
+        };
+    }, []);
+
+    if (ladders.length === 0) {
+        return null;
     }
 
-    componentDidMount() {
-        data.watch(cached.ladders, this.update);
-    }
-
-    update = (ladders?: LadderType[]) => {
-        if (ladders) {
-            this.setState({ ladders: ladders });
-        }
-    };
-
-    componentWillUnmount() {
-        data.unwatch(cached.ladders, this.update);
-    }
-    render() {
-        return (
+    return (
+        <>
+            <h3>
+                <Link to="/ladders">
+                    <i className="fa fa-list-ol"></i> {_("Ladders")}
+                </Link>
+            </h3>
             <div className="Home-LadderList">
-                {this.state.ladders.map((ladder) => (
+                {ladders.map((ladder) => (
                     <Link key={ladder.id} to={`/ladder/${ladder.id}`}>
                         <span className="ladder-rank">#{ladder.player_rank}</span> {ladder.name}
                     </Link>
                 ))}
-                {(this.state.ladders.length === 0 || null) && null}
             </div>
-        );
-    }
+        </>
+    );
 }
