@@ -85,6 +85,9 @@ try {
             "?(<anonymous>)",
             "Cannot read properties of undefined (reading 'ns')",
 
+            // Transient network failures when loading CSS for lazy chunks
+            "Unable to preload CSS",
+
             // Library bugs
             ").ended is not a function", // d3
 
@@ -103,6 +106,30 @@ try {
 } catch (e) {
     console.error(e);
 }
+
+// Reload the page when a lazy chunk's CSS fails to preload for whatever
+// reason.
+const PRELOAD_INFINITE_LOOP_GUARD_KEY = "preloadErrorReloads";
+let preload_error_processed = false;
+window.addEventListener("vite:preloadError", () => {
+    if (preload_error_processed) {
+        return;
+    }
+    preload_error_processed = true;
+    const times_loaded = parseInt(
+        sessionStorage.getItem(PRELOAD_INFINITE_LOOP_GUARD_KEY) ?? "0",
+        10,
+    );
+    if (times_loaded < 2) {
+        sessionStorage.setItem(PRELOAD_INFINITE_LOOP_GUARD_KEY, String(times_loaded + 1));
+        window.location.reload();
+    }
+});
+setTimeout(() => {
+    // If this timer fires it means we're not in a preload infinite loop so we can
+    // clear out the guard
+    sessionStorage.removeItem(PRELOAD_INFINITE_LOOP_GUARD_KEY);
+}, 60000);
 
 try {
     window.onunhandledrejection = (e) => {
