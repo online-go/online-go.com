@@ -47,6 +47,7 @@ import { FreeTrialBanner } from "@/components/FreeTrialBanner";
 import { SupporterProblems } from "@/components/SupporterProblems";
 import { FreeTrialSurvey } from "@/components/FreeTrialSurvey";
 import { PriceIncreaseMessage } from "@/components/PriceIncreaseMessage";
+import { HomeDebug, useHomeDebugOverrides, shouldRender, isForced } from "./HomeDebug";
 import "./Home.css";
 
 declare let ogs_missing_translation_count: number;
@@ -57,6 +58,7 @@ type ActiveGameType = rest_api.players.full.Game;
 const DEFAULT_TITLE = "OGS";
 
 export function Home(): React.ReactElement {
+    const [debugOverrides, setDebugOverrides] = useHomeDebugOverrides();
     const [user, setUser] = React.useState<UserType | undefined>(data.get("config.user"));
     const [overview, setOverview] = React.useState<{ active_games: Array<ActiveGameType> }>({
         active_games: [],
@@ -139,6 +141,7 @@ export function Home(): React.ReactElement {
 
     return (
         <div id="Home-Container">
+            <HomeDebug overrides={debugOverrides} setOverrides={setDebugOverrides} />
             {!!user && user.need_rank && user.starting_rank_hint === "not provided" ? (
                 <>
                     <div className="welcome">{_("Welcome!")}</div>
@@ -147,23 +150,37 @@ export function Home(): React.ReactElement {
             ) : (
                 <div id="Home">
                     <div className="left">
-                        <SupporterProblems />
-                        <PriceIncreaseMessage />
-                        <FreeTrialBanner />
-                        <FreeTrialSurvey />
-                        <DismissableMessages />
-                        <EmailBanner />
-                        <PaymentProblemBanner />
-                        <ActiveAnnouncements />
-                        {user && !!user.offered_moderator_powers && (
-                            <ModerationOffer
-                                player_id={user.id}
-                                current_moderator_powers={user.moderator_powers}
-                                offered_moderator_powers={user.offered_moderator_powers}
-                            />
+                        <SupporterProblems
+                            forceShow={isForced(debugOverrides, "SupporterProblems")}
+                        />
+                        <PriceIncreaseMessage
+                            forceShow={isForced(debugOverrides, "PriceIncreaseMessage")}
+                        />
+                        <FreeTrialBanner forceShow={isForced(debugOverrides, "FreeTrialBanner")} />
+                        <FreeTrialSurvey forceShow={isForced(debugOverrides, "FreeTrialSurvey")} />
+                        <DismissableMessages
+                            forceShow={isForced(debugOverrides, "DismissableMessages")}
+                        />
+                        <EmailBanner forceShow={isForced(debugOverrides, "EmailBanner")} />
+                        <PaymentProblemBanner
+                            forceShow={isForced(debugOverrides, "PaymentProblemBanner")}
+                        />
+                        <ActiveAnnouncements
+                            forceShow={isForced(debugOverrides, "ActiveAnnouncements")}
+                        />
+                        {shouldRender(debugOverrides, "ModerationOffer") &&
+                            (isForced(debugOverrides, "ModerationOffer") ||
+                                (user && !!user.offered_moderator_powers)) && (
+                                <ModerationOffer
+                                    player_id={user?.id ?? 0}
+                                    current_moderator_powers={user?.moderator_powers ?? 0}
+                                    offered_moderator_powers={user?.offered_moderator_powers ?? 0}
+                                />
+                            )}
+                        {shouldRender(debugOverrides, "ChallengesList") && (
+                            <ChallengesList onAccept={() => refresh()} />
                         )}
-                        <ChallengesList onAccept={() => refresh()} />
-                        <InviteList />
+                        {shouldRender(debugOverrides, "InviteList") && <InviteList />}
 
                         {((user && user.provisional) || null) && (
                             <DismissableNotification
@@ -176,16 +193,18 @@ export function Home(): React.ReactElement {
                             </DismissableNotification>
                         )}
 
-                        {resolved && user && (
-                            <ActiveDroppedGameList
-                                games={overview.active_games}
-                                user={user}
-                                noActiveGamesView={noActiveGames}
-                            ></ActiveDroppedGameList>
-                        )}
+                        {shouldRender(debugOverrides, "ActiveDroppedGameList") &&
+                            resolved &&
+                            user && (
+                                <ActiveDroppedGameList
+                                    games={overview.active_games}
+                                    user={user}
+                                    noActiveGamesView={noActiveGames}
+                                ></ActiveDroppedGameList>
+                            )}
                     </div>
                     <div className="right">
-                        <ProfileCard user={user} />
+                        {shouldRender(debugOverrides, "ProfileCard") && <ProfileCard user={user} />}
 
                         <div className="home-categories">
                             {showTranslationDialog && (
@@ -214,10 +233,22 @@ export function Home(): React.ReactElement {
                                 </Card>
                             )}
 
-                            <TournamentList />
-                            <LadderList />
-                            <GroupList />
-                            <HomeFriendList />
+                            {shouldRender(debugOverrides, "TournamentList") && (
+                                <TournamentList
+                                    forceShow={isForced(debugOverrides, "TournamentList")}
+                                />
+                            )}
+                            {shouldRender(debugOverrides, "LadderList") && (
+                                <LadderList forceShow={isForced(debugOverrides, "LadderList")} />
+                            )}
+                            {shouldRender(debugOverrides, "GroupList") && (
+                                <GroupList forceShow={isForced(debugOverrides, "GroupList")} />
+                            )}
+                            {shouldRender(debugOverrides, "HomeFriendList") && (
+                                <HomeFriendList
+                                    forceShow={isForced(debugOverrides, "HomeFriendList")}
+                                />
+                            )}
                         </div>
                     </div>
                 </div>
@@ -228,7 +259,7 @@ export function Home(): React.ReactElement {
 
 type InvitationType = rest_api.me.Invitation;
 
-function GroupList(): React.ReactElement | null {
+function GroupList({ forceShow }: { forceShow?: boolean }): React.ReactElement | null {
     const [groups, setGroups] = React.useState<Group[]>([]);
     const [invitations, setInvitations] = React.useState<InvitationType[]>([]);
 
@@ -263,7 +294,7 @@ function GroupList(): React.ReactElement | null {
             .catch(() => 0);
     };
 
-    if (groups.length === 0 && invitations.length === 0) {
+    if (!forceShow && groups.length === 0 && invitations.length === 0) {
         return null;
     }
 
@@ -295,7 +326,7 @@ function GroupList(): React.ReactElement | null {
     );
 }
 
-function TournamentList(): React.ReactElement | null {
+function TournamentList({ forceShow }: { forceShow?: boolean }): React.ReactElement | null {
     const [tournaments, setTournaments] = React.useState<ActiveTournamentList>([]);
 
     React.useEffect(() => {
@@ -312,7 +343,7 @@ function TournamentList(): React.ReactElement | null {
         };
     }, []);
 
-    if (tournaments.length === 0) {
+    if (!forceShow && tournaments.length === 0) {
         return null;
     }
 
@@ -334,7 +365,7 @@ function TournamentList(): React.ReactElement | null {
     );
 }
 
-function HomeFriendList(): React.ReactElement | null {
+function HomeFriendList({ forceShow }: { forceShow?: boolean }): React.ReactElement | null {
     const [friends, setFriends] = React.useState<PlayerCacheEntry[]>([]);
 
     React.useEffect(() => {
@@ -351,7 +382,7 @@ function HomeFriendList(): React.ReactElement | null {
         };
     }, []);
 
-    if (friends.length === 0) {
+    if (!forceShow && friends.length === 0) {
         return null;
     }
 
@@ -369,7 +400,7 @@ function HomeFriendList(): React.ReactElement | null {
 
 type LadderType = rest_api.me.Ladder;
 
-function LadderList(): React.ReactElement | null {
+function LadderList({ forceShow }: { forceShow?: boolean }): React.ReactElement | null {
     const [ladders, setLadders] = React.useState<LadderType[]>([]);
 
     React.useEffect(() => {
@@ -386,7 +417,7 @@ function LadderList(): React.ReactElement | null {
         };
     }, []);
 
-    if (ladders.length === 0) {
+    if (!forceShow && ladders.length === 0) {
         return null;
     }
 

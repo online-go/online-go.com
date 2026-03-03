@@ -24,39 +24,59 @@ import { Link } from "react-router-dom";
 import "./SupporterProblems.css";
 //import * as data from "@/lib/data";
 
-export function SupporterProblems(): React.ReactElement | null {
+interface SupporterProblemsProps {
+    forceShow?: boolean;
+}
+
+export function SupporterProblems({
+    forceShow,
+}: SupporterProblemsProps): React.ReactElement | null {
     const user = useUser();
     const notifications = useNotifications(["supporterExpired"]);
+    const hasNotifications = notifications && notifications.length > 0;
 
-    if (!user || !notifications || notifications.length === 0) {
+    if (!forceShow && (!user || !hasNotifications)) {
         return null;
     }
 
     return (
         <div className="SupporterProblems-container">
-            {notifications.map((notification) => {
-                return (
-                    <div key={notification.id} className="SupporterProblem">
-                        {notification.type === "supporterExpired" &&
-                            _(
-                                "Just a heads-up, your supporter status and AI review subscription has expired. If you'd like to continue receiving AI reviews for your games, as well as the other site supporter benefits, you can sign up again at any time on the supporter page. Thank you for your past patronage, we hope to earn it again in the future!",
-                            )}
-                        <div className="buttons">
-                            <button
-                                onClick={() =>
-                                    notification_manager.deleteNotification(notification)
-                                }
-                            >
-                                {_("Dismiss")}
-                            </button>
+            {hasNotifications ? (
+                notifications.map((notification) => {
+                    return (
+                        <div key={notification.id} className="SupporterProblem">
+                            {notification.type === "supporterExpired" &&
+                                _(
+                                    "Just a heads-up, your supporter status and AI review subscription has expired. If you'd like to continue receiving AI reviews for your games, as well as the other site supporter benefits, you can sign up again at any time on the supporter page. Thank you for your past patronage, we hope to earn it again in the future!",
+                                )}
+                            <div className="buttons">
+                                <button
+                                    onClick={() =>
+                                        notification_manager.deleteNotification(notification)
+                                    }
+                                >
+                                    {_("Dismiss")}
+                                </button>
 
-                            <Link className="primary btn" to="/supporter">
-                                {_("Visit supporter page")}
-                            </Link>
+                                <Link className="primary btn" to="/supporter">
+                                    {_("Visit supporter page")}
+                                </Link>
+                            </div>
                         </div>
+                    );
+                })
+            ) : (
+                <div className="SupporterProblem">
+                    {_(
+                        "Just a heads-up, your supporter status and AI review subscription has expired. If you'd like to continue receiving AI reviews for your games, as well as the other site supporter benefits, you can sign up again at any time on the supporter page. Thank you for your past patronage, we hope to earn it again in the future!",
+                    )}
+                    <div className="buttons">
+                        <Link className="primary btn" to="/supporter">
+                            {_("Visit supporter page")}
+                        </Link>
                     </div>
-                );
-            })}
+                </div>
+            )}
         </div>
     );
 }

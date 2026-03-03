@@ -23,18 +23,25 @@ import { useUser, useData } from "@/lib/hooks";
 import { PaymentProblem } from "@/lib/data_schema";
 import "./PaymentProblemBanner.css";
 
-export function PaymentProblemBanner(): React.ReactElement | null {
+interface PaymentProblemBannerProps {
+    forceShow?: boolean;
+}
+
+export function PaymentProblemBanner({
+    forceShow,
+}: PaymentProblemBannerProps): React.ReactElement | null {
     const user = useUser();
     const [config, _setConfig] = useData("config");
     const [dismissed, _setDismissed] = useData("payment-problem-banner-dismissed-timestamp", 0);
     const navigate = useNavigate();
 
     if (
-        !user ||
-        !user.supporter ||
-        !config ||
-        !config.payment_problems ||
-        dismissed > Date.now() - 1000 * 60 * 60 * 24 * 5
+        !forceShow &&
+        (!user ||
+            !user.supporter ||
+            !config ||
+            !config.payment_problems ||
+            dismissed > Date.now() - 1000 * 60 * 60 * 24 * 5)
     ) {
         return null;
     }
@@ -49,9 +56,15 @@ export function PaymentProblemBanner(): React.ReactElement | null {
     return (
         <div className="PaymentProblemBanner-container">
             <Card className="PaymentProblemBanner">
-                {config.payment_problems.map((problem, i) => (
-                    <PaymentProblemDescription key={i} problem={problem} />
-                ))}
+                {config?.payment_problems ? (
+                    config.payment_problems.map((problem, i) => (
+                        <PaymentProblemDescription key={i} problem={problem} />
+                    ))
+                ) : (
+                    <PaymentProblemDescription
+                        problem={{ type: "payment_failed" } as PaymentProblem}
+                    />
+                )}
 
                 <div className="buttons">
                     <button className="default" onClick={dismiss}>
