@@ -48,6 +48,7 @@ import { SupporterProblems } from "@/components/SupporterProblems";
 import { FreeTrialSurvey } from "@/components/FreeTrialSurvey";
 import { PriceIncreaseMessage } from "@/components/PriceIncreaseMessage";
 import { HomeDebug, useHomeDebugOverrides, shouldRender, isForced } from "./HomeDebug";
+import { WhatsNewBanner } from "./WhatsNewBanner";
 import "./Home.css";
 
 declare let ogs_missing_translation_count: number;
@@ -207,6 +208,12 @@ export function Home(): React.ReactElement {
                         {shouldRender(debugOverrides, "ProfileCard") && <ProfileCard user={user} />}
 
                         <div className="home-categories">
+                            {shouldRender(debugOverrides, "WhatsNewBanner") && (
+                                <WhatsNewBanner
+                                    forceShow={isForced(debugOverrides, "WhatsNewBanner")}
+                                />
+                            )}
+
                             {showTranslationDialog && (
                                 <Card className="translation-dialog">
                                     <FabX onClick={dismissTranslationDialog} />

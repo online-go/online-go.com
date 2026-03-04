@@ -72,6 +72,13 @@ export interface ConfigSchema {
     dismissable_messages: DismissableMessagesSchema;
     payment_problems?: PaymentProblems;
     last_game?: Record<string, unknown>;
+    whats_new?: WhatsNewConfig;
+}
+
+export interface WhatsNewConfig {
+    id: number;
+    timestamp: string;
+    title: Record<string, string>;
 }
 
 interface PaymentMethodDetails {

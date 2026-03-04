@@ -41,6 +41,7 @@ const COMPONENT_NAMES = [
     "InviteList",
     "ActiveDroppedGameList",
     "ProfileCard",
+    "WhatsNewBanner",
     "TournamentList",
     "LadderList",
     "GroupList",
