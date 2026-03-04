@@ -84,6 +84,61 @@
         text-align: center;
     }
 
+    .feedback-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.3rem 0.6rem;
+        border: 1px solid transparent;
+        border-radius: 1rem;
+        background: transparent;
+        cursor: pointer;
+        font-size: 1rem;
+        color: var(--text-color);
+        opacity: 0.4;
+        margin-left: 0.5rem;
+        transition: opacity 0.15s;
+    }
+
+    .feedback-toggle:hover {
+        opacity: 0.8;
+    }
+
+    .feedback-toggle.active {
+        opacity: 1;
+        border-color: var(--shade3);
+    }
+
+    .feedback-form {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+    }
+
+    .feedback-textarea {
+        width: 100%;
+        padding: 0.5rem;
+        font-size: 0.9rem;
+        resize: vertical;
+        box-sizing: border-box;
+        background-color: var(--shade5);
+        border: 1px solid var(--input-border);
+        color: var(--input-fg);
+        border-radius: 3px;
+    }
+
+    .feedback-send {
+        align-self: flex-end;
+    }
+
+    .feedback-confirmation {
+        text-align: center;
+        color: var(--success);
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+    }
+
     .post-nav {
         display: flex;
         justify-content: space-between;
