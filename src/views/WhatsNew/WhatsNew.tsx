@@ -67,8 +67,10 @@ export function WhatsNew(): React.ReactElement | null {
     const [feedbackSending, setFeedbackSending] = React.useState(false);
     const [feedbackSent, setFeedbackSent] = React.useState(false);
     const feedbackSentTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+    const activePostIdRef = React.useRef<number | null>(null);
 
     function applyPost(p: WhatsNewPost): void {
+        activePostIdRef.current = p.id;
         setCurrentPost(p);
         setReactionCounts(p.reaction_counts || {});
         setUserReactions(p.user_reactions || []);
@@ -151,9 +153,13 @@ export function WhatsNew(): React.ReactElement | null {
         if (!currentPost || !feedbackText.trim()) {
             return;
         }
+        const postIdAtSubmit = currentPost.id;
         setFeedbackSending(true);
         post(`whats_new/${currentPost.id}/feedback/`, { text: feedbackText })
             .then(() => {
+                if (activePostIdRef.current !== postIdAtSubmit) {
+                    return;
+                }
                 setFeedbackText("");
                 setFeedbackOpen(false);
                 setFeedbackSent(true);
@@ -166,6 +172,9 @@ export function WhatsNew(): React.ReactElement | null {
                 }, 3000);
             })
             .catch((err: unknown) => {
+                if (activePostIdRef.current !== postIdAtSubmit) {
+                    return;
+                }
                 const status = (err as { status?: number })?.status;
                 if (status === 429) {
                     void alert.fire({ text: _("Rate limit reached. Please try again later.") });
@@ -173,7 +182,12 @@ export function WhatsNew(): React.ReactElement | null {
                     errorAlerter(err);
                 }
             })
-            .finally(() => setFeedbackSending(false));
+            .finally(() => {
+                if (activePostIdRef.current !== postIdAtSubmit) {
+                    return;
+                }
+                setFeedbackSending(false);
+            });
     }
 
     if (loading) {
