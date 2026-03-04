@@ -97,6 +97,7 @@ export function WhatsNew(): React.ReactElement | null {
     React.useEffect(() => {
         window.document.title = _("What's New");
         const targetId = postIdParam ? parseInt(postIdParam) : undefined;
+        activePostIdRef.current = null;
         loadPost(targetId);
 
         setFeedbackOpen(false);
