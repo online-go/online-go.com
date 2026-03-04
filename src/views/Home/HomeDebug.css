@@ -35,6 +35,9 @@
     }
 
     .HomeDebug-dropdown {
+        position: absolute;
+        bottom: 100%;
+        left: 0;
         background: rgba(0, 0, 0, 0.92);
         border: 1px solid #555;
         border-radius: 4px;
