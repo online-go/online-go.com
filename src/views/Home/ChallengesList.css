@@ -15,11 +15,51 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 .ChallengesList {
-    .challenge-cards {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    h2 {
+        margin-bottom: 0.5rem;
+    }
+
+    .carousel-nav {
         display: flex;
-        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        width: 20rem;
+        max-width: 100vw;
+        margin-top: 0.25rem;
+    }
+
+    .carousel-arrow {
+        // background: none;
+        border: 1px solid var(--shade3);
+        border-radius: 50%;
+        width: 2rem;
+        height: 2rem;
+        display: flex;
         align-items: center;
         justify-content: center;
+        cursor: pointer;
+        font-size: 0.75rem;
+        line-height: 1;
+        padding: 0;
+        color: var(--fg);
+        flex-shrink: 0;
+
+        &.back {
+            padding-right: 0.1rem;
+        }
+
+        &.forward {
+            padding-left: 0.1rem;
+        }
+    }
+
+    .carousel-indicator {
+        font-size: 0.85rem;
+        color: var(--shade3);
     }
 
     .Card {

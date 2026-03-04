@@ -44,6 +44,7 @@ interface Challenge {
 
 export function ChallengesList({ onAccept }: ChallengeListProps): React.ReactElement {
     const [challenges, setChallenges] = React.useState<Challenge[]>([]);
+    const [currentIndex, setCurrentIndex] = React.useState(0);
 
     React.useEffect(() => {
         const update = (list: Challenge[]) => {
@@ -56,6 +57,13 @@ export function ChallengesList({ onAccept }: ChallengeListProps): React.ReactEle
             data.unwatch(cached.challenge_list, update);
         };
     }, []);
+
+    // Keep currentIndex in bounds when challenges change
+    React.useEffect(() => {
+        if (currentIndex >= challenges.length && challenges.length > 0) {
+            setCurrentIndex(challenges.length - 1);
+        }
+    }, [challenges.length, currentIndex]);
 
     const deleteChallenge = (challenge: Challenge) => {
         del(`me/challenges/${challenge.id}`).then(ignore).catch(ignore);
@@ -75,43 +83,61 @@ export function ChallengesList({ onAccept }: ChallengeListProps): React.ReactEle
         setChallenges((prev) => prev.filter((c) => c.id !== challenge.id));
     };
 
+    const prev = () => {
+        setCurrentIndex((i) => (i > 0 ? i - 1 : challenges.length - 1));
+    };
+
+    const next = () => {
+        setCurrentIndex((i) => (i < challenges.length - 1 ? i + 1 : 0));
+    };
+
     const user = data.get("user");
+
+    if (challenges.length === 0) {
+        return <div className="ChallengesList" />;
+    }
+
+    const challenge = challenges[currentIndex];
+    if (!challenge) {
+        return <div className="ChallengesList" />;
+    }
+
+    const opponent =
+        challenge.challenger.id === user.id ? challenge.challenged : challenge.challenger;
 
     return (
         <div className="ChallengesList">
-            {challenges.length > 0 && <h2>{_("Challenges")}</h2>}
-            <div className="challenge-cards">
-                {challenges.map((challenge) => {
-                    const opponent =
-                        challenge.challenger.id === user.id
-                            ? challenge.challenged
-                            : challenge.challenger;
+            <h2>{_("Challenges")}</h2>
+            <Card>
+                <div className="icon-name">
+                    <PlayerIcon id={opponent.id} size={64} />
+                    <div className="name">
+                        {challenge.challenged.id === user.id && (
+                            <FabCheck onClick={() => acceptChallenge(challenge)} />
+                        )}
 
-                    return (
-                        <Card key={challenge.id}>
-                            <div className="icon-name">
-                                <PlayerIcon id={opponent.id} size={64} />
-                                <div className="name">
-                                    {challenge.challenged.id === user.id && (
-                                        <FabCheck onClick={() => acceptChallenge(challenge)} />
-                                    )}
-
-                                    <h4 title={profanity_filter(challenge.game.name)}>
-                                        "{profanity_filter(challenge.game.name)}"
-                                    </h4>
-                                    <Player user={opponent} />
-                                </div>
-                                <FabX onClick={() => deleteChallenge(challenge)} />
-                            </div>
-                            <div>
-                                {challenge_text_description(
-                                    challenge as unknown as ChallengeDetails,
-                                )}
-                            </div>
-                        </Card>
-                    );
-                })}
-            </div>
+                        <h4 title={profanity_filter(challenge.game.name)}>
+                            "{profanity_filter(challenge.game.name)}"
+                        </h4>
+                        <Player user={opponent} />
+                    </div>
+                    <FabX onClick={() => deleteChallenge(challenge)} />
+                </div>
+                <div>{challenge_text_description(challenge as unknown as ChallengeDetails)}</div>
+            </Card>
+            {challenges.length > 1 && (
+                <div className="carousel-nav">
+                    <button className="carousel-arrow back" onClick={prev}>
+                        <i className="fa fa-chevron-left" />
+                    </button>
+                    <span className="carousel-indicator">
+                        {currentIndex + 1} / {challenges.length}
+                    </span>
+                    <button className="carousel-arrow forward" onClick={next}>
+                        <i className="fa fa-chevron-right" />
+                    </button>
+                </div>
+            )}
         </div>
     );
 }
