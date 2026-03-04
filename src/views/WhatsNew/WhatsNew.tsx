@@ -66,6 +66,7 @@ export function WhatsNew(): React.ReactElement | null {
     const [feedbackText, setFeedbackText] = React.useState("");
     const [feedbackSending, setFeedbackSending] = React.useState(false);
     const [feedbackSent, setFeedbackSent] = React.useState(false);
+    const feedbackSentTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
     function applyPost(p: WhatsNewPost): void {
         setCurrentPost(p);
@@ -95,6 +96,22 @@ export function WhatsNew(): React.ReactElement | null {
         window.document.title = _("What's New");
         const targetId = postIdParam ? parseInt(postIdParam) : undefined;
         loadPost(targetId);
+
+        setFeedbackOpen(false);
+        setFeedbackText("");
+        setFeedbackSending(false);
+        setFeedbackSent(false);
+        if (feedbackSentTimer.current) {
+            clearTimeout(feedbackSentTimer.current);
+            feedbackSentTimer.current = null;
+        }
+
+        return () => {
+            if (feedbackSentTimer.current) {
+                clearTimeout(feedbackSentTimer.current);
+                feedbackSentTimer.current = null;
+            }
+        };
     }, [postIdParam]);
 
     function toggleReaction(emoji: string): void {
@@ -140,7 +157,13 @@ export function WhatsNew(): React.ReactElement | null {
                 setFeedbackText("");
                 setFeedbackOpen(false);
                 setFeedbackSent(true);
-                setTimeout(() => setFeedbackSent(false), 3000);
+                if (feedbackSentTimer.current) {
+                    clearTimeout(feedbackSentTimer.current);
+                }
+                feedbackSentTimer.current = setTimeout(() => {
+                    setFeedbackSent(false);
+                    feedbackSentTimer.current = null;
+                }, 3000);
             })
             .catch((err: unknown) => {
                 const status = (err as { status?: number })?.status;
@@ -214,9 +237,10 @@ export function WhatsNew(): React.ReactElement | null {
                 <div className="feedback-form">
                     <textarea
                         className="feedback-textarea"
-                        placeholder={_("Share your feedback on this post...")}
+                        placeholder={_("Tell the team what you think")}
                         value={feedbackText}
-                        onChange={(ev) => setFeedbackText(ev.target.value)}
+                        onChange={(ev) => setFeedbackText(ev.target.value.slice(0, 2048))}
+                        maxLength={2048}
                         rows={3}
                     />
                     <button
