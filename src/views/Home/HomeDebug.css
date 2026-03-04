@@ -17,7 +17,7 @@
 
 .HomeDebug {
     position: fixed;
-    top: calc(var(--navbar-height, 48px) + 4px);
+    bottom: 4px;
     left: 4px;
     z-index: 10000;
     font-size: 12px;
@@ -38,7 +38,7 @@
         background: rgba(0, 0, 0, 0.92);
         border: 1px solid #555;
         border-radius: 4px;
-        margin-top: 2px;
+        margin-bottom: 2px;
         padding: 4px 0;
         min-width: 240px;
         max-height: 80vh;

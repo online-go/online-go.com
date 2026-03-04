@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* cspell: disable */
+
 import * as React from "react";
 import * as data from "@/lib/data";
 import { del } from "@/lib/requests";
@@ -73,6 +75,13 @@ export function DismissableMessages({
                         />
                     </div>
                 ))}
+            {forceShow && (!messages || Object.keys(messages).length === 0) && (
+                <div className="DismissableMessage">
+                    <i className="fa fa-times" />
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor
+                    incididunt ut labore et dolore magna aliqua.
+                </div>
+            )}
         </div>
     );
 }

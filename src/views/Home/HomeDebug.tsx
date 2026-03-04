@@ -72,7 +72,7 @@ export function HomeDebug({ overrides, setOverrides }: HomeDebugProps): React.Re
     const [open, setOpen] = React.useState(false);
     const user = useUser();
 
-    if (!user || user.id !== 1) {
+    if (process.env.NODE_ENV !== "development" || !user || user.id !== 1) {
         return null;
     }
 
@@ -101,9 +101,6 @@ export function HomeDebug({ overrides, setOverrides }: HomeDebugProps): React.Re
 
     return (
         <div className="HomeDebug">
-            <button className="HomeDebug-toggle" onClick={() => setOpen(!open)}>
-                DBG
-            </button>
             {open && (
                 <div className="HomeDebug-dropdown">
                     {hasOverrides && (
@@ -128,6 +125,9 @@ export function HomeDebug({ overrides, setOverrides }: HomeDebugProps): React.Re
                     })}
                 </div>
             )}
+            <button className="HomeDebug-toggle" onClick={() => setOpen(!open)}>
+                DBG
+            </button>
         </div>
     );
 }
