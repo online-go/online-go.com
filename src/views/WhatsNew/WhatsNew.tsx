@@ -226,7 +226,17 @@ export function WhatsNew(): React.ReactElement | null {
                 {!user.anonymous && (
                     <button
                         className={"feedback-toggle" + (feedbackOpen ? " active" : "")}
-                        onClick={() => setFeedbackOpen(!feedbackOpen)}
+                        onClick={() => {
+                            const opening = !feedbackOpen;
+                            setFeedbackOpen(opening);
+                            if (opening && feedbackSent) {
+                                setFeedbackSent(false);
+                                if (feedbackSentTimer.current) {
+                                    clearTimeout(feedbackSentTimer.current);
+                                    feedbackSentTimer.current = null;
+                                }
+                            }
+                        }}
                         title={_("Send feedback")}
                     >
                         <i className="fa fa-reply" />
