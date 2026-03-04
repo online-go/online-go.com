@@ -20,6 +20,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { get, post } from "@/lib/requests";
 import { _, current_language, moment } from "@/lib/translate";
 import { errorAlerter } from "@/lib/misc";
+import { alert } from "@/lib/swal_config";
 import { Markdown } from "@/components/Markdown";
 import { useUser } from "@/lib/hooks";
 import { UIPush } from "@/components/UIPush";
@@ -61,6 +62,10 @@ export function WhatsNew(): React.ReactElement | null {
     const [userReactions, setUserReactions] = React.useState<string[]>([]);
     const [loading, setLoading] = React.useState(true);
     const [error, setError] = React.useState<string | null>(null);
+    const [feedbackOpen, setFeedbackOpen] = React.useState(false);
+    const [feedbackText, setFeedbackText] = React.useState("");
+    const [feedbackSending, setFeedbackSending] = React.useState(false);
+    const [feedbackSent, setFeedbackSent] = React.useState(false);
 
     function applyPost(p: WhatsNewPost): void {
         setCurrentPost(p);
@@ -125,6 +130,29 @@ export function WhatsNew(): React.ReactElement | null {
         }
     }
 
+    function submitFeedback(): void {
+        if (!currentPost || !feedbackText.trim()) {
+            return;
+        }
+        setFeedbackSending(true);
+        post(`whats_new/${currentPost.id}/feedback/`, { text: feedbackText })
+            .then(() => {
+                setFeedbackText("");
+                setFeedbackOpen(false);
+                setFeedbackSent(true);
+                setTimeout(() => setFeedbackSent(false), 3000);
+            })
+            .catch((err: unknown) => {
+                const status = (err as { status?: number })?.status;
+                if (status === 429) {
+                    void alert.fire({ text: _("Rate limit reached. Please try again later.") });
+                } else {
+                    errorAlerter(err);
+                }
+            })
+            .finally(() => setFeedbackSending(false));
+    }
+
     if (loading) {
         return <LoadingPage />;
     }
@@ -172,7 +200,37 @@ export function WhatsNew(): React.ReactElement | null {
                         </button>
                     );
                 })}
+                {!user.anonymous && (
+                    <button
+                        className={"feedback-toggle" + (feedbackOpen ? " active" : "")}
+                        onClick={() => setFeedbackOpen(!feedbackOpen)}
+                        title={_("Send feedback")}
+                    >
+                        <i className="fa fa-reply" />
+                    </button>
+                )}
             </div>
+            {feedbackOpen && (
+                <div className="feedback-form">
+                    <textarea
+                        className="feedback-textarea"
+                        placeholder={_("Share your feedback on this post...")}
+                        value={feedbackText}
+                        onChange={(ev) => setFeedbackText(ev.target.value)}
+                        rows={3}
+                    />
+                    <button
+                        className="primary feedback-send"
+                        onClick={submitFeedback}
+                        disabled={feedbackSending || !feedbackText.trim()}
+                    >
+                        {feedbackSending ? _("Sending...") : _("Send")}
+                    </button>
+                </div>
+            )}
+            {feedbackSent && (
+                <div className="feedback-confirmation">{_("Feedback sent. Thank you!")}</div>
+            )}
             {(currentPost.next || currentPost.previous) && (
                 <div className="post-nav">
                     <span>
