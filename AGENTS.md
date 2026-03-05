@@ -1,191 +1,26 @@
-## OGS-Wide Development Policy
+# Project: online-go.com
 
-**Note:** This section contains policies that apply across all OGS repositories (ogs, ogs-ui, ogs-node). Other repos reference this document.
+React/TypeScript frontend for online-go.com. Uses Vite, PostCSS, `yarn`.
 
-### Git Workflow
+## Layout
 
-- **Always use feature branches** - Never commit directly to `main`
-- **Branch naming**: Use descriptive names, e.g., `e2etesting_feature_name`, `fix_issue_123`, `feature_new_dashboard`
-- **No force pushing** - Never rewrite history on shared branches (after pushing)
-- **Amending commits**:
-    - OK: Amend before pushing to clean up local commits
-    - NOT OK: Amend after pushing (creates diverged history)
-    - If you need to fix a pushed commit, create a new commit instead
-- **Pull requests required** - All changes go through PR review before merging to main
-- **Commit messages** - Do not include attribution messages (like "Co-Authored-By" or "Generated with Claude Code") in commit messages
-- **DEV_ONLY changes** - Never commit uncommented code lines with `// DEV_ONLY` comments (these are local-only development settings)
+- `src/components/` - Shared React components
+- `src/views/` - Page views
+- `src/lib/` - Core utilities (`data.ts`, `sockets.ts`, `preferences.ts`, `GobanController.ts`)
+- `src/models/` - TypeScript types
+- `submodules/goban/` - Go board engine (submodule)
 
----
+## Path Aliases
 
-## Development Commands
+- `@/*` -> `src/*`
+- `goban` -> `submodules/goban/src`
+- `react-dynamic-help` -> `submodules/react-dynamic-help/src`
 
-### Setup
+## Rules
 
-```bash
-# Clone with submodules
-git clone --recurse-submodules git@github.com:online-go/online-go.com.git
-
-# Install dependencies
-npx yarn install
-
-# Install husky for pre-commit hooks
-npx husky install
-
-# Or use make to do all setup
-make
-```
-
-### Development Server
-
-```bash
-npm run dev                    # Connect to beta server (default)
-make dev                      # Same as above
-make local-dev                # Connect to local backend
-make point-to-production      # Connect to production server
-make bot-dev                  # Special bot development mode
-```
-
-Development server runs on http://dev.beta.online-go.com:8080/
-
-### Build and Type Checking
-
-```bash
-npm run build                 # Production build
-npm run build:i18n           # Internationalization build
-npm run type-check           # TypeScript type checking
-```
-
-### Code Quality
-
-```bash
-npm run lint                 # ESLint
-npm run lint:fix             # ESLint with auto-fix
-npm run prettier             # Format code with Prettier
-npm run prettier:check       # Check formatting
-npm run spellcheck           # Spell check TypeScript files
-make pretty                  # Run prettier + lint:fix
-```
-
-### Testing
-
-```bash
-npm run test                 # Jest unit tests
-npm run fresh-test           # Clear console and run tests
-npm run test:e2e             # Playwright end-to-end tests
-npm run test:e2e:quick       # E2E tests excluding smoke/slow
-npm run test:e2e:smoke       # Smoke tests only
-npm run test:e2e:ui          # E2E tests with UI
-npm run test:e2e:debug       # E2E tests in debug mode
-npm run test:ci              # Full CI test suite
-```
-
-### Analysis
-
-```bash
-npm run bundle-visualizer    # Analyze bundle size
-npm run dependency-cruiser   # Check dependencies
-```
-
-## Architecture Overview
-
-This is a React/TypeScript application for the Online-Go.com web client, a platform for playing the board game Go online.
-
-### Key Directories
-
-- `src/components/` - React UI components
-- `src/views/` - Main page components/views
-- `src/lib/` - Core utilities and business logic
-- `src/models/` - TypeScript type definitions
-- `submodules/goban/` - Go board engine (git submodule)
-- `submodules/react-dynamic-help/` - Help system
-- `submodules/moderator-ui/` - Moderation interface
-
-### Core Libraries and Systems
-
-- **Game Engine**: Uses custom `goban` library (submodule) for Go game logic
-- **Real-time**: WebSocket connections via `sockets.ts` and `chat_manager.ts`
-- **State Management**: Mix of React state and custom managers
-- **Styling**: PostCSS (.css files) for CSS preprocessing
-- **Testing**: Jest for unit tests, Playwright for E2E tests
-- **Build**: Vite for development and production builds
-
-### Important Core Files
-
-- `src/main.tsx` - Application entry point
-- `src/routes.tsx` - React Router configuration
-- `src/lib/data.ts` - Main data management and API integration
-- `src/lib/preferences.ts` - User preferences management
-- `src/lib/sockets.ts` - WebSocket communication
-- `src/lib/GobanController.ts` - Game board state management
-- `src/lib/chat_manager.ts` - Chat system
-
-### Path Aliases
-
-The project uses TypeScript path mapping:
-
-- `@/*` → `src/*`
-- `goban` → `submodules/goban/src`
-- `goscorer` → `submodules/goban/src/third_party/goscorer/goscorer`
-- `react-dynamic-help` → `submodules/react-dynamic-help/src`
-
-### Backend Integration
-
-The client can connect to different backends via `OGS_BACKEND` environment variable:
-
-- `BETA` (default) - https://beta.online-go.com
-- `PRODUCTION` - https://online-go.com
-- `LOCAL` - http://127.0.0.1:1080
-
-### Component Structure
-
-Most components follow the pattern:
-
-```
-ComponentName/
-├── ComponentName.tsx
-├── ComponentName.css
-└── index.ts
-```
-
-### Development Notes
-
-- Git submodules are required - clone with `--recurse-submodules`
-- Husky pre-commit hooks enforce linting and formatting
-- Development server hot-reloads on file changes
-- TypeScript strict mode is enabled with comprehensive type checking
-- Components are heavily modularized with 100+ individual components
-- The use of emojis is discouraged, they are unprofessional and tacky
-- Use comments sparingly but should be used to explain complex code or non-obvious code
-- Always ensure the code builds and passes linting and formatting
-- Do not use `any` type, ensure that all variables are correctly typed
-- We use `yarn`, not `npm`
-
-### Styling Guidelines
-
-- **CSS files (.css)**: Uses PostCSS with nested syntax, processed by Vite
-- Follow the pattern of existing .css files in the project
-- **Shared build-time variables**: PostCSS simple-vars (`$variable`) that need to be shared across component CSS files should be defined in `src/global_styl/00_constants.css` and imported via `@import "../../global_styl/00_constants.css";` at the top of each CSS file that uses them. Component CSS files are processed independently by Vite, so variables from other CSS files are not automatically available.
-- **CSS custom properties** (runtime `var(--name)` variables) are defined in `src/global_styl/01_variables.css`
-- Example:
-
-    ```css
-    .MyComponent {
-        display: flex;
-        align-items: center;
-
-        .child-element {
-            margin: 1rem;
-        }
-    }
-    ```
-
-### Animation Guidelines
-
-- Avoid disorienting animations like continuous pulsing, throbbing, or looping effects
-- Do not use translate effects on hover (no transform: translateY or translateX)
-- Keep animations subtle and purposeful - prefer opacity and shadow changes over position changes
-
-### Interaction Guidelines
-
-- Background color changes on hover are only allowed for interactive elements (buttons, links, clickable items)
-- Non-interactive elements should not have background color changes on hover
+- No `any` types. No emojis. Use `yarn`, not `npm`.
+- **One component per file** (required for Vite HMR). Each component gets its own `.tsx` and matching `.css` file. Never define multiple components in one file.
+- Co-locate components used by a single parent in the parent's directory (e.g., `GobanLayout/PlayerInfo.tsx`). Shared components go in `src/components/`.
+- CSS uses PostCSS nested syntax. Shared `$variables` go in `src/global_styl/00_constants.css` and must be explicitly imported. Runtime `var(--name)` variables are in `src/global_styl/01_variables.css`.
+- No pulsing/throbbing animations. No `translateY`/`translateX` on hover. No hover background changes on non-interactive elements.
+- Code must build and pass linting/formatting.

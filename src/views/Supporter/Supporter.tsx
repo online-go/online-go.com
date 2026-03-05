@@ -579,7 +579,12 @@ export function Supporter(props: SupporterProperties): React.ReactElement {
                                         <PaymentMethod payment={p} />
                                         <span className="status">
                                             {p.currency ? (
-                                                p.status === "succeeded" ? (
+                                                p.status === "refunded" ? (
+                                                    <i
+                                                        className="fa fa-undo"
+                                                        title={_("Refunded")}
+                                                    />
+                                                ) : p.status === "succeeded" ? (
                                                     <i className="fa fa-check" />
                                                 ) : (
                                                     <i className="fa fa-times" />

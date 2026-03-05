@@ -27,6 +27,10 @@
             color: red;
         }
 
+        .fa-undo {
+            color: #e8a317;
+        }
+
         .date {
             display: inline-block;
             width: 12rem;

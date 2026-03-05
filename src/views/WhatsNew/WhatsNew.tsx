@@ -20,6 +20,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { get, post } from "@/lib/requests";
 import { _, current_language, moment } from "@/lib/translate";
 import { errorAlerter } from "@/lib/misc";
+import { alert } from "@/lib/swal_config";
 import { Markdown } from "@/components/Markdown";
 import { useUser } from "@/lib/hooks";
 import { UIPush } from "@/components/UIPush";
@@ -61,8 +62,15 @@ export function WhatsNew(): React.ReactElement | null {
     const [userReactions, setUserReactions] = React.useState<string[]>([]);
     const [loading, setLoading] = React.useState(true);
     const [error, setError] = React.useState<string | null>(null);
+    const [feedbackOpen, setFeedbackOpen] = React.useState(false);
+    const [feedbackText, setFeedbackText] = React.useState("");
+    const [feedbackSending, setFeedbackSending] = React.useState(false);
+    const [feedbackSent, setFeedbackSent] = React.useState(false);
+    const feedbackSentTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+    const activePostIdRef = React.useRef<number | null>(null);
 
     function applyPost(p: WhatsNewPost): void {
+        activePostIdRef.current = p.id;
         setCurrentPost(p);
         setReactionCounts(p.reaction_counts || {});
         setUserReactions(p.user_reactions || []);
@@ -89,7 +97,24 @@ export function WhatsNew(): React.ReactElement | null {
     React.useEffect(() => {
         window.document.title = _("What's New");
         const targetId = postIdParam ? parseInt(postIdParam) : undefined;
+        activePostIdRef.current = null;
         loadPost(targetId);
+
+        setFeedbackOpen(false);
+        setFeedbackText("");
+        setFeedbackSending(false);
+        setFeedbackSent(false);
+        if (feedbackSentTimer.current) {
+            clearTimeout(feedbackSentTimer.current);
+            feedbackSentTimer.current = null;
+        }
+
+        return () => {
+            if (feedbackSentTimer.current) {
+                clearTimeout(feedbackSentTimer.current);
+                feedbackSentTimer.current = null;
+            }
+        };
     }, [postIdParam]);
 
     function toggleReaction(emoji: string): void {
@@ -123,6 +148,47 @@ export function WhatsNew(): React.ReactElement | null {
         if (data.post_id === currentPost?.id) {
             setReactionCounts(data.counts);
         }
+    }
+
+    function submitFeedback(): void {
+        if (!currentPost || !feedbackText.trim()) {
+            return;
+        }
+        const postIdAtSubmit = currentPost.id;
+        setFeedbackSending(true);
+        post(`whats_new/${currentPost.id}/feedback/`, { text: feedbackText })
+            .then(() => {
+                if (activePostIdRef.current !== postIdAtSubmit) {
+                    return;
+                }
+                setFeedbackText("");
+                setFeedbackOpen(false);
+                setFeedbackSent(true);
+                if (feedbackSentTimer.current) {
+                    clearTimeout(feedbackSentTimer.current);
+                }
+                feedbackSentTimer.current = setTimeout(() => {
+                    setFeedbackSent(false);
+                    feedbackSentTimer.current = null;
+                }, 3000);
+            })
+            .catch((err: unknown) => {
+                if (activePostIdRef.current !== postIdAtSubmit) {
+                    return;
+                }
+                const status = (err as { status?: number })?.status;
+                if (status === 429) {
+                    void alert.fire({ text: _("Rate limit reached. Please try again later.") });
+                } else {
+                    errorAlerter(err);
+                }
+            })
+            .finally(() => {
+                if (activePostIdRef.current !== postIdAtSubmit) {
+                    return;
+                }
+                setFeedbackSending(false);
+            });
     }
 
     if (loading) {
@@ -172,7 +238,48 @@ export function WhatsNew(): React.ReactElement | null {
                         </button>
                     );
                 })}
+                {!user.anonymous && (
+                    <button
+                        className={"feedback-toggle" + (feedbackOpen ? " active" : "")}
+                        onClick={() => {
+                            const opening = !feedbackOpen;
+                            setFeedbackOpen(opening);
+                            if (opening && feedbackSent) {
+                                setFeedbackSent(false);
+                                if (feedbackSentTimer.current) {
+                                    clearTimeout(feedbackSentTimer.current);
+                                    feedbackSentTimer.current = null;
+                                }
+                            }
+                        }}
+                        title={_("Send feedback")}
+                    >
+                        <i className="fa fa-reply" />
+                    </button>
+                )}
             </div>
+            {feedbackOpen && (
+                <div className="feedback-form">
+                    <textarea
+                        className="feedback-textarea"
+                        placeholder={_("Tell the team what you think")}
+                        value={feedbackText}
+                        onChange={(ev) => setFeedbackText(ev.target.value.slice(0, 2048))}
+                        maxLength={2048}
+                        rows={3}
+                    />
+                    <button
+                        className="primary feedback-send"
+                        onClick={submitFeedback}
+                        disabled={feedbackSending || !feedbackText.trim()}
+                    >
+                        {feedbackSending ? _("Sending...") : _("Send")}
+                    </button>
+                </div>
+            )}
+            {feedbackSent && (
+                <div className="feedback-confirmation">{_("Feedback sent. Thank you!")}</div>
+            )}
             {(currentPost.next || currentPost.previous) && (
                 <div className="post-nav">
                     <span>
