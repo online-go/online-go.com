@@ -291,7 +291,7 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
                                 </button>
                             </div>
                         )}
-                        {correct && (
+                        {correct && !preferences.get("learning-hub-auto-advance") && (
                             <div className="complete">
                                 <h1>{_("Great job!")}</h1>
                                 <button className="primary" onClick={this.next}>
