@@ -229,6 +229,7 @@ export const defaults = {
     "user-history.warnings-only": false,
     "debug.test-wanted": false,
     "learning-hub-expanded-section": "Fundamentals",
+    "learning-hub-auto-advance": false,
 
     "bot.challenge-level": 2 as 1 | 2 | 3,
     "bot.slug": "" as string,

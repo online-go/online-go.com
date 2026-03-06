@@ -23,6 +23,7 @@ import { InstructionalGoban } from "./InstructionalGoban";
 import { browserHistory } from "@/lib/ogsHistory";
 import { setSectionPageCompleted, getSectionPageCompleted } from "./util";
 import { _ } from "@/lib/translate";
+import * as preferences from "@/lib/preferences";
 
 export interface LearningPageProperties {
     title: string;
@@ -109,10 +110,13 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
     onUpdate = () => {
         if (this.complete()) {
             sfx.play("tutorial-pass");
+            this.instructional_goban?.goban?.disableStonePlacement();
+            if (preferences.get("learning-hub-auto-advance")) {
+                this.next();
+                return;
+            }
         } else if (this.failed()) {
             sfx.play("tutorial-fail");
-        }
-        if (this.complete() || this.failed()) {
             this.instructional_goban?.goban?.disableStonePlacement();
         }
 
@@ -129,7 +133,11 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
         this.correct_answer_triggered = true;
         sfx.play("tutorial-pass");
         this.instructional_goban?.goban?.disableStonePlacement();
-        this.forceUpdate();
+        if (preferences.get("learning-hub-auto-advance")) {
+            this.next();
+        } else {
+            this.forceUpdate();
+        }
     };
     onWrongAnswer = () => {
         this.wrong_answer_triggered = true;
