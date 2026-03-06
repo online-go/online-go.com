@@ -134,11 +134,9 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
         this.correct_answer_triggered = true;
         sfx.play("tutorial-pass");
         this.instructional_goban?.goban?.disableStonePlacement();
+        this.forceUpdate();
         if (preferences.get("learning-hub-auto-advance")) {
-            this.forceUpdate();
             setTimeout(() => this.next(), 500);
-        } else {
-            this.forceUpdate();
         }
     };
     onWrongAnswer = () => {
