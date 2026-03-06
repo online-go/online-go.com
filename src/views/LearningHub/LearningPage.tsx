@@ -112,7 +112,8 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
             sfx.play("tutorial-pass");
             this.instructional_goban?.goban?.disableStonePlacement();
             if (preferences.get("learning-hub-auto-advance")) {
-                this.next();
+                this.setState({ show_reset: this.showReset(), show_next: true });
+                setTimeout(() => this.next(), 500);
                 return;
             }
         } else if (this.failed()) {
@@ -134,7 +135,8 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
         sfx.play("tutorial-pass");
         this.instructional_goban?.goban?.disableStonePlacement();
         if (preferences.get("learning-hub-auto-advance")) {
-            this.next();
+            this.forceUpdate();
+            setTimeout(() => this.next(), 500);
         } else {
             this.forceUpdate();
         }
@@ -291,12 +293,14 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
                                 </button>
                             </div>
                         )}
-                        {correct && !preferences.get("learning-hub-auto-advance") && (
+                        {correct && (
                             <div className="complete">
                                 <h1>{_("Great job!")}</h1>
-                                <button className="primary" onClick={this.next}>
-                                    {_("Next")}
-                                </button>
+                                {!preferences.get("learning-hub-auto-advance") && (
+                                    <button className="primary" onClick={this.next}>
+                                        {_("Next")}
+                                    </button>
+                                )}
                             </div>
                         )}
                         {!correct && !fail && (
