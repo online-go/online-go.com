@@ -131,6 +131,16 @@
 
     .position {
         cursor: crosshair;
+
+        &.tight-right {
+            margin-right: 0;
+            padding-right: 0;
+        }
+    }
+
+    .position-trailing {
+        margin-right: 0.2em;
+        padding-right: 0.2em;
     }
 
     .chat-input-player-list-toggle {

@@ -404,14 +404,39 @@
         }
     }
 
-    .reset-progress {
-        font-size: var(--font-size-small);
-        color: var(--shade2);
-        cursor: pointer;
+    .section-nav-footer {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
         padding: 0.5rem;
+        margin-top: 0.5rem;
 
-        &:hover {
-            color: var(--shade0);
+        .auto-advance-toggle {
+            font-size: var(--font-size-small);
+            color: var(--shade2);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+
+            input {
+                cursor: pointer;
+            }
+
+            &:hover {
+                color: var(--shade0);
+            }
+        }
+
+        .reset-progress {
+            font-size: var(--font-size-small);
+            color: var(--shade2);
+            cursor: pointer;
+
+            &:hover {
+                color: var(--shade0);
+            }
         }
     }
 }
