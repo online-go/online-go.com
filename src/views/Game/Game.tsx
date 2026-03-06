@@ -337,8 +337,10 @@ export function Game(): React.ReactElement | null {
             updateAntiGriefGameState(goban);
         };
 
-        goban.on("phase", () => {
-            goban!.engine.cur_move.clearMarks();
+        goban.on("phase", (phase) => {
+            if (phase !== "stone removal") {
+                goban!.engine.cur_move.clearMarks();
+            }
             // Update AntiGrief state when phase changes
             updateAntiGriefGameState(goban);
         });

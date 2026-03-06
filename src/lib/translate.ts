@@ -544,6 +544,9 @@ export function setCurrentLanguage(language_code: string) {
         "The game would be repeating with that move, please play somewhere else first": _(
             "The game would be repeating with that move, please play somewhere else first",
         ),
+        "Auto-scoring failed, please manually score the game": _(
+            "Auto-scoring failed, please manually score the game",
+        ),
         Error: _("Error"),
         "Self-capture is not allowed": _("Self-capture is not allowed"),
 
