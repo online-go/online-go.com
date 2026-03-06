@@ -583,20 +583,25 @@ let orig_move: MoveTree | null = null;
 let stashed_pen_marks: any = null; //goban.pen_marks;
 //let orig_marks: unknown[] | null = null;
 
+const position_split_regex = /((?<=^|\s)\b[a-zA-Z][0-9]{1,2}\b[,.!?]*(?=\s|$))/m;
+const position_pattern_regex = /(?<=^|\s)\b([a-zA-Z][0-9]{1,2})\b([,.!?]*)(?=\s|$)/m;
+
 function MarkupChatLine({ line }: { line: ChatLine }): React.ReactElement {
     const body = line.body;
     const goban_controller = useGobanController();
     const goban = goban_controller.goban;
 
     const highlight_position = (event: React.MouseEvent<HTMLSpanElement>) => {
-        const pos = parsePosition((event.target as HTMLSpanElement).innerText, goban);
+        const position = event.currentTarget.dataset.position || "";
+        const pos = parsePosition(position, goban);
         if (pos.i >= 0) {
             goban.getMarks(pos.i, pos.j).chat_triangle = true;
             goban.drawSquare(pos.i, pos.j);
         }
     };
     function unhighlight_position(event: React.MouseEvent<HTMLSpanElement>) {
-        const pos = parsePosition((event.target as HTMLSpanElement).innerText, goban);
+        const position = event.currentTarget.dataset.position || "";
+        const pos = parsePosition(position, goban);
         if (pos.i >= 0) {
             goban.getMarks(pos.i, pos.j).chat_triangle = false;
             goban.drawSquare(pos.i, pos.j);
@@ -608,23 +613,26 @@ function MarkupChatLine({ line }: { line: ChatLine }): React.ReactElement {
             <React.Fragment>
                 {chat_markup(body, [
                     {
-                        split: /((?:^|\s)[a-zA-Z][0-9]{1,2}(?=\s|$))/gm,
-                        pattern: /^(\s?)([a-zA-Z][0-9]{1,2})$/,
+                        split: position_split_regex,
+                        pattern: position_pattern_regex,
                         replacement: (m, idx) => {
-                            const pos = m[2];
+                            const pos = m[1];
                             if (parsePosition(pos, goban).i < 0) {
-                                return <span key={idx}>{m[0]}</span>;
+                                return <span key={idx}>{m[1]}</span>;
                             }
                             return (
                                 <React.Fragment key={idx}>
-                                    {m[1]}
                                     <span
-                                        className="position"
+                                        className={m[2] ? "position tight-right" : "position"}
+                                        data-position={m[1]}
                                         onMouseEnter={highlight_position}
                                         onMouseLeave={unhighlight_position}
                                     >
-                                        {m[2]}
+                                        {m[1]}
                                     </span>
+                                    {(m[2] || null) && (
+                                        <span className="position-trailing">{m[2]}</span>
+                                    )}
                                 </React.Fragment>
                             );
                         },
