@@ -41,6 +41,7 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
     correct_answer_triggered: boolean = false;
     wrong_answer_triggered: boolean = false;
     error_triggered: boolean = false;
+    auto_advance_scheduled: boolean = false;
 
     static underConstruction(): boolean {
         return false;
@@ -78,6 +79,7 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
         };
     }
     next = () => {
+        this.auto_advance_scheduled = false;
         setSectionPageCompleted(this.props.section, this.props.curPage);
 
         this.correct_answer_triggered = false;
@@ -111,7 +113,8 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
         if (this.complete()) {
             sfx.play("tutorial-pass");
             this.instructional_goban?.goban?.disableStonePlacement();
-            if (preferences.get("learning-hub-auto-advance")) {
+            if (preferences.get("learning-hub-auto-advance") && !this.auto_advance_scheduled) {
+                this.auto_advance_scheduled = true;
                 this.setState({ show_reset: this.showReset(), show_next: true });
                 setTimeout(() => this.next(), 500);
                 return;
@@ -135,7 +138,8 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
         sfx.play("tutorial-pass");
         this.instructional_goban?.goban?.disableStonePlacement();
         this.forceUpdate();
-        if (preferences.get("learning-hub-auto-advance")) {
+        if (preferences.get("learning-hub-auto-advance") && !this.auto_advance_scheduled) {
+            this.auto_advance_scheduled = true;
             setTimeout(() => this.next(), 500);
         }
     };
