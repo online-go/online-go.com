@@ -173,6 +173,90 @@ export const prepareNewUser = async (
     };
 };
 
+/**
+ * Registers a new user via API instead of UI.
+ * This is significantly faster than registerNewUser().
+ */
+export const atomicRegisterNewUser = async (
+    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>,
+    username: string,
+    password: string,
+) => {
+    const uniqueIPv6 = generateUniqueTestIPv6();
+    const userContext = await createContext({
+        extraHTTPHeaders: {
+            "X-Forwarded-For": uniqueIPv6,
+        },
+    });
+
+    const request = userContext.request;
+
+    // 1. Initialize session and get CSRF token
+    await request.get("/");
+    const cookies = await userContext.cookies();
+    const csrftoken = cookies.find((c) => c.name === "csrftoken")?.value || "";
+
+    // 2. Register via API
+    // ebi is a device fingerprint; we generate a simple one for the test
+    const ebi = `e2e-device-${Date.now()}.0.0.0.0.xxx.xxx.0`;
+    const registerResponse = await request.post("/api/v0/register", {
+        data: {
+            username,
+            password,
+            email: "",
+            ebi,
+        },
+        headers: { "X-CSRFToken": csrftoken },
+    });
+
+    if (!registerResponse.ok()) {
+        throw new Error(`API Registration failed: ${await registerResponse.text()}`);
+    }
+
+    return { userContext, csrftoken };
+};
+
+/**
+ * Prepares a new user for testing using only API calls.
+ * Replaces prepareNewUser() for non-onboarding related tests.
+ */
+export const atomicPrepareNewUser = async (
+    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>,
+    username: string,
+    password: string,
+) => {
+    const { userContext, csrftoken } = await atomicRegisterNewUser(
+        createContext,
+        username,
+        password,
+    );
+    const request = userContext.request;
+
+    // 3. Skip the "Skill Level" onboarding via API
+    await request.put("/api/v1/me/starting_rank", {
+        data: { choice: "basic" },
+        headers: { "X-CSRFToken": csrftoken },
+    });
+
+    const userPage = await userContext.newPage();
+
+    // 4. Inject preferences directly into localStorage to suppress UI noise
+    await userPage.addInitScript(() => {
+        // Prevent desktop notification prompts
+        localStorage.setItem("ogs.preferences.asked-to-enable-desktop-notifications", "true");
+        // Disable dynamic help popups (RDH system)
+        localStorage.setItem("rdh-system-state", '{"enabled":false}');
+    });
+
+    // Final navigation to ensure we are logged in and ready
+    await userPage.goto("/");
+
+    return {
+        userPage,
+        userContext,
+    };
+};
+
 export const goToProfile = async (userPage: Page) => {
     const menuLink = userPage.locator('nav[aria-label="Profile"] .Menu-title');
     await expect(menuLink).toBeVisible();

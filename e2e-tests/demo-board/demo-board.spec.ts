@@ -16,7 +16,7 @@
  */
 
 import { ogsTest } from "@helpers";
-import { createAndVerifyDemoBoard } from "@helpers/demo-board-utils";
+import { createDemoBoard, verifyDemoBoard } from "@helpers/demo-board-utils";
 
 ogsTest.describe("Demo Board Tests", () => {
     const testCases = [
@@ -55,7 +55,8 @@ ogsTest.describe("Demo Board Tests", () => {
 
     for (const tc of testCases) {
         ogsTest(`should successfully create a ${tc.name}`, async ({ createContext }) => {
-            await createAndVerifyDemoBoard(createContext, tc.settings, tc.expected);
+            const page = await createDemoBoard(createContext, tc.settings);
+            await verifyDemoBoard(page, tc.expected);
         });
     }
 });
