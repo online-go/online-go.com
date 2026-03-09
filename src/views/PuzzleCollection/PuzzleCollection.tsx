@@ -56,7 +56,7 @@ export function PuzzleCollection(): React.ReactElement | null {
     }
 
     const user = data.get("user");
-    const can_edit_collection = user && collection.owner.id === user.id;
+    const can_edit_collection = !user.anonymous && collection.owner.id === user.id;
 
     return (
         <div className="page-width">
