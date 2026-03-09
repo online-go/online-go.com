@@ -51,6 +51,7 @@ interface PuzzleEntryInterface {
 
 interface SortablePuzzleListProperties {
     collection: IdType;
+    canEdit: boolean;
 }
 interface SortablePuzzleListState {
     entries: Array<PuzzleEntryInterface>;
@@ -81,6 +82,10 @@ export class SortablePuzzleList extends React.Component<
     }
 
     handleDragEnd = (event: DragEndEvent) => {
+        if (!this.props.canEdit) {
+            return;
+        }
+
         const { active, over } = event;
 
         if (over == null) {
@@ -110,14 +115,16 @@ export class SortablePuzzleList extends React.Component<
             <SortablePuzzleListContainer
                 entries={this.state.entries}
                 onDragEnd={this.handleDragEnd}
+                canEdit={this.props.canEdit}
             />
         );
     }
 }
 
-function PuzzleEntry({ puzzle }: { puzzle: PuzzleEntryInterface }) {
+function PuzzleEntry({ puzzle, canEdit }: { puzzle: PuzzleEntryInterface; canEdit: boolean }) {
     const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
         id: puzzle.id,
+        disabled: !canEdit,
     });
 
     const style = {
@@ -127,10 +134,10 @@ function PuzzleEntry({ puzzle }: { puzzle: PuzzleEntryInterface }) {
 
     return (
         <li
-            className="SortablePuzzleListEntry"
+            className={"SortablePuzzleListEntry " + (canEdit ? "can-edit" : "read-only")}
             ref={setNodeRef}
-            {...attributes}
-            {...listeners}
+            {...(canEdit ? attributes : {})}
+            {...(canEdit ? listeners : {})}
             style={style}
         >
             <span className="minigoban">
@@ -163,7 +170,7 @@ function PuzzleEntry({ puzzle }: { puzzle: PuzzleEntryInterface }) {
                     navigateTo(`/puzzle/${puzzle.id}`, ev);
                 }}
             >
-                {_("Edit")}
+                {canEdit ? _("Edit") : _("Solve")}
             </button>
         </li>
     );
@@ -172,9 +179,11 @@ function PuzzleEntry({ puzzle }: { puzzle: PuzzleEntryInterface }) {
 function SortablePuzzleListContainer({
     entries,
     onDragEnd,
+    canEdit,
 }: {
     entries: Array<PuzzleEntryInterface>;
     onDragEnd: (event: DragEndEvent) => void;
+    canEdit: boolean;
 }) {
     const sensors = useSensors(
         // Without this activation constraint, the "Edit" button doesn't work
@@ -187,7 +196,7 @@ function SortablePuzzleListContainer({
             <SortableContext items={entries} strategy={verticalListSortingStrategy}>
                 <ul className="SortablePuzzleList">
                     {entries.map((entry) => (
-                        <PuzzleEntry key={entry.id} puzzle={entry} />
+                        <PuzzleEntry key={entry.id} puzzle={entry} canEdit={canEdit} />
                     ))}
                 </ul>
             </SortableContext>
