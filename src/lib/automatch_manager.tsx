@@ -123,15 +123,15 @@ class AutomatchManager extends TypedEventEmitter<Events> {
 
         this.emit("start", entry);
     };
-    private onAutomatchCancel = (entry: { uuid: string }) => {
-        if (!entry) {
+    private onAutomatchCancel = (entry: { uuid: string | null }) => {
+        if (!entry || !entry.uuid) {
             if (this.active_live_automatcher) {
                 entry = this.active_live_automatcher;
             } else {
                 return;
             }
         }
-        this.remove(entry.uuid);
+        this.remove(entry.uuid as string);
         this.emit("cancel", entry);
     };
     private remove(uuid: string) {
