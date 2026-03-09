@@ -80,7 +80,13 @@ import { Experiment, Variant, Default as ExDefault } from "@/components/Experime
 import { RatingCalculator } from "@/views/RatingCalculator";
 import { AccountWarning } from "@/components/AccountWarning";
 import { NetworkStatus } from "@/components/NetworkStatus";
-import { PrizeBatchList, PrizeBatch, PrizeRedemption } from "@/views/Prizes";
+import {
+    PrizeBatchList,
+    PrizeBatch,
+    PrizeRedemption,
+    SponsorshipRequest,
+    SponsorshipRequestDetail,
+} from "@/views/Prizes";
 import { GoTV } from "@/views/GoTV";
 import { Loading } from "@/components/Loading";
 
@@ -390,6 +396,8 @@ export const routes = (
                 <Route path="/redeem/:code" element={<PrizeRedemption />} />
                 <Route path="/prize-batches/:id" element={<PrizeBatch />} />
                 <Route path="/prize-batches" element={<PrizeBatchList />} />
+                <Route path="/sponsorship-request" element={<SponsorshipRequest />} />
+                <Route path="/sponsorship-requests/:id" element={<SponsorshipRequestDetail />} />
                 {/*
                   <Route path="/admin/tournament-scheduler/:schedule_id" element={<TournamentModify />}/>
                   <Route path="/admin/tournament-schedule-list" element={<AdminTournamentScheduleList />}/>

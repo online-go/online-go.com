@@ -280,6 +280,14 @@ export function NavBar(): React.ReactElement {
                                 icon={<i className="fa fa-star" />}
                             />
                             <MenuLink
+                                title={pgettext(
+                                    "Request an OGS prize sponsorship for a tournament",
+                                    "Sponsorship Request",
+                                )}
+                                to="/sponsorship-request"
+                                icon={<i className="fa fa-trophy" />}
+                            />
+                            <MenuLink
                                 title={_("About")}
                                 to="/docs/about"
                                 icon={<i className="fa fa-info-circle" />}
