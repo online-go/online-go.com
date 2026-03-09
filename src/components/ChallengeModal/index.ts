@@ -15,6 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export * from "./ChallengeModal.api";
+export { challenge, challengeComputer, challengeRematch } from "./ChallengeModal.api";
 export { challenge_text_description } from "./ChallengeModal.utils";
 export type { ChallengeModalConfig, ChallengeDetails } from "./ChallengeModal.types";

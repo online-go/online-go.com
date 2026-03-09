@@ -104,8 +104,12 @@
             margin-right: 0.5rem;
         }
 
-        > div {
+        > div:not(.ActiveAnnouncements-container) {
             margin-left: 2rem;
+        }
+
+        > .ActiveAnnouncements-container .Card {
+            margin-left: 0;
         }
     }
 
@@ -209,5 +213,12 @@
         flex-direction: column;
         align-items: center;
         padding-top: 1rem;
+    }
+
+    .top-bar-container {
+        width: 100%;
+        max-width: 60rem;
+        margin-left: auto;
+        margin-right: auto;
     }
 }

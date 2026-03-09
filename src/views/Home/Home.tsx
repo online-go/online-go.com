@@ -28,7 +28,7 @@ import { post, get, abort_requests_in_flight } from "@/lib/requests";
 import { errorAlerter } from "@/lib/misc";
 import { DismissableNotification } from "@/components/DismissableNotification";
 import { FriendList } from "@/components/FriendList";
-import { ChallengesList } from "./ChallengesList";
+import { PlayBar } from "./PlayBar";
 import { ProfileCard } from "@/components/ProfileCard";
 import { InviteList } from "./InviteList";
 import { notification_manager } from "@/components/Notifications";
@@ -129,17 +129,6 @@ export function Home(): React.ReactElement {
         setShowTranslationDialog(false);
     }, []);
 
-    const noActiveGames = (
-        <div className="no-active-games">
-            <div style={{ marginBottom: "1rem" }}>
-                {_("You're not currently playing any games.")}
-            </div>
-            <Link to="/play" className="btn primary">
-                {_("Find a game")}
-            </Link>
-        </div>
-    );
-
     return (
         <div id="Home-Container">
             <HomeDebug overrides={debugOverrides} setOverrides={setDebugOverrides} />
@@ -151,48 +140,53 @@ export function Home(): React.ReactElement {
             ) : (
                 <div id="Home">
                     <div className="left">
-                        <SupporterProblems
-                            forceShow={isForced(debugOverrides, "SupporterProblems")}
-                        />
-                        <PriceIncreaseMessage
-                            forceShow={isForced(debugOverrides, "PriceIncreaseMessage")}
-                        />
-                        <FreeTrialBanner forceShow={isForced(debugOverrides, "FreeTrialBanner")} />
-                        <FreeTrialSurvey forceShow={isForced(debugOverrides, "FreeTrialSurvey")} />
-                        <DismissableMessages
-                            forceShow={isForced(debugOverrides, "DismissableMessages")}
-                        />
-                        <EmailBanner forceShow={isForced(debugOverrides, "EmailBanner")} />
-                        <PaymentProblemBanner
-                            forceShow={isForced(debugOverrides, "PaymentProblemBanner")}
-                        />
-                        <ActiveAnnouncements
-                            forceShow={isForced(debugOverrides, "ActiveAnnouncements")}
-                        />
-                        {shouldRender(debugOverrides, "ModerationOffer") &&
-                            (isForced(debugOverrides, "ModerationOffer") ||
-                                (user && !!user.offered_moderator_powers)) && (
-                                <ModerationOffer
-                                    player_id={user?.id ?? 0}
-                                    current_moderator_powers={user?.moderator_powers ?? 0}
-                                    offered_moderator_powers={user?.offered_moderator_powers ?? 0}
-                                />
+                        <div className="top-bar-container">
+                            {shouldRender(debugOverrides, "ChallengesList") && (
+                                <PlayBar onChallengeAccept={() => refresh()} />
                             )}
-                        {shouldRender(debugOverrides, "ChallengesList") && (
-                            <ChallengesList onAccept={() => refresh()} />
-                        )}
-                        {shouldRender(debugOverrides, "InviteList") && <InviteList />}
+                            <SupporterProblems
+                                forceShow={isForced(debugOverrides, "SupporterProblems")}
+                            />
+                            <PriceIncreaseMessage
+                                forceShow={isForced(debugOverrides, "PriceIncreaseMessage")}
+                            />
+                            <FreeTrialBanner
+                                forceShow={isForced(debugOverrides, "FreeTrialBanner")}
+                            />
+                            <FreeTrialSurvey
+                                forceShow={isForced(debugOverrides, "FreeTrialSurvey")}
+                            />
+                            <DismissableMessages
+                                forceShow={isForced(debugOverrides, "DismissableMessages")}
+                            />
+                            <EmailBanner forceShow={isForced(debugOverrides, "EmailBanner")} />
+                            <PaymentProblemBanner
+                                forceShow={isForced(debugOverrides, "PaymentProblemBanner")}
+                            />
+                            {shouldRender(debugOverrides, "ModerationOffer") &&
+                                (isForced(debugOverrides, "ModerationOffer") ||
+                                    (user && !!user.offered_moderator_powers)) && (
+                                    <ModerationOffer
+                                        player_id={user?.id ?? 0}
+                                        current_moderator_powers={user?.moderator_powers ?? 0}
+                                        offered_moderator_powers={
+                                            user?.offered_moderator_powers ?? 0
+                                        }
+                                    />
+                                )}
+                            {shouldRender(debugOverrides, "InviteList") && <InviteList />}
 
-                        {((user && user.provisional) || null) && (
-                            <DismissableNotification
-                                className="learn-how-to-play"
-                                dismissedKey="learn-how-to-play"
-                            >
-                                <Link to="/learn-to-play-go">
-                                    {_("New to Go? Click here to learn how to play!")}
-                                </Link>
-                            </DismissableNotification>
-                        )}
+                            {((user && user.provisional) || null) && (
+                                <DismissableNotification
+                                    className="learn-how-to-play"
+                                    dismissedKey="learn-how-to-play"
+                                >
+                                    <Link to="/learn-to-play-go">
+                                        {_("New to Go? Click here to learn how to play!")}
+                                    </Link>
+                                </DismissableNotification>
+                            )}
+                        </div>
 
                         {shouldRender(debugOverrides, "ActiveDroppedGameList") &&
                             resolved &&
@@ -200,7 +194,6 @@ export function Home(): React.ReactElement {
                                 <ActiveDroppedGameList
                                     games={overview.active_games}
                                     user={user}
-                                    noActiveGamesView={noActiveGames}
                                 ></ActiveDroppedGameList>
                             )}
                     </div>
@@ -208,6 +201,9 @@ export function Home(): React.ReactElement {
                         {shouldRender(debugOverrides, "ProfileCard") && <ProfileCard user={user} />}
 
                         <div className="home-categories">
+                            <ActiveAnnouncements
+                                forceShow={isForced(debugOverrides, "ActiveAnnouncements")}
+                            />
                             {shouldRender(debugOverrides, "WhatsNewBanner") && (
                                 <WhatsNewBanner
                                     forceShow={isForced(debugOverrides, "WhatsNewBanner")}
