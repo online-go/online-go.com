@@ -187,7 +187,7 @@ function ReadOnlyPuzzleEntry({ puzzle }: { puzzle: PuzzleEntryInterface }) {
             <span className="name">{puzzle.name}</span>
             <span className="difficulty">{longRankString(puzzle.rank)}</span>
             <button
-                className="edit"
+                className="solve"
                 onTouchStart={(ev) => {
                     ev.stopPropagation();
                     ev.preventDefault();
