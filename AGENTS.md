@@ -32,4 +32,8 @@ Follow [CONTRIBUTING.md](CONTRIBUTING.md) before marking any change as done. In 
 
 - Run `yarn build` to verify the build succeeds.
 - Run `yarn lint` to check for linting errors.
-- Run `yarn prettier` to check formatting (use `yarn prettier --write` to auto-fix).
+- Run `yarn prettier` to check formatting (use `yarn prettier --write` to auto-fix; only target the files that were modified).
+
+## Pull Requests
+
+- Follow the repository PR template at `.github/pull_request_template.md` when creating pull requests.

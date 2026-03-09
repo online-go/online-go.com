@@ -16,10 +16,10 @@
  */
 
 import * as React from "react";
-import * as data from "@/lib/data";
 import { _, pgettext } from "@/lib/translate";
 import { errorAlerter, navigateTo } from "@/lib/misc";
 import { get, del, put, abort_requests_in_flight } from "@/lib/requests";
+import { useUser } from "@/lib/hooks";
 import { SortablePuzzleList } from "./SortablePuzzleList";
 import { openACLModal } from "@/components/ACLModal";
 import { alert } from "@/lib/swal_config";
@@ -28,8 +28,9 @@ import "./PuzzleCollection.css";
 
 export function PuzzleCollection(): React.ReactElement | null {
     const { collection_id } = useParams();
+    const user = useUser();
 
-    const [collection, setCollection] = React.useState(null);
+    const [collection, setCollection] = React.useState<rest_api.PuzzleCollection | null>(null);
     const [name, setName] = React.useState<string>();
     const [puzzle_is_private, setPrivate] = React.useState(false);
     const [color_transform_enabled, setColorTransformEnabled] = React.useState(false);
@@ -43,7 +44,6 @@ export function PuzzleCollection(): React.ReactElement | null {
                 setColorTransformEnabled(collection["color_transform_enabled"]);
                 setPositionTransformEnabled(collection["position_transform_enabled"]);
                 setCollection(collection);
-                console.log(collection);
             })
             .catch(errorAlerter);
 
@@ -56,6 +56,8 @@ export function PuzzleCollection(): React.ReactElement | null {
         return null;
     }
 
+    const can_edit_collection = !user.anonymous && collection.owner.id === user.id;
+
     return (
         <div className="page-width">
             <div id="PuzzleCollection">
@@ -66,95 +68,115 @@ export function PuzzleCollection(): React.ReactElement | null {
                             value={name}
                             onChange={(ev) => setName(ev.target.value)}
                             placeholder={_("Name")}
+                            disabled={!can_edit_collection}
                         />
                     </dd>
 
-                    <dt>
-                        <label htmlFor="private">{_("Private")}</label>
-                    </dt>
-                    <dd>
-                        <input
-                            type="checkbox"
-                            id="private"
-                            checked={puzzle_is_private}
-                            onChange={(ev) => setPrivate(ev.target.checked)}
-                        />
-                    </dd>
-
-                    <dt>
-                        <label htmlFor="color_transform_enabled">
-                            {pgettext(
-                                "For a puzzle, enable or disable the swapping of black/white colors",
-                                "Color transform enabled",
-                            )}
-                        </label>
-                    </dt>
-                    <dd>
-                        <input
-                            type="checkbox"
-                            id="color_transform_enabled"
-                            checked={color_transform_enabled}
-                            onChange={(ev) => setColorTransformEnabled(ev.target.checked)}
-                        />
-                    </dd>
-
-                    <dt>
-                        <label htmlFor="position_transform_enabled">
-                            {pgettext(
-                                "For a puzzle, enable or disable rotating and flipping of the board",
-                                "Position transform enabled",
-                            )}
-                        </label>
-                    </dt>
-                    <dd>
-                        <input
-                            type="checkbox"
-                            id="position_transform_enabled"
-                            checked={position_transform_enabled}
-                            onChange={(ev) => setPositionTransformEnabled(ev.target.checked)}
-                        />
-                    </dd>
-
-                    {puzzle_is_private && (
+                    {can_edit_collection && (
                         <React.Fragment>
-                            <dt></dt>
+                            <dt>
+                                <label htmlFor="private">{_("Private")}</label>
+                            </dt>
                             <dd>
-                                <button
-                                    className="success"
-                                    onClick={() =>
-                                        openACLModal({ puzzle_collection_id: collection_id })
-                                    }
-                                >
-                                    {pgettext(
-                                        "Control who can access the game or review",
-                                        "Access settings",
-                                    )}
-                                </button>
+                                <input
+                                    type="checkbox"
+                                    id="private"
+                                    checked={puzzle_is_private}
+                                    onChange={(ev) => setPrivate(ev.target.checked)}
+                                />
                             </dd>
+
+                            <dt>
+                                <label htmlFor="color_transform_enabled">
+                                    {pgettext(
+                                        "For a puzzle, enable or disable the swapping of black/white colors",
+                                        "Color transform enabled",
+                                    )}
+                                </label>
+                            </dt>
+                            <dd>
+                                <input
+                                    type="checkbox"
+                                    id="color_transform_enabled"
+                                    checked={color_transform_enabled}
+                                    onChange={(ev) => setColorTransformEnabled(ev.target.checked)}
+                                />
+                            </dd>
+
+                            <dt>
+                                <label htmlFor="position_transform_enabled">
+                                    {pgettext(
+                                        "For a puzzle, enable or disable rotating and flipping of the board",
+                                        "Position transform enabled",
+                                    )}
+                                </label>
+                            </dt>
+                            <dd>
+                                <input
+                                    type="checkbox"
+                                    id="position_transform_enabled"
+                                    checked={position_transform_enabled}
+                                    onChange={(ev) =>
+                                        setPositionTransformEnabled(ev.target.checked)
+                                    }
+                                />
+                            </dd>
+
+                            {puzzle_is_private && (
+                                <React.Fragment>
+                                    <dt></dt>
+                                    <dd>
+                                        <button
+                                            className="success"
+                                            onClick={() =>
+                                                openACLModal({
+                                                    puzzle_collection_id: collection_id,
+                                                })
+                                            }
+                                        >
+                                            {pgettext(
+                                                "Control who can access the game or review",
+                                                "Access settings",
+                                            )}
+                                        </button>
+                                    </dd>
+                                </React.Fragment>
+                            )}
                         </React.Fragment>
                     )}
                 </dl>
 
-                <div className="update">
-                    <button className="reject" onClick={remove}>
-                        {_("Delete")}
-                    </button>
-                    <button className="primary" onClick={save}>
-                        {_("Save")}
-                    </button>
-                </div>
-
-                <div className="center">
-                    <div style={{ textAlign: "center", margin: "1rem" }}>
-                        <button
-                            className="btn primary"
-                            onClick={() => navigateTo("/puzzle/new?collection_id=" + collection_id)}
-                        >
-                            {_("New puzzle")}
+                {can_edit_collection && (
+                    <div className="update">
+                        <button className="reject" onClick={remove}>
+                            {_("Delete")}
+                        </button>
+                        <button className="primary" onClick={save}>
+                            {_("Save")}
                         </button>
                     </div>
+                )}
 
-                    {collection_id && <SortablePuzzleList collection={collection_id} />}
+                <div className="center">
+                    {can_edit_collection && (
+                        <div style={{ textAlign: "center", margin: "1rem" }}>
+                            <button
+                                className="btn primary"
+                                onClick={() =>
+                                    navigateTo("/puzzle/new?collection_id=" + collection_id)
+                                }
+                            >
+                                {_("New puzzle")}
+                            </button>
+                        </div>
+                    )}
+
+                    {collection_id && (
+                        <SortablePuzzleList
+                            collection={collection_id}
+                            canEdit={can_edit_collection}
+                        />
+                    )}
                 </div>
             </div>
         </div>
@@ -183,7 +205,7 @@ export function PuzzleCollection(): React.ReactElement | null {
                 if (accept) {
                     del(`puzzles/collections/${collection_id}`)
                         .then(() => {
-                            window.location.pathname = "/puzzle-collections/" + data.get("user").id;
+                            window.location.pathname = "/puzzle-collections/" + user.id;
                         })
                         .catch(errorAlerter);
                 }

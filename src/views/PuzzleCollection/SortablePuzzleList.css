@@ -24,7 +24,7 @@
 .SortablePuzzleListEntry {
     list-style: none;
     user-select: none;
-    cursor: grab;
+    cursor: default;
     border: 1px solid transparent;
     border-color: var(--shade4);
     display: inline-flex;
@@ -60,5 +60,9 @@
         width: 5rem;
         flex-shrink: 0;
         overflow: hidden;
+    }
+
+    &.can-edit {
+        cursor: grab;
     }
 }

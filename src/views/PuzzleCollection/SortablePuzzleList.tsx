@@ -51,6 +51,7 @@ interface PuzzleEntryInterface {
 
 interface SortablePuzzleListProperties {
     collection: IdType;
+    canEdit: boolean;
 }
 interface SortablePuzzleListState {
     entries: Array<PuzzleEntryInterface>;
@@ -110,6 +111,7 @@ export class SortablePuzzleList extends React.Component<
             <SortablePuzzleListContainer
                 entries={this.state.entries}
                 onDragEnd={this.handleDragEnd}
+                canEdit={this.props.canEdit}
             />
         );
     }
@@ -127,7 +129,7 @@ function PuzzleEntry({ puzzle }: { puzzle: PuzzleEntryInterface }) {
 
     return (
         <li
-            className="SortablePuzzleListEntry"
+            className="SortablePuzzleListEntry can-edit"
             ref={setNodeRef}
             {...attributes}
             {...listeners}
@@ -169,7 +171,68 @@ function PuzzleEntry({ puzzle }: { puzzle: PuzzleEntryInterface }) {
     );
 }
 
+function ReadOnlyPuzzleEntry({ puzzle }: { puzzle: PuzzleEntryInterface }) {
+    return (
+        <li className="SortablePuzzleListEntry read-only">
+            <span className="minigoban">
+                <MiniGoban
+                    noLink
+                    game_id={undefined}
+                    json={puzzle.puzzle}
+                    displayWidth={64}
+                    white={undefined}
+                    black={undefined}
+                />
+            </span>
+            <span className="name">{puzzle.name}</span>
+            <span className="difficulty">{longRankString(puzzle.rank)}</span>
+            <button
+                className="solve"
+                onTouchStart={(ev) => {
+                    ev.stopPropagation();
+                    ev.preventDefault();
+                    navigateTo(`/puzzle/${puzzle.id}`, ev);
+                }}
+                onClick={(ev) => {
+                    ev.stopPropagation();
+                    ev.preventDefault();
+                    navigateTo(`/puzzle/${puzzle.id}`, ev);
+                }}
+                onAuxClick={(ev) => {
+                    ev.stopPropagation();
+                    ev.preventDefault();
+                    navigateTo(`/puzzle/${puzzle.id}`, ev);
+                }}
+            >
+                {_("Solve")}
+            </button>
+        </li>
+    );
+}
+
 function SortablePuzzleListContainer({
+    entries,
+    onDragEnd,
+    canEdit,
+}: {
+    entries: Array<PuzzleEntryInterface>;
+    onDragEnd: (event: DragEndEvent) => void;
+    canEdit: boolean;
+}) {
+    if (!canEdit) {
+        return (
+            <ul className="SortablePuzzleList">
+                {entries.map((entry) => (
+                    <ReadOnlyPuzzleEntry key={entry.id} puzzle={entry} />
+                ))}
+            </ul>
+        );
+    }
+
+    return <EditableSortablePuzzleListContainer entries={entries} onDragEnd={onDragEnd} />;
+}
+
+function EditableSortablePuzzleListContainer({
     entries,
     onDragEnd,
 }: {
