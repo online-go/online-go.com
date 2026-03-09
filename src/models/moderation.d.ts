@@ -104,7 +104,8 @@ declare namespace rest_api {
             | "annul_thrown_game"
             | "annul_thrown_games"
             | "warn_thrown_game"
-            | "no_thrown_game";
+            | "no_thrown_game"
+            | "informal_warn_escaper";
 
         // Regrettably, there's another definition of Vote in goban ServerToClient.ts
         // I wonder how we unify the rest_api and goban interfaces...
@@ -167,6 +168,12 @@ declare namespace rest_api {
             has_warning_type_mapping: boolean | null; // whether this report type has warning message mappings
             time_since_last_warning: number | null; // seconds since last warning of this type
             games_since_last_warning: number | null; // games played since last warning of this type
+            escape_rate: number | null;
+            escapes_in_window: number | null;
+            games_in_window: number | null;
+            is_escaping_too_much: boolean | null;
+            has_prior_formal_warning: boolean | null;
+            has_prior_final_warning: boolean | null;
         }
     }
 }
