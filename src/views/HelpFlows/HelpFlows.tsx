@@ -31,6 +31,7 @@ import { OJEIntro } from "./OJEIntro";
 import { GameLogHelp } from "./GameLogHelp";
 import { AIDetectionAppealHelp } from "./AIDetectionAppealHelp";
 import { EscapingAppealHelp } from "./EscapingAppealHelp";
+import { EscapingJudgementToolIntro } from "./EscapingJudgementToolIntro";
 import "./HelpFlows.css";
 
 /**
@@ -94,6 +95,7 @@ export function HelpFlows(): React.ReactElement {
             <GameLogHelp />
             <AIDetectionAppealHelp />
             <EscapingAppealHelp />
+            <EscapingJudgementToolIntro />
 
             <OJEIntro />
         </>
