@@ -90,7 +90,9 @@ declare namespace rest_api {
             | "ack_educated_beginner_thrown_game_and_annul"
             | "ack_warned_thrown_game"
             | "ack_warned_thrown_game_and_annul"
-            | "no_thrown_game_evident";
+            | "no_thrown_game_evident"
+            | "informal_warn_escaper"
+            | "ack_informal_warn_escaper";
 
         type Severity = "warning" | "acknowledgement" | "info";
 
