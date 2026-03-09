@@ -174,7 +174,7 @@ export function PuzzleCollection(): React.ReactElement | null {
                     {collection_id && (
                         <SortablePuzzleList
                             collection={collection_id}
-                            canEdit={Boolean(can_edit_collection)}
+                            canEdit={can_edit_collection}
                         />
                     )}
                 </div>

@@ -117,10 +117,9 @@ export class SortablePuzzleList extends React.Component<
     }
 }
 
-function PuzzleEntry({ puzzle, canEdit }: { puzzle: PuzzleEntryInterface; canEdit: boolean }) {
+function PuzzleEntry({ puzzle }: { puzzle: PuzzleEntryInterface }) {
     const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
         id: puzzle.id,
-        disabled: !canEdit,
     });
 
     const style = {
@@ -130,10 +129,10 @@ function PuzzleEntry({ puzzle, canEdit }: { puzzle: PuzzleEntryInterface; canEdi
 
     return (
         <li
-            className={"SortablePuzzleListEntry " + (canEdit ? "can-edit" : "read-only")}
+            className="SortablePuzzleListEntry can-edit"
             ref={setNodeRef}
-            {...(canEdit ? attributes : {})}
-            {...(canEdit ? listeners : {})}
+            {...attributes}
+            {...listeners}
             style={style}
         >
             <span className="minigoban">
@@ -166,7 +165,7 @@ function PuzzleEntry({ puzzle, canEdit }: { puzzle: PuzzleEntryInterface; canEdi
                     navigateTo(`/puzzle/${puzzle.id}`, ev);
                 }}
             >
-                {canEdit ? _("Edit") : _("Solve")}
+                {_("Edit")}
             </button>
         </li>
     );
@@ -251,7 +250,7 @@ function EditableSortablePuzzleListContainer({
             <SortableContext items={entries} strategy={verticalListSortingStrategy}>
                 <ul className="SortablePuzzleList">
                     {entries.map((entry) => (
-                        <PuzzleEntry key={entry.id} puzzle={entry} canEdit />
+                        <PuzzleEntry key={entry.id} puzzle={entry} />
                     ))}
                 </ul>
             </SortableContext>
