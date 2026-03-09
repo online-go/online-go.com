@@ -25,3 +25,11 @@ React/TypeScript frontend for online-go.com. Uses Vite, PostCSS, `yarn`.
 - No pulsing/throbbing animations. No `translateY`/`translateX` on hover. No hover background changes on non-interactive elements.
 - All user-visible strings must be translated. Use `pgettext(context, msgid)` (or `llm_pgettext` for LLM-translated strings), `ngettext`/`npgettext` for plurals, and `interpolate()` for parameterized strings. Import from `@/lib/translate`. See `src/lib/translate.ts` for details.
 - Code must build and pass linting/formatting.
+
+## Before Committing or Considering a Change Complete
+
+Follow [CONTRIBUTING.md](CONTRIBUTING.md) before marking any change as done. In particular:
+
+- Run `yarn build` to verify the build succeeds.
+- Run `yarn lint` to check for linting errors.
+- Run `yarn prettier` to check formatting (use `yarn prettier --write` to auto-fix).
