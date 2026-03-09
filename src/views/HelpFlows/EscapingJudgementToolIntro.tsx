@@ -19,21 +19,21 @@ import React from "react";
 
 import { HelpFlow, HelpItem } from "react-dynamic-help";
 
-import { pgettext } from "@/lib/translate";
+import { llm_pgettext } from "@/lib/translate";
 
 export function EscapingJudgementToolIntro(): React.ReactElement {
     return (
         <HelpFlow
             id="escaping-judgement-tool-intro"
             showInitially={false}
-            description={pgettext(
+            description={llm_pgettext(
                 "Name of a dynamic help flow",
                 "Escaping Judgement Tool Introduction",
             )}
         >
             <HelpItem target="escape-rate-badge" position="bottom-left">
                 <div>
-                    {pgettext(
+                    {llm_pgettext(
                         "Help message introducing the escaping judgement tool to community moderators",
                         "This is a new escaping judgement tool, currently under test! The idea is to vote for the informal warning if they escaped but they are not escaping too much.",
                     )}
@@ -41,7 +41,7 @@ export function EscapingJudgementToolIntro(): React.ReactElement {
             </HelpItem>
             <HelpItem target="informal-warn-escaper-option" position="bottom-left">
                 <div>
-                    {pgettext(
+                    {llm_pgettext(
                         "Help message about the informal warning voting option for escaping reports",
                         "Use this one if they are not escaping too much. Report in the forum if you spot bugs or issues!",
                     )}
