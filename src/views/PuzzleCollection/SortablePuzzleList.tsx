@@ -172,6 +172,45 @@ function PuzzleEntry({ puzzle, canEdit }: { puzzle: PuzzleEntryInterface; canEdi
     );
 }
 
+function ReadOnlyPuzzleEntry({ puzzle }: { puzzle: PuzzleEntryInterface }) {
+    return (
+        <li className="SortablePuzzleListEntry read-only">
+            <span className="minigoban">
+                <MiniGoban
+                    noLink
+                    game_id={undefined}
+                    json={puzzle.puzzle}
+                    displayWidth={64}
+                    white={undefined}
+                    black={undefined}
+                />
+            </span>
+            <span className="name">{puzzle.name}</span>
+            <span className="difficulty">{longRankString(puzzle.rank)}</span>
+            <button
+                className="edit"
+                onTouchStart={(ev) => {
+                    ev.stopPropagation();
+                    ev.preventDefault();
+                    navigateTo(`/puzzle/${puzzle.id}`, ev);
+                }}
+                onClick={(ev) => {
+                    ev.stopPropagation();
+                    ev.preventDefault();
+                    navigateTo(`/puzzle/${puzzle.id}`, ev);
+                }}
+                onAuxClick={(ev) => {
+                    ev.stopPropagation();
+                    ev.preventDefault();
+                    navigateTo(`/puzzle/${puzzle.id}`, ev);
+                }}
+            >
+                {_("Solve")}
+            </button>
+        </li>
+    );
+}
+
 function SortablePuzzleListContainer({
     entries,
     onDragEnd,
@@ -185,7 +224,7 @@ function SortablePuzzleListContainer({
         return (
             <ul className="SortablePuzzleList">
                 {entries.map((entry) => (
-                    <PuzzleEntry key={entry.id} puzzle={entry} canEdit={canEdit} />
+                    <ReadOnlyPuzzleEntry key={entry.id} puzzle={entry} />
                 ))}
             </ul>
         );

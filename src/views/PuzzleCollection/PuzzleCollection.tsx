@@ -16,10 +16,10 @@
  */
 
 import * as React from "react";
-import * as data from "@/lib/data";
 import { _, pgettext } from "@/lib/translate";
 import { errorAlerter, navigateTo } from "@/lib/misc";
 import { get, del, put, abort_requests_in_flight } from "@/lib/requests";
+import { useUser } from "@/lib/hooks";
 import { SortablePuzzleList } from "./SortablePuzzleList";
 import { openACLModal } from "@/components/ACLModal";
 import { alert } from "@/lib/swal_config";
@@ -28,6 +28,7 @@ import "./PuzzleCollection.css";
 
 export function PuzzleCollection(): React.ReactElement | null {
     const { collection_id } = useParams();
+    const user = useUser();
 
     const [collection, setCollection] = React.useState<rest_api.PuzzleCollection | null>(null);
     const [name, setName] = React.useState<string>();
@@ -55,7 +56,6 @@ export function PuzzleCollection(): React.ReactElement | null {
         return null;
     }
 
-    const user = data.get("user");
     const can_edit_collection = !user.anonymous && collection.owner.id === user.id;
 
     return (
@@ -205,7 +205,7 @@ export function PuzzleCollection(): React.ReactElement | null {
                 if (accept) {
                     del(`puzzles/collections/${collection_id}`)
                         .then(() => {
-                            window.location.pathname = "/puzzle-collections/" + data.get("user").id;
+                            window.location.pathname = "/puzzle-collections/" + user.id;
                         })
                         .catch(errorAlerter);
                 }
