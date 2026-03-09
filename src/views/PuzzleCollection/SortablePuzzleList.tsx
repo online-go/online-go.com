@@ -82,10 +82,6 @@ export class SortablePuzzleList extends React.Component<
     }
 
     handleDragEnd = (event: DragEndEvent) => {
-        if (!this.props.canEdit) {
-            return;
-        }
-
         const { active, over } = event;
 
         if (over == null) {
@@ -185,6 +181,26 @@ function SortablePuzzleListContainer({
     onDragEnd: (event: DragEndEvent) => void;
     canEdit: boolean;
 }) {
+    if (!canEdit) {
+        return (
+            <ul className="SortablePuzzleList">
+                {entries.map((entry) => (
+                    <PuzzleEntry key={entry.id} puzzle={entry} canEdit={canEdit} />
+                ))}
+            </ul>
+        );
+    }
+
+    return <EditableSortablePuzzleListContainer entries={entries} onDragEnd={onDragEnd} />;
+}
+
+function EditableSortablePuzzleListContainer({
+    entries,
+    onDragEnd,
+}: {
+    entries: Array<PuzzleEntryInterface>;
+    onDragEnd: (event: DragEndEvent) => void;
+}) {
     const sensors = useSensors(
         // Without this activation constraint, the "Edit" button doesn't work
         // because dnd swallows click events.
@@ -196,7 +212,7 @@ function SortablePuzzleListContainer({
             <SortableContext items={entries} strategy={verticalListSortingStrategy}>
                 <ul className="SortablePuzzleList">
                     {entries.map((entry) => (
-                        <PuzzleEntry key={entry.id} puzzle={entry} canEdit={canEdit} />
+                        <PuzzleEntry key={entry.id} puzzle={entry} canEdit />
                     ))}
                 </ul>
             </SortableContext>
