@@ -29,6 +29,8 @@ import { cmVoteWarnAnnulSandbaggingTest } from "./cm-vote-warn-annul-sandbagging
 import { cmVoteEscalateSandbaggingTest } from "./cm-vote-escalate-sandbagging";
 import { cmSandbaggingAssessmentConversionTest } from "./cm-sandbagging-assessment-conversion";
 import { cmLastWarningInfoTest } from "./cm-last-warning-info";
+import { cmEscapeRateDisplayTest } from "./cm-escape-rate-display";
+import { cmInformalWarnEscaperTest } from "./cm-informal-warn-escaper";
 
 ogsTest.describe("@CM Community Moderation Tests", () => {
     ogsTest("CM Vote on own report", cmVoteOnOwnReportTest);
@@ -46,4 +48,6 @@ ogsTest.describe("@CM Community Moderation Tests", () => {
         cmSandbaggingAssessmentConversionTest,
     );
     ogsTest("@Slow Last warning info shown on repeat offender reports", cmLastWarningInfoTest);
+    ogsTest("Escape rate display on escaping reports", cmEscapeRateDisplayTest);
+    ogsTest("Informal warning vote on escaping reports", cmInformalWarnEscaperTest);
 });

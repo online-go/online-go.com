@@ -293,7 +293,23 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
     uploadSGFs = (files: File[]) => {
         if (parseInt(this.props.match.params.player_id) === data.get("user").id) {
             files = files.filter((file) => /.sgf$/i.test(file.name));
-            Promise.all(files.map((file) => post(`me/games/sgf/${this.state.collection_id}`, file)))
+            Promise.all(
+                files.map((file) =>
+                    // Read the file into memory before uploading. Files from
+                    // Google Drive via Android Chrome's file picker are backed
+                    // by a content:// URI that may not be fully materialized
+                    // yet, causing fetch() to fail when it tries to read the
+                    // FormData body.
+                    file
+                        .arrayBuffer()
+                        .then((buf) =>
+                            post(
+                                `me/games/sgf/${this.state.collection_id}`,
+                                new File([buf], file.name, { type: "application/x-go-sgf" }),
+                            ),
+                        ),
+                ),
+            )
                 .then(() => {
                     this.refresh(this.props.match.params.player_id).then(ignore).catch(ignore);
                 })

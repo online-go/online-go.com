@@ -85,6 +85,28 @@ Thank you for your report, '{{reported}}' has been given a formal warning about 
             ),
             { reported },
         ),
+    informal_warn_escaper: (game_id) =>
+        interpolate(
+            llm_pgettext(
+                "Informal warning message to a user - a gentle reminder, not a formal warning",
+                `
+Just a friendly reminder: please remember to finish your games or resign when you want to stop playing.
+
+Leaving games without concluding them (like game #{{game_id}}) is frustrating for your opponents, who have to wait for your clock to run out.
+
+Thank you for helping keep OGS enjoyable for everyone.`,
+            ),
+            { game_id },
+        ),
+    ack_informal_warn_escaper: (reported) =>
+        interpolate(
+            llm_pgettext(
+                "Acknowledgement message to a user who reported an escaper that received an informal warning",
+                `
+Thank you for your report about '{{reported}}'. We've sent them a friendly reminder about finishing their games properly.`,
+            ),
+            { reported },
+        ),
     no_escaping_evident: (reported) =>
         interpolate(
             llm_pgettext(
