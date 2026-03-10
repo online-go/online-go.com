@@ -18,7 +18,7 @@
 import React, { useState, useEffect } from "react";
 import { get, post } from "@/lib/requests";
 import { useNavigate } from "react-router-dom";
-import { _ } from "@/lib/translate";
+import { interpolate, llm_pgettext } from "@/lib/translate";
 import { toast } from "@/lib/toast";
 import {
     calculateRowCost,
@@ -30,6 +30,7 @@ import {
     SupporterPricing,
 } from "./SponsorshipRequestTypes";
 import "./SponsorshipRequest.css";
+import { LoadingPage } from "@/components/Loading";
 
 export function SponsorshipRequest(): React.ReactElement {
     const navigate = useNavigate();
@@ -68,13 +69,16 @@ export function SponsorshipRequest(): React.ReactElement {
     }, []);
 
     if (!pricing) {
-        return <div className="sponsorship-request">{_("Loading...")}</div>;
+        return <LoadingPage />;
     }
 
-    const budgetPerPlayer = pricing.hane.monthly_price_usd / 100 / 2;
+    const haneMonthlyPrice = pricing.hane.monthly_price_usd / 100;
+    const attendeeHaneValue = haneMonthlyPrice * expectedPlayers;
+    const budgetPerPlayer = haneMonthlyPrice / 2;
     const totalBudget = Math.max(100, budgetPerPlayer * expectedPlayers);
-    const totalCost = prizeRows.reduce((sum, row) => sum + calculateRowCost(pricing, row), 0);
-    const overBudget = totalCost > totalBudget;
+    const prizeCost = prizeRows.reduce((sum, row) => sum + calculateRowCost(pricing, row), 0);
+    const totalValue = attendeeHaneValue + prizeCost;
+    const overBudget = prizeCost > totalBudget;
 
     const formValid =
         name.trim() &&
@@ -130,7 +134,8 @@ export function SponsorshipRequest(): React.ReactElement {
             .then(() => {
                 toast(
                     <div>
-                        {_(
+                        {llm_pgettext(
+                            "",
                             "Your tournament prize request has been submitted! You will be notified when it is reviewed.",
                         )}
                     </div>,
@@ -139,30 +144,31 @@ export function SponsorshipRequest(): React.ReactElement {
             })
             .catch((err: unknown) => {
                 console.error("Error submitting request:", err);
-                toast(<div>{_("Failed to submit request. Please try again.")}</div>);
+                toast(<div>{llm_pgettext("", "Failed to submit request. Please try again.")}</div>);
                 setSubmitting(false);
             });
     }
 
     return (
         <div className="sponsorship-request">
-            <h2>{_("Request Tournament Prizes")}</h2>
+            <h2>{llm_pgettext("", "Request Tournament Prizes")}</h2>
 
             <p className="form-description">
-                {_(
+                {llm_pgettext(
+                    "",
                     "OGS is happy to support in-person Go tournaments by providing supporter-level prizes. Fill out the form below with your tournament details and configure the prizes you'd like to offer. Once submitted, your request will be reviewed and you'll be notified when it's approved.",
                 )}
             </p>
 
             <div className="form-section">
-                <h3>{_("Organizer Information")}</h3>
+                <h3>{llm_pgettext("", "Organizer Information")}</h3>
                 <div className="form-row">
                     <label>
-                        {_("Your Name")} *
+                        {llm_pgettext("", "Your Name")} *
                         <input type="text" value={name} onChange={(e) => setName(e.target.value)} />
                     </label>
                     <label>
-                        {_("Email Address")} *
+                        {llm_pgettext("", "Email Address")} *
                         <input
                             type="email"
                             value={email}
@@ -172,7 +178,7 @@ export function SponsorshipRequest(): React.ReactElement {
                 </div>
                 <div className="form-row">
                     <label>
-                        {_("Club or Organization")}
+                        {llm_pgettext("", "Club or Organization")}
                         <input
                             type="text"
                             value={organization}
@@ -180,7 +186,7 @@ export function SponsorshipRequest(): React.ReactElement {
                         />
                     </label>
                     <label>
-                        {_("Tournament Location")} *
+                        {llm_pgettext("", "Tournament Location")} *
                         <input
                             type="text"
                             value={location}
@@ -191,10 +197,10 @@ export function SponsorshipRequest(): React.ReactElement {
             </div>
 
             <div className="form-section">
-                <h3>{_("Tournament Information")}</h3>
+                <h3>{llm_pgettext("", "Tournament Information")}</h3>
                 <div className="form-row">
                     <label>
-                        {_("Tournament Name")} *
+                        {llm_pgettext("", "Tournament Name")} *
                         <input
                             type="text"
                             value={tournamentName}
@@ -204,7 +210,7 @@ export function SponsorshipRequest(): React.ReactElement {
                 </div>
                 <div className="form-row">
                     <label>
-                        {_("Start Date")} *
+                        {llm_pgettext("", "Start Date")} *
                         <input
                             type="date"
                             value={startDate}
@@ -212,7 +218,7 @@ export function SponsorshipRequest(): React.ReactElement {
                         />
                     </label>
                     <label>
-                        {_("End Date")} *
+                        {llm_pgettext("", "End Date")} *
                         <input
                             type="date"
                             value={endDate}
@@ -222,7 +228,7 @@ export function SponsorshipRequest(): React.ReactElement {
                 </div>
                 <div className="form-row">
                     <label>
-                        {_("Expected Number of Players")} *
+                        {llm_pgettext("", "Expected Number of Players")} *
                         <input
                             type="number"
                             min={1}
@@ -231,53 +237,60 @@ export function SponsorshipRequest(): React.ReactElement {
                         />
                     </label>
                     <label>
-                        {_("Number of Players Last Year")}
+                        {llm_pgettext("", "Number of Players Last Year")}
                         <input
                             type="number"
                             min={0}
                             value={previousYearPlayers}
                             onChange={(e) => setPreviousYearPlayers(e.target.value)}
-                            placeholder={_("If applicable")}
+                            placeholder={llm_pgettext("", "If applicable")}
                         />
                     </label>
                 </div>
             </div>
 
             <div className="form-section">
-                <h3>{_("Custom Prize Code")}</h3>
+                <h3>{llm_pgettext("", "Custom Prize Code")}</h3>
                 <p className="help-text">
-                    {_(
+                    {llm_pgettext(
+                        "Hane is a japanese word for our supporter level, do not translate it",
                         "This code can be used by all attendees for a free month of Hane level access. If they are already a supporter, they can use it to upgrade their supporter level to the next tier for a month.",
                     )}
                 </p>
                 <div className="form-row">
                     <label>
-                        {_("Prize Code")} *
+                        {llm_pgettext("", "Prize Code")} *
                         <input
                             type="text"
                             value={customPrizeCode}
                             onChange={(e) => setCustomPrizeCode(e.target.value.toUpperCase())}
                             maxLength={20}
-                            placeholder={_("e.g. MACHAMP25")}
+                            placeholder={"e.g. MACHAMP25"}
                         />
                     </label>
                 </div>
             </div>
 
             <div className="form-section">
-                <h3>{_("Prize Configuration")}</h3>
+                <h3>{llm_pgettext("", "Prize Configuration")}</h3>
                 <p className="help-text">
-                    {_("Budget per player")}: ${budgetPerPlayer.toFixed(2)} | {_("Total budget")}: $
-                    {totalBudget.toFixed(2)} ({expectedPlayers} {_("players")})
+                    {llm_pgettext(
+                        "Hane is a japanese word for our supporter level, do not translate it",
+                        "Configure additional winner/placement prizes below. All attendees automatically receive a free month of Hane access via your custom prize code.",
+                    )}
+                </p>
+                <p className={`help-text${overBudget ? " over-budget-text" : ""}`}>
+                    {llm_pgettext("", "Winner prize budget")}: ${prizeCost.toFixed(2)} / $
+                    {totalBudget.toFixed(2)}
                 </p>
 
                 <table className="prize-table">
                     <thead>
                         <tr>
-                            <th>{_("Prize Level")}</th>
-                            <th>{_("Duration")}</th>
-                            <th>{_("Quantity")}</th>
-                            <th>{_("Value")}</th>
+                            <th>{llm_pgettext("", "Prize Level")}</th>
+                            <th>{llm_pgettext("", "Duration")}</th>
+                            <th>{llm_pgettext("", "Quantity")}</th>
+                            <th>{llm_pgettext("", "Value")}</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -378,19 +391,53 @@ export function SponsorshipRequest(): React.ReactElement {
                 </table>
 
                 <button type="button" className="add-row-btn" onClick={addRow}>
-                    {_("Add Prize")}
+                    {llm_pgettext("", "Add Prize")}
                 </button>
 
                 <div className={`budget-summary ${overBudget ? "over-budget" : ""}`}>
-                    <div>
-                        <strong>{_("Total Value")}:</strong> ${totalCost.toFixed(2)}
+                    <div className="budget-line">
+                        <div>
+                            <div>
+                                {llm_pgettext(
+                                    "Hane is a japanese word for our supporter level, do not translate it",
+                                    "Attendee Hane codes",
+                                )}
+                                :
+                            </div>
+                            <div className="help-text">
+                                {interpolate(
+                                    llm_pgettext(
+                                        "Do not translate the %s in the string, it is a placeholder for the expected player count",
+                                        `(Note, %s extra uses will be provided in case the turnout is higher than expected)`,
+                                    ),
+                                    [Math.round(expectedPlayers / 2)],
+                                )}
+                                :
+                            </div>
+                        </div>
+                        <span>
+                            ${haneMonthlyPrice.toFixed(2)} x {expectedPlayers}{" "}
+                            {llm_pgettext(
+                                "player count, this will be part of $cost x num players",
+                                "players",
+                            )}{" "}
+                            = ${attendeeHaneValue.toFixed(2)}
+                        </span>
                     </div>
-                    <div>
-                        <strong>{_("Budget")}:</strong> ${totalBudget.toFixed(2)}
+                    <div className="budget-line">
+                        <span>{llm_pgettext("", "Winner prizes")}:</span>
+                        <span>${prizeCost.toFixed(2)}</span>
+                    </div>
+                    <div className="budget-line budget-line-total">
+                        <span>{llm_pgettext("", "Total sponsorship value")}:</span>
+                        <span>${totalValue.toFixed(2)}</span>
                     </div>
                     {overBudget && (
                         <div className="over-budget-warning">
-                            {_("Total value exceeds your budget. Please adjust your prizes.")}
+                            {llm_pgettext(
+                                "",
+                                "Winner prize value exceeds your budget. Please adjust your prizes.",
+                            )}
                         </div>
                     )}
                 </div>
@@ -403,7 +450,9 @@ export function SponsorshipRequest(): React.ReactElement {
                     disabled={!formValid || submitting}
                     onClick={handleSubmit}
                 >
-                    {submitting ? _("Submitting...") : _("Request Prizes")}
+                    {submitting
+                        ? llm_pgettext("", "Submitting...")
+                        : llm_pgettext("", "Request Prizes")}
                 </button>
             </div>
         </div>

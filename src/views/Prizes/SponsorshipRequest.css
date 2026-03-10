@@ -27,6 +27,11 @@
         font-size: 0.9em;
     }
 
+    .over-budget-text {
+        color: var(--danger);
+        font-weight: bold;
+    }
+
     .form-row {
         display: flex;
         gap: 1rem;
@@ -143,9 +148,8 @@
         background: var(--shade5);
         border-radius: 5px;
         display: flex;
-        gap: 2rem;
-        align-items: center;
-        flex-wrap: wrap;
+        flex-direction: column;
+        gap: 0.5rem;
 
         &.over-budget {
             border: 2px solid var(--reject);
@@ -153,8 +157,19 @@
         }
     }
 
+    .budget-line {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .budget-line-total {
+        font-weight: bold;
+        border-top: 1px solid var(--input-border);
+        padding-top: 0.5rem;
+        margin-top: 0.25rem;
+    }
+
     .over-budget-warning {
-        width: 100%;
         font-weight: bold;
     }
 
