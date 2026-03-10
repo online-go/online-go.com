@@ -43,6 +43,7 @@ export function SponsorshipRequest(): React.ReactElement {
     const [name, setName] = useState(dev ? "Test Organizer" : "");
     const [email, setEmail] = useState(dev ? "test@example.com" : "");
     const [organization, setOrganization] = useState(dev ? "Test Go Club" : "");
+    const [website, setWebsite] = useState(dev ? "https://example.com/tournament" : "");
     const [location, setLocation] = useState(dev ? "Test City, USA" : "");
     const [tournamentName, setTournamentName] = useState(dev ? "Test Go Tournament" : "");
     const [startDate, setStartDate] = useState(dev ? "2026-06-01" : "");
@@ -116,6 +117,7 @@ export function SponsorshipRequest(): React.ReactElement {
             name: name.trim(),
             email: email.trim(),
             organization: organization.trim(),
+            website: website.trim(),
             location: location.trim(),
             tournament_name: tournamentName.trim(),
             tournament_start_date: startDate,
@@ -191,6 +193,17 @@ export function SponsorshipRequest(): React.ReactElement {
                             type="text"
                             value={location}
                             onChange={(e) => setLocation(e.target.value)}
+                        />
+                    </label>
+                </div>
+                <div className="form-row">
+                    <label>
+                        {llm_pgettext("", "Website")}
+                        <input
+                            type="url"
+                            value={website}
+                            onChange={(e) => setWebsite(e.target.value)}
+                            placeholder="https://"
                         />
                     </label>
                 </div>

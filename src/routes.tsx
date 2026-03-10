@@ -80,13 +80,8 @@ import { Experiment, Variant, Default as ExDefault } from "@/components/Experime
 import { RatingCalculator } from "@/views/RatingCalculator";
 import { AccountWarning } from "@/components/AccountWarning";
 import { NetworkStatus } from "@/components/NetworkStatus";
-import {
-    PrizeBatchList,
-    PrizeBatch,
-    PrizeRedemption,
-    SponsorshipRequest,
-    SponsorshipRequestDetail,
-} from "@/views/Prizes";
+import { PrizeRedemption, SponsorshipRequest } from "@/views/Prizes";
+import { PrizeBatchList, PrizeBatch, SponsorshipRequestDetail } from "@moderator-ui/Prizes";
 import { GoTV } from "@/views/GoTV";
 import { Loading } from "@/components/Loading";
 

@@ -15,8 +15,5 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export * from "./PrizeBatchList";
-export * from "./PrizeBatch";
 export * from "./PrizeRedemption";
 export * from "./SponsorshipRequest";
-export * from "./SponsorshipRequestAdmin";

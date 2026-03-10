@@ -12,3 +12,4 @@ export * from "./GameTimings";
 export * from "./Moderator";
 export * from "./ReportsCenter";
 export * from "./AppealsCenter";
+export * from "./Prizes";
