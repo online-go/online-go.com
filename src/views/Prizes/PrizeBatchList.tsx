@@ -30,8 +30,19 @@ interface PrizeBatch {
     notes: string;
 }
 
+interface TournamentRequest {
+    id: string;
+    requester: number;
+    name: string;
+    tournament_name: string;
+    status: string;
+    created_at: string;
+    expected_players: number;
+}
+
 export function PrizeBatchList(): React.ReactElement {
     const [prizeBatches, setPrizeBatches] = useState<PrizeBatch[]>([]);
+    const [tournamentRequests, setTournamentRequests] = useState<TournamentRequest[]>([]);
     const [showNewBatchForm, setShowNewBatchForm] = useState<boolean>(false);
     const [expirationDate, setExpirationDate] = useState<string>(calculateExpirationDate());
     const [notes, setNotes] = useState<string>("");
@@ -45,6 +56,9 @@ export function PrizeBatchList(): React.ReactElement {
         get("prizes/batches")
             .then((data: PrizeBatch[]) => setPrizeBatches(data))
             .catch((error) => console.error("Error fetching prize batches:", error));
+        get("prizes/sponsorship-requests")
+            .then((data: TournamentRequest[]) => setTournamentRequests(data))
+            .catch((error) => console.error("Error fetching tournament requests:", error));
     }, []);
 
     const handleExpirationDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -81,8 +95,63 @@ export function PrizeBatchList(): React.ReactElement {
         setShowNewBatchForm(!showNewBatchForm);
     };
 
+    const pendingRequests = tournamentRequests.filter((r) => r.status === "pending");
+    const otherRequests = tournamentRequests.filter((r) => r.status !== "pending");
+
     return (
         <div className="prize-batch-list">
+            {pendingRequests.length > 0 && (
+                <div className="sponsorship-requests-section">
+                    <h2>Pending Tournament Prize Requests</h2>
+                    <ul className="batch-list">
+                        {pendingRequests.map((req) => (
+                            <li key={req.id} className="batch-item request-pending">
+                                <div className="batch-details">
+                                    <strong>{req.tournament_name}</strong>
+                                    <br />
+                                    <span>
+                                        Organizer: {req.name} | Players: {req.expected_players} |{" "}
+                                        {new Date(req.created_at).toLocaleDateString()}
+                                    </span>
+                                </div>
+                                <Link
+                                    to={`/sponsorship-requests/${req.id}`}
+                                    className="view-batch-link"
+                                >
+                                    Review
+                                </Link>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+
+            {otherRequests.length > 0 && (
+                <div className="sponsorship-requests-section">
+                    <h2>Past Tournament Prize Requests</h2>
+                    <ul className="batch-list">
+                        {otherRequests.map((req) => (
+                            <li key={req.id} className="batch-item">
+                                <div className="batch-details">
+                                    <strong>{req.tournament_name}</strong> [{req.status}]
+                                    <br />
+                                    <span>
+                                        Organizer: {req.name} |{" "}
+                                        {new Date(req.created_at).toLocaleDateString()}
+                                    </span>
+                                </div>
+                                <Link
+                                    to={`/sponsorship-requests/${req.id}`}
+                                    className="view-batch-link"
+                                >
+                                    View
+                                </Link>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+
             <div className="header">
                 <h2>Prize Batches</h2>
                 <button className="new-batch-btn" onClick={toggleNewBatchForm}>

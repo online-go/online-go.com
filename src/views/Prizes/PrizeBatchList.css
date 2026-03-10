@@ -16,6 +16,10 @@
         padding: 0;
     }
 
+    .sponsorship-requests-section {
+        margin-bottom: 2rem;
+    }
+
     .batch-item {
         background-color: var(--card-background-color);
         padding: 10px;
@@ -24,6 +28,10 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+
+        &.request-pending {
+            border-left: 4px solid #f0ad4e;
+        }
     }
 
     .batch-details {
