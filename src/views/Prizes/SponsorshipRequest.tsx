@@ -18,65 +18,17 @@
 import React, { useState, useEffect } from "react";
 import { get, post } from "@/lib/requests";
 import { useNavigate } from "react-router-dom";
-import { _, pgettext } from "@/lib/translate";
+import { _ } from "@/lib/translate";
 import { toast } from "@/lib/toast";
+import {
+    calculateRowCost,
+    DURATION_OPTIONS,
+    getLevelName,
+    getMonthlyPrice,
+    PrizeConfig,
+    SupporterPricing,
+} from "./SponsorshipRequestTypes";
 import "./SponsorshipRequest.css";
-
-interface PrizeRow {
-    level: number; // 2=Hane, 3=Tenuki, 4=Meijin
-    duration: number; // days
-    quantity: number;
-}
-
-interface SupporterPricing {
-    hane: { monthly_price_usd: number };
-    tenuki: { monthly_price_usd: number };
-    meijin: { monthly_price_usd: number };
-}
-
-const DURATION_OPTIONS = [
-    { days: 30, months: 1, label: "30 days" },
-    { days: 60, months: 2, label: "60 days" },
-    { days: 90, months: 3, label: "90 days" },
-    { days: 120, months: 4, label: "120 days" },
-    { days: 180, months: 6, label: "180 days" },
-    { days: 365, months: 12, label: "365 days" },
-];
-
-function getLevelName(level: number): string {
-    switch (level) {
-        case 2:
-            return pgettext("OGS supporter level name", "Hane");
-        case 3:
-            return pgettext("OGS supporter level name", "Tenuki");
-        case 4:
-            return pgettext("OGS supporter level name", "Meijin");
-        default:
-            return "";
-    }
-}
-
-function getMonthlyPrice(pricing: SupporterPricing, level: number): number {
-    switch (level) {
-        case 2:
-            return pricing.hane.monthly_price_usd / 100;
-        case 3:
-            return pricing.tenuki.monthly_price_usd / 100;
-        case 4:
-            return pricing.meijin.monthly_price_usd / 100;
-        default:
-            return 0;
-    }
-}
-
-function getDurationMonths(days: number): number {
-    const option = DURATION_OPTIONS.find((o) => o.days === days);
-    return option ? option.months : days / 30;
-}
-
-function calculateRowCost(pricing: SupporterPricing, row: PrizeRow): number {
-    return getMonthlyPrice(pricing, row.level) * getDurationMonths(row.duration) * row.quantity;
-}
 
 export function SponsorshipRequest(): React.ReactElement {
     const navigate = useNavigate();
@@ -100,7 +52,7 @@ export function SponsorshipRequest(): React.ReactElement {
     );
 
     // Prize rows - default one of each level
-    const [prizeRows, setPrizeRows] = useState<PrizeRow[]>([
+    const [prizeRows, setPrizeConfigs] = useState<PrizeConfig[]>([
         { level: 4, duration: 30, quantity: 1 },
         { level: 3, duration: 30, quantity: 1 },
         { level: 2, duration: 30, quantity: 1 },
@@ -135,16 +87,18 @@ export function SponsorshipRequest(): React.ReactElement {
         prizeRows.length > 0 &&
         !overBudget;
 
-    function updateRow(index: number, updates: Partial<PrizeRow>) {
-        setPrizeRows((rows) => rows.map((row, i) => (i === index ? { ...row, ...updates } : row)));
+    function updateRow(index: number, updates: Partial<PrizeConfig>) {
+        setPrizeConfigs((rows) =>
+            rows.map((row, i) => (i === index ? { ...row, ...updates } : row)),
+        );
     }
 
     function removeRow(index: number) {
-        setPrizeRows((rows) => rows.filter((_, i) => i !== index));
+        setPrizeConfigs((rows) => rows.filter((_, i) => i !== index));
     }
 
     function addRow() {
-        setPrizeRows((rows) => [...rows, { level: 2, duration: 30, quantity: 1 }]);
+        setPrizeConfigs((rows) => [...rows, { level: 2, duration: 30, quantity: 1 }]);
     }
 
     function handleSubmit() {

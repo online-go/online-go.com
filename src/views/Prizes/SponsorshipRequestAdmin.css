@@ -60,18 +60,6 @@
             padding: 0.5rem;
             border-bottom: 1px solid var(--input-border);
         }
-
-        select, input[type="number"] {
-            padding: 0.4rem;
-            border: 1px solid var(--input-border);
-            border-radius: 3px;
-            background: var(--input-background);
-            color: var(--text-color);
-        }
-
-        input[type="number"] {
-            width: 4rem;
-        }
     }
 
     .budget-summary {
@@ -113,69 +101,6 @@
         button:disabled {
             opacity: 0.5;
             cursor: not-allowed;
-        }
-    }
-
-    .remove-btn {
-        background: none;
-        border: none;
-        color: var(--reject);
-        cursor: pointer;
-        font-size: 1.1rem;
-    }
-
-    .edit-modal-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 100;
-    }
-
-    .edit-modal {
-        background-color: var(--background-color);
-        padding: 2rem;
-        border-radius: 5px;
-        max-width: 700px;
-        width: 100%;
-        max-height: 80vh;
-        overflow-y: auto;
-
-        label {
-            display: block;
-            margin-bottom: 0.75rem;
-
-            input {
-                display: block;
-                width: 100%;
-                padding: 0.5rem;
-                border: 1px solid var(--input-border);
-                border-radius: 3px;
-                background: var(--input-background);
-                color: var(--text-color);
-                margin-top: 0.25rem;
-            }
-        }
-
-        .modal-actions {
-            display: flex;
-            gap: 1rem;
-            justify-content: flex-end;
-            margin-top: 1.5rem;
-
-            button {
-                padding: 0.5rem 1.5rem;
-                border: none;
-                border-radius: 5px;
-                cursor: pointer;
-                background-color: var(--primary);
-                color: var(--colored-background-fg);
-            }
         }
     }
 }
