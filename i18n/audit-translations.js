@@ -428,30 +428,48 @@ async function llm_translate(key, entry, lang, language) {
         return LLM_CACHE[lang][key];
     }
 
-    let completion = await openrouter.chat.send({
-        chatGenerationParams: {
-            messages: [
-                {
-                    role: "system",
-                    content:
-                        "You are translating user interface strings from English to " +
-                        language +
-                        ". " +
-                        "Only include the translation in your response.",
+    let completion;
+    for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+            completion = await openrouter.chat.send({
+                chatGenerationParams: {
+                    messages: [
+                        {
+                            role: "system",
+                            content:
+                                "You are translating user interface strings from English to " +
+                                language +
+                                ". " +
+                                "Only include the translation in your response.",
+                        },
+                        {
+                            role: "system",
+                            content:
+                                "The context provided for the string is: " + (entry.msgctxt ?? ""),
+                        },
+                        {
+                            role: "system",
+                            content:
+                                "Translate the provided string from English to " + language,
+                        },
+                        { role: "user", content: entry.msgid },
+                    ],
+                    model: OPENROUTER_MODEL,
                 },
-                {
-                    role: "system",
-                    content: "The context provided for the string is: " + (entry.msgctxt ?? ""),
-                },
-                {
-                    role: "system",
-                    content: "Translate the provided string from English to " + language,
-                },
-                { role: "user", content: entry.msgid },
-            ],
-            model: OPENROUTER_MODEL,
-        },
-    });
+            });
+            break;
+        } catch (err) {
+            if (attempt < 2) {
+                console.warn(
+                    `LLM translation attempt ${attempt + 1} failed, retrying in ${(attempt + 1) * 5}s...`,
+                    err.message,
+                );
+                await new Promise((resolve) => setTimeout(resolve, (attempt + 1) * 5000));
+            } else {
+                throw err;
+            }
+        }
+    }
 
     let translation = completion.choices[0].message.content;
     LLM_CACHE[lang][key] = translation;
