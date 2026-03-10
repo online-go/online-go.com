@@ -194,7 +194,11 @@ export const atomicRegisterNewUser = async (
     // 1. Initialize session and get CSRF token
     await request.get("/");
     const cookies = await userContext.cookies();
-    const csrftoken = cookies.find((c) => c.name === "csrftoken")?.value || "";
+    const csrftoken = cookies.find((c) => c.name === "csrftoken")?.value;
+
+    if (!csrftoken) {
+        throw new Error("Failed to obtain CSRF token from session cookies after GET /");
+    }
 
     // 2. Register via API
     // ebi is a device fingerprint; we generate a simple one for the test
@@ -233,10 +237,14 @@ export const atomicPrepareNewUser = async (
     const request = userContext.request;
 
     // 3. Skip the "Skill Level" onboarding via API
-    await request.put("/api/v1/me/starting_rank", {
+    const onboardingResponse = await request.put("/api/v1/me/starting_rank", {
         data: { choice: "basic" },
         headers: { "X-CSRFToken": csrftoken },
     });
+
+    if (!onboardingResponse.ok()) {
+        throw new Error(`Failed to skip onboarding via API: ${await onboardingResponse.text()}`);
+    }
 
     const userPage = await userContext.newPage();
 
@@ -245,7 +253,7 @@ export const atomicPrepareNewUser = async (
         // Prevent desktop notification prompts
         localStorage.setItem("ogs.preferences.asked-to-enable-desktop-notifications", "true");
         // Disable dynamic help popups (RDH system)
-        localStorage.setItem("rdh-system-state", '{"enabled":false}');
+        localStorage.setItem("ogs.rdh-system-state", '{"enabled":false}');
     });
 
     // Final navigation to ensure we are logged in and ready
