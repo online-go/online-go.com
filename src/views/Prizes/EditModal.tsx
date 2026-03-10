@@ -20,6 +20,7 @@ import { _ } from "@/lib/translate";
 import {
     calculateRowCost,
     DURATION_OPTIONS,
+    getDurationLabel,
     getLevelName,
     PrizeConfig,
     SponsorshipRequestData,
@@ -138,7 +139,7 @@ export function EditModal({
                                     >
                                         {DURATION_OPTIONS.map((opt) => (
                                             <option key={opt.days} value={opt.days}>
-                                                {opt.label}
+                                                {getDurationLabel(opt.days)}
                                             </option>
                                         ))}
                                     </select>

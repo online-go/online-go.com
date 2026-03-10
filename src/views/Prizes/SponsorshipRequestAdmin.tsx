@@ -24,7 +24,7 @@ import { _ } from "@/lib/translate";
 import { toast } from "@/lib/toast";
 import {
     calculateRowCost,
-    DURATION_OPTIONS,
+    getDurationLabel,
     getLevelName,
     SponsorshipRequestData,
     SupporterPricing,
@@ -184,10 +184,7 @@ export function SponsorshipRequestDetail(): React.ReactElement {
                         {request.prizes.map((prize, index) => (
                             <tr key={index}>
                                 <td>{getLevelName(prize.level)}</td>
-                                <td>
-                                    {DURATION_OPTIONS.find((o) => o.days === prize.duration)
-                                        ?.label ?? prize.duration + " days"}
-                                </td>
+                                <td>{getDurationLabel(prize.duration)}</td>
                                 <td>{prize.quantity}</td>
                                 <td>${calculateRowCost(pricing, prize).toFixed(2)}</td>
                             </tr>

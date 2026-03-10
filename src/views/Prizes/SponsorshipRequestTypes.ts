@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { pgettext } from "@/lib/translate";
+import { ngettext, pgettext } from "@/lib/translate";
 
 export interface PrizeConfig {
     level: number;
@@ -51,13 +51,17 @@ export interface SupporterPricing {
 }
 
 export const DURATION_OPTIONS = [
-    { days: 30, months: 1, label: "30 days" },
-    { days: 60, months: 2, label: "60 days" },
-    { days: 90, months: 3, label: "90 days" },
-    { days: 120, months: 4, label: "120 days" },
-    { days: 180, months: 6, label: "180 days" },
-    { days: 365, months: 12, label: "365 days" },
+    { days: 30, months: 1 },
+    { days: 60, months: 2 },
+    { days: 90, months: 3 },
+    { days: 120, months: 4 },
+    { days: 180, months: 6 },
+    { days: 365, months: 12 },
 ];
+
+export function getDurationLabel(days: number): string {
+    return ngettext("%s day", "%s days", days);
+}
 
 export function getLevelName(level: number): string {
     switch (level) {

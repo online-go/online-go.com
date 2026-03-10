@@ -23,6 +23,7 @@ import { toast } from "@/lib/toast";
 import {
     calculateRowCost,
     DURATION_OPTIONS,
+    getDurationLabel,
     getLevelName,
     getMonthlyPrice,
     PrizeConfig,
@@ -138,6 +139,7 @@ export function SponsorshipRequest(): React.ReactElement {
             })
             .catch((err: unknown) => {
                 console.error("Error submitting request:", err);
+                toast(<div>{_("Failed to submit request. Please try again.")}</div>);
                 setSubmitting(false);
             });
     }
@@ -316,7 +318,7 @@ export function SponsorshipRequest(): React.ReactElement {
                                     >
                                         {DURATION_OPTIONS.map((opt) => (
                                             <option key={opt.days} value={opt.days}>
-                                                {opt.label}
+                                                {getDurationLabel(opt.days)}
                                             </option>
                                         ))}
                                     </select>
