@@ -247,7 +247,7 @@ export function SponsorshipRequest(): React.ReactElement {
                 <h3>{_("Custom Prize Code")}</h3>
                 <p className="help-text">
                     {_(
-                        "This code will be given to all attendees. Choose something unique and memorable related to your tournament.",
+                        "This code can be used by all attendees for a free month of Hane level access. If they are already a supporter, they can use it to upgrade their supporter level to the next tier for a month.",
                     )}
                 </p>
                 <div className="form-row">
