@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ngettext, pgettext } from "@/lib/translate";
+import { interpolate, ngettext, pgettext } from "@/lib/translate";
 
 export interface PrizeConfig {
     level: number;
@@ -60,7 +60,7 @@ export const DURATION_OPTIONS = [
 ];
 
 export function getDurationLabel(days: number): string {
-    return ngettext("%s day", "%s days", days);
+    return interpolate(ngettext("%s day", "%s days", days), [days]);
 }
 
 export function getLevelName(level: number): string {
