@@ -22,17 +22,21 @@
  * Uses init_e2e data:
  * - E2E_CM_IWE_ACC : accused with low escape rate
  * - E2E_CM_IWE_OTH : opponent in the seeded games (for escape rate history)
- * - E2E_CM_IWE_REP : reporter who files the report via the UI
  * - E2E_CM_IWE_V1, E2E_CM_IWE_V2, E2E_CM_IWE_V3 : CMs with escaping power
+ * Reporter is created fresh each run via prepareNewUser to avoid "too many
+ * outstanding reports" from leftover reports of previous failed runs.
  * - 3 seeded games between ACC and OTH (for escape rate history)
  * - 1 prior informal warning on game 1
  *
  * Flow:
  * 1. Reporter plays a real 9x9 game with ACC, then files an escaping report
- * 2. CM1 views report and verifies escape rate badge + informal warning option
- * 3. All 3 CMs vote "informal_warn_escaper"
+ * 2. CM1 views report and verifies escape rate badge; detects whether rate
+ *    is tolerable (→ informal_warn_escaper) or too high (→ warn_escaper)
+ * 3. All 3 CMs vote the appropriate action
  * 4. Reporter sees acknowledgement (AccountWarningAck)
- * 5. Accused does NOT see a blocking warning (INFO severity, not WARNING)
+ * 5. Accused sees the correct warning type:
+ *    - Informal: non-blocking AccountWarningInfo (INFO severity)
+ *    - Formal: blocking AccountWarning (WARNING severity)
  *
  * Note: The escape rate uses a 12-month rolling window from the report's
  * creation date. If the seeded games are older than 12 months they will
@@ -49,9 +53,10 @@ import {
     generateUniqueTestIPv6,
     loginAsUser,
     navigateToReport,
+    newTestUsername,
+    prepareNewUser,
     reportPlayerByColor,
     setupSeededCM,
-    setupSeededUser,
     turnOffDynamicHelp,
 } from "@helpers/user-utils";
 
@@ -74,26 +79,14 @@ export const cmInformalWarnEscaperTest = async (
 ) => {
     const TIMEOUT_MS = 120 * 1000;
 
-    // Set up reporter page for count tracking
-    const { userPage: reporterPage } = await setupSeededUser(createContext, "E2E_CM_IWE_REP");
-
-    // Clean up leftover reports from previous test runs so the test is re-runnable
-    // without re-seeding. The reporter can cancel their own open reports.
-    await reporterPage.goto("/reports-center/my_reports");
-    const cancelButton = reporterPage.locator("button.reject.xs", { hasText: "Cancel" });
-    try {
-        await cancelButton.first().waitFor({ state: "visible", timeout: 5000 });
-        for (let i = 0; i < 10; i++) {
-            await cancelButton.first().click();
-            try {
-                await cancelButton.first().waitFor({ state: "visible", timeout: 3000 });
-            } catch {
-                break; // No more cancel buttons
-            }
-        }
-    } catch {
-        // No reports to cancel
-    }
+    // Use a fresh reporter each run to avoid "Too many outstanding reports"
+    // from leftover reports of previous failed runs.
+    const reporterUsername = newTestUsername("IWE_REP");
+    const { userPage: reporterPage } = await prepareNewUser(
+        createContext,
+        reporterUsername,
+        "test",
+    );
 
     await withReportCountTracking(
         reporterPage,
@@ -104,14 +97,29 @@ export const cmInformalWarnEscaperTest = async (
             // ========================================
 
             // Set up accused page manually — setupSeededUser would hang because
-            // the seeded informal warning dialog blocks turnOffDynamicHelp.
-            // We log in, dismiss the warning, then turn off dynamic help.
+            // warning dialogs block turnOffDynamicHelp.
+            // We log in, dismiss all warnings, then turn off dynamic help.
             const accusedContext = await createContext({
                 extraHTTPHeaders: { "X-Forwarded-For": generateUniqueTestIPv6() },
             });
             const accusedGamePage = await accusedContext.newPage();
             await loginAsUser(accusedGamePage, "E2E_CM_IWE_ACC", "test");
             await accusedGamePage.goto("/");
+
+            // Dismiss any formal warning dialogs (from previous runs that voted
+            // warn_escaper). These require checking "I understand" before OK.
+            const formalWarning = accusedGamePage.locator("div.AccountWarning");
+            for (let i = 0; i < 10; i++) {
+                try {
+                    await formalWarning.waitFor({ state: "visible", timeout: 3000 });
+                    const checkbox = formalWarning.locator('input[type="checkbox"]');
+                    await checkbox.check();
+                    await formalWarning.locator("button.primary").click();
+                    await expect(formalWarning).not.toBeVisible();
+                } catch {
+                    break;
+                }
+            }
 
             // Dismiss any informal warning dialogs (from seeded prior warning and/or
             // previous test runs). May not appear if already acknowledged.
@@ -127,6 +135,17 @@ export const cmInformalWarnEscaperTest = async (
             }
 
             await turnOffDynamicHelp(accusedGamePage);
+
+            // Decline any stale challenges from previous failed runs
+            const declineButton = accusedGamePage.locator(".fab.reject.raiser");
+            for (let i = 0; i < 10; i++) {
+                try {
+                    await declineButton.first().waitFor({ state: "visible", timeout: 2000 });
+                    await declineButton.first().click();
+                } catch {
+                    break;
+                }
+            }
 
             // Reporter (black) challenges accused (white) to a quick 9x9 game
             await createDirectChallenge(reporterPage, "E2E_CM_IWE_ACC", {
@@ -181,7 +200,7 @@ export const cmInformalWarnEscaperTest = async (
             );
             await navigateToReport(cm1Page, reportNumber);
 
-            // Verify escape rate badge is visible (may be "Rate acceptable" on first
+            // Verify escape rate badge is visible (may be "Rate: tolerable" on first
             // run or "Escaping too much" on re-runs as warnings accumulate)
             const badge = cm1Page.locator(".escape-rate-badge");
             await expect(badge).toBeVisible({ timeout: 15000 });
@@ -190,12 +209,18 @@ export const cmInformalWarnEscaperTest = async (
             const warningStatus = cm1Page.locator(".formal-warning-status");
             await expect(warningStatus).toBeVisible();
 
-            // Verify informal_warn_escaper radio button exists
-            const informalWarnOption = cm1Page.locator('input[value="informal_warn_escaper"]');
-            await expect(informalWarnOption).toBeVisible();
+            // The available vote depends on the escape rate: tolerable shows
+            // informal_warn_escaper, too-high shows warn_escaper instead.
+            const isEscapingTooMuch = await badge.evaluate((el) =>
+                el.classList.contains("escaping-too-much"),
+            );
+            const voteAction = isEscapingTooMuch ? "warn_escaper" : "informal_warn_escaper";
+
+            const voteOption = cm1Page.locator(`input[value="${voteAction}"]`);
+            await expect(voteOption).toBeVisible();
 
             // ========================================
-            // Phase 2: All 3 CMs vote informal_warn_escaper
+            // Phase 2: All 3 CMs vote
             // ========================================
 
             const cmVoters = ["E2E_CM_IWE_V1", "E2E_CM_IWE_V2", "E2E_CM_IWE_V3"];
@@ -213,7 +238,7 @@ export const cmInformalWarnEscaperTest = async (
                     await navigateToReport(cmPage, reportNumber);
                 }
 
-                await cmPage.locator('input[value="informal_warn_escaper"]').click();
+                await cmPage.locator(`input[value="${voteAction}"]`).click();
                 const voteButton = await expectOGSClickableByName(cmPage, /Vote$/);
                 await voteButton.click();
                 await cmContext.close();
@@ -228,7 +253,7 @@ export const cmInformalWarnEscaperTest = async (
                 timeout: 15000,
             });
 
-            // Verify at least the first ack is the informal escaper ack (has canned message)
+            // Verify at least the first ack has a canned message
             await expect(
                 reporterPage.locator("div.AccountWarningAck .canned-message"),
             ).toBeVisible();
@@ -248,13 +273,11 @@ export const cmInformalWarnEscaperTest = async (
             }
 
             // ========================================
-            // Phase 4: Accused does NOT see a blocking warning
+            // Phase 4: Verify the accused sees the right warning type
             // ========================================
 
-            // Informal warnings have INFO severity, so no blocking AccountWarning dialog.
-            // Use manual login (not setupSeededUser) because the accused may have an
-            // AccountWarningInfo dialog from this test's informal warning vote, which
-            // would block turnOffDynamicHelp inside setupSeededUser.
+            // Use manual login (not setupSeededUser) because the accused may have
+            // warning dialogs that block turnOffDynamicHelp inside setupSeededUser.
             const accusedCheckContext = await createContext({
                 extraHTTPHeaders: { "X-Forwarded-For": generateUniqueTestIPv6() },
             });
@@ -262,8 +285,17 @@ export const cmInformalWarnEscaperTest = async (
             await loginAsUser(accusedPage, "E2E_CM_IWE_ACC", "test");
             await accusedPage.goto("/");
 
-            // Dismiss any AccountWarningInfo dialogs (informal warnings from this
-            // run and/or previous runs)
+            if (isEscapingTooMuch) {
+                // Formal warning (WARNING severity) → blocking AccountWarning dialog
+                // Requires checking "I understand" before OK is enabled.
+                const formalWarn = accusedPage.locator("div.AccountWarning");
+                await expect(formalWarn).toBeVisible({ timeout: 15000 });
+                await formalWarn.locator('input[type="checkbox"]').check();
+                await formalWarn.locator("button.primary").click();
+                await expect(formalWarn).not.toBeVisible();
+            }
+
+            // Dismiss any informal warning dialogs (INFO severity, non-blocking)
             const infoOk = accusedPage.locator(".AccountWarningInfo button.primary");
             for (let i = 0; i < 10; i++) {
                 try {
@@ -271,12 +303,14 @@ export const cmInformalWarnEscaperTest = async (
                     await infoOk.click();
                     await expect(infoOk).not.toBeVisible();
                 } catch {
-                    break; // No more warning dialogs
+                    break;
                 }
             }
 
-            // Verify no BLOCKING warning dialog (formal/WARNING severity)
-            await expect(accusedPage.locator("div.AccountWarning")).not.toBeVisible();
+            if (!isEscapingTooMuch) {
+                // Verify no BLOCKING warning dialog (formal/WARNING severity)
+                await expect(accusedPage.locator("div.AccountWarning")).not.toBeVisible();
+            }
 
             await tracker.assertCountReturnedToInitial(reporterPage);
         },
