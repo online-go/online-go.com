@@ -30,7 +30,6 @@ import { cmVoteEscalateSandbaggingTest } from "./cm-vote-escalate-sandbagging";
 import { cmSandbaggingAssessmentConversionTest } from "./cm-sandbagging-assessment-conversion";
 import { cmLastWarningInfoTest } from "./cm-last-warning-info";
 import { cmEscapeRateDisplayTest } from "./cm-escape-rate-display";
-import { cmInformalWarnEscaperTest } from "./cm-informal-warn-escaper";
 
 ogsTest.describe("@CM Community Moderation Tests", () => {
     ogsTest("CM Vote on own report", cmVoteOnOwnReportTest);
