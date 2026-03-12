@@ -105,7 +105,8 @@ declare namespace rest_api {
             | "annul_thrown_games"
             | "warn_thrown_game"
             | "no_thrown_game"
-            | "informal_warn_escaper";
+            | "informal_warn_escaper"
+            | "informal_warn_escaper_and_annul";
 
         // Regrettably, there's another definition of Vote in goban ServerToClient.ts
         // I wonder how we unify the rest_api and goban interfaces...
