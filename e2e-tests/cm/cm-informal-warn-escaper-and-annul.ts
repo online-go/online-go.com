@@ -31,14 +31,11 @@
  *
  * Flow:
  * 1. Reporter plays a real 9x9 game with ACC, then files an escaping report
- * 2. CM1 views report and verifies escape rate badge; detects whether rate
- *    is tolerable (→ informal_warn_escaper_and_annul) or too high
- *    (→ warn_escaper, falling back to formal warn path)
- * 3. All 3 CMs vote the appropriate action
+ * 2. CM1 views report and verifies escape rate badge shows "Rate: tolerable"
+ *    (fails if rate is too high — reseed with `ogs-manage init_e2e`)
+ * 3. All 3 CMs vote informal_warn_escaper_and_annul
  * 4. Reporter sees acknowledgement (AccountWarningAck)
- * 5. Accused sees the correct warning type:
- *    - Informal: non-blocking AccountWarningInfo (INFO severity)
- *    - Formal: blocking AccountWarning (WARNING severity)
+ * 5. Accused sees informal warning (non-blocking AccountWarningInfo)
  *
  * Note: The escape rate uses a 12-month rolling window from the report's
  * creation date. If the seeded games are older than 12 months they will
@@ -202,20 +199,14 @@ export const cmInformalWarnEscaperAndAnnulTest = async (
             );
             await navigateToReport(cm1Page, reportNumber);
 
-            // Verify escape rate badge is visible (may be "Rate: tolerable" on first
-            // run or "Escaping too much" on re-runs as warnings accumulate)
+            // Verify escape rate badge shows "Rate: tolerable" (rate-low class).
+            // If it shows "Escaping too much" the seeded data needs resetting
+            // via `ogs-manage init_e2e`.
             const badge = cm1Page.locator(".escape-rate-badge");
             await expect(badge).toBeVisible({ timeout: 15000 });
+            await expect(badge).toHaveClass(/rate-low/);
 
-            // The available vote depends on the escape rate: tolerable shows
-            // informal_warn_escaper_and_annul, too-high shows warn_escaper instead.
-            const isEscapingTooMuch = await badge.evaluate((el) =>
-                el.classList.contains("escaping-too-much"),
-            );
-            const voteAction = isEscapingTooMuch
-                ? "warn_escaper"
-                : "informal_warn_escaper_and_annul";
-
+            const voteAction = "informal_warn_escaper_and_annul";
             const voteOption = cm1Page.locator(`input[value="${voteAction}"]`);
             await expect(voteOption).toBeVisible();
 
@@ -285,17 +276,12 @@ export const cmInformalWarnEscaperAndAnnulTest = async (
             await loginAsUser(accusedPage, "E2E_CM_IWE_ACC", "test");
             await accusedPage.goto("/");
 
-            if (isEscapingTooMuch) {
-                // Formal warning (WARNING severity) → blocking AccountWarning dialog
-                // Requires checking "I understand" before OK is enabled.
-                const formalWarn = accusedPage.locator("div.AccountWarning");
-                await expect(formalWarn).toBeVisible({ timeout: 15000 });
-                await formalWarn.locator('input[type="checkbox"]').check();
-                await formalWarn.locator("button.primary").click();
-                await expect(formalWarn).not.toBeVisible();
-            }
+            // Verify the accused sees an informal warning (INFO severity, non-blocking)
+            await expect(accusedPage.locator(".AccountWarningInfo")).toBeVisible({
+                timeout: 15000,
+            });
 
-            // Dismiss any informal warning dialogs (INFO severity, non-blocking)
+            // Dismiss informal warning dialogs (may have extras from previous runs)
             const infoOk = accusedPage.locator(".AccountWarningInfo button.primary");
             for (let i = 0; i < 10; i++) {
                 try {
@@ -307,10 +293,8 @@ export const cmInformalWarnEscaperAndAnnulTest = async (
                 }
             }
 
-            if (!isEscapingTooMuch) {
-                // Verify no BLOCKING warning dialog (formal/WARNING severity)
-                await expect(accusedPage.locator("div.AccountWarning")).not.toBeVisible();
-            }
+            // Verify no BLOCKING warning dialog (formal/WARNING severity)
+            await expect(accusedPage.locator("div.AccountWarning")).not.toBeVisible();
 
             await tracker.assertCountReturnedToInitial(reporterPage);
         },
