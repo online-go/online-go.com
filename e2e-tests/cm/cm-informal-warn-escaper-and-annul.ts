@@ -16,8 +16,9 @@
  */
 
 /*
- * Tests that CMs can vote "informal warning" on escaping reports, and
- * that the vote resolves the report and sends an ack to the reporter.
+ * Tests that CMs can vote "informal warning and annul game" on escaping
+ * reports, and that the vote resolves the report, annuls the game, and
+ * sends an ack to the reporter.
  *
  * Uses init_e2e data:
  * - E2E_CM_IWE_ACC : accused with low escape rate
@@ -32,7 +33,7 @@
  * 1. Reporter plays a real 9x9 game with ACC, then files an escaping report
  * 2. CM1 views report and verifies escape rate badge shows "Rate: tolerable"
  *    (fails if rate is too high — reseed with `ogs-manage init_e2e`)
- * 3. All 3 CMs vote informal_warn_escaper
+ * 3. All 3 CMs vote informal_warn_escaper_and_annul
  * 4. Reporter sees acknowledgement (AccountWarningAck)
  * 5. Accused sees informal warning (non-blocking AccountWarningInfo)
  *
@@ -69,7 +70,7 @@ import { expect } from "@playwright/test";
 
 import { withReportCountTracking } from "@helpers/report-utils";
 
-export const cmInformalWarnEscaperTest = async (
+export const cmInformalWarnEscaperAndAnnulTest = async (
     {
         createContext,
     }: { createContext: (options?: CreateContextOptions) => Promise<BrowserContext> },
@@ -79,7 +80,7 @@ export const cmInformalWarnEscaperTest = async (
 
     // Use a fresh reporter each run to avoid "Too many outstanding reports"
     // from leftover reports of previous failed runs.
-    const reporterUsername = newTestUsername("IWE_REP");
+    const reporterUsername = newTestUsername("IWEA_REP");
     const { userPage: reporterPage } = await prepareNewUser(
         createContext,
         reporterUsername,
@@ -148,7 +149,7 @@ export const cmInformalWarnEscaperTest = async (
             // Reporter (black) challenges accused (white) to a quick 9x9 game
             await createDirectChallenge(reporterPage, "E2E_CM_IWE_ACC", {
                 ...defaultChallengeSettings,
-                gameName: "E2E CM IWE Report Game",
+                gameName: "E2E CM IWEA Report Game",
                 boardSize: "9x9",
                 speed: "blitz",
                 color: "black",
@@ -177,19 +178,22 @@ export const cmInformalWarnEscaperTest = async (
 
             await expect(reporterPage.getByText("wins by")).toBeVisible();
 
+            // Capture the game URL before navigating away — we'll verify annulment later
+            const gameUrl = reporterPage.url();
+
             // Report the accused (white) for escaping from the game page
             await reportPlayerByColor(
                 reporterPage,
                 ".white",
                 "escaping",
-                "E2E test: player escaped this game",
+                "E2E test: player escaped this game (annul test)",
             );
 
             // Find the report number via reporter's "My Own Reports"
             const reportNumber = await captureReportNumber(reporterPage);
 
             // ========================================
-            // Phase 1: CM1 verifies escape rate display and informal warning option
+            // Phase 1: CM1 verifies escape rate display and annul option
             // ========================================
 
             const { seededCMPage: cm1Page, seededCMContext: cm1Context } = await setupSeededCM(
@@ -205,11 +209,7 @@ export const cmInformalWarnEscaperTest = async (
             await expect(badge).toBeVisible({ timeout: 15000 });
             await expect(badge).toHaveClass(/rate-low/);
 
-            // Verify formal warning status is visible
-            const warningStatus = cm1Page.locator(".formal-warning-status");
-            await expect(warningStatus).toBeVisible();
-
-            const voteAction = "informal_warn_escaper";
+            const voteAction = "informal_warn_escaper_and_annul";
             const voteOption = cm1Page.locator(`input[value="${voteAction}"]`);
             await expect(voteOption).toBeVisible();
 
@@ -298,6 +298,15 @@ export const cmInformalWarnEscaperTest = async (
 
             // Verify no BLOCKING warning dialog (formal/WARNING severity)
             await expect(accusedPage.locator("div.AccountWarning")).not.toBeVisible();
+
+            // ========================================
+            // Phase 5: Verify the game was annulled
+            // ========================================
+
+            await reporterPage.goto(gameUrl);
+            const annulledIndicator = reporterPage.locator(".annulled-indicator");
+            await expect(annulledIndicator).toBeVisible({ timeout: 15000 });
+            await expect(annulledIndicator).toContainText("Annulled");
 
             await tracker.assertCountReturnedToInitial(reporterPage);
         },

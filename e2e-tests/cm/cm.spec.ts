@@ -30,6 +30,8 @@ import { cmVoteEscalateSandbaggingTest } from "./cm-vote-escalate-sandbagging";
 import { cmSandbaggingAssessmentConversionTest } from "./cm-sandbagging-assessment-conversion";
 import { cmLastWarningInfoTest } from "./cm-last-warning-info";
 import { cmEscapeRateDisplayTest } from "./cm-escape-rate-display";
+import { cmInformalWarnEscaperTest } from "./cm-informal-warn-escaper";
+import { cmInformalWarnEscaperAndAnnulTest } from "./cm-informal-warn-escaper-and-annul";
 
 ogsTest.describe("@CM Community Moderation Tests", () => {
     ogsTest("CM Vote on own report", cmVoteOnOwnReportTest);
@@ -48,9 +50,12 @@ ogsTest.describe("@CM Community Moderation Tests", () => {
     );
     ogsTest("@Slow Last warning info shown on repeat offender reports", cmLastWarningInfoTest);
     ogsTest("Escape rate display on escaping reports", cmEscapeRateDisplayTest);
-    // TBD: This test accumulates escape warnings across runs, eventually pushing
-    // the rate above the "escaping too much" threshold. At that point it can no
-    // longer test the informal warning path. Needs a way to reset the accused's
-    // warning state without re-running init_e2e.
-    // ogsTest("Informal warning vote on escaping reports", cmInformalWarnEscaperTest);
+    // Note: @Manual because this test accumulates escape warnings across runs,
+    // eventually pushing the rate above the "escaping too much" threshold.
+    // Needs a way to reset the accused's warning state without re-running init_e2e.
+    ogsTest("@Manual Informal warning vote on escaping reports", cmInformalWarnEscaperTest);
+    ogsTest(
+        "@Manual Informal warning and annul vote on escaping reports",
+        cmInformalWarnEscaperAndAnnulTest,
+    );
 });
