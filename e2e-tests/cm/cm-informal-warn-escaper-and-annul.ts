@@ -178,6 +178,9 @@ export const cmInformalWarnEscaperAndAnnulTest = async (
 
             await expect(reporterPage.getByText("wins by")).toBeVisible();
 
+            // Capture the game URL before navigating away — we'll verify annulment later
+            const gameUrl = reporterPage.url();
+
             // Report the accused (white) for escaping from the game page
             await reportPlayerByColor(
                 reporterPage,
@@ -295,6 +298,15 @@ export const cmInformalWarnEscaperAndAnnulTest = async (
 
             // Verify no BLOCKING warning dialog (formal/WARNING severity)
             await expect(accusedPage.locator("div.AccountWarning")).not.toBeVisible();
+
+            // ========================================
+            // Phase 5: Verify the game was annulled
+            // ========================================
+
+            await reporterPage.goto(gameUrl);
+            const annulledIndicator = reporterPage.locator(".annulled-indicator");
+            await expect(annulledIndicator).toBeVisible({ timeout: 15000 });
+            await expect(annulledIndicator).toContainText("Annulled");
 
             await tracker.assertCountReturnedToInitial(reporterPage);
         },
