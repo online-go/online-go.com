@@ -98,6 +98,19 @@ export const generateUniqueTestIPv6 = (): string => {
     return `fd00:e2e:${workerIndex}::${seg1}:${seg2}:${counter}`;
 };
 
+// Counter for same-millisecond ebi generation
+let ebiCounter = 0;
+
+// Generate unique device fingerprints for atomic API registration.
+// Incorporates a counter and worker index to prevent same-millisecond collisions in parallel runs.
+export const generateUniqueEbi = (): string => {
+    const timestamp = Date.now();
+    const workerIndex = process.env.TEST_WORKER_INDEX || "0";
+    const counter = ebiCounter++;
+
+    return `e2e-device-${timestamp}-${workerIndex}-${counter}.0.0.0.0.xxx.xxx.0`;
+};
+
 export const registerNewUser = async (
     createContext: (options?: CreateContextOptions) => Promise<BrowserContext>,
     username: string,
@@ -184,25 +197,24 @@ export const atomicRegisterNewUser = async (
 ) => {
     const uniqueIPv6 = generateUniqueTestIPv6();
     const userContext = await createContext({
-        extraHTTPHeaders: {
-            "X-Forwarded-For": uniqueIPv6,
-        },
+        extraHTTPHeaders: { "X-Forwarded-For": uniqueIPv6 },
     });
 
     const request = userContext.request;
 
-    // 1. Initialize session and get CSRF token
-    await request.get("/");
-    const cookies = await userContext.cookies();
-    const csrftoken = cookies.find((c) => c.name === "csrftoken")?.value;
-
-    if (!csrftoken) {
-        throw new Error("Failed to obtain CSRF token from session cookies after GET /");
+    // Get CSRF token from the bootstrap config
+    const configResponse = await request.get("/api/v1/ui/config");
+    if (!configResponse.ok()) {
+        throw new Error(`Failed to load UI config: ${await configResponse.text()}`);
     }
 
-    // 2. Register via API
-    // ebi is a device fingerprint; we generate a simple one for the test
-    const ebi = `e2e-device-${Date.now()}.0.0.0.0.xxx.xxx.0`;
+    const { csrf_token: csrftoken } = await configResponse.json();
+    if (!csrftoken) {
+        throw new Error("Failed to obtain CSRF token from /api/v1/ui/config response");
+    }
+
+    // Register account via direct API call
+    const ebi = generateUniqueEbi();
     const registerResponse = await request.post("/api/v0/register", {
         data: {
             username,
@@ -220,10 +232,6 @@ export const atomicRegisterNewUser = async (
     return { userContext, csrftoken };
 };
 
-/**
- * Prepares a new user for testing using only API calls.
- * Replaces prepareNewUser() for non-onboarding related tests.
- */
 export const atomicPrepareNewUser = async (
     createContext: (options?: CreateContextOptions) => Promise<BrowserContext>,
     username: string,
@@ -236,7 +244,7 @@ export const atomicPrepareNewUser = async (
     );
     const request = userContext.request;
 
-    // 3. Skip the "Skill Level" onboarding via API
+    // Skip the "Skill Level" onboarding flow
     const onboardingResponse = await request.put("/api/v1/me/starting_rank", {
         data: { choice: "basic" },
         headers: { "X-CSRFToken": csrftoken },
@@ -248,7 +256,7 @@ export const atomicPrepareNewUser = async (
 
     const userPage = await userContext.newPage();
 
-    // 4. Inject preferences directly into localStorage to suppress UI noise
+    // Inject preferences directly into localStorage to suppress UI noise (popups, notifications)
     await userPage.addInitScript(() => {
         // Prevent desktop notification prompts
         localStorage.setItem("ogs.preferences.asked-to-enable-desktop-notifications", "true");
