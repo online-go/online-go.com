@@ -19,7 +19,7 @@ import type { CreateContextOptions } from "@helpers";
 
 import { expect, Page, BrowserContext } from "@playwright/test";
 import { log } from "./logger";
-import { newTestUsername, atomicPrepareNewUser } from "@helpers/user-utils";
+import { newTestUsername, atomicPrepareNewUser, prepareNewUser } from "@helpers/user-utils";
 
 export interface DemoBoardModalFields {
     gameName?: string;
@@ -126,8 +126,10 @@ export interface DemoBoardExpectedFields {
 export const createDemoBoard = async (
     createContext: (options?: CreateContextOptions) => Promise<BrowserContext>,
     settings: DemoBoardModalFields,
+    setupType: "ui" | "atomic" = "atomic",
 ): Promise<Page> => {
-    const { userPage: page } = await atomicPrepareNewUser(
+    const setupFn = setupType === "ui" ? prepareNewUser : atomicPrepareNewUser;
+    const { userPage: page } = await setupFn(
         createContext,
         newTestUsername("DemoE2E"), // cspell:disable-line
         "test",
