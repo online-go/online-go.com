@@ -16,13 +16,19 @@
  */
 
 import { ogsTest } from "@helpers";
-import { createAndVerifyDemoBoard } from "@helpers/demo-board-utils";
+import { createDemoBoard, verifyDemoBoard } from "@helpers/demo-board-utils";
 
-ogsTest.describe("Demo Board Tests", () => {
-    const testCases = [
+ogsTest.describe("Demo Board Creation Tests", () => {
+    const testCases: {
+        name: string;
+        settings: any;
+        expected: any;
+        setupType: "ui" | "atomic";
+    }[] = [
         {
             name: "Default 19x19 board",
             settings: {},
+            setupType: "ui", // Use original UI flow for the default case
             expected: {
                 boardSize: "19x19",
                 rules: "Japanese",
@@ -42,6 +48,7 @@ ogsTest.describe("Demo Board Tests", () => {
                 white_ranking: 1037, // 1 Pro
                 rules: "chinese",
             },
+            setupType: "atomic", // Use fast atomic flow for the custom case
             expected: {
                 boardSize: "9x9",
                 rules: "Chinese",
@@ -55,7 +62,8 @@ ogsTest.describe("Demo Board Tests", () => {
 
     for (const tc of testCases) {
         ogsTest(`should successfully create a ${tc.name}`, async ({ createContext }) => {
-            await createAndVerifyDemoBoard(createContext, tc.settings, tc.expected);
+            const page = await createDemoBoard(createContext, tc.settings, tc.setupType);
+            await verifyDemoBoard(page, tc.expected);
         });
     }
 });
