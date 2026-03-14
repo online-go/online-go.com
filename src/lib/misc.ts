@@ -687,7 +687,7 @@ export function showSecondsResolution(duration: moment.Duration | null): string 
     } else if (duration < moment.duration(60000)) {
         return `${moment.duration(duration).asSeconds().toFixed(1)}s`;
     } else {
-        return moment.duration(duration).format("d:h:m:s");
+        return moment.duration(duration).format("d:hh:mm:ss");
     }
 }
 
