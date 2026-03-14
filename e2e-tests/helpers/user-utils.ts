@@ -267,6 +267,9 @@ export const atomicPrepareNewUser = async (
     // Final navigation to ensure we are logged in and ready
     await userPage.goto("/");
 
+    // Verify the user is actually logged in by checking if the username is visible in the header
+    await expect(userPage.getByText(username)).toBeVisible();
+
     return {
         userPage,
         userContext,

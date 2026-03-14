@@ -126,7 +126,7 @@ export interface DemoBoardExpectedFields {
 export const createDemoBoard = async (
     createContext: (options?: CreateContextOptions) => Promise<BrowserContext>,
     settings: DemoBoardModalFields,
-    setupType: "ui" | "atomic" = "atomic",
+    setupType: "ui" | "atomic" = "ui",
 ): Promise<Page> => {
     const setupFn = setupType === "ui" ? prepareNewUser : atomicPrepareNewUser;
     const { userPage: page } = await setupFn(
