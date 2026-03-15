@@ -98,6 +98,7 @@ for (const base_path of [
     "/oje",
     "/firewall",
     "/fair_play",
+    "/static",
     "/__debug__",
 ]) {
     proxy[base_path] = {
@@ -227,7 +228,8 @@ export default defineConfig({
     },
     css: {
         postcss: {
-            parser: comment,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            parser: comment as any,
             plugins: [
                 atImportGlob(),
                 atImport(),
