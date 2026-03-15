@@ -36,6 +36,7 @@ module.exports = {
         "^goban$": "<rootDir>/submodules/goban/src",
         "^goscorer$": "<rootDir>/submodules/goban/src/third_party/goscorer/goscorer",
         "^d3$": "<rootDir>/src/stubs/d3.ts",
+        "^@moderator-ui/(.*)": "<rootDir>/src/stubs/moderator-ui/$1",
     },
     setupFiles: ["./setup-jest.cjs"],
     setupFilesAfterEnv: ["jest-chain", "@testing-library/jest-dom"],
