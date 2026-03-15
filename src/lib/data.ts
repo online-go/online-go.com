@@ -181,19 +181,22 @@ export function remove<KeyT extends Extract<keyof DataSchema, string>>(
     emitForKey(key);
 }
 
-export function removePrefix(key_prefix: string): any {
-    const hits: Partial<DataSchema> = {};
+export function removePrefix(key_prefix: string, replication?: Replication): void {
+    const hits: string[] = [];
 
-    Object.keys(store).map((key) => {
+    Object.keys(store).forEach((key) => {
         if (key.indexOf(key_prefix) === 0) {
-            hits[key as keyof DataSchema] = key;
+            hits.push(key);
+        }
+    });
+    Object.keys(remote_store).forEach((key) => {
+        if (key.indexOf(key_prefix) === 0 && !hits.includes(key)) {
+            hits.push(key);
         }
     });
 
-    for (const key in hits) {
-        safeLocalStorageRemove(`ogs.${key}`);
-        delete store[key as keyof DataSchema];
-        emitForKey(key as keyof DataSchema);
+    for (const key of hits) {
+        remove(key as keyof DataSchema, replication);
     }
 }
 

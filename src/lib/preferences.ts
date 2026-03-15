@@ -406,12 +406,13 @@ export function watchSelectedThemes(cb: (themes: GobanSelectedThemes) => void) {
  */
 export function usePreference<KeyT extends ValidPreference>(
     key: KeyT,
+    replication?: data.Replication,
 ): [PreferencesType[KeyT], (v: PreferencesType[KeyT]) => void] {
     const [value, stateSetter] = React.useState(get(key));
 
     const setStateAndPreference = (v: PreferencesType[KeyT]) => {
         stateSetter(v);
-        set(key, v);
+        set(key, v, replication);
     };
 
     React.useEffect(() => {

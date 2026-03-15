@@ -131,19 +131,6 @@ function calculateSectionProgress(lessons: any[]): SectionProgress {
 }
 
 // Initializes section expansion state from saved preferences or defaults to first section
-function initializeExpandedSections(): ExpandedSectionsState {
-    const expandedSections: ExpandedSectionsState = {};
-    const lastExpandedSection = preferences.get(LAST_EXPANDED_SECTION_KEY);
-
-    sections.forEach(([sectionName], index) => {
-        // Restore from saved state or default to first section
-        expandedSections[sectionName] = lastExpandedSection
-            ? sectionName === lastExpandedSection
-            : index === 0;
-    });
-
-    return expandedSections;
-}
 
 // Returns the appropriate ribbon content based on lesson completion status
 function getRibbonContent(sectionName: string): React.ReactNode {
@@ -173,28 +160,30 @@ function getRibbonContent(sectionName: string): React.ReactNode {
 // Convert to functional component for better performance
 function Index(): React.ReactElement {
     const user = data.get("user");
-    const [expandedSections, setExpandedSections] = React.useState<ExpandedSectionsState>(
-        initializeExpandedSections,
+    const [lastExpandedSection, setLastExpandedSection] = preferences.usePreference(
+        LAST_EXPANDED_SECTION_KEY,
+        data.Replication.REMOTE_OVERWRITES_LOCAL,
     );
 
-    const toggleSection = React.useCallback((sectionName: string) => {
-        setExpandedSections((prevState) => {
-            // Accordion behavior: always keep exactly one section expanded.
-            // If user clicks the currently expanded section, ignore the click.
-            if (prevState[sectionName]) {
-                return prevState;
-            }
-
-            // Collapse all sections except the clicked one
-            const newState = Object.keys(prevState).reduce<ExpandedSectionsState>((acc, key) => {
-                acc[key] = key === sectionName;
-                return acc;
-            }, {});
-
-            preferences.set(LAST_EXPANDED_SECTION_KEY, sectionName);
-            return newState;
+    const expandedSections = React.useMemo(() => {
+        const state: ExpandedSectionsState = {};
+        sections.forEach(([sectionName], index) => {
+            state[sectionName] = lastExpandedSection
+                ? sectionName === lastExpandedSection
+                : index === 0;
         });
-    }, []);
+        return state;
+    }, [lastExpandedSection]);
+
+    const toggleSection = React.useCallback(
+        (sectionName: string) => {
+            if (expandedSections[sectionName]) {
+                return;
+            }
+            setLastExpandedSection(sectionName);
+        },
+        [expandedSections, setLastExpandedSection],
+    );
 
     return (
         <div id="LearningHub-Index">
@@ -395,17 +384,14 @@ function SectionNav(): React.ReactElement {
     const urlMatch = window.location.pathname.match(/\/learn-to-play-go(\/([^\/]+))?(\/([0-9]+))?/);
     const currentSectionName = urlMatch?.[2] || "";
 
-    const [autoAdvance, setAutoAdvance] = React.useState(() =>
-        preferences.get("learning-hub-auto-advance"),
+    const [autoAdvance, setAutoAdvance] = preferences.usePreference(
+        "learning-hub-auto-advance",
+        data.Replication.REMOTE_OVERWRITES_LOCAL,
     );
 
     const handleAutoAdvanceToggle = React.useCallback(() => {
-        setAutoAdvance((prev) => {
-            const next = !prev;
-            preferences.set("learning-hub-auto-advance", next);
-            return next;
-        });
-    }, []);
+        setAutoAdvance(!autoAdvance);
+    }, [autoAdvance, setAutoAdvance]);
 
     // Memoize reset progress handler
     const handleResetProgress = React.useCallback(() => {
@@ -416,7 +402,7 @@ function SectionNav(): React.ReactElement {
             })
             .then(({ value: accept }) => {
                 if (accept) {
-                    data.removePrefix("learning-hub.");
+                    data.removePrefix("learning-hub.", data.Replication.REMOTE_OVERWRITES_LOCAL);
                     browserHistory.push("/learn-to-play-go");
                 }
             });
