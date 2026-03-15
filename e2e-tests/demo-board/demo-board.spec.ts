@@ -16,13 +16,18 @@
  */
 
 import { ogsTest } from "@helpers";
-import { createDemoBoard, verifyDemoBoard } from "@helpers/demo-board-utils";
+import {
+    createDemoBoard,
+    verifyDemoBoard,
+    DemoBoardModalFields,
+    DemoBoardExpectedFields,
+} from "@helpers/demo-board-utils";
 
 ogsTest.describe("Demo Board Creation Tests", () => {
     const testCases: {
         name: string;
-        settings: any;
-        expected: any;
+        settings: DemoBoardModalFields;
+        expected: DemoBoardExpectedFields;
         setupType: "ui" | "atomic";
     }[] = [
         {

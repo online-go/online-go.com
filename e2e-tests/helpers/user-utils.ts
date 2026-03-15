@@ -225,8 +225,9 @@ export const atomicRegisterNewUser = async (
         headers: { "X-CSRFToken": csrftoken },
     });
 
-    if (!registerResponse.ok()) {
-        throw new Error(`API Registration failed: ${await registerResponse.text()}`);
+    const body = await registerResponse.json();
+    if (!registerResponse.ok() || body.id === undefined) {
+        throw new Error(`API Registration failed: ${JSON.stringify(body)}`);
     }
 
     return { userContext, csrftoken };
