@@ -262,7 +262,7 @@ export const atomicPrepareNewUser = async (
         // Prevent desktop notification prompts
         localStorage.setItem("ogs.preferences.asked-to-enable-desktop-notifications", "true");
         // Disable dynamic help popups (RDH system)
-        localStorage.setItem("ogs.rdh-system-state", '{"enabled":false}');
+        localStorage.setItem("ogs.rdh-system-state", JSON.stringify('{"enabled":false}'));
     });
 
     // Final navigation to ensure we are logged in and ready
