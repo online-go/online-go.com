@@ -32,6 +32,7 @@ import { cmLastWarningInfoTest } from "./cm-last-warning-info";
 import { cmEscapeRateDisplayTest } from "./cm-escape-rate-display";
 import { cmInformalWarnEscaperTest } from "./cm-informal-warn-escaper";
 import { cmInformalWarnEscaperAndAnnulTest } from "./cm-informal-warn-escaper-and-annul";
+import { cmEscalatedEscapingAllOptionsTest } from "./cm-escalated-escaping-all-options";
 
 ogsTest.describe("@CM Community Moderation Tests", () => {
     ogsTest("CM Vote on own report", cmVoteOnOwnReportTest);
@@ -57,5 +58,9 @@ ogsTest.describe("@CM Community Moderation Tests", () => {
     ogsTest(
         "@Manual Informal warning and annul vote on escaping reports",
         cmInformalWarnEscaperAndAnnulTest,
+    );
+    ogsTest(
+        "Escalated escaping report shows all voting options",
+        cmEscalatedEscapingAllOptionsTest,
     );
 });
