@@ -46,6 +46,7 @@ export interface SponsorshipRequestData {
 }
 
 export interface SupporterPricing {
+    aji: { monthly_price_usd: number };
     hane: { monthly_price_usd: number };
     tenuki: { monthly_price_usd: number };
     meijin: { monthly_price_usd: number };
@@ -79,6 +80,8 @@ export function getLevelName(level: number): string {
 
 export function getMonthlyPrice(pricing: SupporterPricing, level: number): number {
     switch (level) {
+        case 1:
+            return pricing.aji.monthly_price_usd / 100;
         case 2:
             return pricing.hane.monthly_price_usd / 100;
         case 3:
