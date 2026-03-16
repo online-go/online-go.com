@@ -19,7 +19,7 @@ import type { CreateContextOptions } from "@helpers";
 
 import { expect, Page, BrowserContext } from "@playwright/test";
 import { log } from "./logger";
-import { newTestUsername, prepareNewUser } from "@helpers/user-utils";
+import { newTestUsername, atomicPrepareNewUser, prepareNewUser } from "@helpers/user-utils";
 
 export interface DemoBoardModalFields {
     gameName?: string;
@@ -114,7 +114,6 @@ export const fillOutDemoBoardCreationForm = async (
     await whiteRankSelect.selectOption(final_settings.white_ranking?.toString() || "2");
 };
 
-// 1. Add a new interface for the expected outcomes
 export interface DemoBoardExpectedFields {
     boardSize: string;
     rules: string;
@@ -124,27 +123,28 @@ export interface DemoBoardExpectedFields {
     whiteRank: string;
 }
 
-// 2. Add the new high-level orchestrator function
-export const createAndVerifyDemoBoard = async (
+export const createDemoBoard = async (
     createContext: (options?: CreateContextOptions) => Promise<BrowserContext>,
     settings: DemoBoardModalFields,
-    expected: DemoBoardExpectedFields,
-) => {
-    const { userPage: page } = await prepareNewUser(
+    setupType: "ui" | "atomic" = "ui",
+): Promise<Page> => {
+    const setupFn = setupType === "ui" ? prepareNewUser : atomicPrepareNewUser;
+    const { userPage: page } = await setupFn(
         createContext,
         newTestUsername("DemoE2E"), // cspell:disable-line
         "test",
     );
 
-    // Use existing helpers for the setup
     await loadDemoBoardCreationModal(page);
     await fillOutDemoBoardCreationForm(page, settings);
 
-    // Click create and wait for navigation
     await page.click('button:has-text("Create Demo")');
     await expect(page).toHaveURL(/.*demo.*/);
 
-    // Perform all assertions based on the 'expected' parameter
+    return page;
+};
+
+export const verifyDemoBoard = async (page: Page, expected: DemoBoardExpectedFields) => {
     await expect(page.locator(".game-state")).toContainText("Review by");
     await expect(page.locator(".Goban")).toHaveCount(2);
     await expect(page.locator(".condensed-game-ranked")).toHaveText("Unranked");
@@ -179,4 +179,13 @@ export const createAndVerifyDemoBoard = async (
         .locator("div.white.player-name-container .Player-rank")
         .innerText();
     expect(whitePlayerRank).toBe(expected.whiteRank);
+};
+
+export const createAndVerifyDemoBoard = async (
+    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>,
+    settings: DemoBoardModalFields,
+    expected: DemoBoardExpectedFields,
+) => {
+    const page = await createDemoBoard(createContext, settings);
+    await verifyDemoBoard(page, expected);
 };
