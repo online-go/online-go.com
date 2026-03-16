@@ -19,21 +19,24 @@ jobs:
 
         steps:
             - name: Update ogs repo to get latest script
-              run: cd /home/greenasjade/src/ogs/ogs && git pull origin main
-            #
+              run: cd /home/greenasjade/src/OGS/ogs && git pull origin main
+
             - name: Determine trigger source
               id: trigger
+              env:
+                  EVENT_NAME: ${{ github.event_name }}
               run: |
-                  if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+                  if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
                     echo "source=github-trigger" >> $GITHUB_OUTPUT
-                  elif [ "${{ github.event_name }}" = "push" ]; then
-                    echo "source=ogs-ui" >> $GITHUB_OUTPUT
+                  elif [ "$EVENT_NAME" = "push" ]; then
+                    echo "source=online-go.com" >> $GITHUB_OUTPUT
                   else
                     echo "source=unknown" >> $GITHUB_OUTPUT
                   fi
 
             - name: Run E2E Test Suite
+              env:
+                  TEST_FILTER: ${{ github.event.inputs.test_filter || '' }}
+                  TRIGGER_SOURCE: ${{ steps.trigger.outputs.source }}
               run: |
-                  TEST_FILTER="${{ github.event.inputs.test_filter || '' }}"
-                  TRIGGER_SOURCE="${{ steps.trigger.outputs.source }}"
-                  /home/greenasjade/src/ogs/ogs/.e2e-ci/run-tests.sh "$TEST_FILTER" "$TRIGGER_SOURCE"
+                  /home/greenasjade/src/OGS/ogs/.e2e-ci/run-tests.sh "$TEST_FILTER" "$TRIGGER_SOURCE"
