@@ -29,7 +29,7 @@ jobs:
                   if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
                     echo "source=github-trigger" >> $GITHUB_OUTPUT
                   elif [ "$EVENT_NAME" = "push" ]; then
-                    echo "source=online-go.com" >> $GITHUB_OUTPUT
+                    echo "source=ogs-ui" >> $GITHUB_OUTPUT
                   else
                     echo "source=unknown" >> $GITHUB_OUTPUT
                   fi
