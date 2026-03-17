@@ -33,6 +33,7 @@ import { cmEscapeRateDisplayTest } from "./cm-escape-rate-display";
 import { cmInformalWarnEscaperTest } from "./cm-informal-warn-escaper";
 import { cmInformalWarnEscaperAndAnnulTest } from "./cm-informal-warn-escaper-and-annul";
 import { cmEscalatedEscapingAllOptionsTest } from "./cm-escalated-escaping-all-options";
+import { cmSandbaggingInProgressGameTest } from "./cm-sandbagging-in-progress-game";
 
 ogsTest.describe("@CM Community Moderation Tests", () => {
     ogsTest("CM Vote on own report", cmVoteOnOwnReportTest);
@@ -62,5 +63,9 @@ ogsTest.describe("@CM Community Moderation Tests", () => {
     ogsTest(
         "Escalated escaping report shows all voting options",
         cmEscalatedEscapingAllOptionsTest,
+    );
+    ogsTest(
+        "Sandbagging report on in-progress game becomes assessment not thrown",
+        cmSandbaggingInProgressGameTest,
     );
 });
