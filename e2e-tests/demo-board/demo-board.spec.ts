@@ -16,24 +16,13 @@
  */
 
 import { ogsTest } from "@helpers";
-import {
-    createDemoBoard,
-    verifyDemoBoard,
-    DemoBoardModalFields,
-    DemoBoardExpectedFields,
-} from "@helpers/demo-board-utils";
+import { createAndVerifyDemoBoard } from "@helpers/demo-board-utils";
 
-ogsTest.describe("Demo Board Creation Tests", () => {
-    const testCases: {
-        name: string;
-        settings: DemoBoardModalFields;
-        expected: DemoBoardExpectedFields;
-        setupType: "ui" | "atomic";
-    }[] = [
+ogsTest.describe("Demo Board Tests", () => {
+    const testCases = [
         {
             name: "Default 19x19 board",
             settings: {},
-            setupType: "ui", // Use original UI flow for the default case
             expected: {
                 boardSize: "19x19",
                 rules: "Japanese",
@@ -53,7 +42,6 @@ ogsTest.describe("Demo Board Creation Tests", () => {
                 white_ranking: 1037, // 1 Pro
                 rules: "chinese",
             },
-            setupType: "atomic", // Use fast atomic flow for the custom case
             expected: {
                 boardSize: "9x9",
                 rules: "Chinese",
@@ -67,8 +55,7 @@ ogsTest.describe("Demo Board Creation Tests", () => {
 
     for (const tc of testCases) {
         ogsTest(`should successfully create a ${tc.name}`, async ({ createContext }) => {
-            const page = await createDemoBoard(createContext, tc.settings, tc.setupType);
-            await verifyDemoBoard(page, tc.expected);
+            await createAndVerifyDemoBoard(createContext, tc.settings, tc.expected);
         });
     }
 });

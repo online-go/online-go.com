@@ -23,7 +23,7 @@ When creating e2e tests, note that:
 
 -   The string argument of `newTestUsername` must be less than 21 characters. This is because OGS username limit is 20 chars and 8 are used for uniquification. It's helpful to have characters identifying which test and which role
 
-- Use direct API calls for user registration to save time, provided that at least one test in each functional category (e.g., 'smoke', 'games', 'profile') verifies the registration flow via the UI. The intent of e2e testing remains driving the system as a user does for core feature validation.
+-   Avoid direct API calls - the intent of e2e testing is to test by driving the system as a user does.
 
 -   We do all our testing in English, we don't have to worry about pgettext
 

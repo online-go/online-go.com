@@ -19,7 +19,7 @@ import type { CreateContextOptions } from "@helpers";
 
 import { expect, Page, BrowserContext } from "@playwright/test";
 import { log } from "./logger";
-import { newTestUsername, atomicPrepareNewUser, prepareNewUser } from "@helpers/user-utils";
+import { newTestUsername, prepareNewUser } from "@helpers/user-utils";
 
 export interface DemoBoardModalFields {
     gameName?: string;
@@ -86,7 +86,6 @@ export const fillOutDemoBoardCreationForm = async (
     }
 
     if (final_settings.komi !== undefined) {
-        // First set komi to custom if needed
         if (final_settings.komi !== "automatic") {
             await page.selectOption("#demo-board-modal-komi", { value: "custom" });
             await page.fill("#demo-board-modal-komi-value", final_settings.komi.toString());
@@ -123,33 +122,22 @@ export interface DemoBoardExpectedFields {
     whiteRank: string;
 }
 
-export const createDemoBoard = async (
-    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>,
-    settings: DemoBoardModalFields,
-    setupType: "ui" | "atomic" = "ui",
-): Promise<Page> => {
-    const setupFn = setupType === "ui" ? prepareNewUser : atomicPrepareNewUser;
-    const { userPage: page } = await setupFn(
-        createContext,
-        newTestUsername("DemoE2E"), // cspell:disable-line
-        "test",
-    );
-
+export const createDemoBoard = async (page: Page, settings: DemoBoardModalFields) => {
     await loadDemoBoardCreationModal(page);
     await fillOutDemoBoardCreationForm(page, settings);
 
     await page.click('button:has-text("Create Demo")');
     await expect(page).toHaveURL(/.*demo.*/);
-
-    return page;
 };
 
-export const verifyDemoBoard = async (page: Page, expected: DemoBoardExpectedFields) => {
+export const verifyDemoBoardBasicInfo = async (page: Page, expected: DemoBoardExpectedFields) => {
     await expect(page.locator(".game-state")).toContainText("Review by");
     await expect(page.locator(".Goban")).toHaveCount(2);
     await expect(page.locator(".condensed-game-ranked")).toHaveText("Unranked");
     await expect(page.locator(".condensed-game-rules")).toHaveText(`Rules: ${expected.rules}`);
+};
 
+export const verifyDemoBoardGameModalInfo = async (page: Page, boardSize: string) => {
     await page
         .locator("a")
         .filter({ has: page.locator("i.fa.fa-info") })
@@ -157,9 +145,14 @@ export const verifyDemoBoard = async (page: Page, expected: DemoBoardExpectedFie
     await page.waitForSelector(".Modal.GameInfoModal", { state: "visible" });
 
     await page.waitForSelector(
-        `.Modal.GameInfoModal dt:has-text("Board Size") + dd:has-text("${expected.boardSize}")`,
+        `.Modal.GameInfoModal dt:has-text("Board Size") + dd:has-text("${boardSize}")`,
     );
 
+    await page.keyboard.press("Escape");
+    await expect(page.locator(".Modal.GameInfoModal")).not.toBeVisible();
+};
+
+export const verifyDemoBoardPlayerInfo = async (page: Page, expected: DemoBoardExpectedFields) => {
     const blackPlayerUsername = await page
         .locator("div.black.player-name-container .Player-username")
         .innerText();
@@ -186,6 +179,14 @@ export const createAndVerifyDemoBoard = async (
     settings: DemoBoardModalFields,
     expected: DemoBoardExpectedFields,
 ) => {
-    const page = await createDemoBoard(createContext, settings);
-    await verifyDemoBoard(page, expected);
+    const { userPage: page } = await prepareNewUser(
+        createContext,
+        newTestUsername("DemoE2E"), // cspell:disable-line
+        "test",
+    );
+
+    await createDemoBoard(page, settings);
+    await verifyDemoBoardBasicInfo(page, expected);
+    await verifyDemoBoardGameModalInfo(page, expected.boardSize);
+    await verifyDemoBoardPlayerInfo(page, expected);
 };

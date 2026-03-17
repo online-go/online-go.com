@@ -98,19 +98,6 @@ export const generateUniqueTestIPv6 = (): string => {
     return `fd00:e2e:${workerIndex}::${seg1}:${seg2}:${counter}`;
 };
 
-// Counter for same-millisecond ebi generation
-let ebiCounter = 0;
-
-// Generate unique device fingerprints for atomic API registration.
-// Incorporates a counter and worker index to prevent same-millisecond collisions in parallel runs.
-export const generateUniqueEbi = (): string => {
-    const timestamp = Date.now();
-    const workerIndex = process.env.TEST_WORKER_INDEX || "0";
-    const counter = ebiCounter++;
-
-    return `e2e-device-${timestamp}-${workerIndex}-${counter}.0.0.0.0.xxx.xxx.0`;
-};
-
 export const registerNewUser = async (
     createContext: (options?: CreateContextOptions) => Promise<BrowserContext>,
     username: string,
@@ -179,97 +166,6 @@ export const prepareNewUser = async (
     });
 
     await load(userPage, "/");
-
-    return {
-        userPage,
-        userContext,
-    };
-};
-
-/**
- * Registers a new user via API instead of UI.
- * This is significantly faster than registerNewUser().
- */
-export const atomicRegisterNewUser = async (
-    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>,
-    username: string,
-    password: string,
-) => {
-    const uniqueIPv6 = generateUniqueTestIPv6();
-    const userContext = await createContext({
-        extraHTTPHeaders: { "X-Forwarded-For": uniqueIPv6 },
-    });
-
-    const request = userContext.request;
-
-    // Get CSRF token from the bootstrap config
-    const configResponse = await request.get("/api/v1/ui/config");
-    if (!configResponse.ok()) {
-        throw new Error(`Failed to load UI config: ${await configResponse.text()}`);
-    }
-
-    const { csrf_token: csrftoken } = await configResponse.json();
-    if (!csrftoken) {
-        throw new Error("Failed to obtain CSRF token from /api/v1/ui/config response");
-    }
-
-    // Register account via direct API call
-    const ebi = generateUniqueEbi();
-    const registerResponse = await request.post("/api/v0/register", {
-        data: {
-            username,
-            password,
-            email: "",
-            ebi,
-        },
-        headers: { "X-CSRFToken": csrftoken },
-    });
-
-    const body = await registerResponse.json();
-    if (!registerResponse.ok() || body.id === undefined) {
-        throw new Error(`API Registration failed: ${JSON.stringify(body)}`);
-    }
-
-    return { userContext, csrftoken };
-};
-
-export const atomicPrepareNewUser = async (
-    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>,
-    username: string,
-    password: string,
-) => {
-    const { userContext, csrftoken } = await atomicRegisterNewUser(
-        createContext,
-        username,
-        password,
-    );
-    const request = userContext.request;
-
-    // Skip the "Skill Level" onboarding flow
-    const onboardingResponse = await request.put("/api/v1/me/starting_rank", {
-        data: { choice: "basic" },
-        headers: { "X-CSRFToken": csrftoken },
-    });
-
-    if (!onboardingResponse.ok()) {
-        throw new Error(`Failed to skip onboarding via API: ${await onboardingResponse.text()}`);
-    }
-
-    const userPage = await userContext.newPage();
-
-    // Inject preferences directly into localStorage to suppress UI noise (popups, notifications)
-    await userPage.addInitScript(() => {
-        // Prevent desktop notification prompts
-        localStorage.setItem("ogs.preferences.asked-to-enable-desktop-notifications", "true");
-        // Disable dynamic help popups (RDH system)
-        localStorage.setItem("ogs.rdh-system-state", JSON.stringify('{"enabled":false}'));
-    });
-
-    // Final navigation to ensure we are logged in and ready
-    await userPage.goto("/");
-
-    // Verify the user is actually logged in by checking if the username is visible in the header
-    await expect(userPage.getByText(username)).toBeVisible();
 
     return {
         userPage,
