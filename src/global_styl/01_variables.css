@@ -230,6 +230,13 @@
     --shade4: #ececec;
     --shade5: #f5f5f5;
 
+    --blue-shade0: #53537a;
+    --blue-shade1: #8686a8;
+    --blue-shade2: #b9b9d9;
+    --blue-shade3: #d9d9f9;
+    --blue-shade4: #ececf9;
+    --blue-shade5: #f5f5ff;
+
     --search-highlight: #ffea00;
     --other-player-background: rgba(150, 150, 150, 0.3);
 
@@ -410,6 +417,13 @@
     --shade3: #545454;
     --shade4: #474747;
     --shade5: #3a3a3a;
+
+    --blue-shade0: #cad4d9;
+    --blue-shade1: #9eb6c0;
+    --blue-shade2: #758d99;
+    --blue-shade3: #475e69;
+    --blue-shade4: #2f3b45;
+    --blue-shade5: rgb(32, 34, 37);
 
     --search-highlight: #554e00;
     --other-player-background: rgba(140, 140, 140, 0.2);

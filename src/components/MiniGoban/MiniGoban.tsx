@@ -19,12 +19,13 @@ import * as React from "react";
 import { Link } from "react-router-dom";
 import { npgettext, interpolate, moment } from "@/lib/translate";
 import * as preferences from "@/lib/preferences";
-import { GobanRenderer, JGOFMove } from "goban";
+import { GobanRenderer, JGOFMove, JGOFTimeControl } from "goban";
 import { GobanController } from "@/lib/GobanController";
 import * as data from "@/lib/data";
 import { PersistentElement } from "@/components/PersistentElement";
 import { getUserRating, PROVISIONAL_RATING_CUTOFF } from "@/lib/rank_utils";
 import { Clock } from "@/components/Clock";
+import { StaticClock } from "./StaticClock";
 import { fetch } from "@/lib/player_cache";
 import { getGameResultText } from "@/lib/misc";
 import { getEm10Width, getWindowWidth } from "@/lib/device";
@@ -55,6 +56,11 @@ export interface MiniGobanProps {
     noText?: boolean;
     title?: boolean;
     onGobanCreated?: (goban_controller: GobanController) => void;
+    timeControl?: JGOFTimeControl;
+    blackExtra?: React.ReactNode;
+    whiteExtra?: React.ReactNode;
+    leftLabel?: string;
+    rightLabel?: string;
     chat?: boolean;
     labels_positioning?: "none" | "all" | "top-left" | "top-right" | "bottom-left" | "bottom-right";
     sampleOptions?: {
@@ -150,6 +156,42 @@ export function MiniGoban(props: MiniGobanProps): React.ReactElement {
             }
             if (props.json.marks) {
                 goban.current.setMarks(props.json.marks);
+            }
+        }
+
+        // Set names and ranks from props immediately so they display even without a game
+        if (props.black) {
+            if (typeof props.black === "string") {
+                setBlackName(props.black);
+            } else {
+                setBlackName(props.black.username || "");
+                if (props.black.ratings && !preferences.get("hide-ranks")) {
+                    const blackRating = getUserRating(
+                        props.black as Parameters<typeof getUserRating>[0],
+                    );
+                    let rank_text = blackRating.bounded_rank_label;
+                    if (blackRating.deviation >= PROVISIONAL_RATING_CUTOFF) {
+                        rank_text = "?";
+                    }
+                    setBlackRank(`[${rank_text}]`);
+                }
+            }
+        }
+        if (props.white) {
+            if (typeof props.white === "string") {
+                setWhiteName(props.white);
+            } else {
+                setWhiteName(props.white.username || "");
+                if (props.white.ratings && !preferences.get("hide-ranks")) {
+                    const whiteRating = getUserRating(
+                        props.white as Parameters<typeof getUserRating>[0],
+                    );
+                    let rank_text = whiteRating.bounded_rank_label;
+                    if (whiteRating.deviation >= PROVISIONAL_RATING_CUTOFF) {
+                        rank_text = "?";
+                    }
+                    setWhiteRank(`[${rank_text}]`);
+                }
             }
         }
 
@@ -257,7 +299,9 @@ export function MiniGoban(props: MiniGobanProps): React.ReactElement {
                         ? engine.rengo_teams.black[0].username +
                               " +" +
                               (engine.rengo_teams.black.length - 1)
-                        : engine.players.black.username,
+                        : engine.players?.black?.username ||
+                              (black as PlayerCacheEntry).username ||
+                              "",
                 );
             }
             if (typeof white === "string") {
@@ -268,7 +312,9 @@ export function MiniGoban(props: MiniGobanProps): React.ReactElement {
                         ? engine.rengo_teams.white[0].username +
                               " +" +
                               (engine.rengo_teams.white.length - 1)
-                        : engine.players.white.username,
+                        : engine.players?.white?.username ||
+                              (white as PlayerCacheEntry).username ||
+                              "",
                 );
             }
 
@@ -327,6 +373,9 @@ export function MiniGoban(props: MiniGobanProps): React.ReactElement {
                 </div>
             )}
             <div className="inner-container">
+                {props.leftLabel && (
+                    <span className="side-label left-label">{props.leftLabel}</span>
+                )}
                 <PersistentElement
                     className={
                         "small board" +
@@ -337,36 +386,53 @@ export function MiniGoban(props: MiniGobanProps): React.ReactElement {
                     }
                     elt={goban_div.current}
                 />
+                {props.rightLabel && (
+                    <span className="side-label right-label">{props.rightLabel}</span>
+                )}
                 {!props.noText && (
                     <div className={`title-black ${black_to_move_cls}`}>
+                        {props.blackExtra}
                         <span className={`player-name`}>{black_name}</span>
                         <span className={`player-rank`}>{black_rank}</span>
-                        {finished ||
-                            (goban.current && (
-                                <Clock
-                                    compact
-                                    goban={goban.current}
-                                    color="black"
-                                    className="mini-goban"
-                                />
-                            ))}
-                        {finished || <span className="score">{black_points}</span>}
+                        {props.timeControl ? (
+                            <StaticClock timeControl={props.timeControl} />
+                        ) : (
+                            <>
+                                {finished ||
+                                    (goban.current && (
+                                        <Clock
+                                            compact
+                                            goban={goban.current}
+                                            color="black"
+                                            className="mini-goban"
+                                        />
+                                    ))}
+                                {finished || <span className="score">{black_points}</span>}
+                            </>
+                        )}
                     </div>
                 )}
                 {!props.noText && (
                     <div className={`title-white ${white_to_move_cls}`}>
+                        {props.whiteExtra}
                         <span className={`player-name`}>{white_name}</span>
                         <span className={`player-rank`}>{white_rank}</span>
-                        {finished ||
-                            (goban.current && (
-                                <Clock
-                                    compact
-                                    goban={goban.current}
-                                    color="white"
-                                    className="mini-goban"
-                                />
-                            ))}
-                        {finished || <span className="score">{white_points}</span>}
+                        {props.timeControl ? (
+                            <StaticClock timeControl={props.timeControl} />
+                        ) : (
+                            <>
+                                {finished ||
+                                    (goban.current && (
+                                        <Clock
+                                            compact
+                                            goban={goban.current}
+                                            color="white"
+                                            className="mini-goban"
+                                        />
+                                    ))}
+                                {finished || <span className="score">{white_points}</span>}
+                            </>
+                        )}
                     </div>
                 )}
             </div>

@@ -155,7 +155,7 @@ declare namespace rest_api {
         ranked: boolean;
         handicap: number;
         komi: number;
-        time_control: string; // JSON?
+        time_control?: import("../components/TimeControl").TimeControl;
         black_player_rank: number;
         black_player_rating: number;
         white_player_rank: number;

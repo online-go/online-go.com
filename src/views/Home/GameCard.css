@@ -1,0 +1,28 @@
+.GameCard {
+    display: flex;
+    flex-direction: column;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    background: var(--blue-shade5);
+    border: 1px solid var(--blue-shade4);
+
+    .GameCard-title-bar {
+        position: relative;
+        background: var(--blue-shade4);
+        padding: 0.3rem 0.6rem;
+        font-weight: bold;
+        border-radius: 0.5rem 0.5rem 0 0;
+        text-align: center;
+    }
+
+    .GameCard-board {
+        display: flex;
+        justify-content: center;
+        padding: 0.4rem;
+    }
+
+    .GameCard-footer {
+        padding: 0.4rem;
+        text-align: center;
+    }
+}
