@@ -20,26 +20,19 @@
  * that the vote resolves the report and sends an ack to the reporter.
  *
  * Uses init_e2e data:
- * - E2E_CM_IWE_ACC : accused with low escape rate
- * - E2E_CM_IWE_OTH : opponent in the seeded games (for escape rate history)
  * - E2E_CM_IWE_V1, E2E_CM_IWE_V2, E2E_CM_IWE_V3 : CMs with escaping power
- * Reporter is created fresh each run via prepareNewUser to avoid "too many
- * outstanding reports" from leftover reports of previous failed runs.
- * - 3 seeded games between ACC and OTH (for escape rate history)
- * - 1 prior informal warning on game 1
+ *
+ * Creates dynamically:
+ * - accused user - created fresh each run
+ * - reporter user - created fresh each run
+ * - 1 game between reporter and accused
  *
  * Flow:
- * 1. Reporter plays a real 9x9 game with ACC, then files an escaping report
+ * 1. Reporter plays a real 9x9 game with accused, then files an escaping report
  * 2. CM1 views report and verifies escape rate badge shows "Rate: tolerable"
- *    (fails if rate is too high — reseed with `ogs-manage init_e2e`)
  * 3. All 3 CMs vote informal_warn_escaper
  * 4. Reporter sees acknowledgement (AccountWarningAck)
  * 5. Accused sees informal warning (non-blocking AccountWarningInfo)
- *
- * Note: The escape rate uses a 12-month rolling window from the report's
- * creation date. If the seeded games are older than 12 months they will
- * fall outside the window and this test will fail. Fix by re-running
- * `ogs-manage init_e2e` to delete and recreate the games.
  */
 
 import type { CreateContextOptions } from "@helpers";
@@ -48,14 +41,11 @@ import { BrowserContext, TestInfo } from "@playwright/test";
 
 import {
     captureReportNumber,
-    generateUniqueTestIPv6,
-    loginAsUser,
     navigateToReport,
     newTestUsername,
     prepareNewUser,
     reportPlayerByColor,
     setupSeededCM,
-    turnOffDynamicHelp,
 } from "@helpers/user-utils";
 
 import {
@@ -69,6 +59,8 @@ import { expect } from "@playwright/test";
 
 import { withReportCountTracking } from "@helpers/report-utils";
 
+const CM_VOTERS = ["E2E_CM_IWE_V1", "E2E_CM_IWE_V2", "E2E_CM_IWE_V3"];
+
 export const cmInformalWarnEscaperTest = async (
     {
         createContext,
@@ -77,76 +69,22 @@ export const cmInformalWarnEscaperTest = async (
 ) => {
     const TIMEOUT_MS = 120 * 1000;
 
-    // Use a fresh reporter each run to avoid "Too many outstanding reports"
-    // from leftover reports of previous failed runs.
-    const reporterUsername = newTestUsername("IWE_REP");
-    const { userPage: reporterPage } = await prepareNewUser(
-        createContext,
-        reporterUsername,
-        "test",
-    );
+    // Create fresh users — avoids accumulated warnings from previous runs
+    const accusedUsername = newTestUsername("IWEAcc"); // cspell:disable-line
+    const { userPage: accusedPage } = await prepareNewUser(createContext, accusedUsername, "test");
+
+    const reporterUsername = newTestUsername("IWERep"); // cspell:disable-line
+    const { userPage: reporterPage } = await prepareNewUser(createContext, reporterUsername, "test");
 
     await withReportCountTracking(
         reporterPage,
         testInfo,
         async (tracker) => {
             // ========================================
-            // Phase 0: Play a real game, then file escaping report via the UI
+            // Phase 0: Play a real game, then file escaping report
             // ========================================
 
-            // Set up accused page manually — setupSeededUser would hang because
-            // warning dialogs block turnOffDynamicHelp.
-            // We log in, dismiss all warnings, then turn off dynamic help.
-            const accusedContext = await createContext({
-                extraHTTPHeaders: { "X-Forwarded-For": generateUniqueTestIPv6() },
-            });
-            const accusedGamePage = await accusedContext.newPage();
-            await loginAsUser(accusedGamePage, "E2E_CM_IWE_ACC", "test");
-            await accusedGamePage.goto("/");
-
-            // Dismiss any formal warning dialogs (from previous runs that voted
-            // warn_escaper). These require checking "I understand" before OK.
-            const formalWarning = accusedGamePage.locator("div.AccountWarning");
-            for (let i = 0; i < 10; i++) {
-                try {
-                    await formalWarning.waitFor({ state: "visible", timeout: 3000 });
-                    const checkbox = formalWarning.locator('input[type="checkbox"]');
-                    await checkbox.check();
-                    await formalWarning.locator("button.primary").click();
-                    await expect(formalWarning).not.toBeVisible();
-                } catch {
-                    break;
-                }
-            }
-
-            // Dismiss any informal warning dialogs (from seeded prior warning and/or
-            // previous test runs). May not appear if already acknowledged.
-            const warningOk = accusedGamePage.locator(".AccountWarningInfo button.primary");
-            for (let i = 0; i < 10; i++) {
-                try {
-                    await warningOk.waitFor({ state: "visible", timeout: 3000 });
-                    await warningOk.click();
-                    await expect(warningOk).not.toBeVisible();
-                } catch {
-                    break; // No more warning dialogs
-                }
-            }
-
-            await turnOffDynamicHelp(accusedGamePage);
-
-            // Decline any stale challenges from previous failed runs
-            const declineButton = accusedGamePage.locator(".fab.reject.raiser");
-            for (let i = 0; i < 10; i++) {
-                try {
-                    await declineButton.first().waitFor({ state: "visible", timeout: 2000 });
-                    await declineButton.first().click();
-                } catch {
-                    break;
-                }
-            }
-
-            // Reporter (black) challenges accused (white) to a quick 9x9 game
-            await createDirectChallenge(reporterPage, "E2E_CM_IWE_ACC", {
+            await createDirectChallenge(reporterPage, accusedUsername, {
                 ...defaultChallengeSettings,
                 gameName: "E2E CM IWE Report Game",
                 boardSize: "9x9",
@@ -154,20 +92,19 @@ export const cmInformalWarnEscaperTest = async (
                 color: "black",
             });
 
-            await acceptDirectChallenge(accusedGamePage);
+            await acceptDirectChallenge(accusedPage);
 
-            // Wait for goban to be ready
             const goban = reporterPage.locator(".Goban[data-pointers-bound]");
             await goban.waitFor({ state: "visible" });
 
             // Play a few moves (need >= 2 to pass the escaping report applicability check)
-            await playMoves(reporterPage, accusedGamePage, ["D5", "E5", "D6", "E6"], "9x9");
+            await playMoves(reporterPage, accusedPage, ["D5", "E5", "D6", "E6"], "9x9");
 
             // End the game: both pass, both accept scoring
             await reporterPage.getByText("Pass", { exact: true }).click();
-            await accusedGamePage.getByText("Pass", { exact: true }).click();
+            await accusedPage.getByText("Pass", { exact: true }).click();
 
-            const accusedAccept = accusedGamePage.getByText("Accept");
+            const accusedAccept = accusedPage.getByText("Accept");
             await expect(accusedAccept).toBeVisible();
             await accusedAccept.click();
 
@@ -177,7 +114,7 @@ export const cmInformalWarnEscaperTest = async (
 
             await expect(reporterPage.getByText("wins by")).toBeVisible();
 
-            // Report the accused (white) for escaping from the game page
+            // Report the accused (white) for escaping
             await reportPlayerByColor(
                 reporterPage,
                 ".white",
@@ -185,22 +122,27 @@ export const cmInformalWarnEscaperTest = async (
                 "E2E test: player escaped this game",
             );
 
-            // Find the report number via reporter's "My Own Reports"
             const reportNumber = await captureReportNumber(reporterPage);
 
             // ========================================
-            // Phase 1: CM1 verifies escape rate display and informal warning option
+            // Phase 1: Set up CMs and verify escape rate display
             // ========================================
 
-            const { seededCMPage: cm1Page, seededCMContext: cm1Context } = await setupSeededCM(
-                createContext,
-                "E2E_CM_IWE_V1",
-            );
+            const cmPages = [];
+            const cmContexts = [];
+            for (const cmUser of CM_VOTERS) {
+                const { seededCMPage, seededCMContext } = await setupSeededCM(
+                    createContext,
+                    cmUser,
+                );
+                cmPages.push(seededCMPage);
+                cmContexts.push(seededCMContext);
+            }
+
+            const cm1Page = cmPages[0];
             await navigateToReport(cm1Page, reportNumber);
 
-            // Verify escape rate badge shows "Rate: tolerable" (rate-low class).
-            // If it shows "Escaping too much" the seeded data needs resetting
-            // via `ogs-manage init_e2e`.
+            // Verify escape rate badge shows "Rate: tolerable" (rate-low class)
             const badge = cm1Page.locator(".escape-rate-badge");
             await expect(badge).toBeVisible({ timeout: 15000 });
             await expect(badge).toHaveClass(/rate-low/);
@@ -217,25 +159,18 @@ export const cmInformalWarnEscaperTest = async (
             // Phase 2: All 3 CMs vote
             // ========================================
 
-            const cmVoters = ["E2E_CM_IWE_V1", "E2E_CM_IWE_V2", "E2E_CM_IWE_V3"];
-            for (const cmUser of cmVoters) {
-                let cmPage;
-                let cmContext;
-                if (cmUser === "E2E_CM_IWE_V1") {
-                    cmPage = cm1Page;
-                    cmContext = cm1Context;
-                } else {
-                    ({ seededCMPage: cmPage, seededCMContext: cmContext } = await setupSeededCM(
-                        createContext,
-                        cmUser,
-                    ));
+            for (let i = 0; i < cmPages.length; i++) {
+                const cmPage = cmPages[i];
+                if (i > 0) {
                     await navigateToReport(cmPage, reportNumber);
                 }
-
                 await cmPage.locator(`input[value="${voteAction}"]`).click();
                 const voteButton = await expectOGSClickableByName(cmPage, /Vote$/);
                 await voteButton.click();
-                await cmContext.close();
+            }
+
+            for (const ctx of cmContexts) {
+                await ctx.close();
             }
 
             // ========================================
@@ -252,31 +187,17 @@ export const cmInformalWarnEscaperTest = async (
                 reporterPage.locator("div.AccountWarningAck .canned-message"),
             ).toBeVisible();
 
-            // Dismiss all pending acks (there may be extras from previous runs)
+            // Dismiss the ack
             const ackOkButton = reporterPage
                 .locator("div.AccountWarningAck")
                 .locator("button.primary");
-            for (let i = 0; i < 10; i++) {
-                try {
-                    await ackOkButton.waitFor({ state: "visible", timeout: 3000 });
-                    await ackOkButton.click();
-                    await expect(ackOkButton).not.toBeVisible({ timeout: 3000 });
-                } catch {
-                    break; // No more ack dialogs
-                }
-            }
+            await ackOkButton.click();
+            await expect(ackOkButton).not.toBeVisible({ timeout: 3000 });
 
             // ========================================
             // Phase 4: Verify the accused sees the right warning type
             // ========================================
 
-            // Use manual login (not setupSeededUser) because the accused may have
-            // warning dialogs that block turnOffDynamicHelp inside setupSeededUser.
-            const accusedCheckContext = await createContext({
-                extraHTTPHeaders: { "X-Forwarded-For": generateUniqueTestIPv6() },
-            });
-            const accusedPage = await accusedCheckContext.newPage();
-            await loginAsUser(accusedPage, "E2E_CM_IWE_ACC", "test");
             await accusedPage.goto("/");
 
             // Verify the accused sees an informal warning (INFO severity, non-blocking)
@@ -284,17 +205,10 @@ export const cmInformalWarnEscaperTest = async (
                 timeout: 15000,
             });
 
-            // Dismiss informal warning dialogs (may have extras from previous runs)
+            // Dismiss informal warning
             const infoOk = accusedPage.locator(".AccountWarningInfo button.primary");
-            for (let i = 0; i < 10; i++) {
-                try {
-                    await infoOk.waitFor({ state: "visible", timeout: 3000 });
-                    await infoOk.click();
-                    await expect(infoOk).not.toBeVisible();
-                } catch {
-                    break;
-                }
-            }
+            await infoOk.click();
+            await expect(infoOk).not.toBeVisible();
 
             // Verify no BLOCKING warning dialog (formal/WARNING severity)
             await expect(accusedPage.locator("div.AccountWarning")).not.toBeVisible();

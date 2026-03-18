@@ -51,13 +51,10 @@ ogsTest.describe("@CM Community Moderation Tests", () => {
         cmSandbaggingAssessmentConversionTest,
     );
     ogsTest("@Slow Last warning info shown on repeat offender reports", cmLastWarningInfoTest);
-    ogsTest("Escape rate display on escaping reports", cmEscapeRateDisplayTest);
-    // Note: @Manual because this test accumulates escape warnings across runs,
-    // eventually pushing the rate above the "escaping too much" threshold.
-    // Needs a way to reset the accused's warning state without re-running init_e2e.
-    ogsTest("@Manual Informal warning vote on escaping reports", cmInformalWarnEscaperTest);
+    ogsTest("@Slow Escape rate display on escaping reports", cmEscapeRateDisplayTest);
+    ogsTest("Informal warning vote on escaping reports", cmInformalWarnEscaperTest);
     ogsTest(
-        "@Manual Informal warning and annul vote on escaping reports",
+        "Informal warning and annul vote on escaping reports",
         cmInformalWarnEscaperAndAnnulTest,
     );
     ogsTest(
