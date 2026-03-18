@@ -24,11 +24,6 @@
         margin-bottom: 0.5rem;
     }
 
-    .MiniGoban {
-        width: 19rem;
-        height: 20rem;
-    }
-
     .challenge-counter {
         cursor: pointer;
         position: absolute;

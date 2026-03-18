@@ -415,15 +415,8 @@
     --shade1: #9a9a9a;
     --shade2: #6d6d6d;
     --shade3: #545454;
-    --shade4: #474747;
-    --shade5: #3a3a3a;
-
-    --blue-shade0: #94919c;
-    --blue-shade1: #7e7b85;
-    --blue-shade2: #68666e;
-    --blue-shade3: #525157;
-    --blue-shade4: #3c3b40;
-    --blue-shade5: rgb(39, 38, 41);
+    --shade4: #3a3a3a;
+    --shade5: #2a2a2a;
 
     --search-highlight: #554e00;
     --other-player-background: rgba(140, 140, 140, 0.2);

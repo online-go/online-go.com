@@ -16,7 +16,8 @@
  */
 .PlayBar {
     display: flex;
-    align-items: center;
+    align-items: stretch;
+    flex-wrap: wrap;
     gap: 1.5rem;
     padding: 1rem;
 
@@ -82,6 +83,23 @@
 
     .ChallengesList {
         flex: 1;
-        min-width: 0;
+        min-width: 19rem;
+    }
+
+    @media screen and (max-width: 850px) {
+        justify-content: center;
+
+        .ChallengesList {
+            flex: none;
+        }
+    }
+
+    > .GameCard {
+        flex-shrink: 0;
+    }
+
+    .MiniGoban {
+        width: 19rem;
+        height: 20rem;
     }
 }

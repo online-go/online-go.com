@@ -3,12 +3,12 @@
     flex-direction: column;
     border-radius: 0.5rem;
     overflow: hidden;
-    background: var(--blue-shade5);
-    border: 1px solid var(--blue-shade4);
+    background: darken(var(--shade5), 80%);
+    border: 1px solid darken(var(--shade4), 80%);
 
     .GameCard-title-bar {
         position: relative;
-        background: var(--blue-shade4);
+        background: var(--shade4);
         padding: 0.3rem 0.6rem;
         font-weight: bold;
         border-radius: 0.5rem 0.5rem 0 0;

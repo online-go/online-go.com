@@ -52,8 +52,9 @@
         flex-grow: 1;
         flex-basis: 20rem;
         width: 100%;
-        max-width: 100%;
-        align-self: center;
+        max-width: 60rem;
+        margin-left: auto;
+        margin-right: auto;
     }
 
     .no-active-games {
