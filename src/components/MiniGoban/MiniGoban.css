@@ -188,6 +188,7 @@
 
     &.nolink {
         .board {
+            cursor: default;
             background-color: transparent !important;
             border: none !important;
         }
