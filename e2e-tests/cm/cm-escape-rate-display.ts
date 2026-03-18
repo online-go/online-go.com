@@ -120,7 +120,7 @@ async function playAndFinishGame(
  */
 async function reportAndVote(
     reporterPage: Page,
-    createContext: (options?: CreateContextOptions) => Promise<BrowserContext>,
+    cmPages: Page[],
     voteAction: string,
 ): Promise<void> {
     // Report the accused (white) for escaping
@@ -134,16 +134,11 @@ async function reportAndVote(
     const reportNumber = await captureReportNumber(reporterPage);
 
     // 3 CMs vote to reach consensus
-    for (const cmUser of CM_VOTERS) {
-        const { seededCMPage: cmPage, seededCMContext: cmContext } = await setupSeededCM(
-            createContext,
-            cmUser,
-        );
+    for (const cmPage of cmPages) {
         await navigateToReport(cmPage, reportNumber);
         await cmPage.locator(`input[value="${voteAction}"]`).click();
         const voteButton = await expectOGSClickableByName(cmPage, /Vote$/);
         await voteButton.click();
-        await cmContext.close();
     }
 }
 
@@ -210,13 +205,25 @@ export const cmEscapeRateDisplayTest = async (
         reporterPage,
         testInfo,
         async (tracker) => {
+            // Set up the 3 CM contexts once and reuse them across all votes
+            const cmPages: Page[] = [];
+            const cmContexts: BrowserContext[] = [];
+            for (const cmUser of CM_VOTERS) {
+                const { seededCMPage, seededCMContext } = await setupSeededCM(
+                    createContext,
+                    cmUser,
+                );
+                cmPages.push(seededCMPage);
+                cmContexts.push(seededCMContext);
+            }
+
             // ========================================
             // Games 1-3: Play, report, 3 CMs vote informal_warn_escaper
             // ========================================
 
             for (let i = 1; i <= 3; i++) {
                 await playAndFinishGame(reporterPage, accusedPage, accusedUsername, i);
-                await reportAndVote(reporterPage, createContext, "informal_warn_escaper");
+                await reportAndVote(reporterPage, cmPages, "informal_warn_escaper");
 
                 // Navigate home to trigger warning dialogs, then dismiss them
                 await accusedPage.goto("/");
@@ -229,7 +236,7 @@ export const cmEscapeRateDisplayTest = async (
             // ========================================
 
             await playAndFinishGame(reporterPage, accusedPage, accusedUsername, 4);
-            await reportAndVote(reporterPage, createContext, "warn_escaper");
+            await reportAndVote(reporterPage, cmPages, "warn_escaper");
 
             // Dismiss the formal warning on the accused
             await accusedPage.goto("/");
@@ -254,13 +261,10 @@ export const cmEscapeRateDisplayTest = async (
             const reportNumber = await captureReportNumber(reporterPage);
 
             // ========================================
-            // Verify the escape rate display
+            // Verify the escape rate display (reuse V1's existing context)
             // ========================================
 
-            const { seededCMPage: cmPage, seededCMContext: cmContext } = await setupSeededCM(
-                createContext,
-                "E2E_CM_ERH_V1",
-            );
+            const cmPage = cmPages[0];
             await navigateToReport(cmPage, reportNumber);
 
             // Verify the escape rate section is visible
@@ -282,7 +286,10 @@ export const cmEscapeRateDisplayTest = async (
             await expect(warningStatus).toBeVisible();
             await expect(warningStatus).toContainText("Previously formally warned");
 
-            await cmContext.close();
+            // Close all CM contexts
+            for (const ctx of cmContexts) {
+                await ctx.close();
+            }
 
             // ========================================
             // Clean up: cancel the open report
