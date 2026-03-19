@@ -78,6 +78,10 @@ export function DismissableMessages({
             {forceShow && (!messages || Object.keys(messages).length === 0) && (
                 <div className="DismissableMessage">
                     <i className="fa fa-times" />
+                    {/* Lorem ipsum placeholder text is fine here because this
+                        is only ever visible for development when we are force
+                        showing the component and there is no existing message
+                        */}
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor
                     incididunt ut labore et dolore magna aliqua.
                 </div>
