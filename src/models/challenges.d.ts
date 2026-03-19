@@ -130,7 +130,7 @@ declare namespace rest_api {
     }
 
     interface MinimalPlayerDTO {
-        id?: number;
+        id: number;
         username: string;
         country?: string;
         icon?: string; // URL
