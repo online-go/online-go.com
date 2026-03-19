@@ -21,7 +21,7 @@ import { browserHistory } from "@/lib/ogsHistory";
 import * as data from "@/lib/data";
 import { profanity_filter } from "@/lib/profanity_filter";
 import { ignore } from "@/lib/misc";
-import { _, interpolate } from "@/lib/translate";
+import { _, interpolate, pgettext } from "@/lib/translate";
 import cached from "@/lib/cached";
 import "./ChallengesList.css";
 import { getEm10Width } from "@/lib/device";
@@ -162,12 +162,15 @@ export function ChallengesList({ onAccept }: ChallengeListProps): React.ReactEle
                             className="primary accept-button"
                             onClick={() => acceptChallenge(challenge)}
                         >
-                            <i className="fa fa-check" /> Accept
+                            <i className="fa fa-check" />{" "}
+                            {pgettext("Accept game challenge", "Accept")}
                         </button>
                     )}
                     <button className="decline-button" onClick={() => deleteChallenge(challenge)}>
                         <i className="fa fa-times" />{" "}
-                        {challenge.challenger.id === user.id ? _("Cancel") : _("Decline")}
+                        {challenge.challenger.id === user.id
+                            ? pgettext("Cancel game challenge", "Cancel")
+                            : pgettext("Decline game challenge", "Decline")}
                     </button>
                 </div>
             </GameCard>
