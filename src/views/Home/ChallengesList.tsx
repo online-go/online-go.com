@@ -138,8 +138,8 @@ export function ChallengesList({ onAccept }: ChallengeListProps): React.ReactEle
                 }
                 width={challenge.game.width}
                 height={challenge.game.height}
-                black={opponent as any}
-                white={user as any}
+                black={opponent}
+                white={user}
                 blackExtra={<ColorIndicator color={opponentColor} />}
                 whiteExtra={<ColorIndicator color={ourColor} />}
                 displayWidth={1.7 * getEm10Width()}
