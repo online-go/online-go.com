@@ -60,7 +60,7 @@ export function PlayBar({ onChallengeAccept }: PlayBarProps): React.ReactElement
           }
         | undefined;
 
-    const playLabel = React.useMemo((): React.ReactNode => {
+    const playLabelDetails = React.useMemo((): React.ReactNode => {
         if (game_clock === "multiple") {
             const selected_size_count = Object.values(multiple_sizes).filter((x) => x).length;
             const selected_speed_count = Object.values(multiple_speeds).filter((x) => x).length;
@@ -89,12 +89,9 @@ export function PlayBar({ onChallengeAccept }: PlayBarProps): React.ReactElement
         const sizeLabel = opt ? size : "9x9";
 
         return (
-            <span className="play-label">
-                <span className="play-label-play">{_("Play")}</span>
-                <span className="play-label-details">
-                    <span className="play-label-size">{sizeLabel}</span>
-                    <span className="play-label-time">{timeDesc}</span>
-                </span>
+            <span className="play-label-details">
+                <span className="play-label-size">{sizeLabel}</span>
+                <span className="play-label-time">{timeDesc}</span>
             </span>
         );
     }, [board_size, game_speed, time_control_system, game_clock, multiple_sizes, multiple_speeds]);
@@ -176,7 +173,10 @@ export function PlayBar({ onChallengeAccept }: PlayBarProps): React.ReactElement
         <div className="PlayBar">
             <div className="play-buttons">
                 <button className="play-button primary" onClick={doAutomatch}>
-                    {playLabel}
+                    <span className="play-label">
+                        <span className="play-label-play">{_("Play")}</span>
+                        {playLabelDetails}
+                    </span>
                 </button>
                 <button className="play-button" onClick={() => navigate("/play")}>
                     {_("New Game")}
