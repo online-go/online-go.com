@@ -64,8 +64,8 @@ export function ChallengesList({ onAccept }: ChallengeListProps): React.ReactEle
     }, []);
 
     React.useEffect(() => {
-        if (currentIndex >= challenges.length && challenges.length > 0) {
-            setCurrentIndex(challenges.length - 1);
+        if (currentIndex >= challenges.length) {
+            setCurrentIndex(Math.max(0, challenges.length - 1));
         }
     }, [challenges.length, currentIndex]);
 
@@ -79,6 +79,7 @@ export function ChallengesList({ onAccept }: ChallengeListProps): React.ReactEle
     };
 
     const acceptChallenge = (challenge: Challenge) => {
+        setChallenges((prev) => prev.filter((c) => c.id !== challenge.id));
         post(`me/challenges/${challenge.id}/accept`, {})
             .then((res) => {
                 if (res.time_per_move > 0 && res.time_per_move < 1800) {
@@ -87,8 +88,9 @@ export function ChallengesList({ onAccept }: ChallengeListProps): React.ReactEle
                     onAccept();
                 }
             })
-            .catch(ignore);
-        setChallenges((prev) => prev.filter((c) => c.id !== challenge.id));
+            .catch(() => {
+                setChallenges((prev) => [...prev, challenge]);
+            });
     };
 
     const user = data.get("user");
