@@ -43,6 +43,7 @@ import * as preferences from "@/lib/preferences";
 
 import { alert } from "@/lib/swal_config";
 import "./ActiveAnnouncements.css";
+import { Goban } from "goban";
 
 // Holds the expirations dates of cleared announcements
 const hard_cleared_announcements: { [id: number]: number } = data.get(
@@ -141,6 +142,8 @@ export const ActiveAnnouncements: React.FC<ActiveAnnouncementsProps> = React.mem
 
         // Update game participant status when location changes or goban loads
         React.useEffect(() => {
+            let registeredGoban: Goban | null = null;
+
             const checkParticipation = () => {
                 const user = data.get("user");
                 setIsGameParticipant(isUserGameParticipant(user?.id));
@@ -153,16 +156,15 @@ export const ActiveAnnouncements: React.FC<ActiveAnnouncementsProps> = React.mem
                 // Also listen for goban load event if goban exists
                 const goban = (window as any).global_goban;
                 if (goban?.on) {
+                    registeredGoban = goban;
                     goban.on("load", checkParticipation);
                 }
             });
 
             return () => {
                 cancelAnimationFrame(rafId);
-                // Clean up goban load listener
-                const goban = (window as any).global_goban;
-                if (goban?.off) {
-                    goban.off("load", checkParticipation);
+                if (registeredGoban) {
+                    registeredGoban.off("load", checkParticipation);
                 }
             };
         }, [location]); // Re-run when location changes
