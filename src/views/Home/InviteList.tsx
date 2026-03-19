@@ -69,7 +69,7 @@ function challengeDtoToSeekgraphChallengeSubset(c: ChallengeDTO, user_id: number
         rengo_casual_mode: c.game.rengo_casual_mode, // boolean;
         user_challenge: c.challenger.id === user_id,
         time_control_parameters: JSON.parse(c.game.time_control_parameters as string),
-        time_control: c.game.time_control!.system,
+        time_control: c.game.time_control.system,
         game_name: c.game.name,
         rules: c.game.rules as RuleSet, // import("../lib/types").RuleSet;
         width: c.game.width, // number;
