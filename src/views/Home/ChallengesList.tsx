@@ -74,8 +74,12 @@ export function ChallengesList({ onAccept }: ChallengeListProps): React.ReactEle
     };
 
     const deleteChallenge = (challenge: Challenge) => {
-        del(`me/challenges/${challenge.id}`).then(ignore).catch(ignore);
         setChallenges((prev) => prev.filter((c) => c.id !== challenge.id));
+        del(`me/challenges/${challenge.id}`)
+            .then(ignore)
+            .catch(() => {
+                setChallenges((prev) => [...prev, challenge]);
+            });
     };
 
     const acceptChallenge = (challenge: Challenge) => {
