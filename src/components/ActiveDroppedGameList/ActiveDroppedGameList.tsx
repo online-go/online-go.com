@@ -30,6 +30,7 @@ interface ActiveDroppedGameListProps {
     games: any[];
     user: UserType;
     noActiveGamesView?: React.ReactElement;
+    showCount?: boolean;
 }
 
 export function ActiveDroppedGameList(props: ActiveDroppedGameListProps): React.ReactElement {
@@ -44,9 +45,9 @@ export function ActiveDroppedGameList(props: ActiveDroppedGameListProps): React.
         <>
             {hasActiveGames && (
                 <div className="active-games">
-                    <h2>
-                        {_("Active Games")} ({activeGames.length})
-                    </h2>
+                    <div className="active-games-header">
+                        {_("Active Games")} {props.showCount && `(${activeGames.length})`}
+                    </div>
                     <GameList
                         list={activeGames}
                         player={props.user}

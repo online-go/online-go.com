@@ -128,6 +128,7 @@ export function ChallengesList({ onAccept }: ChallengeListProps): React.ReactEle
     return (
         <div className="ChallengesList">
             <GameCard
+                key={challenge.id}
                 cardTitle={
                     <>
                         <span>{_("Game Challenge")}</span>

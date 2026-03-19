@@ -52,9 +52,17 @@
         flex-grow: 1;
         flex-basis: 20rem;
         width: 100%;
-        max-width: 60rem;
+        max-width: 90rem;
         margin-left: auto;
         margin-right: auto;
+        margin-top: 3rem;
+
+        .active-games-header {
+            display: flex;
+            align-items: center;
+            justify-content: left;
+            font-size: 0.9rem;
+        }
     }
 
     .no-active-games {
