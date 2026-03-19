@@ -105,18 +105,19 @@ export function ChallengesList({ onAccept }: ChallengeListProps): React.ReactEle
     const tc = challenge.game.time_control;
     const timeControl = tc && tc.system !== "none" ? tc : undefined;
 
+    const weAreChallenger = challenge.challenger.id === user.id;
+    const opponent = weAreChallenger ? challenge.challenged : challenge.challenger;
+
     const colorIsAssigned =
         challenge.challenger_color === "black" || challenge.challenger_color === "white";
-    const challengerIndicator = colorIsAssigned ? (
-        <ColorIndicator color={challenge.challenger_color as "black" | "white"} />
-    ) : (
-        <ColorIndicator color="auto" />
-    );
-    const challengedIndicator = colorIsAssigned ? (
-        <ColorIndicator color={challenge.challenger_color === "black" ? "white" : "black"} />
-    ) : (
-        <ColorIndicator color="auto" />
-    );
+    const ourColor = colorIsAssigned
+        ? weAreChallenger
+            ? (challenge.challenger_color as "black" | "white")
+            : challenge.challenger_color === "black"
+              ? "white"
+              : "black"
+        : "auto";
+    const opponentColor = ourColor === "auto" ? "auto" : ourColor === "black" ? "white" : "black";
 
     return (
         <div className="ChallengesList">
@@ -137,10 +138,10 @@ export function ChallengesList({ onAccept }: ChallengeListProps): React.ReactEle
                 }
                 width={challenge.game.width}
                 height={challenge.game.height}
-                black={challenge.challenger as any}
-                white={challenge.challenged as any}
-                blackExtra={challengerIndicator}
-                whiteExtra={challengedIndicator}
+                black={opponent as any}
+                white={user as any}
+                blackExtra={<ColorIndicator color={opponentColor} />}
+                whiteExtra={<ColorIndicator color={ourColor} />}
                 displayWidth={1.7 * getEm10Width()}
                 title={true}
                 noText={false}
