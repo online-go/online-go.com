@@ -15,6 +15,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export { challenge, challengeComputer, challengeRematch } from "./ChallengeModal.api";
-export { challenge_text_description } from "./ChallengeModal.utils";
-export type { ChallengeModalConfig, ChallengeDetails } from "./ChallengeModal.types";
+.WhatsNewBanner {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin-left: 0 !important;
+
+    .WhatsNewBanner-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .WhatsNewBanner-label {
+        font-size: 0.75rem;
+        opacity: 0.7;
+    }
+
+    .dismiss {
+        cursor: pointer;
+        opacity: 0.5;
+
+        &:hover {
+            opacity: 1;
+        }
+    }
+}

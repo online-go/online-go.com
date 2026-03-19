@@ -15,4 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export * from "./Overview";
+import * as React from "react";
+import "./ColorIndicator.css";
+
+interface ColorIndicatorProps {
+    color: "black" | "white" | "auto";
+}
+
+export function ColorIndicator({ color }: ColorIndicatorProps): React.ReactElement {
+    return <span className={`ColorIndicator ${color}`} />;
+}

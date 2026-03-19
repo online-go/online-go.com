@@ -49,6 +49,26 @@
         position: relative;
         display: inline-block;
         z-index: 1;
+
+        .side-label {
+            position: absolute;
+            top: 50%;
+            font-size: 0.75em;
+            white-space: nowrap;
+            opacity: 0.8;
+        }
+
+        .left-label {
+            left: 0;
+            transform: rotate(-90deg) translateX(-50%);
+            transform-origin: 0 0;
+        }
+
+        .right-label {
+            right: 0;
+            transform: rotate(90deg) translateX(50%);
+            transform-origin: 100% 0;
+        }
     }
 
     .player-rank {
@@ -79,6 +99,7 @@
         position: absolute;
         display: flex;
         flex-direction: row;
+        align-items: center;
         font-size: 0.9em;
         left: 1rem;
         right: 1rem;
@@ -167,6 +188,7 @@
 
     &.nolink {
         .board {
+            cursor: default;
             background-color: transparent !important;
             border: none !important;
         }

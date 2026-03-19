@@ -49,7 +49,11 @@ Thank you!
 `;
 */
 
-export function FreeTrialSurvey(): React.ReactElement | null {
+interface FreeTrialSurveyProps {
+    forceShow?: boolean;
+}
+
+export function FreeTrialSurvey(_props: FreeTrialSurveyProps): React.ReactElement | null {
     return null;
 
     /*

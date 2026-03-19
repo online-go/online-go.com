@@ -17,7 +17,8 @@
 
 import * as React from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { get, post } from "@/lib/requests";
+import * as data from "@/lib/data";
+import { get, post, put } from "@/lib/requests";
 import { _, current_language, moment } from "@/lib/translate";
 import { errorAlerter } from "@/lib/misc";
 import { alert } from "@/lib/swal_config";
@@ -107,6 +108,16 @@ export function WhatsNew(): React.ReactElement | null {
         if (feedbackSentTimer.current) {
             clearTimeout(feedbackSentTimer.current);
             feedbackSentTimer.current = null;
+        }
+
+        // Mark as read if there's an unread whats_new in the config
+        const config = data.get("config");
+        if (config?.whats_new) {
+            put("whats_new/mark_read/")
+                .then(() => {
+                    data.set("config", { ...config, whats_new: undefined });
+                })
+                .catch(errorAlerter);
         }
 
         return () => {

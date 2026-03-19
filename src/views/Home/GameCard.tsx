@@ -15,6 +15,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export { challenge, challengeComputer, challengeRematch } from "./ChallengeModal.api";
-export { challenge_text_description } from "./ChallengeModal.utils";
-export type { ChallengeModalConfig, ChallengeDetails } from "./ChallengeModal.types";
+import * as React from "react";
+import { MiniGoban, MiniGobanProps } from "@/components/MiniGoban";
+import "./GameCard.css";
+
+interface GameCardProps extends MiniGobanProps {
+    cardTitle: React.ReactNode;
+    children?: React.ReactNode;
+}
+
+export function GameCard({
+    cardTitle,
+    children,
+    ...miniGobanProps
+}: GameCardProps): React.ReactElement {
+    return (
+        <div className="GameCard">
+            <div className="GameCard-title-bar">{cardTitle}</div>
+            <div className="GameCard-board">
+                <MiniGoban {...miniGobanProps} />
+            </div>
+            {children && <div className="GameCard-footer">{children}</div>}
+        </div>
+    );
+}

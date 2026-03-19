@@ -15,16 +15,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 .ChallengesList {
-    .challenge-cards {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-wrap: wrap;
+
+    h2 {
+        margin-bottom: 0.5rem;
     }
 
-    .Card {
-        width: 20rem;
+    .challenge-counter {
+        cursor: pointer;
+        position: absolute;
+        right: 0.6rem;
+        opacity: 0.8;
+        user-select: none;
+    }
+
+    .Challenge {
+        width: 19rem;
+        min-height: 19rem;
         max-width: 100vw;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
 
         .icon-name {
             flex-grow: 1;
@@ -49,12 +63,34 @@
         }
 
         .challenge-actions {
-            text-align: right;
-        }
+            display: flex;
+            flex-direction: row;
+            gap: 0.5rem;
+            width: 100%;
+            justify-content: space-between;
 
-        .fab {
-            float: right;
-            flex-shrink: 0;
+            .accept-button,
+            .decline-button {
+                display: flex;
+                align-items: center;
+                gap: 0.3rem;
+                padding: 0.3rem 0.75rem;
+                border-radius: 0.25rem;
+                border: 1px solid var(--shade3);
+                cursor: pointer;
+                font-size: 0.85rem;
+            }
+
+            .accept-button {
+                background-color: var(--primary);
+                color: white;
+                border-color: var(--primary);
+            }
+
+            .decline-button {
+                background-color: transparent;
+                color: var(--fg);
+            }
         }
     }
 }

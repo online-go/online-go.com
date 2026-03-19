@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#Overview-Container {
+#Home-Container {
     .welcome {
         margin-top: 2rem;
         text-align: center;
@@ -22,14 +22,14 @@
     }
 }
 
-#Overview {
+#Home {
     padding-left: 0.5rem;
     padding-right: 0.5rem;
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
 
-    h3 >i {
+    h3 > i {
         margin-right: 1rem;
     }
 
@@ -52,8 +52,17 @@
         flex-grow: 1;
         flex-basis: 20rem;
         width: 100%;
-        max-width: 100%;
-        align-self: center;
+        max-width: 90rem;
+        margin-left: auto;
+        margin-right: auto;
+        margin-top: 3rem;
+
+        .active-games-header {
+            display: flex;
+            align-items: center;
+            justify-content: left;
+            font-size: 0.9rem;
+        }
     }
 
     .no-active-games {
@@ -97,15 +106,19 @@
         }
     }
 
-    .overview-categories {
+    .home-categories {
         padding-top: 1rem;
 
         a > i {
             margin-right: 0.5rem;
         }
 
-        > div {
+        > div:not(.ActiveAnnouncements-container) {
             margin-left: 2rem;
+        }
+
+        > .ActiveAnnouncements-container .Card {
+            margin-left: 0;
         }
     }
 
@@ -158,12 +171,19 @@
         overflow-y: auto;
     }
 
-    .Overview-TournamentList, .Overview-LadderList, .Overview-GroupList {
-        a, .clickable, .fakelink {
+    .Home-TournamentList,
+    .Home-LadderList,
+    .Home-GroupList {
+        a,
+        .clickable,
+        .fakelink {
             color: var(--text-color);
         }
 
-        a:active, a:hover, .clickable:hover, .fakelink:hover {
+        a:active,
+        a:hover,
+        .clickable:hover,
+        .fakelink:hover {
             color: var(--text-color-active);
         }
     }
@@ -202,5 +222,12 @@
         flex-direction: column;
         align-items: center;
         padding-top: 1rem;
+    }
+
+    .top-bar-container {
+        width: 100%;
+        max-width: 60rem;
+        margin-left: auto;
+        margin-right: auto;
     }
 }

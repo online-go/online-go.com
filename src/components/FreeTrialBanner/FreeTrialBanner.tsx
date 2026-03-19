@@ -30,11 +30,15 @@ const DAYS_PER_YEAR = 365.2422;
 
 interface FreeTrialBannerProperties {
     show_even_if_saved_for_later?: boolean;
+    forceShow?: boolean;
 }
 
 type State = "activated" | "error" | "saved_for_later" | "closed" | null;
 
-export function FreeTrialBanner({ show_even_if_saved_for_later }: FreeTrialBannerProperties) {
+export function FreeTrialBanner({
+    show_even_if_saved_for_later,
+    forceShow,
+}: FreeTrialBannerProperties) {
     const user = useUser();
     const [state, setState] = React.useState<State>(null);
     const [loading, setLoading] = React.useState(false);
@@ -80,37 +84,39 @@ export function FreeTrialBanner({ show_even_if_saved_for_later }: FreeTrialBanne
         setState("closed");
     }, []);
 
-    if (!show_even_if_saved_for_later && show_even_if_saved_for_later) {
-        return null;
-    }
+    if (!forceShow) {
+        if (!show_even_if_saved_for_later && show_even_if_saved_for_later) {
+            return null;
+        }
 
-    if (!account_age_days || account_age_days < 5 * DAYS_PER_YEAR) {
-        return null;
-    }
+        if (!account_age_days || account_age_days < 5 * DAYS_PER_YEAR) {
+            return null;
+        }
 
-    if (last_offered_trial_days_ago !== null && last_offered_trial_days_ago < DAYS_PER_YEAR) {
-        return null;
-    }
+        if (last_offered_trial_days_ago !== null && last_offered_trial_days_ago < DAYS_PER_YEAR) {
+            return null;
+        }
 
-    if (user.supporter) {
-        return null;
-    }
+        if (user.supporter) {
+            return null;
+        }
 
-    if (user.is_moderator) {
-        return null;
-    }
+        if (user.is_moderator) {
+            return null;
+        }
 
-    if (state === "closed") {
-        return null;
-    }
+        if (state === "closed") {
+            return null;
+        }
 
-    if (
-        !show_even_if_saved_for_later &&
-        state !== "saved_for_later" &&
-        saved_for_later &&
-        Date.now() - saved_for_later < DAYS_PER_YEAR * 24 * 60 * 60 * 1000
-    ) {
-        return null;
+        if (
+            !show_even_if_saved_for_later &&
+            state !== "saved_for_later" &&
+            saved_for_later &&
+            Date.now() - saved_for_later < DAYS_PER_YEAR * 24 * 60 * 60 * 1000
+        ) {
+            return null;
+        }
     }
 
     return (

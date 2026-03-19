@@ -43,6 +43,7 @@ import * as preferences from "@/lib/preferences";
 
 import { alert } from "@/lib/swal_config";
 import "./ActiveAnnouncements.css";
+import { Goban } from "goban";
 
 // Holds the expirations dates of cleared announcements
 const hard_cleared_announcements: { [id: number]: number } = data.get(
@@ -59,306 +60,317 @@ data.set("announcements.hard_cleared", hard_cleared_announcements);
 // Store announcement timeouts
 const announcement_timeouts: { [id: number]: NodeJS.Timeout } = {};
 
-export const ActiveAnnouncements: React.FC = React.memo(() => {
-    const [updateCounter, forceUpdate] = React.useReducer((x) => x + 1, 0);
-    const location = useLocation(); // Triggers re-render on navigation
-    const [isGameParticipant, setIsGameParticipant] = React.useState(false);
+interface ActiveAnnouncementsProps {
+    forceShow?: boolean;
+}
 
-    const clearAnnouncement = React.useCallback((id: number) => {
-        hard_cleared_announcements[id] = Date.now() + 30 * 24 * 3600 * 1000;
-        data.set("announcements.hard_cleared", hard_cleared_announcements);
-        forceUpdate();
-    }, []);
+export const ActiveAnnouncements: React.FC<ActiveAnnouncementsProps> = React.memo(
+    ({ forceShow }) => {
+        const [updateCounter, forceUpdate] = React.useReducer((x) => x + 1, 0);
+        const location = useLocation(); // Triggers re-render on navigation
+        const [isGameParticipant, setIsGameParticipant] = React.useState(false);
 
-    // Handle new announcements from the server
-    const announce = React.useCallback((announcement: Announcement) => {
-        active_announcements[announcement.id] = announcement;
-        announcement_event_emitter.emit("announcement", announcement);
-
-        // Clear any existing timeout for this announcement
-        if (announcement_timeouts[announcement.id]) {
-            clearTimeout(announcement_timeouts[announcement.id]);
-        }
-
-        // Set new timeout based on expiration
-        const timeUntilExpiration = moment(announcement.expiration).toDate().getTime() - Date.now();
-        if (timeUntilExpiration > 0) {
-            const timeout = setTimeout(() => {
-                delete active_announcements[announcement.id];
-                delete announcement_timeouts[announcement.id];
-                forceUpdate();
-            }, timeUntilExpiration);
-            announcement_timeouts[announcement.id] = timeout;
-        }
-    }, []);
-
-    // Handle retracted announcements from the server
-    const retract = React.useCallback((announcement: Announcement) => {
-        delete active_announcements[announcement.id];
-        // Clear the timeout if it exists
-        if (announcement_timeouts[announcement.id]) {
-            clearTimeout(announcement_timeouts[announcement.id]);
-            delete announcement_timeouts[announcement.id];
-        }
-        forceUpdate();
-    }, []);
-
-    // Register presence of ActiveAnnouncements
-    React.useEffect(() => {
-        activeAnnouncementsTracker.setPresent(true);
-        return () => {
-            activeAnnouncementsTracker.setPresent(false);
-            // Clean up all timeouts when component unmounts
-            for (const id in announcement_timeouts) {
-                clearTimeout(announcement_timeouts[id]);
-                delete announcement_timeouts[id];
-            }
-        };
-    }, []);
-
-    // Listen to announcement events
-    React.useEffect(() => {
-        const update = (_announcement?: Announcement) => {
-            // When an announcement is updated, ensure we trigger a re-render
-            // This handles both new announcements and updates to existing ones
+        const clearAnnouncement = React.useCallback((id: number) => {
+            hard_cleared_announcements[id] = Date.now() + 30 * 24 * 3600 * 1000;
+            data.set("announcements.hard_cleared", hard_cleared_announcements);
             forceUpdate();
-        };
+        }, []);
 
-        announcement_event_emitter.on("announcement", update);
-        announcement_event_emitter.on("announcement-cleared", update);
+        // Handle new announcements from the server
+        const announce = React.useCallback((announcement: Announcement) => {
+            active_announcements[announcement.id] = announcement;
+            announcement_event_emitter.emit("announcement", announcement);
 
-        return () => {
-            announcement_event_emitter.off("announcement", update);
-            announcement_event_emitter.off("announcement-cleared", update);
-        };
-    }, []);
-
-    // Update game participant status when location changes or goban loads
-    React.useEffect(() => {
-        const checkParticipation = () => {
-            const user = data.get("user");
-            setIsGameParticipant(isUserGameParticipant(user?.id));
-        };
-
-        // Check after navigation with requestAnimationFrame
-        const rafId = requestAnimationFrame(() => {
-            checkParticipation();
-
-            // Also listen for goban load event if goban exists
-            const goban = (window as any).global_goban;
-            if (goban?.on) {
-                goban.on("load", checkParticipation);
-            }
-        });
-
-        return () => {
-            cancelAnimationFrame(rafId);
-            // Clean up goban load listener
-            const goban = (window as any).global_goban;
-            if (goban?.off) {
-                goban.off("load", checkParticipation);
-            }
-        };
-    }, [location]); // Re-run when location changes
-
-    // Filter and sort announcements
-    const sortedAnnouncements = React.useMemo(() => {
-        const lst: Announcement[] = [];
-
-        for (const announcement_id in active_announcements) {
-            // Create a new reference to ensure we get the latest announcement data
-            const announcement = { ...active_announcements[announcement_id] };
-            const is_hidden = announcement_id in hard_cleared_announcements;
-            const creator_blocked = getBlocks(announcement.creator.id).block_announcements;
-            const type_muted = announcementTypeMuted(announcement);
-
-            // Hide non-system announcements if user is a game participant
-            if (!shouldShowToGameParticipant(announcement, isGameParticipant)) {
-                continue;
+            // Clear any existing timeout for this announcement
+            if (announcement_timeouts[announcement.id]) {
+                clearTimeout(announcement_timeouts[announcement.id]);
             }
 
-            /* No longer show twitch announcements, they'll show up automatically on GoTV */
-            const is_twitch = isAnnouncementAllTwitch(announcement);
-
-            if (
-                announcement.type !== "tournament" &&
-                !is_hidden &&
-                !creator_blocked &&
-                !type_muted &&
-                !is_twitch
-            ) {
-                lst.push(announcement);
+            // Set new timeout based on expiration
+            const timeUntilExpiration =
+                moment(announcement.expiration).toDate().getTime() - Date.now();
+            if (timeUntilExpiration > 0) {
+                const timeout = setTimeout(() => {
+                    delete active_announcements[announcement.id];
+                    delete announcement_timeouts[announcement.id];
+                    forceUpdate();
+                }, timeUntilExpiration);
+                announcement_timeouts[announcement.id] = timeout;
             }
+        }, []);
+
+        // Handle retracted announcements from the server
+        const retract = React.useCallback((announcement: Announcement) => {
+            delete active_announcements[announcement.id];
+            // Clear the timeout if it exists
+            if (announcement_timeouts[announcement.id]) {
+                clearTimeout(announcement_timeouts[announcement.id]);
+                delete announcement_timeouts[announcement.id];
+            }
+            forceUpdate();
+        }, []);
+
+        // Register presence of ActiveAnnouncements
+        React.useEffect(() => {
+            activeAnnouncementsTracker.setPresent(true);
+            return () => {
+                activeAnnouncementsTracker.setPresent(false);
+                // Clean up all timeouts when component unmounts
+                for (const id in announcement_timeouts) {
+                    clearTimeout(announcement_timeouts[id]);
+                    delete announcement_timeouts[id];
+                }
+            };
+        }, []);
+
+        // Listen to announcement events
+        React.useEffect(() => {
+            const update = (_announcement?: Announcement) => {
+                // When an announcement is updated, ensure we trigger a re-render
+                // This handles both new announcements and updates to existing ones
+                forceUpdate();
+            };
+
+            announcement_event_emitter.on("announcement", update);
+            announcement_event_emitter.on("announcement-cleared", update);
+
+            return () => {
+                announcement_event_emitter.off("announcement", update);
+                announcement_event_emitter.off("announcement-cleared", update);
+            };
+        }, []);
+
+        // Update game participant status when location changes or goban loads
+        React.useEffect(() => {
+            let registeredGoban: Goban | null = null;
+
+            const checkParticipation = () => {
+                const user = data.get("user");
+                setIsGameParticipant(isUserGameParticipant(user?.id));
+            };
+
+            // Check after navigation with requestAnimationFrame
+            const rafId = requestAnimationFrame(() => {
+                checkParticipation();
+
+                // Also listen for goban load event if goban exists
+                const goban = (window as any).global_goban;
+                if (goban?.on) {
+                    registeredGoban = goban;
+                    goban.on("load", checkParticipation);
+                }
+            });
+
+            return () => {
+                cancelAnimationFrame(rafId);
+                if (registeredGoban) {
+                    registeredGoban.off("load", checkParticipation);
+                }
+            };
+        }, [location]); // Re-run when location changes
+
+        // Filter and sort announcements
+        const sortedAnnouncements = React.useMemo(() => {
+            const lst: Announcement[] = [];
+
+            for (const announcement_id in active_announcements) {
+                // Create a new reference to ensure we get the latest announcement data
+                const announcement = { ...active_announcements[announcement_id] };
+                const is_hidden = announcement_id in hard_cleared_announcements;
+                const creator_blocked = getBlocks(announcement.creator.id).block_announcements;
+                const type_muted = announcementTypeMuted(announcement);
+
+                // Hide non-system announcements if user is a game participant
+                if (!shouldShowToGameParticipant(announcement, isGameParticipant)) {
+                    continue;
+                }
+
+                /* No longer show twitch announcements, they'll show up automatically on GoTV */
+                const is_twitch = isAnnouncementAllTwitch(announcement);
+
+                if (
+                    announcement.type !== "tournament" &&
+                    !is_hidden &&
+                    !creator_blocked &&
+                    !type_muted &&
+                    !is_twitch
+                ) {
+                    lst.push(announcement);
+                }
+            }
+
+            // Sort announcements: system first, then by id (oldest first)
+            return sortAnnouncements(lst);
+        }, [isGameParticipant, updateCounter]);
+
+        if (!forceShow && sortedAnnouncements.length === 0) {
+            return null;
         }
 
-        // Sort announcements: system first, then by id (oldest first)
-        return sortAnnouncements(lst);
-    }, [isGameParticipant, updateCounter]);
+        return (
+            <div className="ActiveAnnouncements-container">
+                <Card className="ActiveAnnouncements">
+                    <UIPush event="retract" channel="announcements" action={retract} />
+                    <UIPush event="announcement" channel="announcements" action={announce} />
+                    <UIPush event="retract" action={retract} />
+                    <UIPush event="announcement" action={announce} />
 
-    if (sortedAnnouncements.length === 0) {
-        return null;
-    }
+                    {sortedAnnouncements.map((announcement, idx) => {
+                        const user = data.get("user");
+                        const can_block_user =
+                            user &&
+                            !user.anonymous &&
+                            user.id !== announcement.creator.id &&
+                            announcement.creator.ui_class.indexOf("moderator") < 0;
 
-    return (
-        <div className="ActiveAnnouncements-container">
-            <Card className="ActiveAnnouncements">
-                <UIPush event="retract" channel="announcements" action={retract} />
-                <UIPush event="announcement" channel="announcements" action={announce} />
-                <UIPush event="retract" action={retract} />
-                <UIPush event="announcement" action={announce} />
-
-                {sortedAnnouncements.map((announcement, idx) => {
-                    const user = data.get("user");
-                    const can_block_user =
-                        user &&
-                        !user.anonymous &&
-                        user.id !== announcement.creator.id &&
-                        announcement.creator.ui_class.indexOf("moderator") < 0;
-
-                    const announcement_actions: PopupMenuItem[] = [
-                        {
-                            title: _("Hide this announcement"),
-                            onClick: () => {
-                                clearAnnouncement(announcement.id);
-                                return;
+                        const announcement_actions: PopupMenuItem[] = [
+                            {
+                                title: _("Hide this announcement"),
+                                onClick: () => {
+                                    clearAnnouncement(announcement.id);
+                                    return;
+                                },
                             },
-                        },
-                    ];
+                        ];
 
-                    if (can_block_user) {
-                        announcement_actions.push({
-                            title: interpolate(_("Hide all from {{username}}"), {
-                                username: announcement.creator.username,
-                            }),
-                            onClick: () => {
-                                alert
-                                    .fire({
-                                        text: interpolate(
-                                            _(
-                                                "Are you sure you want to hide all announcements from {{name}}?",
+                        if (can_block_user) {
+                            announcement_actions.push({
+                                title: interpolate(_("Hide all from {{username}}"), {
+                                    username: announcement.creator.username,
+                                }),
+                                onClick: () => {
+                                    alert
+                                        .fire({
+                                            text: interpolate(
+                                                _(
+                                                    "Are you sure you want to hide all announcements from {{name}}?",
+                                                ),
+                                                { name: announcement.creator.username },
                                             ),
-                                            { name: announcement.creator.username },
-                                        ),
-                                        showCancelButton: true,
-                                        confirmButtonText: _("Yes"),
-                                        cancelButtonText: _("Cancel"),
-                                    })
-                                    .then(({ value: yes }) => {
-                                        if (yes) {
-                                            setAnnouncementBlock(announcement.creator.id, true);
-                                            forceUpdate();
-                                        }
-                                    })
-                                    .catch(() => 0);
-                                return;
-                            },
-                        });
-                    }
+                                            showCancelButton: true,
+                                            confirmButtonText: _("Yes"),
+                                            cancelButtonText: _("Cancel"),
+                                        })
+                                        .then(({ value: yes }) => {
+                                            if (yes) {
+                                                setAnnouncementBlock(announcement.creator.id, true);
+                                                forceUpdate();
+                                            }
+                                        })
+                                        .catch(() => 0);
+                                    return;
+                                },
+                            });
+                        }
 
-                    if (announcement.type === "stream") {
-                        announcement_actions.push({
-                            title: _("Hide stream announcements"),
-                            onClick: () => {
-                                alert
-                                    .fire({
-                                        text: _(
-                                            "Are you sure you want to hide all announcements for streamers?",
-                                        ),
-                                        showCancelButton: true,
-                                        confirmButtonText: _("Yes"),
-                                        cancelButtonText: _("Cancel"),
-                                    })
-                                    .then(({ value: yes }) => {
-                                        if (yes) {
-                                            preferences.set("mute-stream-announcements", true);
-                                            forceUpdate();
-                                        }
-                                    })
-                                    .catch(() => 0);
-                                return;
-                            },
-                        });
-                    }
+                        if (announcement.type === "stream") {
+                            announcement_actions.push({
+                                title: _("Hide stream announcements"),
+                                onClick: () => {
+                                    alert
+                                        .fire({
+                                            text: _(
+                                                "Are you sure you want to hide all announcements for streamers?",
+                                            ),
+                                            showCancelButton: true,
+                                            confirmButtonText: _("Yes"),
+                                            cancelButtonText: _("Cancel"),
+                                        })
+                                        .then(({ value: yes }) => {
+                                            if (yes) {
+                                                preferences.set("mute-stream-announcements", true);
+                                                forceUpdate();
+                                            }
+                                        })
+                                        .catch(() => 0);
+                                    return;
+                                },
+                            });
+                        }
 
-                    if (announcement.type === "event") {
-                        announcement_actions.push({
-                            title: _("Hide event announcements"),
-                            onClick: () => {
-                                alert
-                                    .fire({
-                                        text: _(
-                                            "Are you sure you want to hide all event announcements?",
-                                        ),
-                                        showCancelButton: true,
-                                        confirmButtonText: _("Yes"),
-                                        cancelButtonText: _("Cancel"),
-                                    })
-                                    .then(({ value: yes }) => {
-                                        if (yes) {
-                                            preferences.set("mute-event-announcements", true);
-                                            forceUpdate();
-                                        }
-                                    })
-                                    .catch(() => 0);
-                                return;
-                            },
-                        });
-                    }
+                        if (announcement.type === "event") {
+                            announcement_actions.push({
+                                title: _("Hide event announcements"),
+                                onClick: () => {
+                                    alert
+                                        .fire({
+                                            text: _(
+                                                "Are you sure you want to hide all event announcements?",
+                                            ),
+                                            showCancelButton: true,
+                                            confirmButtonText: _("Yes"),
+                                            cancelButtonText: _("Cancel"),
+                                        })
+                                        .then(({ value: yes }) => {
+                                            if (yes) {
+                                                preferences.set("mute-event-announcements", true);
+                                                forceUpdate();
+                                            }
+                                        })
+                                        .catch(() => 0);
+                                    return;
+                                },
+                            });
+                        }
 
-                    if (announcement.type === "advertisement") {
-                        announcement_actions.push({
-                            title: _("Hide go service advertisements"),
-                            onClick: () => {
-                                alert
-                                    .fire({
-                                        text: _(
-                                            "Are you sure you want to hide all go related advertisements?",
-                                        ),
-                                        showCancelButton: true,
-                                        confirmButtonText: _("Yes"),
-                                        cancelButtonText: _("Cancel"),
-                                    })
-                                    .then(({ value: yes }) => {
-                                        if (yes) {
-                                            preferences.set("mute-event-announcements", true);
-                                            forceUpdate();
-                                        }
-                                    })
-                                    .catch(() => 0);
-                                return;
-                            },
-                        });
-                    }
+                        if (announcement.type === "advertisement") {
+                            announcement_actions.push({
+                                title: _("Hide go service advertisements"),
+                                onClick: () => {
+                                    alert
+                                        .fire({
+                                            text: _(
+                                                "Are you sure you want to hide all go related advertisements?",
+                                            ),
+                                            showCancelButton: true,
+                                            confirmButtonText: _("Yes"),
+                                            cancelButtonText: _("Cancel"),
+                                        })
+                                        .then(({ value: yes }) => {
+                                            if (yes) {
+                                                preferences.set("mute-event-announcements", true);
+                                                forceUpdate();
+                                            }
+                                        })
+                                        .catch(() => 0);
+                                    return;
+                                },
+                            });
+                        }
 
-                    // All announcements should have entries now
-                    if (!announcement.entries || announcement.entries.length === 0) {
-                        return null;
-                    }
+                        // All announcements should have entries now
+                        if (!announcement.entries || announcement.entries.length === 0) {
+                            return null;
+                        }
 
-                    const displayableEntries = getDisplayableEntries(announcement);
-                    if (displayableEntries.length === 0) {
-                        return null;
-                    }
+                        const displayableEntries = getDisplayableEntries(announcement);
+                        if (displayableEntries.length === 0) {
+                            return null;
+                        }
 
-                    return (
-                        <div className={`announcement announcement-${announcement.type}`} key={idx}>
-                            <div className="announcement-content">
-                                {displayableEntries.map((entry, entryIdx) => (
-                                    <div className="announcement-entry" key={entryIdx}>
-                                        <AnnouncementEntry entry={entry} />
-                                    </div>
-                                ))}
-                                {announcement.type !== "system" && (
-                                    <i className="announcement-creator">
-                                        &nbsp;- {announcement.creator.username}
-                                    </i>
-                                )}
+                        return (
+                            <div
+                                className={`announcement announcement-${announcement.type}`}
+                                key={idx}
+                            >
+                                <div className="announcement-content">
+                                    {displayableEntries.map((entry, entryIdx) => (
+                                        <div className="announcement-entry" key={entryIdx}>
+                                            <AnnouncementEntry entry={entry} />
+                                        </div>
+                                    ))}
+                                    {announcement.type !== "system" && (
+                                        <i className="announcement-creator">
+                                            &nbsp;- {announcement.creator.username}
+                                        </i>
+                                    )}
+                                </div>
+                                <PopupMenu list={announcement_actions}></PopupMenu>
                             </div>
-                            <PopupMenu list={announcement_actions}></PopupMenu>
-                        </div>
-                    );
-                })}
-            </Card>
-        </div>
-    );
-});
+                        );
+                    })}
+                </Card>
+            </div>
+        );
+    },
+);

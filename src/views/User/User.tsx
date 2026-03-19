@@ -534,6 +534,7 @@ export function User(props: { user_id?: number }): React.ReactElement {
                         <ActiveDroppedGameList
                             games={active_games}
                             user={user}
+                            showCount={true}
                         ></ActiveDroppedGameList>
                     )}
 

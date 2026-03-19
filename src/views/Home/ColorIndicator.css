@@ -15,6 +15,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export { challenge, challengeComputer, challengeRematch } from "./ChallengeModal.api";
-export { challenge_text_description } from "./ChallengeModal.utils";
-export type { ChallengeModalConfig, ChallengeDetails } from "./ChallengeModal.types";
+.ColorIndicator {
+    display: inline-block;
+    width: 0.7em;
+    height: 0.7em;
+    border-radius: 50%;
+    vertical-align: middle;
+    margin-right: 0.2em;
+    flex-shrink: 0;
+
+    &.black {
+        background: #222;
+        border: 1px solid #222;
+    }
+
+    &.white {
+        background: #fff;
+        border: 1px solid #888;
+    }
+
+    &.auto {
+        background: linear-gradient(to right, #222 50%, #fff 50%);
+        border: 1px solid #888;
+    }
+}

@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* cspell: disable */
+
 import * as React from "react";
 import * as data from "@/lib/data";
 import { del } from "@/lib/requests";
@@ -23,7 +25,13 @@ import { AutoTranslate } from "@/components/AutoTranslate";
 import { UIPush } from "@/components/UIPush";
 import "./DismissableMessages.css";
 
-export function DismissableMessages(): React.ReactElement | null {
+interface DismissableMessagesProps {
+    forceShow?: boolean;
+}
+
+export function DismissableMessages({
+    forceShow,
+}: DismissableMessagesProps): React.ReactElement | null {
     const [messages, setMessages] = React.useState<DismissableMessagesSchema | undefined>(
         data.get("config.dismissable_messages"),
     );
@@ -32,7 +40,7 @@ export function DismissableMessages(): React.ReactElement | null {
         data.watch("config.dismissable_messages", setMessages);
     }, []);
 
-    if (!messages || Object.keys(messages).length === 0) {
+    if (!forceShow && (!messages || Object.keys(messages).length === 0)) {
         return null;
     }
 
@@ -56,16 +64,28 @@ export function DismissableMessages(): React.ReactElement | null {
                 event="dismissable_messages"
                 action={setMessages}
             />
-            {Object.keys(messages).map((key) => (
-                <div key={key} className="DismissableMessage">
-                    <i className="fa fa-times" onClick={() => dismiss(key)} />
-                    <AutoTranslate
-                        source={messages[key].message}
-                        source_language={messages[key].language}
-                        markdown
-                    />
+            {messages &&
+                Object.keys(messages).map((key) => (
+                    <div key={key} className="DismissableMessage">
+                        <i className="fa fa-times" onClick={() => dismiss(key)} />
+                        <AutoTranslate
+                            source={messages[key].message}
+                            source_language={messages[key].language}
+                            markdown
+                        />
+                    </div>
+                ))}
+            {forceShow && (!messages || Object.keys(messages).length === 0) && (
+                <div className="DismissableMessage">
+                    <i className="fa fa-times" />
+                    {/* Lorem ipsum placeholder text is fine here because this
+                        is only ever visible for development when we are force
+                        showing the component and there is no existing message
+                        */}
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor
+                    incididunt ut labore et dolore magna aliqua.
                 </div>
-            ))}
+            )}
         </div>
     );
 }
