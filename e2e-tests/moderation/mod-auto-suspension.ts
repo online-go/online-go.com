@@ -137,7 +137,7 @@ export const autoSuspensionTest = async ({
         await testPage.waitForTimeout(500);
         const chooseButton = await expectOGSClickableByName(testPage, /^Basic/);
         await chooseButton.click();
-        await expect(testPage.getByText("You're not currently playing any games")).toBeVisible();
+        await expect(testPage).toHaveURL(/\/(overview|$)/);
 
         // Turn off dynamic help
         await testPage.goto("/settings/help");
