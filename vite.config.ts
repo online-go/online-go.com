@@ -99,6 +99,7 @@ for (const base_path of [
     "/firewall",
     "/fair_play",
     "/__debug__",
+    "/static",
 ]) {
     proxy[base_path] = {
         target: backend_url,
