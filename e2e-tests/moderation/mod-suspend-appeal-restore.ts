@@ -178,6 +178,11 @@ export const suspendAppealRestoreTest = async ({
     const appealRow = modPage.locator(".PaginatedTable tr", { hasText: username });
     await expect(appealRow).toBeVisible();
 
+    // Verify the Reason column shows the trailing words of the ban reason
+    const reasonCell = appealRow.locator("td.ban_reason");
+    await expect(reasonCell).toContainText("e2e testing");
+    log("Ban reason summary visible in appeals table ✓");
+
     // Click on the "State" column cell (not the Player cell)
     const stateCell = appealRow.locator("td.state").last();
     await stateCell.click();

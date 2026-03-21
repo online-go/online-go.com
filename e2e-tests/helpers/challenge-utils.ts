@@ -244,13 +244,9 @@ export const createDirectChallenge = async (
 export const acceptDirectChallenge = async (page: Page) => {
     await page.goto("/");
 
-    // Click skip button if present
-    const skipButton = page.getByRole("button", { name: /skip/i });
-    if (await skipButton.isVisible()) {
-        await skipButton.click();
-    }
-
-    await page.locator(".fab.primary.raiser").click();
+    // The Home screen shows incoming challenges inline with Accept/Decline buttons
+    const acceptButton = await expectOGSClickableByName(page, /Accept/);
+    await acceptButton.click();
 };
 
 // Fill out the challenge form with the given settings.
