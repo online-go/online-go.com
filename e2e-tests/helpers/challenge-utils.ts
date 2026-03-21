@@ -245,8 +245,7 @@ export const acceptDirectChallenge = async (page: Page) => {
     await page.goto("/");
 
     // The Home screen shows incoming challenges inline with Accept/Decline buttons
-    const acceptButton = page.getByRole("button", { name: /Accept/ });
-    await expect(acceptButton).toBeVisible({ timeout: 15000 });
+    const acceptButton = await expectOGSClickableByName(page, /Accept/);
     await acceptButton.click();
 };
 
