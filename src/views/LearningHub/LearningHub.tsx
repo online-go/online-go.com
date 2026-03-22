@@ -45,20 +45,24 @@ export function LearningHub(): React.ReactElement {
         };
     }, [params.section, params.page]);
 
+    const user = data.get("user");
+
     React.useEffect(() => {
         // One-time migration of local historical progress to remote storage
-        if (!data.get("_learning-hub-migrated")) {
+        if (user && !user.anonymous && !data.get("_learning-hub-migrated")) {
             const legacyData = data.legacy_learning_hub_data;
             for (const key in legacyData) {
+                // Ensure correct key typing for data access
+                const typedKey = key as `learning-hub.${string}`;
                 // We merge learning-hub legacy (pre-sync) data with current server data
-                const currentData: any = data.get(key as any) || {};
+                const currentData = (data.get(typedKey) || {}) as Record<number, true>;
                 const merged = { ...legacyData[key], ...currentData };
-                data.set(key as any, merged, data.Replication.REMOTE_OVERWRITES_LOCAL);
+                data.set(typedKey, merged, data.Replication.REMOTE_OVERWRITES_LOCAL);
             }
-            // Even if they have no data, we mark them as migrated so we don't keep checking
+            // Now mark as migrated locally and remotely
             data.set("_learning-hub-migrated", true, data.Replication.REMOTE_OVERWRITES_LOCAL);
         }
-    }, []);
+    }, [user]);
 
     const section_name = (params.section || "index").toLowerCase();
     let section: any = null;
