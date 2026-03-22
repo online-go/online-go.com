@@ -327,6 +327,8 @@ function safeLocalStorageRemove(key: string) {
     }
 }
 
+export const legacy_learning_hub_data: Record<string, Record<number, true>> = {};
+
 /* Load previously saved data from localStorage */
 try {
     for (let i = 0; i < localStorage.length; ++i) {
@@ -337,6 +339,9 @@ try {
                 const item = localStorage.getItem(`ogs.${key}`);
                 if (item) {
                     store[key as keyof DataSchema] = JSON.parse(item);
+                    if (key.startsWith("learning-hub.")) {
+                        legacy_learning_hub_data[key] = store[key as keyof DataSchema];
+                    }
                 }
             } catch (e) {
                 console.error(
