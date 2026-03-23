@@ -52,6 +52,7 @@ import { HelpSettings } from "./HelpSettings";
 import { Supporter } from "@/views/Supporter";
 import { GoTVPreferences } from "./GoTVPreferences";
 import { ThemePreferences } from "./ThemePreferences";
+import { HomeScreenPreferences } from "./HomeScreenPreferences";
 import "./Settings.css";
 
 export function Settings(): React.ReactElement {
@@ -112,6 +113,7 @@ export function Settings(): React.ReactElement {
         { key: "game", label: _("Game Preferences") },
         { key: "theme", label: _("Themes & Visuals") },
         { key: "chat", label: _("Chat Preferences") },
+        { key: "home", label: _("Home Preferences") },
         { key: "gotv", label: interpolate(_("%s Preferences"), ["GoTV"]) },
         {
             key: "supporter",
@@ -150,6 +152,9 @@ export function Settings(): React.ReactElement {
     switch (selected) {
         case "general":
             SelectedPage = GeneralPreferences;
+            break;
+        case "home":
+            SelectedPage = HomeScreenPreferences;
             break;
         case "sound":
             SelectedPage = SoundPreferences;

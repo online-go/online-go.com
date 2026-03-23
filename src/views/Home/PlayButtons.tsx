@@ -23,20 +23,14 @@ import * as preferences from "@/lib/preferences";
 import { useData } from "@/lib/hooks";
 import { _ } from "@/lib/translate";
 import { alert } from "@/lib/swal_config";
-import { uuid, getGameResultText } from "@/lib/misc";
+import { uuid } from "@/lib/misc";
 import { automatch_manager } from "@/lib/automatch_manager";
 import { SPEED_OPTIONS } from "@/views/Play/SPEED_OPTIONS";
 import { challengeComputer } from "@/components/ChallengeModal";
-import { ChallengesList } from "./ChallengesList";
-import { GameCard } from "./GameCard";
-import { getEm10Width } from "@/lib/device";
-import "./PlayBar.css";
+import "./PlayButtons.css";
 
-interface PlayBarProps {
-    onChallengeAccept: () => void;
-}
-
-export function PlayBar({ onChallengeAccept }: PlayBarProps): React.ReactElement {
+export function PlayButtons(): React.ReactElement {
+    const [config] = useData("config");
     const [board_size] = preferences.usePreference("automatch.size");
     const [game_speed] = preferences.usePreference("automatch.speed");
     const [time_control_system] = preferences.usePreference("automatch.time-control");
@@ -46,19 +40,8 @@ export function PlayBar({ onChallengeAccept }: PlayBarProps): React.ReactElement
     const [handicaps] = preferences.usePreference("automatch.handicaps");
     const [lower_rank_diff] = preferences.usePreference("automatch.lower-rank-diff");
     const [upper_rank_diff] = preferences.usePreference("automatch.upper-rank-diff");
-    const [config] = useData("config");
     const navigate = useNavigate();
-
-    const last_game = config?.last_game as
-        | {
-              game_id?: number;
-              game_name?: string;
-              outcome?: string;
-              winner?: number;
-              black_player_id?: number;
-              white_player_id?: number;
-          }
-        | undefined;
+    const last_game_id = (config?.last_game as { game_id?: number } | undefined)?.game_id;
 
     const playLabelDetails = React.useMemo((): React.ReactNode => {
         if (game_clock === "multiple") {
@@ -170,52 +153,26 @@ export function PlayBar({ onChallengeAccept }: PlayBarProps): React.ReactElement
     ]);
 
     return (
-        <div className="PlayBar">
-            <div className="play-buttons">
-                <button className="play-button primary" onClick={doAutomatch}>
-                    <span className="play-label">
-                        <span className="play-label-play">{_("Play")}</span>
-                        {playLabelDetails}
-                    </span>
-                </button>
-                <button className="play-button" onClick={() => navigate("/play")}>
-                    {_("New Game")}
-                </button>
-                <button className="play-button" onClick={() => challengeComputer()}>
-                    {_("Play Computer")}
-                </button>
-            </div>
-            <ChallengesList onAccept={onChallengeAccept} />
-            {last_game?.game_id && (
-                <GameCard
-                    cardTitle={
-                        <>
-                            <span>
-                                {_("Last Game")}
-                                {last_game.outcome &&
-                                    ` - ${getGameResultText(
-                                        last_game.outcome,
-                                        last_game.winner !== last_game.white_player_id,
-                                        last_game.winner !== last_game.black_player_id,
-                                    )}`}
-                            </span>
-                            {last_game.game_name && (
-                                <div style={{ fontWeight: "normal", fontSize: "0.9em" }}>
-                                    "{last_game.game_name}"
-                                </div>
-                            )}
-                        </>
-                    }
-                    game_id={last_game.game_id}
-                    displayWidth={1.7 * getEm10Width()}
-                    title={false}
-                    noText={false}
-                    noLink={true}
+        <div className="PlayButtons">
+            <button className="play-button primary" onClick={doAutomatch}>
+                <span className="play-label">
+                    <span className="play-label-play">{_("Play")}</span>
+                    {playLabelDetails}
+                </span>
+            </button>
+            <button className="play-button" onClick={() => navigate("/play")}>
+                {_("New Game")}
+            </button>
+            <button className="play-button" onClick={() => challengeComputer()}>
+                {_("Play Computer")}
+            </button>
+            {last_game_id && (
+                <button
+                    className="play-button review-last-game"
+                    onClick={() => navigate(`/game/${last_game_id}`)}
                 >
-                    <button onClick={() => navigate(`/game/${last_game.game_id}`)}>
-                        {_("Review Last Game")}
-                    </button>
-                </GameCard>
+                    {_("Review Last Game")}
+                </button>
             )}
         </div>
     );

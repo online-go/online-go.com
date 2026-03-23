@@ -51,11 +51,11 @@
     .active-games {
         flex-grow: 1;
         flex-basis: 20rem;
-        width: 100%;
-        max-width: 90rem;
+        //width: 100%;
+        margin-top: 1rem;
         margin-left: auto;
         margin-right: auto;
-        margin-top: 3rem;
+        height: 100%;
 
         .active-games-header {
             display: flex;
@@ -66,13 +66,9 @@
     }
 
     .no-active-games {
-        flex-grow: 1;
-        flex-basis: 20rem;
-        display: flex;
-        max-height: 80vh;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
+        margin-top: 1rem;
+        color: var(--shade2);
+        font-size: 0.9rem;
     }
 
     .learn-how-to-play {
@@ -81,11 +77,11 @@
 
     .left {
         flex: 1;
-        min-width: 20rem;
+        min-width: 0;
         max-width: 100vw;
         display: flex;
         flex-direction: column;
-        /* overflow-x: auto; */
+        overflow-x: hidden;
     }
 
     .right {
@@ -95,6 +91,10 @@
         max-width: 100vw;
         text-align: left;
         margin-left: 1rem;
+
+        &:not(:has(.ProfileCard, .home-categories > *)) {
+            display: none;
+        }
 
         a {
             display: block;
@@ -222,6 +222,33 @@
         flex-direction: column;
         align-items: center;
         padding-top: 1rem;
+    }
+
+    .play-buttons-column {
+        flex: 0 0 auto;
+        display: flex;
+        flex-direction: column;
+        padding-top: 2rem;
+        padding-left: 0rem;
+        padding-right: 1rem;
+    }
+
+    @media screen and (max-width: 850px) {
+        .play-buttons-column {
+            order: 2;
+            width: 100%;
+            padding-left: 1rem;
+            padding-right: 1rem;
+            padding-top: 1rem;
+        }
+
+        .left {
+            order: 1;
+        }
+
+        .right {
+            order: 3;
+        }
     }
 
     .top-bar-container {

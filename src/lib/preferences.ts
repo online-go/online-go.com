@@ -235,6 +235,27 @@ export const defaults = {
     "bot.slug": "" as string,
     "bot.color": "random" as "random" | "white" | "black",
     "bot.last-selected-id": undefined as string | number | undefined,
+
+    "home-show-SupporterProblems": true,
+    "home-show-PriceIncreaseMessage": true,
+    "home-show-FreeTrialBanner": true,
+    "home-show-FreeTrialSurvey": true,
+    "home-show-DismissableMessages": true,
+    "home-show-EmailBanner": true,
+    "home-show-PaymentProblemBanner": true,
+    "home-show-ActiveAnnouncements": true,
+    "home-show-ModerationOffer": true,
+    "home-show-ChallengesList": true,
+    "home-show-InviteList": true,
+    "home-show-ActiveDroppedGameList": true,
+    "home-show-ProfileCard": true,
+    "home-show-WhatsNewBanner": true,
+    "home-show-TournamentList": true,
+    "home-show-LadderList": true,
+    "home-show-GroupList": true,
+    "home-show-HomeFriendList": true,
+    "home-show-PlayButtons": true,
+    "home-show-GameCount": false,
 };
 
 defaults["profanity-filter"][current_language] = true;

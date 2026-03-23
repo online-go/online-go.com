@@ -28,9 +28,10 @@ import { post, get, abort_requests_in_flight } from "@/lib/requests";
 import { errorAlerter } from "@/lib/misc";
 import { DismissableNotification } from "@/components/DismissableNotification";
 import { FriendList } from "@/components/FriendList";
-import { PlayBar } from "./PlayBar";
+import { PlayButtons } from "./PlayButtons";
 import { ProfileCard } from "@/components/ProfileCard";
 import { InviteList } from "./InviteList";
+import { ChallengesList } from "./ChallengesList";
 import { notification_manager } from "@/components/Notifications";
 import { ActiveAnnouncements } from "@/components/Announcements";
 import { FabX } from "@/components/material";
@@ -47,7 +48,7 @@ import { FreeTrialBanner } from "@/components/FreeTrialBanner";
 import { SupporterProblems } from "@/components/SupporterProblems";
 import { FreeTrialSurvey } from "@/components/FreeTrialSurvey";
 import { PriceIncreaseMessage } from "@/components/PriceIncreaseMessage";
-import { HomeDebug, useHomeDebugOverrides, shouldRender, isForced } from "./HomeDebug";
+import { HomeDebug, useHomeDebugState, shouldRender, isForced } from "./HomeDebug";
 import { WhatsNewBanner } from "./WhatsNewBanner";
 import "./Home.css";
 
@@ -59,7 +60,7 @@ type ActiveGameType = rest_api.players.full.Game;
 const DEFAULT_TITLE = "OGS";
 
 export function Home(): React.ReactElement {
-    const [debugOverrides, setDebugOverrides] = useHomeDebugOverrides();
+    const [forceShowSet, setForceShowSet] = useHomeDebugState();
     const [user, setUser] = React.useState<UserType | undefined>(data.get("config.user"));
     const [overview, setOverview] = React.useState<{ active_games: Array<ActiveGameType> }>({
         active_games: [],
@@ -131,7 +132,7 @@ export function Home(): React.ReactElement {
 
     return (
         <div id="Home-Container">
-            <HomeDebug overrides={debugOverrides} setOverrides={setDebugOverrides} />
+            <HomeDebug forceShowSet={forceShowSet} setForceShowSet={setForceShowSet} />
             {!!user && user.need_rank && user.starting_rank_hint === "not provided" ? (
                 <>
                     <div className="welcome">{_("Welcome!")}</div>
@@ -139,32 +140,51 @@ export function Home(): React.ReactElement {
                 </>
             ) : (
                 <div id="Home">
+                    {shouldRender("PlayButtons") && (
+                        <div className="play-buttons-column">
+                            <PlayButtons />
+                        </div>
+                    )}
                     <div className="left">
                         <div className="top-bar-container">
-                            {shouldRender(debugOverrides, "ChallengesList") && (
-                                <PlayBar onChallengeAccept={() => refresh()} />
+                            {shouldRender("ChallengesList") && (
+                                <ChallengesList onAccept={refresh} />
                             )}
-                            <SupporterProblems
-                                forceShow={isForced(debugOverrides, "SupporterProblems")}
-                            />
-                            <PriceIncreaseMessage
-                                forceShow={isForced(debugOverrides, "PriceIncreaseMessage")}
-                            />
-                            <FreeTrialBanner
-                                forceShow={isForced(debugOverrides, "FreeTrialBanner")}
-                            />
-                            <FreeTrialSurvey
-                                forceShow={isForced(debugOverrides, "FreeTrialSurvey")}
-                            />
-                            <DismissableMessages
-                                forceShow={isForced(debugOverrides, "DismissableMessages")}
-                            />
-                            <EmailBanner forceShow={isForced(debugOverrides, "EmailBanner")} />
-                            <PaymentProblemBanner
-                                forceShow={isForced(debugOverrides, "PaymentProblemBanner")}
-                            />
-                            {shouldRender(debugOverrides, "ModerationOffer") &&
-                                (isForced(debugOverrides, "ModerationOffer") ||
+                            {shouldRender("SupporterProblems") && (
+                                <SupporterProblems
+                                    forceShow={isForced(forceShowSet, "SupporterProblems")}
+                                />
+                            )}
+                            {shouldRender("PriceIncreaseMessage") && (
+                                <PriceIncreaseMessage
+                                    forceShow={isForced(forceShowSet, "PriceIncreaseMessage")}
+                                />
+                            )}
+                            {shouldRender("FreeTrialBanner") && (
+                                <FreeTrialBanner
+                                    forceShow={isForced(forceShowSet, "FreeTrialBanner")}
+                                />
+                            )}
+                            {shouldRender("FreeTrialSurvey") && (
+                                <FreeTrialSurvey
+                                    forceShow={isForced(forceShowSet, "FreeTrialSurvey")}
+                                />
+                            )}
+                            {shouldRender("DismissableMessages") && (
+                                <DismissableMessages
+                                    forceShow={isForced(forceShowSet, "DismissableMessages")}
+                                />
+                            )}
+                            {shouldRender("EmailBanner") && (
+                                <EmailBanner forceShow={isForced(forceShowSet, "EmailBanner")} />
+                            )}
+                            {shouldRender("PaymentProblemBanner") && (
+                                <PaymentProblemBanner
+                                    forceShow={isForced(forceShowSet, "PaymentProblemBanner")}
+                                />
+                            )}
+                            {shouldRender("ModerationOffer") &&
+                                (isForced(forceShowSet, "ModerationOffer") ||
                                     (user && !!user.offered_moderator_powers)) && (
                                     <ModerationOffer
                                         player_id={user?.id ?? 0}
@@ -174,7 +194,7 @@ export function Home(): React.ReactElement {
                                         }
                                     />
                                 )}
-                            {shouldRender(debugOverrides, "InviteList") && <InviteList />}
+                            {shouldRender("InviteList") && <InviteList />}
 
                             {((user && user.provisional) || null) && (
                                 <DismissableNotification
@@ -188,25 +208,26 @@ export function Home(): React.ReactElement {
                             )}
                         </div>
 
-                        {shouldRender(debugOverrides, "ActiveDroppedGameList") &&
-                            resolved &&
-                            user && (
-                                <ActiveDroppedGameList
-                                    games={overview.active_games}
-                                    user={user}
-                                ></ActiveDroppedGameList>
-                            )}
+                        {shouldRender("ActiveDroppedGameList") && resolved && user && (
+                            <ActiveDroppedGameList
+                                games={overview.active_games}
+                                user={user}
+                                showCount={shouldRender("GameCount")}
+                            ></ActiveDroppedGameList>
+                        )}
                     </div>
                     <div className="right">
-                        {shouldRender(debugOverrides, "ProfileCard") && <ProfileCard user={user} />}
+                        {shouldRender("ProfileCard") && <ProfileCard user={user} />}
 
                         <div className="home-categories">
-                            <ActiveAnnouncements
-                                forceShow={isForced(debugOverrides, "ActiveAnnouncements")}
-                            />
-                            {shouldRender(debugOverrides, "WhatsNewBanner") && (
+                            {shouldRender("ActiveAnnouncements") && (
+                                <ActiveAnnouncements
+                                    forceShow={isForced(forceShowSet, "ActiveAnnouncements")}
+                                />
+                            )}
+                            {shouldRender("WhatsNewBanner") && (
                                 <WhatsNewBanner
-                                    forceShow={isForced(debugOverrides, "WhatsNewBanner")}
+                                    forceShow={isForced(forceShowSet, "WhatsNewBanner")}
                                 />
                             )}
 
@@ -236,20 +257,20 @@ export function Home(): React.ReactElement {
                                 </Card>
                             )}
 
-                            {shouldRender(debugOverrides, "TournamentList") && (
+                            {shouldRender("TournamentList") && (
                                 <TournamentList
-                                    forceShow={isForced(debugOverrides, "TournamentList")}
+                                    forceShow={isForced(forceShowSet, "TournamentList")}
                                 />
                             )}
-                            {shouldRender(debugOverrides, "LadderList") && (
-                                <LadderList forceShow={isForced(debugOverrides, "LadderList")} />
+                            {shouldRender("LadderList") && (
+                                <LadderList forceShow={isForced(forceShowSet, "LadderList")} />
                             )}
-                            {shouldRender(debugOverrides, "GroupList") && (
-                                <GroupList forceShow={isForced(debugOverrides, "GroupList")} />
+                            {shouldRender("GroupList") && (
+                                <GroupList forceShow={isForced(forceShowSet, "GroupList")} />
                             )}
-                            {shouldRender(debugOverrides, "HomeFriendList") && (
+                            {shouldRender("HomeFriendList") && (
                                 <HomeFriendList
-                                    forceShow={isForced(debugOverrides, "HomeFriendList")}
+                                    forceShow={isForced(forceShowSet, "HomeFriendList")}
                                 />
                             )}
                         </div>

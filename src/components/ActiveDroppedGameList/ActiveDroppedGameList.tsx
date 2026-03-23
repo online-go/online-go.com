@@ -29,7 +29,6 @@ interface UserType {
 interface ActiveDroppedGameListProps {
     games: any[];
     user: UserType;
-    noActiveGamesView?: React.ReactElement;
     showCount?: boolean;
 }
 
@@ -55,7 +54,9 @@ export function ActiveDroppedGameList(props: ActiveDroppedGameListProps): React.
                     />
                 </div>
             )}
-            {((!hasActiveGames && props.noActiveGamesView) || null) && props.noActiveGamesView}
+            {!hasActiveGames && !hasDroppedGames && (
+                <div className="no-active-games">{_("No active games")}</div>
+            )}
             {hasDroppedGames && (
                 <div className="dropped-games">
                     <div className="dropped-games-header">

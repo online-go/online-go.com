@@ -14,19 +14,11 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-.PlayBar {
+.PlayButtons {
     display: flex;
-    align-items: stretch;
-    flex-wrap: wrap;
-    gap: 1.5rem;
-    padding: 1rem;
-
-    .play-buttons {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-        flex-shrink: 0;
-    }
+    flex-direction: column;
+    gap: 0.5rem;
+    flex-shrink: 0;
 
     .play-label {
         display: inline-flex;
@@ -36,11 +28,9 @@
         width: 100%;
 
         .play-label-play {
-            //font-size: 2rem;
             line-height: 1;
             font-weight: 600;
             font-size: 1.5rem;
-            //font-family: "Noto Sans", "Unknown font";
         }
 
         .play-label-details {
@@ -48,7 +38,7 @@
             flex-direction: column;
             align-items: flex-end;
             line-height: 1.2;
-            color: var(--shade0);
+            color: var(--colored-background-fg-dim);
             margin-left: 1.5rem;
 
             .play-label-time,
@@ -56,6 +46,10 @@
                 font-size: 0.9rem;
             }
         }
+    }
+
+    .review-last-game {
+        margin-top: 2rem;
     }
 
     .play-button {
@@ -77,29 +71,6 @@
             background-color: var(--primary);
             border-color: var(--primary);
             color: white;
-            //padding-right: 0.5rem;
         }
-    }
-
-    .ChallengesList {
-        flex: 1;
-        min-width: 19rem;
-    }
-
-    @media screen and (max-width: 850px) {
-        justify-content: center;
-
-        .ChallengesList {
-            flex: none;
-        }
-    }
-
-    > .GameCard {
-        flex-shrink: 0;
-    }
-
-    .MiniGoban {
-        width: 19rem;
-        height: 20rem;
     }
 }
