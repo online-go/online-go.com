@@ -156,7 +156,7 @@ export const prepareNewUser = async (
     const chooseButton = await expectOGSClickableByName(userPage, /^Basic/);
     await chooseButton.click();
 
-    await expect(userPage.locator(".PlayBar")).toBeVisible();
+    await expect(userPage.locator("#Home")).toBeVisible();
 
     await turnOffDynamicHelp(userPage); // the popups can get in the way.
 
