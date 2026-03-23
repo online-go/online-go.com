@@ -28,15 +28,15 @@ React/TypeScript frontend for online-go.com. Uses Vite, PostCSS, `yarn`.
 
 ## Before Committing or Considering a Change Complete
 
-Follow [CONTRIBUTING.md](CONTRIBUTING.md) before marking any change as done. Run these checks during development after each meaningful change:
+Follow [CONTRIBUTING.md](CONTRIBUTING.md) before marking any change as done. In particular:
 
-- Run `npm run type-check` to verify TypeScript types compile cleanly.
-- Run `npm run lint` to check for linting errors.
-- Run `npx prettier --write <modified-files>` to auto-fix formatting on only the files that were modified.
+- Run `yarn type-check` to verify TypeScript types compile cleanly.
+- Run `yarn lint` to check for linting errors.
+- Run `yarn prettier:file <modified-files>` to auto-fix formatting on only the files that were modified.
 
 Only run the full build once before the final push, since it is slow and not needed in the normal development loop:
 
-- Run `npm run build` to verify the full build succeeds.
+- Run `yarn build` to verify the build succeeds.
 
 Before submitting a PR, remind the author to perform manual testing in both mobile and desktop browsers.
 
