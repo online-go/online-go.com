@@ -38,7 +38,7 @@
             flex-direction: column;
             align-items: flex-end;
             line-height: 1.2;
-            color: var(--shade0);
+            color: var(--colored-background-fg-dim);
             margin-left: 1.5rem;
 
             .play-label-time,

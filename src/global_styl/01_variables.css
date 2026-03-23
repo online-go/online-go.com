@@ -166,6 +166,7 @@
     --reject: #ff410f;
     --colored-background-fg: $colored-background-fg;
     --colored-background-fg-dark: darken($colored-background-fg, 10);
+    --colored-background-fg-dim: darken($colored-background-fg, 15);
 
     /* Chat/special backgrounds */
     --malkovich-bg: #cce3d5;
@@ -347,6 +348,7 @@
     --reject: #a62705;
     --colored-background-fg: $colored-background-fg;
     --colored-background-fg-dark: darken($colored-background-fg, 10);
+    --colored-background-fg-dim: darken($colored-background-fg, 25);
 
     /* Chat/special backgrounds */
     --malkovich-bg: #597053;
