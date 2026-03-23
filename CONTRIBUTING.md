@@ -5,7 +5,7 @@ We welcome contributions made with AI assistance! If you're using AI tools like 
 -   **Follow project standards**: All code must adhere to the guidelines in [AGENTS.md](AGENTS.md), including our development commands, architecture patterns, and code quality standards. When in doubt, it should look and feel like the other code in the project.
 -   **Review and understand**: You are responsible for fully reviewing, understanding, and testing all AI-generated code before submitting. Don't submit code you haven't personally verified or don't understand.
 -   **Test thoroughly**: Ensure the changes you've made are working as expected. Ensure they work on both mobile and desktop browsers. When applicable, ensure they work as expected when you're logged in or anonymous.
--   **Code quality**: Ensure the code builds successfully and passes all linting and formatting checks (`npm run build`, `npm run lint`, `npm run prettier`).
+-   **Code quality**: Ensure the code builds successfully and passes all linting and formatting checks (`npm run type-check`, `npm run lint`, `npm run prettier`).
 
 AI is a powerful tool for productivity, but the quality and correctness of your contribution is ultimately your responsibility.
 
@@ -127,7 +127,7 @@ You could poke around in `src/` if you are already curious
 
 6. in a command window, cd to the folder that was created when you cloned the repo and do
 
-`npm clean-install`
+`yarn install`
 
 `npm run dev`
 

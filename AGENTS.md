@@ -30,9 +30,11 @@ React/TypeScript frontend for online-go.com. Uses Vite, PostCSS, `yarn`.
 
 Follow [CONTRIBUTING.md](CONTRIBUTING.md) before marking any change as done. In particular:
 
-- Run `yarn build` to verify the build succeeds.
-- Run `yarn lint` to check for linting errors.
-- Run `yarn prettier` to check formatting (use `yarn prettier --write` to auto-fix; only target the files that were modified).
+- Run `npm run type-check` to verify TypeScript types compile cleanly.
+- Run `npm run lint` to check for linting errors.
+- Run `npm run prettier` to check formatting (use `npm run prettier` to auto-fix; only target the files that were modified).
+
+Before submitting a PR, remind the author to perform manual testing in both mobile and desktop browsers.
 
 ## Pull Requests
 
