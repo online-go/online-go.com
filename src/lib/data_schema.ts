@@ -331,6 +331,7 @@ export interface DataSchema
 
     [player_notes_key: `player-notes.${number}.${number}`]: string;
     [learning_hub_key: `learning-hub.${string}`]: { [page_number: number]: true };
+    "_learning-hub-migrated"?: boolean;
     [moderator_join_game_publicly_key: `moderator.join-game-publicly.${string}`]: boolean;
     [puzzle_last_visited_key: `puzzle.collection.${number}.last-visited`]: number;
     [paginated_table_page_size_key: `paginated-table.${string}.page_size`]: number;
