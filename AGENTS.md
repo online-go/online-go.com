@@ -32,7 +32,7 @@ Follow [CONTRIBUTING.md](CONTRIBUTING.md) before marking any change as done. Run
 
 - Run `npm run type-check` to verify TypeScript types compile cleanly.
 - Run `npm run lint` to check for linting errors.
-- Run `npm run prettier --write` to auto-fix formatting; only target the files that were modified.
+- Run `npx prettier --write <modified-files>` to auto-fix formatting on only the files that were modified.
 
 Only run the full build once before the final push, since it is slow and not needed in the normal development loop:
 

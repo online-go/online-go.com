@@ -127,7 +127,7 @@ You could poke around in `src/` if you are already curious
 
 6. in a command window, cd to the folder that was created when you cloned the repo and do
 
-`yarn install`
+`npx yarn install`
 
 `npm run dev`
 
