@@ -29,7 +29,6 @@ interface UserType {
 interface ActiveDroppedGameListProps {
     games: any[];
     user: UserType;
-    noActiveGamesView?: React.ReactElement;
     showCount?: boolean;
 }
 

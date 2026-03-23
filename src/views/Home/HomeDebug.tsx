@@ -109,6 +109,7 @@ export function HomeDebug({
         } else {
             // hidden → visible
             preferences.set(prefKey(name), true as never);
+            setForceShowSet(new Set(forceShowSet));
         }
         forceRender((n) => n + 1);
     };
