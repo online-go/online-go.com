@@ -658,7 +658,10 @@ socket.on("remote_storage/update", (row) => {
     }
 });
 
+export let initial_sync_complete = false;
+
 socket.on("remote_storage/sync_complete", () => {
+    initial_sync_complete = true;
     events.emit("remote_data_sync_complete");
 });
 

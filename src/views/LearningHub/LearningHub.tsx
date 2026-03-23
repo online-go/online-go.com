@@ -17,6 +17,7 @@
 
 import * as React from "react";
 import * as data from "@/lib/data";
+import { useData } from "@/lib/hooks";
 import "./LearningHub.css";
 import * as preferences from "@/lib/preferences";
 import { Link, useParams } from "react-router-dom";
@@ -36,6 +37,19 @@ interface LearningHubParams {
 
 export function LearningHub(): React.ReactElement {
     const params = useParams<keyof LearningHubParams>();
+    const [user] = useData("user");
+    const [synced, setSynced] = React.useState(data.initial_sync_complete);
+
+    React.useEffect(() => {
+        if (synced) {
+            return;
+        }
+        const handler = () => setSynced(true);
+        data.events.on("remote_data_sync_complete", handler);
+        return () => {
+            data.events.off("remote_data_sync_complete", handler);
+        };
+    }, [synced]);
 
     React.useEffect(() => {
         const oldTitle = window.document.title;
@@ -45,11 +59,9 @@ export function LearningHub(): React.ReactElement {
         };
     }, [params.section, params.page]);
 
-    const user = data.get("user");
-
     React.useEffect(() => {
         // One-time migration of local historical progress to remote storage
-        if (user && !user.anonymous && !data.get("_learning-hub-migrated")) {
+        if (user && !user.anonymous && synced && !data.get("_learning-hub-migrated")) {
             const legacyData = data.legacy_learning_hub_data;
             for (const key in legacyData) {
                 // Ensure correct key typing for data access
@@ -62,7 +74,7 @@ export function LearningHub(): React.ReactElement {
             // Now mark as migrated locally and remotely
             data.set("_learning-hub-migrated", true, data.Replication.REMOTE_OVERWRITES_LOCAL);
         }
-    }, [user]);
+    }, [user, synced]);
 
     const section_name = (params.section || "index").toLowerCase();
     let section: any = null;
