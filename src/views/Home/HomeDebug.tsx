@@ -16,18 +16,14 @@
  */
 
 import * as React from "react";
+import * as preferences from "@/lib/preferences";
+import { ValidPreference } from "@/lib/preferences";
 import { useUser } from "@/lib/hooks";
 import "./HomeDebug.css";
 
-export type DebugOverride = "default" | "on" | "off";
+const FORCE_SHOW_STORAGE_KEY = "home-debug-force-show";
 
-export interface HomeDebugOverrides {
-    [key: string]: DebugOverride;
-}
-
-const STORAGE_KEY = "home-debug-overrides";
-
-const COMPONENT_NAMES = [
+export const COMPONENT_NAMES = [
     "SupporterProblems",
     "PriceIncreaseMessage",
     "FreeTrialBanner",
@@ -46,58 +42,84 @@ const COMPONENT_NAMES = [
     "LadderList",
     "GroupList",
     "HomeFriendList",
+    "PlayButtons",
+    "GameCount",
 ] as const;
 
-function loadOverrides(): HomeDebugOverrides {
+export type HomeComponentName = (typeof COMPONENT_NAMES)[number];
+
+function prefKey(name: string): ValidPreference {
+    return `home-show-${name}` as ValidPreference;
+}
+
+function loadForceShow(): Set<string> {
     try {
-        const stored = localStorage.getItem(STORAGE_KEY);
+        const stored = localStorage.getItem(FORCE_SHOW_STORAGE_KEY);
         if (stored) {
-            return JSON.parse(stored) as HomeDebugOverrides;
+            return new Set(JSON.parse(stored) as string[]);
         }
     } catch (e) {
         console.error(e);
     }
-    return {};
+    return new Set();
 }
 
-function saveOverrides(overrides: HomeDebugOverrides): void {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(overrides));
+function saveForceShow(forceSet: Set<string>): void {
+    localStorage.setItem(FORCE_SHOW_STORAGE_KEY, JSON.stringify([...forceSet]));
 }
 
 interface HomeDebugProps {
-    overrides: HomeDebugOverrides;
-    setOverrides: (overrides: HomeDebugOverrides) => void;
+    forceShowSet: Set<string>;
+    setForceShowSet: (s: Set<string>) => void;
 }
 
-export function HomeDebug({ overrides, setOverrides }: HomeDebugProps): React.ReactElement | null {
+export function HomeDebug({
+    forceShowSet,
+    setForceShowSet,
+}: HomeDebugProps): React.ReactElement | null {
     const [open, setOpen] = React.useState(false);
+    const [, forceRender] = React.useState(0);
     const user = useUser();
 
     if (process.env.NODE_ENV !== "development" || !user || user.id !== 1) {
         return null;
     }
 
-    const hasOverrides = Object.values(overrides).some((v) => v !== "default");
+    const hasOverrides = COMPONENT_NAMES.some(
+        (name) => !preferences.get(prefKey(name)) || forceShowSet.has(name),
+    );
 
-    const cycleOverride = (name: string) => {
-        const current = overrides[name] || "default";
-        let next: DebugOverride;
-        if (current === "default") {
-            next = "on";
-        } else if (current === "on") {
-            next = "off";
+    const cycleState = (name: string) => {
+        const visible = preferences.get(prefKey(name));
+        const forced = forceShowSet.has(name);
+
+        if (visible && !forced) {
+            // visible → forced
+            const next = new Set(forceShowSet);
+            next.add(name);
+            setForceShowSet(next);
+            saveForceShow(next);
+        } else if (forced) {
+            // forced → hidden
+            const next = new Set(forceShowSet);
+            next.delete(name);
+            setForceShowSet(next);
+            saveForceShow(next);
+            preferences.set(prefKey(name), false as never);
         } else {
-            next = "default";
+            // hidden → visible
+            preferences.set(prefKey(name), true as never);
         }
-
-        const updated = { ...overrides, [name]: next };
-        setOverrides(updated);
-        saveOverrides(updated);
+        forceRender((n) => n + 1);
     };
 
     const resetAll = () => {
-        setOverrides({});
-        saveOverrides({});
+        for (const name of COMPONENT_NAMES) {
+            preferences.set(prefKey(name), true as never);
+        }
+        setForceShowSet(new Set());
+        saveForceShow(new Set());
+        forceRender((n) => n + 1);
     };
 
     return (
@@ -110,12 +132,21 @@ export function HomeDebug({ overrides, setOverrides }: HomeDebugProps): React.Re
                         </div>
                     )}
                     {COMPONENT_NAMES.map((name) => {
-                        const state = overrides[name] || "default";
+                        const visible = preferences.get(prefKey(name));
+                        const forced = forceShowSet.has(name);
+                        let state: string;
+                        if (forced) {
+                            state = "on";
+                        } else if (!visible) {
+                            state = "off";
+                        } else {
+                            state = "default";
+                        }
                         return (
                             <div
                                 key={name}
                                 className={`HomeDebug-item ${state}`}
-                                onClick={() => cycleOverride(name)}
+                                onClick={() => cycleState(name)}
                             >
                                 <span className={`HomeDebug-state ${state}`}>
                                     {state === "on" ? "ON" : state === "off" ? "OFF" : "--"}
@@ -133,28 +164,15 @@ export function HomeDebug({ overrides, setOverrides }: HomeDebugProps): React.Re
     );
 }
 
-export function useHomeDebugOverrides(): [HomeDebugOverrides, (o: HomeDebugOverrides) => void] {
-    const [overrides, setOverrides] = React.useState<HomeDebugOverrides>(loadOverrides);
-    return [overrides, setOverrides];
+export function useHomeDebugState(): [Set<string>, (s: Set<string>) => void] {
+    const [forceShowSet, setForceShowSet] = React.useState<Set<string>>(loadForceShow);
+    return [forceShowSet, setForceShowSet];
 }
 
-// Returns true if the component should be rendered
-export function shouldRender(
-    overrides: HomeDebugOverrides,
-    name: string,
-    defaultValue: boolean = true,
-): boolean {
-    const override = overrides[name];
-    if (override === "on") {
-        return true;
-    }
-    if (override === "off") {
-        return false;
-    }
-    return defaultValue;
+export function shouldRender(name: string): boolean {
+    return !!preferences.get(prefKey(name));
 }
 
-// Returns true if the component is being forced on via debug panel
-export function isForced(overrides: HomeDebugOverrides, name: string): boolean {
-    return overrides[name] === "on";
+export function isForced(forceShowSet: Set<string>, name: string): boolean {
+    return forceShowSet.has(name);
 }
