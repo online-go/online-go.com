@@ -244,10 +244,14 @@
 
         .left {
             order: 1;
+            flex-basis: 100%;
         }
 
         .right {
             order: 3;
+            flex-basis: 100%;
+            min-width: 0;
+            margin-left: 0;
         }
     }
 
