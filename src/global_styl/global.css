@@ -14,6 +14,30 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+/* Scrollbar styling */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--shade2) var(--shade5);
+}
+
+*::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+    background: var(--shade5);
+}
+
+*::-webkit-scrollbar-thumb {
+    background: var(--shade2);
+    border-radius: 4px;
+
+    &:hover {
+        background: var(--shade1);
+    }
+}
+
 #loading-svg-container {
     position: absolute;
     left: 0;

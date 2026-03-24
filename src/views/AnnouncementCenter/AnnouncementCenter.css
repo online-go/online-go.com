@@ -408,25 +408,6 @@
             max-height: 400px;
             overflow-y: auto;
             padding-right: 0.5rem;
-
-            /* Custom scrollbar */
-            &::-webkit-scrollbar {
-                width: 6px;
-            }
-
-            &::-webkit-scrollbar-track {
-                background: var(--shade5);
-                border-radius: 3px;
-            }
-
-            &::-webkit-scrollbar-thumb {
-                background: var(--shade3);
-                border-radius: 3px;
-
-                &:hover {
-                    background: var(--shade2);
-                }
-            }
         }
 
         .link-actions-v2 {

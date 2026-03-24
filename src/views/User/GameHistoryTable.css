@@ -1,0 +1,141 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.GameHistoryTable-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: self-start;
+    width: 100%;
+}
+
+.GameHistoryTable {
+    .game_name,
+    .date,
+    .player,
+    .library-lost-result,
+    .library-won-result,
+    .library-tie-result,
+    .library-lost-result-vs-weaker,
+    .library-lost-result-vs-stronger,
+    .library-won-result-vs-stronger,
+    .library-won-result-vs-weaker,
+    .library-won-result-unranked,
+    .library-lost-result-unranked,
+    .library-hidden-result {
+        white-space: nowrap;
+    }
+
+    .library-lost-result,
+    .library-won-result,
+    .library-tie-result,
+    .library-lost-result-vs-weaker,
+    .library-lost-result-vs-stronger,
+    .library-won-result-vs-stronger,
+    .library-won-result-vs-weaker,
+    .library-won-result-unranked,
+    .library-lost-result-unranked,
+    .library-hidden-result {
+        overflow: hidden;
+        max-width: 8rem;
+        text-overflow: ellipsis;
+    }
+
+    .library-lost-result-vs-weaker {
+        background-color: var(--weak-loss);
+        color: var(--weak-l-text);
+    }
+
+    .library-lost-result-vs-stronger {
+        background-color: var(--strong-loss);
+        color: var(--strong-l-text);
+    }
+
+    .library-won-result-vs-stronger {
+        background-color: var(--strong-win);
+        color: var(--strong-w-text);
+    }
+
+    .library-won-result-vs-weaker {
+        background-color: var(--weak-win);
+        color: var(--weak-w-text);
+    }
+
+    .library-won-result-unranked {
+        color: var(--strong-win);
+    }
+
+    .library-lost-result-unranked {
+        color: var(--strong-loss);
+    }
+
+    .board_size {
+        padding-right: 0.5em;
+    }
+
+    .handicap {
+        text-align: center;
+    }
+
+    .game_name {
+        a {
+            color: unset;
+        }
+
+        max-width: 15rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .player {
+        max-width: 12rem;
+        overflow: hidden;
+    }
+
+    span {
+        padding-right: 0.3em;
+        vertical-align: middle;
+    }
+
+    .user_info {
+        white-space: nowrap;
+    }
+
+    .winner_marker {
+        color: var(--winner-trophy);
+        padding-left: 4px;
+        vertical-align: middle;
+        padding-right: 4px;
+    }
+
+    .annulled {
+        opacity: var(--annul-opacity);
+    }
+
+    th {
+        padding-right: 0.5em;
+    }
+
+    .fa-flag {
+        color: #ff8b00;
+    }
+
+    .game-name {
+        overflow-x: hidden;
+        text-overflow: ellipsis;
+        max-width: 10rem;
+    }
+}

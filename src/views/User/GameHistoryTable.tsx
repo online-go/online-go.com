@@ -37,6 +37,7 @@ import { useUser } from "@/lib/hooks";
 import { GameNameForList } from "@/components/GobanLineSummary";
 import { get } from "@/lib/requests";
 import { MODERATOR_POWERS } from "@/lib/moderation";
+import "./GameHistoryTable.css";
 
 interface GameHistoryProps {
     user_id: number;
@@ -303,7 +304,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
                         />
                     )}
                     {/* loading-container="game_history.settings().$loading" */}
-                    <div className="game-options">
+                    <div className="GameHistoryTable-options">
                         <div className="search">
                             <i className="fa fa-search"></i>
                             <PlayerAutocomplete
@@ -452,7 +453,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
                         </div>
                     </div>
                     <PaginatedTable
-                        className="game-history-table"
+                        className="GameHistoryTable"
                         name="game-history"
                         method="GET"
                         source={`players/${props.user_id}/games/`}
