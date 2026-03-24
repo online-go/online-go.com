@@ -210,6 +210,16 @@ export function PlayControls({ annulment_reason }: PlayControlsProps): React.Rea
 
     const paused = usePaused(goban);
     const show_undo_requested = useShowUndoRequested(goban);
+    const undo_requester_name = React.useMemo(() => {
+        const requested_by = engine.undo_requested_by;
+        if (requested_by === engine.players.black.id) {
+            return engine.players.black.username;
+        }
+        if (requested_by === engine.players.white.id) {
+            return engine.players.white.username;
+        }
+        return _("A player");
+    }, [show_undo_requested, engine.undo_requested_by]);
     const winner = useWinner(goban);
     const official_move_number = useOfficialMoveNumber(goban);
     const conditional_moves = useConditionalMoveTree(goban);
@@ -301,12 +311,17 @@ export function PlayControls({ annulment_reason }: PlayControlsProps): React.Rea
             <div className="game-state" ref={game_state_pane}>
                 {((mode === "play" && phase === "play") || null) && (
                     <span>
-                        {show_undo_requested ? (
-                            <span>{_("Undo Requested")}</span>
-                        ) : (
-                            <span>
-                                {((show_title && !goban?.engine?.rengo) || null) && (
-                                    <span>{title}</span>
+                        {((show_title && !goban?.engine?.rengo) || null) && <span>{title}</span>}
+                        {show_undo_requested && (
+                            <span className="undo-requested-message">
+                                {interpolate(
+                                    pgettext(
+                                        "Notification that a player has requested to undo their last move",
+                                        "{{player_name}} has requested an undo",
+                                    ),
+                                    {
+                                        player_name: undo_requester_name,
+                                    },
                                 )}
                             </span>
                         )}
@@ -320,7 +335,17 @@ export function PlayControls({ annulment_reason }: PlayControlsProps): React.Rea
                 {(mode === "analyze" || null) && (
                     <span>
                         {show_undo_requested ? (
-                            <span>{_("Undo Requested")}</span>
+                            <span>
+                                {interpolate(
+                                    pgettext(
+                                        "Notification that a player has requested to undo their last move",
+                                        "{{player_name}} has requested an undo",
+                                    ),
+                                    {
+                                        player_name: undo_requester_name,
+                                    },
+                                )}
+                            </span>
                         ) : (
                             <span>{_("Analyze Mode")}</span>
                         )}

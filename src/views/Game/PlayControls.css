@@ -120,7 +120,9 @@
                 text-transform: uppercase;
                 background-color: var(--shade5);
                 color: var(--fg);
-                transition: border-color 0.2s ease, background-color 0.2s ease;
+                transition:
+                    border-color 0.2s ease,
+                    background-color 0.2s ease;
 
                 &::placeholder {
                     text-transform: none;
@@ -177,11 +179,14 @@
 
     .accept-undo-button {
         white-space: nowrap;
-        /*
-        position: absolute;
-        left: 0.5em;
-        bottom: 0.5em;
-        */
+    }
+
+    .reject-undo-button {
+        white-space: nowrap;
+    }
+
+    .undo-requested-message {
+        display: block;
     }
 
     .stalling-score-estimate {
@@ -218,7 +223,7 @@
                 width: 1rem;
                 height: 1rem;
                 background-color: red;
-                border: 0.2rem solid #E079CE;
+                border: 0.2rem solid #e079ce;
                 margin-right: 0.5rem;
             }
 
@@ -246,7 +251,7 @@
 
         &.white {
             background-color: white;
-            border-color: #AAA;
+            border-color: #aaa;
         }
     }
 
