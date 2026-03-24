@@ -18,7 +18,7 @@ React/TypeScript frontend for online-go.com. Uses Vite, PostCSS, `yarn`.
 
 ## Rules
 
-- No `any` types. No emojis. Use `yarn`, not `npm`.
+- No `any` types. No emojis. Use `yarn` for package management, not `npm`.
 - **One component per file** (required for Vite HMR). Each component gets its own `.tsx` and matching `.css` file. Never define multiple components in one file.
 - Co-locate components used by a single parent in the parent's directory (e.g., `GobanLayout/PlayerInfo.tsx`). Shared components go in `src/components/`.
 - CSS uses PostCSS nested syntax. Shared `$variables` go in `src/global_styl/00_constants.css` and must be explicitly imported. Runtime `var(--name)` variables are in `src/global_styl/01_variables.css`.
@@ -30,9 +30,15 @@ React/TypeScript frontend for online-go.com. Uses Vite, PostCSS, `yarn`.
 
 Follow [CONTRIBUTING.md](CONTRIBUTING.md) before marking any change as done. In particular:
 
-- Run `yarn build` to verify the build succeeds.
+- Run `yarn type-check` to verify TypeScript types compile cleanly.
 - Run `yarn lint` to check for linting errors.
-- Run `yarn prettier` to check formatting (use `yarn prettier --write` to auto-fix; only target the files that were modified).
+- Run `yarn prettier:file <modified-files>` to auto-fix formatting on only the files that were modified.
+
+Only run the full build once before the final push, since it is slow and not needed in the normal development loop:
+
+- Run `yarn build` to verify the build succeeds.
+
+Before submitting a PR, remind the author to perform manual testing in both mobile and desktop browsers.
 
 ## Pull Requests
 

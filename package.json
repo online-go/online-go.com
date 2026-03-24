@@ -16,6 +16,7 @@
         "build:i18n": "OGS_I18N_BUILD_MODE=true vite build",
         "type-check": "tsc --skipLibCheck --noEmit",
         "prettier": "prettier --write \"src/**/*.{ts,tsx}\"",
+        "prettier:file": "prettier --write",
         "prettier:check": "prettier --check \"src/**/*.{ts,tsx}\"",
         "lint": "eslint src/",
         "lint:fix": "eslint --fix src/",
